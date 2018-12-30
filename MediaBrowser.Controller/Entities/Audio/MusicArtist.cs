@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Users;
@@ -9,9 +8,8 @@ using System.Linq;
 using MediaBrowser.Model.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Extensions;
-using MediaBrowser.Model.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -245,7 +243,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 var newPath = GetRebasedPath();
                 if (!string.Equals(Path, newPath, StringComparison.Ordinal))
                 {
-                    Logger.Debug("{0} path has changed from {1} to {2}", GetType().Name, Path, newPath);
+                    Logger.LogDebug("{0} path has changed from {1} to {2}", GetType().Name, Path, newPath);
                     return true;
                 }
             }

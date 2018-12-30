@@ -6,7 +6,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using Emby.Drawing.Skia;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Globalization;
@@ -16,7 +16,6 @@ namespace MediaBrowser.Server.Startup.Common
     public class ImageEncoderHelper
     {
         public static IImageEncoder GetImageEncoder(ILogger logger, 
-            ILogManager logManager, 
             IFileSystem fileSystem, 
             StartupOptions startupOptions, 
             Func<IHttpClient> httpClient,
@@ -28,20 +27,20 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 try
                 {
-                    return new SkiaEncoder(logManager.GetLogger("Skia"), appPaths, httpClient, fileSystem, localizationManager);
+                    return new SkiaEncoder(logger, appPaths, httpClient, fileSystem, localizationManager);
                 }
                 catch (Exception ex)
                 {
-                    logger.Info("Skia not available. Will try next image processor. {0}", ex.Message);
+                    logger.LogInformation("Skia not available. Will try next image processor. {0}", ex.Message);
                 }
 
                 try
                 {
-                    return new ImageMagickEncoder(logManager.GetLogger("ImageMagick"), appPaths, httpClient, fileSystem, environment);
+                    return new ImageMagickEncoder(logger, appPaths, httpClient, fileSystem, environment);
                 }
                 catch
                 {
-                    logger.Info("ImageMagick not available. Will try next image processor.");
+                    logger.LogInformation("ImageMagick not available. Will try next image processor.");
                 }
             }
 

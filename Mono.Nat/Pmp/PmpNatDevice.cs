@@ -32,7 +32,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Mono.Nat.Pmp
 {
@@ -132,7 +132,7 @@ namespace Mono.Nat.Pmp
                                                mapping.Protocol,
                                                mapping.PrivatePort,
                                                e.Message);
-                _logger.Debug(message);
+                _logger.LogDebug(message);
                 throw e;
             }
 
@@ -183,7 +183,7 @@ namespace Mono.Nat.Pmp
                                      };
 
                         var errorMsg = errors[resultCode];
-                        _logger.Debug("Error in CreatePortMapListen: " + errorMsg);
+                        _logger.LogDebug("Error in CreatePortMapListen: " + errorMsg);
                         return;
                     }
 
@@ -198,7 +198,7 @@ namespace Mono.Nat.Pmp
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in CreatePortMapListen", ex);
+                    _logger.LogError(ex, "Error in CreatePortMapListen");
                     return;
                 }
             }

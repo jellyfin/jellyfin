@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Tasks;
 using System.Collections.Generic;
 using System.Linq;

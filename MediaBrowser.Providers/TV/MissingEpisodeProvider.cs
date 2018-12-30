@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -217,7 +217,7 @@ namespace MediaBrowser.Providers.TV
                     if (addMissingEpisodes)
                     {
                         // tvdb has a lot of nearly blank episodes
-                        _logger.Info("Creating virtual missing episode {0} {1}x{2}", series.Name, tuple.Item1, tuple.Item2);
+                        _logger.LogInformation("Creating virtual missing episode {0} {1}x{2}", series.Name, tuple.Item1, tuple.Item2);
                         await AddEpisode(series, tuple.Item1, tuple.Item2, cancellationToken).ConfigureAwait(false);
 
                         hasChanges = true;
@@ -226,7 +226,7 @@ namespace MediaBrowser.Providers.TV
                 else if (airDate.Value > now)
                 {
                     // tvdb has a lot of nearly blank episodes
-                    _logger.Info("Creating virtual unaired episode {0} {1}x{2}", series.Name, tuple.Item1, tuple.Item2);
+                    _logger.LogInformation("Creating virtual unaired episode {0} {1}x{2}", series.Name, tuple.Item1, tuple.Item2);
                     await AddEpisode(series, tuple.Item1, tuple.Item2, cancellationToken).ConfigureAwait(false);
 
                     hasChanges = true;
@@ -414,7 +414,7 @@ namespace MediaBrowser.Providers.TV
 
             season.AddChild(episode, cancellationToken);
 
-            await episode.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken).ConfigureAwait(false);
+            await episode.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

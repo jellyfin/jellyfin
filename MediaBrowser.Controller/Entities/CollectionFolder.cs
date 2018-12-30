@@ -1,19 +1,21 @@
-﻿using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
+
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -103,7 +105,7 @@ namespace MediaBrowser.Controller.Entities
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error loading library options", ex);
+                Logger.LogError(ex, "Error loading library options");
 
                 return new LibraryOptions();
             }

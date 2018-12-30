@@ -3,7 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
@@ -774,7 +774,7 @@ namespace MediaBrowser.Providers.Music
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error getting music brainz info", ex);
+                        _logger.LogError(ex, "Error getting music brainz info");
                     }
                 }
             }
@@ -812,7 +812,7 @@ namespace MediaBrowser.Providers.Music
             if (throttleMs > 0)
             {
                 // MusicBrainz is extremely adamant about limiting to one request per second
-                _logger.Debug("Throttling MusicBrainz by {0}ms", throttleMs.ToString(CultureInfo.InvariantCulture));
+                _logger.LogDebug("Throttling MusicBrainz by {0}ms", throttleMs.ToString(CultureInfo.InvariantCulture));
                 await Task.Delay(throttleMs, cancellationToken).ConfigureAwait(false);
             }
 

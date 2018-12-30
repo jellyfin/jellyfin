@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -379,7 +379,7 @@ namespace MediaBrowser.Providers.Movies
                 !string.IsNullOrEmpty(language) &&
                 !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
             {
-                _logger.Info("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
+                _logger.LogInformation("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
 
                 url = string.Format(GetMovieInfo3, id, ApiKey) + "&language=en";
 
@@ -425,7 +425,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (delayMs > 0)
             {
-                _logger.Debug("Throttling Tmdb by {0} ms", delayMs);
+                _logger.LogDebug("Throttling Tmdb by {0} ms", delayMs);
                 await Task.Delay(Convert.ToInt32(delayMs)).ConfigureAwait(false);
             }
 

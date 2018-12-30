@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,7 +55,7 @@ namespace EmbyServer.SocketSharp
 
         void socket_OnError(object sender, SocketHttpListener.ErrorEventArgs e)
         {
-            _logger.Error("Error in SharpWebSocket: {0}", e.Message ?? string.Empty);
+            _logger.LogError("Error in SharpWebSocket: {0}", e.Message ?? string.Empty);
             //EventHelper.FireEventIfNotNull(Closed, this, EventArgs.Empty, _logger);
         }
 

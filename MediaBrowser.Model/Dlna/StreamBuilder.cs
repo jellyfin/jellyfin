@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using System;
@@ -528,7 +528,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 transcodeReasons.InsertRange(0, GetTranscodeReasonsFromDirectPlayProfile(item, null, audioStream, options.Profile.DirectPlayProfiles));
 
-                _logger.Info("Profile: {0}, No direct play profiles found for Path: {1}",
+                _logger.LogInformation("Profile: {0}, No direct play profiles found for Path: {1}",
                     options.Profile.Name ?? "Unknown Profile",
                     item.Path ?? "Unknown path");
             }
@@ -732,7 +732,7 @@ namespace MediaBrowser.Model.Dlna
             bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || directPlayEligibilityResult.Item1);
             bool isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || directStreamEligibilityResult.Item1);
 
-            _logger.Info("Profile: {0}, Path: {1}, isEligibleForDirectPlay: {2}, isEligibleForDirectStream: {3}",
+            _logger.LogInformation("Profile: {0}, Path: {1}, isEligibleForDirectPlay: {2}, isEligibleForDirectStream: {3}",
                 options.Profile.Name ?? "Unknown Profile",
                 item.Path ?? "Unknown path",
                 isEligibleForDirectPlay,
@@ -1022,7 +1022,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (directPlay == null)
             {
-                _logger.Info("Profile: {0}, No direct play profiles found for Path: {1}",
+                _logger.LogInformation("Profile: {0}, No direct play profiles found for Path: {1}",
                     profile.Name ?? "Unknown Profile",
                     mediaSource.Path ?? "Unknown path");
 
@@ -1188,7 +1188,7 @@ namespace MediaBrowser.Model.Dlna
 
         private void LogConditionFailure(DeviceProfile profile, string type, ProfileCondition condition, MediaSourceInfo mediaSource)
         {
-            _logger.Info("Profile: {0}, DirectPlay=false. Reason={1}.{2} Condition: {3}. ConditionValue: {4}. IsRequired: {5}. Path: {6}",
+            _logger.LogInformation("Profile: {0}, DirectPlay=false. Reason={1}.{2} Condition: {3}. ConditionValue: {4}. IsRequired: {5}. Path: {6}",
                 type,
                 profile.Name ?? "Unknown Profile",
                 condition.Property,
@@ -1210,7 +1210,7 @@ namespace MediaBrowser.Model.Dlna
 
                 if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
-                    _logger.Info("Not eligible for {0} due to unsupported subtitles", playMethod);
+                    _logger.LogInformation("Not eligible for {0} due to unsupported subtitles", playMethod);
                     return new ValueTuple<bool, TranscodeReason?>(false, TranscodeReason.SubtitleCodecNotSupported);
                 }
             }
@@ -1397,7 +1397,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (itemBitrate > requestedMaxBitrate)
             {
-                _logger.Info("Bitrate exceeds " + playMethod + " limit: media bitrate: {0}, max bitrate: {1}", itemBitrate.ToString(CultureInfo.InvariantCulture), requestedMaxBitrate.ToString(CultureInfo.InvariantCulture));
+                _logger.LogInformation("Bitrate exceeds " + playMethod + " limit: media bitrate: {0}, max bitrate: {1}", itemBitrate.ToString(CultureInfo.InvariantCulture), requestedMaxBitrate.ToString(CultureInfo.InvariantCulture));
                 return false;
             }
 

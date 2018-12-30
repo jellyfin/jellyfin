@@ -9,7 +9,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Threading;
 using Mono.Nat;
 using System.Threading;
@@ -29,9 +29,9 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private NatManager _natManager;
 
-        public ExternalPortForwarding(ILogManager logmanager, IServerApplicationHost appHost, IServerConfigurationManager config, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, ITimerFactory timerFactory)
+        public ExternalPortForwarding(ILoggerFactory loggerFactory, IServerApplicationHost appHost, IServerConfigurationManager config, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, ITimerFactory timerFactory)
         {
-            _logger = logmanager.GetLogger("PortMapper");
+            _logger = loggerFactory.CreateLogger("PortMapper");
             _appHost = appHost;
             _config = config;
             _deviceDiscovery = deviceDiscovery;
@@ -84,7 +84,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private void Start()
         {
-            _logger.Debug("Starting NAT discovery");
+            _logger.LogDebug("Starting NAT discovery");
             if (_natManager == null)
             {
                 _natManager = new NatManager(_logger, _httpClient);
@@ -139,7 +139,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 _usnsHandled.Add(identifier);
             }
 
-            _logger.Debug("Found NAT device: " + identifier);
+            _logger.LogDebug("Found NAT device: " + identifier);
 
             IPAddress address;
             if (IPAddress.TryParse(info.Location.Host, out address))
@@ -166,6 +166,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(ex, "Error");
                     return;
                 }
 
@@ -216,7 +217,7 @@ namespace Emby.Server.Implementations.EntryPoints
             catch
             {
                 // Commenting out because users are reporting problems out of our control
-                //_logger.ErrorException("Error creating port forwarding rules", ex);
+                //_logger.LogError(ex, "Error creating port forwarding rules");
             }
         }
 
@@ -253,6 +254,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error creating http port map");
                 return;
             }
 
@@ -262,12 +264,13 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error creating https port map");
             }
         }
 
         private Task CreatePortMap(INatDevice device, int privatePort, int publicPort)
         {
-            _logger.Debug("Creating port map on local port {0} to public port {1} with device {2}", privatePort, publicPort, device.LocalAddress.ToString());
+            _logger.LogDebug("Creating port map on local port {0} to public port {1} with device {2}", privatePort, publicPort, device.LocalAddress.ToString());
 
             return device.CreatePortMap(new Mapping(Protocol.Tcp, privatePort, publicPort)
             {
@@ -284,7 +287,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private void DisposeNat()
         {
-            _logger.Debug("Stopping NAT discovery");
+            _logger.LogDebug("Stopping NAT discovery");
 
             if (_timer != null)
             {
@@ -309,7 +312,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error stopping NAT Discovery", ex);
+                        _logger.LogError(ex, "Error stopping NAT Discovery");
                     }
                 }
             }

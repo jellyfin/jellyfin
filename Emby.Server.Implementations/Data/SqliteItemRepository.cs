@@ -24,7 +24,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Reflection;
@@ -667,7 +667,7 @@ namespace Emby.Server.Implementations.Data
                         var userDataKey = tuple.Item4;
 
                         SaveItem(item, topParent, userDataKey, saveItemStatement);
-                        //Logger.Debug(_saveItemCommand.CommandText);
+                        //logger.LogDebug(_saveItemCommand.CommandText);
 
                         var inheritedTags = tuple.Item5;
 
@@ -886,12 +886,12 @@ namespace Emby.Server.Implementations.Data
 
             if (topParent != null)
             {
-                //Logger.Debug("Item {0} has top parent {1}", item.Id, topParent.Id);
+                //logger.LogDebug("Item {0} has top parent {1}", item.Id, topParent.Id);
                 saveItemStatement.TryBind("@TopParentId", topParent.Id.ToString("N"));
             }
             else
             {
-                //Logger.Debug("Item {0} has null top parent", item.Id);
+                //logger.LogDebug("Item {0} has null top parent", item.Id);
                 saveItemStatement.TryBindNull("@TopParentId");
             }
 
@@ -1230,7 +1230,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             CheckDisposed();
-            //Logger.Info("Retrieving item {0}", id.ToString("N"));
+            //logger.LogInformation("Retrieving item {0}", id.ToString("N"));
             using (WriteLock.Read())
             {
                 using (var connection = CreateConnection(true))
@@ -1345,7 +1345,7 @@ namespace Emby.Server.Implementations.Data
 
             if (type == null)
             {
-                //Logger.Debug("Unknown type {0}", typeString);
+                //logger.LogDebug("Unknown type {0}", typeString);
 
                 return null;
             }
@@ -1364,7 +1364,7 @@ namespace Emby.Server.Implementations.Data
                     }
                     catch (SerializationException ex)
                     {
-                        Logger.ErrorException("Error deserializing item", ex);
+                        Logger.LogError(ex, "Error deserializing item");
                     }
                 }
             }
@@ -2686,7 +2686,7 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            //Logger.Info("GetItemList: " + _environmentInfo.StackTrace);
+            //logger.LogInformation("GetItemList: " + _environmentInfo.StackTrace);
 
             var now = DateTime.UtcNow;
 
@@ -2744,7 +2744,7 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            //Logger.Info("GetItemList: " + _environmentInfo.StackTrace);
+            //logger.LogInformation("GetItemList: " + _environmentInfo.StackTrace);
 
             var now = DateTime.UtcNow;
 
@@ -2910,14 +2910,14 @@ namespace Emby.Server.Implementations.Data
 
             if (elapsed >= slowThreshold)
             {
-                Logger.Debug("{2} query time (slow): {0}ms. Query: {1}",
+                Logger.LogDebug("{2} query time (slow): {0}ms. Query: {1}",
                     Convert.ToInt32(elapsed),
                     commandText,
                     methodName);
             }
             else
             {
-                //Logger.Debug("{2} query time: {0}ms. Query: {1}",
+                //logger.LogDebug("{2} query time: {0}ms. Query: {1}",
                 //    Convert.ToInt32(elapsed),
                 //    commandText,
                 //    methodName);
@@ -2942,7 +2942,7 @@ namespace Emby.Server.Implementations.Data
                     TotalRecordCount = returnList.Count
                 };
             }
-            //Logger.Info("GetItems: " + _environmentInfo.StackTrace);
+            //logger.LogInformation("GetItems: " + _environmentInfo.StackTrace);
 
             var now = DateTime.UtcNow;
 
@@ -3216,7 +3216,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             CheckDisposed();
-            //Logger.Info("GetItemIdsList: " + _environmentInfo.StackTrace);
+            //logger.LogInformation("GetItemIdsList: " + _environmentInfo.StackTrace);
 
             var now = DateTime.UtcNow;
 
@@ -3376,7 +3376,7 @@ namespace Emby.Server.Implementations.Data
                     TotalRecordCount = returnList.Count
                 };
             }
-            //Logger.Info("GetItemIds: " + _environmentInfo.StackTrace);
+            //logger.LogInformation("GetItemIds: " + _environmentInfo.StackTrace);
 
             var now = DateTime.UtcNow;
 
@@ -5565,7 +5565,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
 
             CheckDisposed();
-            //Logger.Info("GetItemValues: " + _environmentInfo.StackTrace);
+            //logger.LogInformation("GetItemValues: " + _environmentInfo.StackTrace);
 
             var now = DateTime.UtcNow;
 
@@ -5734,7 +5734,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                         var list = new List<Tuple<BaseItem, ItemCounts>>();
                         var result = new QueryResult<Tuple<BaseItem, ItemCounts>>();
 
-                        //Logger.Info("GetItemValues {0}", string.Join(";", statementTexts.ToArray()));
+                        //logger.LogInformation("GetItemValues {0}", string.Join(";", statementTexts.ToArray()));
                         var statements = PrepareAllSafe(db, statementTexts);
 
                         if (!isReturningZeroItems)

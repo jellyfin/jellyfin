@@ -5,10 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Controller.IO;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.LiveTv
 {
@@ -95,7 +95,7 @@ namespace MediaBrowser.Api.LiveTv
                     bytesRead = await _streamHelper.CopyToAsync(inputStream, outputStream, cancellationToken).ConfigureAwait(false);
 
                     //var position = fs.Position;
-                    //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
+                    //_logger.LogDebug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
 
                     if (bytesRead == 0)
                     {

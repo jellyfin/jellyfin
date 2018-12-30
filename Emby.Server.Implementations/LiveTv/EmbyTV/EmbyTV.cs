@@ -12,7 +12,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
@@ -170,7 +170,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error creating virtual folder", ex);
+                        _logger.LogError(ex, "Error creating virtual folder");
                     }
 
                     pathsAdded.AddRange(pathsToCreate);
@@ -196,13 +196,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error creating recording folders", ex);
+                _logger.LogError(ex, "Error creating recording folders");
             }
         }
 
         private async Task RemovePathFromLibrary(string path)
         {
-            _logger.Debug("Removing path from library: {0}", path);
+            _logger.LogDebug("Removing path from library: {0}", path);
 
             var requiresRefresh = false;
             var virtualFolders = _libraryManager.GetVirtualFolders()
@@ -224,7 +224,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error removing virtual folder", ex);
+                        _logger.LogError(ex, "Error removing virtual folder");
                     }
                 }
                 else
@@ -236,14 +236,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error removing media path", ex);
+                        _logger.LogError(ex, "Error removing media path");
                     }
                 }
             }
 
             if (requiresRefresh)
             {
-                _libraryManager.ValidateMediaLibrary(new SimpleProgress<Double>(), CancellationToken.None);
+                await _libraryManager.ValidateMediaLibrary(new SimpleProgress<Double>(), CancellationToken.None);
             }
         }
 
@@ -342,7 +342,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error getting channels", ex);
+                    _logger.LogError(ex, "Error getting channels");
                 }
             }
 
@@ -364,7 +364,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error adding metadata", ex);
+                        _logger.LogError(ex, "Error adding metadata");
                     }
                 }
             }
@@ -406,7 +406,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 foreach (var channel in channels)
                 {
-                    _logger.Info("Found epg channel in {0} {1} {2} {3}", provider.Name, info.ListingsId, channel.Name, channel.Id);
+                    _logger.LogInformation("Found epg channel in {0} {1} {2} {3}", provider.Name, info.ListingsId, channel.Name, channel.Id);
                 }
 
                 result = new EpgChannelData(channels);
@@ -595,7 +595,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error getting channels", ex);
+                    _logger.LogError(ex, "Error getting channels");
                 }
             }
 
@@ -718,7 +718,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
             if (programInfo == null)
             {
-                _logger.Info("Unable to find program with Id {0}. Will search using start date", timer.ProgramId);
+                _logger.LogInformation("Unable to find program with Id {0}. Will search using start date", timer.ProgramId);
                 programInfo = GetProgramInfoFromCache(timer.ChannelId, timer.StartDate);
             }
 
@@ -984,11 +984,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 if (!IsListingProviderEnabledForTuner(provider.Item2, channel.TunerHostId))
                 {
-                    _logger.Debug("Skipping getting programs for channel {0}-{1} from {2}-{3}, because it's not enabled for this tuner.", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
+                    _logger.LogDebug("Skipping getting programs for channel {0}-{1} from {2}-{3}, because it's not enabled for this tuner.", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
                     continue;
                 }
 
-                _logger.Debug("Getting programs for channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
+                _logger.LogDebug("Getting programs for channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
 
                 var epgChannel = await GetEpgChannelFromTunerChannel(provider.Item1, provider.Item2, channel, cancellationToken).ConfigureAwait(false);
 
@@ -996,7 +996,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (epgChannel == null)
                 {
-                    _logger.Debug("EPG channel not found for tuner channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
+                    _logger.LogDebug("EPG channel not found for tuner channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
                     programs = new List<ProgramInfo>();
                 }
                 else
@@ -1042,7 +1042,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public async Task<ILiveStream> GetChannelStreamWithDirectStreamProvider(string channelId, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
-            _logger.Info("Streaming Channel " + channelId);
+            _logger.LogInformation("Streaming Channel " + channelId);
 
             var result = string.IsNullOrEmpty(streamId) ? 
                 null :
@@ -1052,7 +1052,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 result.ConsumerCount++;
 
-                _logger.Info("Live stream {0} consumer count is now {1}", streamId, result.ConsumerCount);
+                _logger.LogInformation("Live stream {0} consumer count is now {1}", streamId, result.ConsumerCount);
 
                 return result;
             }
@@ -1067,7 +1067,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     result.OriginalStreamId = streamId;
 
-                    _logger.Info("Returning mediasource streamId {0}, mediaSource.Id {1}, mediaSource.LiveStreamId {2}", streamId, openedMediaSource.Id, openedMediaSource.LiveStreamId);
+                    _logger.LogInformation("Returning mediasource streamId {0}, mediaSource.Id {1}, mediaSource.LiveStreamId {2}", streamId, openedMediaSource.Id, openedMediaSource.LiveStreamId);
 
                     return result;
                 }
@@ -1174,7 +1174,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             var timer = e.Argument;
 
-            _logger.Info("Recording timer fired for {0}.", timer.Name);
+            _logger.LogInformation("Recording timer fired for {0}.", timer.Name);
 
             try
             {
@@ -1182,7 +1182,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (recordingEndDate <= DateTime.UtcNow)
                 {
-                    _logger.Warn("Recording timer fired for updatedTimer {0}, Id: {1}, but the program has already ended.", timer.Name, timer.Id);
+                    _logger.LogWarning("Recording timer fired for updatedTimer {0}, Id: {1}, but the program has already ended.", timer.Name, timer.Id);
                     OnTimerOutOfDate(timer);
                     return;
                 }
@@ -1190,7 +1190,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 var registration = await _liveTvManager.GetRegistrationInfo("dvr").ConfigureAwait(false);
                 if (!registration.IsValid)
                 {
-                    _logger.Warn("Emby Premiere required to use Emby DVR.");
+                    _logger.LogWarning("Emby Premiere required to use Emby DVR.");
                     OnTimerOutOfDate(timer);
                     return;
                 }
@@ -1208,7 +1208,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 else
                 {
-                    _logger.Info("Skipping RecordStream because it's already in progress.");
+                    _logger.LogInformation("Skipping RecordStream because it's already in progress.");
                 }
             }
             catch (OperationCanceledException)
@@ -1217,7 +1217,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error recording stream", ex);
+                _logger.LogError(ex, "Error recording stream");
             }
         }
 
@@ -1342,7 +1342,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
             if (programInfo == null)
             {
-                _logger.Info("Unable to find program with Id {0}. Will search using start date", timer.ProgramId);
+                _logger.LogInformation("Unable to find program with Id {0}. Will search using start date", timer.ProgramId);
                 programInfo = GetProgramInfoFromCache(timer.ChannelId, timer.StartDate);
             }
 
@@ -1390,9 +1390,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 var duration = recordingEndDate - DateTime.UtcNow;
 
-                _logger.Info("Beginning recording. Will record for {0} minutes.", duration.TotalMinutes.ToString(CultureInfo.InvariantCulture));
+                _logger.LogInformation("Beginning recording. Will record for {0} minutes.", duration.TotalMinutes.ToString(CultureInfo.InvariantCulture));
 
-                _logger.Info("Writing file to path: " + recordPath);
+                _logger.LogInformation("Writing file to path: " + recordPath);
 
                 Action onStarted = async () =>
                 {
@@ -1414,16 +1414,16 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 await recorder.Record(directStreamProvider, mediaStreamInfo, recordPath, duration, onStarted, activeRecordingInfo.CancellationTokenSource.Token).ConfigureAwait(false);
 
                 recordingStatus = RecordingStatus.Completed;
-                _logger.Info("Recording completed: {0}", recordPath);
+                _logger.LogInformation("Recording completed: {recordPath}", recordPath);
             }
             catch (OperationCanceledException)
             {
-                _logger.Info("Recording stopped: {0}", recordPath);
+                _logger.LogInformation("Recording stopped: {recordPath}", recordPath);
                 recordingStatus = RecordingStatus.Completed;
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error recording to {0}", ex, recordPath);
+                _logger.LogError(ex, "Error recording to {recordPath}", recordPath);
                 recordingStatus = RecordingStatus.Error;
             }
 
@@ -1435,7 +1435,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error closing live stream", ex);
+                    _logger.LogError(ex, "Error closing live stream");
                 }
             }
 
@@ -1450,7 +1450,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             if (recordingStatus != RecordingStatus.Completed && DateTime.UtcNow < timer.EndDate && timer.RetryCount < 10)
             {
                 const int retryIntervalSeconds = 60;
-                _logger.Info("Retrying recording in {0} seconds.", retryIntervalSeconds);
+                _logger.LogInformation("Retrying recording in {0} seconds.", retryIntervalSeconds);
 
                 timer.Status = RecordingStatus.New;
                 timer.PrePaddingSeconds = 0;
@@ -1511,22 +1511,22 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error deleting 0-byte failed recording file {0}", ex, path);
+                    _logger.LogError(ex, "Error deleting 0-byte failed recording file {path}", path);
                 }
             }
         }
 
         private void TriggerRefresh(string path)
         {
-            _logger.Info("Triggering refresh on {0}", path);
+            _logger.LogInformation("Triggering refresh on {path}", path);
 
             var item = GetAffectedBaseItem(_fileSystem.GetDirectoryName(path));
 
             if (item != null)
             {
-                _logger.Info("Refreshing recording parent {0}", item.Path);
+                _logger.LogInformation("Refreshing recording parent {path}", item.Path);
 
-                _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
+                _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
                 {
                     RefreshPaths = new string[]
                     {
@@ -1642,7 +1642,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error deleting item", ex);
+                        _logger.LogError(ex, "Error deleting item");
                     }
                 }
             }
@@ -1668,7 +1668,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error deleting recording", ex);
+                    _logger.LogError(ex, "Error deleting recording");
                 }
             }
         }
@@ -1773,14 +1773,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     UseShellExecute = false
                 });
 
-                _logger.Info("Running recording post processor {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+                _logger.LogInformation("Running recording post processor {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
                 process.Exited += Process_Exited;
                 process.Start();
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error running recording post processor", ex);
+                _logger.LogError(ex, "Error running recording post processor");
             }
         }
 
@@ -1794,7 +1794,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var process = (IProcess)sender;
             try
             {
-                _logger.Info("Recording post-processing script completed with exit code {0}", process.ExitCode);
+                _logger.LogInformation("Recording post-processing script completed with exit code {ExitCode}", process.ExitCode);
             }
             catch
             {
@@ -1875,7 +1875,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error saving recording image", ex);
+                    _logger.LogError(ex, "Error saving recording image");
                 }
             }
 
@@ -1890,7 +1890,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error saving recording image", ex);
+                        _logger.LogError(ex, "Error saving recording image");
                     }
                 }
 
@@ -1903,7 +1903,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error saving recording image", ex);
+                        _logger.LogError(ex, "Error saving recording image");
                     }
                 }
 
@@ -1916,7 +1916,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error saving recording image", ex);
+                        _logger.LogError(ex, "Error saving recording image");
                     }
                 }
             }
@@ -1984,7 +1984,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error saving nfo", ex);
+                _logger.LogError(ex, "Error saving nfo");
             }
         }
 
@@ -2790,7 +2790,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     if (!string.Equals(device.Url, configuredDevice.Url, StringComparison.OrdinalIgnoreCase))
                     {
-                        _logger.Info("Tuner url has changed from {0} to {1}", configuredDevice.Url, device.Url);
+                        _logger.LogInformation("Tuner url has changed from {0} to {1}", configuredDevice.Url, device.Url);
 
                         configuredDevice.Url = device.Url;
                         await _liveTvManager.SaveTunerHost(configuredDevice).ConfigureAwait(false);
@@ -2807,14 +2807,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 foreach (var device in discoveredDevices)
                 {
-                    _logger.Info("Discovered tuner device {0} at {1}", host.Name, device.Url);
+                    _logger.LogInformation("Discovered tuner device {0} at {1}", host.Name, device.Url);
                 }
 
                 return discoveredDevices;
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error discovering tuner devices", ex);
+                _logger.LogError(ex, "Error discovering tuner devices");
 
                 return new List<TunerHostInfo>();
             }

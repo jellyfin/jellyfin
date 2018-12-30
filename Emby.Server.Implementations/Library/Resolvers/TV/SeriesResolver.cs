@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
 using System;
@@ -131,14 +131,14 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             {
                 //if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
                 //{
-                //    //logger.Debug("Igoring series file or folder marked hidden: {0}", child.FullName);
+                //    //logger.LogDebug("Igoring series file or folder marked hidden: {0}", child.FullName);
                 //    continue;
                 //}
 
                 // Can't enforce this because files saved by Bitcasa are always marked System
                 //if ((attributes & FileAttributes.System) == FileAttributes.System)
                 //{
-                //    logger.Debug("Igoring series subfolder marked system: {0}", child.FullName);
+                //    logger.LogDebug("Igoring series subfolder marked system: {0}", child.FullName);
                 //    continue;
                 //}
 
@@ -146,7 +146,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 {
                     if (IsSeasonFolder(child.FullName, isTvContentType, libraryManager))
                     {
-                        //logger.Debug("{0} is a series because of season folder {1}.", path, child.FullName);
+                        //logger.LogDebug("{0} is a series because of season folder {1}.", path, child.FullName);
                         return true;
                     }
                 }
@@ -181,7 +181,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 }
             }
 
-            //logger.Debug("{0} is not a series folder.", path);
+            //logger.LogDebug("{0} is not a series folder.", path);
             return false;
         }
 

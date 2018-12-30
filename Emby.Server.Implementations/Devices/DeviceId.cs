@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Devices
 {
@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Devices
                         return value;
                     }
 
-                    _logger.Error("Invalid value found in device id file");
+                    _logger.LogError("Invalid value found in device id file");
                 }
             }
             catch (DirectoryNotFoundException)
@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.Devices
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error reading file", ex);
+                _logger.LogError(ex, "Error reading file");
             }
 
             return null;
@@ -66,7 +66,7 @@ namespace Emby.Server.Implementations.Devices
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error writing to file", ex);
+                _logger.LogError(ex, "Error writing to file");
             }
         }
 

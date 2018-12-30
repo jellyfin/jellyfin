@@ -9,7 +9,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using System.Globalization;
@@ -44,7 +44,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             FileSystem.CreateDirectory(FileSystem.GetDirectoryName(TempFilePath));
 
             var typeName = GetType().Name;
-            Logger.Info("Opening " + typeName + " Live stream from {0}", url);
+            Logger.LogInformation("Opening " + typeName + " Live stream from {0}", url);
 
             var httpRequestOptions = new HttpRequestOptions
             {
@@ -125,17 +125,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             {
                 try
                 {
+                    Logger.LogInformation("Beginning {0} stream to {1}", GetType().Name, TempFilePath);
                     using (response)
+                    using (var stream = response.Content)
+                    using (var fileStream = FileSystem.GetFileStream(TempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
                     {
-                        using (var stream = response.Content)
-                        {
-                            Logger.Info("Beginning {0} stream to {1}", GetType().Name, TempFilePath);
-
-                            using (var fileStream = FileSystem.GetFileStream(TempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
-                            {
-                                await ApplicationHost.StreamHelper.CopyToAsync(stream, fileStream, 81920, () => Resolve(openTaskCompletionSource), cancellationToken).ConfigureAwait(false);
-                            }
-                        }
+                        await ApplicationHost.StreamHelper.CopyToAsync(stream, fileStream, 81920, () => Resolve(openTaskCompletionSource), cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch (OperationCanceledException)
@@ -143,7 +138,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error copying live stream.", ex);
+                    Logger.LogError(ex, "Error copying live stream.");
                 }
                 EnableStreamSharing = false;
                 await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);

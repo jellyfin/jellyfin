@@ -2,7 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,7 +54,7 @@ namespace Emby.Server.Implementations.Library.Validators
 
             var numPeople = people.Count;
 
-            _logger.Debug("Will refresh {0} people", numPeople);
+            _logger.LogDebug("Will refresh {0} people", numPeople);
 
             foreach (var person in people)
             {
@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 {
                     var item = _libraryManager.GetPerson(person);
 
-                    var options = new MetadataRefreshOptions(_fileSystem)
+                    var options = new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
                     {
                         ImageRefreshMode = MetadataRefreshMode.ValidationOnly,
                         MetadataRefreshMode = MetadataRefreshMode.ValidationOnly
@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error validating IBN entry {0}", ex, person);
+                    _logger.LogError(ex, "Error validating IBN entry {person}", person);
                 }
 
                 // Update progress
@@ -98,7 +98,7 @@ namespace Emby.Server.Implementations.Library.Validators
 
             foreach (var item in deadEntities)
             {
-                _logger.Info("Deleting dead {2} {0} {1}.", item.Id.ToString("N"), item.Name, item.GetType().Name);
+                _logger.LogInformation("Deleting dead {2} {0} {1}.", item.Id.ToString("N"), item.Name, item.GetType().Name);
 
                 _libraryManager.DeleteItem(item, new DeleteOptions
                 {
@@ -108,7 +108,7 @@ namespace Emby.Server.Implementations.Library.Validators
 
             progress.Report(100);
 
-            _logger.Info("People validation complete");
+            _logger.LogInformation("People validation complete");
         }
     }
 }

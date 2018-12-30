@@ -9,7 +9,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using TagLib;
 using TagLib.IFD;
 using TagLib.IFD.Entries;
@@ -170,9 +170,9 @@ namespace Emby.Photos
                         }
                     }
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    _logger.ErrorException("Image Provider - Error reading image tag for {0}", e, item.Path);
+                    _logger.LogError(ex, "Image Provider - Error reading image tag for {0}", item.Path);
                 }
             }
 

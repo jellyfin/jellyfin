@@ -4,7 +4,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using MediaBrowser.Model.IO;
@@ -78,7 +78,7 @@ namespace Emby.Drawing.ImageMagick
 
         private void LogVersion()
         {
-            _logger.Info("ImageMagick version: " + GetVersion());
+            _logger.LogInformation("ImageMagick version: " + GetVersion());
             TestWebp();
             Wand.SetMagickThreadCount(1);
         }
@@ -101,9 +101,9 @@ namespace Emby.Drawing.ImageMagick
                     wand.SaveImage(tmpPath);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                //_logger.ErrorException("Error loading webp: ", ex);
+                _logger.LogError(ex, "Error loading webp");
                 _webpAvailable = false;
             }
         }
@@ -295,7 +295,7 @@ namespace Emby.Drawing.ImageMagick
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error drawing indicator overlay", ex);
+                _logger.LogError(ex, "Error drawing indicator overlay");
             }
         }
 

@@ -6,7 +6,7 @@ using System.Threading;
 
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api

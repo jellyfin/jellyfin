@@ -6,7 +6,7 @@ using System.Linq;
 using Emby.Server.Implementations.Data;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Activity;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Querying;
 using SQLitePCL.pretty;
 using MediaBrowser.Model.Extensions;
@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Activity
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error loading database file. Will reset and retry.", ex);
+                Logger.LogError(ex, "Error loading database file. Will reset and retry.");
 
                 FileSystem.DeleteFile(DbFilePath);
 
@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.Activity
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error migrating activity log database", ex);
+                Logger.LogError(ex, "Error migrating activity log database");
             }
         }
 
@@ -87,36 +87,34 @@ namespace Emby.Server.Implementations.Activity
             }
 
             using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(db =>
                 {
-                    connection.RunInTransaction(db =>
+                    using (var statement = db.PrepareStatement("insert into ActivityLog (Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity) values (@Name, @Overview, @ShortOverview, @Type, @ItemId, @UserId, @DateCreated, @LogSeverity)"))
                     {
-                        using (var statement = db.PrepareStatement("insert into ActivityLog (Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity) values (@Name, @Overview, @ShortOverview, @Type, @ItemId, @UserId, @DateCreated, @LogSeverity)"))
+                        statement.TryBind("@Name", entry.Name);
+
+                        statement.TryBind("@Overview", entry.Overview);
+                        statement.TryBind("@ShortOverview", entry.ShortOverview);
+                        statement.TryBind("@Type", entry.Type);
+                        statement.TryBind("@ItemId", entry.ItemId);
+
+                        if (entry.UserId.Equals(Guid.Empty))
                         {
-                            statement.TryBind("@Name", entry.Name);
-
-                            statement.TryBind("@Overview", entry.Overview);
-                            statement.TryBind("@ShortOverview", entry.ShortOverview);
-                            statement.TryBind("@Type", entry.Type);
-                            statement.TryBind("@ItemId", entry.ItemId);
-
-                            if (entry.UserId.Equals(Guid.Empty))
-                            {
-                                statement.TryBindNull("@UserId");
-                            }
-                            else
-                            {
-                                statement.TryBind("@UserId", entry.UserId.ToString("N"));
-                            }
-
-                            statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
-                            statement.TryBind("@LogSeverity", entry.Severity.ToString());
-
-                            statement.MoveNext();
+                            statement.TryBindNull("@UserId");
                         }
-                    }, TransactionMode);
-                }
+                        else
+                        {
+                            statement.TryBind("@UserId", entry.UserId.ToString("N"));
+                        }
+
+                        statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
+                        statement.TryBind("@LogSeverity", entry.Severity.ToString());
+
+                        statement.MoveNext();
+                    }
+                }, TransactionMode);
             }
         }
 
@@ -128,132 +126,128 @@ namespace Emby.Server.Implementations.Activity
             }
 
             using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(db =>
                 {
-                    connection.RunInTransaction(db =>
+                    using (var statement = db.PrepareStatement("Update ActivityLog set Name=@Name,Overview=@Overview,ShortOverview=@ShortOverview,Type=@Type,ItemId=@ItemId,UserId=@UserId,DateCreated=@DateCreated,LogSeverity=@LogSeverity where Id=@Id"))
                     {
-                        using (var statement = db.PrepareStatement("Update ActivityLog set Name=@Name,Overview=@Overview,ShortOverview=@ShortOverview,Type=@Type,ItemId=@ItemId,UserId=@UserId,DateCreated=@DateCreated,LogSeverity=@LogSeverity where Id=@Id"))
+                        statement.TryBind("@Id", entry.Id);
+
+                        statement.TryBind("@Name", entry.Name);
+                        statement.TryBind("@Overview", entry.Overview);
+                        statement.TryBind("@ShortOverview", entry.ShortOverview);
+                        statement.TryBind("@Type", entry.Type);
+                        statement.TryBind("@ItemId", entry.ItemId);
+
+                        if (entry.UserId.Equals(Guid.Empty))
                         {
-                            statement.TryBind("@Id", entry.Id);
-
-                            statement.TryBind("@Name", entry.Name);
-                            statement.TryBind("@Overview", entry.Overview);
-                            statement.TryBind("@ShortOverview", entry.ShortOverview);
-                            statement.TryBind("@Type", entry.Type);
-                            statement.TryBind("@ItemId", entry.ItemId);
-
-                            if (entry.UserId.Equals(Guid.Empty))
-                            {
-                                statement.TryBindNull("@UserId");
-                            }
-                            else
-                            {
-                                statement.TryBind("@UserId", entry.UserId.ToString("N"));
-                            }
-
-                            statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
-                            statement.TryBind("@LogSeverity", entry.Severity.ToString());
-
-                            statement.MoveNext();
+                            statement.TryBindNull("@UserId");
                         }
-                    }, TransactionMode);
-                }
+                        else
+                        {
+                            statement.TryBind("@UserId", entry.UserId.ToString("N"));
+                        }
+
+                        statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
+                        statement.TryBind("@LogSeverity", entry.Severity.ToString());
+
+                        statement.MoveNext();
+                    }
+                }, TransactionMode);
             }
         }
 
         public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit)
         {
             using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                var commandText = BaseActivitySelectText;
+                var whereClauses = new List<string>();
+
+                if (minDate.HasValue)
                 {
-                    var commandText = BaseActivitySelectText;
-                    var whereClauses = new List<string>();
-
-                    if (minDate.HasValue)
+                    whereClauses.Add("DateCreated>=@DateCreated");
+                }
+                if (hasUserId.HasValue)
+                {
+                    if (hasUserId.Value)
                     {
-                        whereClauses.Add("DateCreated>=@DateCreated");
+                        whereClauses.Add("UserId not null");
                     }
-                    if (hasUserId.HasValue)
+                    else
                     {
-                        if (hasUserId.Value)
-                        {
-                            whereClauses.Add("UserId not null");
-                        }
-                        else
-                        {
-                            whereClauses.Add("UserId is null");
-                        }
+                        whereClauses.Add("UserId is null");
                     }
+                }
 
-                    var whereTextWithoutPaging = whereClauses.Count == 0 ?
-                      string.Empty :
-                      " where " + string.Join(" AND ", whereClauses.ToArray());
+                var whereTextWithoutPaging = whereClauses.Count == 0 ?
+                  string.Empty :
+                  " where " + string.Join(" AND ", whereClauses.ToArray());
 
-                    if (startIndex.HasValue && startIndex.Value > 0)
-                    {
-                        var pagingWhereText = whereClauses.Count == 0 ?
-                            string.Empty :
-                            " where " + string.Join(" AND ", whereClauses.ToArray());
-
-                        whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM ActivityLog {0} ORDER BY DateCreated DESC LIMIT {1})",
-                            pagingWhereText,
-                            startIndex.Value.ToString(_usCulture)));
-                    }
-
-                    var whereText = whereClauses.Count == 0 ?
+                if (startIndex.HasValue && startIndex.Value > 0)
+                {
+                    var pagingWhereText = whereClauses.Count == 0 ?
                         string.Empty :
                         " where " + string.Join(" AND ", whereClauses.ToArray());
 
-                    commandText += whereText;
+                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM ActivityLog {0} ORDER BY DateCreated DESC LIMIT {1})",
+                        pagingWhereText,
+                        startIndex.Value.ToString(_usCulture)));
+                }
 
-                    commandText += " ORDER BY DateCreated DESC";
+                var whereText = whereClauses.Count == 0 ?
+                    string.Empty :
+                    " where " + string.Join(" AND ", whereClauses.ToArray());
 
-                    if (limit.HasValue)
+                commandText += whereText;
+
+                commandText += " ORDER BY DateCreated DESC";
+
+                if (limit.HasValue)
+                {
+                    commandText += " LIMIT " + limit.Value.ToString(_usCulture);
+                }
+
+                var statementTexts = new List<string>();
+                statementTexts.Add(commandText);
+                statementTexts.Add("select count (Id) from ActivityLog" + whereTextWithoutPaging);
+
+                return connection.RunInTransaction(db =>
+                {
+                    var list = new List<ActivityLogEntry>();
+                    var result = new QueryResult<ActivityLogEntry>();
+
+                    var statements = PrepareAllSafe(db, statementTexts).ToList();
+
+                    using (var statement = statements[0])
                     {
-                        commandText += " LIMIT " + limit.Value.ToString(_usCulture);
+                        if (minDate.HasValue)
+                        {
+                            statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
+                        }
+
+                        foreach (var row in statement.ExecuteQuery())
+                        {
+                            list.Add(GetEntry(row));
+                        }
                     }
 
-                    var statementTexts = new List<string>();
-                    statementTexts.Add(commandText);
-                    statementTexts.Add("select count (Id) from ActivityLog" + whereTextWithoutPaging);
-
-                    return connection.RunInTransaction(db =>
+                    using (var statement = statements[1])
                     {
-                        var list = new List<ActivityLogEntry>();
-                        var result = new QueryResult<ActivityLogEntry>();
-
-                        var statements = PrepareAllSafe(db, statementTexts).ToList();
-
-                        using (var statement = statements[0])
+                        if (minDate.HasValue)
                         {
-                            if (minDate.HasValue)
-                            {
-                                statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
-                            }
-
-                            foreach (var row in statement.ExecuteQuery())
-                            {
-                                list.Add(GetEntry(row));
-                            }
+                            statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
                         }
 
-                        using (var statement = statements[1])
-                        {
-                            if (minDate.HasValue)
-                            {
-                                statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
-                            }
+                        result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
+                    }
 
-                            result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
-                        }
+                    result.Items = list.ToArray();
+                    return result;
 
-                        result.Items = list.ToArray();
-                        return result;
-
-                    }, ReadTransactionMode);
-                }
+                }, ReadTransactionMode);
             }
         }
 
@@ -308,7 +302,7 @@ namespace Emby.Server.Implementations.Activity
             index++;
             if (reader[index].SQLiteType != SQLiteType.Null)
             {
-                info.Severity = (LogSeverity)Enum.Parse(typeof(LogSeverity), reader[index].ToString(), true);
+                info.Severity = (LogLevel)Enum.Parse(typeof(LogLevel), reader[index].ToString(), true);
             }
 
             return info;

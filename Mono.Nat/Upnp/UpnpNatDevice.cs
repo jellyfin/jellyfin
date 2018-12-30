@@ -34,7 +34,7 @@ using System.Text;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Dlna;
 
 namespace Mono.Nat.Upnp
@@ -77,7 +77,7 @@ namespace Mono.Nat.Upnp
             // Are we going to get addresses with the "http://" attached?
             if (locationDetails.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
             {
-                _logger.Debug("Found device at: {0}", locationDetails);
+                _logger.LogDebug("Found device at: {0}", locationDetails);
                 // This bit strings out the "http://" from the string
                 locationDetails = locationDetails.Substring(7);
 
@@ -89,7 +89,7 @@ namespace Mono.Nat.Upnp
             }
             else
             {
-                _logger.Debug("Couldn't decode address. Please send following string to the developer: ");
+                _logger.LogDebug("Couldn't decode address. Please send following string to the developer: ");
             }
         }
 
@@ -116,7 +116,7 @@ namespace Mono.Nat.Upnp
             {
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
-                    _logger.Debug("{0}: Couldn't get services list: {1}", HostEndPoint, response.StatusCode);
+                    _logger.LogDebug("{0}: Couldn't get services list: {1}", HostEndPoint, response.StatusCode);
                     return; // FIXME: This the best thing to do??
                 }
 
@@ -139,7 +139,7 @@ namespace Mono.Nat.Upnp
                         {
                             return;
                         }
-                        _logger.Debug("{0}: Couldn't parse services list", HostEndPoint);
+                        _logger.LogDebug("{0}: Couldn't parse services list", HostEndPoint);
                         System.Threading.Thread.Sleep(10);
                     }
                 }
@@ -155,14 +155,14 @@ namespace Mono.Nat.Upnp
                     {
                         //If the service is a WANIPConnection, then we have what we want
                         string type = service["serviceType"].InnerText;
-                        _logger.Debug("{0}: Found service: {1}", HostEndPoint, type);
+                        _logger.LogDebug("{0}: Found service: {1}", HostEndPoint, type);
 
                         // TODO: Add support for version 2 of UPnP.
                         if (string.Equals(type, "urn:schemas-upnp-org:service:WANPPPConnection:1", StringComparison.OrdinalIgnoreCase) ||
                             string.Equals(type, "urn:schemas-upnp-org:service:WANIPConnection:1", StringComparison.OrdinalIgnoreCase))
                         {
                             this.controlUrl = service["controlURL"].InnerText;
-                            _logger.Debug("{0}: Found upnp service at: {1}", HostEndPoint, controlUrl);
+                            _logger.LogDebug("{0}: Found upnp service at: {1}", HostEndPoint, controlUrl);
 
                             Uri u;
                             if (Uri.TryCreate(controlUrl, UriKind.RelativeOrAbsolute, out u))
@@ -174,15 +174,15 @@ namespace Mono.Nat.Upnp
                                     if (IPAddress.TryParse(u.Host, out parsedHostIpAddress))
                                     {
                                         this.hostEndPoint = new IPEndPoint(parsedHostIpAddress, u.Port);
-                                        //_logger.Debug("{0}: Absolute URI detected. Host address is now: {1}", old, HostEndPoint);
+                                        //_logger.LogDebug("{0}: Absolute URI detected. Host address is now: {1}", old, HostEndPoint);
                                         this.controlUrl = controlUrl.Substring(u.GetLeftPart(UriPartial.Authority).Length);
-                                        //_logger.Debug("{0}: New control url: {1}", HostEndPoint, controlUrl);
+                                        //_logger.LogDebug("{0}: New control url: {1}", HostEndPoint, controlUrl);
                                     }
                                 }
                             }
                             else
                             {
-                                _logger.Debug("{0}: Assuming control Uri is relative: {1}", HostEndPoint, controlUrl);
+                                _logger.LogDebug("{0}: Assuming control Uri is relative: {1}", HostEndPoint, controlUrl);
                             }
                             return;
                         }

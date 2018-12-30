@@ -1,6 +1,6 @@
 ﻿using System;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Model.Tasks
 {

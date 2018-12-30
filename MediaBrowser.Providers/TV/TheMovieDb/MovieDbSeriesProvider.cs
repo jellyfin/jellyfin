@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Movies;
@@ -412,7 +412,7 @@ namespace MediaBrowser.Providers.TV
                 !string.IsNullOrEmpty(language) &&
                 !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
             {
-                _logger.Info("MovieDbSeriesProvider couldn't find meta for language " + language + ". Trying English...");
+                _logger.LogInformation("MovieDbSeriesProvider couldn't find meta for language " + language + ". Trying English...");
 
                 url = string.Format(GetTvInfo3, id, MovieDbProvider.ApiKey) + "&language=en";
 

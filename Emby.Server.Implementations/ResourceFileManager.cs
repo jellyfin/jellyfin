@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error in Path.GetFullPath", ex);
+                _logger.LogError(ex, "Error in Path.GetFullPath");
             }
 
             // Don't allow file system access outside of the source folder

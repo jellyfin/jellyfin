@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 
