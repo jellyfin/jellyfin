@@ -102,21 +102,62 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             if (string.Equals(ext, ".gz", StringComparison.OrdinalIgnoreCase))
             {
-                using (var stream = _fileSystem.OpenRead(file))
+                try
                 {
-                    var tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
-                    _fileSystem.CreateDirectory(tempFolder);
+                    var tempFolder = ExtractGz(file);
+                    return FindXmlFile(tempFolder);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error extracting from gz file {0}", ex, file);
+                }
 
-                    _zipClient.ExtractAllFromGz(stream, tempFolder, true);
-
-                    return _fileSystem.GetFiles(tempFolder, true)
-                        .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
-                        .Select(i => i.FullName)
-                        .FirstOrDefault();
+                try
+                {
+                    var tempFolder = ExtractFirstFileFromGz(file);
+                    return FindXmlFile(tempFolder);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error extracting from zip file {0}", ex, file);
                 }
             }
 
             return file;
+        }
+
+        private string ExtractFirstFileFromGz(string file)
+        {
+            using (var stream = _fileSystem.OpenRead(file))
+            {
+                var tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
+                _fileSystem.CreateDirectory(tempFolder);
+
+                _zipClient.ExtractFirstFileFromGz(stream, tempFolder, "data.xml");
+
+                return tempFolder;
+            }
+        }
+
+        private string ExtractGz(string file)
+        {
+            using (var stream = _fileSystem.OpenRead(file))
+            {
+                var tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
+                _fileSystem.CreateDirectory(tempFolder);
+
+                _zipClient.ExtractAllFromGz(stream, tempFolder, true);
+
+                return tempFolder;
+            }
+        }
+
+        private string FindXmlFile(string directory)
+        {
+            return _fileSystem.GetFiles(directory, true)
+                .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
+                .Select(i => i.FullName)
+                .FirstOrDefault();
         }
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
@@ -139,6 +180,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             _logger.Debug("Getting xmltv programs for channel {0}", channelId);
 
             var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
+            _logger.Debug("Opening XmlTvReader for {0}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
 
             var results = reader.GetProgrammes(channelId, startDateUtc, endDateUtc, cancellationToken);
@@ -232,6 +274,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             // In theory this should never be called because there is always only one lineup
             var path = await GetXml(info.Path, CancellationToken.None).ConfigureAwait(false);
+            _logger.Debug("Opening XmlTvReader for {0}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
             var results = reader.GetChannels();
 
@@ -243,6 +286,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             // In theory this should never be called because there is always only one lineup
             var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
+            _logger.Debug("Opening XmlTvReader for {0}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
             var results = reader.GetChannels();
 
