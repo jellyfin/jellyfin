@@ -287,7 +287,8 @@ namespace MediaBrowser.Providers.Movies
             if (!string.IsNullOrEmpty(language))
             {
                 // They require this to be uppercase
-                // https://jellyfin.media/community/index.php?/topic/32454-fr-follow-tmdbs-new-language-api-update/?p=311148
+                // Everything after the hyphen must be written in uppercase due to a way TMDB wrote their api.
+                // See here: https://www.themoviedb.org/talk/5119221d760ee36c642af4ad?page=3#56e372a0c3a3685a9e0019ab
                 var parts = language.Split('-');
 
                 if (parts.Length == 2)
