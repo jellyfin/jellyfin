@@ -2392,7 +2392,8 @@ namespace Emby.Server.Implementations.LiveTv
 
         public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
-            // Voodoo
+            // Hack to make the object a pure ListingsProviderInfo instead of an AddListingProvider
+            // ServerConfiguration.SaveConfiguration crashes during xml serialization for AddListingProvider
             info = _jsonSerializer.DeserializeFromString<ListingsProviderInfo>(_jsonSerializer.SerializeToString(info));
 
             IListingsProvider provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
@@ -2408,8 +2409,8 @@ namespace Emby.Server.Implementations.LiveTv
 
             LiveTvOptions config = GetConfiguration();
 
-            var list = config.ListingProviders.ToList();
-            var index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
+            List<ListingsProviderInfo> list = config.ListingProviders.ToList();
+            int index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
 
             if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
             {
