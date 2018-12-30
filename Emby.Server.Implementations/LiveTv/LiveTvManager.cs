@@ -2392,8 +2392,8 @@ namespace Emby.Server.Implementations.LiveTv
 
         public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
-            // Let's try something
-            //info = _jsonSerializer.DeserializeFromString<ListingsProviderInfo>(_jsonSerializer.SerializeToString(info));
+            // Voodoo
+            info = _jsonSerializer.DeserializeFromString<ListingsProviderInfo>(_jsonSerializer.SerializeToString(info));
 
             IListingsProvider provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
@@ -2406,7 +2406,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);
 
-            var config = GetConfiguration();
+            LiveTvOptions config = GetConfiguration();
 
             var list = config.ListingProviders.ToList();
             var index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
