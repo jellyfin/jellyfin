@@ -65,8 +65,8 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
                 return UnzipIfNeeded(path, path);
             }
 
-            var cacheFilename = DateTime.UtcNow.DayOfYear.ToString(CultureInfo.InvariantCulture) + "-" + DateTime.UtcNow.Hour.ToString(CultureInfo.InvariantCulture) + ".xml";
-            var cacheFile = Path.Combine(_config.ApplicationPaths.CachePath, "xmltv", cacheFilename);
+            string cacheFilename = DateTime.UtcNow.DayOfYear.ToString(CultureInfo.InvariantCulture) + "-" + DateTime.UtcNow.Hour.ToString(CultureInfo.InvariantCulture) + ".xml";
+            string cacheFile = Path.Combine(_config.ApplicationPaths.CachePath, "xmltv", cacheFilename);
             if (_fileSystem.FileExists(cacheFile))
             {
                 return UnzipIfNeeded(path, cacheFile);
@@ -74,7 +74,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
 
             _logger.Info("Downloading xmltv listings from {0}", path);
 
-            var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
+            string tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
                 Url = path,
@@ -98,13 +98,13 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
 
         private string UnzipIfNeeded(string originalUrl, string file)
         {
-            var ext = Path.GetExtension(originalUrl.Split('?')[0]);
+            string ext = Path.GetExtension(originalUrl.Split('?')[0]);
 
             if (string.Equals(ext, ".gz", StringComparison.OrdinalIgnoreCase))
             {
                 try
                 {
-                    var tempFolder = ExtractGz(file);
+                    string tempFolder = ExtractGz(file);
                     return FindXmlFile(tempFolder);
                 }
                 catch (Exception ex)
@@ -114,7 +114,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
 
                 try
                 {
-                    var tempFolder = ExtractFirstFileFromGz(file);
+                    string tempFolder = ExtractFirstFileFromGz(file);
                     return FindXmlFile(tempFolder);
                 }
                 catch (Exception ex)
@@ -130,7 +130,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
         {
             using (var stream = _fileSystem.OpenRead(file))
             {
-                var tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
+                string tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
                 _fileSystem.CreateDirectory(tempFolder);
 
                 _zipClient.ExtractFirstFileFromGz(stream, tempFolder, "data.xml");
@@ -143,7 +143,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
         {
             using (var stream = _fileSystem.OpenRead(file))
             {
-                var tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
+                string tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
                 _fileSystem.CreateDirectory(tempFolder);
 
                 _zipClient.ExtractAllFromGz(stream, tempFolder, true);
@@ -179,51 +179,47 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
 
             _logger.Debug("Getting xmltv programs for channel {0}", channelId);
 
-            var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
+            string path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
             _logger.Debug("Opening XmlTvReader for {0}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
 
-            var results = reader.GetProgrammes(channelId, startDateUtc, endDateUtc, cancellationToken);
-            return results.Select(p => GetProgramInfo(p, info));
+            return reader.GetProgrammes(channelId, startDateUtc, endDateUtc, cancellationToken)
+                        .Select(p => GetProgramInfo(p, info));
         }
 
-        private ProgramInfo GetProgramInfo(XmlTvProgram p, ListingsProviderInfo info)
+        private ProgramInfo GetProgramInfo(XmlTvProgram program, ListingsProviderInfo info)
         {
-            var episodeTitle = p.Episode?.Title;
+            string episodeTitle = program.Episode?.Title;
 
             var programInfo = new ProgramInfo
             {
-                ChannelId = p.ChannelId,
-                EndDate = p.EndDate.UtcDateTime,
-                EpisodeNumber = p.Episode?.Episode,
+                ChannelId = program.ChannelId,
+                EndDate = program.EndDate.UtcDateTime,
+                EpisodeNumber = program.Episode?.Episode,
                 EpisodeTitle = episodeTitle,
-                Genres = p.Categories,
-                StartDate = p.StartDate.UtcDateTime,
-                Name = p.Title,
-                Overview = p.Description,
-                ProductionYear = p.CopyrightDate?.Year,
-                SeasonNumber = p.Episode?.Series,
-                IsSeries = p.Episode != null,
-                IsRepeat = p.IsPreviouslyShown && !p.IsNew,
-                IsPremiere = p.Premiere != null,
-                IsKids = p.Categories.Any(c => info.KidsCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
-                IsMovie = p.Categories.Any(c => info.MovieCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
-                IsNews = p.Categories.Any(c => info.NewsCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
-                IsSports = p.Categories.Any(c => info.SportsCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
-                ImageUrl = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source) ? p.Icon.Source : null,
-                HasImage = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source),
-                OfficialRating = p.Rating != null && !String.IsNullOrEmpty(p.Rating.Value) ? p.Rating.Value : null,
-                CommunityRating = p.StarRating,
-                SeriesId = p.Episode == null ? null : p.Title.GetMD5().ToString("N")
+                Genres = program.Categories,
+                StartDate = program.StartDate.UtcDateTime,
+                Name = program.Title,
+                Overview = program.Description,
+                ProductionYear = program.CopyrightDate?.Year,
+                SeasonNumber = program.Episode?.Series,
+                IsSeries = program.Episode != null,
+                IsRepeat = program.IsPreviouslyShown && !program.IsNew,
+                IsPremiere = program.Premiere != null,
+                IsKids = program.Categories.Any(c => info.KidsCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
+                IsMovie = program.Categories.Any(c => info.MovieCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
+                IsNews = program.Categories.Any(c => info.NewsCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
+                IsSports = program.Categories.Any(c => info.SportsCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
+                ImageUrl = program.Icon != null && !String.IsNullOrEmpty(program.Icon.Source) ? program.Icon.Source : null,
+                HasImage = program.Icon != null && !String.IsNullOrEmpty(program.Icon.Source),
+                OfficialRating = program.Rating != null && !String.IsNullOrEmpty(program.Rating.Value) ? program.Rating.Value : null,
+                CommunityRating = program.StarRating,
+                SeriesId = program.Episode == null ? null : program.Title.GetMD5().ToString("N")
             };
 
-            if (!string.IsNullOrWhiteSpace(p.ProgramId))
+            if (string.IsNullOrWhiteSpace(program.ProgramId))
             {
-                programInfo.ShowId = p.ProgramId;
-            }
-            else
-            {
-                var uniqueString = (p.Title ?? string.Empty) + (episodeTitle ?? string.Empty) /*+ (p.IceTvEpisodeNumber ?? string.Empty)*/;
+                string uniqueString = (program.Title ?? string.Empty) + (episodeTitle ?? string.Empty) /*+ (p.IceTvEpisodeNumber ?? string.Empty)*/;
 
                 if (programInfo.SeasonNumber.HasValue)
                 {
@@ -237,17 +233,20 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
                 programInfo.ShowId = uniqueString.GetMD5().ToString("N");
 
                 // If we don't have valid episode info, assume it's a unique program, otherwise recordings might be skipped
-                if (programInfo.IsSeries && !programInfo.IsRepeat)
+                if (programInfo.IsSeries
+                    && !programInfo.IsRepeat
+                    && (programInfo.EpisodeNumber ?? 0) == 0)
                 {
-                    if ((programInfo.EpisodeNumber ?? 0) == 0)
-                    {
-                        programInfo.ShowId = programInfo.ShowId + programInfo.StartDate.Ticks.ToString(CultureInfo.InvariantCulture);
-                    }
+                    programInfo.ShowId = programInfo.ShowId + programInfo.StartDate.Ticks.ToString(CultureInfo.InvariantCulture);
                 }
+            }
+            else
+            {
+                programInfo.ShowId = program.ProgramId;
             }
 
             // Construct an id from the channel and start date
-            programInfo.Id = String.Format("{0}_{1:O}", p.ChannelId, p.StartDate);
+            programInfo.Id = String.Format("{0}_{1:O}", program.ChannelId, program.StartDate);
 
             if (programInfo.IsMovie)
             {
@@ -273,10 +272,10 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
         public async Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
         {
             // In theory this should never be called because there is always only one lineup
-            var path = await GetXml(info.Path, CancellationToken.None).ConfigureAwait(false);
+            string path = await GetXml(info.Path, CancellationToken.None).ConfigureAwait(false);
             _logger.Debug("Opening XmlTvReader for {0}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
-            var results = reader.GetChannels();
+            IEnumerable<XmlTvChannel> results = reader.GetChannels();
 
             // Should this method be async?
             return results.Select(c => new NameIdPair() { Id = c.Id, Name = c.DisplayName }).ToList();
@@ -285,10 +284,10 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
         public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
             // In theory this should never be called because there is always only one lineup
-            var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
+            string path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
             _logger.Debug("Opening XmlTvReader for {0}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
-            var results = reader.GetChannels();
+            IEnumerable<XmlTvChannel> results = reader.GetChannels();
 
             // Should this method be async?
             return results.Select(c => new ChannelInfo
