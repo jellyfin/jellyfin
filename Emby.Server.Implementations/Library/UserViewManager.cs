@@ -354,7 +354,7 @@ namespace Emby.Server.Implementations.Library
                 Limit = limit * 5,
                 IsPlayed = isPlayed,
                 DtoOptions = options,
-                MediaTypes = mediaTypes.ToArray(mediaTypes.Count)
+                MediaTypes = mediaTypes.ToArray()
             };
 
             if (parents.Count == 0)

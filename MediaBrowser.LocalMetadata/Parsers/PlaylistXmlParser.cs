@@ -95,7 +95,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 }
             }
 
-            item.LinkedChildren = list.ToArray(list.Count);
+            item.LinkedChildren = list.ToArray();
         }
 
         public PlaylistXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem) : base(logger, providerManager, xmlReaderSettingsFactory, fileSystem)

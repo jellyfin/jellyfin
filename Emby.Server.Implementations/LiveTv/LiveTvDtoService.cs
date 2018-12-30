@@ -139,7 +139,7 @@ namespace Emby.Server.Implementations.LiveTv
                 dto.ProgramId = GetInternalProgramId(info.ProgramId).ToString("N");
             }
 
-            dto.DayPattern = info.Days == null ? null : GetDayPattern(info.Days.ToArray(info.Days.Count));
+            dto.DayPattern = info.Days == null ? null : GetDayPattern(info.Days.ToArray());
 
             FillImages(dto, info.Name, info.SeriesId);
 

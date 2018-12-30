@@ -239,7 +239,7 @@ namespace Emby.Server.Implementations.Channels
                 all = all.Take(query.Limit.Value).ToList();
             }
 
-            var returnItems = all.ToArray(all.Count);
+            var returnItems = all.ToArray();
 
             if (query.RefreshLatestChannelItems)
             {
@@ -1011,7 +1011,7 @@ namespace Emby.Server.Implementations.Channels
             {
                 item.Name = info.Name;
                 item.Genres = info.Genres.ToArray();
-                item.Studios = info.Studios.ToArray(info.Studios.Count);
+                item.Studios = info.Studios.ToArray();
                 item.CommunityRating = info.CommunityRating;
                 item.Overview = info.Overview;
                 item.IndexNumber = info.IndexNumber;
@@ -1021,7 +1021,7 @@ namespace Emby.Server.Implementations.Channels
                 item.ProviderIds = info.ProviderIds;
                 item.OfficialRating = info.OfficialRating;
                 item.DateCreated = info.DateCreated ?? DateTime.UtcNow;
-                item.Tags = info.Tags.ToArray(info.Tags.Count);
+                item.Tags = info.Tags.ToArray();
                 item.OriginalTitle = info.OriginalTitle;
             }
             else if (info.Type == ChannelItemType.Folder && info.FolderType == ChannelFolderType.Container)
@@ -1043,7 +1043,7 @@ namespace Emby.Server.Implementations.Channels
             var hasAlbumArtists = item as IHasAlbumArtist;
             if (hasAlbumArtists != null)
             {
-                hasAlbumArtists.AlbumArtists = info.AlbumArtists.ToArray(info.AlbumArtists.Count);
+                hasAlbumArtists.AlbumArtists = info.AlbumArtists.ToArray();
             }
 
             var trailer = item as Trailer;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Extensions;
@@ -104,7 +105,7 @@ namespace MediaBrowser.Model.Entities
                         attributes.Add("Default");
                     }
 
-                    return string.Join(" ", attributes.ToArray(attributes.Count));
+                    return string.Join(" ", attributes.ToArray());
                 }
 
                 if (Type == MediaStreamType.Video)
@@ -123,7 +124,7 @@ namespace MediaBrowser.Model.Entities
                         attributes.Add(Codec.ToUpper());
                     }
 
-                    return string.Join(" ", attributes.ToArray(attributes.Count));
+                    return string.Join(" ", attributes.ToArray());
                 }
 
                 if (Type == MediaStreamType.Subtitle)
@@ -154,7 +155,7 @@ namespace MediaBrowser.Model.Entities
                         attributes.Add("Forced");
                     }
 
-                    string name = string.Join(" ", attributes.ToArray(attributes.Count));
+                    string name = string.Join(" ", attributes.ToArray());
 
                     return name;
                 }

@@ -1140,7 +1140,7 @@ namespace Emby.Server.Implementations.LiveTv
             var dtoOptions = new DtoOptions();
             var fields = dtoOptions.Fields.ToList();
             fields.Remove(ItemFields.BasicSyncInfo);
-            dtoOptions.Fields = fields.ToArray(fields.Count);
+            dtoOptions.Fields = fields.ToArray();
 
             progress.Report(100);
         }
@@ -1458,16 +1458,16 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 MediaTypes = new[] { MediaType.Video },
                 Recursive = true,
-                AncestorIds = folderIds.ToArray(folderIds.Count),
+                AncestorIds = folderIds.ToArray(),
                 IsFolder = false,
                 IsVirtualItem = false,
                 Limit = limit,
                 StartIndex = query.StartIndex,
                 OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
-                IncludeItemTypes = includeItemTypes.ToArray(includeItemTypes.Count),
-                ExcludeItemTypes = excludeItemTypes.ToArray(excludeItemTypes.Count),
-                Genres = genres.ToArray(genres.Count),
+                IncludeItemTypes = includeItemTypes.ToArray(),
+                ExcludeItemTypes = excludeItemTypes.ToArray(),
+                Genres = genres.ToArray(),
                 DtoOptions = dtoOptions
             });
 
@@ -1791,7 +1791,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var returnArray = returnList
                 .OrderBy(i => i.StartDate)
-                .ToArray(returnList.Count);
+                .ToArray();
 
             return new QueryResult<TimerInfoDto>
             {
@@ -2338,7 +2338,7 @@ namespace Emby.Server.Implementations.LiveTv
             fields.Remove(ItemFields.CanDownload);
             fields.Remove(ItemFields.DisplayPreferencesId);
             fields.Remove(ItemFields.Etag);
-            options.Fields = fields.ToArray(fields.Count);
+            options.Fields = fields.ToArray();
         }
 
         public Folder GetInternalLiveTvFolder(CancellationToken cancellationToken)
@@ -2373,7 +2373,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 info.Id = Guid.NewGuid().ToString("N");
                 list.Add(info);
-                config.TunerHosts = list.ToArray(list.Count);
+                config.TunerHosts = list.ToArray();
             }
             else
             {
@@ -2412,7 +2412,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 info.Id = Guid.NewGuid().ToString("N");
                 list.Add(info);
-                config.ListingProviders = list.ToArray(list.Count);
+                config.ListingProviders = list.ToArray();
             }
             else
             {
@@ -2451,7 +2451,7 @@ namespace Emby.Server.Implementations.LiveTv
                     Name = tunerChannelId,
                     Value = providerChannelId
                 });
-                listingsProviderInfo.ChannelMappings = list.ToArray(list.Count);
+                listingsProviderInfo.ChannelMappings = list.ToArray();
             }
 
             _config.SaveConfiguration("livetv", config);

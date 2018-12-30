@@ -466,7 +466,7 @@ namespace Emby.Server.Implementations.Activity
                 {
                     Name = string.Format(_localization.GetLocalizedString("ScheduledTaskFailedWithName"), task.Name),
                     Type = NotificationType.TaskFailed.ToString(),
-                    Overview = string.Join(Environment.NewLine, vals.ToArray(vals.Count)),
+                    Overview = string.Join(Environment.NewLine, vals.ToArray()),
                     ShortOverview = runningTime,
                     Severity = LogSeverity.Error
                 });
