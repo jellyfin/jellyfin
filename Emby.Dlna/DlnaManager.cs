@@ -531,7 +531,7 @@ namespace Emby.Dlna
         }
     }
 
-    class DlnaProfileEntryPoint /*: IServerEntryPoint*/
+    class DlnaProfileEntryPoint : IServerEntryPoint
     {
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
@@ -551,7 +551,7 @@ namespace Emby.Dlna
 
         private void DumpProfiles()
         {
-            var list = new List<DeviceProfile>
+            DeviceProfile[] list = new []
             {
                 new SamsungSmartTvProfile(),
                 new XboxOneProfile(),

@@ -2392,13 +2392,16 @@ namespace Emby.Server.Implementations.LiveTv
 
         public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
-            info = _jsonSerializer.DeserializeFromString<ListingsProviderInfo>(_jsonSerializer.SerializeToString(info));
+            // Let's try something
+            //info = _jsonSerializer.DeserializeFromString<ListingsProviderInfo>(_jsonSerializer.SerializeToString(info));
 
-            var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
+            IListingsProvider provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
             if (provider == null)
             {
-                throw new ResourceNotFoundException();
+                throw new ResourceNotFoundException(
+                    string.Format("Couldn't find provider with name: '{0}' of type: '{1}'", provider.Name, provider.Type)
+                );
             }
 
             await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);
