@@ -353,7 +353,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (!string.IsNullOrEmpty(stream.Language))
                 {
-                    // https://jellyfin.media/community/index.php?/topic/49071-nfo-not-generated-on-actualize-or-rescan-or-identify
+                    // http://web.archive.org/web/20181230211547/https://emby.media/community/index.php?/topic/49071-nfo-not-generated-on-actualize-or-rescan-or-identify
+                    // Web Archive version of link since it's not really explained in the thread.
                     writer.WriteElementString("language", RemoveInvalidXMLChars(stream.Language));
                 }
 
