@@ -117,10 +117,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             httpOptions.RequestContent = requestString;
             using (var response = await Post(httpOptions, true, info).ConfigureAwait(false))
             {
-                StreamReader reader = new StreamReader(response.Content);
-                string responseString = reader.ReadToEnd();
-                var dailySchedules = _jsonSerializer.DeserializeFromString<List<ScheduleDirect.Day>>(responseString);
-                _logger.LogDebug("Found " + dailySchedules.Count + " programs on " + stationID + " ScheduleDirect");
+                var dailySchedules = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Day>>(response.Content).ConfigureAwait(false);
+                _logger.LogDebug("Found {ScheduleCount} programs on {StationID} ScheduleDirect", dailySchedules.Count, stationID);
 
                 httpOptions = new HttpRequestOptions()
                 {
@@ -140,16 +138,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 httpOptions.RequestContent = requestBody;
 
                 double wideAspect = 1.77777778;
-                var primaryImageCategory = "Logo";
 
                 using (var innerResponse = await Post(httpOptions, true, info).ConfigureAwait(false))
                 {
-                    StreamReader innerReader = new StreamReader(innerResponse.Content);
-                    responseString = innerReader.ReadToEnd();
-
-                    var programDetails =
-                        _jsonSerializer.DeserializeFromString<List<ScheduleDirect.ProgramDetails>>(
-                            responseString);
+                    var programDetails = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.ProgramDetails>>(innerResponse.Content).ConfigureAwait(false);
                     var programDict = programDetails.ToDictionary(p => p.programID, y => y);
 
                     var programIdsWithImages =
