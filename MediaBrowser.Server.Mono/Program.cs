@@ -164,7 +164,7 @@ namespace MediaBrowser.Server.Mono
             }
             try
             {
-                string path = Path.Combine(_appPaths.ProgramDataPath, "logging.json");
+                string path = Path.Combine(_appPaths.ConfigurationDirectoryPath, "logging.json");
 
                 if (!File.Exists(path))
                 {
@@ -178,7 +178,7 @@ namespace MediaBrowser.Server.Mono
                     }
                 }
                 var configuration = new ConfigurationBuilder()
-                    .SetBasePath(_appPaths.ProgramDataPath)
+                    .SetBasePath(_appPaths.ConfigurationDirectoryPath)
                     .AddJsonFile("logging.json")
                     .AddEnvironmentVariables("JELLYFIN_")
                     .Build();
