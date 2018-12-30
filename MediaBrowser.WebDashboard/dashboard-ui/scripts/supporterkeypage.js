@@ -80,7 +80,7 @@ define(["fetchHelper", "dom", "registrationServices", "loading", "confirm", "glo
                 })
             }, function(response) {
                 alertText({
-                    text: globalize.translate("MessageSubCancelError", "cancel@emby.media")
+                    text: globalize.translate("MessageSubCancelError", "cancel@jellyfin.media")
                 })
             })
         })

@@ -353,7 +353,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (!string.IsNullOrEmpty(stream.Language))
                 {
-                    // https://emby.media/community/index.php?/topic/49071-nfo-not-generated-on-actualize-or-rescan-or-identify
+                    // https://jellyfin.media/community/index.php?/topic/49071-nfo-not-generated-on-actualize-or-rescan-or-identify
                     writer.WriteElementString("language", RemoveInvalidXMLChars(stream.Language));
                 }
 

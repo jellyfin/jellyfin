@@ -520,7 +520,7 @@ define(["datetime", "events", "itemHelper", "serverNotifications", "dom", "globa
                             serverId: ApiClient.serverId(),
                             element: page.querySelector(".serverActivityItems")
                         })));
-                    var swaggerUrl = "http://swagger.emby.media?url=" + ApiClient.getUrl("openapi");
+                    var swaggerUrl = "http://swagger.jellyfin.media?url=" + ApiClient.getUrl("openapi");
                     swaggerUrl = swaggerUrl + "&api_key=" + ApiClient.accessToken(), page.querySelector(".swaggerLink").setAttribute("href", swaggerUrl), refreshActiveRecordings(view, apiClient)
                 }
             }), view.addEventListener("viewbeforehide", function() {
