@@ -68,7 +68,9 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="source">The source object.</param>
         /// <param name="dest">The destination object.</param>
-        public static void DeepCopy<T, TU>(this T source, TU dest)
+        public static void DeepCopy<T, TU>(this T source, TU dest) 
+        where T : BaseItem
+        where TU : BaseItem
         {
             var sourceProps = typeof (T).GetProperties().Where(x => x.CanRead).ToList();
             var destProps = typeof(TU).GetProperties()
@@ -85,6 +87,19 @@ namespace MediaBrowser.Controller.Entities
 
             }
 
+        }
+
+        /// <summary>
+        /// Copies all properties on newly created object. Skips properties that do not exist.
+        /// </summary>
+        /// <param name="source">The source object.</param>
+        public static TU DeepCopy<T, TU>(this T source) 
+        where T : BaseItem
+        where TU : BaseItem, new()
+        {
+            var dest = new TU();
+            source.DeepCopy(dest);
+            return dest;
         }
 
 
