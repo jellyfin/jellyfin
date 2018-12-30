@@ -137,7 +137,7 @@ namespace Emby.Notifications
 
             var notification = new NotificationRequest
             {
-                Description = "Please see emby.media for details.",
+                Description = "Please see jellyfin.media for details.",
                 NotificationType = type,
                 Name = _localization.GetLocalizedString("NewVersionIsAvailable")
             };
