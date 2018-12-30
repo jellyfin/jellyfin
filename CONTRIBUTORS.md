@@ -5,6 +5,8 @@
  - [JustAMan](https://github.com/JustAMan)
  - [dcrdev](https://github.com/dcrdev)
  - [EraYaN](https://github.com/EraYaN)
+ - [flemse](https://github.com/flemse)
+ - [bfayers](https://github.com/bfayers)
 
 # Emby Contributors
 
