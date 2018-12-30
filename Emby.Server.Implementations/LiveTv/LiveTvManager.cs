@@ -2392,21 +2392,25 @@ namespace Emby.Server.Implementations.LiveTv
 
         public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
+            // Hack to make the object a pure ListingsProviderInfo instead of an AddListingProvider
+            // ServerConfiguration.SaveConfiguration crashes during xml serialization for AddListingProvider
             info = _jsonSerializer.DeserializeFromString<ListingsProviderInfo>(_jsonSerializer.SerializeToString(info));
 
-            var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
+            IListingsProvider provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
             if (provider == null)
             {
-                throw new ResourceNotFoundException();
+                throw new ResourceNotFoundException(
+                    string.Format("Couldn't find provider of type: '{0}'", info.Type)
+                );
             }
 
             await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);
 
-            var config = GetConfiguration();
+            LiveTvOptions config = GetConfiguration();
 
-            var list = config.ListingProviders.ToList();
-            var index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
+            List<ListingsProviderInfo> list = config.ListingProviders.ToList();
+            int index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
 
             if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
             {
