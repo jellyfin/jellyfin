@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Cache;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -122,17 +123,17 @@ namespace Emby.Server.Implementations.HttpClientManager
 
         private WebRequest GetRequest(HttpRequestOptions options, string method)
         {
-            var url = options.Url;
+            string url = options.Url;
 
-            var uriAddress = new Uri(url);
-            var userInfo = uriAddress.UserInfo;
+            Uri uriAddress = new Uri(url);
+            string userInfo = uriAddress.UserInfo;
             if (!string.IsNullOrWhiteSpace(userInfo))
             {
                 _logger.LogInformation("Found userInfo in url: {0} ... url: {1}", userInfo, url);
                 url = url.Replace(userInfo + "@", string.Empty);
             }
 
-            var request = CreateWebRequest(url);
+            WebRequest request = CreateWebRequest(url);
 
             if (request is HttpWebRequest httpWebRequest)
             {
@@ -140,15 +141,11 @@ namespace Emby.Server.Implementations.HttpClientManager
 
                 if (options.EnableHttpCompression)
                 {
-                    if (options.DecompressionMethod.HasValue)
+                    httpWebRequest.AutomaticDecompression = DecompressionMethods.Deflate;
+                    if (options.DecompressionMethod.HasValue
+                        && options.DecompressionMethod.Value == CompressionMethod.Gzip)
                     {
-                        httpWebRequest.AutomaticDecompression = options.DecompressionMethod.Value == CompressionMethod.Gzip
-                            ? DecompressionMethods.GZip
-                            : DecompressionMethods.Deflate;
-                    }
-                    else
-                    {
-                        httpWebRequest.AutomaticDecompression = DecompressionMethods.Deflate;
+                        httpWebRequest.AutomaticDecompression = DecompressionMethods.GZip;
                     }
                 }
                 else
@@ -156,10 +153,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                     httpWebRequest.AutomaticDecompression = DecompressionMethods.None;
                 }
 
-                if (options.EnableKeepAlive)
-                {
-                    httpWebRequest.KeepAlive = true;
-                }
+                httpWebRequest.KeepAlive = options.EnableKeepAlive;
 
                 if (!string.IsNullOrEmpty(options.Host))
                 {
@@ -172,7 +166,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                 }
             }
 
-            request.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
+            request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
 
             request.Method = method;
             request.Timeout = options.TimeoutMs;
