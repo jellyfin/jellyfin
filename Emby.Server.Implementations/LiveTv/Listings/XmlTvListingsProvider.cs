@@ -1,6 +1,3 @@
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.LiveTv;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,10 +11,13 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 
-namespace Emby.Server.Implementations.LiveTv.Listings
+namespace Jellyfin.Server.Implementations.LiveTv.Listings
 {
     public class XmlTvListingsProvider : IListingsProvider
     {
@@ -189,20 +189,20 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private ProgramInfo GetProgramInfo(XmlTvProgram p, ListingsProviderInfo info)
         {
-            var episodeTitle = p.Episode == null ? null : p.Episode.Title;
+            var episodeTitle = p.Episode?.Title;
 
             var programInfo = new ProgramInfo
             {
                 ChannelId = p.ChannelId,
                 EndDate = p.EndDate.UtcDateTime,
-                EpisodeNumber = p.Episode == null ? null : p.Episode.Episode,
+                EpisodeNumber = p.Episode?.Episode,
                 EpisodeTitle = episodeTitle,
                 Genres = p.Categories,
                 StartDate = p.StartDate.UtcDateTime,
                 Name = p.Title,
                 Overview = p.Description,
-                ProductionYear = !p.CopyrightDate.HasValue ? (int?)null : p.CopyrightDate.Value.Year,
-                SeasonNumber = p.Episode == null ? null : p.Episode.Series,
+                ProductionYear = p.CopyrightDate?.Year,
+                SeasonNumber = p.Episode?.Series,
                 IsSeries = p.Episode != null,
                 IsRepeat = p.IsPreviouslyShown && !p.IsNew,
                 IsPremiere = p.Premiere != null,
@@ -213,8 +213,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 ImageUrl = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source) ? p.Icon.Source : null,
                 HasImage = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source),
                 OfficialRating = p.Rating != null && !String.IsNullOrEmpty(p.Rating.Value) ? p.Rating.Value : null,
-                CommunityRating = p.StarRating.HasValue ? p.StarRating.Value : (float?)null,
-                SeriesId = p.Episode != null ? p.Title.GetMD5().ToString("N") : null
+                CommunityRating = p.StarRating,
+                SeriesId = p.Episode == null ? null : p.Title.GetMD5().ToString("N")
             };
 
             if (!string.IsNullOrWhiteSpace(p.ProgramId))
@@ -267,7 +267,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 throw new FileNotFoundException("Could not find the XmlTv file specified:", info.Path);
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         public async Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
