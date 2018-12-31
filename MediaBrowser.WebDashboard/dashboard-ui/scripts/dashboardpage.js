@@ -520,6 +520,7 @@ define(["datetime", "events", "itemHelper", "serverNotifications", "dom", "globa
                             serverId: ApiClient.serverId(),
                             element: page.querySelector(".serverActivityItems")
                         })));
+                    //FIXME: There is no jellyfin swagger instance, as such this url is currently invalid
                     var swaggerUrl = "http://swagger.jellyfin.media?url=" + ApiClient.getUrl("openapi");
                     swaggerUrl = swaggerUrl + "&api_key=" + ApiClient.accessToken(), page.querySelector(".swaggerLink").setAttribute("href", swaggerUrl), refreshActiveRecordings(view, apiClient)
                 }

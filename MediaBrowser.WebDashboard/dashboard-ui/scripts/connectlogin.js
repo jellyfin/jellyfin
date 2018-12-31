@@ -154,6 +154,7 @@ define(["appSettings", "loading", "browser", "emby-linkbutton"], function(appSet
             Dashboard.navigate("connectlogin.html?mode=connect")
         });
         var terms = view.querySelector(".terms");
+        //FIXME: Link below directs to "jellyfin.media/terms" which is a non existant URL
         terms.innerHTML = Globalize.translate("LoginDisclaimer") + "<div style='margin-top:5px;'><a is='emby-linkbutton' class='button-link' href='http://jellyfin.media/terms' target='_blank'>" + Globalize.translate("TermsOfUse") + "</a></div>", AppInfo.isNativeApp ? (terms.classList.add("hide"), view.querySelector(".tvAppInfo").classList.add("hide")) : (terms.classList.remove("hide"), view.querySelector(".tvAppInfo").classList.remove("hide")), view.addEventListener("viewbeforeshow", function() {
             var page = this;
             if (page.querySelector("#txtSignupEmail").value = "", page.querySelector("#txtSignupUsername").value = "", page.querySelector("#txtSignupPassword").value = "", page.querySelector("#txtSignupPasswordConfirm").value = "", browser.safari && AppInfo.isNativeApp) page.querySelector(".embyIntroDownloadMessage").innerHTML = Globalize.translate("EmbyIntroDownloadMessageWithoutLink");
