@@ -1,145 +1,245 @@
-define(["connectionManager", "playbackManager", "events", "inputManager", "focusManager", "appRouter"], function(connectionManager, playbackManager, events, inputManager, focusManager, appRouter) {
-    "use strict";
+define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focusManager', 'appRouter'], function (connectionManager, playbackManager, events, inputManager, focusManager, appRouter) {
+    'use strict';
+
+    var serverNotifications = {};
 
     function notifyApp() {
-        inputManager.notify()
+
+        inputManager.notify();
     }
 
     function displayMessage(cmd) {
+
         var args = cmd.Arguments;
-        args.TimeoutMs ? require(["toast"], function(toast) {
-            toast({
-                title: args.Header,
-                text: args.Text
-            })
-        }) : require(["alert"], function(alert) {
-            alert({
-                title: args.Header,
-                text: args.Text
-            })
-        })
+
+        if (args.TimeoutMs) {
+
+            require(['toast'], function (toast) {
+                toast({ title: args.Header, text: args.Text });
+            });
+
+        }
+        else {
+            require(['alert'], function (alert) {
+                alert({ title: args.Header, text: args.Text });
+            });
+        }
     }
 
     function displayContent(cmd, apiClient) {
-        playbackManager.isPlayingLocally(["Video", "Book", "Game"]) || appRouter.showItem(cmd.Arguments.ItemId, apiClient.serverId())
+
+        if (!playbackManager.isPlayingLocally(['Video', 'Book', 'Game'])) {
+            appRouter.showItem(cmd.Arguments.ItemId, apiClient.serverId());
+        }
     }
 
     function playTrailers(apiClient, itemId) {
-        apiClient.getItem(apiClient.getCurrentUserId(), itemId).then(function(item) {
-            playbackManager.playTrailers(item)
-        })
+
+        apiClient.getItem(apiClient.getCurrentUserId(), itemId).then(function (item) {
+
+            playbackManager.playTrailers(item);
+        });
     }
 
     function processGeneralCommand(cmd, apiClient) {
+
+        // Full list
+        // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs#L23
+        //console.log('Received command: ' + cmd.Name);
+
         switch (cmd.Name) {
-            case "Select":
-                return void inputManager.trigger("select");
-            case "Back":
-                return void inputManager.trigger("back");
-            case "MoveUp":
-                return void inputManager.trigger("up");
-            case "MoveDown":
-                return void inputManager.trigger("down");
-            case "MoveLeft":
-                return void inputManager.trigger("left");
-            case "MoveRight":
-                return void inputManager.trigger("right");
-            case "PageUp":
-                return void inputManager.trigger("pageup");
-            case "PageDown":
-                return void inputManager.trigger("pagedown");
-            case "PlayTrailers":
+
+            case 'Select':
+                inputManager.trigger('select');
+                return;
+            case 'Back':
+                inputManager.trigger('back');
+                return;
+            case 'MoveUp':
+                inputManager.trigger('up');
+                return;
+            case 'MoveDown':
+                inputManager.trigger('down');
+                return;
+            case 'MoveLeft':
+                inputManager.trigger('left');
+                return;
+            case 'MoveRight':
+                inputManager.trigger('right');
+                return;
+            case 'PageUp':
+                inputManager.trigger('pageup');
+                return;
+            case 'PageDown':
+                inputManager.trigger('pagedown');
+                return;
+            case 'PlayTrailers':
                 playTrailers(apiClient, cmd.Arguments.ItemId);
                 break;
-            case "SetRepeatMode":
+            case 'SetRepeatMode':
                 playbackManager.setRepeatMode(cmd.Arguments.RepeatMode);
                 break;
-            case "VolumeUp":
-                return void inputManager.trigger("volumeup");
-            case "VolumeDown":
-                return void inputManager.trigger("volumedown");
-            case "ChannelUp":
-                return void inputManager.trigger("channelup");
-            case "ChannelDown":
-                return void inputManager.trigger("channeldown");
-            case "Mute":
-                return void inputManager.trigger("mute");
-            case "Unmute":
-                return void inputManager.trigger("unmute");
-            case "ToggleMute":
-                return void inputManager.trigger("togglemute");
-            case "SetVolume":
-                notifyApp(), playbackManager.setVolume(cmd.Arguments.Volume);
+            case 'VolumeUp':
+                inputManager.trigger('volumeup');
+                return;
+            case 'VolumeDown':
+                inputManager.trigger('volumedown');
+                return;
+            case 'ChannelUp':
+                inputManager.trigger('channelup');
+                return;
+            case 'ChannelDown':
+                inputManager.trigger('channeldown');
+                return;
+            case 'Mute':
+                inputManager.trigger('mute');
+                return;
+            case 'Unmute':
+                inputManager.trigger('unmute');
+                return;
+            case 'ToggleMute':
+                inputManager.trigger('togglemute');
+                return;
+            case 'SetVolume':
+                notifyApp();
+                playbackManager.setVolume(cmd.Arguments.Volume);
                 break;
-            case "SetAudioStreamIndex":
-                notifyApp(), playbackManager.setAudioStreamIndex(parseInt(cmd.Arguments.Index));
+            case 'SetAudioStreamIndex':
+                notifyApp();
+                playbackManager.setAudioStreamIndex(parseInt(cmd.Arguments.Index));
                 break;
-            case "SetSubtitleStreamIndex":
-                notifyApp(), playbackManager.setSubtitleStreamIndex(parseInt(cmd.Arguments.Index));
+            case 'SetSubtitleStreamIndex':
+                notifyApp();
+                playbackManager.setSubtitleStreamIndex(parseInt(cmd.Arguments.Index));
                 break;
-            case "ToggleFullscreen":
-                return void inputManager.trigger("togglefullscreen");
-            case "GoHome":
-                return void inputManager.trigger("home");
-            case "GoToSettings":
-                return void inputManager.trigger("settings");
-            case "DisplayContent":
+            case 'ToggleFullscreen':
+                inputManager.trigger('togglefullscreen');
+                return;
+            case 'GoHome':
+                inputManager.trigger('home');
+                return;
+            case 'GoToSettings':
+                inputManager.trigger('settings');
+                return;
+            case 'DisplayContent':
                 displayContent(cmd, apiClient);
                 break;
-            case "GoToSearch":
-                return void inputManager.trigger("search");
-            case "DisplayMessage":
+            case 'GoToSearch':
+                inputManager.trigger('search');
+                return;
+            case 'DisplayMessage':
                 displayMessage(cmd);
                 break;
-            case "ToggleOsd":
-            case "ToggleContextMenu":
-            case "TakeScreenShot":
-            case "SendKey":
+            case 'ToggleOsd':
+                // todo
                 break;
-            case "SendString":
+            case 'ToggleContextMenu':
+                // todo
+                break;
+            case 'TakeScreenShot':
+                // todo
+                break;
+            case 'SendKey':
+                // todo
+                break;
+            case 'SendString':
+                // todo
                 focusManager.sendText(cmd.Arguments.String);
                 break;
             default:
-                console.log("processGeneralCommand does not recognize: " + cmd.Name)
+                console.log('processGeneralCommand does not recognize: ' + cmd.Name);
+                break;
         }
-        notifyApp()
+
+        notifyApp();
     }
 
     function onMessageReceived(e, msg) {
+
         var apiClient = this;
-        if ("Play" === msg.MessageType) {
+
+        if (msg.MessageType === "Play") {
+
             notifyApp();
             var serverId = apiClient.serverInfo().Id;
-            "PlayNext" === msg.Data.PlayCommand ? playbackManager.queueNext({
-                ids: msg.Data.ItemIds,
-                serverId: serverId
-            }) : "PlayLast" === msg.Data.PlayCommand ? playbackManager.queue({
-                ids: msg.Data.ItemIds,
-                serverId: serverId
-            }) : playbackManager.play({
-                ids: msg.Data.ItemIds,
-                startPositionTicks: msg.Data.StartPositionTicks,
-                mediaSourceId: msg.Data.MediaSourceId,
-                audioStreamIndex: msg.Data.AudioStreamIndex,
-                subtitleStreamIndex: msg.Data.SubtitleStreamIndex,
-                startIndex: msg.Data.StartIndex,
-                serverId: serverId
-            })
-        } else if ("Playstate" === msg.MessageType) "Stop" === msg.Data.Command ? inputManager.trigger("stop") : "Pause" === msg.Data.Command ? inputManager.trigger("pause") : "Unpause" === msg.Data.Command ? inputManager.trigger("play") : "PlayPause" === msg.Data.Command ? inputManager.trigger("playpause") : "Seek" === msg.Data.Command ? playbackManager.seek(msg.Data.SeekPositionTicks) : "NextTrack" === msg.Data.Command ? inputManager.trigger("next") : "PreviousTrack" === msg.Data.Command ? inputManager.trigger("previous") : notifyApp();
-        else if ("GeneralCommand" === msg.MessageType) {
+
+            if (msg.Data.PlayCommand === "PlayNext") {
+                playbackManager.queueNext({ ids: msg.Data.ItemIds, serverId: serverId });
+            }
+            else if (msg.Data.PlayCommand === "PlayLast") {
+                playbackManager.queue({ ids: msg.Data.ItemIds, serverId: serverId });
+            }
+            else {
+                playbackManager.play({
+                    ids: msg.Data.ItemIds,
+                    startPositionTicks: msg.Data.StartPositionTicks,
+                    mediaSourceId: msg.Data.MediaSourceId,
+                    audioStreamIndex: msg.Data.AudioStreamIndex,
+                    subtitleStreamIndex: msg.Data.SubtitleStreamIndex,
+                    startIndex: msg.Data.StartIndex,
+                    serverId: serverId
+                });
+            }
+
+        }
+        else if (msg.MessageType === "Playstate") {
+
+            if (msg.Data.Command === 'Stop') {
+                inputManager.trigger('stop');
+            }
+            else if (msg.Data.Command === 'Pause') {
+                inputManager.trigger('pause');
+            }
+            else if (msg.Data.Command === 'Unpause') {
+                inputManager.trigger('play');
+            }
+            else if (msg.Data.Command === 'PlayPause') {
+                inputManager.trigger('playpause');
+            }
+            else if (msg.Data.Command === 'Seek') {
+                playbackManager.seek(msg.Data.SeekPositionTicks);
+            }
+            else if (msg.Data.Command === 'NextTrack') {
+                inputManager.trigger('next');
+            }
+            else if (msg.Data.Command === 'PreviousTrack') {
+                inputManager.trigger('previous');
+            } else {
+                notifyApp();
+            }
+        }
+        else if (msg.MessageType === "GeneralCommand") {
             var cmd = msg.Data;
-            processGeneralCommand(cmd, apiClient)
-        } else if ("UserDataChanged" === msg.MessageType) {
-            if (msg.Data.UserId === apiClient.getCurrentUserId())
-                for (var i = 0, length = msg.Data.UserDataList.length; i < length; i++) events.trigger(serverNotifications, "UserDataChanged", [apiClient, msg.Data.UserDataList[i]])
-        } else events.trigger(serverNotifications, msg.MessageType, [apiClient, msg.Data])
+            processGeneralCommand(cmd, apiClient);
+        }
+        else if (msg.MessageType === "UserDataChanged") {
+
+            if (msg.Data.UserId === apiClient.getCurrentUserId()) {
+
+                for (var i = 0, length = msg.Data.UserDataList.length; i < length; i++) {
+                    events.trigger(serverNotifications, 'UserDataChanged', [apiClient, msg.Data.UserDataList[i]]);
+                }
+            }
+        }
+        else {
+
+            events.trigger(serverNotifications, msg.MessageType, [apiClient, msg.Data]);
+        }
+
     }
 
     function bindEvents(apiClient) {
-        events.off(apiClient, "message", onMessageReceived), events.on(apiClient, "message", onMessageReceived)
+
+        events.off(apiClient, "message", onMessageReceived);
+        events.on(apiClient, "message", onMessageReceived);
     }
-    var serverNotifications = {};
-    return connectionManager.getApiClients().forEach(bindEvents), events.on(connectionManager, "apiclientcreated", function(e, newApiClient) {
-        bindEvents(newApiClient)
-    }), serverNotifications
+
+    connectionManager.getApiClients().forEach(bindEvents);
+
+    events.on(connectionManager, 'apiclientcreated', function (e, newApiClient) {
+
+        bindEvents(newApiClient);
+    });
+
+    return serverNotifications;
 });

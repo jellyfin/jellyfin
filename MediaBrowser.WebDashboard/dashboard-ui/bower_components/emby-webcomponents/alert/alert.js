@@ -1,18 +1,34 @@
-define(["dialog", "globalize"], function(dialog, globalize) {
-    "use strict";
-    return function(text, title) {
+define(['dialog', 'globalize'], function (dialog, globalize) {
+    'use strict';
+
+    return function (text, title) {
+
         var options;
-        options = "string" == typeof text ? {
-            title: title,
-            text: text
-        } : text;
+        if (typeof text === 'string') {
+            options = {
+                title: title,
+                text: text
+            };
+        } else {
+            options = text;
+        }
+
         var items = [];
-        return items.push({
-            name: globalize.translate("sharedcomponents#ButtonGotIt"),
-            id: "ok",
-            type: "submit"
-        }), options.buttons = items, dialog(options).then(function(result) {
-            return "ok" === result ? Promise.resolve() : Promise.reject()
-        })
-    }
+
+        items.push({
+            name: globalize.translate('sharedcomponents#ButtonGotIt'),
+            id: 'ok',
+            type: 'submit'
+        });
+
+        options.buttons = items;
+
+        return dialog(options).then(function (result) {
+            if (result === 'ok') {
+                return Promise.resolve();
+            }
+
+            return Promise.reject();
+        });
+    };
 });

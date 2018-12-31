@@ -5,21 +5,17 @@
     bottom: 0;
     left: 0;
     right: 0;
-    display: -webkit-box;
-    display: -webkit-flex;
     display: flex;
-    -webkit-box-align: center;
-    -webkit-align-items: center;
-    align-items: center
+    align-items: center;
 }
 
-.youtubePlayerContainer.onTop {
-    z-index: 1000
-}
+    .youtubePlayerContainer.onTop {
+        z-index: 1000;
+    }
 
-.youtubePlayerContainer video {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100%;
-    height: 100%
-}
+    .youtubePlayerContainer video {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100%;
+        height: 100%;
+    }

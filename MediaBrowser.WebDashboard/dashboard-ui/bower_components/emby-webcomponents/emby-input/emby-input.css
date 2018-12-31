@@ -2,35 +2,39 @@
     display: block;
     margin: 0;
     margin-bottom: 0 !important;
+    /* Remove select styling */
+    /* Font size must the 16px or larger to prevent iOS page zoom on focus */
     font-size: 110%;
+    /* General select styles: change as needed */
     font-family: inherit;
     font-weight: inherit;
     padding: .4em .25em;
+    /* Prevent padding from causing width overflow */
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
-    outline: 0 !important;
-    -webkit-tap-highlight-color: transparent;
-    width: 100%
+    outline: none !important;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    width: 100%;
 }
 
-.emby-input::-moz-focus-inner {
-    border: 0
-}
+    .emby-input::-moz-focus-inner {
+        border: 0;
+    }
 
 .inputContainer {
-    margin-bottom: 1.8em
+    margin-bottom: 1.8em;
 }
 
 .inputLabel {
     display: inline-block;
-    margin-bottom: .25em
+    margin-bottom: .25em;
 }
 
-.emby-input+.fieldDescription {
-    margin-top: .25em
+.emby-input + .fieldDescription {
+    margin-top: .25em;
 }
 
 .emby-input-iconbutton {
     -webkit-align-self: flex-end;
-    align-self: flex-end
+    align-self: flex-end;
 }

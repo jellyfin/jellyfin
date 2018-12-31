@@ -1,218 +1,515 @@
-define(["events", "browser", "require", "apphost", "appSettings", "htmlMediaHelper"], function(events, browser, require, appHost, appSettings, htmlMediaHelper) {
+define(['events', 'browser', 'require', 'apphost', 'appSettings', 'htmlMediaHelper'], function (events, browser, require, appHost, appSettings, htmlMediaHelper) {
     "use strict";
 
     function getDefaultProfile() {
-        return new Promise(function(resolve, reject) {
-            require(["browserdeviceprofile"], function(profileBuilder) {
-                resolve(profileBuilder({}))
-            })
-        })
+
+        return new Promise(function (resolve, reject) {
+
+            require(['browserdeviceprofile'], function (profileBuilder) {
+
+                resolve(profileBuilder({}));
+            });
+        });
     }
 
+    var fadeTimeout;
     function fade(instance, elem, startingVolume) {
-        instance._isFadingOut = !0;
-        var newVolume = Math.max(0, startingVolume - .15);
-        return console.log("fading volume to " + newVolume), elem.volume = newVolume, newVolume <= 0 ? (instance._isFadingOut = !1, Promise.resolve()) : new Promise(function(resolve, reject) {
-            cancelFadeTimeout(), fadeTimeout = setTimeout(function() {
-                fade(instance, elem, newVolume).then(resolve, reject)
-            }, 100)
-        })
+
+        instance._isFadingOut = true;
+
+        // Need to record the starting volume on each pass rather than querying elem.volume
+        // This is due to iOS safari not allowing volume changes and always returning the system volume value
+
+        var newVolume = Math.max(0, startingVolume - 0.15);
+        console.log('fading volume to ' + newVolume);
+        elem.volume = newVolume;
+
+        if (newVolume <= 0) {
+
+            instance._isFadingOut = false;
+            return Promise.resolve();
+        }
+
+        return new Promise(function (resolve, reject) {
+
+            cancelFadeTimeout();
+
+            fadeTimeout = setTimeout(function () {
+
+                fade(instance, elem, newVolume).then(resolve, reject);
+            }, 100);
+        });
     }
 
     function cancelFadeTimeout() {
         var timeout = fadeTimeout;
-        timeout && (clearTimeout(timeout), fadeTimeout = null)
+        if (timeout) {
+            clearTimeout(timeout);
+            fadeTimeout = null;
+        }
     }
 
     function supportsFade() {
-        return !browser.tv
+
+        if (browser.tv) {
+            // Not working on tizen. 
+            // We could possibly enable on other tv's, but all smart tv browsers tend to be pretty primitive
+            return false;
+        }
+
+        return true;
     }
 
     function requireHlsPlayer(callback) {
-        require(["hlsjs"], function(hls) {
-            window.Hls = hls, callback()
-        })
+        require(['hlsjs'], function (hls) {
+            window.Hls = hls;
+            callback();
+        });
     }
 
     function enableHlsPlayer(url, item, mediaSource, mediaType) {
-        return htmlMediaHelper.enableHlsJsPlayer(mediaSource.RunTimeTicks, mediaType) ? -1 !== url.indexOf(".m3u8") ? Promise.resolve() : new Promise(function(resolve, reject) {
-            require(["fetchHelper"], function(fetchHelper) {
+
+        if (!htmlMediaHelper.enableHlsJsPlayer(mediaSource.RunTimeTicks, mediaType)) {
+
+            return Promise.reject();
+        }
+
+        if (url.indexOf('.m3u8') !== -1) {
+            return Promise.resolve();
+        }
+
+        // issue head request to get content type
+        return new Promise(function (resolve, reject) {
+
+            require(['fetchHelper'], function (fetchHelper) {
                 fetchHelper.ajax({
                     url: url,
-                    type: "HEAD"
-                }).then(function(response) {
-                    "application/x-mpegurl" === (response.headers.get("Content-Type") || "").toLowerCase() ? resolve() : reject()
-                }, reject)
-            })
-        }) : Promise.reject()
+                    type: 'HEAD'
+                }).then(function (response) {
+
+                    var contentType = (response.headers.get('Content-Type') || '').toLowerCase();
+                    if (contentType === 'application/x-mpegurl') {
+                        resolve();
+                    } else {
+                        reject();
+                    }
+
+                }, reject);
+            });
+        });
     }
 
     function HtmlAudioPlayer() {
+
+        var self = this;
+
+        self.name = 'Html Audio Player';
+        self.type = 'mediaplayer';
+        self.id = 'htmlaudioplayer';
+
+        // Let any players created by plugins take priority
+        self.priority = 1;
+
+        self.play = function (options) {
+
+            self._started = false;
+            self._timeUpdated = false;
+
+            self._currentTime = null;
+
+            var elem = createMediaElement(options);
+
+            return setCurrentSrc(elem, options);
+        };
+
         function setCurrentSrc(elem, options) {
-            elem.removeEventListener("error", onError), unBindEvents(elem), bindEvents(elem);
+
+            elem.removeEventListener('error', onError);
+
+            unBindEvents(elem);
+            bindEvents(elem);
+
             var val = options.url;
-            console.log("playing url: " + val);
-            var seconds = (options.playerStartPositionTicks || 0) / 1e7;
-            seconds && (val += "#t=" + seconds), htmlMediaHelper.destroyHlsPlayer(self), self._currentPlayOptions = options;
+            console.log('playing url: ' + val);
+
+            // Convert to seconds
+            var seconds = (options.playerStartPositionTicks || 0) / 10000000;
+            if (seconds) {
+                val += '#t=' + seconds;
+            }
+
+            htmlMediaHelper.destroyHlsPlayer(self);
+
+            self._currentPlayOptions = options;
+
             var crossOrigin = htmlMediaHelper.getCrossOriginValue(options.mediaSource);
-            return crossOrigin && (elem.crossOrigin = crossOrigin), enableHlsPlayer(val, options.item, options.mediaSource, "Audio").then(function() {
-                return new Promise(function(resolve, reject) {
-                    requireHlsPlayer(function() {
+            if (crossOrigin) {
+                elem.crossOrigin = crossOrigin;
+            }
+
+            return enableHlsPlayer(val, options.item, options.mediaSource, 'Audio').then(function () {
+
+                return new Promise(function (resolve, reject) {
+
+                    requireHlsPlayer(function () {
                         var hls = new Hls({
-                            manifestLoadingTimeOut: 2e4
+                            manifestLoadingTimeOut: 20000
+                            //appendErrorMaxRetry: 6,
+                            //debug: true
                         });
-                        hls.loadSource(val), hls.attachMedia(elem), htmlMediaHelper.bindEventsToHlsPlayer(self, hls, elem, onError, resolve, reject), self._hlsPlayer = hls, self._currentSrc = val
-                    })
-                })
-            }, function() {
-                return elem.autoplay = !0, htmlMediaHelper.applySrc(elem, val, options).then(function() {
-                    return self._currentSrc = val, htmlMediaHelper.playWithPromise(elem, onError)
-                })
-            })
+                        hls.loadSource(val);
+                        hls.attachMedia(elem);
+
+                        htmlMediaHelper.bindEventsToHlsPlayer(self, hls, elem, onError, resolve, reject);
+
+                        self._hlsPlayer = hls;
+
+                        self._currentSrc = val;
+                    });
+                });
+
+
+            }, function () {
+
+                elem.autoplay = true;
+
+                return htmlMediaHelper.applySrc(elem, val, options).then(function () {
+
+                    self._currentSrc = val;
+
+                    return htmlMediaHelper.playWithPromise(elem, onError);
+                });
+            });
         }
 
         function bindEvents(elem) {
-            elem.addEventListener("timeupdate", onTimeUpdate), elem.addEventListener("ended", onEnded), elem.addEventListener("volumechange", onVolumeChange), elem.addEventListener("pause", onPause), elem.addEventListener("playing", onPlaying), elem.addEventListener("play", onPlay)
+            elem.addEventListener('timeupdate', onTimeUpdate);
+            elem.addEventListener('ended', onEnded);
+            elem.addEventListener('volumechange', onVolumeChange);
+            elem.addEventListener('pause', onPause);
+            elem.addEventListener('playing', onPlaying);
+            elem.addEventListener('play', onPlay);
         }
 
         function unBindEvents(elem) {
-            elem.removeEventListener("timeupdate", onTimeUpdate), elem.removeEventListener("ended", onEnded), elem.removeEventListener("volumechange", onVolumeChange), elem.removeEventListener("pause", onPause), elem.removeEventListener("playing", onPlaying), elem.removeEventListener("play", onPlay)
+            elem.removeEventListener('timeupdate', onTimeUpdate);
+            elem.removeEventListener('ended', onEnded);
+            elem.removeEventListener('volumechange', onVolumeChange);
+            elem.removeEventListener('pause', onPause);
+            elem.removeEventListener('playing', onPlaying);
+            elem.removeEventListener('play', onPlay);
         }
 
-        function createMediaElement() {
+        self.stop = function (destroyPlayer) {
+
+            cancelFadeTimeout();
+
             var elem = self._mediaElement;
-            return elem || (elem = document.querySelector(".mediaPlayerAudio"), elem || (elem = document.createElement("audio"), elem.classList.add("mediaPlayerAudio"), elem.classList.add("hide"), document.body.appendChild(elem)), elem.volume = htmlMediaHelper.getSavedVolume(), self._mediaElement = elem, elem)
+            var src = self._currentSrc;
+
+            if (elem && src) {
+
+                if (!destroyPlayer || !supportsFade()) {
+
+                    elem.pause();
+
+                    htmlMediaHelper.onEndedInternal(self, elem, onError);
+
+                    if (destroyPlayer) {
+                        self.destroy();
+                    }
+                    return Promise.resolve();
+                }
+
+                var originalVolume = elem.volume;
+
+                return fade(self, elem, elem.volume).then(function () {
+
+                    elem.pause();
+                    elem.volume = originalVolume;
+
+                    htmlMediaHelper.onEndedInternal(self, elem, onError);
+
+                    if (destroyPlayer) {
+                        self.destroy();
+                    }
+                });
+            }
+            return Promise.resolve();
+        };
+
+        self.destroy = function () {
+            unBindEvents(self._mediaElement);
+        };
+
+        function createMediaElement() {
+
+            var elem = self._mediaElement;
+
+            if (elem) {
+                return elem;
+            }
+
+            elem = document.querySelector('.mediaPlayerAudio');
+
+            if (!elem) {
+                elem = document.createElement('audio');
+                elem.classList.add('mediaPlayerAudio');
+                elem.classList.add('hide');
+
+                document.body.appendChild(elem);
+            }
+
+            elem.volume = htmlMediaHelper.getSavedVolume();
+
+            self._mediaElement = elem;
+
+            return elem;
         }
 
         function onEnded() {
-            htmlMediaHelper.onEndedInternal(self, this, onError)
+
+            htmlMediaHelper.onEndedInternal(self, this, onError);
         }
 
         function onTimeUpdate() {
+
+            // Get the player position + the transcoding offset
             var time = this.currentTime;
-            self._isFadingOut || (self._currentTime = time, events.trigger(self, "timeupdate"))
+
+            // Don't trigger events after user stop
+            if (!self._isFadingOut) {
+                self._currentTime = time;
+                events.trigger(self, 'timeupdate');
+            }
         }
 
         function onVolumeChange() {
-            self._isFadingOut || (htmlMediaHelper.saveVolume(this.volume), events.trigger(self, "volumechange"))
+
+            if (!self._isFadingOut) {
+                htmlMediaHelper.saveVolume(this.volume);
+                events.trigger(self, 'volumechange');
+            }
         }
 
         function onPlaying(e) {
-            self._started || (self._started = !0, this.removeAttribute("controls"), htmlMediaHelper.seekOnPlaybackStart(self, e.target, self._currentPlayOptions.playerStartPositionTicks)), events.trigger(self, "playing")
+
+            if (!self._started) {
+                self._started = true;
+                this.removeAttribute('controls');
+
+                htmlMediaHelper.seekOnPlaybackStart(self, e.target, self._currentPlayOptions.playerStartPositionTicks);
+            }
+            events.trigger(self, 'playing');
         }
 
         function onPlay(e) {
-            events.trigger(self, "unpause")
+
+            events.trigger(self, 'unpause');
         }
 
         function onPause() {
-            events.trigger(self, "pause")
+            events.trigger(self, 'pause');
         }
 
         function onError() {
-            var errorCode = this.error ? this.error.code || 0 : 0,
-                errorMessage = this.error ? this.error.message || "" : "";
-            console.log("Media element error: " + errorCode.toString() + " " + errorMessage);
+
+            var errorCode = this.error ? (this.error.code || 0) : 0;
+            var errorMessage = this.error ? (this.error.message || '') : '';
+            console.log('Media element error: ' + errorCode.toString() + ' ' + errorMessage);
+
             var type;
+
             switch (errorCode) {
                 case 1:
+                    // MEDIA_ERR_ABORTED
+                    // This will trigger when changing media while something is playing
                     return;
                 case 2:
-                    type = "network";
+                    // MEDIA_ERR_NETWORK
+                    type = 'network';
                     break;
                 case 3:
-                    if (self._hlsPlayer) return void htmlMediaHelper.handleHlsJsMediaError(self);
-                    type = "mediadecodeerror";
+                    // MEDIA_ERR_DECODE
+                    if (self._hlsPlayer) {
+                        htmlMediaHelper.handleHlsJsMediaError(self);
+                        return;
+                    } else {
+                        type = 'mediadecodeerror';
+                    }
                     break;
                 case 4:
-                    type = "medianotsupported";
+                    // MEDIA_ERR_SRC_NOT_SUPPORTED
+                    type = 'medianotsupported';
                     break;
                 default:
-                    return
+                    // seeing cases where Edge is firing error events with no error code
+                    // example is start playing something, then immediately change src to something else
+                    return;
             }
-            htmlMediaHelper.onErrorInternal(self, type)
-        }
-        var self = this;
-        self.name = "Html Audio Player", self.type = "mediaplayer", self.id = "htmlaudioplayer", self.priority = 1, self.play = function(options) {
-            return self._started = !1, self._timeUpdated = !1, self._currentTime = null, setCurrentSrc(createMediaElement(), options)
-        }, self.stop = function(destroyPlayer) {
-            cancelFadeTimeout();
-            var elem = self._mediaElement,
-                src = self._currentSrc;
-            if (elem && src) {
-                if (!destroyPlayer || !supportsFade()) return elem.pause(), htmlMediaHelper.onEndedInternal(self, elem, onError), destroyPlayer && self.destroy(), Promise.resolve();
-                var originalVolume = elem.volume;
-                return fade(self, elem, elem.volume).then(function() {
-                    elem.pause(), elem.volume = originalVolume, htmlMediaHelper.onEndedInternal(self, elem, onError), destroyPlayer && self.destroy()
-                })
-            }
-            return Promise.resolve()
-        }, self.destroy = function() {
-            unBindEvents(self._mediaElement)
+
+            htmlMediaHelper.onErrorInternal(self, type);
         }
     }
-    var fadeTimeout;
-    return HtmlAudioPlayer.prototype.currentSrc = function() {
-        return this._currentSrc
-    }, HtmlAudioPlayer.prototype.canPlayMediaType = function(mediaType) {
-        return "audio" === (mediaType || "").toLowerCase()
-    }, HtmlAudioPlayer.prototype.getDeviceProfile = function(item) {
-        return appHost.getDeviceProfile ? appHost.getDeviceProfile(item) : getDefaultProfile()
-    }, HtmlAudioPlayer.prototype.currentTime = function(val) {
+
+    HtmlAudioPlayer.prototype.currentSrc = function () {
+        return this._currentSrc;
+    };
+
+    HtmlAudioPlayer.prototype.canPlayMediaType = function (mediaType) {
+
+        return (mediaType || '').toLowerCase() === 'audio';
+    };
+
+    HtmlAudioPlayer.prototype.getDeviceProfile = function (item) {
+
+        if (appHost.getDeviceProfile) {
+            return appHost.getDeviceProfile(item);
+        }
+
+        return getDefaultProfile();
+    };
+
+    // Save this for when playback stops, because querying the time at that point might return 0
+    HtmlAudioPlayer.prototype.currentTime = function (val) {
+
         var mediaElement = this._mediaElement;
         if (mediaElement) {
-            if (null != val) return void(mediaElement.currentTime = val / 1e3);
+            if (val != null) {
+                mediaElement.currentTime = val / 1000;
+                return;
+            }
+
             var currentTime = this._currentTime;
-            return currentTime ? 1e3 * currentTime : 1e3 * (mediaElement.currentTime || 0)
+            if (currentTime) {
+                return currentTime * 1000;
+            }
+
+            return (mediaElement.currentTime || 0) * 1000;
         }
-    }, HtmlAudioPlayer.prototype.duration = function(val) {
+    };
+
+    HtmlAudioPlayer.prototype.duration = function (val) {
+
         var mediaElement = this._mediaElement;
         if (mediaElement) {
             var duration = mediaElement.duration;
-            if (htmlMediaHelper.isValidDuration(duration)) return 1e3 * duration
+            if (htmlMediaHelper.isValidDuration(duration)) {
+                return duration * 1000;
+            }
         }
-        return null
-    }, HtmlAudioPlayer.prototype.seekable = function() {
+
+        return null;
+    };
+
+    HtmlAudioPlayer.prototype.seekable = function () {
         var mediaElement = this._mediaElement;
         if (mediaElement) {
+
             var seekable = mediaElement.seekable;
             if (seekable && seekable.length) {
-                var start = seekable.start(0),
-                    end = seekable.end(0);
-                return htmlMediaHelper.isValidDuration(start) || (start = 0), htmlMediaHelper.isValidDuration(end) || (end = 0), end - start > 0
+
+                var start = seekable.start(0);
+                var end = seekable.end(0);
+
+                if (!htmlMediaHelper.isValidDuration(start)) {
+                    start = 0;
+                }
+                if (!htmlMediaHelper.isValidDuration(end)) {
+                    end = 0;
+                }
+
+                return (end - start) > 0;
             }
-            return !1
+
+            return false;
         }
-    }, HtmlAudioPlayer.prototype.getBufferedRanges = function() {
+    };
+
+    HtmlAudioPlayer.prototype.getBufferedRanges = function () {
         var mediaElement = this._mediaElement;
-        return mediaElement ? htmlMediaHelper.getBufferedRanges(this, mediaElement) : []
-    }, HtmlAudioPlayer.prototype.pause = function() {
+        if (mediaElement) {
+
+            return htmlMediaHelper.getBufferedRanges(this, mediaElement);
+        }
+
+        return [];
+    };
+
+    HtmlAudioPlayer.prototype.pause = function () {
         var mediaElement = this._mediaElement;
-        mediaElement && mediaElement.pause()
-    }, HtmlAudioPlayer.prototype.resume = function() {
+        if (mediaElement) {
+            mediaElement.pause();
+        }
+    };
+
+    // This is a retry after error
+    HtmlAudioPlayer.prototype.resume = function () {
         var mediaElement = this._mediaElement;
-        mediaElement && mediaElement.play()
-    }, HtmlAudioPlayer.prototype.unpause = function() {
+        if (mediaElement) {
+            mediaElement.play();
+        }
+    };
+
+    HtmlAudioPlayer.prototype.unpause = function () {
         var mediaElement = this._mediaElement;
-        mediaElement && mediaElement.play()
-    }, HtmlAudioPlayer.prototype.paused = function() {
+        if (mediaElement) {
+            mediaElement.play();
+        }
+    };
+
+    HtmlAudioPlayer.prototype.paused = function () {
+
         var mediaElement = this._mediaElement;
-        return !!mediaElement && mediaElement.paused
-    }, HtmlAudioPlayer.prototype.setVolume = function(val) {
+        if (mediaElement) {
+            return mediaElement.paused;
+        }
+
+        return false;
+    };
+
+    HtmlAudioPlayer.prototype.setVolume = function (val) {
         var mediaElement = this._mediaElement;
-        mediaElement && (mediaElement.volume = val / 100)
-    }, HtmlAudioPlayer.prototype.getVolume = function() {
+        if (mediaElement) {
+            mediaElement.volume = val / 100;
+        }
+    };
+
+    HtmlAudioPlayer.prototype.getVolume = function () {
         var mediaElement = this._mediaElement;
-        if (mediaElement) return Math.min(Math.round(100 * mediaElement.volume), 100)
-    }, HtmlAudioPlayer.prototype.volumeUp = function() {
-        this.setVolume(Math.min(this.getVolume() + 2, 100))
-    }, HtmlAudioPlayer.prototype.volumeDown = function() {
-        this.setVolume(Math.max(this.getVolume() - 2, 0))
-    }, HtmlAudioPlayer.prototype.setMute = function(mute) {
+        if (mediaElement) {
+
+            return Math.min(Math.round(mediaElement.volume * 100), 100);
+        }
+    };
+
+    HtmlAudioPlayer.prototype.volumeUp = function () {
+        this.setVolume(Math.min(this.getVolume() + 2, 100));
+    };
+
+    HtmlAudioPlayer.prototype.volumeDown = function () {
+        this.setVolume(Math.max(this.getVolume() - 2, 0));
+    };
+
+    HtmlAudioPlayer.prototype.setMute = function (mute) {
+
         var mediaElement = this._mediaElement;
-        mediaElement && (mediaElement.muted = mute)
-    }, HtmlAudioPlayer.prototype.isMuted = function() {
+        if (mediaElement) {
+            mediaElement.muted = mute;
+        }
+    };
+
+    HtmlAudioPlayer.prototype.isMuted = function () {
         var mediaElement = this._mediaElement;
-        return !!mediaElement && mediaElement.muted
-    }, HtmlAudioPlayer.prototype.destroy = function() {}, HtmlAudioPlayer
+        if (mediaElement) {
+            return mediaElement.muted;
+        }
+        return false;
+    };
+
+    HtmlAudioPlayer.prototype.destroy = function () {
+
+    };
+
+    return HtmlAudioPlayer;
 });

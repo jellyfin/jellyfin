@@ -1,211 +1,285 @@
-define(["playbackManager", "focusManager", "appRouter", "dom"], function(playbackManager, focusManager, appRouter, dom) {
-    "use strict";
+define(['playbackManager', 'focusManager', 'appRouter', 'dom'], function (playbackManager, focusManager, appRouter, dom) {
+    'use strict';
+
+    var lastInputTime = new Date().getTime();
 
     function notify() {
-        lastInputTime = (new Date).getTime(), handleCommand("unknown")
+        lastInputTime = new Date().getTime();
+
+        handleCommand('unknown');
     }
 
     function notifyMouseMove() {
-        lastInputTime = (new Date).getTime()
+        lastInputTime = new Date().getTime();
     }
 
     function idleTime() {
-        return (new Date).getTime() - lastInputTime
+        return new Date().getTime() - lastInputTime;
     }
 
     function select(sourceElement) {
-        sourceElement.click()
+
+        sourceElement.click();
     }
 
+    var eventListenerCount = 0;
     function on(scope, fn) {
-        eventListenerCount++, dom.addEventListener(scope, "command", fn, {})
+        eventListenerCount++;
+        dom.addEventListener(scope, 'command', fn, {
+
+        });
     }
 
     function off(scope, fn) {
-        eventListenerCount && eventListenerCount--, dom.removeEventListener(scope, "command", fn, {})
+
+        if (eventListenerCount) {
+            eventListenerCount--;
+        }
+
+        dom.removeEventListener(scope, 'command', fn, {
+
+        });
     }
 
+    var commandTimes = {};
+
     function checkCommandTime(command) {
-        var last = commandTimes[command] || 0,
-            now = (new Date).getTime();
-        return !(now - last < 1e3) && (commandTimes[command] = now, !0)
+
+        var last = commandTimes[command] || 0;
+        var now = new Date().getTime();
+
+        if ((now - last) < 1000) {
+            return false;
+        }
+
+        commandTimes[command] = now;
+        return true;
     }
 
     function handleCommand(name, options) {
-        lastInputTime = (new Date).getTime();
-        var sourceElement = options ? options.sourceElement : null;
-        if (sourceElement && (sourceElement = focusManager.focusableParent(sourceElement)), sourceElement = sourceElement || document.activeElement || window, eventListenerCount) {
+
+        lastInputTime = new Date().getTime();
+
+        var sourceElement = (options ? options.sourceElement : null);
+
+        if (sourceElement) {
+            sourceElement = focusManager.focusableParent(sourceElement);
+        }
+
+        sourceElement = sourceElement || document.activeElement || window;
+
+        if (eventListenerCount) {
             var customEvent = new CustomEvent("command", {
                 detail: {
                     command: name
                 },
-                bubbles: !0,
-                cancelable: !0
+                bubbles: true,
+                cancelable: true
             });
-            if (!sourceElement.dispatchEvent(customEvent)) return
+
+            var eventResult = sourceElement.dispatchEvent(customEvent);
+            if (!eventResult) {
+                // event cancelled
+                return;
+            }
         }
+
         switch (name) {
-            case "up":
+
+            case 'up':
                 focusManager.moveUp(sourceElement);
                 break;
-            case "down":
+            case 'down':
                 focusManager.moveDown(sourceElement);
                 break;
-            case "left":
+            case 'left':
                 focusManager.moveLeft(sourceElement);
                 break;
-            case "right":
+            case 'right':
                 focusManager.moveRight(sourceElement);
                 break;
-            case "home":
+            case 'home':
                 appRouter.goHome();
                 break;
-            case "settings":
+            case 'settings':
                 appRouter.showSettings();
                 break;
-            case "back":
+            case 'back':
                 appRouter.back();
                 break;
-            case "forward":
+            case 'forward':
                 break;
-            case "select":
+            case 'select':
                 select(sourceElement);
                 break;
-            case "pageup":
-            case "pagedown":
-            case "end":
+            case 'pageup':
                 break;
-            case "menu":
-            case "info":
+            case 'pagedown':
                 break;
-            case "nextchapter":
+            case 'end':
+                break;
+            case 'menu':
+            case 'info':
+                break;
+            case 'nextchapter':
                 playbackManager.nextChapter();
                 break;
-            case "next":
-            case "nexttrack":
+            case 'next':
+            case 'nexttrack':
                 playbackManager.nextTrack();
                 break;
-            case "previous":
-            case "previoustrack":
+            case 'previous':
+            case 'previoustrack':
                 playbackManager.previousTrack();
                 break;
-            case "previouschapter":
+            case 'previouschapter':
                 playbackManager.previousChapter();
                 break;
-            case "guide":
+            case 'guide':
                 appRouter.showGuide();
                 break;
-            case "recordedtv":
+            case 'recordedtv':
                 appRouter.showRecordedTV();
                 break;
-            case "record":
+            case 'record':
                 break;
-            case "livetv":
+            case 'livetv':
                 appRouter.showLiveTV();
                 break;
-            case "mute":
-                playbackManager.setMute(!0);
+            case 'mute':
+                playbackManager.setMute(true);
                 break;
-            case "unmute":
-                playbackManager.setMute(!1);
+            case 'unmute':
+                playbackManager.setMute(false);
                 break;
-            case "togglemute":
+            case 'togglemute':
                 playbackManager.toggleMute();
                 break;
-            case "channelup":
+            case 'channelup':
                 playbackManager.channelUp();
                 break;
-            case "channeldown":
+            case 'channeldown':
                 playbackManager.channelDown();
                 break;
-            case "volumedown":
+            case 'volumedown':
                 playbackManager.volumeDown();
                 break;
-            case "volumeup":
+            case 'volumeup':
                 playbackManager.volumeUp();
                 break;
-            case "play":
+            case 'play':
                 playbackManager.unpause();
                 break;
-            case "pause":
+            case 'pause':
                 playbackManager.pause();
                 break;
-            case "playpause":
+            case 'playpause':
                 playbackManager.playPause();
                 break;
-            case "stop":
-                checkCommandTime("stop") && playbackManager.stop();
+            case 'stop':
+                if (checkCommandTime('stop')) {
+                    playbackManager.stop();
+                }
                 break;
-            case "changezoom":
+            case 'changezoom':
                 playbackManager.toggleAspectRatio();
                 break;
-            case "changeaudiotrack":
+            case 'changeaudiotrack':
                 playbackManager.changeAudioStream();
                 break;
-            case "changesubtitletrack":
+            case 'changesubtitletrack':
                 playbackManager.changeSubtitleStream();
                 break;
-            case "search":
+            case 'search':
                 appRouter.showSearch();
                 break;
-            case "favorites":
+            case 'favorites':
                 appRouter.showFavorites();
                 break;
-            case "fastforward":
+            case 'fastforward':
                 playbackManager.fastForward();
                 break;
-            case "rewind":
+            case 'rewind':
                 playbackManager.rewind();
                 break;
-            case "togglefullscreen":
+            case 'togglefullscreen':
                 playbackManager.toggleFullscreen();
                 break;
-            case "disabledisplaymirror":
-                playbackManager.enableDisplayMirroring(!1);
+            case 'disabledisplaymirror':
+                playbackManager.enableDisplayMirroring(false);
                 break;
-            case "enabledisplaymirror":
-                playbackManager.enableDisplayMirroring(!0);
+            case 'enabledisplaymirror':
+                playbackManager.enableDisplayMirroring(true);
                 break;
-            case "toggledisplaymirror":
+            case 'toggledisplaymirror':
                 playbackManager.toggleDisplayMirroring();
                 break;
-            case "togglestats":
+            case 'togglestats':
+                //playbackManager.toggleStats();
                 break;
-            case "movies":
-            case "music":
-            case "tv":
+            case 'movies':
+                // TODO
                 appRouter.goHome();
                 break;
-            case "nowplaying":
+            case 'music':
+                // TODO
+                appRouter.goHome();
+                break;
+            case 'tv':
+                // TODO
+                appRouter.goHome();
+                break;
+            case 'nowplaying':
                 appRouter.showNowPlaying();
                 break;
-            case "save":
-            case "screensaver":
-            case "refresh":
-            case "changebrightness":
-            case "red":
-            case "green":
-            case "yellow":
-            case "blue":
-            case "grey":
-            case "brown":
+            case 'save':
                 break;
-            case "repeatnone":
-                playbackManager.setRepeatMode("RepeatNone");
+            case 'screensaver':
+                // TODO
                 break;
-            case "repeatall":
-                playbackManager.setRepeatMode("RepeatAll");
+            case 'refresh':
+                // TODO
                 break;
-            case "repeatone":
-                playbackManager.setRepeatMode("RepeatOne")
+            case 'changebrightness':
+                // TODO
+                break;
+            case 'red':
+                // TODO
+                break;
+            case 'green':
+                // TODO
+                break;
+            case 'yellow':
+                // TODO
+                break;
+            case 'blue':
+                // TODO
+                break;
+            case 'grey':
+                // TODO
+                break;
+            case 'brown':
+                // TODO
+                break;
+            case 'repeatnone':
+                playbackManager.setRepeatMode('RepeatNone');
+                break;
+            case 'repeatall':
+                playbackManager.setRepeatMode('RepeatAll');
+                break;
+            case 'repeatone':
+                playbackManager.setRepeatMode('RepeatOne');
+                break;
+            default:
+                break;
         }
     }
-    var lastInputTime = (new Date).getTime(),
-        eventListenerCount = 0,
-        commandTimes = {};
-    return dom.addEventListener(document, "click", notify, {
-        passive: !0
-    }), {
+
+    dom.addEventListener(document, 'click', notify, {
+        passive: true
+    });
+
+    return {
         trigger: handleCommand,
         handle: handleCommand,
         notify: notify,
@@ -213,5 +287,5 @@ define(["playbackManager", "focusManager", "appRouter", "dom"], function(playbac
         idleTime: idleTime,
         on: on,
         off: off
-    }
+    };
 });

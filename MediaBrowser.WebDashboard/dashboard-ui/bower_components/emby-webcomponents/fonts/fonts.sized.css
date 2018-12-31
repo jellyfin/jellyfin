@@ -1,33 +1,32 @@
-h1,
-h2,
-h3 {
-    font-weight: 500
-}
-
 h1 {
-    font-size: 1.8em
+    font-weight: 500;
+    font-size: 1.8em;
 }
 
 .layout-desktop h1 {
-    font-size: 2em
+    font-size: 2em;
 }
 
 h2 {
-    font-size: 1.5em
+    font-weight: 500;
+    font-size: 1.5em;
 }
 
 h3 {
-    font-size: 1.17em
+    font-weight: 500;
+    font-size: 1.17em;
 }
 
-@media all and (min-height:720px) {
+@media all and (min-height: 720px) {
     html {
-        font-size: 20px
+        font-size: 20px;
     }
 }
 
-@media all and (min-height:1000px) {
+/* This is supposed to be 1080p, but had to reduce the min height to account for possible browser chrome */
+@media all and (min-height: 1000px) {
+
     html {
-        font-size: 27px
+        font-size: 27px;
     }
 }

@@ -1,35 +1,57 @@
-define(["playbackManager", "layoutManager", "events"], function(playbackManager, layoutManager, events) {
+﻿define(['playbackManager', 'layoutManager', 'events'], function (playbackManager, layoutManager, events) {
     "use strict";
 
+    var orientationLocked;
+
     function onOrientationChangeSuccess() {
-        orientationLocked = !0
+        orientationLocked = true;
     }
 
     function onOrientationChangeError(err) {
-        orientationLocked = !1, console.log("error locking orientation: " + err)
+        orientationLocked = false;
+        console.log('error locking orientation: ' + err);
     }
-    var orientationLocked;
-    events.on(playbackManager, "playbackstart", function(e, player, state) {
-        if (player.isLocalPlayer && !player.isExternalPlayer && playbackManager.isPlayingVideo(player) && layoutManager.mobile) {
-            var lockOrientation = screen.lockOrientation || screen.mozLockOrientation || screen.msLockOrientation || screen.orientation && screen.orientation.lock;
-            if (lockOrientation) try {
-                var promise = lockOrientation("landscape");
-                promise.then ? promise.then(onOrientationChangeSuccess, onOrientationChangeError) : orientationLocked = promise
-            } catch (err) {
-                onOrientationChangeError(err)
+
+    events.on(playbackManager, 'playbackstart', function (e, player, state) {
+
+        var isLocalVideo = player.isLocalPlayer && !player.isExternalPlayer && playbackManager.isPlayingVideo(player);
+
+        if (isLocalVideo && layoutManager.mobile) {
+            var lockOrientation = screen.lockOrientation || screen.mozLockOrientation || screen.msLockOrientation || (screen.orientation && screen.orientation.lock);
+
+            if (lockOrientation) {
+
+                try {
+                    var promise = lockOrientation('landscape');
+                    if (promise.then) {
+                        promise.then(onOrientationChangeSuccess, onOrientationChangeError);
+                    } else {
+                        // returns a boolean
+                        orientationLocked = promise;
+                    }
+                }
+                catch (err) {
+                    onOrientationChangeError(err);
+                }
             }
         }
-    }), events.on(playbackManager, "playbackstop", function(e, playbackStopInfo) {
+    });
+
+    events.on(playbackManager, 'playbackstop', function (e, playbackStopInfo) {
+
         if (orientationLocked && !playbackStopInfo.nextMediaType) {
-            var unlockOrientation = screen.unlockOrientation || screen.mozUnlockOrientation || screen.msUnlockOrientation || screen.orientation && screen.orientation.unlock;
+
+            var unlockOrientation = screen.unlockOrientation || screen.mozUnlockOrientation || screen.msUnlockOrientation || (screen.orientation && screen.orientation.unlock);
+
             if (unlockOrientation) {
                 try {
-                    unlockOrientation()
-                } catch (err) {
-                    console.log("error unlocking orientation: " + err)
+                    unlockOrientation();
                 }
-                orientationLocked = !1
+                catch (err) {
+                    console.log('error unlocking orientation: ' + err);
+                }
+                orientationLocked = false;
             }
         }
-    })
+    });
 });

@@ -1,4 +1,4 @@
-.iconOsd {
+﻿.iconOsd {
     position: fixed;
     top: 7%;
     right: 3%;
@@ -8,38 +8,33 @@
     padding: 1em;
     color: #fff;
     backdrop-filter: blur(5px);
-    -webkit-border-radius: .25em;
     border-radius: .25em;
-    -webkit-transition: opacity .2s ease-out;
-    -o-transition: opacity .2s ease-out;
-    transition: opacity .2s ease-out
+    transition: opacity 200ms ease-out;
 }
 
 .iconOsd-hidden {
-    opacity: 0
+    opacity: 0;
 }
 
 .iconOsdIcon {
     font-size: 320%;
     display: block;
-    margin: .25em .7em
+    margin: .25em .7em;
 }
 
 .iconOsdProgressOuter {
     margin: 1.5em .25em 1em;
     height: .35em;
     background: #222;
-    -webkit-border-radius: .25em;
-    border-radius: .25em
+    border-radius: .25em;
 }
 
 .iconOsdProgressInner {
     background: #52B54B;
     height: 100%;
-    -webkit-border-radius: .25em;
-    border-radius: .25em
+    border-radius: .25em;
 }
 
 .brightnessOsdProgressInner {
-    background: #FF9800
+    background: #FF9800;
 }

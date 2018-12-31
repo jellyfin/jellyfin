@@ -1,10 +1,7 @@
-.card-round:focus>.cardBox-focustransform {
-    -webkit-transform: scale(1.26, 1.26);
-    transform: scale(1.26, 1.26)
+.card-round:focus > .cardBox-focustransform {
+    transform: scale(1.26, 1.26);
 }
 
-.cardImage-round,
-.cardImageContainer-round {
-    -webkit-border-radius: 1000px;
-    border-radius: 1000px
+.cardImageContainer-round, .cardImage-round {
+    border-radius: 1000px;
 }

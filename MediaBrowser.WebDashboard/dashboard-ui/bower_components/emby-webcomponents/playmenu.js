@@ -1,55 +1,75 @@
-define(["actionsheet", "datetime", "playbackManager", "globalize", "appSettings"], function(actionsheet, datetime, playbackManager, globalize, appSettings) {
-    "use strict";
+define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'], function (actionsheet, datetime, playbackManager, globalize, appSettings) {
+    'use strict';
 
     function show(options) {
-        var item = options.item,
-            itemType = item.Type,
-            isFolder = item.IsFolder,
-            itemId = item.Id,
-            channelId = item.ChannelId,
-            serverId = item.ServerId,
-            resumePositionTicks = item.UserData ? item.UserData.PlaybackPositionTicks : null,
-            playableItemId = "Program" === itemType ? channelId : itemId;
-        if (!resumePositionTicks || isFolder) return void playbackManager.play({
-            ids: [playableItemId],
-            serverId: serverId
-        });
+
+        var item = options.item;
+
+        var itemType = item.Type;
+        var isFolder = item.IsFolder;
+        var itemId = item.Id;
+        var channelId = item.ChannelId;
+        var serverId = item.ServerId;
+        var resumePositionTicks = item.UserData ? item.UserData.PlaybackPositionTicks : null;
+
+        var playableItemId = itemType === 'Program' ? channelId : itemId;
+
+        if (!resumePositionTicks || isFolder) {
+            playbackManager.play({
+                ids: [playableItemId],
+                serverId: serverId
+            });
+            return;
+        }
+
         var menuItems = [];
+
         menuItems.push({
-            name: globalize.translate("sharedcomponents#ResumeAt", datetime.getDisplayRunningTime(resumePositionTicks)),
-            id: "resume"
-        }), menuItems.push({
-            name: globalize.translate("sharedcomponents#PlayFromBeginning"),
-            id: "play"
-        }), actionsheet.show({
+            name: globalize.translate('sharedcomponents#ResumeAt', datetime.getDisplayRunningTime(resumePositionTicks)),
+            id: 'resume'
+        });
+
+        menuItems.push({
+            name: globalize.translate('sharedcomponents#PlayFromBeginning'),
+            id: 'play'
+        });
+
+        actionsheet.show({
+
             items: menuItems,
             positionTo: options.positionTo
-        }).then(function(id) {
+
+        }).then(function (id) {
             switch (id) {
-                case "play":
+
+                case 'play':
                     playbackManager.play({
                         ids: [playableItemId],
                         serverId: serverId
                     });
                     break;
-                case "resume":
+                case 'resume':
                     playbackManager.play({
                         ids: [playableItemId],
                         startPositionTicks: resumePositionTicks,
                         serverId: serverId
                     });
                     break;
-                case "queue":
+                case 'queue':
                     playbackManager.queue({
                         items: [item]
                     });
                     break;
-                case "shuffle":
-                    playbackManager.shuffle(item)
+                case 'shuffle':
+                    playbackManager.shuffle(item);
+                    break;
+                default:
+                    break;
             }
-        })
+        });
     }
+
     return {
         show: show
-    }
+    };
 });

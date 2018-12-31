@@ -2,30 +2,31 @@
     display: block;
     margin: 0;
     margin-bottom: 0 !important;
+    /* Remove select styling */
+    /* Font size must the 16px or larger to prevent iOS page zoom on focus */
     font-size: inherit;
+    /* General select styles: change as needed */
     font-family: inherit;
     font-weight: inherit;
     color: inherit;
     padding: .35em .25em;
-    -webkit-box-sizing: border-box;
+    /* Prevent padding from causing width overflow */
     box-sizing: border-box;
-    outline: 0 !important;
-    -webkit-tap-highlight-color: transparent;
-    width: 100%
+    outline: none !important;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    width: 100%;
 }
 
-.emby-textarea::-moz-focus-inner {
-    border: 0
-}
+    .emby-textarea::-moz-focus-inner {
+        border: 0;
+    }
 
 .textareaLabel {
     display: inline-block;
-    -webkit-transition: all .2s ease-out;
-    -o-transition: all .2s ease-out;
     transition: all .2s ease-out;
-    margin-bottom: .25em
+    margin-bottom: .25em;
 }
 
-.emby-textarea+.fieldDescription {
-    margin-top: .25em
+.emby-textarea + .fieldDescription {
+    margin-top: .25em;
 }

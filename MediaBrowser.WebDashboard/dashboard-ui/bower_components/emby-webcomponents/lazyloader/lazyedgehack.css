@@ -1,4 +1,5 @@
 .lazy {
+    /* In edge, intersection observer will not fire on 0px sized elements */
     min-width: .1em;
-    min-height: .1em
+    min-height: .1em;
 }

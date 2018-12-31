@@ -1,13 +1,9 @@
-.imageEditor-buttons {
-    display: -webkit-box;
-    display: -webkit-flex;
+﻿.imageEditor-buttons {
     display: flex;
-    -webkit-box-align: center;
-    -webkit-align-items: center;
     align-items: center;
-    margin: 1em 0
+    margin: 1em 0 1em;
 }
 
 .first-imageEditor-buttons {
-    margin-top: 2em
+    margin-top: 2em;
 }

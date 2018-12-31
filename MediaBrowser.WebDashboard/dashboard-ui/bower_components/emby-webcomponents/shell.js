@@ -1,12 +1,15 @@
-define([], function() {
-    "use strict";
+define([], function () {
+    'use strict';
+
     return {
-        openUrl: function(url) {
-            window.open(url, "_blank")
+        openUrl: function (url) {
+            window.open(url, '_blank');
         },
-        canExec: !1,
-        exec: function(options) {
-            return Promise.reject()
+        canExec: false,
+        exec: function (options) {
+            // options.path
+            // options.arguments
+            return Promise.reject();
         }
-    }
+    };
 });

@@ -1,101 +1,224 @@
-define(["scroller", "dom", "layoutManager", "inputManager", "focusManager", "browser", "registerElement"], function(scroller, dom, layoutManager, inputManager, focusManager, browser) {
-    "use strict";
+﻿define(['scroller', 'dom', 'layoutManager', 'inputManager', 'focusManager', 'browser', 'registerElement'], function (scroller, dom, layoutManager, inputManager, focusManager, browser) {
+    'use strict';
+
+    var ScrollerProtoType = Object.create(HTMLDivElement.prototype);
+
+    ScrollerProtoType.createdCallback = function () {
+        this.classList.add('emby-scroller');
+    };
 
     function initCenterFocus(elem, scrollerInstance) {
-        dom.addEventListener(elem, "focus", function(e) {
+
+        dom.addEventListener(elem, 'focus', function (e) {
+
             var focused = focusManager.focusableParent(e.target);
-            focused && scrollerInstance.toCenter(focused)
+
+            if (focused) {
+                scrollerInstance.toCenter(focused);
+            }
+
         }, {
-            capture: !0,
-            passive: !0
-        })
+            capture: true,
+            passive: true
+        });
     }
 
+    ScrollerProtoType.scrollToBeginning = function () {
+        if (this.scroller) {
+            this.scroller.slideTo(0, true);
+        }
+    };
+    ScrollerProtoType.toStart = function (elem, immediate) {
+        if (this.scroller) {
+            this.scroller.toStart(elem, immediate);
+        }
+    };
+    ScrollerProtoType.toCenter = function (elem, immediate) {
+        if (this.scroller) {
+            this.scroller.toCenter(elem, immediate);
+        }
+    };
+
+    ScrollerProtoType.scrollToPosition = function (pos, immediate) {
+        if (this.scroller) {
+            this.scroller.slideTo(pos, immediate);
+        }
+    };
+
+    ScrollerProtoType.getScrollPosition = function () {
+        if (this.scroller) {
+            return this.scroller.getScrollPosition();
+        }
+    };
+
+    ScrollerProtoType.getScrollSize = function () {
+        if (this.scroller) {
+            return this.scroller.getScrollSize();
+        }
+    };
+
+    ScrollerProtoType.getScrollEventName = function () {
+        if (this.scroller) {
+            return this.scroller.getScrollEventName();
+        }
+    };
+
+    ScrollerProtoType.getScrollSlider = function () {
+        if (this.scroller) {
+            return this.scroller.getScrollSlider();
+        }
+    };
+
+    ScrollerProtoType.addScrollEventListener = function (fn, options) {
+        if (this.scroller) {
+            dom.addEventListener(this.scroller.getScrollFrame(), this.scroller.getScrollEventName(), fn, options);
+        }
+    };
+
+    ScrollerProtoType.removeScrollEventListener = function (fn, options) {
+        if (this.scroller) {
+            dom.removeEventListener(this.scroller.getScrollFrame(), this.scroller.getScrollEventName(), fn, options);
+        }
+    };
+
     function onInputCommand(e) {
+
         var cmd = e.detail.command;
-        "end" === cmd ? (focusManager.focusLast(this, "." + this.getAttribute("data-navcommands")), e.preventDefault(), e.stopPropagation()) : "pageup" === cmd ? (focusManager.moveFocus(e.target, this, "." + this.getAttribute("data-navcommands"), -12), e.preventDefault(), e.stopPropagation()) : "pagedown" === cmd && (focusManager.moveFocus(e.target, this, "." + this.getAttribute("data-navcommands"), 12), e.preventDefault(), e.stopPropagation())
+
+        if (cmd === 'end') {
+            focusManager.focusLast(this, '.' + this.getAttribute('data-navcommands'));
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        else if (cmd === 'pageup') {
+            focusManager.moveFocus(e.target, this, '.' + this.getAttribute('data-navcommands'), -12);
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        else if (cmd === 'pagedown') {
+            focusManager.moveFocus(e.target, this, '.' + this.getAttribute('data-navcommands'), 12);
+            e.preventDefault();
+            e.stopPropagation();
+        }
     }
 
     function initHeadroom(elem) {
-        require(["headroom"], function(Headroom) {
+        require(['headroom'], function (Headroom) {
+
             var headroom = new Headroom([], {
                 scroller: elem
             });
-            headroom.init(), headroom.add(document.querySelector(".skinHeader")), elem.headroom = headroom
-        })
+            // initialise
+            headroom.init();
+            headroom.add(document.querySelector('.skinHeader'));
+            elem.headroom = headroom;
+        });
     }
 
+    ScrollerProtoType.attachedCallback = function () {
+
+        if (this.getAttribute('data-navcommands')) {
+            inputManager.on(this, onInputCommand);
+        }
+
+        var horizontal = this.getAttribute('data-horizontal') !== 'false';
+
+        var slider = this.querySelector('.scrollSlider');
+
+        if (horizontal) {
+            slider.style['white-space'] = 'nowrap';
+        }
+
+        var bindHeader = this.getAttribute('data-bindheader') === 'true';
+
+        var scrollFrame = this;
+        var enableScrollButtons = layoutManager.desktop && horizontal && this.getAttribute('data-scrollbuttons') !== 'false';
+
+        var options = {
+            horizontal: horizontal,
+            mouseDragging: 1,
+            mouseWheel: this.getAttribute('data-mousewheel') !== 'false',
+            touchDragging: 1,
+            slidee: slider,
+            scrollBy: 200,
+            speed: horizontal ? 270 : 240,
+            //immediateSpeed: pageOptions.immediateSpeed,
+            elasticBounds: 1,
+            dragHandle: 1,
+            scrollWidth: this.getAttribute('data-scrollsize') === 'auto' ? null : 5000000,
+            autoImmediate: true,
+            skipSlideToWhenVisible: this.getAttribute('data-skipfocuswhenvisible') === 'true',
+            dispatchScrollEvent: enableScrollButtons || bindHeader || this.getAttribute('data-scrollevent') === 'true',
+            hideScrollbar: enableScrollButtons || this.getAttribute('data-hidescrollbar') === 'true',
+            allowNativeSmoothScroll: this.getAttribute('data-allownativesmoothscroll') === 'true' && !enableScrollButtons,
+            allowNativeScroll: !enableScrollButtons,
+            forceHideScrollbars: enableScrollButtons,
+
+            // In edge, with the native scroll, the content jumps around when hovering over the buttons
+            requireAnimation: enableScrollButtons && browser.edge
+        };
+
+        // If just inserted it might not have any height yet - yes this is a hack
+        this.scroller = new scroller(scrollFrame, options);
+        this.scroller.init();
+
+        if (layoutManager.tv && this.getAttribute('data-centerfocus')) {
+            initCenterFocus(this, this.scroller);
+        }
+
+        if (bindHeader) {
+            initHeadroom(this);
+        }
+
+        if (enableScrollButtons) {
+            loadScrollButtons(this);
+        }
+    };
+
     function loadScrollButtons(scroller) {
-        require(["emby-scrollbuttons"], function() {
-            scroller.insertAdjacentHTML("beforeend", '<div is="emby-scrollbuttons"></div>')
-        })
+
+        require(['emby-scrollbuttons'], function () {
+            scroller.insertAdjacentHTML('beforeend', '<div is="emby-scrollbuttons"></div>');
+        });
     }
-    var ScrollerProtoType = Object.create(HTMLDivElement.prototype);
-    ScrollerProtoType.createdCallback = function() {
-        this.classList.add("emby-scroller")
-    }, ScrollerProtoType.scrollToBeginning = function() {
-        this.scroller && this.scroller.slideTo(0, !0)
-    }, ScrollerProtoType.toStart = function(elem, immediate) {
-        this.scroller && this.scroller.toStart(elem, immediate)
-    }, ScrollerProtoType.toCenter = function(elem, immediate) {
-        this.scroller && this.scroller.toCenter(elem, immediate)
-    }, ScrollerProtoType.scrollToPosition = function(pos, immediate) {
-        this.scroller && this.scroller.slideTo(pos, immediate)
-    }, ScrollerProtoType.getScrollPosition = function() {
-        if (this.scroller) return this.scroller.getScrollPosition()
-    }, ScrollerProtoType.getScrollSize = function() {
-        if (this.scroller) return this.scroller.getScrollSize()
-    }, ScrollerProtoType.getScrollEventName = function() {
-        if (this.scroller) return this.scroller.getScrollEventName()
-    }, ScrollerProtoType.getScrollSlider = function() {
-        if (this.scroller) return this.scroller.getScrollSlider()
-    }, ScrollerProtoType.addScrollEventListener = function(fn, options) {
-        this.scroller && dom.addEventListener(this.scroller.getScrollFrame(), this.scroller.getScrollEventName(), fn, options)
-    }, ScrollerProtoType.removeScrollEventListener = function(fn, options) {
-        this.scroller && dom.removeEventListener(this.scroller.getScrollFrame(), this.scroller.getScrollEventName(), fn, options)
-    }, ScrollerProtoType.attachedCallback = function() {
-        this.getAttribute("data-navcommands") && inputManager.on(this, onInputCommand);
-        var horizontal = "false" !== this.getAttribute("data-horizontal"),
-            slider = this.querySelector(".scrollSlider");
-        horizontal && (slider.style["white-space"] = "nowrap");
-        var bindHeader = "true" === this.getAttribute("data-bindheader"),
-            scrollFrame = this,
-            enableScrollButtons = layoutManager.desktop && horizontal && "false" !== this.getAttribute("data-scrollbuttons"),
-            options = {
-                horizontal: horizontal,
-                mouseDragging: 1,
-                mouseWheel: "false" !== this.getAttribute("data-mousewheel"),
-                touchDragging: 1,
-                slidee: slider,
-                scrollBy: 200,
-                speed: horizontal ? 270 : 240,
-                elasticBounds: 1,
-                dragHandle: 1,
-                scrollWidth: "auto" === this.getAttribute("data-scrollsize") ? null : 5e6,
-                autoImmediate: !0,
-                skipSlideToWhenVisible: "true" === this.getAttribute("data-skipfocuswhenvisible"),
-                dispatchScrollEvent: enableScrollButtons || bindHeader || "true" === this.getAttribute("data-scrollevent"),
-                hideScrollbar: enableScrollButtons || "true" === this.getAttribute("data-hidescrollbar"),
-                allowNativeSmoothScroll: "true" === this.getAttribute("data-allownativesmoothscroll") && !enableScrollButtons,
-                allowNativeScroll: !enableScrollButtons,
-                forceHideScrollbars: enableScrollButtons,
-                requireAnimation: enableScrollButtons && browser.edge
-            };
-        this.scroller = new scroller(scrollFrame, options), this.scroller.init(), layoutManager.tv && this.getAttribute("data-centerfocus") && initCenterFocus(this, this.scroller), bindHeader && initHeadroom(this), enableScrollButtons && loadScrollButtons(this)
-    }, ScrollerProtoType.pause = function() {
+
+    ScrollerProtoType.pause = function () {
+
         var headroom = this.headroom;
-        headroom && headroom.pause()
-    }, ScrollerProtoType.resume = function() {
+        if (headroom) {
+            headroom.pause();
+        }
+    };
+
+    ScrollerProtoType.resume = function () {
+
         var headroom = this.headroom;
-        headroom && headroom.resume()
-    }, ScrollerProtoType.detachedCallback = function() {
-        this.getAttribute("data-navcommands") && inputManager.off(this, onInputCommand);
+        if (headroom) {
+            headroom.resume();
+        }
+    };
+
+    ScrollerProtoType.detachedCallback = function () {
+
+        if (this.getAttribute('data-navcommands')) {
+            inputManager.off(this, onInputCommand);
+        }
+
         var headroom = this.headroom;
-        headroom && (headroom.destroy(), this.headroom = null);
+        if (headroom) {
+            headroom.destroy();
+            this.headroom = null;
+        }
+
         var scrollerInstance = this.scroller;
-        scrollerInstance && (scrollerInstance.destroy(), this.scroller = null)
-    }, document.registerElement("emby-scroller", {
+        if (scrollerInstance) {
+            scrollerInstance.destroy();
+            this.scroller = null;
+        }
+    };
+
+    document.registerElement('emby-scroller', {
         prototype: ScrollerProtoType,
-        extends: "div"
-    })
+        extends: 'div'
+    });
 });

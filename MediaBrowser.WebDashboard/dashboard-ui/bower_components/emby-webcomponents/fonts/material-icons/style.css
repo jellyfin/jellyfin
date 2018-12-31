@@ -2,12 +2,12 @@
     font-family: 'Material Icons';
     font-style: normal;
     font-weight: 400;
-    src: local('Material Icons'), local('MaterialIcons-Regular'), url(flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2'), url(flUhRq6tzZclQEJ-Vdg-IuiaDsNa.woff) format('woff')
+    src: local('Material Icons'), local('MaterialIcons-Regular'), url(flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2'), url(flUhRq6tzZclQEJ-Vdg-IuiaDsNa.woff) format('woff');
 }
 
 .md-icon {
     font-family: 'Material Icons';
-    font-weight: 400;
+    font-weight: normal;
     font-style: normal;
     letter-spacing: normal;
     text-transform: none;
@@ -15,12 +15,11 @@
     white-space: nowrap;
     word-wrap: normal;
     direction: ltr;
+    -webkit-font-feature-settings: 'liga';
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    -webkit-font-feature-settings: "liga"1;
-    -moz-font-feature-settings: "liga"1;
-    font-feature-settings: "liga"1;
+    font-feature-settings: "liga" 1;
     line-height: 1;
     overflow: hidden;
-    vertical-align: middle
+    vertical-align: middle;
 }

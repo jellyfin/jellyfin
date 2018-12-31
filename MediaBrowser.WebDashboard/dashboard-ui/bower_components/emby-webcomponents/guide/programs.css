@@ -1,19 +1,19 @@
 .newTvProgram {
-    background: #38c;
-    color: #fff
+    background: #3388cc;
+    color: #fff;
 }
 
 .liveTvProgram {
-    background: #c33;
-    color: #fff
+    background: #cc3333;
+    color: #fff;
 }
 
 .premiereTvProgram {
     background: #EF6C00;
-    color: #fff
+    color: #fff;
 }
 
 .repeatTvProgram {
     background: #009688;
-    color: #fff
+    color: #fff;
 }

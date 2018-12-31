@@ -1,23 +1,10 @@
-.card,
-.card:focus {
-    font-weight: inherit !important
-}
-
-.card,
-.cardBox,
-.cardContent,
-.textActionButton {
-    -webkit-tap-highlight-color: transparent;
-    outline: 0 !important
-}
-
 button::-moz-focus-inner {
     padding: 0;
-    border: 0
+    border: 0;
 }
 
 button {
-    -webkit-border-fit: border !important
+    -webkit-border-fit: border !important;
 }
 
 .card {
@@ -25,155 +12,127 @@ button {
     font-size: inherit !important;
     font-family: inherit !important;
     text-transform: none;
-    background: 0 0 !important;
+    background-color: transparent !important;
+    background: none !important;
     margin: 0;
     padding: 0;
     display: block;
     color: inherit !important;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    outline: none !important;
     cursor: pointer;
     contain: layout style;
-    -webkit-flex-shrink: 0;
-    flex-shrink: 0
-}
-
-.cardContent-button,
-.textActionButton {
-    cursor: pointer;
-    vertical-align: middle;
-    font-family: inherit
+    flex-shrink: 0;
+    font-weight: inherit !important;
 }
 
 .card-nofocustransform {
-    contain: layout style paint
+    contain: layout style paint;
 }
 
 .itemsContainer {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: flex
-}
-
-.vertical-list,
-.vertical-wrap {
-    display: -webkit-box;
-    display: -webkit-flex;
-    -webkit-box-direction: normal
+    display: flex;
 }
 
 .vertical-list {
     display: flex;
-    -webkit-box-orient: vertical;
-    -webkit-flex-direction: column;
     flex-direction: column;
-    -webkit-flex-wrap: nowrap;
-    flex-wrap: nowrap
+    flex-wrap: nowrap;
 }
 
 .vertical-wrap {
     display: flex;
-    -webkit-box-orient: horizontal;
-    -webkit-flex-direction: row;
     flex-direction: row;
-    -webkit-flex-wrap: wrap;
-    flex-wrap: wrap
+    flex-wrap: wrap;
 }
 
-.cardImageContainer,
-.mediaSourceIndicator {
-    display: -webkit-box;
-    -webkit-box-align: center
-}
-
-.vertical-wrap.centered {
-    -webkit-box-pack: center;
-    -webkit-justify-content: center;
-    justify-content: center
-}
+    .vertical-wrap.centered {
+        justify-content: center;
+    }
 
 .cardScalable {
     position: relative;
-    contain: layout style
+    contain: layout style;
 }
 
-.cardPadder-backdrop,
-.cardPadder-mixedBackdrop,
-.cardPadder-overflowBackdrop,
-.cardPadder-overflowSmallBackdrop,
-.cardPadder-smallBackdrop {
+.cardPadder-backdrop, .cardPadder-mixedBackdrop, .cardPadder-smallBackdrop, .cardPadder-overflowBackdrop, .cardPadder-overflowSmallBackdrop {
     padding-bottom: 56.25%;
-    contain: strict
+    contain: strict;
 }
 
-.cardPadder-mixedSquare,
-.cardPadder-overflowSquare,
-.cardPadder-square,
-.overflowSquareCard-textCardPadder {
+.cardPadder-square, .cardPadder-mixedSquare, .cardPadder-overflowSquare, .overflowSquareCard-textCardPadder {
     padding-bottom: 100%;
-    contain: strict
+    contain: strict;
 }
 
-.cardPadder-mixedPortrait,
-.cardPadder-overflowPortrait,
-.cardPadder-portrait,
-.overflowPortraitCard-textCardPadder {
+.cardPadder-portrait, .cardPadder-mixedPortrait, .cardPadder-overflowPortrait, .overflowPortraitCard-textCardPadder {
     padding-bottom: 150%;
-    contain: strict
+    contain: strict;
 }
 
 .cardPadder-banner {
     padding-bottom: 18.5%;
-    contain: strict
+    contain: strict;
 }
 
 .cardBox {
     padding: 0 !important;
     margin: .42em;
-    -webkit-transition: none;
-    -o-transition: none;
     transition: none;
     border: 0 solid transparent;
-    contain: layout style
+    /* These both are needed in case cardBox is a button */
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    outline: none !important;
+    contain: layout style;
 }
 
-@media (min-width:50em) {
+/*.cardBox-withfocuscontent {
+    margin: .68em;
+}*/
+
+@media (min-width: 50em) {
+
     .cardBox {
-        margin: .9em
+        margin: .9em;
     }
 }
 
 .cardBox-withfocuscontent-large {
-    margin: .4em
+    margin: .4em;
 }
 
+/*.card-focuscontent {
+    border: .12em solid transparent;
+}*/
+
 .card-focuscontent-large {
-    border: .5em solid transparent
+    border: .5em solid transparent;
 }
 
 .cardBox-focustransform {
     will-change: transform;
-    -webkit-transition: -webkit-transform .2s ease-out;
-    -o-transition: transform .2s ease-out;
-    transition: transform .2s ease-out
+    transition: transform 200ms ease-out;
 }
 
-.card:focus>.cardBox-focustransform {
-    -webkit-transform: scale(1.18, 1.18);
-    transform: scale(1.18, 1.18)
+.card:focus > .cardBox-focustransform {
+    transform: scale(1.18, 1.18);
 }
 
 .cardBox-bottompadded {
-    margin-bottom: 1.8em !important
+    margin-bottom: 1.8em !important;
 }
 
-@media (max-width:50em) {
+@media (max-width: 50em) {
+
     .cardBox-bottompadded {
-        margin-bottom: 1.2em !important
+        margin-bottom: 1.2em !important;
     }
 }
 
 .card:focus {
     position: relative !important;
-    z-index: 10 !important
+    z-index: 10 !important;
+    font-weight: inherit !important;
 }
 
 .btnCardOptions {
@@ -181,17 +140,13 @@ button {
     bottom: .25em;
     right: 0;
     margin: 0 !important;
-    z-index: 1
+    z-index: 1;
 }
 
 .mediaSourceIndicator {
-    display: -webkit-flex;
     display: flex;
     position: absolute;
-    -webkit-align-items: center;
     align-items: center;
-    -webkit-box-pack: center;
-    -webkit-justify-content: center;
     justify-content: center;
     top: .3em;
     left: .3em;
@@ -199,186 +154,178 @@ button {
     vertical-align: middle;
     width: 1.6em;
     height: 1.6em;
-    -webkit-border-radius: 50%;
     border-radius: 50%;
     color: #fff;
-    background: #38c
-}
-
-.cardText,
-.innerCardFooter {
-    overflow: hidden;
-    text-align: left
+    background: rgb(51, 136, 204);
 }
 
 .cardImageContainer {
-    -webkit-background-size: contain;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center center;
-    -webkit-align-items: center;
+    display: -webkit-flex;
+    display: flex;
     align-items: center;
-    -webkit-box-pack: center;
-    -webkit-justify-content: center;
     justify-content: center;
     position: relative;
-    -webkit-background-clip: content-box !important;
     background-clip: content-box !important;
     color: inherit;
+    /* This is only needed for scalable cards */
     height: 100%;
-    contain: strict
-}
-
-.cardContent,
-.cardImage {
-    position: absolute;
-    right: 0;
-    top: 0;
-    left: 0;
-    bottom: 0
+    contain: strict;
 }
 
 .chapterCardImageContainer {
     background-color: #000;
-    -webkit-border-radius: 0;
-    border-radius: 0
+    border-radius: 0;
 }
 
 .textCardImageContainer {
-    background-color: #333
+    background-color: #333;
 }
 
 .cardContent {
     overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Needed in case this is a button */
     display: block;
+    /* Needed in case this is a button */
     margin: 0 !important;
+    /* Needed in safari */
     height: 100%;
-    contain: strict
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    outline: none !important;
+    contain: strict;
 }
 
 .cardContent-button {
     border: 0 !important;
     padding: 0 !important;
+    cursor: pointer;
     color: inherit;
     width: 100%;
-    font-size: inherit
+    vertical-align: middle;
+    font-family: inherit;
+    font-size: inherit;
 }
 
-.cardContent-button:not(.defaultCardBackground) {
-    background-color: transparent
-}
+    .cardContent-button:not(.defaultCardBackground) {
+        background-color: transparent;
+    }
 
 .visualCardBox .cardContent {
-    -webkit-border-bottom-left-radius: 0;
     border-bottom-left-radius: 0;
-    -webkit-border-bottom-right-radius: 0;
-    border-bottom-right-radius: 0
+    border-bottom-right-radius: 0;
 }
 
 .cardContent-shadow {
-    -webkit-box-shadow: 0 .0725em .29em 0 rgba(0, 0, 0, .37);
-    box-shadow: 0 .0725em .29em 0 rgba(0, 0, 0, .37)
+    box-shadow: 0 0.0725em 0.29em 0 rgba(0, 0, 0, 0.37);
 }
 
+/*.card:focus .cardContent-shadow {
+    box-shadow: 0 .63em 1.26em rgba(0, 0, 0, 0.37);
+}*/
+
 .cardImageContainer {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: flex
+    display: flex;
 }
 
 .cardImage {
-    -webkit-background-size: contain;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-size: contain;
     background-repeat: no-repeat;
-    background-position: center bottom
+    background-position: center bottom;
 }
 
 .cardImage-img {
     max-height: 100%;
     max-width: 100%;
+    /* This is simply for lazy image purposes, to ensure the image is visible sooner when scrolling */
     min-height: 70%;
     min-width: 70%;
-    margin: auto
+    margin: auto;
 }
 
 .coveredImage-img {
     width: 100%;
-    height: 100%
+    height: 100%;
 }
 
 .coveredImage-noscale-img {
     max-height: none;
-    max-width: none
+    max-width: none;
 }
 
 .coveredImage {
-    -webkit-background-size: 100% 100%;
     background-size: 100% 100%;
-    background-position: center center
+    background-position: center center;
 }
 
 .coveredImage-noScale {
-    -webkit-background-size: cover;
-    background-size: cover
+    background-size: cover;
 }
 
 .cardFooter {
-    padding: .3em .3em .5em;
-    position: relative
+    padding: .3em .3em .5em .3em;
+    position: relative;
 }
 
 .visualCardBox {
-    -webkit-box-shadow: 0 .0725em .29em 0 rgba(0, 0, 0, .37);
-    box-shadow: 0 .0725em .29em 0 rgba(0, 0, 0, .37);
-    -webkit-border-radius: .145em;
-    border-radius: .145em
+    box-shadow: 0 0.0725em 0.29em 0 rgba(0, 0, 0, 0.37);
+    border-radius: .145em;
 }
 
 .innerCardFooter {
-    background: rgba(0, 0, 0, .7);
+    background: rgba(0,0,0,.7);
     position: absolute;
     bottom: 0;
     left: 0;
+    text-align: left;
     z-index: 1;
+    overflow: hidden;
     max-width: 100%;
-    color: #fff
+    color: #fff;
 }
 
 .innerCardFooterClear {
-    background-color: transparent
+    background-color: transparent;
 }
 
 .fullInnerCardFooter {
-    right: 0
+    right: 0;
 }
 
 .cardText {
     padding: .06em .5em;
     white-space: nowrap;
-    -o-text-overflow: ellipsis;
-    text-overflow: ellipsis
-}
-
-.cardDefaultText,
-.cardTextCentered {
-    text-align: center
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
 }
 
 .cardText-secondary {
-    font-size: 86%
+    font-size: 86%;
 }
 
 .cardText-first {
-    padding-top: .24em
+    padding-top: .24em;
 }
 
-.innerCardFooter>.cardText {
-    padding: .3em .5em
+.innerCardFooter > .cardText {
+    padding: .3em .5em;
 }
 
 .cardFooter-withlogo {
     padding-left: 4em;
-    position: relative
+    position: relative;
 }
 
 .cardFooterLogo {
@@ -387,70 +334,77 @@ button {
     bottom: 0;
     left: 0;
     width: 4.5em;
-    -webkit-background-size: 70% auto;
     background-size: 70% auto;
     background-repeat: no-repeat;
-    background-position: center center
+    background-position: center center;
+}
+
+.cardTextCentered {
+    text-align: center;
 }
 
 .cardText-rightmargin {
-    margin-right: 2em
+    margin-right: 2em;
 }
 
 .cardDefaultText {
-    white-space: normal
+    white-space: normal;
+    text-align: center;
 }
 
 .textActionButton {
-    background: 0 0;
+    border: 0 !important;
+    background: transparent;
     border: 0 !important;
     padding: 0 !important;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    outline: none !important;
     color: inherit;
-    font-size: inherit
+    vertical-align: middle;
+    font-family: inherit;
+    font-size: inherit;
+    /*display: flex;
+    align-items: center;
+    justify-content: center;*/
 }
 
-.textActionButton:hover {
-    text-decoration: underline
-}
+    .textActionButton:hover {
+        text-decoration: underline;
+    }
 
 .cardImageIcon {
     font-size: 5em;
-    color: inherit
+    color: inherit;
 }
 
 .cardImageIcon-small {
     font-size: 3em;
-    margin-bottom: .1em
+    margin-bottom: .1em;
 }
 
 .cardIndicators {
     right: .225em;
     top: .225em;
     position: absolute;
-    display: -webkit-box;
-    display: -webkit-flex;
     display: flex;
-    -webkit-box-align: center;
-    -webkit-align-items: center;
     align-items: center;
-    contain: layout style
+    contain: layout style;
 }
 
 .cardProgramAttributeIndicators {
     top: 0;
     left: 0;
     position: absolute;
-    display: -webkit-box;
-    display: -webkit-flex;
     display: flex;
     text-transform: uppercase;
-    font-size: 92%
+    font-size: 92%;
 }
 
 .programAttributeIndicator {
     padding: .18em .5em;
     color: #fff;
-    font-weight: 500
+    font-weight: 500;
 }
 
 .cardOverlayButton {
@@ -458,31 +412,24 @@ button {
     margin: 0;
     z-index: 1;
     padding: .75em;
-    font-size: 88%
+    font-size: 88%;
 }
 
 .cardOverlayButton-br {
     position: absolute;
     bottom: 0;
-    right: 0
+    right: 0;
 }
 
 .cardOverlayButtonIcon {
-    background-color: rgba(0, 0, 0, .7) !important;
-    -webkit-border-radius: 100em;
+    background-color: rgba(0,0,0,.7) !important;
     border-radius: 100em;
     width: 1.5em !important;
     height: 1.5em !important;
-    -webkit-box-pack: center;
-    -webkit-justify-content: center;
     justify-content: center;
-    -webkit-box-align: center;
-    -webkit-align-items: center;
     align-items: center;
-    display: -webkit-box;
-    display: -webkit-flex;
     display: flex;
-    font-size: 1.66956521739130434em !important
+    font-size: 1.66956521739130434em !important;
 }
 
 .cardOverlayButton-centered {
@@ -490,8 +437,6 @@ button {
     right: initial;
     position: static;
     position: absolute;
-    display: -webkit-box;
-    display: -webkit-flex;
     display: flex;
     font-size: 112%;
     margin: -1.3em 0 0 -1.3em;
@@ -499,372 +444,358 @@ button {
     height: 2.6em;
     top: 50%;
     left: 50%;
-    background-color: rgba(0, 0, 0, .5) !important;
-    border: .06em solid rgba(255, 255, 255, .6);
+    background-color: rgba(0,0,0,.5) !important;
+    border: .06em solid rgba(255,255,255,.6);
     padding: .38em !important;
     color: rgba(255, 255, 255, .76);
-    -webkit-transition: -webkit-transform .2s ease-out;
-    -o-transition: transform .2s ease-out;
-    transition: transform .2s ease-out
+    transition: transform 200ms ease-out;
 }
 
-.cardOverlayButton-centered:hover {
-    -webkit-transform: scale(1.2, 1.2);
-    transform: scale(1.2, 1.2)
-}
+    .cardOverlayButton-centered:hover {
+        transform: scale(1.2, 1.2);
+    }
 
-.backdropCard,
 .bannerCard {
-    width: 100%
+    width: 100%;
 }
 
-.smallBackdropCard,
+.backdropCard {
+    width: 100%;
+}
+
+.smallBackdropCard {
+    width: 50%;
+}
+
 .squareCard {
-    width: 50%
+    width: 50%;
 }
 
 .portraitCard {
-    width: 33.333333333333333333333333333333%
+    width: 33.333333333333333333333333333333%;
 }
 
 .mixedPortraitCard {
-    width: 12em
+    width: 12em;
 }
 
 .mixedSquareCard {
-    width: 18em
+    width: 18em;
 }
 
 .mixedBackdropCard {
-    width: 32em
+    width: 32em;
 }
 
-@media (min-width:25em) {
+@media (min-width: 25em) {
+
     .backdropCard {
-        width: 50%
+        width: 50%;
     }
 }
 
-@media (min-width:31.25em) {
-
-    .portraitCard,
-    .smallBackdropCard,
-    .squareCard {
-        width: 33.333333333333333333333333333333%
-    }
-}
-
-@media (min-width:43.75em) {
-
-    .portraitCard,
-    .squareCard {
-        width: 25%
-    }
-}
-
-@media (min-width:48.125em) {
-    .backdropCard {
-        width: 33.333333333333333333333333333333%
-    }
-}
-
-@media (min-width:50em) {
-    .bannerCard {
-        width: 50%
-    }
-
-    .portraitCard,
-    .squareCard {
-        width: 20%
-    }
+@media (min-width: 31.25em) {
 
     .smallBackdropCard {
-        width: 25%
+        width: 33.333333333333333333333333333333%;
+    }
+
+    .squareCard, .portraitCard {
+        width: 33.333333333333333333333333333333%;
     }
 }
 
-@media (min-width:62.5em) {
-    .smallBackdropCard {
-        width: 20%
+@media (min-width: 43.75em) {
+    .squareCard, .portraitCard {
+        width: 25%;
     }
 }
 
-@media (min-width:75em) {
+@media (min-width: 48.125em) {
     .backdropCard {
-        width: 25%
+        width: 33.333333333333333333333333333333%;
     }
+}
 
-    .portraitCard,
-    .squareCard {
-        width: 16.666666666666666666666666666667%
-    }
+@media (min-width: 50em) {
 
     .bannerCard {
-        width: 33.333333333333333333333333333333%
+        width: 50%;
+    }
+
+    .squareCard, .portraitCard {
+        width: 20%;
     }
 
     .smallBackdropCard {
-        width: 16.666666666666666666666666666667%
+        width: 25%;
     }
 }
 
-@media (min-width:87.5em) {
+@media (min-width: 62.5em) {
 
-    .portraitCard,
-    .smallBackdropCard,
-    .squareCard {
-        width: 14.285714285714285714285714285714%
-    }
-}
 
-@media (min-width:100em) {
     .smallBackdropCard {
-        width: 12.5%
+        width: 20%;
     }
+}
+
+@media (min-width: 75em) {
 
     .backdropCard {
-        width: 20%
+        width: 25%;
     }
 
-    .portraitCard,
-    .squareCard {
-        width: 12.5%
+    .squareCard, .portraitCard {
+        width: 16.666666666666666666666666666667%;
     }
-}
 
-@media (min-width:120em) {
-
-    .portraitCard,
-    .squareCard {
-        width: 11.111111111111111111111111111111%
-    }
-}
-
-@media (min-width:131.25em) {
     .bannerCard {
-        width: 25%
+        width: 33.333333333333333333333333333333%;
     }
 
-    .portraitCard,
-    .squareCard {
-        width: 10%
+    .smallBackdropCard {
+        width: 16.666666666666666666666666666667%;
     }
 }
 
-@media (min-width:156.25em) {
+
+@media (min-width: 87.5em) {
+
+    .squareCard, .portraitCard {
+        width: 14.285714285714285714285714285714%;
+    }
+
+    .smallBackdropCard {
+        width: 14.285714285714285714285714285714%;
+    }
+}
+
+@media (min-width: 100em) {
+
+    .smallBackdropCard {
+        width: 12.5%;
+    }
+
     .backdropCard {
-        width: 16.666666666666666666666666666667%
+        width: 20%;
+    }
+
+    .squareCard, .portraitCard {
+        width: 12.5%;
     }
 }
 
-.itemsContainer-tv>.backdropCard {
-    width: 25%
+@media (min-width: 120em) {
+
+    .squareCard, .portraitCard {
+        width: 11.111111111111111111111111111111%;
+    }
 }
 
-.itemsContainer-tv>.portraitCard,
-.itemsContainer-tv>.squareCard {
-    width: 16.666666666666666666666666666667%
+@media (min-width: 131.25em) {
+
+    .bannerCard {
+        width: 25%;
+    }
+
+    .squareCard, .portraitCard {
+        width: 10%;
+    }
 }
 
-.overflowBackdropCard,
+@media (min-width: 156.25em) {
+
+    .backdropCard {
+        width: 16.666666666666666666666666666667%;
+    }
+}
+
+.itemsContainer-tv > .backdropCard {
+    width: 25%;
+}
+
+.itemsContainer-tv > .squareCard {
+    width: 16.666666666666666666666666666667%;
+}
+
+.itemsContainer-tv > .portraitCard {
+    width: 16.666666666666666666666666666667%;
+}
+
+.overflowBackdropCard {
+    width: 72vw;
+}
+
 .overflowSmallBackdropCard {
-    width: 72vw
+    width: 72vw;
 }
 
-.overflowPortraitCard,
-.overflowSquareCard {
-    width: 40vw
+.overflowSquareCard, .overflowPortraitCard {
+    width: 40vw;
 }
 
-@media (min-width:25em) {
+@media (min-width: 25em) {
     .overflowPortraitCard {
-        width: 31.2vw
+        width: 31.2vw;
     }
 }
 
-@media (min-width:35em) {
+@media (min-width: 35em) {
     .overflowSquareCard {
-        width: 31.2vw
+        width: 31.2vw;
     }
 
     .overflowBackdropCard {
-        width: 45.5vw
+        width: 45.5vw;
     }
 
     .overflowSmallBackdropCard {
-        width: 30vw
+        width: 30vw;
     }
 }
 
-@media (min-width:43.75em) {
-
-    .overflowPortraitCard,
-    .overflowSquareCard {
-        width: 23.3vw
+@media (min-width: 43.75em) {
+    .overflowSquareCard, .overflowPortraitCard {
+        width: 23.3vw;
     }
 }
 
-@media (min-width:48.125em) {
+@media (min-width: 48.125em) {
+    .overflowBackdropCard, .overflowSmallBackdropCard {
+        width: 30vw;
+    }
+}
 
-    .overflowBackdropCard,
+@media (orientation: landscape) {
+    .overflowBackdropCard, .overflowSmallBackdropCard {
+        width: 30vw;
+    }
+
+    .overflowSquareCard, .overflowPortraitCard {
+        width: 23.3vw;
+    }
+}
+
+@media (orientation: landscape) and (min-width: 48.125em) {
+    .overflowBackdropCard, .overflowSmallBackdropCard {
+        width: 23.3vw;
+    }
+}
+
+@media (orientation: landscape) and (min-width: 50em) {
     .overflowSmallBackdropCard {
-        width: 30vw
+        width: 15.5vw;
     }
 }
 
-@media (orientation:landscape) {
+@media (min-width: 50em) {
 
-    .overflowBackdropCard,
-    .overflowSmallBackdropCard {
-        width: 30vw
-    }
-
-    .overflowPortraitCard,
-    .overflowSquareCard {
-        width: 23.3vw
+    .overflowSquareCard, .overflowPortraitCard {
+        width: 18.4vw;
     }
 }
 
-@media (orientation:landscape) and (min-width:48.125em) {
+@media (min-width: 75em) {
 
-    .overflowBackdropCard,
-    .overflowSmallBackdropCard {
-        width: 23.3vw
+    .overflowBackdropCard, .overflowSmallBackdropCard {
+        width: 23.3vw;
+    }
+
+    .overflowSquareCard, .overflowPortraitCard {
+        width: 15.5vw;
     }
 }
 
-@media (orientation:landscape) and (min-width:50em) {
-    .overflowSmallBackdropCard {
-        width: 15.5vw
+@media (min-width: 87.5em) {
+
+    .overflowSquareCard, .overflowPortraitCard {
+        width: 13.3vw;
     }
 }
 
-@media (min-width:50em) {
+@media (min-width: 100em) {
 
-    .overflowPortraitCard,
-    .overflowSquareCard {
-        width: 18.4vw
+    .overflowBackdropCard, .overflowSmallBackdropCard {
+        width: 18.7vw;
+    }
+
+    .overflowSquareCard, .overflowPortraitCard {
+        width: 11.6vw;
     }
 }
 
-@media (min-width:75em) {
+@media (min-width: 120em) {
 
-    .overflowBackdropCard,
-    .overflowSmallBackdropCard {
-        width: 23.3vw
-    }
-
-    .overflowPortraitCard,
-    .overflowSquareCard {
-        width: 15.5vw
+    .overflowSquareCard, .overflowPortraitCard {
+        width: 10.3vw;
     }
 }
 
-@media (min-width:87.5em) {
+@media (min-width: 131.25em) {
 
-    .overflowPortraitCard,
-    .overflowSquareCard {
-        width: 13.3vw
+    .overflowSquareCard, .overflowPortraitCard {
+        width: 9.3vw;
     }
 }
 
-@media (min-width:100em) {
+@media (min-width: 156.25em) {
 
-    .overflowBackdropCard,
-    .overflowSmallBackdropCard {
-        width: 18.7vw
-    }
-
-    .overflowPortraitCard,
-    .overflowSquareCard {
-        width: 11.6vw
+    .overflowBackdropCard, .overflowSmallBackdropCard {
+        width: 15.6vw;
     }
 }
 
-@media (min-width:120em) {
-
-    .overflowPortraitCard,
-    .overflowSquareCard {
-        width: 10.3vw
-    }
-}
-
-@media (min-width:131.25em) {
-
-    .overflowPortraitCard,
-    .overflowSquareCard {
-        width: 9.3vw
-    }
-}
-
-@media (min-width:156.25em) {
-
-    .overflowBackdropCard,
-    .overflowSmallBackdropCard {
-        width: 15.6vw
-    }
-}
-
-.itemsContainer-tv>.overflowBackdropCard {
-    width: 23.5vw
+.itemsContainer-tv > .overflowBackdropCard {
+    width: 23.5vw;
 }
 
 .overflowBackdropCard-textCard {
-    width: 15.5vw !important
+    width: 15.5vw !important;
 }
 
 .overflowBackdropCard-textCardPadder {
-    padding-bottom: 87.75%
+    padding-bottom: 87.75%;
 }
 
-.itemsContainer-tv>.overflowPortraitCard,
-.itemsContainer-tv>.overflowSquareCard {
-    width: 15.6vw
+.itemsContainer-tv > .overflowSquareCard, .itemsContainer-tv > .overflowPortraitCard {
+    width: 15.6vw;
 }
 
-.itemsContainer-tv>.overflowSmallBackdropCard {
-    width: 18.8vw
+.itemsContainer-tv > .overflowSmallBackdropCard {
+    width: 18.8vw;
 }
 
 .cardOverlayContainer {
-    background: -webkit-radial-gradient(50% 50%, farthest-corner, rgba(30, 30, 30, .5) 50%, #2c2c2c 100%);
-    background: -o-radial-gradient(50% 50%, farthest-corner, rgba(30, 30, 30, .5) 50%, #2c2c2c 100%);
-    background: radial-gradient(farthest-corner at 50% 50%, rgba(30, 30, 30, .5) 50%, #2c2c2c 100%);
+    background: radial-gradient(farthest-corner at 50% 50%,rgba(30,30,30,.5) 50%,#2c2c2c 100%);
     opacity: 0;
-    -webkit-transition: opacity .2s;
-    -o-transition: opacity .2s;
     transition: opacity .2s;
     position: absolute;
     top: 0;
     left: 0;
     bottom: 0;
     right: 0;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none
+    user-select: none;
 }
 
 .card-hoverable :hover .cardOverlayContainer {
-    opacity: 1
+    opacity: 1;
 }
 
 .cardOverlayButton-hover {
     opacity: 0;
-    -webkit-transition: opacity .2s;
-    -o-transition: opacity .2s;
     transition: opacity .2s;
-    background: 0 0;
+    background: transparent;
     color: #fff !important;
-    padding: .5em
+    padding: .5em;
 }
 
 .cardOverlayButtonIcon-hover {
-    background: 0 0 !important
+    background: transparent !important;
 }
 
 .card-hoverable:hover .cardOverlayButton-hover {
-    opacity: 1
+    opacity: 1;
 }
 
 .cardOverlayFab-primary {
@@ -876,10 +807,10 @@ button {
     margin-left: -1.5em;
     position: absolute;
     top: 50%;
-    left: 50%
+    left: 50%;
 }
 
-.cardOverlayFab-primary i {
-    border: .07em solid rgba(255, 255, 255, .9);
-    color: #fff
-}
+    .cardOverlayFab-primary i {
+        border: .07em solid rgba(255,255,255,.9);
+        color: #fff;
+    }

@@ -1,12 +1,12 @@
 .recordingButton {
     margin-left: 0;
-    min-width: 10em
+    min-width: 10em;
 }
 
 .recordingIcon-active {
-    color: #c33
+    color: #cc3333;
 }
 
 .recordSeriesContainer {
-    margin-bottom: .8em
+    margin-bottom: .8em;
 }

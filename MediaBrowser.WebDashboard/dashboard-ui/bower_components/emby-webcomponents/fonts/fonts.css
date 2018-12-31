@@ -1,39 +1,37 @@
-h1,
-h2,
-h3 {
-    font-weight: 500
+html {
+    font-family: -apple-system, "Helvetica", system-ui, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", 'Open Sans', sans-serif;
 }
 
 html {
-    font-family: -apple-system, Helvetica, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", 'Open Sans', sans-serif;
     font-size: 93%;
     -webkit-text-size-adjust: 100%;
-    -moz-text-size-adjust: 100%;
-    text-size-adjust: 100%
+    text-size-adjust: 100%;
 }
 
-h1,
-h2,
-h3 {
-    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", 'Open Sans', sans-serif
+h1, h2, h3 {
+    /* For better bolding, since Helvetica does not support 500 weight, and 600 is too thick */
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", 'Open Sans', sans-serif;
 }
 
 h1 {
-    font-size: 1.8em
+    font-weight: 500;
+    font-size: 1.8em;
 }
 
 h2 {
-    font-size: 1.5em
+    font-weight: 500;
+    font-size: 1.5em;
 }
 
 h3 {
-    font-size: 1.17em
+    font-weight: 500;
+    font-size: 1.17em;
 }
 
 .layout-tv {
-    font-size: 2.5vh
+    font-size: 2.5vh;
 }
 
 .layout-mobile {
-    font-size: 90%
+    font-size: 90%;
 }

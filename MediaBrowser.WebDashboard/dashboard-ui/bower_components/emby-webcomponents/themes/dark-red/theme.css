@@ -1,442 +1,449 @@
 html {
     color: #eee;
-    color: rgba(255, 255, 255, .87)
+    color: rgba(255, 255, 255, .87);
 }
 
 .emby-collapsible-button {
     border-color: #383838;
-    border-color: rgba(255, 255, 255, .135)
+    border-color: rgba(255,255,255, .135);
 }
 
 .skinHeader {
     color: #ccc;
-    color: rgba(255, 255, 255, .78)
+    color: rgba(255, 255, 255, .78);
 }
 
 .skinHeader-withBackground {
-    background-color: #c33;
-    -webkit-box-shadow: 0 .0725em .29em 0 rgba(0, 0, 0, .37);
-    box-shadow: 0 .0725em .29em 0 rgba(0, 0, 0, .37)
+    background-color: #cc3333;
+    box-shadow: 0 0.0725em 0.29em 0 rgba(0, 0, 0, 0.37);
 }
 
 .osdHeader {
-    -webkit-box-shadow: none !important;
-    box-shadow: none !important
+    box-shadow: none !important;
 }
 
 .skinHeader.semiTransparent {
     backdrop-filter: none !important;
     background-color: rgba(0, 0, 0, .3);
-    background: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, .6)), to(rgba(0, 0, 0, 0)));
-    background: -webkit-linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, 0));
-    background: -o-linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, 0));
     background: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, 0));
-    -webkit-box-shadow: none;
-    box-shadow: none
+    box-shadow: none;
 }
 
 .pageTitleWithDefaultLogo {
-    background-image: url(../logowhite.png)
+    background-image: url(../logowhite.png);
 }
 
-.backgroundContainer,
-.dialog,
-html {
-    background-color: #282828
+.dialog {
+    background-color: #282828;
 }
 
-.backgroundContainer.withBackdrop {
-    background-color: rgba(0, 0, 0, .86)
+html, .backgroundContainer {
+    background-color: #282828;
 }
 
+    .backgroundContainer.withBackdrop {
+        background-color: rgba(0,0,0,.86);
+    }
+
+/* buttons */
 .paper-icon-button-light:focus {
-    color: #c33;
-    background-color: rgba(204, 51, 51, .2)
+    color: #cc3333;
+    background-color: rgba(204, 51, 51, 0.2);
 }
 
 .skinHeader-withBackground .paper-icon-button-light:focus {
     color: #fff;
-    background-color: rgba(255, 255, 255, .2)
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
-.fab,
-.raised {
+.raised, .fab {
     background: #404040;
-    color: #fff
+    color: #fff;
 }
 
-.fab:focus,
-.raised:focus {
-    background: #505050
-}
+    .raised:focus, .fab:focus {
+        background: #505050;
+    }
 
 .button-submit {
-    background: #c33
+    background: #cc3333;
 }
 
-.button-submit:focus {
-    background: #D83F3F
-}
+    .button-submit:focus {
+        background: #D83F3F;
+    }
 
 .checkboxLabel {
-    color: inherit
+    color: inherit;
 }
 
-.checkboxListLabel,
-.inputLabel,
-.inputLabelUnfocused,
-.paperListLabel,
-.textareaLabelUnfocused {
+.paperListLabel, .inputLabelUnfocused, .textareaLabelUnfocused, .inputLabel, .checkboxListLabel {
     color: #bbb;
-    color: rgba(255, 255, 255, .7)
+    color: rgba(255, 255, 255, .7);
 }
 
-.inputLabelFocused,
-.selectLabelFocused,
-.textareaLabelFocused {
-    color: #c33
+.selectLabelFocused, .textareaLabelFocused, .inputLabelFocused {
+    color: #cc3333;
 }
 
 .checkboxOutline {
-    border-color: currentColor
+    border-color: currentColor;
 }
 
-.collapseContent,
-.formDialogFooter:not(.formDialogFooter-clear),
-.formDialogHeader:not(.formDialogHeader-clear),
-.paperList,
-.visualCardBox {
-    background-color: #222
+.paperList, .visualCardBox, .formDialogHeader:not(.formDialogHeader-clear), .formDialogFooter:not(.formDialogFooter-clear), .collapseContent {
+    background-color: #222;
 }
 
 .defaultCardBackground1 {
-    background-color: #d2b019
+    background-color: #d2b019;
 }
 
 .defaultCardBackground2 {
-    background-color: #338abb
+    background-color: #338abb;
 }
 
 .defaultCardBackground3 {
-    background-color: #6b689d
+    background-color: #6b689d;
 }
 
 .defaultCardBackground4 {
-    background-color: #dd452b
+    background-color: #dd452b;
 }
 
 .defaultCardBackground5 {
-    background-color: #5ccea9
+    background-color: #5ccea9;
 }
 
-.cardText-secondary,
-.fieldDescription,
-.guide-programNameCaret,
-.listItem .secondary,
-.nowPlayingBarSecondaryText,
-.programSecondaryTitle,
-.secondaryText {
+.listItem .secondary, .nowPlayingBarSecondaryText, .secondaryText, .fieldDescription, .cardText-secondary, .programSecondaryTitle, .guide-programNameCaret {
     color: #999;
-    color: rgba(255, 255, 255, .5)
+    color: rgba(255, 255, 255, .5);
 }
 
 .actionsheetDivider {
     background: #444;
-    background: rgba(255, 255, 255, .14)
+    background: rgba(255, 255, 255, .14);
 }
 
 .cardFooter-vibrant .cardText-secondary {
     color: inherit;
-    opacity: .5
+    opacity: .5;
 }
 
 .actionSheetMenuItem:hover {
-    background-color: #222
+    background-color: #222;
 }
 
 .toast {
     background: #303030;
     color: #fff;
-    color: rgba(255, 255, 255, .87)
+    color: rgba(255, 255, 255, .87);
 }
 
+/* appfooter */
 .appfooter {
     background: #101010;
     color: #ccc;
-    color: rgba(255, 255, 255, .78)
+    color: rgba(255, 255, 255, .78);
 }
 
-@supports (backdrop-filter:blur(10px)) or (-webkit-backdrop-filter:blur(10px)) {
+@supports ( (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px)) ) {
+
     .appfooter-blurred {
-        background: rgba(24, 24, 24, .7);
+        background: rgba(24,24,24,.7);
         -webkit-backdrop-filter: blur(20px);
-        backdrop-filter: blur(20px)
+        backdrop-filter: blur(20px);
     }
 }
 
+/* Multi-select */
 .itemSelectionPanel {
-    border: 1px solid #c33
+    border: 1px solid #cc3333;
 }
 
 .selectionCommandsPanel {
-    background: #c33;
-    color: #fff
+    background: #cc3333;
+    color: #fff;
 }
 
+/* upNextDialog */
 .upNextDialog-countdownText {
-    color: #c33
+    color: #cc3333;
 }
 
+/* alphaPicker */
 .alphaPickerButton {
     color: #999;
     color: rgba(255, 255, 255, .5);
-    background-color: transparent
+    background-color: transparent;
 }
 
 .alphaPickerButton-selected {
-    color: #fff
+    color: #fff;
 }
 
 .alphaPickerButton-tv:focus {
-    background-color: #c33;
-    color: #fff !important
+    background-color: #cc3333;
+    color: #fff !important;
 }
 
 .detailTableBodyRow-shaded:nth-child(even) {
     background: #1c1c1c;
-    background: rgba(30, 30, 30, .9)
+    background: rgba(30, 30, 30, .9);
 }
 
 .listItem-border {
-    border-color: rgba(30, 30, 30, .9) !important
+    border-color: rgba(30, 30, 30, .9) !important;
 }
 
 .listItem:focus {
-    background: #333
+    background: #333;
 }
 
 .progressring-spiner {
-    border-color: #c33
+    border-color: #cc3333;
 }
 
-.button-flat-accent,
 .button-link {
-    color: #c33
+    color: #cc3333;
+}
+
+.button-flat-accent {
+    color: #cc3333;
 }
 
 .mediaInfoText {
     color: #ddd;
-    background: rgba(170, 170, 190, .2)
+    background: rgba(170,170,190, .2);
 }
 
-.mediaInfoTimerIcon,
 .starIcon {
-    color: #CB272A
+    color: #CB272A;
 }
 
-.emby-input,
-.emby-textarea {
+.mediaInfoTimerIcon {
+    color: #CB272A;
+}
+
+/* inputs */
+.emby-input, .emby-textarea {
     color: inherit;
     background: #1c1c1c;
     border: .07em solid #1c1c1c;
-    -webkit-border-radius: .15em;
-    border-radius: .15em
+    border-radius: .15em;
 }
 
-.emby-input:focus,
-.emby-textarea:focus {
-    border-color: #c33
-}
+    .emby-input:focus, .emby-textarea:focus {
+        border-color: #cc3333;
+    }
 
+/* select */
 .emby-select-withcolor {
     color: inherit;
     background: #1c1c1c;
-    border: .07em solid #1c1c1c
+    border: .07em solid #1c1c1c;
 }
 
-.emby-select-withcolor>option {
-    color: inherit;
-    background: #222
-}
+    .emby-select-withcolor > option {
+        color: inherit;
+        background: #222;
+    }
 
-.emby-select-withcolor:focus {
-    border-color: #c33 !important
-}
+    .emby-select-withcolor:focus {
+        border-color: #cc3333 !important;
+    }
 
 .emby-select-tv-withcolor:focus {
-    background-color: #c33 !important;
-    color: #fff !important
+    background-color: #cc3333 !important;
+    color: #fff !important;
 }
 
-.emby-checkbox:checked+span+span+.checkboxOutline {
-    border-color: #c33
+/* checkbox */
+.emby-checkbox:checked + span + span + .checkboxOutline {
+    border-color: #cc3333;
 }
 
-.emby-checkbox:focus+span+.emby-checkbox-focushelper {
-    background-color: rgba(204, 51, 51, .26)
+.emby-checkbox:focus + span + .emby-checkbox-focushelper {
+    background-color: rgba(204, 51, 51, 0.26);
 }
 
-.emby-checkbox:checked+span+span+.checkboxOutline,
+.emby-checkbox:checked + span + span + .checkboxOutline {
+    background-color: #cc3333;
+}
+
+/* indicators */
 .itemProgressBarForeground {
-    background-color: #c33
+    background-color: #cc3333;
 }
 
 .itemProgressBarForeground-recording {
-    background-color: #CB272A
+    background-color: #CB272A;
 }
 
-.countIndicator,
+.countIndicator {
+    background: #cc3333;
+}
+
 .playedIndicator {
-    background: #c33
+    background: #cc3333;
 }
 
 .fullSyncIndicator {
-    background: #c33;
-    color: #fff
+    background: #cc3333;
+    color: #fff;
 }
 
+/* main nav drawer */
 .mainDrawer {
     background-color: #1c1c1f;
     color: #ccc;
-    color: rgba(255, 255, 255, .7)
+    color: rgba(255, 255, 255, .7);
 }
 
 .navMenuOption:hover {
-    background: #252528
+    background: #252528;
 }
 
 .navMenuOption-selected {
-    background: #c33 !important;
-    color: #fff
+    background: #cc3333 !important;
+    color: #fff;
 }
 
+/* emby-button */
 .emby-button-focusscale:focus {
-    background: #c33;
-    color: #fff
+    background: #cc3333;
+    color: #fff;
 }
 
+/* emby-tabs */
 .emby-tab-button {
     color: #999;
-    color: rgba(255, 255, 255, .5)
+    color: rgba(255, 255, 255, .5);
 }
 
-.emby-tab-button-active,
-.emby-tab-button-active.emby-button-tv {
-    color: #fff
+.emby-tab-button-active {
+    color: #fff;
 }
+
+    .emby-tab-button-active.emby-button-tv {
+        color: #fff;
+    }
 
 .emby-tab-button.emby-button-tv:focus {
     color: #fff;
-    background: 0 0
+    background: transparent;
 }
 
-.channelPrograms,
-.guide-channelHeaderCell,
-.programCell {
-    border-color: #383838
+/* guide */
+.guide-channelHeaderCell, .channelPrograms, .programCell {
+    border-color: #383838;
 }
 
 .programCell-sports {
-    background: #3949AB !important
+    background: #3949AB !important;
 }
 
 .programCell-movie {
-    background: #5E35B1 !important
+    background: #5E35B1 !important;
 }
 
 .programCell-kids {
-    background: #039BE5 !important
+    background: #039BE5 !important;
 }
 
 .programCell-news {
-    background: #43A047 !important
+    background: #43A047 !important;
 }
 
 .programCell-active {
-    background: #1e1e1e !important
+    background: #1e1e1e !important;
 }
 
-.guide-channelHeaderCell:focus,
-.programCell:focus {
-    background-color: #c33 !important;
-    color: #fff !important
+.programCell:focus, .guide-channelHeaderCell:focus {
+    background-color: #cc3333 !important;
+    color: #fff !important;
 }
 
 .guide-programTextIcon {
     color: #1e1e1e;
-    background: #555
+    background: #555;
 }
 
 .guide-headerTimeslots {
-    color: inherit
+    color: inherit;
 }
 
 .guide-date-tab-button {
     color: #555;
-    color: rgba(255, 255, 255, .3)
+    color: rgba(255,255,255,.3);
 }
 
-.guide-date-tab-button.emby-tab-button-active,
-.guide-date-tab-button:focus {
-    color: #c33
-}
+    .guide-date-tab-button.emby-tab-button-active {
+        color: #cc3333;
+    }
 
-.guide-date-tab-button.emby-button-tv:focus {
-    background-color: #c33;
-    color: #fff
-}
+    .guide-date-tab-button:focus {
+        color: #cc3333;
+    }
 
+    .guide-date-tab-button.emby-button-tv:focus {
+        background-color: #cc3333;
+        color: #fff;
+    }
+
+/* detail screen */
 .itemBackdropFader {
-    background: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0)), to(#191919));
-    background: -webkit-linear-gradient(rgba(0, 0, 0, 0), #191919);
-    background: -o-linear-gradient(rgba(0, 0, 0, 0), #191919);
-    background: linear-gradient(rgba(0, 0, 0, 0), #191919)
+    background: linear-gradient(rgba(0,0,0,0), #191919);
 }
 
+/* used by directory picker and other areas */
 .infoBanner {
     color: #ddd;
     background: #111;
     padding: 1em;
-    -webkit-border-radius: .25em;
-    border-radius: .25em
+    border-radius: .25em;
 }
 
+/* buttons */
 .ratingbutton-icon-withrating {
-    color: #c33
+    color: #cc3333;
 }
 
-.downloadbutton-icon-complete,
 .downloadbutton-icon-on {
-    color: #4285F4
+    color: #4285F4;
+}
+
+.downloadbutton-icon-complete {
+    color: #4285F4;
 }
 
 .playstatebutton-icon-played {
-    color: #c33
+    color: #cc3333;
 }
 
 .repeatButton-active {
-    color: #4285F4
+    color: #4285F4;
 }
 
+/* cards */
 .card:focus .card-focuscontent {
-    border-color: #c33
+    border-color: #cc3333;
 }
 
+/* scrollbars */
 .layout-desktop ::-webkit-scrollbar {
     width: 1em;
-    height: 1em
+    height: 1em;
 }
 
 ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3)
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
 }
 
 ::-webkit-scrollbar-track-piece {
-    background-color: #3b3b3b
+    background-color: #3b3b3b;
 }
 
-::-webkit-scrollbar-thumb:horizontal,
-::-webkit-scrollbar-thumb:vertical {
+::-webkit-scrollbar-thumb:vertical, ::-webkit-scrollbar-thumb:horizontal {
     -webkit-border-radius: 2px;
-    background: center no-repeat #888
+    background: #888 no-repeat center;
 }

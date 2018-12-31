@@ -1,15 +1,27 @@
-define([], function() {
-    "use strict";
+define([], function () {
+    'use strict';
 
     function replaceAll(str, find, replace) {
-        return str.split(find).join(replace)
+
+        return str.split(find).join(replace);
     }
-    return function(options) {
-        "string" == typeof options && (options = {
-            title: "",
-            text: options
-        });
-        var text = replaceAll(options.text || "", "<br/>", "\n");
-        return confirm(text) ? Promise.resolve() : Promise.reject()
-    }
+
+    return function (options) {
+
+        if (typeof options === 'string') {
+            options = {
+                title: '',
+                text: options
+            };
+        }
+
+        var text = replaceAll(options.text || '', '<br/>', '\n');
+        var result = confirm(text);
+
+        if (result) {
+            return Promise.resolve();
+        } else {
+            return Promise.reject();
+        }
+    };
 });

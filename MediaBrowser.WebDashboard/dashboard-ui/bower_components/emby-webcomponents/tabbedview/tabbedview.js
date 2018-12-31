@@ -1,59 +1,124 @@
-define(["backdrop", "mainTabsManager", "layoutManager", "emby-tabs"], function(backdrop, mainTabsManager, layoutManager) {
-    "use strict";
+define(['backdrop', 'mainTabsManager', 'layoutManager', 'emby-tabs'], function (backdrop, mainTabsManager, layoutManager) {
+    'use strict';
 
     function onViewDestroy(e) {
+
         var tabControllers = this.tabControllers;
-        tabControllers && (tabControllers.forEach(function(t) {
-            t.destroy && t.destroy()
-        }), this.tabControllers = null), this.view = null, this.params = null, this.currentTabController = null, this.initialTabIndex = null
+
+        if (tabControllers) {
+            tabControllers.forEach(function (t) {
+                if (t.destroy) {
+                    t.destroy();
+                }
+            });
+
+            this.tabControllers = null;
+        }
+
+        this.view = null;
+        this.params = null;
+        this.currentTabController = null;
+        this.initialTabIndex = null;
     }
 
-    function onBeforeTabChange() {}
+    function onBeforeTabChange() {
+
+    }
 
     function TabbedView(view, params) {
+
+        this.tabControllers = [];
+        this.view = view;
+        this.params = params;
+
+        var self = this;
+
+        var currentTabIndex = parseInt(params.tab || this.getDefaultTabIndex(params.parentId));
+        this.initialTabIndex = currentTabIndex;
+
         function validateTabLoad(index) {
-            return self.validateTabLoad ? self.validateTabLoad(index) : Promise.resolve()
+
+            return self.validateTabLoad ? self.validateTabLoad(index) : Promise.resolve();
         }
 
         function loadTab(index, previousIndex) {
-            validateTabLoad(index).then(function() {
-                self.getTabController(index).then(function(controller) {
+
+            validateTabLoad(index).then(function () {
+                self.getTabController(index).then(function (controller) {
+
                     var refresh = !controller.refreshed;
+
                     controller.onResume({
-                        autoFocus: null == previousIndex && layoutManager.tv,
+                        autoFocus: previousIndex == null && layoutManager.tv,
                         refresh: refresh
-                    }), controller.refreshed = !0, currentTabIndex = index, self.currentTabController = controller
-                })
-            })
+                    });
+
+                    controller.refreshed = true;
+
+                    currentTabIndex = index;
+                    self.currentTabController = controller;
+                });
+            });
         }
 
         function getTabContainers() {
-            return view.querySelectorAll(".tabContent")
+            return view.querySelectorAll('.tabContent');
         }
 
         function onTabChange(e) {
-            var newIndex = parseInt(e.detail.selectedTabIndex),
-                previousIndex = e.detail.previousIndex,
-                previousTabController = null == previousIndex ? null : self.tabControllers[previousIndex];
-            previousTabController && previousTabController.onPause && previousTabController.onPause(), loadTab(newIndex, previousIndex)
+            var newIndex = parseInt(e.detail.selectedTabIndex);
+            var previousIndex = e.detail.previousIndex;
+
+            var previousTabController = previousIndex == null ? null : self.tabControllers[previousIndex];
+            if (previousTabController && previousTabController.onPause) {
+                previousTabController.onPause();
+            }
+
+            loadTab(newIndex, previousIndex);
         }
-        this.tabControllers = [], this.view = view, this.params = params;
-        var self = this,
-            currentTabIndex = parseInt(params.tab || this.getDefaultTabIndex(params.parentId));
-        this.initialTabIndex = currentTabIndex, view.addEventListener("viewbeforehide", this.onPause.bind(this)), view.addEventListener("viewbeforeshow", function(e) {
-            mainTabsManager.setTabs(view, currentTabIndex, self.getTabs, getTabContainers, onBeforeTabChange, onTabChange, !1)
-        }), view.addEventListener("viewshow", function(e) {
-            self.onResume(e.detail)
-        }), view.addEventListener("viewdestroy", onViewDestroy.bind(this))
+
+        view.addEventListener('viewbeforehide', this.onPause.bind(this));
+
+        view.addEventListener('viewbeforeshow', function (e) {
+
+            mainTabsManager.setTabs(view, currentTabIndex, self.getTabs, getTabContainers, onBeforeTabChange, onTabChange, false);
+        });
+
+        view.addEventListener('viewshow', function (e) {
+
+            self.onResume(e.detail);
+        });
+
+        view.addEventListener('viewdestroy', onViewDestroy.bind(this));
     }
-    return TabbedView.prototype.onResume = function(options) {
-        this.setTitle(), backdrop.clear();
+
+    TabbedView.prototype.onResume = function (options) {
+
+        this.setTitle();
+        backdrop.clear();
+
         var currentTabController = this.currentTabController;
-        currentTabController ? currentTabController && currentTabController.onResume && currentTabController.onResume({}) : mainTabsManager.selectedTabIndex(this.initialTabIndex)
-    }, TabbedView.prototype.onPause = function() {
+
+        if (!currentTabController) {
+            mainTabsManager.selectedTabIndex(this.initialTabIndex);
+        }
+        else if (currentTabController && currentTabController.onResume) {
+            currentTabController.onResume({});
+        }
+    };
+
+    TabbedView.prototype.onPause = function () {
+
         var currentTabController = this.currentTabController;
-        currentTabController && currentTabController.onPause && currentTabController.onPause()
-    }, TabbedView.prototype.setTitle = function() {
-        Emby.Page.setTitle("")
-    }, TabbedView
+
+        if (currentTabController && currentTabController.onPause) {
+            currentTabController.onPause();
+        }
+    };
+
+    TabbedView.prototype.setTitle = function () {
+        Emby.Page.setTitle('');
+    };
+
+    return TabbedView;
 });

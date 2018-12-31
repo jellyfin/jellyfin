@@ -1,96 +1,170 @@
-define([], function() {
-    "use strict";
+define([], function () {
+    'use strict';
 
     function parentWithAttribute(elem, name, value) {
-        for (; value ? elem.getAttribute(name) !== value : !elem.getAttribute(name);)
-            if (!(elem = elem.parentNode) || !elem.getAttribute) return null;
-        return elem
+
+        while ((value ? elem.getAttribute(name) !== value : !elem.getAttribute(name))) {
+            elem = elem.parentNode;
+
+            if (!elem || !elem.getAttribute) {
+                return null;
+            }
+        }
+
+        return elem;
     }
 
     function parentWithTag(elem, tagNames) {
-        for (Array.isArray(tagNames) || (tagNames = [tagNames]); - 1 === tagNames.indexOf(elem.tagName || "");)
-            if (!(elem = elem.parentNode)) return null;
-        return elem
+
+        // accept both string and array passed in
+        if (!Array.isArray(tagNames)) {
+            tagNames = [tagNames];
+        }
+
+        while (tagNames.indexOf(elem.tagName || '') === -1) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
     }
 
     function containsAnyClass(classList, classNames) {
-        for (var i = 0, length = classNames.length; i < length; i++)
-            if (classList.contains(classNames[i])) return !0;
-        return !1
+
+        for (var i = 0, length = classNames.length; i < length; i++) {
+            if (classList.contains(classNames[i])) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function parentWithClass(elem, classNames) {
-        for (Array.isArray(classNames) || (classNames = [classNames]); !elem.classList || !containsAnyClass(elem.classList, classNames);)
-            if (!(elem = elem.parentNode)) return null;
-        return elem
+
+        // accept both string and array passed in
+        if (!Array.isArray(classNames)) {
+            classNames = [classNames];
+        }
+
+        while (!elem.classList || !containsAnyClass(elem.classList, classNames)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
     }
+
+    var supportsCaptureOption = false;
+    try {
+        var opts = Object.defineProperty({}, 'capture', {
+            get: function () {
+                supportsCaptureOption = true;
+            }
+        });
+        window.addEventListener("test", null, opts);
+    } catch (e) { }
 
     function addEventListenerWithOptions(target, type, handler, options) {
         var optionsOrCapture = options;
-        supportsCaptureOption || (optionsOrCapture = options.capture), target.addEventListener(type, handler, optionsOrCapture)
+        if (!supportsCaptureOption) {
+            optionsOrCapture = options.capture;
+        }
+        target.addEventListener(type, handler, optionsOrCapture);
     }
 
     function removeEventListenerWithOptions(target, type, handler, options) {
         var optionsOrCapture = options;
-        supportsCaptureOption || (optionsOrCapture = options.capture), target.removeEventListener(type, handler, optionsOrCapture)
+        if (!supportsCaptureOption) {
+            optionsOrCapture = options.capture;
+        }
+        target.removeEventListener(type, handler, optionsOrCapture);
     }
 
+    var windowSize;
+    var windowSizeEventsBound;
     function clearWindowSize() {
-        windowSize = null
+        windowSize = null;
     }
 
     function getWindowSize() {
-        return windowSize || (windowSize = {
-            innerHeight: window.innerHeight,
-            innerWidth: window.innerWidth
-        }, windowSizeEventsBound || (windowSizeEventsBound = !0, addEventListenerWithOptions(window, "orientationchange", clearWindowSize, {
-            passive: !0
-        }), addEventListenerWithOptions(window, "resize", clearWindowSize, {
-            passive: !0
-        }))), windowSize
+        if (!windowSize) {
+            windowSize = {
+                innerHeight: window.innerHeight,
+                innerWidth: window.innerWidth
+            };
+
+            if (!windowSizeEventsBound) {
+                windowSizeEventsBound = true;
+                addEventListenerWithOptions(window, "orientationchange", clearWindowSize, { passive: true });
+                addEventListenerWithOptions(window, 'resize', clearWindowSize, { passive: true });
+            }
+        }
+
+        return windowSize;
     }
 
+    var _animationEvent;
     function whichAnimationEvent() {
-        if (_animationEvent) return _animationEvent;
-        var t, el = document.createElement("div"),
-            animations = {
-                animation: "animationend",
-                OAnimation: "oAnimationEnd",
-                MozAnimation: "animationend",
-                WebkitAnimation: "webkitAnimationEnd"
-            };
-        for (t in animations)
-            if (void 0 !== el.style[t]) return _animationEvent = animations[t], animations[t];
-        return _animationEvent = "animationend"
+
+        if (_animationEvent) {
+            return _animationEvent;
+        }
+
+        var t,
+            el = document.createElement("div");
+        var animations = {
+            "animation": "animationend",
+            "OAnimation": "oAnimationEnd",
+            "MozAnimation": "animationend",
+            "WebkitAnimation": "webkitAnimationEnd"
+        };
+        for (t in animations) {
+            if (el.style[t] !== undefined) {
+                _animationEvent = animations[t];
+                return animations[t];
+            }
+        }
+
+        _animationEvent = 'animationend';
+        return _animationEvent;
     }
 
     function whichAnimationCancelEvent() {
-        return whichAnimationEvent().replace("animationend", "animationcancel").replace("AnimationEnd", "AnimationCancel")
+
+        return whichAnimationEvent().replace('animationend', 'animationcancel').replace('AnimationEnd', 'AnimationCancel');
     }
 
+    var _transitionEvent;
     function whichTransitionEvent() {
-        if (_transitionEvent) return _transitionEvent;
-        var t, el = document.createElement("div"),
-            transitions = {
-                transition: "transitionend",
-                OTransition: "oTransitionEnd",
-                MozTransition: "transitionend",
-                WebkitTransition: "webkitTransitionEnd"
-            };
-        for (t in transitions)
-            if (void 0 !== el.style[t]) return _transitionEvent = transitions[t], transitions[t];
-        return _transitionEvent = "transitionend"
-    }
-    var supportsCaptureOption = !1;
-    try {
-        var opts = Object.defineProperty({}, "capture", {
-            get: function() {
-                supportsCaptureOption = !0
+        if (_transitionEvent) {
+            return _transitionEvent;
+        }
+
+        var t,
+            el = document.createElement("div");
+        var transitions = {
+            "transition": "transitionend",
+            "OTransition": "oTransitionEnd",
+            "MozTransition": "transitionend",
+            "WebkitTransition": "webkitTransitionEnd"
+        };
+        for (t in transitions) {
+            if (el.style[t] !== undefined) {
+                _transitionEvent = transitions[t];
+                return transitions[t];
             }
-        });
-        window.addEventListener("test", null, opts)
-    } catch (e) {}
-    var windowSize, windowSizeEventsBound, _animationEvent, _transitionEvent;
+        }
+
+        _transitionEvent = 'transitionend';
+        return _transitionEvent;
+    }
+
     return {
         parentWithAttribute: parentWithAttribute,
         parentWithClass: parentWithClass,
@@ -101,5 +175,5 @@ define([], function() {
         whichTransitionEvent: whichTransitionEvent,
         whichAnimationEvent: whichAnimationEvent,
         whichAnimationCancelEvent: whichAnimationCancelEvent
-    }
+    };
 });

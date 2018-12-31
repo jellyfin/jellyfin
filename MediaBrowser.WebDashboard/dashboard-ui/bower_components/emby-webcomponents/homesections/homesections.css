@@ -1,10 +1,11 @@
-.homeLibraryButton {
+﻿.homeLibraryButton {
     min-width: 18%;
-    margin: .5em !important
+    margin: .5em !important;
 }
 
-@media all and (max-width:50em) {
+@media all and (max-width: 50em) {
+
     .homeLibraryButton {
-        width: 46% !important
+        width: 46% !important;
     }
 }

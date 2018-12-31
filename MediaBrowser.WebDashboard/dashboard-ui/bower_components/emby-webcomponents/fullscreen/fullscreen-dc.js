@@ -1,12 +1,26 @@
-define(["dom", "fullscreenManager"], function(dom, fullscreenManager) {
-    "use strict";
+define(['dom', 'fullscreenManager'], function (dom, fullscreenManager) {
+    'use strict';
 
     function isTargetValid(target) {
-        return !dom.parentWithTag(target, ["BUTTON", "INPUT", "TEXTAREA"])
+
+        if (dom.parentWithTag(target, ['BUTTON', 'INPUT', 'TEXTAREA'])) {
+            return false;
+        }
+
+        return true;
     }
-    dom.addEventListener(window, "dblclick", function(e) {
-        isTargetValid(e.target) && (fullscreenManager.isFullScreen() ? fullscreenManager.exitFullscreen() : fullscreenManager.requestFullscreen())
+
+    dom.addEventListener(window, 'dblclick', function (e) {
+
+        if (isTargetValid(e.target)) {
+            if (fullscreenManager.isFullScreen()) {
+                fullscreenManager.exitFullscreen();
+            } else {
+                fullscreenManager.requestFullscreen();
+            }
+        }
+
     }, {
-        passive: !0
-    })
+        passive: true
+    });
 });

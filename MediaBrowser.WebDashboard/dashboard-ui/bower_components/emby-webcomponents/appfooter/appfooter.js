@@ -1,20 +1,46 @@
-define(["browser", "css!./appfooter"], function(browser) {
-    "use strict";
+﻿define(['browser', 'css!./appfooter'], function (browser) {
+    'use strict';
 
     function render(options) {
-        var elem = document.createElement("div");
-        return elem.classList.add("appfooter"), browser.chrome || elem.classList.add("appfooter-blurred"), document.body.appendChild(elem), elem
+
+        var elem = document.createElement('div');
+
+        elem.classList.add('appfooter');
+
+        if (!browser.chrome) {
+            // chrome does not display this properly
+            elem.classList.add('appfooter-blurred');
+        }
+
+        document.body.appendChild(elem);
+
+        return elem;
     }
 
     function appFooter(options) {
+
         var self = this;
-        self.element = render(options), self.add = function(elem) {
-            self.element.appendChild(elem)
-        }, self.insert = function(elem) {
-            "string" == typeof elem ? self.element.insertAdjacentHTML("afterbegin", elem) : self.element.insertBefore(elem, self.element.firstChild)
-        }
+
+        self.element = render(options);
+
+        self.add = function (elem) {
+            self.element.appendChild(elem);
+        };
+
+        self.insert = function (elem) {
+            if (typeof elem === 'string') {
+                self.element.insertAdjacentHTML('afterbegin', elem);
+            } else {
+                self.element.insertBefore(elem, self.element.firstChild);
+            }
+        };
     }
-    return appFooter.prototype.destroy = function() {
-        this.element = null
-    }, appFooter
+
+    appFooter.prototype.destroy = function () {
+        var self = this;
+
+        self.element = null;
+    };
+
+    return appFooter;
 });

@@ -1,103 +1,74 @@
-.nowPlayingBarInfoContainer {
-    display: -webkit-box;
-    display: -webkit-flex;
+﻿.nowPlayingBarInfoContainer {
     display: flex;
-    -webkit-box-align: center;
-    -webkit-align-items: center;
     align-items: center;
     height: 100%;
-    -webkit-box-flex: 1;
-    -webkit-flex-grow: 1;
     flex-grow: 1;
-    overflow: hidden
+    overflow: hidden;
 }
 
+/* Now playing bar */
 .nowPlayingBar {
+    /* Above everything, except for the video player and popup overlays */
     text-align: center;
     will-change: transform;
     contain: layout style;
-    -webkit-transition: -webkit-transform .2s ease-out;
-    -o-transition: transform .2s ease-out;
-    transition: transform .2s ease-out
+    transition: transform 200ms ease-out;
 }
 
 .nowPlayingBar-hidden {
-    -webkit-transform: translate3d(0, 100%, 0);
-    transform: translate3d(0, 100%, 0)
+    transform: translate3d(0,100%,0);
 }
 
 .nowPlayingBarTop {
-    display: -webkit-box;
-    display: -webkit-flex;
     display: flex;
-    -webkit-box-orient: horizontal;
-    -webkit-box-direction: normal;
-    -webkit-flex-direction: row;
     flex-direction: row;
-    -webkit-box-align: center;
-    -webkit-align-items: center;
     align-items: center;
     height: 4.2em;
     position: relative;
-    -webkit-box-pack: center;
-    -webkit-justify-content: center;
-    justify-content: center
+    justify-content: center;
 }
 
-.mediaButton,
-.nowPlayingBarUserDataButtons .btnUserItemRating {
+.mediaButton, .nowPlayingBarUserDataButtons .btnUserItemRating {
     vertical-align: middle;
     margin: 0;
-    text-align: center
+    text-align: center;
 }
 
 .mediaButton {
-    font-size: 120%
+    font-size: 120%;
 }
 
 .nowPlayingBar .nowPlayingImage {
     background-position: center center;
     background-repeat: no-repeat;
-    -webkit-background-size: contain;
     background-size: contain;
     height: 70%;
     width: 4.2em;
-    -webkit-flex-shrink: 0;
-    flex-shrink: 0
+    flex-shrink: 0;
 }
 
 .nowPlayingBarText {
     overflow: hidden;
     white-space: nowrap;
-    -o-text-overflow: ellipsis;
     text-overflow: ellipsis;
     vertical-align: middle;
     text-align: left;
-    -webkit-box-flex: 1;
-    -webkit-flex-grow: 1;
     flex-grow: 1;
     font-size: 92%;
     margin-right: 2.4em;
-    margin-left: 1em
+    margin-left: 1em;
 }
 
 .nowPlayingBarCenter {
     vertical-align: middle;
     text-align: center;
+    /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
     z-index: 2;
-    -webkit-box-flex: 1;
-    -webkit-flex-grow: 1;
     flex-grow: 1;
-    display: -webkit-box;
-    display: -webkit-flex;
     display: flex;
-    -webkit-box-align: center;
-    -webkit-align-items: center;
     align-items: center;
-    -webkit-box-pack: center;
-    -webkit-justify-content: center;
     justify-content: center;
-    position: absolute
+    position: absolute;
 }
 
 .nowPlayingBarPositionContainer {
@@ -105,81 +76,81 @@
     left: 0;
     top: -.56em;
     right: 0;
-    z-index: 1
+    z-index: 1;
 }
 
-.headroom--unpinned .nowPlayingBarPositionContainer,
+.headroom--unpinned .nowPlayingBarPositionContainer {
+    display: none;
+}
+
 .noMediaProgress .nowPlayingBarPositionContainer {
-    display: none
+    display: none;
 }
 
 .nowPlayingBarRight {
     position: relative;
     margin: 0 .5em 0 auto;
+    /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
     z-index: 2;
-    display: -webkit-box;
-    display: -webkit-flex;
     display: flex;
-    -webkit-box-align: center;
-    -webkit-align-items: center;
     align-items: center;
-    -webkit-flex-shrink: 0;
-    flex-shrink: 0
+    flex-shrink: 0;
 }
 
 .nowPlayingBarCurrentTime {
     vertical-align: middle;
     text-align: center;
     display: inline-block;
-    padding-left: 1.5em
+    padding-left: 1.5em;
 }
 
 .nowPlayingBarVolumeSliderContainer {
-    margin-right: 2em
+    margin-right: 2em;
 }
 
 .nowPlayingBarUserDataButtons {
     display: inline-block;
     margin-left: 1em;
-    margin-right: 1em
+    margin-right: 1em;
 }
 
 .nowPlayingBarPositionSlider::-webkit-slider-thumb {
     width: 1.2em !important;
-    height: 1.2em !important
+    height: 1.2em !important;
 }
 
-@media all and (max-width:87.5em) {
+@media all and (max-width: 87.5em) {
+
     .nowPlayingBarUserDataButtons {
-        display: none
+        display: none;
     }
 }
 
-@media all and (max-width:68.75em) {
+@media all and (max-width: 68.75em) {
 
-    .nowPlayingBar .muteButton,
-    .nowPlayingBar .unmuteButton,
-    .nowPlayingBarVolumeSliderContainer {
-        display: none !important
+    .nowPlayingBarVolumeSliderContainer, .nowPlayingBar .muteButton, .nowPlayingBar .unmuteButton {
+        display: none !important;
     }
 }
 
-@media all and (max-width:50em) {
+@media all and (max-width: 50em) {
+
     .nowPlayingBarCenter {
-        display: none !important
+        display: none !important;
     }
 
     .toggleRepeatButton {
-        display: none
+        display: none;
     }
 }
 
-@media all and (min-width:50em) {
+@media all and (min-width: 50em) {
+
     .nowPlayingBarRight .playPauseButton {
-        display: none
+        display: none;
     }
 
     .nowPlayingBarInfoContainer {
-        max-width: 40%
+        max-width: 40%;
     }
 }

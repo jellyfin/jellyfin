@@ -1,16 +1,13 @@
-.appfooter {
+﻿.appfooter {
     position: fixed;
     left: 0;
     right: 0;
     z-index: 1;
     bottom: 0;
-    -webkit-transition: -webkit-transform 180ms linear;
-    -o-transition: transform 180ms linear;
     transition: transform 180ms linear;
-    contain: layout style
+    contain: layout style;
 }
 
-.appfooter.headroom--unpinned {
-    -webkit-transform: translateY(100%) !important;
-    transform: translateY(100%) !important
-}
+    .appfooter.headroom--unpinned {
+        transform: translateY(100%)!important;
+    }
