@@ -193,7 +193,7 @@ namespace MediaBrowser.Server.Mono
                 Serilog.Log.Logger = new LoggerConfiguration()
                     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] {Message:lj}{NewLine}{Exception}")
                     .WriteTo.File(
-                        Path.Combine(logDir, "logs", "log_.log"),
+                        Path.Combine(logDir, "log_.log"),
                         rollingInterval: RollingInterval.Day,
                         outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] {Message}{NewLine}{Exception}")
                     .Enrich.FromLogContext()
