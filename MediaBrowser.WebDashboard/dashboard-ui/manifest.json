@@ -1,6 +1,5 @@
 {
-  "_comment": "This should be Jellyfin, but that breaks apps...",
-  "description": "Jellyfin: the Free Software media system.",
+  "description": "The Free Software media system.",
   "display": "minimal-ui",
   "icons": [
     {
