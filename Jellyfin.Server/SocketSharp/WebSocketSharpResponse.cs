@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 using HttpListenerResponse = SocketHttpListener.Net.HttpListenerResponse;
 using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
 using IRequest = MediaBrowser.Model.Services.IRequest;
-using System.Net.Sockets;
 
-namespace EmbyServer.SocketSharp
+
+namespace Jellyfin.SocketSharp
 {
     public class WebSocketSharpResponse : IHttpResponse
     {

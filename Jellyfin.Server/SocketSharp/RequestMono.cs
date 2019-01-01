@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -8,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 
-namespace EmbyServer.SocketSharp
+namespace Jellyfin.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {
@@ -52,7 +51,7 @@ namespace EmbyServer.SocketSharp
 
                 input.Position = 0;
 
-                //Uncomment to debug
+                // Uncomment to debug
                 //var content = new StreamReader(ms).ReadToEnd();
                 //Console.WriteLine(boundary + "::" + content);
                 //input.Position = 0;
@@ -802,6 +801,5 @@ namespace EmbyServer.SocketSharp
                 return path.Substring(path.LastIndexOf('\\') + 1);
             }
         }
-
     }
 }
