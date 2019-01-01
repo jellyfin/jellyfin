@@ -416,7 +416,6 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager = GetConfigurationManager();
 
-            // Initialize this early in case the -v command line option is used
             Logger = LoggerFactory.CreateLogger("App");
 
             StartupOptions = options;
@@ -467,7 +466,7 @@ namespace Emby.Server.Implementations
         {
             get
             {
-                return _version ?? (_version = GetType().GetTypeInfo().Assembly.GetName().Version);
+                return _version ?? (_version = typeof(ApplicationHost).Assembly.GetName().Version);
             }
         }
 
@@ -1772,7 +1771,7 @@ namespace Emby.Server.Implementations
             return list.ToList();
         }
 
-        protected abstract List<Assembly> GetAssembliesWithPartsInternal();
+        protected abstract IEnumerable<Assembly> GetAssembliesWithPartsInternal();
 
         /// <summary>
         /// Gets the plugin assemblies.

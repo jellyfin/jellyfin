@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Emby.Server.Implementations.HttpServer;
-using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 using SocketHttpListener.Net;
 using IHttpFile = MediaBrowser.Model.Services.IHttpFile;
 using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
 using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
 using IResponse = MediaBrowser.Model.Services.IResponse;
-using System.Threading.Tasks;
 
-namespace EmbyServer.SocketSharp
+namespace Jellyfin.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {
