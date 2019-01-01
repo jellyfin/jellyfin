@@ -9,12 +9,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.System
 {
@@ -137,11 +136,12 @@ namespace MediaBrowser.Api.System
 
             try
             {
-                files = _fileSystem.GetFiles(_appPaths.LogDirectoryPath, new[] { ".txt" }, true, false);
+                files = _fileSystem.GetFiles(_appPaths.LogDirectoryPath, new[] { ".txt", ".log" }, true, false);
             }
-            catch (IOException)
+            catch (IOException ex)
             {
-                files = new FileSystemMetadata[] { };
+                Logger.LogError(ex, "Error getting logs");
+                files = Enumerable.Empty<FileSystemMetadata>();
             }
 
             var result = files.Select(i => new LogFile
