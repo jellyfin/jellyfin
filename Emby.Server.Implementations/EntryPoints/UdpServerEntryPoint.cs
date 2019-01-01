@@ -45,9 +45,6 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         public void Run()
         {
-            // ToDo: Fix This
-            return;
-
             var udpServer = new UdpServer(_logger, _appHost, _json, _socketFactory);
 
             try
