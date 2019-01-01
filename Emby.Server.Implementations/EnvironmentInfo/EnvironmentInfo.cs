@@ -41,7 +41,8 @@ namespace Emby.Server.Implementations.EnvironmentInfo
         {
             get
             {
-                switch (OperatingSystem) {
+                switch (OperatingSystem)
+                {
                     case MediaBrowser.Model.System.OperatingSystem.Android: return "Android";
                     case MediaBrowser.Model.System.OperatingSystem.BSD: return "BSD";
                     case MediaBrowser.Model.System.OperatingSystem.Linux: return "Linux";
