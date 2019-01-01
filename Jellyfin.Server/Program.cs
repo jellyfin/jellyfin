@@ -130,6 +130,8 @@ namespace Jellyfin.Server
             string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
             if (string.IsNullOrEmpty(logDir)){
                 logDir = Path.Combine(programDataPath, "logs");
+                // Ensure logDir exists
+                Directory.CreateDirectory(logDir);
                 // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
                 Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", logDir);
             }
