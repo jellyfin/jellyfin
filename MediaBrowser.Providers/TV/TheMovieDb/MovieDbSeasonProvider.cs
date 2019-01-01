@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
@@ -32,14 +32,14 @@ namespace MediaBrowser.Providers.TV
         private readonly ILocalizationManager _localization;
         private readonly ILogger _logger;
 
-        public MovieDbSeasonProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization, IJsonSerializer jsonSerializer, ILogManager logManager)
+        public MovieDbSeasonProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization, IJsonSerializer jsonSerializer, ILoggerFactory loggerFactory)
         {
             _httpClient = httpClient;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
             _jsonSerializer = jsonSerializer;
-            _logger = logManager.GetLogger(GetType().Name);
+            _logger = loggerFactory.CreateLogger(GetType().Name);
         }
 
         public async Task<MetadataResult<Season>> GetMetadata(SeasonInfo info, CancellationToken cancellationToken)
@@ -97,7 +97,7 @@ namespace MediaBrowser.Providers.TV
                 }
                 catch (HttpException ex)
                 {
-                    _logger.Error("No metadata found for {0}", seasonNumber.Value);
+                    _logger.LogError(ex, "No metadata found for {0}", seasonNumber.Value);
 
                     if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                     {

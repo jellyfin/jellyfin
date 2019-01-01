@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.XbmcMetadata.Configuration;
 using MediaBrowser.XbmcMetadata.Savers;
 using System;
@@ -294,7 +294,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             }
                             else
                             {
-                                Logger.Warn("Invalid Added value found: " + val);
+                                Logger.LogWarning("Invalid Added value found: " + val);
                             }
                         }
                         break;

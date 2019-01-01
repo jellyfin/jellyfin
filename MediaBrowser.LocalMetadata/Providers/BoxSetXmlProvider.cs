@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.LocalMetadata.Parsers;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System.IO;
 using System.Threading;
 

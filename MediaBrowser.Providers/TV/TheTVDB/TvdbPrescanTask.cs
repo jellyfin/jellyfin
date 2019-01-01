@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
@@ -358,7 +358,7 @@ namespace MediaBrowser.Providers.TV
                     }
                     catch (HttpException ex)
                     {
-                        _logger.ErrorException("Error updating tvdb series id {0}, language {1}", ex, seriesId, language);
+                        _logger.LogError(ex, "Error updating tvdb series id {ID}, language {Language}", seriesId, language);
 
                         // Already logged at lower levels, but don't fail the whole operation, unless timed out
                         // We have to fail this to make it run again otherwise new episode data could potentially be missing
@@ -389,7 +389,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         private Task UpdateSeries(string id, string seriesDataPath, long? lastTvDbUpdateTime, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
-            _logger.Info("Updating series from tvdb " + id + ", language " + preferredMetadataLanguage);
+            _logger.LogInformation("Updating series from tvdb " + id + ", language " + preferredMetadataLanguage);
 
             seriesDataPath = Path.Combine(seriesDataPath, id);
 

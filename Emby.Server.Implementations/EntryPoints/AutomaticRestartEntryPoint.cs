@@ -2,7 +2,7 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Linq;
@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 {
                     DisposeTimer();
 
-                    _logger.Info("Automatically restarting the system because it is idle and a restart is required.");
+                    _logger.LogInformation("Automatically restarting the system because it is idle and a restart is required.");
 
                     try
                     {
@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error restarting server", ex);
+                        _logger.LogError(ex, "Error restarting server");
                     }
                 }
             }
@@ -98,7 +98,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error getting timers", ex);
+                    _logger.LogError(ex, "Error getting timers");
                 }
             }
 

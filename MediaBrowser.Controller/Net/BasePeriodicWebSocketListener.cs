@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
+﻿using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Threading;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,6 +7,7 @@ using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -114,7 +114,7 @@ namespace MediaBrowser.Controller.Net
 
             var cancellationTokenSource = new CancellationTokenSource();
 
-            Logger.Debug("{1} Begin transmitting over websocket to {0}", message.Connection.RemoteEndPoint, GetType().Name);
+            Logger.LogDebug("{1} Begin transmitting over websocket to {0}", message.Connection.RemoteEndPoint, GetType().Name);
 
             var timer = SendOnTimer ?
                 TimerFactory.Create(TimerCallback, message.Connection, Timeout.Infinite, Timeout.Infinite) :
@@ -229,7 +229,7 @@ namespace MediaBrowser.Controller.Net
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error sending web socket message {0}", ex, Name);
+                Logger.LogError(ex, "Error sending web socket message {Name}", Name);
                 DisposeConnection(tuple);
             }
         }
@@ -257,7 +257,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="connection">The connection.</param>
         private void DisposeConnection(Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType> connection)
         {
-            Logger.Debug("{1} stop transmitting over websocket to {0}", connection.Item1.RemoteEndPoint, GetType().Name);
+            Logger.LogDebug("{1} stop transmitting over websocket to {0}", connection.Item1.RemoteEndPoint, GetType().Name);
 
             var timer = connection.Item3;
 

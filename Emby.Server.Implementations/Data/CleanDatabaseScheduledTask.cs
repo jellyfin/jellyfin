@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.Data
             var numComplete = 0;
             var numItems = itemIds.Count;
 
-            _logger.Debug("Cleaning {0} items with dead parent links", numItems);
+            _logger.LogDebug("Cleaning {0} items with dead parent links", numItems);
 
             foreach (var itemId in itemIds)
             {
@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.Data
 
                 if (item != null)
                 {
-                    _logger.Info("Cleaning item {0} type: {1} path: {2}", item.Name, item.GetType().Name, item.Path ?? string.Empty);
+                    _logger.LogInformation("Cleaning item {0} type: {1} path: {2}", item.Name, item.GetType().Name, item.Path ?? string.Empty);
 
                     _libraryManager.DeleteItem(item, new DeleteOptions
                     {

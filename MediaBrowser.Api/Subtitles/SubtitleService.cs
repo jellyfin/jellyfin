@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Subtitles
 {
@@ -273,11 +274,11 @@ namespace MediaBrowser.Api.Subtitles
                     await _subtitleManager.DownloadSubtitles(video, request.SubtitleId, CancellationToken.None)
                         .ConfigureAwait(false);
 
-                    _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.High);
+                    _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(Logger, _fileSystem)), RefreshPriority.High);
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error downloading subtitles", ex);
+                    Logger.LogError(ex, "Error downloading subtitles");
                 }
 
             });

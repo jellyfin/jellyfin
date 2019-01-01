@@ -4,6 +4,10 @@
  - [nvllsvm](https://github.com/nvllsvm)
  - [JustAMan](https://github.com/JustAMan)
  - [dcrdev](https://github.com/dcrdev)
+ - [EraYaN](https://github.com/EraYaN)
+ - [flemse](https://github.com/flemse)
+ - [bfayers](https://github.com/bfayers)
+ - [Bond_009](https://github.com/Bond-009)
 
 # Emby Contributors
 

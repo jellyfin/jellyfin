@@ -15,7 +15,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Library;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Users;
@@ -248,7 +248,7 @@ namespace Emby.Server.Implementations.Session
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error updating user", ex);
+                        _logger.LogError("Error updating user", ex);
                     }
                 }
             }
@@ -528,7 +528,7 @@ namespace Emby.Server.Implementations.Session
 
                 foreach (var session in idle)
                 {
-                    _logger.Debug("Session {0} has gone idle while playing", session.Id);
+                    _logger.LogDebug("Session {0} has gone idle while playing", session.Id);
 
                     try
                     {
@@ -543,7 +543,7 @@ namespace Emby.Server.Implementations.Session
                     }
                     catch (Exception ex)
                     {
-                        _logger.Debug("Error calling OnPlaybackStopped", ex);
+                        _logger.LogDebug("Error calling OnPlaybackStopped", ex);
                     }
                 }
 
@@ -847,7 +847,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var msString = info.PositionTicks.HasValue ? (info.PositionTicks.Value / 10000).ToString(CultureInfo.InvariantCulture) : "unknown";
 
-                _logger.Info("Playback stopped reported by app {0} {1} playing {2}. Stopped at {3} ms",
+                _logger.LogInformation("Playback stopped reported by app {0} {1} playing {2}. Stopped at {3} ms",
                     session.Client,
                     session.ApplicationVersion,
                     info.Item.Name,
@@ -882,7 +882,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error closing live stream", ex);
+                    _logger.LogError("Error closing live stream", ex);
                 }
             }
 
@@ -1042,7 +1042,7 @@ namespace Emby.Server.Implementations.Session
                 command.PlayCommand = PlayCommand.PlayNow;
             }
 
-            command.ItemIds = items.Select(i => i.Id).ToArray(items.Count);
+            command.ItemIds = items.Select(i => i.Id).ToArray();
 
             if (user != null)
             {
@@ -1070,7 +1070,7 @@ namespace Emby.Server.Implementations.Session
 
                         if (episodes.Count > 0)
                         {
-                            command.ItemIds = episodes.Select(i => i.Id).ToArray(episodes.Count);
+                            command.ItemIds = episodes.Select(i => i.Id).ToArray();
                         }
                     }
                 }
@@ -1095,7 +1095,7 @@ namespace Emby.Server.Implementations.Session
 
             if (item == null)
             {
-                _logger.Error("A non-existant item Id {0} was passed into TranslateItemForPlayback", id);
+                _logger.LogError("A non-existant item Id {0} was passed into TranslateItemForPlayback", id);
                 return new List<BaseItem>();
             }
 
@@ -1151,7 +1151,7 @@ namespace Emby.Server.Implementations.Session
 
             if (item == null)
             {
-                _logger.Error("A non-existant item Id {0} was passed into TranslateItemForInstantMix", id);
+                _logger.LogError("A non-existant item Id {0} was passed into TranslateItemForInstantMix", id);
                 return new List<BaseItem>();
             }
 
@@ -1222,7 +1222,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in SendRestartRequiredNotification.", ex);
+                    _logger.LogError("Error in SendRestartRequiredNotification.", ex);
                 }
 
             }, cancellationToken)).ToArray();
@@ -1249,7 +1249,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in SendServerShutdownNotification.", ex);
+                    _logger.LogError("Error in SendServerShutdownNotification.", ex);
                 }
 
             }, cancellationToken)).ToArray();
@@ -1266,7 +1266,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            _logger.Debug("Beginning SendServerRestartNotification");
+            _logger.LogDebug("Beginning SendServerRestartNotification");
 
             var sessions = Sessions.ToList();
 
@@ -1278,7 +1278,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in SendServerRestartNotification.", ex);
+                    _logger.LogError("Error in SendServerRestartNotification.", ex);
                 }
 
             }, cancellationToken)).ToArray();
@@ -1316,7 +1316,7 @@ namespace Emby.Server.Implementations.Session
                     UserName = user.Name
                 });
 
-                session.AdditionalUsers = list.ToArray(list.Count);
+                session.AdditionalUsers = list.ToArray();
             }
         }
 
@@ -1345,7 +1345,7 @@ namespace Emby.Server.Implementations.Session
                 var list = session.AdditionalUsers.ToList();
                 list.Remove(user);
 
-                session.AdditionalUsers = list.ToArray(list.Count);
+                session.AdditionalUsers = list.ToArray();
             }
         }
 
@@ -1462,7 +1462,7 @@ namespace Emby.Server.Implementations.Session
 
             if (existing != null)
             {
-                _logger.Info("Reissuing access token: " + existing.AccessToken);
+                _logger.LogInformation("Reissuing access token: " + existing.AccessToken);
                 return existing.AccessToken;
             }
 
@@ -1481,7 +1481,7 @@ namespace Emby.Server.Implementations.Session
                 UserName = user.Name
             };
 
-            _logger.Info("Creating new access token for user {0}", user.Id);
+            _logger.LogInformation("Creating new access token for user {0}", user.Id);
             _authRepo.Create(newToken);
 
             return newToken.AccessToken;
@@ -1513,7 +1513,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            _logger.Info("Logging out access token {0}", existing.AccessToken);
+            _logger.LogInformation("Logging out access token {0}", existing.AccessToken);
 
             _authRepo.Delete(existing);
 
@@ -1529,7 +1529,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error reporting session ended", ex);
+                    _logger.LogError("Error reporting session ended", ex);
                 }
             }
         }
@@ -1599,7 +1599,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error saving device capabilities", ex);
+                    _logger.LogError("Error saving device capabilities", ex);
                 }
             }
         }
@@ -1669,7 +1669,7 @@ namespace Emby.Server.Implementations.Session
                 fields.Remove(ItemFields.Tags);
                 fields.Remove(ItemFields.ExtraIds);
 
-                dtoOptions.Fields = fields.ToArray(fields.Count);
+                dtoOptions.Fields = fields.ToArray();
 
                 _itemInfoDtoOptions = dtoOptions;
             }
@@ -1692,7 +1692,7 @@ namespace Emby.Server.Implementations.Session
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting {0} image info", ex, type);
+                _logger.LogError("Error getting {0} image info", ex, type);
                 return null;
             }
         }
@@ -1818,7 +1818,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error sending message", ex);
+                    _logger.LogError("Error sending message", ex);
                 }
 
             }, cancellationToken)).ToArray();
@@ -1840,7 +1840,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error sending message", ex);
+                    _logger.LogError("Error sending message", ex);
                 }
 
             }, cancellationToken)).ToArray();
@@ -1862,7 +1862,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error sending message", ex);
+                    _logger.LogError("Error sending message", ex);
                 }
 
             }, cancellationToken)).ToArray();
@@ -1886,7 +1886,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error sending message", ex);
+                    _logger.LogError("Error sending message", ex);
                 }
 
             }, cancellationToken)).ToArray();

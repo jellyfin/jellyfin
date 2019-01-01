@@ -13,7 +13,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -169,7 +169,7 @@ namespace MediaBrowser.Providers.Playlists
                 var file = directoryService.GetFile(path);
                 if (file != null && file.LastWriteTimeUtc != item.DateModified)
                 {
-                    _logger.Debug("Refreshing {0} due to date modified timestamp change.", path);
+                    _logger.LogDebug("Refreshing {0} due to date modified timestamp change.", path);
                     return true;
                 }
             }

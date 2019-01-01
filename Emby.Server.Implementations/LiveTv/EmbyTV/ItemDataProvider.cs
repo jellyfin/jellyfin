@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 if (_items == null)
                 {
-                    Logger.Info("Loading live tv data from {0}", _dataPath);
+                    Logger.LogInformation("Loading live tv data from {0}", _dataPath);
                     _items = GetItemsFromFile(_dataPath);
                 }
                 return _items.ToList();
@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error deserializing {0}", ex, jsonFile);
+                Logger.LogError(ex, "Error deserializing {jsonFile}", jsonFile);
             }
             return new List<T>();
         }

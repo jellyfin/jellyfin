@@ -6,7 +6,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using SQLitePCL.pretty;
 
@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.Data
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error migrating users database", ex);
+                Logger.LogError(ex, "Error migrating users database");
             }
         }
 

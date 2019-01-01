@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Providers.Manager;
 using System;
 using System.Collections.Generic;
@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers.TV
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error in DummySeasonProvider", ex);
+                Logger.LogError(ex, "Error in DummySeasonProvider");
             }
         }
 

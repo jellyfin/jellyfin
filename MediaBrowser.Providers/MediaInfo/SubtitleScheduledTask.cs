@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
@@ -148,7 +148,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error downloading subtitles for {0}", ex, video.Path);
+                    _logger.LogError(ex, "Error downloading subtitles for {Path}", video.Path);
                 }
 
                 // Update progress

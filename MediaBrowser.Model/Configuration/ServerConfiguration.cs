@@ -221,7 +221,7 @@ namespace MediaBrowser.Model.Configuration
             HttpsPortNumber = DefaultHttpsPort;
             EnableHttps = true;
             EnableDashboardResponseCaching = true;
-            EnableAnonymousUsageReporting = true;
+            EnableAnonymousUsageReporting = false;
             EnableCaseSensitiveItemIds = true;
 
             EnableAutomaticRestart = true;
@@ -246,7 +246,7 @@ namespace MediaBrowser.Model.Configuration
             SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
             SortRemoveWords = new[] { "the", "a", "an" };
 
-            UICulture = "en-us";
+            UICulture = "en-US";
 
             MetadataOptions = new[]
             {

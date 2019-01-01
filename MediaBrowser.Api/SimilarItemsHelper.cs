@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api
 {
@@ -81,7 +80,7 @@ namespace MediaBrowser.Api
 
             var query = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = includeTypes.Select(i => i.Name).ToArray(includeTypes.Length),
+                IncludeItemTypes = includeTypes.Select(i => i.Name).ToArray(),
                 Recursive = true,
                 DtoOptions = dtoOptions
             };

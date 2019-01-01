@@ -20,7 +20,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Savers
@@ -135,7 +135,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             }
             catch (Exception ex)
             {
-                Logger.Error("Error setting hidden attribute on {0} - {1}", path, ex.Message);
+                Logger.LogError(ex, "Error setting hidden attribute on {path}", path);
             }
         }
 

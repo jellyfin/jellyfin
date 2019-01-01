@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -34,7 +34,7 @@ namespace Emby.Dlna.Eventing
 
             // Remove logging for now because some devices are sending this very frequently
             // TODO re-enable with dlna debug logging setting
-            //_logger.Debug("Renewing event subscription for {0} with timeout of {1} to {2}",
+            //_logger.LogDebug("Renewing event subscription for {0} with timeout of {1} to {2}",
             //    subscription.NotificationType,
             //    timeout,
             //    subscription.CallbackUrl);
@@ -60,7 +60,7 @@ namespace Emby.Dlna.Eventing
 
             // Remove logging for now because some devices are sending this very frequently
             // TODO re-enable with dlna debug logging setting
-            //_logger.Debug("Creating event subscription for {0} with timeout of {1} to {2}",
+            //_logger.LogDebug("Creating event subscription for {0} with timeout of {1} to {2}",
             //    notificationType,
             //    timeout,
             //    callbackUrl);
@@ -96,7 +96,7 @@ namespace Emby.Dlna.Eventing
 
         public EventSubscriptionResponse CancelEventSubscription(string subscriptionId)
         {
-            _logger.Debug("Cancelling event subscription {0}", subscriptionId);
+            _logger.LogDebug("Cancelling event subscription {0}", subscriptionId);
 
             EventSubscription sub;
             _subscriptions.TryRemove(subscriptionId, out sub);

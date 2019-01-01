@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -37,12 +37,12 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpResultFactory" /> class.
         /// </summary>
-        public HttpResultFactory(ILogManager logManager, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IBrotliCompressor brotliCompressor)
+        public HttpResultFactory(ILoggerFactory loggerfactory, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IBrotliCompressor brotliCompressor)
         {
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
             _brotliCompressor = brotliCompressor;
-            _logger = logManager.GetLogger("HttpResultFactory");
+            _logger = loggerfactory.CreateLogger("HttpResultFactory");
         }
 
         /// <summary>
@@ -112,12 +112,15 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         private IHasHeaders GetHttpResult(IRequest requestContext, byte[] content, string contentType, bool addCachePrevention, IDictionary<string, string> responseHeaders = null)
         {
+            string compressionType = null;
+            bool isHeadRequest = false;
+
+            if (requestContext != null) {
+                compressionType = GetCompressionType(requestContext, content, contentType);
+                isHeadRequest = string.Equals(requestContext.Verb, "head", StringComparison.OrdinalIgnoreCase);
+            }
+
             IHasHeaders result;
-
-            var compressionType = requestContext == null ? null : GetCompressionType(requestContext, content, contentType);
-
-            var isHeadRequest = string.Equals(requestContext.Verb, "head", StringComparison.OrdinalIgnoreCase);
-
             if (string.IsNullOrEmpty(compressionType))
             {
                 var contentLength = content.Length;

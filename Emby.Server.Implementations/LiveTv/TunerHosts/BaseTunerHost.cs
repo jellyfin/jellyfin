@@ -2,7 +2,7 @@
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             var result = await GetChannelsInternal(tuner, cancellationToken).ConfigureAwait(false);
             var list = result.ToList();
-            //Logger.Info("Channels from {0}: {1}", tuner.Url, JsonSerializer.SerializeToString(list));
+            //logger.LogInformation("Channels from {0}: {1}", tuner.Url, JsonSerializer.SerializeToString(list));
 
             if (!string.IsNullOrEmpty(key) && list.Count > 0)
             {
@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error getting channel list", ex);
+                    Logger.LogError(ex, "Error getting channel list");
 
                     if (enableCache)
                     {
@@ -161,7 +161,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     }
                     catch (Exception ex)
                     {
-                        Logger.Error("Error getting channels", ex);
+                        Logger.LogError(ex, "Error getting channels");
                     }
                 }
             }
@@ -201,7 +201,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error("Error getting channels", ex);
+                    Logger.LogError(ex, "Error getting channels");
                 }
             }
 
@@ -216,12 +216,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     var startTime = DateTime.UtcNow;
                     await liveStream.Open(cancellationToken).ConfigureAwait(false);
                     var endTime = DateTime.UtcNow;
-                    Logger.Info("Live stream opened after {0}ms", (endTime - startTime).TotalMilliseconds);
+                    Logger.LogInformation("Live stream opened after {0}ms", (endTime - startTime).TotalMilliseconds);
                     return liveStream;
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error("Error opening tuner", ex);
+                    Logger.LogError(ex, "Error opening tuner");
                 }
             }
 

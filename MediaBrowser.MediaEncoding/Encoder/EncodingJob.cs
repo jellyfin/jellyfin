@@ -5,7 +5,6 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using System;
@@ -14,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -81,7 +81,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error disposing log stream", ex);
+                    _logger.LogError(ex, "Error disposing log stream");
                 }
 
                 LogFileStream = null;
@@ -98,7 +98,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error closing media source", ex);
+                    _logger.LogError(ex, "Error closing media source");
                 }
             }
         }

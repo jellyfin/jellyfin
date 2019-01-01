@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -143,7 +143,7 @@ namespace MediaBrowser.Api
                 {
                     var list = options.Fields.ToList();
                     list.Add(Model.Querying.ItemFields.RecursiveItemCount);
-                    options.Fields = list.ToArray(list.Count);
+                    options.Fields = list.ToArray();
                 }
 
                 if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
@@ -156,7 +156,7 @@ namespace MediaBrowser.Api
                 {
                     var list = options.Fields.ToList();
                     list.Add(Model.Querying.ItemFields.ChildCount);
-                    options.Fields = list.ToArray(list.Count);
+                    options.Fields = list.ToArray();
                 }
             }
 

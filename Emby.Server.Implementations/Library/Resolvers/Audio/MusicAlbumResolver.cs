@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using Emby.Naming.Audio;
 using System;
 using System.Collections.Generic;
@@ -128,7 +128,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                         {
                             if (IsMultiDiscFolder(path, libraryOptions))
                             {
-                                logger.Debug("Found multi-disc folder: " + path);
+                                logger.LogDebug("Found multi-disc folder: " + path);
                                 discSubfolderCount++;
                             }
                             else
