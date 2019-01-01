@@ -134,7 +134,7 @@ namespace Jellyfin.Server
                 Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", logDir);
             }
 
-            string appPath = Assembly.GetEntryAssembly().Location;
+            string appPath = AppContext.BaseDirectory;
 
             return new ServerApplicationPaths(programDataPath, appPath, appPath, logDir);
         }
