@@ -1066,8 +1066,6 @@ namespace Emby.Server.Implementations
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths, EnvironmentInfo.EnvironmentInfo environmentInfo)
         {
-            var builder = new StringBuilder();
-
             // Distinct these to prevent users from reporting problems that aren't actually problems
             var commandLineArgs = Environment
                 .GetCommandLineArgs()
@@ -1076,11 +1074,11 @@ namespace Emby.Server.Implementations
             logger.LogInformation("Arguments: {Args}", commandLineArgs);
             logger.LogInformation("Operating system: {OS} {OSVersion}", environmentInfo.OperatingSystemName, environmentInfo.OperatingSystemVersion);
             logger.LogInformation("Architecture: {Architecture}", environmentInfo.SystemArchitecture);
-            logger.LogInformation("64-Bit Process: {0}", Environment.Is64BitProcess);
-            logger.LogInformation("User Interactive: {0}", Environment.UserInteractive);
-            logger.LogInformation("Processor count: {0}", Environment.ProcessorCount);
-            logger.LogInformation("Program data path: {0}", appPaths.ProgramDataPath);
-            logger.LogInformation("Application directory: {0}", appPaths.ProgramSystemPath);
+            logger.LogInformation("64-Bit Process: {Is64Bit}", Environment.Is64BitProcess);
+            logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
+            logger.LogInformation("Processor count: {ProcessorCount}", Environment.ProcessorCount);
+            logger.LogInformation("Program data path: {ProgramDataPath}", appPaths.ProgramDataPath);
+            logger.LogInformation("Application directory: {ApplicationPath}", appPaths.ProgramSystemPath);
         }
 
         private void SetHttpLimit()
@@ -1151,7 +1149,7 @@ namespace Emby.Server.Implementations
                 //localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
                 if (!localCert.HasPrivateKey)
                 {
-                    Logger.LogError("No private key included in SSL cert {0}.", certificateLocation);
+                    Logger.LogError("No private key included in SSL cert {CertificateLocation}.", certificateLocation);
                     return null;
                 }
 
@@ -1159,7 +1157,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error loading cert from {certificateLocation}", certificateLocation);
+                Logger.LogError(ex, "Error loading cert from {CertificateLocation}", certificateLocation);
                 return null;
             }
         }
