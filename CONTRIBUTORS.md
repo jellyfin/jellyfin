@@ -8,6 +8,7 @@
  - [flemse](https://github.com/flemse)
  - [bfayers](https://github.com/bfayers)
  - [Bond_009](https://github.com/Bond-009)
+ - [cvium](https://github.com/cvium)
 
 # Emby Contributors
 
