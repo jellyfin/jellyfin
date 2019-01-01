@@ -8,7 +8,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
@@ -101,7 +101,7 @@ namespace MediaBrowser.Providers.Subtitles
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error downloading subtitles from {0}", ex, provider.Name);
+                        _logger.LogError(ex, "Error downloading subtitles from {Provider}", provider.Name);
                     }
                 }
                 return new RemoteSubtitleInfo[] { };
@@ -119,7 +119,7 @@ namespace MediaBrowser.Providers.Subtitles
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error downloading subtitles from {0}", ex, i.Name);
+                    _logger.LogError(ex, "Error downloading subtitles from {0}", i.Name);
                     return new RemoteSubtitleInfo[] { };
                 }
             });
@@ -207,7 +207,7 @@ namespace MediaBrowser.Providers.Subtitles
 
             foreach (var savePath in savePaths)
             {
-                _logger.Info("Saving subtitles to {0}", savePath);
+                _logger.LogInformation("Saving subtitles to {0}", savePath);
 
                 _monitor.ReportFileSystemChangeBeginning(savePath);
 

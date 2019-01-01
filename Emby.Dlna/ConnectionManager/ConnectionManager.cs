@@ -2,9 +2,9 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using Emby.Dlna.Service;
-using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.ConnectionManager
 {

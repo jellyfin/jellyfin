@@ -14,7 +14,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Extensions;
 
@@ -30,11 +30,11 @@ namespace Emby.Server.Implementations.Configuration
         /// Initializes a new instance of the <see cref="ServerConfigurationManager" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
-        /// <param name="logManager">The log manager.</param>
+        /// <param name="loggerFactory">The paramref name="loggerFactory" factory.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
         /// <param name="fileSystem">The file system.</param>
-        public ServerConfigurationManager(IApplicationPaths applicationPaths, ILogManager logManager, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
-            : base(applicationPaths, logManager, xmlSerializer, fileSystem)
+        public ServerConfigurationManager(IApplicationPaths applicationPaths, ILoggerFactory loggerFactory, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
+            : base(applicationPaths, loggerFactory, xmlSerializer, fileSystem)
         {
             UpdateMetadataPath();
         }

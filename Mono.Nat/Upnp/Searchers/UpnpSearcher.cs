@@ -37,7 +37,7 @@ using System.Diagnostics;
 using System.Net.Sockets;
 using System.Net.NetworkInformation;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Dlna;
 using System.Threading.Tasks;
 
@@ -90,7 +90,7 @@ namespace Mono.Nat
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error decoding device response", ex);
+                _logger.LogError(ex, "Error decoding device response");
             }
         }
 

@@ -7,7 +7,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
 using MediaBrowser.Model.Serialization;
@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     mediaInfo = _json.DeserializeFromFile<MediaInfo>(cacheFilePath);
 
-                    //_logger.Debug("Found cached media info");
+                    //_logger.LogDebug("Found cached media info");
                 }
                 catch
                 {
@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.Library
                     delayMs = Math.Max(3000, delayMs);
                     if (delayMs > 0)
                     {
-                        _logger.Info("Waiting {0}ms before probing the live stream", delayMs);
+                        _logger.LogInformation("Waiting {0}ms before probing the live stream", delayMs);
                         await Task.Delay(delayMs, cancellationToken).ConfigureAwait(false);
                     }
                 }
@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Library
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
                     _json.SerializeToFile(mediaInfo, cacheFilePath);
 
-                    //_logger.Debug("Saved media info to {0}", cacheFilePath);
+                    //_logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }
             }
 
@@ -104,7 +104,7 @@ namespace Emby.Server.Implementations.Library
                 mediaStreams = newList;
             }
 
-            _logger.Info("Live tv media info probe took {0} seconds", (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture));
+            _logger.LogInformation("Live tv media info probe took {0} seconds", (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture));
 
             mediaSource.Bitrate = mediaInfo.Bitrate;
             mediaSource.Container = mediaInfo.Container;

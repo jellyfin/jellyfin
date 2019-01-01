@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -145,7 +145,7 @@ namespace MediaBrowser.Providers.Movies
                 movie.ProductionLocations = movieData
                     .production_countries
                     .Select(i => i.name)
-                    .ToArray(movieData.production_countries.Count);
+                    .ToArray();
             }
 
             movie.SetProviderId(MetadataProviders.Tmdb, movieData.id.ToString(_usCulture));

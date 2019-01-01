@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Model.ApiClient;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -79,7 +79,7 @@ namespace Emby.Server.Implementations.Udp
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in OnMessageReceived", ex);
+                    _logger.LogError(ex, "Error in OnMessageReceived");
                 }
             }
         }
@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.Udp
             }
             else
             {
-                _logger.Warn("Unable to respond to udp request because the local ip address could not be determined.");
+                _logger.LogWarning("Unable to respond to udp request because the local ip address could not be determined.");
             }
         }
 
@@ -171,7 +171,7 @@ namespace Emby.Server.Implementations.Udp
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error receiving udp message", ex);
+                _logger.LogError(ex, "Error receiving udp message");
             }
         }
 
@@ -193,7 +193,7 @@ namespace Emby.Server.Implementations.Udp
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error receiving udp message", ex);
+                _logger.LogError(ex, "Error receiving udp message");
             }
 
             BeginReceive();
@@ -224,7 +224,7 @@ namespace Emby.Server.Implementations.Udp
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error handling UDP message", ex);
+                _logger.LogError(ex, "Error handling UDP message");
             }
         }
 
@@ -274,7 +274,7 @@ namespace Emby.Server.Implementations.Udp
             {
                 await _udpClient.SendToAsync(bytes, 0, bytes.Length, remoteEndPoint, cancellationToken).ConfigureAwait(false);
 
-                _logger.Info("Udp message sent to {0}", remoteEndPoint);
+                _logger.LogInformation("Udp message sent to {remoteEndPoint}", remoteEndPoint);
             }
             catch (OperationCanceledException)
             {
@@ -282,7 +282,7 @@ namespace Emby.Server.Implementations.Udp
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error sending message to {0}", ex, remoteEndPoint);
+                _logger.LogError(ex, "Error sending message to {remoteEndPoint}", remoteEndPoint);
             }
         }
     }

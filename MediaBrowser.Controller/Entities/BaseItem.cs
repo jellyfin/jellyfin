@@ -1,41 +1,32 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Extensions;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -798,7 +789,7 @@ namespace MediaBrowser.Controller.Entities
 
                 builder.Append(chunkBuilder);
             }
-            //Logger.Debug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
+            //logger.LogDebug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
             return builder.ToString().RemoveDiacritics();
         }
 
@@ -1295,7 +1286,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return string.Join("/", terms.ToArray(terms.Count));
+            return string.Join("/", terms.ToArray());
         }
 
         /// <summary>
@@ -1414,7 +1405,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error refreshing owned items for {0}", ex, Path ?? Name);
+                    Logger.LogError(ex, "Error refreshing owned items for {path}", Path ?? Name);
                 }
             }
 
@@ -1536,7 +1527,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var newThemeVideos = LoadThemeVideos(fileSystemChildren, options.DirectoryService);
 
-            var newThemeVideoIds = newThemeVideos.Select(i => i.Id).ToArray(newThemeVideos.Length);
+            var newThemeVideoIds = newThemeVideos.Select(i => i.Id).ToArray();
 
             var themeVideosChanged = !item.ThemeVideoIds.SequenceEqual(newThemeVideoIds);
 
@@ -1573,7 +1564,7 @@ namespace MediaBrowser.Controller.Entities
         private async Task<bool> RefreshThemeSongs(BaseItem item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newThemeSongs = LoadThemeSongs(fileSystemChildren, options.DirectoryService);
-            var newThemeSongIds = newThemeSongs.Select(i => i.Id).ToArray(newThemeSongs.Length);
+            var newThemeSongIds = newThemeSongs.Select(i => i.Id).ToArray();
 
             var themeSongsChanged = !item.ThemeSongIds.SequenceEqual(newThemeSongIds);
 
@@ -1802,7 +1793,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (!isAllowed)
                 {
-                    Logger.Debug("{0} has an unrecognized parental rating of {1}.", Name, rating);
+                    Logger.LogDebug("{0} has an unrecognized parental rating of {1}.", Name, rating);
                 }
 
                 return isAllowed;
@@ -2058,7 +2049,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (itemByPath == null)
                 {
-                    //Logger.Warn("Unable to find linked item at path {0}", info.Path);
+                    //Logger.LogWarning("Unable to find linked item at path {0}", info.Path);
                 }
 
                 return itemByPath;
@@ -2070,7 +2061,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (item == null)
                 {
-                    //Logger.Warn("Unable to find linked item at path {0}", info.Path);
+                    //Logger.LogWarning("Unable to find linked item at path {0}", info.Path);
                 }
 
                 return item;
@@ -2110,9 +2101,8 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    var list = current.ToArray(current.Length + 1);
-                    list[list.Length - 1] = name;
-                    Studios = list;
+                    var list = 
+                    Studios = current.Concat(new [] { name }).ToArray();
                 }
             }
         }
@@ -2214,7 +2204,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public virtual void ChangedExternally()
         {
-            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(FileSystem)
+            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(new DirectoryService(Logger, FileSystem))
             {
 
             }, RefreshPriority.High);
@@ -2252,9 +2242,7 @@ namespace MediaBrowser.Controller.Entities
             else
             {
                 var currentCount = ImageInfos.Length;
-                var newList = ImageInfos.ToArray(currentCount + 1);
-                newList[currentCount] = image;
-                ImageInfos = newList;
+                ImageInfos = ImageInfos.Concat(new [] { image }) .ToArray();
             }
         }
 
@@ -2269,10 +2257,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (image == null)
             {
-                var currentCount = ImageInfos.Length;
-                var newList = ImageInfos.ToArray(currentCount + 1);
-                newList[currentCount] = GetImageInfo(file, type);
-                ImageInfos = newList;
+                ImageInfos = ImageInfos.Concat(new [] { GetImageInfo(file, type) }) .ToArray();
             }
             else
             {
@@ -2486,16 +2471,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (newImageList.Count > 0)
             {
-                var currentCount = ImageInfos.Length;
-                var newList = ImageInfos.ToArray(currentCount + newImageList.Count);
-
-                foreach (var image in newImageList)
-                {
-                    newList[currentCount] = GetImageInfo(image, imageType);
-                    currentCount++;
-                }
-
-                ImageInfos = newList;
+                ImageInfos = ImageInfos.Concat(newImageList.Select(i => GetImageInfo(i, imageType))).ToArray();
             }
 
             return imageUpdated || newImageList.Count > 0;
@@ -2537,7 +2513,7 @@ namespace MediaBrowser.Controller.Entities
             var extensions = new List<string> { ".nfo", ".xml", ".srt", ".vtt", ".sub", ".idx", ".txt", ".edl", ".bif", ".smi", ".ttml" };
             extensions.AddRange(SupportedImageExtensions);
 
-            return FileSystem.GetFiles(FileSystem.GetDirectoryName(Path), extensions.ToArray(extensions.Count), false, false)
+            return FileSystem.GetFiles(FileSystem.GetDirectoryName(Path), extensions.ToArray(), false, false)
                 .Where(i => System.IO.Path.GetFileNameWithoutExtension(i.FullName).StartsWith(filename, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
@@ -2776,7 +2752,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var list = GetEtagValues(user);
 
-            return string.Join("|", list.ToArray(list.Count)).GetMD5().ToString("N");
+            return string.Join("|", list.ToArray()).GetMD5().ToString("N");
         }
 
         protected virtual List<string> GetEtagValues(User user)

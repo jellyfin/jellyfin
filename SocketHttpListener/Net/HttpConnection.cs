@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
@@ -173,7 +173,7 @@ namespace SocketHttpListener.Net
 
         private void OnTimeout(object unused)
         {
-            //_logger.Info("HttpConnection timer fired");
+            //_logger.LogInformation("HttpConnection timer fired");
             CloseSocket();
             Unbind();
         }

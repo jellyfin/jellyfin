@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading;
@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error refreshing {0}", ex, name);
+                    _logger.LogError(ex, "Error refreshing {GenreName}", name);
                 }
 
                 numComplete++;

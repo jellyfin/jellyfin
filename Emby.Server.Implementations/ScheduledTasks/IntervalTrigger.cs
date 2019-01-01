@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Tasks;
 
 namespace Emby.Server.Implementations.ScheduledTasks

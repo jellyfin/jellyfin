@@ -376,7 +376,7 @@ define(["datetime", "events", "itemHelper", "serverNotifications", "dom", "globa
             },
             systemUpdateTaskKey: "SystemUpdateTask",
             renderUrls: function(page, systemInfo) {
-                var helpButton = '<a is="emby-linkbutton" class="raised raised-mini button-submit" href="https://github.com/MediaBrowser/Wiki/wiki/Connectivity" target="_blank" style="margin-left:.7em;font-size:84%;padding:.2em .8em;">' + globalize.translate("ButtonHelp") + "</a>",
+                var helpButton = '<a is="emby-linkbutton" class="raised raised-mini button-submit" href="https://web.archive.org/web/20181216120305/https://github.com/MediaBrowser/Wiki/wiki/Connectivity" target="_blank" style="margin-left:.7em;font-size:84%;padding:.2em .8em;">' + globalize.translate("ButtonHelp") + "</a>",
                     localUrlElem = page.querySelector(".localUrl"),
                     externalUrlElem = page.querySelector(".externalUrl");
                 if (systemInfo.LocalAddress) {
@@ -520,7 +520,8 @@ define(["datetime", "events", "itemHelper", "serverNotifications", "dom", "globa
                             serverId: ApiClient.serverId(),
                             element: page.querySelector(".serverActivityItems")
                         })));
-                    var swaggerUrl = "http://swagger.emby.media?url=" + ApiClient.getUrl("openapi");
+                    //FIXME: There is no jellyfin swagger instance, as such this url is currently invalid
+                    var swaggerUrl = "http://swagger.jellyfin.media?url=" + ApiClient.getUrl("openapi");
                     swaggerUrl = swaggerUrl + "&api_key=" + ApiClient.accessToken(), page.querySelector(".swaggerLink").setAttribute("href", swaggerUrl), refreshActiveRecordings(view, apiClient)
                 }
             }), view.addEventListener("viewbeforehide", function() {

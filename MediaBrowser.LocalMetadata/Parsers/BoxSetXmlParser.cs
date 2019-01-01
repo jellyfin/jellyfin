@@ -1,12 +1,11 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Xml;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
@@ -85,7 +84,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 }
             }
 
-            item.Item.LinkedChildren = list.ToArray(list.Count);
+            item.Item.LinkedChildren = list.ToArray();
         }
 
         public BoxSetXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem) : base(logger, providerManager, xmlReaderSettingsFactory, fileSystem)

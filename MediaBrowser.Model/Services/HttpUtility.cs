@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Services
 {
@@ -586,7 +584,7 @@ namespace MediaBrowser.Model.Services
                     WriteCharBytes(bytes, ch, e);
             }
 
-            byte[] buf = bytes.ToArray(bytes.Count);
+            byte[] buf = bytes.ToArray();
             bytes = null;
             return e.GetString(buf, 0, buf.Length);
 

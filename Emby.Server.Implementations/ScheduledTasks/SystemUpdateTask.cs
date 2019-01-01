@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             if (!updateInfo.IsUpdateAvailable)
             {
-                Logger.Debug("No application update available.");
+                Logger.LogDebug("No application update available.");
                 return;
             }
 
@@ -83,13 +83,13 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             if (ConfigurationManager.CommonConfiguration.EnableAutoUpdate)
             {
-                Logger.Info("Update Revision {0} available.  Updating...", updateInfo.AvailableVersion);
+                Logger.LogInformation("Update Revision {0} available.  Updating...", updateInfo.AvailableVersion);
 
                 await _appHost.UpdateApplication(updateInfo.Package, cancellationToken, progress).ConfigureAwait(false);
             }
             else
             {
-                Logger.Info("A new version of " + _appHost.Name + " is available.");
+                Logger.LogInformation("A new version of " + _appHost.Name + " is available.");
             }
         }
 

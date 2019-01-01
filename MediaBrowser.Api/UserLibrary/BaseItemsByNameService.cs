@@ -206,7 +206,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             return new QueryResult<BaseItemDto>
             {
-                Items = dtos.ToArray(result.Items.Length),
+                Items = dtos.ToArray(),
                 TotalRecordCount = result.TotalRecordCount
             };
         }

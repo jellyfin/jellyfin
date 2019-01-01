@@ -35,10 +35,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    var list = item.RemoteTrailers.ToArray(item.RemoteTrailers.Length + 1);
-                    list[list.Length - 1] = mediaUrl;
-
-                    item.RemoteTrailers = list;
+                    item.RemoteTrailers = item.RemoteTrailers.Concat(new [] { mediaUrl }).ToArray();
                 }
             }
         }

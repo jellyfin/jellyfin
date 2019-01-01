@@ -3,7 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     session.ApplicationVersion
                 };
 
-                var key = string.Join("_", keys.ToArray(keys.Count)).GetMD5();
+                var key = string.Join("_", keys.ToArray()).GetMD5();
 
                 ClientInfo info;
                 if (!_apps.TryGetValue(key, out info))
@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception ex)
             {
-                //_logger.ErrorException("Error sending anonymous usage statistics.", ex);
+                _logger.LogError(ex, "Error sending anonymous usage statistics.");
             }
         }
 
@@ -119,7 +119,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception ex)
             {
-                //_logger.ErrorException("Error sending anonymous usage statistics.", ex);
+                _logger.LogError(ex, "Error sending anonymous usage statistics.");
             }
         }
 

@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -95,7 +95,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 }
             }
 
-            item.LinkedChildren = list.ToArray(list.Count);
+            item.LinkedChildren = list.ToArray();
         }
 
         public PlaylistXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem) : base(logger, providerManager, xmlReaderSettingsFactory, fileSystem)

@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators
 {

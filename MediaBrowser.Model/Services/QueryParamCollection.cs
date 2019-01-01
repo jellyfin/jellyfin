@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Services
 {
@@ -221,7 +220,7 @@ namespace MediaBrowser.Model.Services
 
         public override String ToString()
         {
-            var vals = this.Select(GetQueryStringValue).ToArray(this.Count);
+            var vals = this.Select(GetQueryStringValue).ToArray();
 
             return string.Join("&", vals);
         }

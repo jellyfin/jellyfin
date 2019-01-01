@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -245,7 +245,7 @@ namespace MediaBrowser.WebDashboard.Api
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error getting plugin information from {0}", ex, p.GetType().Name);
+                    _logger.LogError(ex, "Error getting plugin information from {Plugin}", p.GetType().Name);
                     return null;
                 }
             })

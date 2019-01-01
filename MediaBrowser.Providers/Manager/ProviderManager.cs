@@ -10,7 +10,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
@@ -79,9 +79,9 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
         /// </summary>
-        public ProviderManager(IHttpClient httpClient, ISubtitleManager subtitleManager, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem, IServerApplicationPaths appPaths, Func<ILibraryManager> libraryManagerFactory, IJsonSerializer json)
+        public ProviderManager(IHttpClient httpClient, ISubtitleManager subtitleManager, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILoggerFactory loggerFactory, IFileSystem fileSystem, IServerApplicationPaths appPaths, Func<ILibraryManager> libraryManagerFactory, IJsonSerializer json)
         {
-            _logger = logManager.GetLogger("ProviderManager");
+            _logger = loggerFactory.CreateLogger("ProviderManager");
             _httpClient = httpClient;
             ConfigurationManager = configurationManager;
             _libraryMonitor = libraryMonitor;
@@ -144,7 +144,7 @@ namespace MediaBrowser.Providers.Manager
                 return service.RefreshMetadata(item, options, cancellationToken);
             }
 
-            _logger.Error("Unable to find a metadata service for item of type " + item.GetType().Name);
+            _logger.LogError("Unable to find a metadata service for item of type {TypeName}", item.GetType().Name);
             return Task.FromResult(ItemUpdateType.None);
         }
 
@@ -250,7 +250,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("{0} failed in GetImageInfos for type {1}", ex, provider.GetType().Name, item.GetType().Name);
+                _logger.LogError(ex, "{0} failed in GetImageInfos for type {1}", provider.GetType().Name, item.GetType().Name);
                 return new List<RemoteImageInfo>();
             }
         }
@@ -329,7 +329,11 @@ namespace MediaBrowser.Providers.Manager
             var options = GetMetadataOptions(item);
             var libraryOptions = _libraryManagerFactory().GetLibraryOptions(item);
 
-            return GetImageProviders(item, libraryOptions, options, new ImageRefreshOptions(new DirectoryService(_logger, _fileSystem)), includeDisabled).OfType<IRemoteImageProvider>();
+            return GetImageProviders(item, libraryOptions, options,
+                    new ImageRefreshOptions(
+                        new DirectoryService(_logger, _fileSystem)),
+                    includeDisabled)
+                .OfType<IRemoteImageProvider>();
         }
 
         private bool CanRefresh(IMetadataProvider provider, BaseItem item, LibraryOptions libraryOptions, MetadataOptions options, bool includeDisabled, bool forceEnableInternetMetadata)
@@ -396,7 +400,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("{0} failed in Supports for type {1}", ex, provider.GetType().Name, item.GetType().Name);
+                _logger.LogError(ex, "{0} failed in Supports for type {1}", provider.GetType().Name, item.GetType().Name);
                 return false;
             }
         }
@@ -506,7 +510,11 @@ namespace MediaBrowser.Providers.Manager
 
             var libraryOptions = new LibraryOptions();
 
-            var imageProviders = GetImageProviders(dummy, libraryOptions, options, new ImageRefreshOptions(new DirectoryService(_logger, _fileSystem)), true).ToList();
+            var imageProviders = GetImageProviders(dummy, libraryOptions, options,
+                                    new ImageRefreshOptions(
+                                        new DirectoryService(_logger, _fileSystem)),
+                                    true)
+                                .ToList();
 
             var pluginList = summary.Plugins.ToList();
 
@@ -522,7 +530,7 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.SubtitleFetcher
             }));
 
-            summary.Plugins = pluginList.ToArray(pluginList.Count);
+            summary.Plugins = pluginList.ToArray();
 
             var supportedImageTypes = imageProviders.OfType<IRemoteImageProvider>()
                 .SelectMany(i => i.GetSupportedImages(dummy))
@@ -620,7 +628,7 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var saver in savers.Where(i => IsSaverEnabledForItem(i, item, libraryOptions, updateType, false)))
             {
-                _logger.Debug("Saving {0} to {1}.", item.Path ?? item.Name, saver.Name);
+                _logger.LogDebug("Saving {0} to {1}.", item.Path ?? item.Name, saver.Name);
 
                 var fileSaver = saver as IMetadataFileSaver;
 
@@ -634,7 +642,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error in {0} GetSavePath", ex, saver.Name);
+                        _logger.LogError(ex, "Error in {0} GetSavePath", saver.Name);
                         continue;
                     }
 
@@ -645,7 +653,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error in metadata saver", ex);
+                        _logger.LogError(ex, "Error in metadata saver");
                     }
                     finally
                     {
@@ -660,7 +668,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error in metadata saver", ex);
+                        _logger.LogError(ex, "Error in metadata saver");
                     }
                 }
             }
@@ -723,7 +731,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error in {0}.IsEnabledFor", ex, saver.Name);
+                _logger.LogError(ex, "Error in {0}.IsEnabledFor", saver.Name);
                 return false;
             }
         }
@@ -825,7 +833,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            //_logger.Debug("Returning search results {0}", _json.SerializeToString(resultList));
+            //_logger.LogDebug("Returning search results {0}", _json.SerializeToString(resultList));
 
             return resultList;
         }
@@ -868,7 +876,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in {0}.Suports", ex, i.GetType().Name);
+                    _logger.LogError(ex, "Error in {0}.Suports", i.GetType().Name);
                     return false;
                 }
             });
@@ -930,7 +938,7 @@ namespace MediaBrowser.Providers.Manager
 
         public void OnRefreshStart(BaseItem item)
         {
-            //_logger.Info("OnRefreshStart {0}", item.Id.ToString("N"));
+            //_logger.LogInformation("OnRefreshStart {0}", item.Id.ToString("N"));
             var id = item.Id;
 
             lock (_activeRefreshes)
@@ -946,7 +954,7 @@ namespace MediaBrowser.Providers.Manager
 
         public void OnRefreshComplete(BaseItem item)
         {
-            //_logger.Info("OnRefreshComplete {0}", item.Id.ToString("N"));
+            //_logger.LogInformation("OnRefreshComplete {0}", item.Id.ToString("N"));
             lock (_activeRefreshes)
             {
                 _activeRefreshes.Remove(item.Id);
@@ -974,7 +982,7 @@ namespace MediaBrowser.Providers.Manager
 
         public void OnRefreshProgress(BaseItem item, double progress)
         {
-            //_logger.Info("OnRefreshProgress {0} {1}", item.Id.ToString("N"), progress);
+            //_logger.LogInformation("OnRefreshProgress {0} {1}", item.Id.ToString("N"), progress);
             var id = item.Id;
 
             lock (_activeRefreshes)
@@ -1062,7 +1070,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error refreshing item", ex);
+                    _logger.LogError(ex, "Error refreshing item");
                 }
             }
 
@@ -1139,7 +1147,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error refreshing library", ex);
+                _logger.LogError(ex, "Error refreshing library");
             }
         }
 

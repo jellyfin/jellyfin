@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 
 namespace MediaBrowser.Model.Activity
@@ -63,6 +63,6 @@ namespace MediaBrowser.Model.Activity
         /// Gets or sets the log severity.
         /// </summary>
         /// <value>The log severity.</value>
-        public LogSeverity Severity { get; set; }
+        public LogLevel Severity { get; set; }
     }
 }

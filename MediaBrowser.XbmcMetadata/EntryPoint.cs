@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.XbmcMetadata.Configuration;
 using MediaBrowser.XbmcMetadata.Savers;
 using System;
@@ -72,7 +72,7 @@ namespace MediaBrowser.XbmcMetadata
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error saving metadata for {0}", ex, item.Path ?? item.Name);
+                _logger.LogError(ex, "Error saving metadata for {path}", item.Path ?? item.Name);
             }
         }
     }
