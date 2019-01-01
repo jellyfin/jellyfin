@@ -221,7 +221,7 @@ namespace MediaBrowser.Model.Configuration
             HttpsPortNumber = DefaultHttpsPort;
             EnableHttps = true;
             EnableDashboardResponseCaching = true;
-            EnableAnonymousUsageReporting = true;
+            EnableAnonymousUsageReporting = false;
             EnableCaseSensitiveItemIds = true;
 
             EnableAutomaticRestart = true;
