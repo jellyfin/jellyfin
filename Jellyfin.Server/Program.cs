@@ -120,7 +120,8 @@ namespace Jellyfin.Server
                     // $XDG_DATA_HOME defines the base directory relative to which user specific data files should be stored.
                     programDataPath = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
                     // If $XDG_DATA_HOME is either not set or empty, $HOME/.local/share should be used.
-                    if (string.IsNullOrEmpty(programDataPath)){
+                    if (string.IsNullOrEmpty(programDataPath))
+                    {
                         programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
                     }
                 }
@@ -128,7 +129,8 @@ namespace Jellyfin.Server
             }
 
             string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
-            if (string.IsNullOrEmpty(logDir)){
+            if (string.IsNullOrEmpty(logDir))
+            {
                 logDir = Path.Combine(programDataPath, "logs");
                 // Ensure logDir exists
                 Directory.CreateDirectory(logDir);
