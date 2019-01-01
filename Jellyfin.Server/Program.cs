@@ -57,7 +57,7 @@ namespace Jellyfin.Server
 
             _logger.LogInformation("Jellyfin version: {Version}", version);
 
-            EnvironmentInfo environmentInfo = getEnvironmentInfo();
+            EnvironmentInfo environmentInfo = new EnvironmentInfo(getOperatingSystem());
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths, environmentInfo);
 
             SQLitePCL.Batteries_V2.Init();
@@ -219,13 +219,6 @@ namespace Jellyfin.Server
 
             return new NullImageEncoder();
         }
-
-        private static EnvironmentInfo getEnvironmentInfo()
-            => new EnvironmentInfo()
-            {
-                SystemArchitecture = RuntimeInformation.OSArchitecture,
-                OperatingSystem = getOperatingSystem()
-            };
 
         private static MediaBrowser.Model.System.OperatingSystem getOperatingSystem() {
             switch (Environment.OSVersion.Platform)

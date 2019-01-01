@@ -8,34 +8,12 @@ namespace Emby.Server.Implementations.EnvironmentInfo
     // TODO: Rework @bond
     public class EnvironmentInfo : IEnvironmentInfo
     {
-        private MediaBrowser.Model.System.OperatingSystem? _customOperatingSystem;
-
-        public virtual MediaBrowser.Model.System.OperatingSystem OperatingSystem
+        public EnvironmentInfo(MediaBrowser.Model.System.OperatingSystem operatingSystem)
         {
-            get
-            {
-                if (_customOperatingSystem.HasValue)
-                {
-                    return _customOperatingSystem.Value;
-                }
-
-                switch (Environment.OSVersion.Platform)
-                {
-                    case PlatformID.MacOSX:
-                        return MediaBrowser.Model.System.OperatingSystem.OSX;
-                    case PlatformID.Win32NT:
-                        return MediaBrowser.Model.System.OperatingSystem.Windows;
-                    case PlatformID.Unix:
-                        return MediaBrowser.Model.System.OperatingSystem.Linux;
-                }
-
-                return MediaBrowser.Model.System.OperatingSystem.Windows;
-            }
-            set
-            {
-                _customOperatingSystem = value;
-            }
+            OperatingSystem = operatingSystem;
         }
+
+        public MediaBrowser.Model.System.OperatingSystem OperatingSystem { get; private set; }
 
         public string OperatingSystemName
         {
@@ -69,7 +47,7 @@ namespace Emby.Server.Implementations.EnvironmentInfo
             }
         }
 
-        public Architecture SystemArchitecture { get; set; }
+        public Architecture SystemArchitecture { get { return RuntimeInformation.OSArchitecture; } }
 
         public string GetEnvironmentVariable(string name)
         {
