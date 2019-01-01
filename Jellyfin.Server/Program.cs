@@ -39,27 +39,23 @@ namespace Jellyfin.Server
         public static async Task<int> Main(string[] args)
         {
             StartupOptions options = new StartupOptions(args);
-
-            Assembly entryAssembly = Assembly.GetEntryAssembly();
+            Version version = Assembly.GetEntryAssembly().GetName().Version;
 
             if (options.ContainsOption("-v") || options.ContainsOption("--version"))
             {
-                Console.WriteLine(entryAssembly.GetName().Version.ToString());
+                Console.WriteLine(version.ToString());
                 return 0;
             }
 
-            string dataPath = options.GetOption("-programdata");
-            string binPath = entryAssembly.Location;
-            ServerApplicationPaths appPaths = CreateApplicationPaths(binPath, dataPath);
-
+            ServerApplicationPaths appPaths = createApplicationPaths(options);
             await createLogger(appPaths);
             _loggerFactory = new SerilogLoggerFactory();
             _logger = _loggerFactory.CreateLogger("Main");
 
             AppDomain.CurrentDomain.UnhandledException += (sender, e) 
-                => _logger.LogCritical((Exception)e.ExceptionObject, "Unhandled Exception");;
+                => _logger.LogCritical((Exception)e.ExceptionObject, "Unhandled Exception");
 
-            _logger.LogInformation("Jellyfin version: {Version}", entryAssembly.GetName().Version);
+            _logger.LogInformation("Jellyfin version: {Version}", version);
 
             EnvironmentInfo environmentInfo = getEnvironmentInfo();
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths, environmentInfo);
@@ -106,9 +102,14 @@ namespace Jellyfin.Server
             return 0;
         }
 
-        private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, string programDataPath)
+        private static ServerApplicationPaths createApplicationPaths(StartupOptions options)
         {
-            if (string.IsNullOrEmpty(programDataPath))
+            string programDataPath;
+            if (options.ContainsOption("-programdata"))
+            {
+                programDataPath = options.GetOption("-programdata");
+            }
+            else
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
@@ -126,28 +127,30 @@ namespace Jellyfin.Server
                 programDataPath = Path.Combine(programDataPath, "jellyfin");
             }
 
-            string appFolderPath = Path.GetDirectoryName(applicationPath);
+            string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
+            if (string.IsNullOrEmpty(logDir)){
+                logDir = Path.Combine(programDataPath, "logs");
+                // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
+                Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", logDir);
+            }
 
-            return new ServerApplicationPaths(programDataPath, appFolderPath, appFolderPath);
+            string appPath = Assembly.GetEntryAssembly().Location;
+
+            return new ServerApplicationPaths(programDataPath, appPath, appPath, logDir);
         }
 
         private static async Task createLogger(IApplicationPaths appPaths)
         {
-            string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
-            if (string.IsNullOrEmpty(logDir)){
-                logDir = Path.Combine(appPaths.ProgramDataPath, "logs");
-                Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", logDir);
-            }
             try
             {
-                string path = Path.Combine(appPaths.ConfigurationDirectoryPath, "logging.json");
+                string configPath = Path.Combine(appPaths.ConfigurationDirectoryPath, "logging.json");
 
-                if (!File.Exists(path))
+                if (!File.Exists(configPath))
                 {
                     // For some reason the csproj name is used instead of the assembly name
                     using (Stream rscstr = typeof(Program).Assembly
                         .GetManifestResourceStream("Jellyfin.Server.Resources.Configuration.logging.json"))
-                    using (Stream fstr = File.Open(path, FileMode.CreateNew))
+                    using (Stream fstr = File.Open(configPath, FileMode.CreateNew))
                     {
                         await rscstr.CopyToAsync(fstr);
                     }
@@ -169,7 +172,7 @@ namespace Jellyfin.Server
                 Serilog.Log.Logger = new LoggerConfiguration()
                     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] {Message:lj}{NewLine}{Exception}")
                     .WriteTo.File(
-                        Path.Combine(logDir, "log_.log"),
+                        Path.Combine(appPaths.LogDirectoryPath, "log_.log"),
                         rollingInterval: RollingInterval.Day,
                         outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] {Message}{NewLine}{Exception}")
                     .Enrich.FromLogContext()
@@ -227,6 +230,7 @@ namespace Jellyfin.Server
                 case PlatformID.Win32NT:
                     return MediaBrowser.Model.System.OperatingSystem.Windows;
                 case PlatformID.Unix:
+                default:
                 {
                     string osDescription = RuntimeInformation.OSDescription;
                     if (osDescription.Contains("linux", StringComparison.OrdinalIgnoreCase))
@@ -241,9 +245,8 @@ namespace Jellyfin.Server
                     {
                         return MediaBrowser.Model.System.OperatingSystem.BSD;
                     }
-                    throw new Exception($"Can't resolve OS with description: {Environment.OSVersion.Platform}");
+                    throw new Exception($"Can't resolve OS with description: '{osDescription}'");
                 }
-                default: throw new Exception($"Can't resolve OS with description: {Environment.OSVersion.Platform}");
             }
         }
 
