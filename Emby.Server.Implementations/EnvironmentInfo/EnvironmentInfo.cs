@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Emby.Server.Implementations.EnvironmentInfo
 {
+    // TODO: Rework @bond
     public class EnvironmentInfo : IEnvironmentInfo
     {
         private MediaBrowser.Model.System.OperatingSystem? _customOperatingSystem;
@@ -40,7 +41,14 @@ namespace Emby.Server.Implementations.EnvironmentInfo
         {
             get
             {
-                return Environment.OSVersion.Platform.ToString();
+                switch (OperatingSystem) {
+                    case MediaBrowser.Model.System.OperatingSystem.Android: return "Android";
+                    case MediaBrowser.Model.System.OperatingSystem.BSD: return "BSD";
+                    case MediaBrowser.Model.System.OperatingSystem.Linux: return "Linux";
+                    case MediaBrowser.Model.System.OperatingSystem.OSX: return "macOS";
+                    case MediaBrowser.Model.System.OperatingSystem.Windows: return "Windows";
+                    default: throw new Exception($"Unknown OS {OperatingSystem}");
+                }
             }
         }
 
