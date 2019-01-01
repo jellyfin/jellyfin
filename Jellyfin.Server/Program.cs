@@ -81,7 +81,7 @@ namespace Jellyfin.Server
             {
                 appHost.Init();
 
-                appHost.ImageProcessor.ImageEncoder = GetImageEncoder(_logger, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo, appHost.LocalizationManager);
+                appHost.ImageProcessor.ImageEncoder = getImageEncoder(_logger, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo, appHost.LocalizationManager);
 
                 _logger.LogInformation("Running startup tasks");
 
@@ -184,7 +184,7 @@ namespace Jellyfin.Server
             }
         }
 
-        public static IImageEncoder GetImageEncoder(
+        public static IImageEncoder getImageEncoder(
             ILogger logger, 
             IFileSystem fileSystem, 
             StartupOptions startupOptions, 
@@ -201,17 +201,18 @@ namespace Jellyfin.Server
                 }
                 catch (Exception ex)
                 {
-                    logger.LogInformation("Skia not available. Will try next image processor. {0}", ex.Message);
+                    logger.LogInformation(ex, "Skia not available. Will try next image processor. {0}");
                 }
 
                 try
                 {
                     return new ImageMagickEncoder(logger, appPaths, httpClient, fileSystem, environment);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    logger.LogInformation("ImageMagick not available. Will try next image processor.");
+                    logger.LogInformation(ex, "ImageMagick not available. Will try next image processor.");
                 }
+                _logger.LogInformation("Falling back on NullImageEncoder");
             }
 
             return new NullImageEncoder();
