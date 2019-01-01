@@ -799,27 +799,6 @@ namespace Emby.Server.Implementations
 
             JsonSerializer = CreateJsonSerializer();
 
-            OnLoggerLoaded(true);
-            //LoggerFactory.LoggerLoaded += (s, e) => OnLoggerLoaded(false);
-
-            DiscoverTypes();
-
-            SetHttpLimit();
-
-            RegisterResources();
-
-            FindParts();
-        }
-
-        protected virtual void OnLoggerLoaded(bool isFirstLoad)
-        {
-            Logger.LogInformation("Application version: {0}", ApplicationVersion);
-
-            if (!isFirstLoad)
-            {
-                LogEnvironmentInfo(Logger, ApplicationPaths, false);
-            }
-
             if (Plugins != null)
             {
                 var pluginBuilder = new StringBuilder();
@@ -831,6 +810,14 @@ namespace Emby.Server.Implementations
 
                 Logger.LogInformation("Plugins: {plugins}", pluginBuilder.ToString());
             }
+
+            DiscoverTypes();
+
+            SetHttpLimit();
+
+            RegisterResources();
+
+            FindParts();
         }
 
         protected virtual IHttpClient CreateHttpClient()
@@ -1073,36 +1060,27 @@ namespace Emby.Server.Implementations
         {
             get
             {
-                return "netframework";
+                return "netcore";
             }
         }
 
-        public static void LogEnvironmentInfo(ILogger Logger, IApplicationPaths appPaths, bool isStartup)
-        {
-            Logger.LogInformation("Jellyfin:\n{ex}", GetBaseExceptionMessage(appPaths).ToString());
-        }
-
-        protected static StringBuilder GetBaseExceptionMessage(IApplicationPaths appPaths)
+        public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths, EnvironmentInfo.EnvironmentInfo environmentInfo)
         {
             var builder = new StringBuilder();
 
             // Distinct these to prevent users from reporting problems that aren't actually problems
             var commandLineArgs = Environment
                 .GetCommandLineArgs()
-                .Distinct()
-                .ToArray();
+                .Distinct();
 
-            builder.AppendLine(string.Format("Command line: {0}", string.Join(" ", commandLineArgs)));
-
-            builder.AppendLine(string.Format("Operating system: {0}", Environment.OSVersion));
-            builder.AppendLine(string.Format("64-Bit OS: {0}", Environment.Is64BitOperatingSystem));
-            builder.AppendLine(string.Format("64-Bit Process: {0}", Environment.Is64BitProcess));
-            builder.AppendLine(string.Format("User Interactive: {0}", Environment.UserInteractive));
-            builder.AppendLine(string.Format("Processor count: {0}", Environment.ProcessorCount));
-            builder.AppendLine(string.Format("Program data path: {0}", appPaths.ProgramDataPath));
-            builder.AppendLine(string.Format("Application directory: {0}", appPaths.ProgramSystemPath));
-
-            return builder;
+            logger.LogInformation("Arguments: {Args}", commandLineArgs);
+            logger.LogInformation("Operating system: {OS} {OSVersion}", environmentInfo.OperatingSystemName, environmentInfo.OperatingSystemVersion);
+            logger.LogInformation("Architecture: {Architecture}", environmentInfo.SystemArchitecture);
+            logger.LogInformation("64-Bit Process: {0}", Environment.Is64BitProcess);
+            logger.LogInformation("User Interactive: {0}", Environment.UserInteractive);
+            logger.LogInformation("Processor count: {0}", Environment.ProcessorCount);
+            logger.LogInformation("Program data path: {0}", appPaths.ProgramDataPath);
+            logger.LogInformation("Application directory: {0}", appPaths.ProgramSystemPath);
         }
 
         private void SetHttpLimit()

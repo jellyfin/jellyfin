@@ -59,14 +59,16 @@ namespace Jellyfin.Server
             AppDomain.CurrentDomain.UnhandledException += (sender, e) 
                 => _logger.LogCritical((Exception)e.ExceptionObject, "Unhandled Exception");;
 
-            ApplicationHost.LogEnvironmentInfo(_logger, appPaths, true);
+            _logger.LogInformation("Jellyfin version: {Version}", entryAssembly.GetName().Version);
+
+            EnvironmentInfo environmentInfo = getEnvironmentInfo();
+            ApplicationHost.LogEnvironmentInfo(_logger, appPaths, environmentInfo);
 
             SQLitePCL.Batteries_V2.Init();
 
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
-            EnvironmentInfo environmentInfo = getEnvironmentInfo();
             var fileSystem = new ManagedFileSystem(_loggerFactory.CreateLogger("FileSystem"), environmentInfo, null, appPaths.TempDirectory, true);
 
             using (var appHost = new CoreAppHost(
@@ -144,7 +146,7 @@ namespace Jellyfin.Server
                 {
                     // For some reason the csproj name is used instead of the assembly name
                     using (Stream rscstr = typeof(Program).Assembly
-                        .GetManifestResourceStream("EmbyServer.Resources.Configuration.logging.json"))
+                        .GetManifestResourceStream("Jellyfin.Server.Resources.Configuration.logging.json"))
                     using (Stream fstr = File.Open(path, FileMode.CreateNew))
                     {
                         await rscstr.CopyToAsync(fstr);
