@@ -278,8 +278,7 @@ namespace Emby.Drawing.ImageMagick
                 {
                     var currentImageSize = new ImageSize(imageWidth, imageHeight);
 
-                    var task = new PlayedIndicatorDrawer(_appPaths, _httpClientFactory(), _fileSystem).DrawPlayedIndicator(wand, currentImageSize);
-                    Task.WaitAll(task);
+                    new PlayedIndicatorDrawer(_appPaths, _httpClientFactory(), _fileSystem).DrawPlayedIndicator(wand, currentImageSize);
                 }
                 else if (options.UnplayedCount.HasValue)
                 {

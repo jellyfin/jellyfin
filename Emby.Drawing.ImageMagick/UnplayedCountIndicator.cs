@@ -1,7 +1,9 @@
-﻿using ImageMagickSharp;
+﻿using System;
+using System.IO;
+using System.Globalization;
+using ImageMagickSharp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Drawing;
-using System.Globalization;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Drawing.ImageMagick
@@ -36,7 +38,7 @@ namespace Emby.Drawing.ImageMagick
                     pixel.Opacity = 0;
                     pixel.Color = "white";
                     draw.FillColor = pixel;
-                    draw.Font = PlayedIndicatorDrawer.ExtractFont("robotoregular.ttf", _appPaths, _fileSystem);
+                    draw.Font = extractFont("robotoregular.ttf", _appPaths, _fileSystem);
                     draw.FontStyle = FontStyleType.NormalStyle;
                     draw.TextAlignment = TextAlignType.CenterAlign;
                     draw.FontWeight = FontWeightType.RegularStyle;
@@ -68,6 +70,41 @@ namespace Emby.Drawing.ImageMagick
                 }
 
             }
+        }
+
+        private static string extractFont(string name, IApplicationPaths paths, IFileSystem fileSystem)
+        {
+            var filePath = Path.Combine(paths.ProgramDataPath, "fonts", name);
+
+            if (fileSystem.FileExists(filePath))
+            {
+                return filePath;
+            }
+
+            var namespacePath = typeof(PlayedIndicatorDrawer).Namespace + ".fonts." + name;
+            var tempPath = Path.Combine(paths.TempDirectory, Guid.NewGuid().ToString("N") + ".ttf");
+            fileSystem.CreateDirectory(fileSystem.GetDirectoryName(tempPath));
+
+            using (var stream = typeof(PlayedIndicatorDrawer).Assembly.GetManifestResourceStream(namespacePath))
+            {
+                using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                {
+                    stream.CopyTo(fileStream);
+                }
+            }
+
+            fileSystem.CreateDirectory(fileSystem.GetDirectoryName(filePath));
+
+            try
+            {
+                fileSystem.CopyFile(tempPath, filePath, false);
+            }
+            catch (IOException)
+            {
+
+            }
+
+            return tempPath;
         }
     }
 }
