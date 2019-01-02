@@ -139,15 +139,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var required = codec == Codec.Encoder ? requiredEncoders : requiredDecoders;
 
-            Regex regex = new Regex(@"\s\S{6}\s(?<codec>(\w|-)+)\s{3}");
+            Regex regex = new Regex(@"\s\S{6}\s(?<codec>[\w|-]+)\s{3}");
 
             MatchCollection matches = regex.Matches(output);
 
             var found = matches.Cast<Match>()
                 .Select(x => x.Groups["codec"].Value)
                 .Where(x => required.Contains(x));
-
-            //var found = required.Where(x => output.IndexOf(x, StringComparison.OrdinalIgnoreCase) != -1);
 
             _logger.LogInformation("Available {Codec}: {Codecs}", codecstr, found);
 
