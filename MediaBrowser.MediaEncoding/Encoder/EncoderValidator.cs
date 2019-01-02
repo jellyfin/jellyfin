@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using MediaBrowser.Model.Diagnostics;
 using Microsoft.Extensions.Logging;
 
@@ -22,8 +23,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             _logger.LogInformation("Validating media encoder at {EncoderPath}", encoderPath);
 
-            var decoders = GetDecoders(encoderPath);
-            var encoders = GetEncoders(encoderPath);
+            var decoders = GetCodecs(encoderPath, Codec.Decoder);
+            var encoders = GetCodecs(encoderPath, Codec.Encoder);
 
             _logger.LogInformation("Encoder validation complete");
 
@@ -71,24 +72,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return true;
         }
 
-        private IEnumerable<string> GetDecoders(string encoderAppPath)
-        {
-            string output = null;
-            try
-            {
-                output = GetProcessOutput(encoderAppPath, "-decoders");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error detecting available decoders");
-            }
-
-            if (string.IsNullOrWhiteSpace(output))
-            {
-                return Enumerable.Empty<string>();
-            }
-
-            var required = new[]
+        private static readonly string[] requiredDecoders = new[]
             {
                 "mpeg2video",
                 "h264_qsv",
@@ -105,31 +89,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "hevc"
             };
 
-            var found = required.Where(x => output.IndexOf(x, StringComparison.OrdinalIgnoreCase) != -1);
-
-            _logger.LogInformation("Available decoders: {Codecs}", found);
-
-            return found;
-        }
-
-        private IEnumerable<string> GetEncoders(string encoderAppPath)
-        {
-            string output = null;
-            try
-            {
-                output = GetProcessOutput(encoderAppPath, "-encoders");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting encoders");
-            }
-
-            if (string.IsNullOrWhiteSpace(output))
-            {
-                return Enumerable.Empty<string>();
-            }
-
-            var required = new[]
+        private static readonly string[] requiredEncoders = new[]
             {
                 "libx264",
                 "libx265",
@@ -153,9 +113,43 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "ac3"
             };
 
-            var found = required.Where(x => output.IndexOf(x, StringComparison.OrdinalIgnoreCase) != -1);
+        private enum Codec
+        {
+            Encoder,
+            Decoder
+        }
 
-            _logger.LogInformation("Available encoders: {Codecs}", found);
+        private IEnumerable<string> GetCodecs(string encoderAppPath, Codec codec)
+        {
+            string codecstr = codec == Codec.Encoder ? "encoders" : "decoders";
+            string output = null;
+            try
+            {
+                output = GetProcessOutput(encoderAppPath, "-" + codecstr);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error detecting available {Codec}", codecstr);
+            }
+
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            var required = codec == Codec.Encoder ? requiredEncoders : requiredDecoders;
+
+            Regex regex = new Regex(@"\s\S{6}\s(?<codec>(\w|-)+)\s{3}");
+
+            MatchCollection matches = regex.Matches(output);
+
+            var found = matches.Cast<Match>()
+                .Select(x => x.Groups["codec"].Value)
+                .Where(x => required.Contains(x));
+
+            //var found = required.Where(x => output.IndexOf(x, StringComparison.OrdinalIgnoreCase) != -1);
+
+            _logger.LogInformation("Available {Codec}: {Codecs}", codecstr, found);
 
             return found;
         }
