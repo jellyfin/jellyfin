@@ -34,20 +34,19 @@ progress::-webkit-progress-bar {
 
 progress::-moz-progress-bar {
     border-radius: .4em;
-    background-image: -moz-linear-gradient(center bottom, #7a61e2 37%, #a319e3 69%)
+    background-color: #a154da
 }
 
 progress::-webkit-progress-value {
     -webkit-border-radius: .4em;
     border-radius: .4em;
-    background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #7a61e2), color-stop(1, #a319e3));
-    background-image: -webkit-linear-gradient(center bottom, #7a61e2 37%, #a319e3 69%)
+    background-color: #a154da
 }
 
 progress[aria-valuenow]:before {
     -webkit-border-radius: .4em;
     border-radius: .4em;
-    background-image: -o-linear-gradient(center bottom, #7a61e2 37%, #a319e3 69%)
+    background-color: #a154da
 }
 
 .localnav {
@@ -418,20 +417,19 @@ div[data-role=controlgroup] a.ui-btn-active {
 
 .transcodingProgress::-moz-progress-bar {
     border-radius: 0;
-    background-image: -moz-linear-gradient(center bottom, #dd4919 37%, #dd4919 69%) !important
+    background-color: #a154da !important
 }
 
 .transcodingProgress::-webkit-progress-value {
     -webkit-border-radius: 0;
     border-radius: 0;
-    background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #dd4919), color-stop(1, #dd4919)) !important;
-    background-image: -webkit-linear-gradient(center bottom, #dd4919 37%, #dd4919 69%) !important
+    background-color: #a154da !important
 }
 
 .transcodingProgress[aria-valuenow]:before {
     -webkit-border-radius: 0;
     border-radius: 0;
-    background-image: -o-linear-gradient(center bottom, #dd4919 37%, #dd4919 69%) !important
+    background-color: #dd4919 !important
 }
 
 .playbackProgress::-moz-progress-bar {
