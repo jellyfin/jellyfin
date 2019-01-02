@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common;
+﻿/*using MediaBrowser.Common;
 using MediaBrowser.Common.Updates;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
@@ -16,7 +16,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// <summary>
     /// Plugin Update Task
     /// </summary>
-    public class PluginUpdateTask /*: IScheduledTask, IConfigurableScheduledTask*/
+    public class PluginUpdateTask : IScheduledTask, IConfigurableScheduledTask
     {
         /// <summary>
         /// The _logger
@@ -140,3 +140,4 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public bool IsLogged => true;
     }
 }
+*/

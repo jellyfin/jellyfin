@@ -2284,17 +2284,6 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// Checks for update.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task{CheckForUpdateResult}.</returns>
-        public Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            throw new Exception("Unimplemented");
-        }
-
-        /// <summary>
         /// Updates the application.
         /// </summary>
         /// <param name="package">The package that contains the update</param>
