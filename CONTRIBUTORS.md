@@ -8,6 +8,7 @@
  - [flemse](https://github.com/flemse)
  - [bfayers](https://github.com/bfayers)
  - [Bond_009](https://github.com/Bond-009)
+ - [AnthonyLavado](https://github.com/anthonylavado)
  - [sparky8251](https://github.com/sparky8251)
 
 # Emby Contributors
