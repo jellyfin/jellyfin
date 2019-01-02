@@ -988,7 +988,8 @@ var Dashboard = {
                 }, {
                     name: "Dark",
                     id: "dark",
-                    isDefault: !0
+                    isDefault: !0,
+                    isDefaultServerDashboard: !0
                 }, {
                     name: "Dark (green accent)",
                     id: "dark-green"
@@ -1001,7 +1002,6 @@ var Dashboard = {
                 }, {
                     name: "Light",
                     id: "light",
-                    isDefaultServerDashboard: !0
                 }, {
                     name: "Light (blue accent)",
                     id: "light-blue"
