@@ -368,7 +368,6 @@ namespace Emby.Server.Implementations
         protected IAuthService AuthService { get; private set; }
 
         public StartupOptions StartupOptions { get; private set; }
-        protected readonly string ReleaseAssetFilename;
 
         internal IPowerManagement PowerManagement { get; private set; }
         internal IImageEncoder ImageEncoder { get; private set; }
@@ -393,7 +392,6 @@ namespace Emby.Server.Implementations
             StartupOptions options,
             IFileSystem fileSystem,
             IPowerManagement powerManagement,
-            string releaseAssetFilename,
             IEnvironmentInfo environmentInfo,
             IImageEncoder imageEncoder,
             ISystemEvents systemEvents,
@@ -419,7 +417,6 @@ namespace Emby.Server.Implementations
             Logger = LoggerFactory.CreateLogger("App");
 
             StartupOptions = options;
-            ReleaseAssetFilename = releaseAssetFilename;
             PowerManagement = powerManagement;
 
             ImageEncoder = imageEncoder;
@@ -2292,48 +2289,12 @@ namespace Emby.Server.Implementations
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task{CheckForUpdateResult}.</returns>
-        public async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
+        public Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var updateLevel = SystemUpdateLevel;
-            var cacheLength = updateLevel == PackageVersionClass.Release ?
-                TimeSpan.FromHours(12) :
-                TimeSpan.FromMinutes(5);
-
-            try
-            {
-                var result = await new GithubUpdater(HttpClient, JsonSerializer).CheckForUpdateResult("MediaBrowser",
-                    "Emby.Releases",
-                    ApplicationVersion,
-                    updateLevel,
-                    ReleaseAssetFilename,
-                    "MBServer",
-                    UpdateTargetFileName,
-                    cacheLength,
-                    cancellationToken).ConfigureAwait(false);
-
-                HasUpdateAvailable = result.IsUpdateAvailable;
-
-                return result;
-            }
-            catch (HttpException ex)
-            {
-                // users are overreacting to this occasionally failing
-                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.Forbidden)
-                {
-                    HasUpdateAvailable = false;
-                    return new CheckForUpdateResult
-                    {
-                        IsUpdateAvailable = false
-                    };
-                }
-
-                throw;
-            }
-        }
-
-        protected virtual string UpdateTargetFileName
-        {
-            get { return "Mbserver.zip"; }
+#if DEBUG
+            throw new Exception("Unimplemented");
+#endif
+            return Task.FromResult(new CheckForUpdateResult());
         }
 
         /// <summary>
