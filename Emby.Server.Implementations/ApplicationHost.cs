@@ -2291,10 +2291,7 @@ namespace Emby.Server.Implementations
         /// <returns>Task{CheckForUpdateResult}.</returns>
         public Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-#if DEBUG
             throw new Exception("Unimplemented");
-#endif
-            return Task.FromResult(new CheckForUpdateResult());
         }
 
         /// <summary>
