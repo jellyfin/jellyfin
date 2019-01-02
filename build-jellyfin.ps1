@@ -103,7 +103,7 @@ if($InstallNSSM.IsPresent -or ($InstallNSSM -eq $true)){
     Install-NSSM $InstallLocation $Architecture
 }
 Copy-Item .\install-jellyfin.ps1 $InstallLocation\install-jellyfin.ps1
-Copy-Item .\installjellyfin.bat $InstallLocation\installjellyfin.bat
+Copy-Item .\install.bat $InstallLocation\install.bat
 if($GenerateZip.IsPresent -or ($GenerateZip -eq $true)){
     Compress-Archive -Path $InstallLocation -DestinationPath "$InstallLocation/jellyfin.zip" -Force
 }
