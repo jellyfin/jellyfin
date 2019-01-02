@@ -56,7 +56,8 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             // Delete log files more than n days old
             var minDateModified = DateTime.UtcNow.AddDays(-ConfigurationManager.CommonConfiguration.LogFileRetentionDays);
 
-			var filesToDelete = _fileSystem.GetFiles(ConfigurationManager.CommonApplicationPaths.LogDirectoryPath, true)
+            // Only delete the .txt log files, the *.log files created by serilog get managed by itself
+            var filesToDelete = _fileSystem.GetFiles(ConfigurationManager.CommonApplicationPaths.LogDirectoryPath, new[] { ".txt" }, true, true)
                           .Where(f => _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)
                           .ToList();
 
@@ -64,8 +65,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
             foreach (var file in filesToDelete)
             {
-                double percent = index;
-                percent /= filesToDelete.Count;
+                double percent = index / filesToDelete.Count;
 
                 progress.Report(100 * percent);
 
