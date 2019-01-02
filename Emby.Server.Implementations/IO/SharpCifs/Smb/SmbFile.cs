@@ -3381,26 +3381,6 @@ namespace SharpCifs.Smb
         }
 
         /// <summary>
-        /// Returns a
-        /// <see cref="System.Uri">System.Uri</see>
-        /// for this <code>SmbFile</code>. The
-        /// <code>URL</code> may be used as any other <code>URL</code> might to
-        /// access an SMB resource. Currently only retrieving data and information
-        /// is supported (i.e. no <tt>doOutput</tt>).
-        /// </summary>
-        /// <returns>
-        /// A new <code>
-        /// <see cref="System.Uri">System.Uri</see>
-        /// </code> for this <code>SmbFile</code>
-        /// </returns>
-        /// <exception cref="System.UriFormatException">System.UriFormatException</exception>
-        [Obsolete(@"Use getURL() instead")]
-        public virtual Uri ToUrl()
-        {
-            return Url;
-        }
-
-        /// <summary>
         /// Computes a hashCode for this file based on the URL string and IP
         /// address if the server.
         /// </summary>

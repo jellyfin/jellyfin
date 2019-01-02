@@ -189,7 +189,7 @@ namespace System.Net
         internal
 #endif
 
-            IPNetwork(BigInteger ipaddress, AddressFamily family, byte cidr)
+        IPNetwork(BigInteger ipaddress, AddressFamily family, byte cidr)
         {
 
             int maxCidr = family == Sockets.AddressFamily.InterNetwork ? 32 : 128;
@@ -1164,18 +1164,6 @@ namespace System.Net
 
         }
 
-        [Obsolete("static Contains is deprecated, please use instance Contains.")]
-        public static bool Contains(IPNetwork network, IPAddress ipaddress)
-        {
-
-            if (network == null)
-            {
-                throw new ArgumentNullException("network");
-            }
-
-            return network.Contains(ipaddress);
-        }
-
         /// <summary>
         /// return true is network2 is fully contained in network
         /// </summary>
@@ -1199,18 +1187,6 @@ namespace System.Net
                 && uintLast <= uintBroadcast);
 
             return contains;
-        }
-
-        [Obsolete("static Contains is deprecated, please use instance Contains.")]
-        public static bool Contains(IPNetwork network, IPNetwork network2)
-        {
-
-            if (network == null)
-            {
-                throw new ArgumentNullException("network");
-            }
-
-            return network.Contains(network2);
         }
 
         #endregion
@@ -1243,18 +1219,6 @@ namespace System.Net
                 || (uintFirst >= uintNetwork && uintLast <= uintBroadcast);
 
             return overlap;
-        }
-
-        [Obsolete("static Overlap is deprecated, please use instance Overlap.")]
-        public static bool Overlap(IPNetwork network, IPNetwork network2)
-        {
-
-            if (network == null)
-            {
-                throw new ArgumentNullException("network");
-            }
-
-            return network.Overlap(network2);
         }
 
         #endregion
@@ -1341,18 +1305,6 @@ namespace System.Net
                 || IPNetwork.IANA_CBLK_RESERVED1.Contains(this);
         }
 
-        [Obsolete("static IsIANAReserved is deprecated, please use instance IsIANAReserved.")]
-        public static bool IsIANAReserved(IPNetwork ipnetwork)
-        {
-
-            if (ipnetwork == null)
-            {
-                throw new ArgumentNullException("ipnetwork");
-            }
-
-            return ipnetwork.IsIANAReserved();
-        }
-
         #endregion
 
         #region Subnet
@@ -1369,16 +1321,6 @@ namespace System.Net
             IPNetworkCollection ipnetworkCollection = null;
             IPNetwork.InternalSubnet(false, this, cidr, out ipnetworkCollection);
             return ipnetworkCollection;
-        }
-
-        [Obsolete("static Subnet is deprecated, please use instance Subnet.")]
-        public static IPNetworkCollection Subnet(IPNetwork network, byte cidr)
-        {
-            if (network == null)
-            {
-                throw new ArgumentNullException("network");
-            }
-            return network.Subnet(cidr);
         }
 
         /// <summary>
@@ -1400,16 +1342,6 @@ namespace System.Net
 
             ipnetworkCollection = inc;
             return true;
-        }
-
-        [Obsolete("static TrySubnet is deprecated, please use instance TrySubnet.")]
-        public static bool TrySubnet(IPNetwork network, byte cidr, out IPNetworkCollection ipnetworkCollection)
-        {
-            if (network == null)
-            {
-                throw new ArgumentNullException("network");
-            }
-            return network.TrySubnet(cidr, out ipnetworkCollection);
         }
 
 #if TRAVISCI
@@ -1476,12 +1408,6 @@ namespace System.Net
             return supernet;
         }
 
-        [Obsolete("static Supernet is deprecated, please use instance Supernet.")]
-        public static IPNetwork Supernet(IPNetwork network, IPNetwork network2)
-        {
-            return network.Supernet(network2);
-        }
-
         /// <summary>
         /// Try to supernet two consecutive cidr equal subnet into a single one
         /// 192.168.0.0/24 + 192.168.1.0/24 = 192.168.0.0/23 
@@ -1498,16 +1424,6 @@ namespace System.Net
             bool parsed = (outSupernet != null);
             supernet = outSupernet;
             return parsed;
-        }
-
-        [Obsolete("static TrySupernet is deprecated, please use instance TrySupernet.")]
-        public static bool TrySupernet(IPNetwork network, IPNetwork network2, out IPNetwork supernet)
-        {
-            if (network == null)
-            {
-                throw new ArgumentNullException("network");
-            }
-            return network.TrySupernet(network2, out supernet);
         }
 
 #if TRAVISCI
@@ -1920,18 +1836,6 @@ namespace System.Net
             return sw.ToString();
         }
 
-        [Obsolete("static Print is deprecated, please use instance Print.")]
-        public static string Print(IPNetwork ipnetwork)
-        {
-
-            if (ipnetwork == null)
-            {
-                throw new ArgumentNullException("ipnetwork");
-            }
-
-            return ipnetwork.Print();
-        }
-
         #endregion
 
         #region TryGuessCidr
@@ -2017,12 +1921,6 @@ namespace System.Net
         #endregion
 
         #region ListIPAddress
-
-        [Obsolete("static ListIPAddress is deprecated, please use instance ListIPAddress.")]
-        public static IPAddressCollection ListIPAddress(IPNetwork ipnetwork)
-        {
-            return ipnetwork.ListIPAddress();
-        }
 
         public IPAddressCollection ListIPAddress()
         {
