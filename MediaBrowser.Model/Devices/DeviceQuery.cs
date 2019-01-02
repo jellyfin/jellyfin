@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace MediaBrowser.Model.Devices
 {
     public class DeviceQuery
@@ -17,6 +19,6 @@ namespace MediaBrowser.Model.Devices
         /// Gets or sets the user identifier.
         /// </summary>
         /// <value>The user identifier.</value>
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
     }
 }
