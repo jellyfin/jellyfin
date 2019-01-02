@@ -1240,7 +1240,7 @@ namespace Emby.Server.Implementations
                 HttpClient,
                 ZipClient,
                 ProcessFactory,
-                5000, false,
+                5000,
                 EnvironmentInfo);
 
             MediaEncoder = mediaEncoder;
