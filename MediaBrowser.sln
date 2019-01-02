@@ -570,11 +570,22 @@ Global
 		{07E39F42-A2C6-4B32-AF8C-725F957A73FF}.Release|x64.Build.0 = Release|Any CPU
 		{07E39F42-A2C6-4B32-AF8C-725F957A73FF}.Release|x86.ActiveCfg = Release|Any CPU
 		{07E39F42-A2C6-4B32-AF8C-725F957A73FF}.Release|x86.Build.0 = Release|Any CPU
+		{D45FC504-D06B-41A0-A220-C20B7E8F1304}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D45FC504-D06B-41A0-A220-C20B7E8F1304}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D45FC504-D06B-41A0-A220-C20B7E8F1304}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D45FC504-D06B-41A0-A220-C20B7E8F1304}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3448830C-EBDC-426C-85CD-7BBB9651A7FE}
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.StandardHeader = $1
+		$1.Text = @### This header should be used to start new files.\n### It provides an explicit per-file license reference that should be present on all new files.\n### To use this header, delete these lines and the following empty line, modify <filename> to\n### the proper full path, and then add new code following the header and a single empty line.\n\n// ${FileName}\n// Part of the Jellyfin project (https://jellyfin.media)\n//\n//    All copyright belongs to the Jellyfin contributors; a full list can\n//    be found in the file CONTRIBUTORS.md\n//\n//    This program is free software: you can redistribute it and/or modify\n//    it under the terms of the GNU General Public License as published by\n//    the Free Software Foundation, version 2.\n//\n//    This program is distributed in the hope that it will be useful,\n//    but WITHOUT ANY WARRANTY; without even the implied warranty of\n//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n//    GNU General Public License for more details.\n//\n//    You should have received a copy of the GNU General Public License\n//    along with this program.  If not, see <https://www.gnu.org/licenses/>.\n
+		$0.DotNetNamingPolicy = $2
+		$2.DirectoryNamespaceAssociation = PrefixedHierarchical
 	EndGlobalSection
 EndGlobal
