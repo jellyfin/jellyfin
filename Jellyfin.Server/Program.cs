@@ -13,7 +13,6 @@ using Emby.Server.Implementations;
 using Emby.Server.Implementations.EnvironmentInfo;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
-using Jellyfin.Server.Native;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
@@ -71,7 +70,6 @@ namespace Jellyfin.Server
                 _loggerFactory,
                 options,
                 fileSystem,
-                new PowerManagement(),
                 environmentInfo,
                 new NullImageEncoder(),
                 new SystemEvents(_loggerFactory.CreateLogger("SystemEvents")),
@@ -274,7 +272,7 @@ namespace Jellyfin.Server
             }
         }
 
-        public static  void Shutdown()
+        public static void Shutdown()
         {
             ApplicationTaskCompletionSource.SetResult(true);
         }
