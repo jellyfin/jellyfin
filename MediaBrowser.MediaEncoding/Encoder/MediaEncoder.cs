@@ -70,13 +70,27 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly string _originalFFMpegPath;
         private readonly string _originalFFProbePath;
         private readonly int DefaultImageExtractionTimeoutMs;
-        private readonly bool EnableEncoderFontFile;
-
         private readonly IEnvironmentInfo _environmentInfo;
 
-        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, bool hasExternalEncoder, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager, IHttpClient httpClient, IZipClient zipClient, IProcessFactory processFactory,
+        public MediaEncoder(ILogger logger,
+            IJsonSerializer jsonSerializer,
+            string ffMpegPath,
+            string ffProbePath,
+            bool hasExternalEncoder,
+            IServerConfigurationManager configurationManager,
+            IFileSystem fileSystem,
+            ILiveTvManager liveTvManager,
+            IIsoManager isoManager,
+            ILibraryManager libraryManager,
+            IChannelManager channelManager,
+            ISessionManager sessionManager,
+            Func<ISubtitleEncoder> subtitleEncoder,
+            Func<IMediaSourceManager> mediaSourceManager,
+            IHttpClient httpClient,
+            IZipClient zipClient,
+            IProcessFactory processFactory,
             int defaultImageExtractionTimeoutMs,
-            bool enableEncoderFontFile, IEnvironmentInfo environmentInfo)
+            IEnvironmentInfo environmentInfo)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
@@ -93,7 +107,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _zipClient = zipClient;
             _processFactory = processFactory;
             DefaultImageExtractionTimeoutMs = defaultImageExtractionTimeoutMs;
-            EnableEncoderFontFile = enableEncoderFontFile;
             _environmentInfo = environmentInfo;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
@@ -177,16 +190,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 SetAvailableDecoders(result.decoders);
                 SetAvailableEncoders(result.encoders);
-
-                if (EnableEncoderFontFile)
-                {
-                    var directory = FileSystem.GetDirectoryName(FFMpegPath);
-
-                    if (!string.IsNullOrWhiteSpace(directory) && FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.ProgramDataPath, directory))
-                    {
-                        new FontConfigLoader(_httpClient, ConfigurationManager.ApplicationPaths, _logger, _zipClient, FileSystem).DownloadFonts(directory).ConfigureAwait(false);
-                    }
-                }
             }
         }
 
