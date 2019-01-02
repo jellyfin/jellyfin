@@ -35,7 +35,7 @@ namespace Emby.Drawing.ImageMagick
             {
                 using (PixelWand pixel = new PixelWand())
                 {
-                    pixel.Color = "#52B54B";
+                    pixel.Color = "#a154da";
                     pixel.Opacity = 0.2;
                     draw.FillColor = pixel;
                     draw.DrawCircle(x, OffsetFromTopRightCorner, x - 20, OffsetFromTopRightCorner - 20);

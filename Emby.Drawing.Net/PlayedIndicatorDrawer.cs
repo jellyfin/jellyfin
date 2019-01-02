@@ -13,7 +13,7 @@ namespace Emby.Drawing.Net
         {
             var x = imageSize.Width - IndicatorWidth - OffsetFromTopRightCorner;
 
-            using (var backdroundBrush = new SolidBrush(Color.FromArgb(225, 82, 181, 75)))
+            using (var backdroundBrush = new SolidBrush(Color.FromArgb(225, 161, 84, 218)))
             {
                 graphics.FillEllipse(backdroundBrush, x, OffsetFromTopRightCorner, IndicatorWidth, IndicatorHeight);
 

@@ -32,7 +32,7 @@ namespace Emby.Drawing.Skia
 
             using (var paint = new SKPaint())
             {
-                paint.Color = SKColor.Parse("#CC52B54B");
+                paint.Color = SKColor.Parse("#CCa154da");
                 paint.Style = SKPaintStyle.Fill;
                 canvas.DrawCircle((float)x, OffsetFromTopRightCorner, 20, paint);
             }

@@ -59,8 +59,8 @@ html {
 }
 
 .paper-icon-button-light:focus {
-    color: #52B54B;
-    background-color: rgba(82, 181, 75, .2)
+    color: #a154da;
+    background-color: rgba(161, 84, 218, .2)
 }
 
 .fab,
@@ -75,7 +75,7 @@ html {
 }
 
 .button-submit {
-    background: #52B54B;
+    background: #a154da;
     color: #fff
 }
 
@@ -100,7 +100,7 @@ html {
 .inputLabelFocused,
 .selectLabelFocused,
 .textareaLabelFocused {
-    color: #52B54B
+    color: #a154da
 }
 
 .checkboxOutline {
@@ -179,16 +179,16 @@ html {
 }
 
 .itemSelectionPanel {
-    border: 1px solid #52B54B
+    border: 1px solid #a154da
 }
 
 .selectionCommandsPanel {
-    background: #52B54B;
+    background: #a154da;
     color: #fff
 }
 
 .upNextDialog-countdownText {
-    color: #52B54B
+    color: #a154da
 }
 
 .alphaPickerButton {
@@ -199,7 +199,7 @@ html {
 
 .alphaPickerButton-selected,
 .alphaPickerButton-tv:focus {
-    background-color: #52B54B;
+    background-color: #a154da;
     color: #fff !important
 }
 
@@ -217,12 +217,12 @@ html {
 }
 
 .progressring-spiner {
-    border-color: #52B54B
+    border-color: #a154da
 }
 
 .button-flat-accent,
 .button-link {
-    color: #52B54B
+    color: #a154da
 }
 
 .mediaInfoText {
@@ -246,7 +246,7 @@ html {
 
 .emby-input:focus,
 .emby-textarea:focus {
-    border-color: #52B54B
+    border-color: #a154da
 }
 
 .emby-select-withcolor {
@@ -257,7 +257,7 @@ html {
 
 .emby-checkbox:checked+span+span+.checkboxOutline,
 .emby-select-withcolor:focus {
-    border-color: #52B54B
+    border-color: #a154da
 }
 
 .emby-select-withcolor>option {
@@ -266,17 +266,17 @@ html {
 }
 
 .emby-select-tv-withcolor:focus {
-    background-color: #52B54B;
+    background-color: #a154da;
     color: #fff
 }
 
 .emby-checkbox:focus+span+.emby-checkbox-focushelper {
-    background-color: rgba(82, 181, 75, .26)
+    background-color: rgba(161, 84, 218, .26)
 }
 
 .emby-checkbox:checked+span+span+.checkboxOutline,
 .itemProgressBarForeground {
-    background-color: #52B54B
+    background-color: #a154da
 }
 
 .itemProgressBarForeground-recording {
@@ -286,7 +286,7 @@ html {
 .countIndicator,
 .fullSyncIndicator,
 .playedIndicator {
-    background: #52B54B
+    background: #a154da
 }
 
 .fullSyncIndicator {
@@ -306,12 +306,12 @@ html {
 }
 
 .navMenuOption-selected {
-    background: #52B54B !important;
+    background: #a154da !important;
     color: #fff
 }
 
 .emby-button-focusscale:focus {
-    background: #52B54B;
+    background: #a154da;
     color: #fff
 }
 
@@ -359,7 +359,7 @@ html {
 
 .guide-channelHeaderCell:focus,
 .programCell:focus {
-    background-color: #52B54B !important;
+    background-color: #a154da !important;
     color: #fff !important
 }
 
@@ -379,11 +379,11 @@ html {
 
 .guide-date-tab-button.emby-tab-button-active,
 .guide-date-tab-button:focus {
-    color: #52B54B
+    color: #a154da
 }
 
 .guide-date-tab-button.emby-button-tv:focus {
-    background-color: #52B54B;
+    background-color: #a154da;
     color: #fff
 }
 

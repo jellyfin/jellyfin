@@ -20,7 +20,7 @@ namespace Emby.Drawing.Net
 
                 graphics.FillRectangle(backdroundBrush, innerX, innerY, innerWidth, innerHeight);
 
-                using (var foregroundBrush = new SolidBrush(Color.FromArgb(82, 181, 75)))
+                using (var foregroundBrush = new SolidBrush(Color.FromArgb(161, 84, 218)))
                 {
                     double foregroundWidth = innerWidth;
                     foregroundWidth *= percent;

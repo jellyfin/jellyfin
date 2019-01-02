@@ -23,7 +23,7 @@ namespace Emby.Drawing.Skia
                 foregroundWidth *= percent;
                 foregroundWidth /= 100;
 
-                paint.Color = SKColor.Parse("#FF52B54B");
+                paint.Color = SKColor.Parse("#FFa154da");
                 canvas.DrawRect(SKRect.Create(0, (float)endY - IndicatorHeight, Convert.ToInt32(Math.Round(foregroundWidth)), (float)endY), paint);
             }
         }

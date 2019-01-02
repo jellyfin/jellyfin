@@ -28,7 +28,7 @@ namespace Emby.Drawing.ImageMagick
                     foregroundWidth *= percent;
                     foregroundWidth /= 100;
 
-                    pixel.Color = "#52B54B";
+                    pixel.Color = "#a154da";
                     pixel.Opacity = 0;
                     draw.FillColor = pixel;
                     draw.DrawRectangle(0, endY - IndicatorHeight, Convert.ToInt32(Math.Round(foregroundWidth)), endY);
