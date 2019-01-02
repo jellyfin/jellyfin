@@ -73,7 +73,6 @@ namespace Jellyfin.Server
                 options,
                 fileSystem,
                 new PowerManagement(),
-                "embyserver-mono_{version}.zip",
                 environmentInfo,
                 new NullImageEncoder(),
                 new SystemEvents(_loggerFactory.CreateLogger("SystemEvents")),
