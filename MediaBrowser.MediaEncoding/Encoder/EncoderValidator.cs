@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using MediaBrowser.Model.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -73,7 +72,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private List<string> GetDecoders(string encoderAppPath)
         {
-            string output = string.Empty;
+            string output = null;
             try
             {
                 output = GetProcessOutput(encoderAppPath, "-decoders");
@@ -83,7 +82,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _logger.LogError(ex, "Error detecting available decoders");
             }
 
-            var found = new List<string>();
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                return new List<string>();
+            }
+
             var required = new[]
             {
                 "mpeg2video",
@@ -101,16 +104,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "hevc"
             };
 
+            var found = new List<string>();
             foreach (var codec in required)
             {
                 var srch = " " + codec + "  ";
 
                 if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    _logger.LogInformation("Decoder available: " + codec);
                     found.Add(codec);
                 }
             }
+
+            _logger.LogInformation("Available decoders: {Codecs}", found);
 
             return found;
         }
@@ -122,11 +127,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 output = GetProcessOutput(encoderAppPath, "-encoders");
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error getting encoders");
             }
 
-            var found = new List<string>();
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                return new List<string>();
+            }
+
             var required = new[]
             {
                 "libx264",
@@ -151,25 +161,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "ac3"
             };
 
-            output = output ?? string.Empty;
-
-            var index = 0;
-
+            var found = new List<string>();
             foreach (var codec in required)
             {
                 var srch = " " + codec + "  ";
 
                 if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    if (index < required.Length - 1)
-                    {
-                        _logger.LogInformation("Encoder available: " + codec);
-                    }
-
                     found.Add(codec);
                 }
-                index++;
             }
+
+            _logger.LogInformation("Available encoders: {Codecs}", found);
 
             return found;
         }
