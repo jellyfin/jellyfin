@@ -175,8 +175,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 var result = new EncoderValidator(_logger, _processFactory).Validate(FFMpegPath);
 
-                SetAvailableDecoders(result.Item1);
-                SetAvailableEncoders(result.Item2);
+                SetAvailableDecoders(result.decoders);
+                SetAvailableEncoders(result.encoders);
 
                 if (EnableEncoderFontFile)
                 {
@@ -401,14 +401,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         private List<string> _encoders = new List<string>();
-        public void SetAvailableEncoders(List<string> list)
+        public void SetAvailableEncoders(IEnumerable<string> list)
         {
             _encoders = list.ToList();
             //_logger.Info("Supported encoders: {0}", string.Join(",", list.ToArray()));
         }
 
         private List<string> _decoders = new List<string>();
-        public void SetAvailableDecoders(List<string> list)
+        public void SetAvailableDecoders(IEnumerable<string> list)
         {
             _decoders = list.ToList();
             //_logger.Info("Supported decoders: {0}", string.Join(",", list.ToArray()));

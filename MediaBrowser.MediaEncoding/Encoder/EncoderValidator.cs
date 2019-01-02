@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using MediaBrowser.Model.Diagnostics;
 using Microsoft.Extensions.Logging;
 
@@ -17,21 +18,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _processFactory = processFactory;
         }
 
-        public Tuple<List<string>, List<string>> Validate(string encoderPath)
+        public (IEnumerable<string> decoders, IEnumerable<string> encoders) Validate(string encoderPath)
         {
-            _logger.LogInformation("Validating media encoder at {0}", encoderPath);
+            _logger.LogInformation("Validating media encoder at {EncoderPath}", encoderPath);
 
             var decoders = GetDecoders(encoderPath);
             var encoders = GetEncoders(encoderPath);
 
             _logger.LogInformation("Encoder validation complete");
 
-            return new Tuple<List<string>, List<string>>(decoders, encoders);
+            return (decoders, encoders);
         }
 
         public bool ValidateVersion(string encoderAppPath, bool logOutput)
         {
-            string output = string.Empty;
+            string output = null;
             try
             {
                 output = GetProcessOutput(encoderAppPath, "-version");
@@ -70,7 +71,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return true;
         }
 
-        private List<string> GetDecoders(string encoderAppPath)
+        private IEnumerable<string> GetDecoders(string encoderAppPath)
         {
             string output = null;
             try
@@ -84,7 +85,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (string.IsNullOrWhiteSpace(output))
             {
-                return new List<string>();
+                return Enumerable.Empty<string>();
             }
 
             var required = new[]
@@ -104,23 +105,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "hevc"
             };
 
-            var found = new List<string>();
-            foreach (var codec in required)
-            {
-                var srch = " " + codec + "  ";
-
-                if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    found.Add(codec);
-                }
-            }
+            var found = required.Where(x => output.IndexOf(x, StringComparison.OrdinalIgnoreCase) != -1);
 
             _logger.LogInformation("Available decoders: {Codecs}", found);
 
             return found;
         }
 
-        private List<string> GetEncoders(string encoderAppPath)
+        private IEnumerable<string> GetEncoders(string encoderAppPath)
         {
             string output = null;
             try
@@ -134,7 +126,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (string.IsNullOrWhiteSpace(output))
             {
-                return new List<string>();
+                return Enumerable.Empty<string>();
             }
 
             var required = new[]
@@ -161,16 +153,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "ac3"
             };
 
-            var found = new List<string>();
-            foreach (var codec in required)
-            {
-                var srch = " " + codec + "  ";
-
-                if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    found.Add(codec);
-                }
-            }
+            var found = required.Where(x => output.IndexOf(x, StringComparison.OrdinalIgnoreCase) != -1);
 
             _logger.LogInformation("Available encoders: {Codecs}", found);
 
@@ -179,7 +162,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetProcessOutput(string path, string arguments)
         {
-            var process = _processFactory.Create(new ProcessOptions
+            IProcess process = _processFactory.Create(new ProcessOptions
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
@@ -190,7 +173,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 RedirectStandardOutput = true
             });
 
-            _logger.LogInformation("Running {path} {arguments}", path, arguments);
+            _logger.LogInformation("Running {Path} {Arguments}", path, arguments);
 
             using (process)
             {
