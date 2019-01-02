@@ -13,7 +13,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// <summary>
     /// Plugin Update Task
     /// </summary>
-    public class SystemUpdateTask : IScheduledTask
+    public class SystemUpdateTask /*: IScheduledTask*/
     {
         /// <summary>
         /// The _app host
