@@ -1795,7 +1795,7 @@
   "XmlTvMovieCategoriesHelp": "Programmes with these categories will be displayed as movies. Separate multiple with '|'.",
   "XmlTvNewsCategoriesHelp": "Programmes with these categories will be displayed as news programmes. Separate multiple with '|'.",
   "XmlTvPathHelp": "A path to an XML TV file. Jellyfin will read this file and periodically check it for updates. You are responsible for creating and updating the file.",
-  "XmlTvPremiere": "By default, Jellyfin will import {0} hours of guide data. Importing unlimited data requires an active Jellyfin Premiere subscription.",
+  "": "By default, Jellyfin will import {0} hours of guide data. Importing unlimited data requires an active Jellyfin Premiere subscription.",
   "XmlTvSportsCategoriesHelp": "Programmes with these categories will be displayed as sports programmes. Separate multiple with '|'.",
   "Yesterday": "Yesterday"
 }

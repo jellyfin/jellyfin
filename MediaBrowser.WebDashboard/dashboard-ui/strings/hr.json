@@ -1795,7 +1795,7 @@
   "XmlTvMovieCategoriesHelp": "Programi s tim kategorijama će biti prikazani kao filmski programi. Odvojite više s '|'.",
   "XmlTvNewsCategoriesHelp": "Programi s tim kategorijama će biti prikazani kao programi vijesti. Odvojite više s '|'.",
   "XmlTvPathHelp": "Putanja do xml tv datoteke. Jellyfin će pročitati ovu datoteku i povremeno provjeravati ažuriranja. Vi ste odgovorni za stvaranje i ažuriranje datoteke.",
-  "XmlTvPremiere": "Prema zadanim postavkama, Jellyfin će uvesti {0} sati vodiča podataka. Uvoz neograničenih podataka zahtijeva aktivnu pretplatu Jellyfin Premijere.",
+  "": "Prema zadanim postavkama, Jellyfin će uvesti {0} sati vodiča podataka. Uvoz neograničenih podataka zahtijeva aktivnu pretplatu Jellyfin Premijere.",
   "XmlTvSportsCategoriesHelp": "Programi s tim kategorijama će biti prikazani kao sportski programi. Odvojite više s '|'.",
   "Yesterday": "Jučer"
 }

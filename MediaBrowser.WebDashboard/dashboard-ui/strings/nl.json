@@ -1795,7 +1795,7 @@
   "XmlTvMovieCategoriesHelp": "Programma's met deze categorieën wordt weergegeven als films. Scheid meerdere met '|'.",
   "XmlTvNewsCategoriesHelp": "Programma's met deze categorieën wordt weergegeven als nieuwsprogramma's. Scheid meerdere met '|'.",
   "XmlTvPathHelp": "Een pad naar een XML-tv-bestand. Jellyfin zal dit bestand regelmatig lezen en controleren voor updates. U bent verantwoordelijk voor het maken en bijwerken van het bestand.",
-  "XmlTvPremiere": "Standaard wordt {0} uur gids data in Jellyfin geïmporteerd. Het importeren van onbeperkte data vereist een actieve Jellyfin Premiere abonnement.",
+  "": "Standaard wordt {0} uur gids data in Jellyfin geïmporteerd. Het importeren van onbeperkte data vereist een actieve Jellyfin Premiere abonnement.",
   "XmlTvSportsCategoriesHelp": "Programma's met deze categorieën wordt weergegeven als sportprogramma's. Scheid meerdere met '|'.",
   "Yesterday": "Gisteren"
 }
