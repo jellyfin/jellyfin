@@ -49,9 +49,10 @@ namespace Emby.Drawing.Skia
             {
                 using (var outputStream = new SKFileWStream(outputPath))
                 {
-                    SKImageInfo imageInfo = new SKImageInfo(width, height);
-                    var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels());
-                    pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
+                    using (var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels()))
+                    {
+                        pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
+                    }
                 }
             }
         }
@@ -62,9 +63,10 @@ namespace Emby.Drawing.Skia
             {
                 using (var outputStream = new SKFileWStream(outputPath))
                 {
-                    SKImageInfo imageInfo = new SKImageInfo(width, height);
-                    var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels());
-                    pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
+                    using (var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels()))
+                    {
+                        pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
+                    }
                 }
             }
         }
