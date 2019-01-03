@@ -686,7 +686,7 @@ namespace MediaBrowser.Api.Playback
             };
 
             var auth = AuthorizationContext.GetAuthorizationInfo(Request);
-            if (auth.UserId != null)
+            if (!auth.UserId.Equals(Guid.Empty))
             {
                 state.User = UserManager.GetUserById(auth.UserId);
             }
