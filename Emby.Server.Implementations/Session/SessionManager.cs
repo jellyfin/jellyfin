@@ -1577,14 +1577,6 @@ namespace Emby.Server.Implementations.Session
         {
             session.Capabilities = capabilities;
 
-            if (!string.IsNullOrEmpty(capabilities.PushToken))
-            {
-                if (string.Equals(capabilities.PushTokenType, "firebase", StringComparison.OrdinalIgnoreCase) && FirebaseSessionController.IsSupported(_appHost))
-                {
-                    EnsureFirebaseController(session, capabilities.PushToken);
-                }
-            }
-
             if (saveCapabilities)
             {
                 EventHelper.FireEventIfNotNull(CapabilitiesChanged, this, new SessionEventArgs
@@ -1602,11 +1594,6 @@ namespace Emby.Server.Implementations.Session
                     _logger.LogError("Error saving device capabilities", ex);
                 }
             }
-        }
-
-        private void EnsureFirebaseController(SessionInfo session, string token)
-        {
-            session.EnsureController<FirebaseSessionController>(s => new FirebaseSessionController(_httpClient, _appHost, _jsonSerializer, s, token, this));
         }
 
         private ClientCapabilities GetSavedCapabilities(string deviceId)
