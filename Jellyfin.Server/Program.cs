@@ -8,7 +8,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Emby.Drawing;
-using Emby.Drawing.ImageMagick;
 using Emby.Drawing.Skia;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.EnvironmentInfo;
