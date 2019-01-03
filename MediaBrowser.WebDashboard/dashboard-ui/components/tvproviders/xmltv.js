@@ -97,11 +97,9 @@ define(["jQuery", "registrationServices", "loading", "emby-checkbox", "emby-inpu
         self.submit = function() {
             page.querySelector(".btnSubmitListings").click()
         }, self.init = function() {
-            options = options || {}, !1 !== options.showCancelButton ? page.querySelector(".btnCancel").classList.remove("hide") : page.querySelector(".btnCancel").classList.add("hide"), !1 !== options.showSubmitButton ? page.querySelector(".btnSubmitListings").classList.remove("hide") : page.querySelector(".btnSubmitListings").classList.add("hide"), page.querySelector(".premiereHelp").innerHTML = Globalize.translate("XmlTvPremiere", 24), $("form", page).on("submit", function() {
+            options = options || {}, !1 !== options.showCancelButton ? page.querySelector(".btnCancel").classList.remove("hide") : page.querySelector(".btnCancel").classList.add("hide"), !1 !== options.showSubmitButton ? page.querySelector(".btnSubmitListings").classList.remove("hide") : page.querySelector(".btnSubmitListings").classList.add("hide"), $("form", page).on("submit", function() {
                 return submitListingsForm(), !1
-            }), page.querySelector("#btnSelectPath").addEventListener("click", onSelectPathClick), page.querySelector(".lnkPremiere").addEventListener("click", function(e) {
-                registrationServices.showPremiereInfo(), e.preventDefault()
-            }), page.querySelector(".chkAllTuners").addEventListener("change", function(e) {
+            }), page.querySelector("#btnSelectPath").addEventListener("click", onSelectPathClick), page.querySelector(".chkAllTuners").addEventListener("change", function(e) {
                 e.target.checked ? page.querySelector(".selectTunersSection").classList.add("hide") : page.querySelector(".selectTunersSection").classList.remove("hide")
             }), reload()
         }
