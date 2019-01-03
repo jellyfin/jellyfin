@@ -640,15 +640,14 @@ namespace Emby.Server.Implementations
         /// Gets the exports.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="manageLiftime">if set to <c>true</c> [manage liftime].</param>
+        /// <param name="manageLifetime">if set to <c>true</c> [manage lifetime].</param>
         /// <returns>IEnumerable{``0}.</returns>
         public IEnumerable<T> GetExports<T>(bool manageLifetime = true)
         {
             var parts = GetExportTypes<T>()
                 .Select(CreateInstanceSafe)
                 .Where(i => i != null)
-                .Cast<T>()
-                .ToList();
+                .Cast<T>();
 
             if (manageLifetime)
             {
@@ -703,7 +702,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
-        public async Task RunStartupTasks()
+        public Task RunStartupTasks()
         {
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
@@ -736,6 +735,8 @@ namespace Emby.Server.Implementations
             Logger.LogInformation("All entry points have started");
 
             //LoggerFactory.RemoveConsoleOutput();
+
+            return Task.CompletedTask;
         }
 
         private void RunEntryPoints(IEnumerable<IServerEntryPoint> entryPoints, bool isBeforeStartup)
