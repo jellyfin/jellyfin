@@ -556,10 +556,11 @@ namespace Emby.Drawing.Skia
                         _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
                         using (var outputStream = new SKFileWStream(outputPath))
                         {
-                            SKImageInfo imageInfo = new SKImageInfo(width,height);
-                            var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels());
-                            pixmap.Encode(outputStream, skiaOutputFormat, quality);
-                            return outputPath;
+                            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels()))
+                            {
+                                pixmap.Encode(outputStream, skiaOutputFormat, quality);
+                                return outputPath;
+                            }
                         }
                     }
 
@@ -609,9 +610,10 @@ namespace Emby.Drawing.Skia
                         _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
                         using (var outputStream = new SKFileWStream(outputPath))
                         {
-                            SKImageInfo imageInfo = new SKImageInfo(width, height);
-                            var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels());
-                            pixmap.Encode(outputStream, skiaOutputFormat, quality);
+                            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels()))
+                            {
+                                pixmap.Encode(outputStream, skiaOutputFormat, quality);
+                            }
                         }
                     }
                 }
