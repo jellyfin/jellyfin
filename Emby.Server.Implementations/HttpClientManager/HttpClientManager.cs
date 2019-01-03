@@ -322,8 +322,8 @@ namespace Emby.Server.Implementations.HttpClientManager
             _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(responseCachePath));
 
             using (var responseStream = response.Content)
-            using (var memoryStream = new MemoryStream())
             {
+                var memoryStream = new MemoryStream();
                 await responseStream.CopyToAsync(memoryStream).ConfigureAwait(false);
                 memoryStream.Position = 0;
 
@@ -430,8 +430,8 @@ namespace Emby.Server.Implementations.HttpClientManager
                     options.CancellationToken.ThrowIfCancellationRequested();
 
                     using (var stream = httpResponse.GetResponseStream())
-                    using (var memoryStream = new MemoryStream())
                     {
+                        var memoryStream = new MemoryStream();
                         await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
                         memoryStream.Position = 0;
