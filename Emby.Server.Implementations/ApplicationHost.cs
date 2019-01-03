@@ -421,8 +421,6 @@ namespace Emby.Server.Implementations
 
             ImageEncoder = imageEncoder;
 
-            //SetBaseExceptionMessage();
-
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
             NetworkManager.NetworkChanged += NetworkManager_NetworkChanged;
@@ -687,18 +685,6 @@ namespace Emby.Server.Implementations
             return parts;
         }
 
-        // TODO: @bond
-        /*
-        private void SetBaseExceptionMessage()
-        {
-            var builder = GetBaseExceptionMessage(ApplicationPaths);
-
-            builder.Insert(0, string.Format("Version: {0}{1}", ApplicationVersion, Environment.NewLine));
-            builder.Insert(0, "*** Error Report ***" + Environment.NewLine);
-
-            LoggerFactory.ExceptionMessagePrefix = builder.ToString();
-        }*/
-
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
@@ -734,8 +720,6 @@ namespace Emby.Server.Implementations
             RunEntryPoints(entryPoints, false);
             Logger.LogInformation("All entry points have started");
 
-            //LoggerFactory.RemoveConsoleOutput();
-
             return Task.CompletedTask;
         }
 
@@ -749,7 +733,7 @@ namespace Emby.Server.Implementations
                 }
 
                 var name = entryPoint.GetType().FullName;
-                Logger.LogInformation("Starting entry point {0}", name);
+                Logger.LogInformation("Starting entry point {Name}", name);
                 var now = DateTime.UtcNow;
                 try
                 {
@@ -757,9 +741,9 @@ namespace Emby.Server.Implementations
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error in {name}", name);
+                    Logger.LogError(ex, "Error while running entrypoint {Name}", name);
                 }
-                Logger.LogInformation("Entry point completed: {0}. Duration: {1} seconds", name, (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture), "ImageInfos");
+                Logger.LogInformation("Entry point completed: {Name}. Duration: {Duration} seconds", name, (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture), "ImageInfos");
             }
         }
 
@@ -1384,12 +1368,11 @@ namespace Emby.Server.Implementations
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, "Error getting plugin Id from {pluginName}.", plugin.GetType().FullName);
+                        Logger.LogError(ex, "Error getting plugin Id from {PluginName}.", plugin.GetType().FullName);
                     }
                 }
 
-                var hasPluginConfiguration = plugin as IHasPluginConfiguration;
-                if (hasPluginConfiguration != null)
+                if (plugin is IHasPluginConfiguration hasPluginConfiguration)
                 {
                     hasPluginConfiguration.SetStartupInfo(s => Directory.CreateDirectory(s));
                 }
@@ -1808,13 +1791,13 @@ namespace Emby.Server.Implementations
             {
                 var result = Version.Parse(FileVersionInfo.GetVersionInfo(path).FileVersion);
 
-                Logger.LogInformation("File {0} has version {1}", path, result);
+                Logger.LogInformation("File {Path} has version {Version}", path, result);
 
                 return result;
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error getting version number from {path}", path);
+                Logger.LogError(ex, "Error getting version number from {Path}", path);
 
                 return new Version(1, 0);
             }
@@ -2417,15 +2400,14 @@ namespace Emby.Server.Implementations
             {
                 var type = GetType();
 
-                //LoggerFactory.AddConsoleOutput();
-                Logger.LogInformation("Disposing " + type.Name);
+                Logger.LogInformation("Disposing {Type}", type.Name);
 
                 var parts = DisposableParts.Distinct().Where(i => i.GetType() != type).ToList();
                 DisposableParts.Clear();
 
                 foreach (var part in parts)
                 {
-                    Logger.LogInformation("Disposing " + part.GetType().Name);
+                    Logger.LogInformation("Disposing {Type}", part.GetType().Name);
 
                     try
                     {
@@ -2433,7 +2415,7 @@ namespace Emby.Server.Implementations
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, "Error disposing {0}", part.GetType().Name);
+                        Logger.LogError(ex, "Error disposing {Type}", part.GetType().Name);
                     }
                 }
             }
