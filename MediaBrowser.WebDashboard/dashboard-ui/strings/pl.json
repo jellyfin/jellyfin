@@ -1795,7 +1795,7 @@
   "XmlTvMovieCategoriesHelp": "Programy z tymi kategoriami, będą wyświetlane jako filmy. Oddziel je używając '|'.",
   "XmlTvNewsCategoriesHelp": "Programy z tymi kategoriami, będą wyświetlane jako programy informacyjne. Oddziel je używając '|'.",
   "XmlTvPathHelp": "Folder pliku xml tv. Jellyfin będzie wczytywać ten plik i okresowo sprawdzać aktualizacje. Jesteś odpowiedzialny za utworzenie i aktualizowanie tego pliku.",
-  "": "Domyślnie, Jellyfin będzie importować {0} godzin danych przewodnika. Import nieograniczony czasowo wymaga aktywnego subskrypcji Jellyfin Premium.",
+  "XmlTvPremiere": "Domyślnie, Jellyfin będzie importować {0} godzin danych przewodnika. Import nieograniczony czasowo wymaga aktywnego subskrypcji Jellyfin Premium.",
   "XmlTvSportsCategoriesHelp": "Programy z tymi kategoriami, będą wyświetlane jako sportowe. Oddziel je używając '|'.",
   "Yesterday": "Wczoraj"
 }

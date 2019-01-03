@@ -1795,7 +1795,7 @@
   "XmlTvMovieCategoriesHelp": "具有这些类别的程序将显示为电影。用 \"|\" 分隔多个。",
   "XmlTvNewsCategoriesHelp": "具有这些类别的程序将显示为新闻程序。用 \"|\" 分隔多个。",
   "XmlTvPathHelp": "xml 电视文件的路径。Jellyfin 将读取此文件并定期检查它以进行更新。您负责创建和更新文件。",
-  "": "默认下，Jellyfin 将导入 {0} 小时的指南数据。导入无限数据需要有效的 Jellyfin 高级版订阅。",
+  "XmlTvPremiere": "默认下，Jellyfin 将导入 {0} 小时的指南数据。导入无限数据需要有效的 Jellyfin 高级版订阅。",
   "XmlTvSportsCategoriesHelp": "这些类别的节目将显示为体育节目。用 \"|\" 分隔多个。",
   "Yesterday": "昨天"
 }

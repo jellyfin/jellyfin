@@ -1795,7 +1795,7 @@
   "XmlTvMovieCategoriesHelp": "Program med dessa kategorier kommer visas som filmer. Separerade med '|'.",
   "XmlTvNewsCategoriesHelp": "Program med dessa kategorier kommer visas som nyhetsprogram. Separerade med '|'.",
   "XmlTvPathHelp": "En sökväg till en xml-fil för tv. Jellyfin kommer läsa in den här filen och regelbundet leta efter uppdateringar. Du är själv ansvarig för att skapa och uppdatera filen.",
-  "": "Som standard kommer Jellyfin importera {0} timmar av guide-data. Att importera oändligt med data kräver ett aktivt Jellyfin premium-medlemskap.",
+  "XmlTvPremiere": "Som standard kommer Jellyfin importera {0} timmar av guide-data. Att importera oändligt med data kräver ett aktivt Jellyfin premium-medlemskap.",
   "XmlTvSportsCategoriesHelp": "Program med dessa kategorier kommer visas som sportprogram. Separerade med '|'.",
   "Yesterday": "Igår"
 }
