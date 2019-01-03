@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -194,26 +194,13 @@ namespace Jellyfin.Server
             IEnvironmentInfo environment,
             ILocalizationManager localizationManager)
         {
-            if (!startupOptions.ContainsOption("-enablegdi"))
+            try
             {
-                try
-                {
-                    return new SkiaEncoder(logger, appPaths, httpClient, fileSystem, localizationManager);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogInformation(ex, "Skia not available. Will try next image processor. {0}");
-                }
-
-                try
-                {
-                    return new ImageMagickEncoder(logger, appPaths, httpClient, fileSystem, environment);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogInformation(ex, "ImageMagick not available. Will try next image processor.");
-                }
-                _logger.LogInformation("Falling back on NullImageEncoder");
+                return new SkiaEncoder(logger, appPaths, httpClient, fileSystem, localizationManager);
+            }
+            catch (Exception ex)
+            {
+                logger.LogInformation(ex, "Skia not available. Will fallback to NullIMageEncoder. {0}");
             }
 
             return new NullImageEncoder();
