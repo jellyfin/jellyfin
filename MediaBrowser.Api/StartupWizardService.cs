@@ -68,35 +68,6 @@ namespace MediaBrowser.Api
             _config.Configuration.IsStartupWizardCompleted = true;
             _config.SetOptimalValues();
             _config.SaveConfiguration();
-
-            Task.Run(UpdateStats);
-        }
-
-        private async Task UpdateStats()
-        {
-            try
-            {
-                var url = string.Format("http://www.mb3admin.local/admin/service/package/installed?mac={0}&product=MBServer&operation=Install&version={1}",
-                    _appHost.SystemId,
-                    _appHost.ApplicationVersion.ToString());
-
-                using (var response = await _httpClient.SendAsync(new HttpRequestOptions
-                {
-
-                    Url = url,
-                    CancellationToken = CancellationToken.None,
-                    LogErrors = false,
-                    LogRequest = false
-
-                }, "GET").ConfigureAwait(false))
-                {
-
-                }
-            }
-            catch
-            {
-
-            }
         }
 
         public object Get(GetStartupConfiguration request)
