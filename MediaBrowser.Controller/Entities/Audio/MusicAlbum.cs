@@ -23,8 +23,8 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public MusicAlbum()
         {
-            Artists = new string[] {};
-            AlbumArtists = new string[] {};
+            Artists = Array.Empty<string>();
+            AlbumArtists = Array.Empty<string>();
         }
 
         [IgnoreDataMember]

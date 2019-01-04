@@ -32,8 +32,8 @@ namespace MediaBrowser.Controller.Subtitles
             SearchAllProviders = true;
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            DisabledSubtitleFetchers = new string[] {};
-            SubtitleFetcherOrder = new string[] {};
+            DisabledSubtitleFetchers = Array.Empty<string>();
+            SubtitleFetcherOrder = Array.Empty<string>();
         }
     }
 }

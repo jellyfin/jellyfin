@@ -4,10 +4,8 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Sync;
 using System;
 using System.Collections.Generic;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -67,7 +65,6 @@ namespace MediaBrowser.Model.Dto
         public int? AirsBeforeSeasonNumber { get; set; }
         public int? AirsAfterSeasonNumber { get; set; }
         public int? AirsBeforeEpisodeNumber { get; set; }
-        public bool? DisplaySpecialsWithSeasons { get; set; }
         public bool? CanDelete { get; set; }
         public bool? CanDownload { get; set; }
 
@@ -156,7 +153,6 @@ namespace MediaBrowser.Model.Dto
         /// <value>The channel identifier.</value>
         public Guid ChannelId { get; set; }
         public string ChannelName { get; set; }
-        public string ServiceName { get; set; }
 
         /// <summary>
         /// Gets or sets the overview.
@@ -480,26 +476,6 @@ namespace MediaBrowser.Model.Dto
         public int? MediaSourceCount { get; set; }
 
         /// <summary>
-        /// Determines whether the specified type is type.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns><c>true</c> if the specified type is type; otherwise, <c>false</c>.</returns>
-        public bool IsType(Type type)
-        {
-            return IsType(type.Name);
-        }
-
-        /// <summary>
-        /// Determines whether the specified type is type.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns><c>true</c> if the specified type is type; otherwise, <c>false</c>.</returns>
-        public bool IsType(string type)
-        {
-            return StringHelper.EqualsIgnoreCase(Type, type);
-        }
-
-        /// <summary>
         /// Gets or sets the image tags.
         /// </summary>
         /// <value>The image tags.</value>
@@ -602,12 +578,6 @@ namespace MediaBrowser.Model.Dto
         public DateTime? EndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the home page URL.
-        /// </summary>
-        /// <value>The home page URL.</value>
-        public string HomePageUrl { get; set; }
-
-        /// <summary>
         /// Gets or sets the locked fields.
         /// </summary>
         /// <value>The locked fields.</value>
@@ -676,11 +646,6 @@ namespace MediaBrowser.Model.Dto
         public double? Longitude { get; set; }
         public double? Altitude { get; set; }
         public int? IsoSpeedRating { get; set; }
-
-        /// <summary>
-        /// Used by RecordingGroup
-        /// </summary>
-        public int? RecordingCount { get; set; }
 
         /// <summary>
         /// Gets or sets the series timer identifier.

@@ -15,18 +15,13 @@ namespace MediaBrowser.Controller.Entities
     {
         public Trailer()
         {
-            TrailerTypes = new TrailerType[] { };
+            TrailerTypes = Array.Empty<TrailerType>();
         }
 
         public TrailerType[] TrailerTypes { get; set; }
 
         public override double GetDefaultPrimaryImageAspectRatio()
-        {
-            double value = 2;
-            value /= 3;
-
-            return value;
-        }
+            => 2 / 3;
 
         public override UnratedItem GetBlockUnratedType()
         {

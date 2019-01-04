@@ -173,8 +173,6 @@ namespace MediaBrowser.Model.Configuration
 
         public int RemoteClientBitrateLimit { get; set; }
 
-        public int SchemaVersion { get; set; }
-
         public bool EnableFolderView { get; set; }
         public bool EnableGroupingIntoCollections { get; set; }
         public bool DisplaySpecialsWithinSeasons { get; set; }
@@ -201,13 +199,13 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public ServerConfiguration()
         {
-            UninstalledPlugins = new string[] { };
-            RemoteIPFilter = new string[] { };
-            LocalNetworkSubnets = new string[] { };
-            LocalNetworkAddresses = new string[] { };
-            CodecsUsed = new string[] { };
+            UninstalledPlugins = Array.Empty<string>();
+            RemoteIPFilter = Array.Empty<string>();
+            LocalNetworkSubnets = Array.Empty<string>();
+            LocalNetworkAddresses = Array.Empty<string>();
+            CodecsUsed = Array.Empty<string>();
             ImageExtractionTimeoutMs = 0;
-            PathSubstitutions = new PathSubstitution[] { };
+            PathSubstitutions = Array.Empty<PathSubstitution>();
             EnableSimpleArtistDetection = true;
 
             DisplaySpecialsWithinSeasons = true;
@@ -235,7 +233,7 @@ namespace MediaBrowser.Model.Configuration
 
             LibraryMonitorDelay = 60;
 
-            ContentTypes = new NameValuePair[] { };
+            ContentTypes = Array.Empty<NameValuePair>();
 
             PreferredMetadataLanguage = "en";
             MetadataCountryCode = "US";
@@ -248,56 +246,51 @@ namespace MediaBrowser.Model.Configuration
 
             MetadataOptions = new[]
             {
-                new MetadataOptions {ItemType = "Book"},
-
-                new MetadataOptions
+                new MetadataOptions()
+                {
+                    ItemType = "Book"
+                },
+                new MetadataOptions()
                 {
                     ItemType = "Movie"
                 },
-
                 new MetadataOptions
                 {
                     ItemType = "MusicVideo",
-                    DisabledMetadataFetchers = new []{ "The Open Movie Database" },
-                    DisabledImageFetchers = new []{ "The Open Movie Database", "FanArt" }
+                    DisabledMetadataFetchers = new [] { "The Open Movie Database" },
+                    DisabledImageFetchers = new [] { "The Open Movie Database", "FanArt" }
                 },
-
                 new MetadataOptions
                 {
                     ItemType = "Series",
-                    DisabledMetadataFetchers = new []{ "TheMovieDb" },
-                    DisabledImageFetchers = new []{ "TheMovieDb" }
+                    DisabledMetadataFetchers = new [] { "TheMovieDb" },
+                    DisabledImageFetchers = new [] { "TheMovieDb" }
                 },
-
                 new MetadataOptions
                 {
                     ItemType = "MusicAlbum",
-                    DisabledMetadataFetchers = new []{ "TheAudioDB" }
+                    DisabledMetadataFetchers = new [] { "TheAudioDB" }
                 },
-
                 new MetadataOptions
                 {
                     ItemType = "MusicArtist",
-                    DisabledMetadataFetchers = new []{ "TheAudioDB" }
+                    DisabledMetadataFetchers = new [] { "TheAudioDB" }
                 },
-
                 new MetadataOptions
                 {
                     ItemType = "BoxSet"
                 },
-
                 new MetadataOptions
                 {
                     ItemType = "Season",
-                    DisabledMetadataFetchers = new []{ "TheMovieDb" },
+                    DisabledMetadataFetchers = new [] { "TheMovieDb" },
                     DisabledImageFetchers = new [] { "FanArt" }
                 },
-
                 new MetadataOptions
                 {
                     ItemType = "Episode",
-                    DisabledMetadataFetchers = new []{ "The Open Movie Database", "TheMovieDb" },
-                    DisabledImageFetchers = new []{ "The Open Movie Database", "TheMovieDb" }
+                    DisabledMetadataFetchers = new [] { "The Open Movie Database", "TheMovieDb" },
+                    DisabledImageFetchers = new [] { "The Open Movie Database", "TheMovieDb" }
                 }
             };
         }

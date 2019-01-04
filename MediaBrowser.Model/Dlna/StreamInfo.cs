@@ -18,10 +18,10 @@ namespace MediaBrowser.Model.Dlna
     {
         public StreamInfo()
         {
-            AudioCodecs = new string[] { };
-            VideoCodecs = new string[] { };
-            SubtitleCodecs = new string[] { };
-            TranscodeReasons = new TranscodeReason[] { };
+            AudioCodecs = Array.Empty<string>();
+            VideoCodecs = Array.Empty<string>();
+            SubtitleCodecs = Array.Empty<string>();
+            TranscodeReasons = Array.Empty<TranscodeReason>();
             StreamOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 

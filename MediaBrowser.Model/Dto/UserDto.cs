@@ -2,7 +2,6 @@
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Users;
 using System;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.Dto
 {

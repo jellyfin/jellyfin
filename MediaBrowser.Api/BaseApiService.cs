@@ -55,12 +55,11 @@ namespace MediaBrowser.Api
             return Request.Headers[name];
         }
 
-        private static readonly string[] EmptyStringArray = Array.Empty<string>();
         public static string[] SplitValue(string value, char delim)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                return EmptyStringArray;
+                return Array.Empty<string>();
             }
 
             return value.Split(new[] { delim }, StringSplitOptions.RemoveEmptyEntries);

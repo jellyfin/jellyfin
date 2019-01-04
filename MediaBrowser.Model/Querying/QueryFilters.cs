@@ -12,10 +12,10 @@ namespace MediaBrowser.Model.Querying
 
         public QueryFiltersLegacy()
         {
-            Genres = new string[] {};
-            Tags = new string[] {};
-            OfficialRatings = new string[] {};
-            Years = new int[] { };
+            Genres = Array.Empty<string>();
+            Tags = Array.Empty<string>();
+            OfficialRatings = Array.Empty<string>();
+            Years = Array.Empty<int>();
         }
     }
     public class QueryFilters
@@ -25,8 +25,8 @@ namespace MediaBrowser.Model.Querying
 
         public QueryFilters()
         {
-            Tags = new string[] {};
-            Genres = new NameGuidPair[] { };
+            Tags = Array.Empty<string>();
+            Genres = Array.Empty<NameGuidPair>();
         }
     }
 }

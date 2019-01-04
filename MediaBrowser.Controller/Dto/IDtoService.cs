@@ -2,7 +2,6 @@
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
-using MediaBrowser.Controller.Sync;
 
 namespace MediaBrowser.Controller.Dto
 {

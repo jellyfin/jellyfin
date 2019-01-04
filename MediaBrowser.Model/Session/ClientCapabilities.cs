@@ -25,8 +25,8 @@ namespace MediaBrowser.Model.Session
 
         public ClientCapabilities()
         {
-            PlayableMediaTypes = new string[] {};
-            SupportedCommands = new string[] {};
+            PlayableMediaTypes = Array.Empty<string>();
+            SupportedCommands = Array.Empty<string>();
             SupportsPersistentIdentifier = true;
         }
     }

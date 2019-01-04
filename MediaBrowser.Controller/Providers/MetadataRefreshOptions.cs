@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Providers;
@@ -47,7 +45,7 @@ namespace MediaBrowser.Controller.Providers
             {
                 if (RefreshPaths == null)
                 {
-                    RefreshPaths = new string[] { };
+                    RefreshPaths = Array.Empty<string>();
                 }
 
                 RefreshPaths = copy.RefreshPaths.ToArray();

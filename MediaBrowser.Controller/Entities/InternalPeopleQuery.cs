@@ -14,8 +14,8 @@ namespace MediaBrowser.Controller.Entities
 
         public InternalPeopleQuery()
         {
-            PersonTypes = new string[] { };
-            ExcludePersonTypes = new string[] { };
+            PersonTypes = Array.Empty<string>();
+            ExcludePersonTypes = Array.Empty<string>();
         }
     }
 }

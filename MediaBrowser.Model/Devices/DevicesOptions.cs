@@ -10,15 +10,12 @@ namespace MediaBrowser.Model.Devices
 
         public DevicesOptions()
         {
-            EnabledCameraUploadDevices = new string[] {};
+            EnabledCameraUploadDevices = Array.Empty<string>();
         }
     }
 
     public class DeviceOptions
     {
-        public string[] EnabledCameraUploadDevices { get; set; }
-        public string CameraUploadPath { get; set; }
-        public bool EnableCameraUploadSubfolders { get; set; }
         public string CustomName { get; set; }
     }
 }
