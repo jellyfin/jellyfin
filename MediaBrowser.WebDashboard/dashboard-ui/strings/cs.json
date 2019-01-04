@@ -1795,7 +1795,6 @@
   "XmlTvMovieCategoriesHelp": "Programy s těmito kategoriemi budou zobrazeny jako filmy. Více kategorií oddělte \"|\".",
   "XmlTvNewsCategoriesHelp": "Programy s těmito kategoriemi budou zobrazeny jako zpravodajské pořady. Více kategorií oddělte \"|\".",
   "XmlTvPathHelp": "Cesta ke XML tv souboru. Jellyfin bude číst tento soubor a pravidelně kontrolovat dostupnost aktualizací. Jste zodpovědný za vytváření a aktualizaci souboru.",
-  "XmlTvPremiere": "Ve výchozím nastavení Jellyfin bude importovat dat průvodce {0} hodin. Neomezený import dat, vyžaduje aktivní předplatné Jellyfin Premiere.",
   "XmlTvSportsCategoriesHelp": "Programy s těmito kategoriemi budou zobrazeny jako sportovní pořady. Více kategorií oddělte \"|\".",
   "Yesterday": "Včera"
 }
