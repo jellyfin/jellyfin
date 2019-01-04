@@ -13,7 +13,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Services;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Security;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Serialization;
@@ -85,7 +84,6 @@ namespace Emby.Server.Implementations.HttpServer
                 {typeof (FileNotFoundException), 404},
                 //{typeof (DirectoryNotFoundException), 404},
                 {typeof (SecurityException), 401},
-                {typeof (PaymentRequiredException), 402},
                 {typeof (ArgumentException), 400}
             };
 
