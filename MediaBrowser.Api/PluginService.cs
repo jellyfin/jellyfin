@@ -76,7 +76,22 @@ namespace MediaBrowser.Api
         public Stream RequestStream { get; set; }
     }
 
-
+    [Route("/Registrations/{Name}", "GET", Summary = "Gets registration status for a feature", IsHidden = true)]
+    [Authenticated]
+    public class GetRegistration : IReturn<RegistrationInfo>
+    {
+        [ApiMember(Name = "Name", Description = "Feature Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Name { get; set; }
+    }
+	
+    public class RegistrationInfo
+    {
+        public string Name { get; set; }
+        public DateTime ExpirationDate { get; set; }
+        public bool IsTrial { get; set; }
+        public bool IsRegistered { get; set; }
+    }
+    
     /// <summary>
     /// Class PluginsService
     /// </summary>
@@ -109,7 +124,20 @@ namespace MediaBrowser.Api
             _deviceManager = deviceManager;
             _jsonSerializer = jsonSerializer;
         }
-
+        
+        
+        public async Task<object> Get(GetRegistration request)
+        {	
+            var info = new RegistrationInfo
+            {
+                ExpirationDate = DateTime.Now.AddYears(100),
+                IsRegistered = true,
+                IsTrial = false,
+                Name = request.Name
+            };
+	
+            return ToOptimizedResult(info);
+        }
 
         /// <summary>
         /// Gets the specified request.
