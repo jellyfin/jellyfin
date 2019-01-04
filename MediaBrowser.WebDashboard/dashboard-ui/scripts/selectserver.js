@@ -222,8 +222,6 @@ define(["loading", "appRouter", "layoutManager", "appSettings", "apphost", "focu
         view.addEventListener("viewshow", function(e) {
             var isRestored = e.detail.isRestored;
             appRouter.setTitle(null), backdrop.setBackdrop(backdropUrl), isRestored || (loadServers(), loadInvitations())
-        }), view.querySelector(".btnConnect").addEventListener("click", function(e) {
-            appRouter.show("/connectlogin.html?mode=connect")
         }), view.querySelector(".btnOffline").addEventListener("click", function(e) {
             appRouter.show("/offline/offline.html")
         }), view.querySelector(".servers").addEventListener("click", function(e) {

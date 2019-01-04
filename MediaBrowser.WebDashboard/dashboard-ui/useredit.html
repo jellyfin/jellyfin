@@ -35,17 +35,7 @@
                 <div id="fldUserName" class="inputContainer">
                     <input is="emby-input" id="txtUserName" required type="text" label="${LabelName}" />
                 </div>
-                <div id="fldConnectInfo" style="display: none;">
-                    <div class="inputContainer">
-                        <input is="emby-input" id="txtConnectUserName" type="text" label="${LabelConnectUserName}" />
-                        <div class="fieldDescription">
-                            <div>${LabelConnectUserNameHelp}</div>
-                            <div style="margin-top: .75em;">
-                                <a is="emby-linkbutton" class="button-link" href="https://github.com/jellyfin/jellyfin" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
                 <div class="selectContainer fldSelectLoginProvider hide">
                     <select class="selectLoginProvider" is="emby-select" label="${LabelAuthProvider}"></select>
                     <div class="fieldDescription">${AuthProviderHelp}</div>
