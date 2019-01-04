@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using MediaBrowser.Model.Configuration;
 using System.Linq;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -48,7 +47,6 @@ namespace MediaBrowser.Controller.Entities
 
         public string PresentationUniqueKey { get; set; }
         public string Path { get; set; }
-        public string PathNotStartsWith { get; set; }
         public string Name { get; set; }
 
         public string Person { get; set; }
@@ -160,8 +158,6 @@ namespace MediaBrowser.Controller.Entities
         public bool EnableGroupByMetadataKey { get; set; }
         public bool? HasChapterImages { get; set; }
 
-        // why tuple vs value tuple?
-        //public Tuple<string, SortOrder>[] OrderBy { get; set; }
         public ValueTuple<string, SortOrder>[] OrderBy { get; set; } 
 
         public DateTime? MinDateCreated { get; set; }
@@ -180,44 +176,44 @@ namespace MediaBrowser.Controller.Entities
 
         public InternalItemsQuery()
         {
-            AlbumArtistIds = new Guid[] {};
-            AlbumIds = new Guid[] {};
-            AncestorIds = new Guid[] {};
-            ArtistIds = new Guid[] {};
-            BlockUnratedItems = new UnratedItem[] { };
-            BoxSetLibraryFolders = new Guid[] {};
-            ChannelIds = new Guid[] {};
-            ContributingArtistIds = new Guid[] {};
+            AlbumArtistIds = Array.Empty<Guid>();
+            AlbumIds = Array.Empty<Guid>();
+            AncestorIds = Array.Empty<Guid>();
+            ArtistIds = Array.Empty<Guid>();
+            BlockUnratedItems = Array.Empty<UnratedItem>();
+            BoxSetLibraryFolders = Array.Empty<Guid>();
+            ChannelIds = Array.Empty<Guid>();
+            ContributingArtistIds = Array.Empty<Guid>();
             DtoOptions = new DtoOptions();
             EnableTotalRecordCount = true;
-            ExcludeArtistIds = new Guid[] {};
-            ExcludeInheritedTags = new string[] {};
-            ExcludeItemIds = new Guid[] {};
-            ExcludeItemTypes = new string[] {};
+            ExcludeArtistIds = Array.Empty<Guid>();
+            ExcludeInheritedTags = Array.Empty<string>();
+            ExcludeItemIds = Array.Empty<Guid>();
+            ExcludeItemTypes = Array.Empty<string>();
             ExcludeProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            ExcludeTags = new string[] {};
-            GenreIds = new Guid[] {};
-            Genres = new string[] {};
+            ExcludeTags = Array.Empty<string>();
+            GenreIds = Array.Empty<Guid>();
+            Genres = Array.Empty<string>();
             GroupByPresentationUniqueKey = true;
             HasAnyProviderId = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            ImageTypes = new ImageType[] { };
-            IncludeItemTypes = new string[] {};
-            ItemIds = new Guid[] {};
-            MediaTypes = new string[] {};
+            ImageTypes = Array.Empty<ImageType>();
+            IncludeItemTypes = Array.Empty<string>();
+            ItemIds = Array.Empty<Guid>();
+            MediaTypes = Array.Empty<string>();
             MinSimilarityScore = 20;
-            OfficialRatings = new string[] {};
+            OfficialRatings = Array.Empty<string>();
             OrderBy = Array.Empty<ValueTuple<string, SortOrder>>();
-            PersonIds = new Guid[] {};
-            PersonTypes = new string[] {};
-            PresetViews = new string[] {};
-            SeriesStatuses = new SeriesStatus[] { };
-            SourceTypes = new SourceType[] { };
-            StudioIds = new Guid[] {};
-            Tags = new string[] {};
-            TopParentIds = new Guid[] {};
-            TrailerTypes = new TrailerType[] { };
-            VideoTypes = new VideoType[] { };
-            Years = new int[] { };
+            PersonIds = Array.Empty<Guid>();
+            PersonTypes = Array.Empty<string>();
+            PresetViews = Array.Empty<string>();
+            SeriesStatuses = Array.Empty<SeriesStatus>();
+            SourceTypes = Array.Empty<SourceType>();
+            StudioIds = Array.Empty<Guid>();
+            Tags = Array.Empty<string>();
+            TopParentIds = Array.Empty<Guid>();
+            TrailerTypes = Array.Empty<TrailerType>();
+            VideoTypes = Array.Empty<VideoType>();
+            Years = Array.Empty<int>();
         }
 
         public InternalItemsQuery(User user)

@@ -46,7 +46,7 @@ namespace MediaBrowser.Model.Globalization
 
         public CultureDto()
         {
-            ThreeLetterISOLanguageNames = new string[] {};
+            ThreeLetterISOLanguageNames = Array.Empty<string>();
         }
     }
 }

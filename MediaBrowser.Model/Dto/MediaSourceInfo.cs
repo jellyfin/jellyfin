@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
 using MediaBrowser.Model.Serialization;
@@ -73,7 +72,7 @@ namespace MediaBrowser.Model.Dto
 
         public MediaSourceInfo()
         {
-            Formats = new string[] { };
+            Formats = Array.Empty<string>();
             MediaStreams = new List<MediaStream>();
             RequiredHttpHeaders = new Dictionary<string, string>();
             SupportsTranscoding = true;
@@ -114,12 +113,6 @@ namespace MediaBrowser.Model.Dto
 
         public int? DefaultAudioStreamIndex { get; set; }
         public int? DefaultSubtitleStreamIndex { get; set; }
-
-        [IgnoreDataMember]
-        public MediaStream DefaultAudioStream
-        {
-            get { return GetDefaultAudioStream(DefaultAudioStreamIndex); }
-        }
 
         public MediaStream GetDefaultAudioStream(int? defaultIndex)
         {

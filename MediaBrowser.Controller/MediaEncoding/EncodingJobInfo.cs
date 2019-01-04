@@ -207,7 +207,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            return new string[] { };
+            return Array.Empty<string>();
         }
 
         public string GetRequestedLevel(string codec)
@@ -317,10 +317,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             _logger = logger;
             TranscodingType = jobType;
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            PlayableStreamFileNames = new string[] { };
-            SupportedAudioCodecs = new string[] { };
-            SupportedVideoCodecs = new string[] { };
-            SupportedSubtitleCodecs = new string[] { };
+            PlayableStreamFileNames = Array.Empty<string>();
+            SupportedAudioCodecs = Array.Empty<string>();
+            SupportedVideoCodecs = Array.Empty<string>();
+            SupportedSubtitleCodecs = Array.Empty<string>();
         }
 
         public bool IsSegmentedLiveStream

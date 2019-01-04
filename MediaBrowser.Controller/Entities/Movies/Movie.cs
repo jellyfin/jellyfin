@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
@@ -32,8 +30,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         public Guid[] LocalTrailerIds { get; set; }
         public Guid[] RemoteTrailerIds { get; set; }
 
-        public MediaUrl[] RemoteTrailers { get; set; }
-
         /// <summary>
         /// Gets or sets the name of the TMDB collection.
         /// </summary>
@@ -55,10 +51,7 @@ namespace MediaBrowser.Controller.Entities.Movies
                 return 0;
             }
 
-            double value = 2;
-            value /= 3;
-
-            return value;
+            return 2 / 3;
         }
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)

@@ -25,8 +25,8 @@ namespace MediaBrowser.Model.LiveTv
 
         public LiveTvInfo()
         {
-            Services = new LiveTvServiceInfo[] { };
-            EnabledUsers = new string[] {};
+            Services = Array.Empty<LiveTvServiceInfo>();
+            EnabledUsers = Array.Empty<string>();
         }
     }
 }
