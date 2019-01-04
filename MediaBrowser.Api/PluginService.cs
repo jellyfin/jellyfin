@@ -75,7 +75,8 @@ namespace MediaBrowser.Api
         /// <value>The request stream.</value>
         public Stream RequestStream { get; set; }
     }
-
+    
+    //TODO cvium delete this
     [Route("/Registrations/{Name}", "GET", Summary = "Gets registration status for a feature", IsHidden = true)]
     [Authenticated]
     public class GetRegistration : IReturn<RegistrationInfo>
@@ -84,6 +85,7 @@ namespace MediaBrowser.Api
         public string Name { get; set; }
     }
 	
+    //TODO cvium delete this
     public class RegistrationInfo
     {
         public string Name { get; set; }
@@ -125,7 +127,7 @@ namespace MediaBrowser.Api
             _jsonSerializer = jsonSerializer;
         }
         
-        
+        //TODO cvium delete this
         public async Task<object> Get(GetRegistration request)
         {	
             var info = new RegistrationInfo
