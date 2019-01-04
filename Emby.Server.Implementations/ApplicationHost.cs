@@ -966,9 +966,6 @@ namespace Emby.Server.Implementations
             DeviceManager = new DeviceManager(AuthenticationRepository, JsonSerializer, LibraryManager, LocalizationManager, UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager, LoggerFactory.CreateLogger("DeviceManager"), NetworkManager);
             RegisterSingleInstance(DeviceManager);
 
-            var newsService = new Emby.Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
-            RegisterSingleInstance<INewsService>(newsService);
-
             MediaSourceManager = new MediaSourceManager(ItemRepository, ApplicationPaths, LocalizationManager, UserManager, LibraryManager, LoggerFactory.CreateLogger("MediaSourceManager"), JsonSerializer, FileSystemManager, UserDataManager, TimerFactory, () => MediaEncoder);
             RegisterSingleInstance(MediaSourceManager);
 
