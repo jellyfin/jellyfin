@@ -40,8 +40,8 @@ namespace Emby.Server.Implementations.Udp
             _json = json;
             _socketFactory = socketFactory;
 
-            AddMessageResponder("who is EmbyServer?", true, RespondToV2Message);
-            AddMessageResponder("who is MediaBrowserServer_v2?", false, RespondToV2Message);
+            AddMessageResponder("who is JellyfinServer?", true, RespondToV2Message);
+            AddMessageResponder("who is Jellyfin?", true, RespondToV2Message);
         }
 
         private void AddMessageResponder(string message, bool isSubstring, Func<string, IpEndPointInfo, Encoding, CancellationToken, Task> responder)
