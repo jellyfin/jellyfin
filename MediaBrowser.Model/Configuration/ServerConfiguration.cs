@@ -175,7 +175,6 @@ namespace MediaBrowser.Model.Configuration
 
         public int SchemaVersion { get; set; }
 
-        public bool EnableAnonymousUsageReporting { get; set; }
         public bool EnableFolderView { get; set; }
         public bool EnableGroupingIntoCollections { get; set; }
         public bool DisplaySpecialsWithinSeasons { get; set; }
@@ -221,7 +220,6 @@ namespace MediaBrowser.Model.Configuration
             HttpsPortNumber = DefaultHttpsPort;
             EnableHttps = true;
             EnableDashboardResponseCaching = true;
-            EnableAnonymousUsageReporting = true;
             EnableCaseSensitiveItemIds = true;
 
             EnableAutomaticRestart = true;

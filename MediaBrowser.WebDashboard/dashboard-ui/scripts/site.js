@@ -721,12 +721,6 @@ var Dashboard = {
             autoFocus: !1,
             roles: "admin"
         }), defineRoute({
-            path: "/supporterkey.html",
-            dependencies: [],
-            controller: "scripts/supporterkeypage",
-            autoFocus: !1,
-            roles: "admin"
-        }), defineRoute({
             path: "/syncactivity.html",
             dependencies: [],
             autoFocus: !1,
@@ -994,7 +988,8 @@ var Dashboard = {
                 }, {
                     name: "Dark",
                     id: "dark",
-                    isDefault: !0
+                    isDefault: !0,
+                    isDefaultServerDashboard: !0
                 }, {
                     name: "Dark (green accent)",
                     id: "dark-green"
@@ -1007,7 +1002,6 @@ var Dashboard = {
                 }, {
                     name: "Light",
                     id: "light",
-                    isDefaultServerDashboard: !0
                 }, {
                     name: "Light (blue accent)",
                     id: "light-blue"
@@ -1087,7 +1081,6 @@ var Dashboard = {
                 if ("wizard" === item) return "wizardstart.html";
                 if ("downloads" === item) return "offline/offline.html";
                 if ("downloadsettings" === item) return "mysyncsettings.html";
-                if ("premiere" === item) return "supporterkey.html";
                 if ("managedownloads" === item) return "managedownloads.html";
                 if ("manageserver" === item) return "dashboard.html";
                 if ("recordedtv" === item) return "livetv.html?tab=3&serverId=" + options.serverId;

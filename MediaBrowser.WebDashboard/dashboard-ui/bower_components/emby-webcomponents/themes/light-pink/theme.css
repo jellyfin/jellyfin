@@ -3,6 +3,12 @@ html, .skinHeader {
     color: rgba(0, 0, 0, .87);
 }
 
+.wizardStartForm,
+.ui-corner-all,
+.ui-shadow {
+  background-color: #E91E63
+}
+
 .emby-collapsible-button {
     border-color: #ccc;
     border-color: rgba(0, 0, 0, .158);

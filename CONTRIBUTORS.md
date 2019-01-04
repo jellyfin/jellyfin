@@ -9,15 +9,17 @@
  - [bfayers](https://github.com/bfayers)
  - [Bond_009](https://github.com/Bond-009)
  - [cvium](https://github.com/cvium)
+ - [AnthonyLavado](https://github.com/anthonylavado)
+ - [sparky8251](https://github.com/sparky8251)
 
 # Emby Contributors
 
- - [LukePulverenti](https://github.com/LukePulverenti) 
- - [ebr11](https://github.com/ebr11) 
- - [lalmanzar](https://github.com/lalmanzar) 
- - [schneifu](https://github.com/schneifu) 
- - [Mark2xv](https://github.com/Mark2xv) 
- - [ScottRapsey](https://github.com/ScottRapsey) 
+ - [LukePulverenti](https://github.com/LukePulverenti)
+ - [ebr11](https://github.com/ebr11)
+ - [lalmanzar](https://github.com/lalmanzar)
+ - [schneifu](https://github.com/schneifu)
+ - [Mark2xv](https://github.com/Mark2xv)
+ - [ScottRapsey](https://github.com/ScottRapsey)
  - [skynet600](https://github.com/skynet600)
  - [Cheesegeezer](https://githum.com/Cheesegeezer)
  - [Radeon](https://github.com/radeonorama)

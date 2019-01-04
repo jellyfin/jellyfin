@@ -368,7 +368,6 @@ namespace Emby.Server.Implementations
         protected IAuthService AuthService { get; private set; }
 
         public StartupOptions StartupOptions { get; private set; }
-        protected readonly string ReleaseAssetFilename;
 
         internal IPowerManagement PowerManagement { get; private set; }
         internal IImageEncoder ImageEncoder { get; private set; }
@@ -393,7 +392,6 @@ namespace Emby.Server.Implementations
             StartupOptions options,
             IFileSystem fileSystem,
             IPowerManagement powerManagement,
-            string releaseAssetFilename,
             IEnvironmentInfo environmentInfo,
             IImageEncoder imageEncoder,
             ISystemEvents systemEvents,
@@ -416,11 +414,9 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager = GetConfigurationManager();
 
-            // Initialize this early in case the -v command line option is used
             Logger = LoggerFactory.CreateLogger("App");
 
             StartupOptions = options;
-            ReleaseAssetFilename = releaseAssetFilename;
             PowerManagement = powerManagement;
 
             ImageEncoder = imageEncoder;
@@ -467,7 +463,7 @@ namespace Emby.Server.Implementations
         {
             get
             {
-                return _version ?? (_version = GetType().GetTypeInfo().Assembly.GetName().Version);
+                return _version ?? (_version = typeof(ApplicationHost).Assembly.GetName().Version);
             }
         }
 
@@ -644,15 +640,14 @@ namespace Emby.Server.Implementations
         /// Gets the exports.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="manageLiftime">if set to <c>true</c> [manage liftime].</param>
+        /// <param name="manageLifetime">if set to <c>true</c> [manage lifetime].</param>
         /// <returns>IEnumerable{``0}.</returns>
         public IEnumerable<T> GetExports<T>(bool manageLifetime = true)
         {
             var parts = GetExportTypes<T>()
                 .Select(CreateInstanceSafe)
                 .Where(i => i != null)
-                .Cast<T>()
-                .ToList();
+                .Cast<T>();
 
             if (manageLifetime)
             {
@@ -707,7 +702,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
-        public async Task RunStartupTasks()
+        public Task RunStartupTasks()
         {
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
@@ -740,6 +735,8 @@ namespace Emby.Server.Implementations
             Logger.LogInformation("All entry points have started");
 
             //LoggerFactory.RemoveConsoleOutput();
+
+            return Task.CompletedTask;
         }
 
         private void RunEntryPoints(IEnumerable<IServerEntryPoint> entryPoints, bool isBeforeStartup)
@@ -800,27 +797,6 @@ namespace Emby.Server.Implementations
 
             JsonSerializer = CreateJsonSerializer();
 
-            OnLoggerLoaded(true);
-            //LoggerFactory.LoggerLoaded += (s, e) => OnLoggerLoaded(false);
-
-            DiscoverTypes();
-
-            SetHttpLimit();
-
-            RegisterResources();
-
-            FindParts();
-        }
-
-        protected virtual void OnLoggerLoaded(bool isFirstLoad)
-        {
-            Logger.LogInformation("Application version: {0}", ApplicationVersion);
-
-            if (!isFirstLoad)
-            {
-                LogEnvironmentInfo(Logger, ApplicationPaths, false);
-            }
-
             if (Plugins != null)
             {
                 var pluginBuilder = new StringBuilder();
@@ -832,6 +808,14 @@ namespace Emby.Server.Implementations
 
                 Logger.LogInformation("Plugins: {plugins}", pluginBuilder.ToString());
             }
+
+            DiscoverTypes();
+
+            SetHttpLimit();
+
+            RegisterResources();
+
+            FindParts();
         }
 
         protected virtual IHttpClient CreateHttpClient()
@@ -982,9 +966,6 @@ namespace Emby.Server.Implementations
             DeviceManager = new DeviceManager(AuthenticationRepository, JsonSerializer, LibraryManager, LocalizationManager, UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager, LoggerFactory.CreateLogger("DeviceManager"), NetworkManager);
             RegisterSingleInstance(DeviceManager);
 
-            var newsService = new Emby.Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
-            RegisterSingleInstance<INewsService>(newsService);
-
             MediaSourceManager = new MediaSourceManager(ItemRepository, ApplicationPaths, LocalizationManager, UserManager, LibraryManager, LoggerFactory.CreateLogger("MediaSourceManager"), JsonSerializer, FileSystemManager, UserDataManager, TimerFactory, () => MediaEncoder);
             RegisterSingleInstance(MediaSourceManager);
 
@@ -1074,36 +1055,25 @@ namespace Emby.Server.Implementations
         {
             get
             {
-                return "netframework";
+                return "netcore";
             }
         }
 
-        public static void LogEnvironmentInfo(ILogger Logger, IApplicationPaths appPaths, bool isStartup)
+        public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths, EnvironmentInfo.EnvironmentInfo environmentInfo)
         {
-            Logger.LogInformation("Jellyfin:\n{ex}", GetBaseExceptionMessage(appPaths).ToString());
-        }
-
-        protected static StringBuilder GetBaseExceptionMessage(IApplicationPaths appPaths)
-        {
-            var builder = new StringBuilder();
-
             // Distinct these to prevent users from reporting problems that aren't actually problems
             var commandLineArgs = Environment
                 .GetCommandLineArgs()
-                .Distinct()
-                .ToArray();
+                .Distinct();
 
-            builder.AppendLine(string.Format("Command line: {0}", string.Join(" ", commandLineArgs)));
-
-            builder.AppendLine(string.Format("Operating system: {0}", Environment.OSVersion));
-            builder.AppendLine(string.Format("64-Bit OS: {0}", Environment.Is64BitOperatingSystem));
-            builder.AppendLine(string.Format("64-Bit Process: {0}", Environment.Is64BitProcess));
-            builder.AppendLine(string.Format("User Interactive: {0}", Environment.UserInteractive));
-            builder.AppendLine(string.Format("Processor count: {0}", Environment.ProcessorCount));
-            builder.AppendLine(string.Format("Program data path: {0}", appPaths.ProgramDataPath));
-            builder.AppendLine(string.Format("Application directory: {0}", appPaths.ProgramSystemPath));
-
-            return builder;
+            logger.LogInformation("Arguments: {Args}", commandLineArgs);
+            logger.LogInformation("Operating system: {OS} {OSVersion}", environmentInfo.OperatingSystemName, environmentInfo.OperatingSystemVersion);
+            logger.LogInformation("Architecture: {Architecture}", environmentInfo.SystemArchitecture);
+            logger.LogInformation("64-Bit Process: {Is64Bit}", Environment.Is64BitProcess);
+            logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
+            logger.LogInformation("Processor count: {ProcessorCount}", Environment.ProcessorCount);
+            logger.LogInformation("Program data path: {ProgramDataPath}", appPaths.ProgramDataPath);
+            logger.LogInformation("Application directory: {ApplicationPath}", appPaths.ProgramSystemPath);
         }
 
         private void SetHttpLimit()
@@ -1174,7 +1144,7 @@ namespace Emby.Server.Implementations
                 //localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
                 if (!localCert.HasPrivateKey)
                 {
-                    Logger.LogError("No private key included in SSL cert {0}.", certificateLocation);
+                    Logger.LogError("No private key included in SSL cert {CertificateLocation}.", certificateLocation);
                     return null;
                 }
 
@@ -1182,7 +1152,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error loading cert from {certificateLocation}", certificateLocation);
+                Logger.LogError(ex, "Error loading cert from {CertificateLocation}", certificateLocation);
                 return null;
             }
         }
@@ -1265,7 +1235,7 @@ namespace Emby.Server.Implementations
                 HttpClient,
                 ZipClient,
                 ProcessFactory,
-                5000, false,
+                5000,
                 EnvironmentInfo);
 
             MediaEncoder = mediaEncoder;
@@ -1772,7 +1742,7 @@ namespace Emby.Server.Implementations
             return list.ToList();
         }
 
-        protected abstract List<Assembly> GetAssembliesWithPartsInternal();
+        protected abstract IEnumerable<Assembly> GetAssembliesWithPartsInternal();
 
         /// <summary>
         /// Gets the plugin assemblies.
@@ -2309,56 +2279,6 @@ namespace Emby.Server.Implementations
             var list = Plugins.ToList();
             list.Remove(plugin);
             Plugins = list.ToArray();
-        }
-
-        /// <summary>
-        /// Checks for update.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task{CheckForUpdateResult}.</returns>
-        public async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            var updateLevel = SystemUpdateLevel;
-            var cacheLength = updateLevel == PackageVersionClass.Release ?
-                TimeSpan.FromHours(12) :
-                TimeSpan.FromMinutes(5);
-
-            try
-            {
-                var result = await new GithubUpdater(HttpClient, JsonSerializer).CheckForUpdateResult("MediaBrowser",
-                    "Emby.Releases",
-                    ApplicationVersion,
-                    updateLevel,
-                    ReleaseAssetFilename,
-                    "MBServer",
-                    UpdateTargetFileName,
-                    cacheLength,
-                    cancellationToken).ConfigureAwait(false);
-
-                HasUpdateAvailable = result.IsUpdateAvailable;
-
-                return result;
-            }
-            catch (HttpException ex)
-            {
-                // users are overreacting to this occasionally failing
-                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.Forbidden)
-                {
-                    HasUpdateAvailable = false;
-                    return new CheckForUpdateResult
-                    {
-                        IsUpdateAvailable = false
-                    };
-                }
-
-                throw;
-            }
-        }
-
-        protected virtual string UpdateTargetFileName
-        {
-            get { return "Mbserver.zip"; }
         }
 
         /// <summary>

@@ -1,23 +1,22 @@
-﻿using MediaBrowser.Controller.Net;
-using Microsoft.Extensions.Logging;
-using SocketHttpListener.Net;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Net;
+using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
-using Emby.Server.Implementations.Net;
-using Emby.Server.Implementations.HttpServer;
+using Microsoft.Extensions.Logging;
+using SocketHttpListener.Net;
 
-namespace EmbyServer.SocketSharp
+namespace Jellyfin.SocketSharp
 {
     public class WebSocketSharpListener : IHttpListener
     {
@@ -258,5 +257,4 @@ namespace EmbyServer.SocketSharp
             }
         }
     }
-
 }
