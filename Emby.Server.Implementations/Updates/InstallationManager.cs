@@ -10,7 +10,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
-using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Events;
@@ -107,7 +106,6 @@ namespace Emby.Server.Implementations.Updates
         private readonly IApplicationPaths _appPaths;
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly ISecurityManager _securityManager;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
 
@@ -122,7 +120,16 @@ namespace Emby.Server.Implementations.Updates
         // netframework or netcore
         private readonly string _packageRuntime;
 
-        public InstallationManager(ILogger logger, IApplicationHost appHost, IApplicationPaths appPaths, IHttpClient httpClient, IJsonSerializer jsonSerializer, ISecurityManager securityManager, IServerConfigurationManager config, IFileSystem fileSystem, ICryptoProvider cryptographyProvider, string packageRuntime)
+        public InstallationManager(
+            ILogger logger,
+            IApplicationHost appHost,
+            IApplicationPaths appPaths,
+            IHttpClient httpClient,
+            IJsonSerializer jsonSerializer, 
+            IServerConfigurationManager config,
+            IFileSystem fileSystem,
+            ICryptoProvider cryptographyProvider,
+            string packageRuntime)
         {
             if (logger == null)
             {
@@ -136,7 +143,6 @@ namespace Emby.Server.Implementations.Updates
             _appPaths = appPaths;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
-            _securityManager = securityManager;
             _config = config;
             _fileSystem = fileSystem;
             _cryptographyProvider = cryptographyProvider;
@@ -163,41 +169,10 @@ namespace Emby.Server.Implementations.Updates
             string packageType = null,
             Version applicationVersion = null)
         {
-            if (withRegistration)
-            {
-                var data = new Dictionary<string, string>
-                {
-                    { "key", _securityManager.SupporterKey },
-                    { "mac", _applicationHost.SystemId },
-                    { "systemid", _applicationHost.SystemId }
-                };
+            // TODO cvium
+            // var packages = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
-                var options = new HttpRequestOptions
-                {
-                    Url = "https://www.mb3admin.local/admin/service/package/retrieveall?includeAllRuntimes=true",
-                    CancellationToken = cancellationToken
-                };
-
-                options.SetPostData(data);
-
-                using (var response = await _httpClient.SendAsync(options, "POST").ConfigureAwait(false))
-                {
-                    using (var json = response.Content)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        var packages = await _jsonSerializer.DeserializeFromStreamAsync<PackageInfo[]>(json).ConfigureAwait(false);
-
-                        return FilterPackages(packages, packageType, applicationVersion);
-                    }
-                }
-            }
-            else
-            {
-                var packages = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
-
-                return FilterPackages(packages, packageType, applicationVersion);
-            }
+            return new List<PackageInfo>(); //FilterPackages(packages, packageType, applicationVersion);
         }
 
         /// <summary>

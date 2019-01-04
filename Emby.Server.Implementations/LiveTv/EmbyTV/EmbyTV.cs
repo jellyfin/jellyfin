@@ -1183,14 +1183,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     return;
                 }
 
-                var registration = await _liveTvManager.GetRegistrationInfo("dvr").ConfigureAwait(false);
-                if (!registration.IsValid)
-                {
-                    _logger.LogWarning("Emby Premiere required to use Emby DVR.");
-                    OnTimerOutOfDate(timer);
-                    return;
-                }
-
                 var activeRecordingInfo = new ActiveRecordingInfo
                 {
                     CancellationTokenSource = new CancellationTokenSource(),
@@ -2379,79 +2371,74 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var allTimers = GetTimersForSeries(seriesTimer)
                 .ToList();
 
-            var registration = await _liveTvManager.GetRegistrationInfo("seriesrecordings").ConfigureAwait(false);
 
             var enabledTimersForSeries = new List<TimerInfo>();
-
-            if (registration.IsValid)
+            foreach (var timer in allTimers)
             {
-                foreach (var timer in allTimers)
+                var existingTimer = _timerProvider.GetTimer(timer.Id);
+
+                if (existingTimer == null)
                 {
-                    var existingTimer = _timerProvider.GetTimer(timer.Id);
+                    existingTimer = string.IsNullOrWhiteSpace(timer.ProgramId)
+                        ? null
+                        : _timerProvider.GetTimerByProgramId(timer.ProgramId);
+                }
 
-                    if (existingTimer == null)
+                if (existingTimer == null)
+                {
+                    if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
                     {
-                        existingTimer = string.IsNullOrWhiteSpace(timer.ProgramId)
-                            ? null
-                            : _timerProvider.GetTimerByProgramId(timer.ProgramId);
-                    }
-
-                    if (existingTimer == null)
-                    {
-                        if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
-                        {
-                            timer.Status = RecordingStatus.Cancelled;
-                        }
-                        else
-                        {
-                            enabledTimersForSeries.Add(timer);
-                        }
-                        _timerProvider.Add(timer);
-
-                        if (TimerCreated != null)
-                        {
-                            TimerCreated(this, new GenericEventArgs<TimerInfo>(timer));
-                        }
+                        timer.Status = RecordingStatus.Cancelled;
                     }
                     else
                     {
-                        // Only update if not currently active - test both new timer and existing in case Id's are different
-                        // Id's could be different if the timer was created manually prior to series timer creation
-                        ActiveRecordingInfo activeRecordingInfo;
-                        if (!_activeRecordings.TryGetValue(timer.Id, out activeRecordingInfo) && !_activeRecordings.TryGetValue(existingTimer.Id, out activeRecordingInfo))
+                        enabledTimersForSeries.Add(timer);
+                    }
+                    _timerProvider.Add(timer);
+
+                    if (TimerCreated != null)
+                    {
+                        TimerCreated(this, new GenericEventArgs<TimerInfo>(timer));
+                    }
+                }
+                else
+                {
+                    // Only update if not currently active - test both new timer and existing in case Id's are different
+                    // Id's could be different if the timer was created manually prior to series timer creation
+                    ActiveRecordingInfo activeRecordingInfo;
+                    if (!_activeRecordings.TryGetValue(timer.Id, out activeRecordingInfo) && !_activeRecordings.TryGetValue(existingTimer.Id, out activeRecordingInfo))
+                    {
+                        UpdateExistingTimerWithNewMetadata(existingTimer, timer);
+
+                        // Needed by ShouldCancelTimerForSeriesTimer
+                        timer.IsManual = existingTimer.IsManual;
+
+                        if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
                         {
-                            UpdateExistingTimerWithNewMetadata(existingTimer, timer);
-
-                            // Needed by ShouldCancelTimerForSeriesTimer
-                            timer.IsManual = existingTimer.IsManual;
-
-                            if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
-                            {
-                                existingTimer.Status = RecordingStatus.Cancelled;
-                            }
-                            else if (!existingTimer.IsManual)
-                            {
-                                existingTimer.Status = RecordingStatus.New;
-                            }
-
-                            if (existingTimer.Status != RecordingStatus.Cancelled)
-                            {
-                                enabledTimersForSeries.Add(existingTimer);
-                            }
-
-                            if (updateTimerSettings)
-                            {
-                                existingTimer.KeepUntil = seriesTimer.KeepUntil;
-                                existingTimer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
-                                existingTimer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
-                                existingTimer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
-                                existingTimer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
-                                existingTimer.Priority = seriesTimer.Priority;
-                            }
-
-                            existingTimer.SeriesTimerId = seriesTimer.Id;
-                            _timerProvider.Update(existingTimer);
+                            existingTimer.Status = RecordingStatus.Cancelled;
                         }
+                        else if (!existingTimer.IsManual)
+                        {
+                            existingTimer.Status = RecordingStatus.New;
+                        }
+
+                        if (existingTimer.Status != RecordingStatus.Cancelled)
+                        {
+                            enabledTimersForSeries.Add(existingTimer);
+                        }
+
+                        if (updateTimerSettings)
+                        {
+                            existingTimer.KeepUntil = seriesTimer.KeepUntil;
+                            existingTimer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
+                            existingTimer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
+                            existingTimer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
+                            existingTimer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
+                            existingTimer.Priority = seriesTimer.Priority;
+                        }
+
+                        existingTimer.SeriesTimerId = seriesTimer.Id;
+                        _timerProvider.Update(existingTimer);
                     }
                 }
             }
