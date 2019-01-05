@@ -124,13 +124,14 @@ namespace Jellyfin.Server
                     }
                 }
                 programDataPath = Path.Combine(programDataPath, "jellyfin");
+                // Ensure the dir exists
                 Directory.CreateDirectory(programDataPath);
             }
 
             string configPath;
-            if (options.ContainsOption("-configpath"))
+            if (options.ContainsOption("-configdir"))
             {
-                configPath = options.GetOption("-configpath");
+                configPath = options.GetOption("-configdir");
             }
             else
             {
@@ -149,15 +150,23 @@ namespace Jellyfin.Server
                     }
                 }
                 configPath = Path.Combine(configPath, "jellyfin");
+                // Ensure the dir exists
                 Directory.CreateDirectory(configPath);
             }
 
             string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
             if (string.IsNullOrEmpty(logDir))
             {
-                logDir = Path.Combine(programDataPath, "logs");
-                // Ensure logDir exists
-                Directory.CreateDirectory(logDir);
+                if (options.ContainsOption("-logdir"))
+                {
+                    logDir = options.GetOption("-logdir");
+                }
+                else
+                {
+                    logDir = Path.Combine(programDataPath, "logs");
+                    // Ensure the dir exists
+                    Directory.CreateDirectory(logDir);
+                }
                 // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
                 Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", logDir);
             }
