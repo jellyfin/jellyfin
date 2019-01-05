@@ -931,8 +931,6 @@
   "LabelRemoteClientBitrateLimitHelp": "Um limite opcional da taxa de bits por-stream para todos os dispositivos fora da rede. Esta opção é útil para evitar que os dispositivos demandem uma taxa de bits maior que a permitida pela sua conexão. Isto pode causar um aumento na carga da CPU de seu servidor para que possa transcodificar os vídeos em tempo real para uma taxa mais baixa.",
   "LabelReport": "Relatório:",
   "LabelResumePoint": "Ponto para retomar:",
-  "LabelRunServerAtStartup": "Executar servidor na inicialização",
-  "LabelRunServerAtStartupHelp": "Esta opção abrirá o ícone da bandeja de sistema na inicialização do Windows. Se você configurou um serviço do Windows, então deixe a opção desmarcada e configure  o serviço para executar na inicialização.",
   "LabelRunningOnPort": "Executando na porta http {0}.",
   "LabelRunningOnPorts": "Executando na porta http {0} e porta https {1}.",
   "LabelRunningTimeValue": "Duração: {0}",

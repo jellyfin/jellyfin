@@ -931,8 +931,6 @@
   "LabelRemoteClientBitrateLimitHelp": "En valfri bitfrekvensgräns för enskilda strömmar utanför det lokala nätverket. Detta är användbart för att förhindra enheter från att begära högre bitfrekvens än din internetuppkoppling kan hantera. Detta kan innebära högre processorbelastning för att omkoda videor till lägre bitfrekvens.",
   "LabelReport": "Rapport:",
   "LabelResumePoint": "Återuppta vid:",
-  "LabelRunServerAtStartup": "Starta servern då systemet startas",
-  "LabelRunServerAtStartupHelp": "This will start the Jellyfin tray icon on Windows startup. If you've set up a Windows service then leave this unchecked and configure the service to run at startup.",
   "LabelRunningOnPort": "Kör http på port {0}",
   "LabelRunningOnPorts": "Kör http på port {0} och https på port {1}",
   "LabelRunningTimeValue": "Speltid: {0}",

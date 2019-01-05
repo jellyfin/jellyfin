@@ -931,8 +931,6 @@
   "LabelRemoteClientBitrateLimitHelp": "Ένα προαιρετικό όριο bitrate ανά δευτερόλεπτο για όλες τις συσκευές δικτύου. Αυτό είναι χρήσιμο για να αποτρέψετε τις συσκευές να ζητούν υψηλότερο bitrate από ό, τι μπορεί να χειριστεί η σύνδεσή σας στο διαδίκτυο. Αυτό μπορεί να έχει ως αποτέλεσμα αυξημένο φορτίο CPU στο διακομιστή σας, προκειμένου να μετατρέψετε τα βίντεο σε κίνηση σε χαμηλότερο bitrate.",
   "LabelReport": "Αναφορά:",
   "LabelResumePoint": "Σημείο επαναφοράς:",
-  "LabelRunServerAtStartup": "Ξεκίνησε τον Σερβερ κατά την εκκίνηση",
-  "LabelRunServerAtStartupHelp": "Αυτό θα ξεκινήσει το εικονίδιο του δίσκου Jellyfin κατά την εκκίνηση των Windows. Αν έχετε ρυθμίσει μια υπηρεσία των Windows, αφήστε το μη ελεγμένο και ρυθμίστε τις παραμέτρους για την εκτέλεση της υπηρεσίας κατά την εκκίνηση.",
   "LabelRunningOnPort": "Running on http port {0}.",
   "LabelRunningOnPorts": "Running on http port {0}, and https port {1}.",
   "LabelRunningTimeValue": "Διάρκεια: {0}",

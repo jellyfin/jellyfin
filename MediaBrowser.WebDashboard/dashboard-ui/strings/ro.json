@@ -931,8 +931,6 @@
   "LabelRemoteClientBitrateLimitHelp": "An optional per-stream bitrate limit for all out of network devices. This is useful to prevent devices from requesting a higher bitrate than your internet connection can handle. This may result in increased CPU load on your server in order to transcode videos on the fly to a lower bitrate.",
   "LabelReport": "Report:",
   "LabelResumePoint": "Resume point:",
-  "LabelRunServerAtStartup": "Pornește serverul automat cu sistemul de operare",
-  "LabelRunServerAtStartupHelp": "Aceaasta va porni Jellyfin bara de stare la pornirea Windows. Dacă ați stat Jellyfin ca serviciu de Windows, lasați această opțiune neselectată și configurați serviciul să pornească automat.",
   "LabelRunningOnPort": "Running on http port {0}.",
   "LabelRunningOnPorts": "Running on http port {0}, and https port {1}.",
   "LabelRunningTimeValue": "Running time: {0}",

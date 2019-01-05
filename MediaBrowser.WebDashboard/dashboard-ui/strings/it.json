@@ -931,8 +931,6 @@
   "LabelRemoteClientBitrateLimitHelp": "Un limite bitrate per-stream opzionale per tutti i dispositivi di rete. Ciò è utile per impedire ai dispositivi di richiedere un bitrate superiore a quello in grado di gestire la connessione a Internet. Questo può provocare un aumento del carico della CPU sul server per transcodificare i video in volo ad un bitrate inferiore.",
   "LabelReport": "Report:",
   "LabelResumePoint": "Punto di ripristino:",
-  "LabelRunServerAtStartup": "Esegui il server all'avvio di Windows",
-  "LabelRunServerAtStartupHelp": "Se hai impostato un servizio Windows, lasciate questa opzione deselezionata e configurate il servizio da eseguire all'avvio.",
   "LabelRunningOnPort": "In esecuzione sulla porta HTTP {0}.",
   "LabelRunningOnPorts": "In esecuzione sulla porta HTTP {0}, e porta HTTPS {1}",
   "LabelRunningTimeValue": "Durata: {0}",

@@ -931,8 +931,6 @@
   "LabelRemoteClientBitrateLimitHelp": "Opcjonalny limit przepływności transmisji dla urządzeń poza siecią domową. Używaj tej opcji, w celu zapobiegania żądaniom o wyższe przepływności, niż Twojej połączenie internetowe może obsłużyć.",
   "LabelReport": "Raport:",
   "LabelResumePoint": "Punkt wznawiania:",
-  "LabelRunServerAtStartup": "Uruchamiaj serwer podczas uruchomienia systemu",
-  "LabelRunServerAtStartupHelp": "Umożliwia uruchomienieJellyfin w trybie aplikacji z aktywną ikoną w zasobniku systemowym. Jeśli skonfigurowałeś Jellyfin jako usługę Windows, pozostaw tę opcję odznaczoną i ustaw typ uruchomienia usługi jako Automatyczny.",
   "LabelRunningOnPort": "Uruchomiony na porcie http {0}.",
   "LabelRunningOnPorts": "Uruchomiony na porcie http {0} oraz na porcie https {1}.",
   "LabelRunningTimeValue": "Czas trwania: {0}",

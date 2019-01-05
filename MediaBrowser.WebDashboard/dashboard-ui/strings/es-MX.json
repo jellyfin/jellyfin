@@ -931,8 +931,6 @@
   "LabelRemoteClientBitrateLimitHelp": "Un límite opcional en la tasa de bits para cada transmisión para todos los dispositivos fuera de la red local. Esto es útil para evitar que los clientes soliciten una tasa de bits mayor a la que su conexión de internet puede soportar. Puede resultar en un incremente en la carga del CPU de su servidor para poder transmitir videos al vuelo a una resolución baja.",
   "LabelReport": "Reporte:",
   "LabelResumePoint": "Punto de reinicio:",
-  "LabelRunServerAtStartup": "Ejecutar el servidor al iniciar",
-  "LabelRunServerAtStartupHelp": "Esto iniciará el icono de Jellyfin en el área de notificación cuando windows arranque. Si ha configurado un Servicio de Windows entonces deje esta casilla desmarcada y configure el servicio para ejecutarse al iniciar.",
   "LabelRunningOnPort": "Ejecutándose en el puerto http {0}.",
   "LabelRunningOnPorts": "Ejecutándose en el puerto http {0} y el puerto https {1}.",
   "LabelRunningTimeValue": "Duración: {0}",

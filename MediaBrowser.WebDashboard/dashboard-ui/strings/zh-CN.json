@@ -931,8 +931,6 @@
   "LabelRemoteClientBitrateLimitHelp": "所有网络设备都有一个可选的每流比特率限制。这对于防止设备请求比 internet 连接所能处理的更高的比特率非常有用。这可能会导致服务器上的 CPU 负载增加, 以便将视频转码到较低的比特率。",
   "LabelReport": "报告：",
   "LabelResumePoint": "恢复点:",
-  "LabelRunServerAtStartup": "开机启动服务器",
-  "LabelRunServerAtStartupHelp": "这将使 Windows 开机时自动启动 Jellyfin 托盘图标。如果你已经设置了一个 Windows 服务，那么请取消勾选此项并配置此服务为开机自启动。",
   "LabelRunningOnPort": "正运行于 HTTP 端口 {0}.",
   "LabelRunningOnPorts": "正运行于HTTP端口 {0}，和 HTTPS 端口{1}.",
   "LabelRunningTimeValue": "运行时间： {0}",

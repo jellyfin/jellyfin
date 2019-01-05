@@ -118,12 +118,6 @@ namespace MediaBrowser.Model.System
         /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
         public bool HasUpdateAvailable { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [supports automatic run at startup].
-        /// </summary>
-        /// <value><c>true</c> if [supports automatic run at startup]; otherwise, <c>false</c>.</value>
-        public bool SupportsAutoRunAtStartup { get; set; }
-
         public string EncoderLocationType { get; set; }
 
         public Architecture SystemArchitecture { get; set; }

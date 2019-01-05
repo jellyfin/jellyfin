@@ -931,8 +931,6 @@
   "LabelRemoteClientBitrateLimitHelp": "An optional per-stream bitrate limit for all out of network devices. This is useful to prevent devices from requesting a higher bitrate than your internet connection can handle. This may result in increased CPU load on your server in order to transcode videos on the fly to a lower bitrate.",
   "LabelReport": "Report:",
   "LabelResumePoint": "Resume point:",
-  "LabelRunServerAtStartup": "Пускане на сървъра при стартиране",
-  "LabelRunServerAtStartupHelp": "Това ще покаже иконката в областта за уведомяване при пускане на Уиндоус. Ако сте задали услуга, тогава махнете отметката на елемента и настройте услугата да се стартира при пускане.",
   "LabelRunningOnPort": "Върви на порт {0} (http).",
   "LabelRunningOnPorts": "Върви на порт {0} (http) и порт {1} (https).",
   "LabelRunningTimeValue": "Времетраене: {0}",

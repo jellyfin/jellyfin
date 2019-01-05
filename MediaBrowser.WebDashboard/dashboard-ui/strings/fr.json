@@ -931,8 +931,6 @@
   "LabelRemoteClientBitrateLimitHelp": "Une limite de débit optionnelle par streaming pour les connexions hors du réseau local. Utile pour éviter que les appareils ne demandent un débit supérieur à ce que votre connexion internet peu fournir. Cela peut augmenter la charge du processeur de votre serveur pour transcoder les vidéos à la volée à un débit plus faible.",
   "LabelReport": "Rapport :",
   "LabelResumePoint": "Point de reprise :",
-  "LabelRunServerAtStartup": "Démarrer le serveur au démarrage",
-  "LabelRunServerAtStartupHelp": "Cela démarrera l'icône Jellyfin dans la barre des tâches au démarrage de Windows. Si vous avez configuré un service Windows, laissez cette option désactivée et configurez le service pour qu'il s'exécute au démarrage.",
   "LabelRunningOnPort": "En cours d'exécution sur le port http {0}.",
   "LabelRunningOnPorts": "En cours d'exécution sur les ports http {0} et https {1}.",
   "LabelRunningTimeValue": "Durée : {0}",

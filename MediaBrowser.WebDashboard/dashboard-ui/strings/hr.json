@@ -931,8 +931,6 @@
   "LabelRemoteClientBitrateLimitHelp": "An optional per-stream bitrate limit for all out of network devices. This is useful to prevent devices from requesting a higher bitrate than your internet connection can handle. This may result in increased CPU load on your server in order to transcode videos on the fly to a lower bitrate.",
   "LabelReport": "Izvještaj:",
   "LabelResumePoint": "Točka nastavka:",
-  "LabelRunServerAtStartup": "Pokreni server pri pokretanju računala",
-  "LabelRunServerAtStartupHelp": "This will start the Jellyfin tray icon on Windows startup. If you've set up a Windows service then leave this unchecked and configure the service to run at startup.",
   "LabelRunningOnPort": "Izvodi se na http port-u {0}.",
   "LabelRunningOnPorts": "Izvodi se na http port-u {0} i na https port-u {1}.",
   "LabelRunningTimeValue": "Vrijeme rada: {0}",

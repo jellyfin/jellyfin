@@ -931,8 +931,6 @@
   "LabelRemoteClientBitrateLimitHelp": "An optional per-stream bitrate limit for all out of network devices. This is useful to prevent devices from requesting a higher bitrate than your internet connection can handle. This may result in increased CPU load on your server in order to transcode videos on the fly to a lower bitrate.",
   "LabelReport": "Relatório:",
   "LabelResumePoint": "Resume point:",
-  "LabelRunServerAtStartup": "Iniciar o servidor no arranque",
-  "LabelRunServerAtStartupHelp": "Isto irá iniciar o ícone do Jellyfin na barra de tarefas quando o Windows inicia. Se configurou um serviço do Windows, deixe a caixa desmarcada e configure o serviço para correr no arranque.",
   "LabelRunningOnPort": "A executar na porta http {0}.",
   "LabelRunningOnPorts": "A executar na porta http {0} e na porta https {1}.",
   "LabelRunningTimeValue": "Duração: {0}",
