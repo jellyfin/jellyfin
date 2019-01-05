@@ -1,7 +1,7 @@
 #!/bin/sh
-db=${1:-/var/lib/jellyfin/data/library.db}
 embypath=${2:-/var/lib/emby-server}
 jellyfinpath=${3:-/var/lib/jellyfin}
+db=${1:-${jellyfinpath}/data/library.db}
 sqlite3 ${db} << SQL
 UPDATE Chapters2 
 SET ImagePath=REPLACE(ImagePath, '${embypath}', '${jellyfinpath}');
