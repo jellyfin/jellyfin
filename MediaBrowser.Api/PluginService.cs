@@ -76,7 +76,8 @@ namespace MediaBrowser.Api
         public Stream RequestStream { get; set; }
     }
     
-    //TODO cvium delete this
+    //TODO Once we have proper apps and plugins and decide to break compatibility with paid plugins,
+    // delete all these registration endpoints. They are only kept for compatibility.
     [Route("/Registrations/{Name}", "GET", Summary = "Gets registration status for a feature", IsHidden = true)]
     [Authenticated]
     public class GetRegistration : IReturn<RegistrationInfo>
@@ -85,7 +86,33 @@ namespace MediaBrowser.Api
         public string Name { get; set; }
     }
 	
-    //TODO cvium delete this
+    /// <summary>
+    /// Class GetPluginSecurityInfo
+    /// </summary>
+    [Route("/Plugins/SecurityInfo", "GET", Summary = "Gets plugin registration information", IsHidden = true)]
+    [Authenticated]
+    public class GetPluginSecurityInfo : IReturn<PluginSecurityInfo>
+    {
+    }
+	
+    /// <summary>
+    /// Class UpdatePluginSecurityInfo
+    /// </summary>
+    [Route("/Plugins/SecurityInfo", "POST", Summary = "Updates plugin registration information", IsHidden = true)]
+    [Authenticated(Roles = "Admin")]
+    public class UpdatePluginSecurityInfo : PluginSecurityInfo, IReturnVoid
+    {
+    }
+	
+    [Route("/Plugins/RegistrationRecords/{Name}", "GET", Summary = "Gets registration status for a feature", IsHidden = true)]
+    [Authenticated]
+    public class GetRegistrationStatus
+    {
+        [ApiMember(Name = "Name", Description = "Feature Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Name { get; set; }
+    }
+    
+    // TODO these two classes are only kept for compability with paid plugins and should be removed
     public class RegistrationInfo
     {
         public string Name { get; set; }
@@ -94,6 +121,21 @@ namespace MediaBrowser.Api
         public bool IsRegistered { get; set; }
     }
     
+    public class MBRegistrationRecord
+    {
+        public DateTime ExpirationDate { get; set; }
+        public bool IsRegistered { get; set; }
+        public bool RegChecked { get; set; }
+        public bool RegError { get; set; }
+        public bool TrialVersion { get; set; }
+        public bool IsValid { get; set; }
+    }
+    
+    public class PluginSecurityInfo
+    {
+        public string SupporterKey { get; set; }
+        public bool IsMBSupporter { get; set; }
+    }
     /// <summary>
     /// Class PluginsService
     /// </summary>
@@ -127,7 +169,26 @@ namespace MediaBrowser.Api
             _jsonSerializer = jsonSerializer;
         }
         
-        //TODO cvium delete this
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public async Task<object> Get(GetRegistrationStatus request)
+        {
+            var record = new MBRegistrationRecord
+            {
+                IsRegistered = true,
+                RegChecked = true,
+                TrialVersion = false,
+                IsValid = true,
+                RegError = false
+            };
+	
+            return ToOptimizedResult(record);
+        }
+        
+        //TODO this function is only kept for compatibility and should be removed once paid plugins break
         public async Task<object> Get(GetRegistration request)
         {	
             var info = new RegistrationInfo
@@ -140,7 +201,7 @@ namespace MediaBrowser.Api
 	
             return ToOptimizedResult(info);
         }
-
+        
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -148,7 +209,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public async Task<object> Get(GetPlugins request)
         {
-            // TODO cvium
+            // TODO This code can be reused for a proper Jellyfin plugin store (maybe). Remove/reuse when decided.
               var result = _appHost.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()).ToArray();
 //            var requireAppStoreEnabled = request.IsAppStoreEnabled.HasValue && request.IsAppStoreEnabled.Value;
 //
@@ -203,7 +264,32 @@ namespace MediaBrowser.Api
 
             return ToOptimizedResult(plugin.Configuration);
         }
-
+        
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public async Task<object> Get(GetPluginSecurityInfo request)
+        {
+            var result = new PluginSecurityInfo
+            {
+                IsMBSupporter = true,
+                SupporterKey = "IAmTotallyLegit"
+            };
+	
+            return ToOptimizedResult(result);
+        }
+	
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public Task Post(UpdatePluginSecurityInfo request)
+        {
+            return Task.CompletedTask;
+        }
+        
         /// <summary>
         /// Posts the specified request.
         /// </summary>
