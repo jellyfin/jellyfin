@@ -1,3 +1,13 @@
+jellyfin (10.0.0-1) unstable; urgency=medium
+
+  * The first Jellyfin release under our new versioning scheme
+  * Numerous bugfixes and code readability improvements
+  * Updated logging configuration, including flag for it and configdir
+  * Updated theming including logo
+  * Dozens of other improvements as documented in PR#419
+
+ -- Joshua Boniface <joshua@boniface.me>  Sat, 05 Jan 2019 15:39:25 -0500
+
 jellyfin (3.5.2-5) unstable; urgency=medium
 
   * Fully GPL'd release - remove tainted code from MediaBrowser.Common
