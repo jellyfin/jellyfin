@@ -75,7 +75,7 @@ namespace MediaBrowser.Api
         /// <value>The request stream.</value>
         public Stream RequestStream { get; set; }
     }
-    
+
     //TODO Once we have proper apps and plugins and decide to break compatibility with paid plugins,
     // delete all these registration endpoints. They are only kept for compatibility.
     [Route("/Registrations/{Name}", "GET", Summary = "Gets registration status for a feature", IsHidden = true)]
@@ -85,7 +85,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Name", Description = "Feature Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
     }
-	
+
     /// <summary>
     /// Class GetPluginSecurityInfo
     /// </summary>
@@ -94,7 +94,7 @@ namespace MediaBrowser.Api
     public class GetPluginSecurityInfo : IReturn<PluginSecurityInfo>
     {
     }
-	
+
     /// <summary>
     /// Class UpdatePluginSecurityInfo
     /// </summary>
@@ -103,7 +103,7 @@ namespace MediaBrowser.Api
     public class UpdatePluginSecurityInfo : PluginSecurityInfo, IReturnVoid
     {
     }
-	
+
     [Route("/Plugins/RegistrationRecords/{Name}", "GET", Summary = "Gets registration status for a feature", IsHidden = true)]
     [Authenticated]
     public class GetRegistrationStatus
@@ -111,7 +111,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Name", Description = "Feature Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
     }
-    
+
     // TODO these two classes are only kept for compability with paid plugins and should be removed
     public class RegistrationInfo
     {
@@ -120,7 +120,7 @@ namespace MediaBrowser.Api
         public bool IsTrial { get; set; }
         public bool IsRegistered { get; set; }
     }
-    
+
     public class MBRegistrationRecord
     {
         public DateTime ExpirationDate { get; set; }
@@ -130,7 +130,7 @@ namespace MediaBrowser.Api
         public bool TrialVersion { get; set; }
         public bool IsValid { get; set; }
     }
-    
+
     public class PluginSecurityInfo
     {
         public string SupporterKey { get; set; }
@@ -168,7 +168,7 @@ namespace MediaBrowser.Api
             _deviceManager = deviceManager;
             _jsonSerializer = jsonSerializer;
         }
-        
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -184,13 +184,13 @@ namespace MediaBrowser.Api
                 IsValid = true,
                 RegError = false
             };
-	
+
             return ToOptimizedResult(record);
         }
-        
+
         //TODO this function is only kept for compatibility and should be removed once paid plugins break
         public async Task<object> Get(GetRegistration request)
-        {	
+        {
             var info = new RegistrationInfo
             {
                 ExpirationDate = DateTime.Now.AddYears(100),
@@ -198,10 +198,10 @@ namespace MediaBrowser.Api
                 IsTrial = false,
                 Name = request.Name
             };
-	
+
             return ToOptimizedResult(info);
         }
-        
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -209,46 +209,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public async Task<object> Get(GetPlugins request)
         {
-            // TODO This code can be reused for a proper Jellyfin plugin store (maybe). Remove/reuse when decided.
-              var result = _appHost.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()).ToArray();
-//            var requireAppStoreEnabled = request.IsAppStoreEnabled.HasValue && request.IsAppStoreEnabled.Value;
-//
-//            // Don't fail just on account of image url's
-//            try
-//            {
-//                var packages = (await _installationManager.GetAvailablePackagesWithoutRegistrationInfo(CancellationToken.None));
-//
-//                foreach (var plugin in result)
-//                {
-//                    var pkg = packages.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.guid) && string.Equals(i.guid.Replace("-", string.Empty), plugin.Id.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase));
-//
-//                    if (pkg != null)
-//                    {
-//                        plugin.ImageUrl = pkg.thumbImage;
-//                    }
-//                }
-//
-//                if (requireAppStoreEnabled)
-//                {
-//                    result = result
-//                        .Where(plugin =>
-//                        {
-//                            var pkg = packages.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.guid) && new Guid(plugin.Id).Equals(new Guid(i.guid)));
-//                            return pkg != null && pkg.enableInAppStore;
-//
-//                        })
-//                        .ToArray();
-//                }
-//            }
-//            catch (Exception ex)
-//            {
-//                Logger.LogError(ex, "Error getting plugin list");
-//                // Play it safe here
-//                if (requireAppStoreEnabled)
-//                {
-//                    result = new PluginInfo[] { };
-//                }
-//            }
+            var result = _appHost.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()).ToArray();
             return ToOptimizedResult(result);
         }
 
@@ -264,7 +225,7 @@ namespace MediaBrowser.Api
 
             return ToOptimizedResult(plugin.Configuration);
         }
-        
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -277,10 +238,10 @@ namespace MediaBrowser.Api
                 IsMBSupporter = true,
                 SupporterKey = "IAmTotallyLegit"
             };
-	
+
             return ToOptimizedResult(result);
         }
-	
+
         /// <summary>
         /// Posts the specified request.
         /// </summary>
@@ -289,7 +250,7 @@ namespace MediaBrowser.Api
         {
             return Task.CompletedTask;
         }
-        
+
         /// <summary>
         /// Posts the specified request.
         /// </summary>
