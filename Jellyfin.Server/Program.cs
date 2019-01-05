@@ -124,6 +124,32 @@ namespace Jellyfin.Server
                     }
                 }
                 programDataPath = Path.Combine(programDataPath, "jellyfin");
+                Directory.CreateDirectory(programDataPath);
+            }
+
+            string configPath;
+            if (options.ContainsOption("-configpath"))
+            {
+                configPath = options.GetOption("-configpath");
+            }
+            else
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    configPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                }
+                else
+                {
+                    // $XDG_CONFIG_HOME defines the base directory relative to which user specific configuration files should be stored.
+                    configPath = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
+                    // If $XDG_CONFIG_HOME is either not set or empty, $HOME/.config should be used.
+                    if (string.IsNullOrEmpty(configPath))
+                    {
+                        configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
+                    }
+                }
+                configPath = Path.Combine(configPath, "jellyfin");
+                Directory.CreateDirectory(configPath);
             }
 
             string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
@@ -138,7 +164,7 @@ namespace Jellyfin.Server
 
             string appPath = AppContext.BaseDirectory;
 
-            return new ServerApplicationPaths(programDataPath, appPath, appPath, logDir);
+            return new ServerApplicationPaths(programDataPath, appPath, appPath, logDir, configPath);
         }
 
         private static async Task createLogger(IApplicationPaths appPaths)
