@@ -1310,7 +1310,6 @@ namespace Emby.Server.Implementations
         {
             if (!ServerConfigurationManager.Configuration.IsPortAuthorized)
             {
-                RegisterServerWithAdministratorAccess();
                 ServerConfigurationManager.Configuration.IsPortAuthorized = true;
                 ConfigurationManager.SaveConfiguration();
             }
@@ -2224,32 +2223,6 @@ namespace Emby.Server.Implementations
         }
 
         protected abstract void ShutdownInternal();
-
-        /// <summary>
-        /// Registers the server with administrator access.
-        /// </summary>
-        private void RegisterServerWithAdministratorAccess()
-        {
-            Logger.LogInformation("Requesting administrative access to authorize http server");
-
-            try
-            {
-                AuthorizeServer();
-            }
-            catch (NotImplementedException)
-            {
-
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error authorizing server");
-            }
-        }
-
-        protected virtual void AuthorizeServer()
-        {
-            throw new NotImplementedException();
-        }
 
         public event EventHandler HasUpdateAvailableChanged;
 
