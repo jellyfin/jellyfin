@@ -1026,8 +1026,6 @@
   "LabelffmpegVersion": "FFmpeg version:",
   "LanNetworksHelp": "Comma separated list of IP addresses or IP/netmask entries for networks that will be considered on local network when enforcing bandwidth restrictions. If set, all other IP addresses will be considered to be on the external network and will be subject to the external bandwidth restrictions. If left blank, only the server's subnet is considered to be on the local network.",
   "LatestFromLibrary": "Τελευταία {0}",
-  "LaunchWebAppOnStartup": "Εκκίνηση του Jellyfin Web App στο πρόγραμμα περιήγησης Web όταν ξεκινά ο διακομιστής Jellyfin",
-  "LaunchWebAppOnStartupHelp": "Αυτό θα ανοίξει την εφαρμογή Web στο προεπιλεγμένο πρόγραμμα περιήγησης Web όταν ξεκινήσει αρχικά ο διακομιστής Jellyfin. Αυτό δεν θα συμβεί όταν χρησιμοποιείτε τη λειτουργία επανεκκίνησης του διακομιστή.",
   "LearnHowToCreateSynologyShares": "Μάθετε πώς μπορείτε να κάνετε κοινή χρήση φακέλων στο Synology.",
   "LetterButtonAbbreviation": "Α",
   "LibraryAccessHelp": "Επιλέξτε τους φακέλους μέσων για να το μοιραστείτε με αυτόν το χρήστη. Οι διαχειριστές θα έχουν τη δυνατότητα να επεξεργάζεστε όλα φακέλους χρησιμοποιώντας τα μεταδεδομένα manager.",

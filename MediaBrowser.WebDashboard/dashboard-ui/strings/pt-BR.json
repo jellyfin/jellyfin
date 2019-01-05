@@ -1026,8 +1026,6 @@
   "LabelffmpegVersion": "Versão do FFMpeg:",
   "LanNetworksHelp": "Lista separada por vírgula de endereços IP ou entradas IP/máscara de rede para redes que serão consideradas como redes locais ao forçar restrições de banda. Se definida, todos os outros endereços  IP serão considerados como estando em uma rede externa e estarão sujeitos a restrições de banda externa. Se deixada em branco, apenas a sub-rede do servidor é considerada como rede local.",
   "LatestFromLibrary": "Últimos {0}",
-  "LaunchWebAppOnStartup": "Executar a app web do Jellyfin no meu navegador quando o Servidor Jellyfin iniciar",
-  "LaunchWebAppOnStartupHelp": "Isto abrirá a app web no seu browser quando o Servidor Jellyfin iniciar. Isto não ocorrerá quando reiniciar o servidor.",
   "LearnHowToCreateSynologyShares": "Saiba como compartilhar pastas no Sinology.",
   "LetterButtonAbbreviation": "A",
   "LibraryAccessHelp": "Selecione as pastas de mídia para compartilhar com este usuário. Administradores poderão editar todas as pastas usando o gerenciador de metadados.",

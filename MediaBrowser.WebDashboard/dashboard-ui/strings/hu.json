@@ -1026,8 +1026,6 @@
   "LabelffmpegVersion": "FFmpeg version:",
   "LanNetworksHelp": "Comma separated list of IP addresses or IP/netmask entries for networks that will be considered on local network when enforcing bandwidth restrictions. If set, all other IP addresses will be considered to be on the external network and will be subject to the external bandwidth restrictions. If left blank, only the server's subnet is considered to be on the local network.",
   "LatestFromLibrary": "Legújabb {0}",
-  "LaunchWebAppOnStartup": "Launch the Jellyfin web app in my web browser when Jellyfin Server starts",
-  "LaunchWebAppOnStartupHelp": "This will open the web app in your default web browser when Jellyfin Server initially starts. This will not occur when using the restart server function.",
   "LearnHowToCreateSynologyShares": "Learn how to share folders in Synology.",
   "LetterButtonAbbreviation": "A",
   "LibraryAccessHelp": "Select the media folders to share with this user. Administrators will be able to edit all folders using the metadata manager.",

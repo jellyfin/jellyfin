@@ -1026,8 +1026,6 @@
   "LabelffmpegVersion": "Versione FFmpeg:",
   "LanNetworksHelp": "Elenco separato da virgola di indirizzi IP o voci IP / maschera di rete per reti che saranno considerate sulla rete locale quando si applicano restrizioni di larghezza di banda. Se impostato, tutti gli altri indirizzi IP verranno considerati nella rete esterna e saranno soggetti alle limitazioni della larghezza di banda esterna. Se lasciato vuoto, solo la sottorete del server viene considerata nella rete locale.",
   "LatestFromLibrary": "Ultimi {0}",
-  "LaunchWebAppOnStartup": "Lancia l'app web Jellyfin nel mio browser web quando Jellyfin Server si avvia",
-  "LaunchWebAppOnStartupHelp": "Ciò aprirà l'app Web nel browser Web predefinito all'avvio iniziale di Jellyfin Server. Ciò non si verifica quando si utilizza la funzione del server di riavvio.",
   "LearnHowToCreateSynologyShares": "Scopri come condividere cartelle in Synology",
   "LetterButtonAbbreviation": "e",
   "LibraryAccessHelp": "Seleziona le cartelle multimediali da condividere con questo utente. Gli amministratori saranno in grado di modificare tutte le cartelle utilizzando il gestore dei metadati.",

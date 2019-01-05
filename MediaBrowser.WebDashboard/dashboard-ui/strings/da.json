@@ -1026,8 +1026,6 @@
   "LabelffmpegVersion": "FFmpeg version:",
   "LanNetworksHelp": "Komma separeret liste over IP adresser eller netmasker til ntværk der vil blive anset for at være lokale når der bliver påtvunget båndbredde restriktioner. Hvis sat vil alle andre IP adresser bliver set som eksterne og blive underlagt båndbredde restriktionerne. Hvis blank, er det kun serveren subnet der bliver betragtet som et lokalt netværk.",
   "LatestFromLibrary": "Seneste {0}",
-  "LaunchWebAppOnStartup": "Start Jellyfin webappen i min browser når Jellyfin Serveren startes.",
-  "LaunchWebAppOnStartupHelp": "Dette vil åbne webappen i din standard web browser når Jellyfin serveren bliver startet. Dette vil ikke ske når genstart server funktionen benyttes.",
   "LearnHowToCreateSynologyShares": "Lær at dele mapper i Synology.",
   "LetterButtonAbbreviation": "A",
   "LibraryAccessHelp": "Vælg hvilke mediemapper der skal deles med denne bruger. Administratorer vil kunne redigere alle mapper ved hjælp af metadata administratoren.",

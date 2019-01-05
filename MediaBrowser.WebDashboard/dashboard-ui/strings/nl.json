@@ -1026,8 +1026,6 @@
   "LabelffmpegVersion": "FFmpeg versie:",
   "LanNetworksHelp": "Komma-gescheiden lijst van IP-adressen of IP/netmask adressen voor netwerken die als lokaal gezien worden wanneer bandbreedtebeperkingen van toepassing zijn. Indien ingesteld, worden alle overige IP-adressen gezien als externe adressen en zullen worden onderworpen aan de bandbreedte-instellingen voor externe adressen. Indien blanco, zal alleen het subnet van de server als lokaal netwerk gezien worden.",
   "LatestFromLibrary": "Laatste {0}",
-  "LaunchWebAppOnStartup": "De Jellyfin-webapp in mijn webbrowser openen wanneer Jellyfin Server opstart",
-  "LaunchWebAppOnStartupHelp": "Dit zal de webapp in uw standaard webbrowser openen wanneer Jellyfin Server opstart. Dit zal niet gebeuren wanneer de \"server opnieuw opstarten\" functie gebruikt wordt.",
   "LearnHowToCreateSynologyShares": "Leren mappen te delen in Synology.",
   "LetterButtonAbbreviation": "A",
   "LibraryAccessHelp": "Selecteer de mediamappen om met deze gebruiker te delen. Beheerders kunnen alle mappen bewerken via de metadata manager.",

@@ -1026,8 +1026,6 @@
   "LabelffmpegVersion": "Wersja FFmpeg:",
   "LanNetworksHelp": "Lista adresów IP lub adresów IP z maską podsieci dla całych sieci, rozdzielana przecinkami, które będą traktowane jako sieć lokalna w trakcie egzekwowania ograniczeń przepustowości. Jeśli zostanie wypełniona, wszystkie pozostałe adresy będą traktowane jako sieć zewnętrzna i będą podlegać ograniczeniom przepustowości. Jeśli zostanie pusta, tylko podsieć, w której znajduje się serwer, będzie traktowana jako sieć lokalna.",
   "LatestFromLibrary": "Ostatnie {0}",
-  "LaunchWebAppOnStartup": "Uruchamiaj aplikację webową Jellyfin w przeglądarce po uruchomieniu serwera Jellyfin",
-  "LaunchWebAppOnStartupHelp": "Zaznaczenie tej opcji spowoduje otwieranie aplikacji webowej w domyślnej przeglądarce po uruchomieniu serwera Jellyfin. Aplikacja webowa nie będzie otwierana w trakcie ponownego uruchomienia serwera.",
   "LearnHowToCreateSynologyShares": "Dowiedz się jak udostępniać foldery w Synology.",
   "LetterButtonAbbreviation": "A",
   "LibraryAccessHelp": "Wybierz foldery mediów udostępniane temu użytkownikowi. Administratorzy będą mogli edytować wszystkie foldery używając menedżera metadanych.",

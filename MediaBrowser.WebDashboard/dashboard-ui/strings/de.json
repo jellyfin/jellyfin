@@ -1026,8 +1026,6 @@
   "LabelffmpegVersion": "FFmpeg Version:",
   "LanNetworksHelp": "Komma separierte Liste von IP Adressen oder IP Masken die als lokale Netzwerke behandelt werden sollen um Bandbreitenlimitationen auszusetzen. Wenn befüllt werden alle anderen IP Adressen als externe Netzwerke behandelt und unterliegen den Bandbreitenlimitationen für externe Verbindungen. Wenn leer, wird nur das SubNetz des Servers als Lokales Netz gesetzt-",
   "LatestFromLibrary": "Neueste {0}",
-  "LaunchWebAppOnStartup": "Starte die Jellyfin WebApp im Browser wenn der Jellyfin Server startet",
-  "LaunchWebAppOnStartupHelp": "Diese Funktion öffnet die Jellyfin WebApp im Standard Browser wenn der Jellyfin Server gestartet wird. Dies wird nicht geschehen wenn der Server nur neu gestartet wird.",
   "LearnHowToCreateSynologyShares": "Erfahre, wie man Verzeichnisse mit Synology teilt.",
   "LetterButtonAbbreviation": "A",
   "LibraryAccessHelp": "Wähle die Medienverzeichnisse die du mit diesem Benutzer teilen möchtest. Administratoren können den Metadaten-Manager verwenden um alle Ordner zu bearbeiten.",

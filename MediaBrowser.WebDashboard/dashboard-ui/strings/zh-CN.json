@@ -1026,8 +1026,6 @@
   "LabelffmpegVersion": "FFmpeg 版本：",
   "LanNetworksHelp": "在强制带宽限制时, 将在本地网络上考虑的网络的 ip 地址或 ip/网络掩码条目的逗号分隔列表。如果设置, 所有其他 IP 地址将被视为在外部网络上, 并且将受到外部带宽限制。如果保留为空, 则只将服务器的子网视为本地网络。",
   "LatestFromLibrary": "最新的{0}",
-  "LaunchWebAppOnStartup": "当 Jellyfin 服务器启动时自动使用我的网页浏览器打开 Jellyfin 网页端应用",
-  "LaunchWebAppOnStartupHelp": "这将会在 Jellyfin 服务器最初启动时自动使用你的默认网页浏览器打开 Jellyfin 网页端应用。使用“重启服务器”功能并不会触发这一动作。",
   "LearnHowToCreateSynologyShares": "了解如何在Synology NAS中共享文件夹。",
   "LetterButtonAbbreviation": "字母按键",
   "LibraryAccessHelp": "选择共享给此用户的媒体文件夹。管理员能使用媒体资料管理器来编辑所有文件夹。",

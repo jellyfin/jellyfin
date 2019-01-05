@@ -1026,8 +1026,6 @@
   "LabelffmpegVersion": "FFmpeg versión:",
   "LanNetworksHelp": "Lista de direcciones IP separadas por comas o entradas de IP / máscara de red para redes que se considerarán en la red local al imponer restricciones de ancho de banda. Si se establece, todas las demás direcciones IP se considerarán en la red externa y estarán sujetas a las restricciones de ancho de banda externo. Si se deja en blanco, solo se considera que la subred del servidor está en la red local.",
   "LatestFromLibrary": "Últimas {0}",
-  "LaunchWebAppOnStartup": "Iniciar la app web de Jellyfin en el navegador cuando el servidor Jellyfin arranca",
-  "LaunchWebAppOnStartupHelp": "Esto abrirá la aplicación web en tu navegador cuando se incie el servidor Jellyfin por primera vez. Esto no ocurrirá cuando se utilice la función de reinicio del servidor.",
   "LearnHowToCreateSynologyShares": "Aprende a compartir carpetas en Synology",
   "LetterButtonAbbreviation": "A",
   "LibraryAccessHelp": "Seleccione las carpetas de medios para compartir con este usuario. Los administradores podrán editar todas las carpetas usando el gestor de metadatos.",
