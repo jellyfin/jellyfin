@@ -11,10 +11,6 @@ FROM microsoft/dotnet:${DOTNET_VERSION}-runtime
 COPY --from=builder /jellyfin /jellyfin
 EXPOSE 8096
 
-#RUN apt update \
-# && apt install -y ffmpeg
-#Use a ffmpeg 4.0.3 build for now, until we have our own (fixes chromecasts and androidtv app)
-
 VOLUME /config /media
 
 RUN apt update
