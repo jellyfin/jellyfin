@@ -1,19 +1,17 @@
 %global         debug_package %{nil}
-# jellyfin commit to package
-%global         commit f8a720d3d8adbdb1f092a42e592dae37ba3f25bb
-%global         gittag v3.5.2-5
-%global         shortcommit %(c=%{commit}; echo ${c:0:7}) 
+# jellyfin tag to package
+%global         gittag v10.0.0
 # Taglib-sharp commit of the submodule since github archive doesn't include submodules
 %global         taglib_commit ee5ab21742b71fd1b87ee24895582327e9e04776
 %global         taglib_shortcommit %(c=%{taglib_commit}; echo ${c:0:7})
 
 Name:           jellyfin
-Version:        3.5.2.git%{shortcommit}
-Release:        5%{?dist}
+Version:        10.0.0
+Release:        1%{?dist}
 Summary:        The Free Software Media Browser.
 License:        GPLv2
 URL:            https://jellyfin.media
-Source0:        https://github.com/%{name}/%{name}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
+Source0:        https://github.com/%{name}/%{name}/archive/%{gittag}.tar.gz
 Source1:        jellyfin.service
 Source2:        jellyfin.env
 Source3:        jellyfin.sudoers
@@ -46,7 +44,7 @@ Jellyfin is a free software media system that puts you in control of managing an
 
 
 %prep
-%autosetup -n %{name}-%{commit}
+%autosetup -n %{name}-%{version}
 pushd ThirdParty
     tar xf %{S:5}
     rm -rf taglib-sharp
@@ -119,6 +117,9 @@ exit 0
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Sat Jan 05 2019 Thomas Büttner <thomas@vergesslicher.tech> - 10.0.0-1
+- Bump version to 10.0.0
+
 * Sat Jan 05 2019 Thomas Büttner <thomas@vergesslicher.tech> - 3.5.2-5
 - Add firewalld service.xml
 
