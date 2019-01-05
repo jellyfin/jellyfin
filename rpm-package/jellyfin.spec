@@ -9,7 +9,7 @@
 
 Name:           jellyfin
 Version:        3.5.2.git%{shortcommit}
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        The Free Software Media Browser.
 License:        GPLv2
 URL:            https://jellyfin.media
@@ -20,6 +20,7 @@ Source3:        jellyfin.sudoers
 Source4:        restart.sh
 Source5:        https://github.com/mono/taglib-sharp/archive/%{taglib_commit}/taglib-sharp-%{taglib_shortcommit}.tar.gz
 Source6:        update-db.sh
+Source7:        jellyfin-firewalld.xml
 
 %{?systemd_requires}
 BuildRequires:  systemd
@@ -74,6 +75,7 @@ EOF
 %{__install} -D -m 0600 %{SOURCE3} %{buildroot}%{_sysconfdir}/sudoers.d/%{name}-sudoers
 %{__install} -D -m 0750 %{SOURCE4} %{buildroot}%{_libexecdir}/%{name}/restart.sh
 %{__install} -D -m 0755 %{SOURCE6} %{buildroot}%{_datadir}/%{name}/update-db-paths.sh
+%{__install} -D -m 0755 %{SOURCE7} %{buildroot}%{_prefix}/lib/firewalld/service/%{name}.xml
 
 %files
 %{_libdir}/%{name}/dashboard-ui/*
@@ -89,6 +91,7 @@ EOF
 %attr(644,root,root) %{_unitdir}/%{name}.service
 %attr(755,root,root) %{_datadir}/%{name}/update-db-paths.sh
 %attr(750,root,root) %{_libexecdir}/%{name}/restart.sh
+%attr(644,root,root) %{_prefix}/lib/firewalld/service/%{name}.xml
 %config(noreplace) %{_sysconfdir}/sysconfig/%{name}
 %config(noreplace) %attr(600,root,root) %{_sysconfdir}/sudoers.d/%{name}-sudoers
 %config(noreplace) %{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
@@ -116,6 +119,9 @@ exit 0
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Sat Jan 05 2019 Thomas Büttner <thomas@vergesslicher.tech> - 3.5.2-5
+- Add firewalld service.xml
+
 * Sat Jan 05 2019 Thomas Büttner <thomas@vergesslicher.tech> - 3.5.2-4
 - Re-added sudoers policy
 
