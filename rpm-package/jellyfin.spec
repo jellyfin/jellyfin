@@ -33,7 +33,7 @@ BuildRequires:  dotnet-sdk-2.2
 Requires:       ffmpeg
 
 # For the update-db-paths.sh script to fix emby paths to jellyfin
-Recommends:     sqlite
+%{?fedora:Recommends: sqlite}
 
 # Fedora has openssl1.1 which is incompatible with dotnet 
 %{?fedora:Requires: compat-openssl10}

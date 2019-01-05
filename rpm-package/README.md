@@ -21,6 +21,7 @@ Use `install -D -m 0600 -o root -g root /usr/share/jellyfin/jellyfin-sudoers /et
 Finally uncomment JELLYFIN_RESTART_OPT in /etc/sysconfig/jellyfin and restart the service.
 
 ## Database patching
+You may need to install sqlite since CentOS has no `Recommends:` with `yum install sqlite`.
 To fix the paths in the emby database for a migration to jellyfin run the script:
 ```shell
 /usr/share/jellyfin/update-db-paths.sh <path-to-library.db> <path-to-emby-data> <path-to-jellyfin-data>
