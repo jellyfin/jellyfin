@@ -51,7 +51,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return false;
             }
 
-            _logger.LogInformation("ffmpeg info: {0}", output);
+            _logger.LogDebug("ffmpeg output: {Output}", output);
 
             if (output.IndexOf("Libav developers", StringComparison.OrdinalIgnoreCase) != -1)
             {
@@ -160,10 +160,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Arguments = arguments,
                 IsHidden = true,
                 ErrorDialog = false,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                // ffmpeg uses stderr to log info, don't show this
+                RedirectStandardError = true
             });
 
-            _logger.LogInformation("Running {Path} {Arguments}", path, arguments);
+            _logger.LogDebug("Running {Path} {Arguments}", path, arguments);
 
             using (process)
             {
@@ -175,7 +177,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch
                 {
-                    _logger.LogInformation("Killing process {path} {arguments}", path, arguments);
+                    _logger.LogWarning("Killing process {Path} {Arguments}", path, arguments);
 
                     // Hate having to do this
                     try
