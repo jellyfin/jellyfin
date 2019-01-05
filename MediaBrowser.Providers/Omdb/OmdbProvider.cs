@@ -270,21 +270,13 @@ namespace MediaBrowser.Providers.Omdb
 
         public static string GetOmdbUrl(string query, IApplicationHost appHost, CancellationToken cancellationToken)
         {
-            var baseUrl = appHost.GetValue("omdb_baseurl");
+            const string url = "https://www.omdbapi.com?apikey=fe53f97e";
 
-            if (string.IsNullOrEmpty(baseUrl))
+            if (string.IsNullOrWhiteSpace(query))
             {
-                baseUrl = "https://www.omdbapi.com";
+                return url;
             }
-
-            var url = baseUrl + "?apikey=fe53f97e";
-
-            if (!string.IsNullOrWhiteSpace(query))
-            {
-                url += "&" + query;
-            }
-
-            return url;
+            return url + "&" + query;
         }
 
         private async Task<string> EnsureItemInfo(string imdbId, CancellationToken cancellationToken)

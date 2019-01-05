@@ -2407,53 +2407,6 @@ namespace Emby.Server.Implementations
                 }
             }
         }
-
-        private Dictionary<string, string> _values;
-        public string GetValue(string name)
-        {
-            if (_values == null)
-            {
-                _values = LoadValues();
-            }
-
-            string value;
-
-            if (_values.TryGetValue(name, out value))
-            {
-                return value;
-            }
-
-            return null;
-        }
-
-        // TODO: @bond Remove?
-        private Dictionary<string, string> LoadValues()
-        {
-            Dictionary<string, string> values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            using (var stream = typeof(ApplicationHost).Assembly.GetManifestResourceStream(typeof(ApplicationHost).Namespace + ".values.txt"))
-            {
-                using (var reader = new StreamReader(stream))
-                {
-                    while (!reader.EndOfStream)
-                    {
-                        var line = reader.ReadLine();
-                        if (string.IsNullOrEmpty(line))
-                        {
-                            continue;
-                        }
-
-                        var index = line.IndexOf('=');
-                        if (index != -1)
-                        {
-                            values[line.Substring(0, index)] = line.Substring(index + 1);
-                        }
-                    }
-                }
-            }
-
-            return values;
-        }
     }
 
     internal class CertificateInfo
