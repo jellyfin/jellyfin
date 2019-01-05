@@ -506,14 +506,6 @@ namespace Emby.Server.Implementations
             return new StreamHelper();
         }
 
-        public virtual bool SupportsAutoRunAtStartup
-        {
-            get
-            {
-                return EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows;
-            }
-        }
-
         /// <summary>
         /// Creates an instance of type and resolves all constructor dependancies
         /// </summary>
@@ -706,8 +698,6 @@ namespace Emby.Server.Implementations
         {
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
-            ConfigureAutorun();
-
             ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
 
             MediaEncoder.Init();
@@ -760,21 +750,6 @@ namespace Emby.Server.Implementations
                     Logger.LogError(ex, "Error in {name}", name);
                 }
                 Logger.LogInformation("Entry point completed: {0}. Duration: {1} seconds", name, (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture), "ImageInfos");
-            }
-        }
-
-        /// <summary>
-        /// Configures the autorun.
-        /// </summary>
-        private void ConfigureAutorun()
-        {
-            try
-            {
-                ConfigureAutoRunAtStartup(ConfigurationManager.CommonConfiguration.RunAtStartup);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error configuring autorun");
             }
         }
 
@@ -1591,8 +1566,6 @@ namespace Emby.Server.Implementations
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void OnConfigurationUpdated(object sender, EventArgs e)
         {
-            ConfigureAutorun();
-
             var requiresRestart = false;
 
             // Don't do anything if these haven't been set yet
@@ -1943,7 +1916,6 @@ namespace Emby.Server.Implementations
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 WanAddress = wanAddress,
                 HasUpdateAvailable = HasUpdateAvailable,
-                SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,
@@ -2294,23 +2266,6 @@ namespace Emby.Server.Implementations
             HasUpdateAvailable = false;
 
             OnApplicationUpdated(package);
-        }
-
-        /// <summary>
-        /// Configures the automatic run at startup.
-        /// </summary>
-        /// <param name="autorun">if set to <c>true</c> [autorun].</param>
-        protected void ConfigureAutoRunAtStartup(bool autorun)
-        {
-            if (SupportsAutoRunAtStartup)
-            {
-                ConfigureAutoRunInternal(autorun);
-            }
-        }
-
-        protected virtual void ConfigureAutoRunInternal(bool autorun)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
