@@ -9,7 +9,7 @@
 
 Name:           jellyfin
 Version:        3.5.2.git%{shortcommit}
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        The Free Software Media Browser.
 License:        GPLv2
 URL:            https://jellyfin.media
@@ -71,7 +71,7 @@ EOF
 %{__mkdir} -p %{buildroot}%{_sharedstatedir}/jellyfin
 %{__install} -D -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.service
 %{__install} -D -m 0644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
-%{__install} -D -m 0600 %{SOURCE3} %{buildroot}%{_datadir}/%{name}/%{name}-sudoers
+%{__install} -D -m 0600 %{SOURCE3} %{buildroot}%{_sysconfdir}/sudoers.d/%{name}-sudoers
 %{__install} -D -m 0750 %{SOURCE4} %{buildroot}%{_libexecdir}/%{name}/restart.sh
 %{__install} -D -m 0755 %{SOURCE6} %{buildroot}%{_datadir}/%{name}/update-db-paths.sh
 
@@ -87,10 +87,10 @@ EOF
 %attr(755,root,root) %{_libdir}/%{name}/jellyfin
 %attr(644,root,root) %{_libdir}/%{name}/sosdocsunix.txt
 %attr(644,root,root) %{_unitdir}/%{name}.service
-%attr(600,root,root) %{_datadir}/%{name}/%{name}-sudoers
 %attr(755,root,root) %{_datadir}/%{name}/update-db-paths.sh
 %attr(750,root,root) %{_libexecdir}/%{name}/restart.sh
 %config(noreplace) %{_sysconfdir}/sysconfig/%{name}
+%config(noreplace) %attr(600,root,root) %{_sysconfdir}/sudoers.d/%{name}-sudoers
 %config(noreplace) %{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
 %attr(-,jellyfin,jellyfin) %dir %{_sharedstatedir}/jellyfin
 %if 0%{?fedora}
@@ -115,15 +115,10 @@ exit 0
 %postun
 %systemd_postun_with_restart jellyfin.service
 
-%posttrans
-echo -e "\e[31m
-To enable In-App service control copy the sudo-policy (be sure to check it contents) with:
-
-install -D -m 0600 %{_datadir}/%{name}/%{name}-sudoers %{_sysconfdir}/sudoers.d/%{name}-sudoers
-
-and uncomment JELLYFIN_RESTART_OPT in %{_sysconfdir}/sysconfig/%{name} \e[0m" >> /dev/stderr
-
 %changelog
+* Sat Jan 05 2019 Thomas Büttner <thomas@vergesslicher.tech> - 3.5.2-4
+- Re-added sudoers policy
+
 * Sat Jan 05 2019 Thomas Büttner <thomas@vergesslicher.tech> - 3.5.2-3
 - Added script for database migration
 
