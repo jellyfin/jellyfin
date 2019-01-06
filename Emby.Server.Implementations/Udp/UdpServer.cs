@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.Udp
 
             AddMessageResponder("who is JellyfinServer?", true, RespondToV2Message);
             AddMessageResponder("who is EmbyServer?", true, RespondToV2Message);
-            AddMessageResponder("who is MediaBrowserServer_v2?", true, RespondToV2Message);
+            AddMessageResponder("who is MediaBrowserServer_v2?", false, RespondToV2Message);
         }
 
         private void AddMessageResponder(string message, bool isSubstring, Func<string, IpEndPointInfo, Encoding, CancellationToken, Task> responder)
