@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Dlna;
+using System;
 
 namespace MediaBrowser.Model.Session
 {
