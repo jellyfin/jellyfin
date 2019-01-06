@@ -12,8 +12,6 @@ namespace MediaBrowser.Model.Session
         public bool SupportsMediaControl { get; set; }
         public bool SupportsContentUploading { get; set; }
         public string MessageCallbackUrl { get; set; }
-        public string PushToken { get; set; }
-        public string PushTokenType { get; set; }
 
         public bool SupportsPersistentIdentifier { get; set; }
         public bool SupportsSync { get; set; }
@@ -25,8 +23,8 @@ namespace MediaBrowser.Model.Session
 
         public ClientCapabilities()
         {
-            PlayableMediaTypes = new string[] {};
-            SupportedCommands = new string[] {};
+            PlayableMediaTypes = Array.Empty<string>();
+            SupportedCommands = Array.Empty<string>();
             SupportsPersistentIdentifier = true;
         }
     }

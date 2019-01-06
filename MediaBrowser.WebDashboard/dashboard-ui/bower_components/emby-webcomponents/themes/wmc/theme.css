@@ -4,6 +4,12 @@ html {
     background-color: #0F3562
 }
 
+.wizardStartForm,
+.ui-corner-all,
+.ui-shadow {
+  background-color: #0C2450
+}
+
 .emby-collapsible-button {
     border-color: #383838;
     border-color: rgba(255, 255, 255, .135)

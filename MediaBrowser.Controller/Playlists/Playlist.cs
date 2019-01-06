@@ -15,14 +15,14 @@ namespace MediaBrowser.Controller.Playlists
 {
     public class Playlist : Folder, IHasShares
     {
-        public static string[] SupportedExtensions = new string[] {
-
-            ".m3u",
-            ".m3u8",
-            ".pls",
-            ".wpl",
-            ".zpl"
-        };
+        public static string[] SupportedExtensions =
+            {
+                ".m3u",
+                ".m3u8",
+                ".pls",
+                ".wpl",
+                ".zpl"
+            };
 
         public Guid OwnerUserId { get; set; }
 
@@ -30,7 +30,7 @@ namespace MediaBrowser.Controller.Playlists
 
         public Playlist()
         {
-            Shares = new Share[] { };
+            Shares = Array.Empty<Share>();
         }
 
         [IgnoreDataMember]
@@ -131,7 +131,7 @@ namespace MediaBrowser.Controller.Playlists
 
         protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
@@ -186,8 +186,7 @@ namespace MediaBrowser.Controller.Playlists
 
         private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem item, User user, string mediaType, DtoOptions options)
         {
-            var musicGenre = item as MusicGenre;
-            if (musicGenre != null)
+            if (item is MusicGenre musicGenre)
             {
                 return LibraryManager.GetItemList(new InternalItemsQuery(user)
                 {
@@ -199,8 +198,7 @@ namespace MediaBrowser.Controller.Playlists
                 });
             }
 
-            var musicArtist = item as MusicArtist;
-            if (musicArtist != null)
+            if (item is MusicArtist musicArtist)
             {
                 return LibraryManager.GetItemList(new InternalItemsQuery(user)
                 {
@@ -212,8 +210,7 @@ namespace MediaBrowser.Controller.Playlists
                 });
             }
 
-            var folder = item as Folder;
-            if (folder != null)
+            if (item is Folder folder)
             {
                 var query = new InternalItemsQuery(user)
                 {

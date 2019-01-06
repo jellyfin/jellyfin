@@ -37,7 +37,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IProcessFactory _processFactory;
         private readonly ITextEncoding _textEncoding;
 
-        public SubtitleEncoder(ILibraryManager libraryManager, ILogger logger, IApplicationPaths appPaths, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IJsonSerializer json, IHttpClient httpClient, IMediaSourceManager mediaSourceManager, IProcessFactory processFactory, ITextEncoding textEncoding)
+        public SubtitleEncoder(
+            ILibraryManager libraryManager,
+            ILogger logger,
+            IApplicationPaths appPaths,
+            IFileSystem fileSystem,
+            IMediaEncoder mediaEncoder,
+            IJsonSerializer json,
+            IHttpClient httpClient,
+            IMediaSourceManager mediaSourceManager,
+            IProcessFactory processFactory,
+            ITextEncoding textEncoding)
         {
             _libraryManager = libraryManager;
             _logger = logger;
@@ -46,6 +56,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _mediaEncoder = mediaEncoder;
             _json = json;
             _httpClient = httpClient;
+            _mediaSourceManager = mediaSourceManager;
             _processFactory = processFactory;
             _textEncoding = textEncoding;
         }

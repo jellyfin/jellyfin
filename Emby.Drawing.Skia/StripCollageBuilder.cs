@@ -49,7 +49,10 @@ namespace Emby.Drawing.Skia
             {
                 using (var outputStream = new SKFileWStream(outputPath))
                 {
-                    bitmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
+                    using (var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels()))
+                    {
+                        pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
+                    }
                 }
             }
         }
@@ -60,7 +63,10 @@ namespace Emby.Drawing.Skia
             {
                 using (var outputStream = new SKFileWStream(outputPath))
                 {
-                    bitmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
+                    using (var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels()))
+                    {
+                        pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
+                    }
                 }
             }
         }
@@ -83,9 +89,8 @@ namespace Emby.Drawing.Skia
 
                 for (int i = 0; i < 4; i++)
                 {
-                    int newIndex;
 
-                    using (var currentBitmap = GetNextValidImage(paths, imageIndex, out newIndex))
+                    using (var currentBitmap = GetNextValidImage(paths, imageIndex, out int newIndex))
                     {
                         imageIndex = newIndex;
 
@@ -98,7 +103,7 @@ namespace Emby.Drawing.Skia
                         int iWidth = (int)Math.Abs(iHeight * currentBitmap.Width / currentBitmap.Height);
                         using (var resizeBitmap = new SKBitmap(iWidth, iHeight, currentBitmap.ColorType, currentBitmap.AlphaType))
                         {
-                            currentBitmap.Resize(resizeBitmap, SKBitmapResizeMethod.Lanczos3);
+                            currentBitmap.ScalePixels(resizeBitmap, SKFilterQuality.High);
                             // crop image
                             int ix = (int)Math.Abs((iWidth - iSlice) / 2);
                             using (var image = SKImage.FromBitmap(resizeBitmap))
@@ -116,7 +121,7 @@ namespace Emby.Drawing.Skia
                                 using (var reflectionBitmap = new SKBitmap(croppedBitmap.Width, croppedBitmap.Height / 2, croppedBitmap.ColorType, croppedBitmap.AlphaType))
                                 {
                                     // resize to half height
-                                    croppedBitmap.Resize(reflectionBitmap, SKBitmapResizeMethod.Lanczos3);
+                                    currentBitmap.ScalePixels(reflectionBitmap, SKFilterQuality.High);
 
                                     using (var flippedBitmap = new SKBitmap(reflectionBitmap.Width, reflectionBitmap.Height, reflectionBitmap.ColorType, reflectionBitmap.AlphaType))
                                     using (var flippedCanvas = new SKCanvas(flippedBitmap))
@@ -164,8 +169,7 @@ namespace Emby.Drawing.Skia
                     currentIndex = 0;
                 }
 
-                SKEncodedOrigin origin;
-                bitmap = SkiaEncoder.Decode(paths[currentIndex], false, _fileSystem, null, out origin);
+                bitmap = SkiaEncoder.Decode(paths[currentIndex], false, _fileSystem, null, out SKEncodedOrigin origin);
 
                 imagesTested[currentIndex] = 0;
 
@@ -194,9 +198,8 @@ namespace Emby.Drawing.Skia
                 {
                     for (var y = 0; y < 2; y++)
                     {
-                        int newIndex;
 
-                        using (var currentBitmap = GetNextValidImage(paths, imageIndex, out newIndex))
+                        using (var currentBitmap = GetNextValidImage(paths, imageIndex, out int newIndex))
                         {
                             imageIndex = newIndex;
 
@@ -208,7 +211,7 @@ namespace Emby.Drawing.Skia
                             using (var resizedBitmap = new SKBitmap(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType))
                             {
                                 // scale image
-                                currentBitmap.Resize(resizedBitmap, SKBitmapResizeMethod.Lanczos3);
+                                currentBitmap.ScalePixels(resizedBitmap, SKFilterQuality.High);
 
                                 // draw this image into the strip at the next position
                                 var xPos = x * cellWidth;

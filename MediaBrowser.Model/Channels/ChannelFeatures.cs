@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
 namespace MediaBrowser.Model.Channels
 {
@@ -76,10 +76,9 @@ namespace MediaBrowser.Model.Channels
 
         public ChannelFeatures()
         {
-            MediaTypes = new ChannelMediaType[] { };
-            ContentTypes = new ChannelMediaContentType[] { };
-
-            DefaultSortFields = new ChannelItemSortField[] { };
+            MediaTypes = Array.Empty<ChannelMediaType>();
+            ContentTypes = Array.Empty<ChannelMediaContentType>();
+            DefaultSortFields = Array.Empty<ChannelItemSortField>();
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Updates;
-using System.Collections.Generic;
-using System;
+using System.Runtime.InteropServices;
 
 namespace MediaBrowser.Model.System
 {

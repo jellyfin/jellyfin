@@ -6,7 +6,6 @@ namespace MediaBrowser.Model.Configuration
 {
     public class LibraryOptions
     {
-        public bool EnableArchiveMediaFiles { get; set; }
         public bool EnablePhotos { get; set; }
         public bool EnableRealtimeMonitor { get; set; }
         public bool EnableChapterImageExtraction { get; set; }
@@ -65,10 +64,10 @@ namespace MediaBrowser.Model.Configuration
 
         public LibraryOptions()
         {
-            TypeOptions = new TypeOptions[] { };
-            DisabledSubtitleFetchers = new string[] { };
-            SubtitleFetcherOrder = new string[] { };
-            DisabledLocalMetadataReaders = new string[] { };
+            TypeOptions = Array.Empty<TypeOptions>();
+            DisabledSubtitleFetchers = Array.Empty<string>();
+            SubtitleFetcherOrder = Array.Empty<string>();
+            DisabledLocalMetadataReaders = Array.Empty<string>();
 
             SkipSubtitlesIfAudioTrackMatches = true;
             RequirePerfectSubtitleMatch = true;
@@ -76,7 +75,7 @@ namespace MediaBrowser.Model.Configuration
             EnablePhotos = true;
             SaveSubtitlesWithMedia = true;
             EnableRealtimeMonitor = true;
-            PathInfos = new MediaPathInfo[] { };
+            PathInfos = Array.Empty<MediaPathInfo>();
             EnableInternetProviders = true;
             EnableAutomaticSeriesGrouping = true;
             SeasonZeroDisplayName = "Specials";
@@ -141,11 +140,11 @@ namespace MediaBrowser.Model.Configuration
 
         public TypeOptions()
         {
-            MetadataFetchers = new string[] { };
-            MetadataFetcherOrder = new string[] { };
-            ImageFetchers = new string[] { };
-            ImageFetcherOrder = new string[] { };
-            ImageOptions = new ImageOption[] { };
+            MetadataFetchers = Array.Empty<string>();
+            MetadataFetcherOrder = Array.Empty<string>();
+            ImageFetchers = Array.Empty<string>();
+            ImageFetcherOrder = Array.Empty<string>();
+            ImageOptions = Array.Empty<ImageOption>();
         }
 
         public static Dictionary<string, ImageOption[]> DefaultImageOptions = new Dictionary<string, ImageOption[]>

@@ -548,9 +548,7 @@ namespace Emby.Drawing.Skia
                 using (var resizedBitmap = new SKBitmap(width, height))//, bitmap.ColorType, bitmap.AlphaType))
                 {
                     // scale image
-                    var resizeMethod = SKBitmapResizeMethod.Lanczos3;
-
-                    bitmap.Resize(resizedBitmap, resizeMethod);
+                    bitmap.ScalePixels(resizedBitmap, SKFilterQuality.High);
 
                     // If all we're doing is resizing then we can stop now
                     if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
@@ -558,8 +556,11 @@ namespace Emby.Drawing.Skia
                         _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
                         using (var outputStream = new SKFileWStream(outputPath))
                         {
-                            resizedBitmap.Encode(outputStream, skiaOutputFormat, quality);
-                            return outputPath;
+                            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels()))
+                            {
+                                pixmap.Encode(outputStream, skiaOutputFormat, quality);
+                                return outputPath;
+                            }
                         }
                     }
 
@@ -593,8 +594,7 @@ namespace Emby.Drawing.Skia
                         // If foreground layer present then draw
                         if (hasForegroundColor)
                         {
-                            Double opacity;
-                            if (!Double.TryParse(options.ForegroundLayer, out opacity))
+                            if (!Double.TryParse(options.ForegroundLayer, out double opacity))
                             {
                                 opacity = .4;
                             }
@@ -610,7 +610,10 @@ namespace Emby.Drawing.Skia
                         _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
                         using (var outputStream = new SKFileWStream(outputPath))
                         {
-                            saveBitmap.Encode(outputStream, skiaOutputFormat, quality);
+                            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels()))
+                            {
+                                pixmap.Encode(outputStream, skiaOutputFormat, quality);
+                            }
                         }
                     }
                 }

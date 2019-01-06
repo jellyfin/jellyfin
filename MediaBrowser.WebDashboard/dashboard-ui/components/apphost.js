@@ -279,7 +279,7 @@ define(["appSettings", "browser", "events", "htmlMediaHelper"], function (appSet
             }
         }
 
-        if (Dashboard.isConnectMode()) {
+        if (AppInfo.isNativeApp) {
             features.push("multiserver");
         }
 
@@ -310,7 +310,7 @@ define(["appSettings", "browser", "events", "htmlMediaHelper"], function (appSet
             features.push("fileinput");
         }
 
-        if (Dashboard.isConnectMode()) {
+        if (AppInfo.isNativeApp) {
             features.push("displaylanguage");
         }
 

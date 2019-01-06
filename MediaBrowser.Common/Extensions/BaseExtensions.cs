@@ -34,25 +34,5 @@ namespace MediaBrowser.Common.Extensions
         {
             return CryptographyProvider.GetMD5(str);
         }
-
-        /// <summary>
-        /// Gets the MB id.
-        /// </summary>
-        /// <param name="str">The STR.</param>
-        /// <param name="type">The type.</param>
-        /// <returns>Guid.</returns>
-        /// <exception cref="System.ArgumentNullException">type</exception>
-        [Obsolete("Use LibraryManager.GetNewItemId")]
-        public static Guid GetMBId(this string str, Type type)
-        {
-            if (type == null)
-            {
-                throw new ArgumentNullException("type");
-            }
-
-            var key = type.FullName + str.ToLower();
-
-            return key.GetMD5();
-        }
     }
 }

@@ -1,15 +1,11 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Globalization;
+using System.Linq;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Events;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
-using System;
-using System.Collections.Concurrent;
-using System.Globalization;
-using System.Linq;
-using System.Threading;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Threading;
@@ -122,7 +118,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (startDate < now)
             {
-                EventHelper.FireEventIfNotNull(TimerFired, this, new GenericEventArgs<TimerInfo> { Argument = item }, base.Logger);
+                TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo> { Argument = item });
                 return;
             }
 
@@ -178,7 +174,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var timer = GetAll().FirstOrDefault(i => string.Equals(i.Id, timerId, StringComparison.OrdinalIgnoreCase));
             if (timer != null)
             {
-                EventHelper.FireEventIfNotNull(TimerFired, this, new GenericEventArgs<TimerInfo> { Argument = timer }, base.Logger);
+                TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo> { Argument = timer });
             }
         }
 

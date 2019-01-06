@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Extensions;
-using System;
+﻿using System;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -21,18 +20,12 @@ namespace MediaBrowser.Model.Configuration
 
         public MetadataOptions()
         {
-            DisabledMetadataSavers = new string[] { };
-            LocalMetadataReaderOrder = new string[] { };
-
-            DisabledMetadataFetchers = new string[] { };
-            MetadataFetcherOrder = new string[] { };
-            DisabledImageFetchers = new string[] { };
-            ImageFetcherOrder = new string[] { };
-        }
-
-        public bool IsMetadataSaverEnabled(string name)
-        {
-            return !ListHelper.ContainsIgnoreCase(DisabledMetadataSavers, name);
+            DisabledMetadataSavers = Array.Empty<string>();
+            LocalMetadataReaderOrder = Array.Empty<string>();
+            DisabledMetadataFetchers = Array.Empty<string>();
+            MetadataFetcherOrder = Array.Empty<string>();
+            DisabledImageFetchers = Array.Empty<string>();
+            ImageFetcherOrder = Array.Empty<string>();
         }
     }
 }

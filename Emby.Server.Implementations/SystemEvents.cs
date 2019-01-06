@@ -1,6 +1,6 @@
 ﻿using System;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.System;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations
 {

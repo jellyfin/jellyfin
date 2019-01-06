@@ -1,4 +1,5 @@
-﻿
+﻿using System.Runtime.InteropServices;
+
 namespace MediaBrowser.Model.System
 {
     public interface IEnvironmentInfo

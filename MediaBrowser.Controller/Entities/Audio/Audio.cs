@@ -2,13 +2,8 @@
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Threading;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Serialization;
 
@@ -36,8 +31,8 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public Audio()
         {
-            Artists = new string[] {};
-            AlbumArtists = new string[] {};
+            Artists = Array.Empty<string>();
+            AlbumArtists = Array.Empty<string>();
         }
 
         public override double GetDefaultPrimaryImageAspectRatio()
