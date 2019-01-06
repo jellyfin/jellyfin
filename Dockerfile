@@ -17,6 +17,7 @@ ARG FFMPEG_URL=https://www.johnvansickle.com/ffmpeg/old-releases/ffmpeg-4.0.3-64
 RUN apt update \
  && apt install -y xz-utils \
  && curl ${FFMPEG_URL} | tar Jxf - -C /usr/bin --wildcards --strip-components=1 ffmpeg*/ffmpeg ffmpeg*/ffprobe \
- && apt remove -y xz-utils
+ && apt remove -y xz-utils \
+ && apt install -y libfontconfig1  # needed for Skia
 
 ENTRYPOINT dotnet /jellyfin/jellyfin.dll -programdata /config
