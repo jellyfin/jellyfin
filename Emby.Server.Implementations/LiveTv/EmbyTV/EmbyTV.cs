@@ -75,7 +75,23 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private readonly IStreamHelper _streamHelper;
 
-        public EmbyTV(IServerApplicationHost appHost, IStreamHelper streamHelper, IMediaSourceManager mediaSourceManager, IAssemblyInfo assemblyInfo, ILogger logger, IJsonSerializer jsonSerializer, IPowerManagement powerManagement, IHttpClient httpClient, IServerConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IProviderManager providerManager, IMediaEncoder mediaEncoder, ITimerFactory timerFactory, IProcessFactory processFactory, ISystemEvents systemEvents)
+        public EmbyTV(IServerApplicationHost appHost,
+            IStreamHelper streamHelper,
+            IMediaSourceManager mediaSourceManager,
+            IAssemblyInfo assemblyInfo,
+            ILogger logger,
+            IJsonSerializer jsonSerializer,
+            IHttpClient httpClient,
+            IServerConfigurationManager config,
+            ILiveTvManager liveTvManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager,
+            ILibraryMonitor libraryMonitor,
+            IProviderManager providerManager,
+            IMediaEncoder mediaEncoder,
+            ITimerFactory timerFactory,
+            IProcessFactory processFactory,
+            ISystemEvents systemEvents)
         {
             Current = this;
 
@@ -97,7 +113,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _streamHelper = streamHelper;
 
             _seriesTimerProvider = new SeriesTimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers"));
-            _timerProvider = new TimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "timers"), _logger, timerFactory, powerManagement);
+            _timerProvider = new TimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "timers"), _logger, timerFactory);
             _timerProvider.TimerFired += _timerProvider_TimerFired;
 
             _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;

@@ -369,7 +369,6 @@ namespace Emby.Server.Implementations
 
         public StartupOptions StartupOptions { get; private set; }
 
-        internal IPowerManagement PowerManagement { get; private set; }
         internal IImageEncoder ImageEncoder { get; private set; }
 
         protected IProcessFactory ProcessFactory { get; private set; }
@@ -391,7 +390,6 @@ namespace Emby.Server.Implementations
             ILoggerFactory loggerFactory,
             StartupOptions options,
             IFileSystem fileSystem,
-            IPowerManagement powerManagement,
             IEnvironmentInfo environmentInfo,
             IImageEncoder imageEncoder,
             ISystemEvents systemEvents,
@@ -417,7 +415,6 @@ namespace Emby.Server.Implementations
             Logger = LoggerFactory.CreateLogger("App");
 
             StartupOptions = options;
-            PowerManagement = powerManagement;
 
             ImageEncoder = imageEncoder;
 
@@ -856,8 +853,6 @@ namespace Emby.Server.Implementations
 
             SocketFactory = new SocketFactory(LoggerFactory.CreateLogger("SocketFactory"));
             RegisterSingleInstance(SocketFactory);
-
-            RegisterSingleInstance(PowerManagement);
 
             SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LoggerFactory, FileSystemManager, CryptographyProvider);
             RegisterSingleInstance(SecurityManager);
