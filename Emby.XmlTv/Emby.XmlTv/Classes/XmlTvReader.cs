@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -32,7 +32,7 @@ namespace Emby.XmlTv.Classes
             _language = language;
         }
 
-        private XmlReader CreateXmlTextReader(string path)
+        private static XmlReader CreateXmlTextReader(string path)
         {
             XmlReaderSettings settings = new XmlReaderSettings();
 
@@ -315,7 +315,7 @@ namespace Emby.XmlTv.Classes
                     if (reader.NodeType == XmlNodeType.Element)
                     {
                         var language = reader.GetAttribute("lang");
-                        if (!String.IsNullOrEmpty(language))
+                        if (!string.IsNullOrEmpty(language))
                         {
                             if (!results.ContainsKey(language))
                             {
@@ -780,7 +780,7 @@ namespace Emby.XmlTv.Classes
             var isPopulated = false;
 
             var source = reader.GetAttribute("src");
-            if (!String.IsNullOrEmpty(source))
+            if (!string.IsNullOrEmpty(source))
             {
                 result.Source = source;
                 isPopulated = true;
@@ -788,7 +788,7 @@ namespace Emby.XmlTv.Classes
 
             var widthString = reader.GetAttribute("width");
             var width = 0;
-            if (!String.IsNullOrEmpty(widthString) && Int32.TryParse(widthString, out width))
+            if (!string.IsNullOrEmpty(widthString) && int.TryParse(widthString, out width))
             {
                 result.Width = width;
                 isPopulated = true;
@@ -796,7 +796,7 @@ namespace Emby.XmlTv.Classes
 
             var heightString = reader.GetAttribute("height");
             var height = 0;
-            if (!String.IsNullOrEmpty(heightString) && Int32.TryParse(heightString, out height))
+            if (!string.IsNullOrEmpty(heightString) && int.TryParse(heightString, out height))
             {
                 result.Height = height;
                 isPopulated = true;
@@ -973,7 +973,7 @@ namespace Emby.XmlTv.Classes
             while (reader.Name == currentElementName)
             {
                 var language = reader.GetAttribute("lang");
-                if (String.IsNullOrEmpty(_language) || String.IsNullOrEmpty(language) || language == _language)
+                if (string.IsNullOrEmpty(_language) || string.IsNullOrEmpty(language) || language == _language)
                 {
                     setter(reader.ReadElementContentAsString());
                 }
@@ -1034,7 +1034,7 @@ namespace Emby.XmlTv.Classes
                 if (match.Success)
                 {
                     dateComponent = match.Groups["dateDigits"].Value;
-                    if (!String.IsNullOrEmpty(match.Groups["dateOffset"].Value))
+                    if (!string.IsNullOrEmpty(match.Groups["dateOffset"].Value))
                     {
                         dateOffset = match.Groups["dateOffset"].Value; // Add in the colon to ease parsing later
                         if (dateOffset.Length == 5)
@@ -1054,7 +1054,7 @@ namespace Emby.XmlTv.Classes
                     dateComponent = dateComponent + completeDate.Substring(dateComponent.Length, completeDate.Length - dateComponent.Length);
                 }
 
-                var standardDate = String.Format("{0} {1}", dateComponent, dateOffset);
+                var standardDate = string.Format("{0} {1}", dateComponent, dateOffset);
                 DateTimeOffset parsedDateTime;
                 if (DateTimeOffset.TryParseExact(standardDate, "yyyyMMddHHmmss zzz", CultureInfo.CurrentCulture, DateTimeStyles.None, out parsedDateTime))
                 {
@@ -1088,7 +1088,7 @@ namespace Emby.XmlTv.Classes
                 dateComponent = dateComponent + completeDate.Substring(dateComponent.Length, completeDate.Length - dateComponent.Length);
             }
 
-            return String.Format("{0} {1}", dateComponent, dateOffset);
+            return string.Format("{0} {1}", dateComponent, dateOffset);
         }
     }
 }

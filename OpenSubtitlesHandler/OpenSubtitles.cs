@@ -284,12 +284,12 @@ namespace OpenSubtitlesHandler
             if (parameters == null)
             {
                 OSHConsole.UpdateLine("No subtitle search parameter passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle search parameter passed"); ;
+                return new MethodResponseError("Fail", "No subtitle search parameter passed");
             }
             if (parameters.Length == 0)
             {
                 OSHConsole.UpdateLine("No subtitle search parameter passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle search parameter passed"); ;
+                return new MethodResponseError("Fail", "No subtitle search parameter passed");
             }
             // Method call ..
             List<IXmlRpcValue> parms = new List<IXmlRpcValue>();
@@ -461,12 +461,12 @@ namespace OpenSubtitlesHandler
             if (parameters == null)
             {
                 OSHConsole.UpdateLine("No subtitle search parameter passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle search parameter passed"); ;
+                return new MethodResponseError("Fail", "No subtitle search parameter passed");
             }
             if (parameters.Length == 0)
             {
                 OSHConsole.UpdateLine("No subtitle search parameter passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle search parameter passed"); ;
+                return new MethodResponseError("Fail", "No subtitle search parameter passed");
             }
             // Method call ..
             List<IXmlRpcValue> parms = new List<IXmlRpcValue>();
@@ -646,12 +646,12 @@ namespace OpenSubtitlesHandler
             if (subIDS == null)
             {
                 OSHConsole.UpdateLine("No subtitle id passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle id passed"); ;
+                return new MethodResponseError("Fail", "No subtitle id passed");
             }
             if (subIDS.Length == 0)
             {
                 OSHConsole.UpdateLine("No subtitle id passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle id passed"); ;
+                return new MethodResponseError("Fail", "No subtitle id passed");
             }
             // Method call ..
             List<IXmlRpcValue> parms = new List<IXmlRpcValue>();
@@ -753,12 +753,12 @@ namespace OpenSubtitlesHandler
             if (subIDS == null)
             {
                 OSHConsole.UpdateLine("No subtitle id passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle id passed"); ;
+                return new MethodResponseError("Fail", "No subtitle id passed");
             }
             if (subIDS.Length == 0)
             {
                 OSHConsole.UpdateLine("No subtitle id passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle id passed"); ;
+                return new MethodResponseError("Fail", "No subtitle id passed");
             }
             // Method call ..
             List<IXmlRpcValue> parms = new List<IXmlRpcValue>();
@@ -868,12 +868,12 @@ namespace OpenSubtitlesHandler
             if (subIDS == null)
             {
                 OSHConsole.UpdateLine("No subtitle id passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle id passed"); ;
+                return new MethodResponseError("Fail", "No subtitle id passed");
             }
             if (subIDS.Length == 0)
             {
                 OSHConsole.UpdateLine("No subtitle id passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle id passed"); ;
+                return new MethodResponseError("Fail", "No subtitle id passed");
             }
             // Method call ..
             List<IXmlRpcValue> parms = new List<IXmlRpcValue>();

@@ -38,10 +38,7 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return ItemSortBy.IsUnplayed; }
-        }
+        public string Name => ItemSortBy.IsUnplayed;
 
         /// <summary>
         /// Gets or sets the user data repository.

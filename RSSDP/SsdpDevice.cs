@@ -281,7 +281,7 @@ namespace Rssdp
         /// <seealso cref="DeviceAdded"/>
         public void AddDevice(SsdpEmbeddedDevice device)
         {
-            if (device == null) throw new ArgumentNullException("device");
+            if (device == null) throw new ArgumentNullException(nameof(device));
             if (device.RootDevice != null && device.RootDevice != this.ToRootDevice()) throw new InvalidOperationException("This device is already associated with a different root device (has been added as a child in another branch).");
             if (device == this) throw new InvalidOperationException("Can't add device to itself.");
 
@@ -309,7 +309,7 @@ namespace Rssdp
         /// <seealso cref="DeviceRemoved"/>
         public void RemoveDevice(SsdpEmbeddedDevice device)
         {
-            if (device == null) throw new ArgumentNullException("device");
+            if (device == null) throw new ArgumentNullException(nameof(device));
 
             bool wasRemoved = false;
             lock (_Devices)

@@ -127,7 +127,7 @@ namespace MediaBrowser.Model.Net
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             var ext = Path.GetExtension(path) ?? string.Empty;
@@ -333,7 +333,7 @@ namespace MediaBrowser.Model.Net
         {
             if (string.IsNullOrEmpty(mimeType))
             {
-                throw new ArgumentNullException("mimeType");
+                throw new ArgumentNullException(nameof(mimeType));
             }
 
             // handle text/html; charset=UTF-8

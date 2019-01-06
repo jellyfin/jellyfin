@@ -197,7 +197,7 @@ namespace Emby.Drawing.Skia
 
         private static bool HasDiacritics(string text)
         {
-            return !String.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
+            return !string.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
         }
 
         private static bool RequiresSpecialCharacterHack(string path)
@@ -509,11 +509,11 @@ namespace Emby.Drawing.Skia
         {
             if (string.IsNullOrWhiteSpace(inputPath))
             {
-                throw new ArgumentNullException("inputPath");
+                throw new ArgumentNullException(nameof(inputPath));
             }
             if (string.IsNullOrWhiteSpace(inputPath))
             {
-                throw new ArgumentNullException("outputPath");
+                throw new ArgumentNullException(nameof(outputPath));
             }
 
             var skiaOutputFormat = GetImageFormat(selectedOutputFormat);
@@ -594,12 +594,12 @@ namespace Emby.Drawing.Skia
                         // If foreground layer present then draw
                         if (hasForegroundColor)
                         {
-                            if (!Double.TryParse(options.ForegroundLayer, out double opacity))
+                            if (!double.TryParse(options.ForegroundLayer, out double opacity))
                             {
                                 opacity = .4;
                             }
 
-                            canvas.DrawColor(new SKColor(0, 0, 0, (Byte)((1 - opacity) * 0xFF)), SKBlendMode.SrcOver);
+                            canvas.DrawColor(new SKColor(0, 0, 0, (byte)((1 - opacity) * 0xFF)), SKBlendMode.SrcOver);
                         }
 
                         if (hasIndicator)

@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             var current = item.Tags;

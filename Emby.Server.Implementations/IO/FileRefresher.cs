@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             if (!_affectedPaths.Contains(path, StringComparer.Ordinal))
@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             lock (_timerLock)

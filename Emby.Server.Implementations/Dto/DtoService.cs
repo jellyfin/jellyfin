@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common;
+using MediaBrowser.Common;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -189,7 +189,7 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private IList<BaseItem> GetTaggedItems(IItemByName byName, User user, DtoOptions options)
+        private static IList<BaseItem> GetTaggedItems(IItemByName byName, User user, DtoOptions options)
         {
             return byName.GetTaggedItems(new InternalItemsQuery(user)
             {
@@ -295,7 +295,7 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private void NormalizeMediaSourceContainers(BaseItemDto dto)
+        private static void NormalizeMediaSourceContainers(BaseItemDto dto)
         {
             foreach (var mediaSource in dto.MediaSources)
             {
@@ -347,7 +347,7 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IList<BaseItem> taggedItems, User user = null)
+        private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IList<BaseItem> taggedItems, User user = null)
         {
             if (item is MusicArtist)
             {
@@ -447,7 +447,7 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private int GetChildCount(Folder folder, User user)
+        private static int GetChildCount(Folder folder, User user)
         {
             // Right now this is too slow to calculate for top level folders on a per-user basis
             // Just return something so that apps that are expecting a value won't think the folders are empty
@@ -470,11 +470,11 @@ namespace Emby.Server.Implementations.Dto
             return item.Id.ToString("N");
         }
 
-        private void SetBookProperties(BaseItemDto dto, Book item)
+        private static void SetBookProperties(BaseItemDto dto, Book item)
         {
             dto.SeriesName = item.SeriesName;
         }
-        private void SetPhotoProperties(BaseItemDto dto, Photo item)
+        private static void SetPhotoProperties(BaseItemDto dto, Photo item)
         {
             dto.CameraMake = item.CameraMake;
             dto.CameraModel = item.CameraModel;
@@ -520,13 +520,13 @@ namespace Emby.Server.Implementations.Dto
             dto.Album = item.Album;
         }
 
-        private void SetGameProperties(BaseItemDto dto, Game item)
+        private static void SetGameProperties(BaseItemDto dto, Game item)
         {
             dto.GameSystem = item.GameSystem;
             dto.MultiPartGameFiles = item.MultiPartGameFiles;
         }
 
-        private void SetGameSystemProperties(BaseItemDto dto, GameSystem item)
+        private static void SetGameSystemProperties(BaseItemDto dto, GameSystem item)
         {
             dto.GameSystem = item.GameSystemName;
         }

@@ -130,11 +130,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
             if (string.IsNullOrWhiteSpace(mediaSourceId))
             {
-                throw new ArgumentNullException("mediaSourceId");
+                throw new ArgumentNullException(nameof(mediaSourceId));
             }
 
             // TODO network path substition useful ?
@@ -300,7 +300,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (string.IsNullOrEmpty(format))
             {
-                throw new ArgumentNullException("format");
+                throw new ArgumentNullException(nameof(format));
             }
 
             if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase))
@@ -328,7 +328,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (string.IsNullOrEmpty(format))
             {
-                throw new ArgumentNullException("format");
+                throw new ArgumentNullException(nameof(format));
             }
 
             if (string.Equals(format, "json", StringComparison.OrdinalIgnoreCase))
@@ -423,12 +423,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (string.IsNullOrEmpty(inputPath))
             {
-                throw new ArgumentNullException("inputPath");
+                throw new ArgumentNullException(nameof(inputPath));
             }
 
             if (string.IsNullOrEmpty(outputPath))
             {
-                throw new ArgumentNullException("outputPath");
+                throw new ArgumentNullException(nameof(outputPath));
             }
 
             _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
@@ -566,12 +566,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (string.IsNullOrEmpty(inputPath))
             {
-                throw new ArgumentNullException("inputPath");
+                throw new ArgumentNullException(nameof(inputPath));
             }
 
             if (string.IsNullOrEmpty(outputPath))
             {
-                throw new ArgumentNullException("outputPath");
+                throw new ArgumentNullException(nameof(outputPath));
             }
 
             _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
@@ -759,7 +759,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 return _fileSystem.ReadAllBytes(path);
             }
 
-            throw new ArgumentOutOfRangeException("protocol");
+            throw new ArgumentOutOfRangeException(nameof(protocol));
         }
     }
 }

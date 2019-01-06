@@ -447,7 +447,7 @@ namespace MediaBrowser.Providers.TV
         {
             if (string.IsNullOrEmpty(tmdbId))
             {
-                throw new ArgumentNullException("tmdbId");
+                throw new ArgumentNullException(nameof(tmdbId));
             }
 
             var path = GetDataFilePath(tmdbId, language);
@@ -470,7 +470,7 @@ namespace MediaBrowser.Providers.TV
         {
             if (string.IsNullOrEmpty(tmdbId))
             {
-                throw new ArgumentNullException("tmdbId");
+                throw new ArgumentNullException(nameof(tmdbId));
             }
 
             var path = GetSeriesDataPath(_configurationManager.ApplicationPaths, tmdbId);

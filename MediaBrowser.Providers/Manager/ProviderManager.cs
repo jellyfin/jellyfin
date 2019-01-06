@@ -179,7 +179,7 @@ namespace MediaBrowser.Providers.Manager
         {
             if (string.IsNullOrWhiteSpace(source))
             {
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException(nameof(source));
             }
 
             var fileStream = _fileSystem.GetFileStream(source, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);

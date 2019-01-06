@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
@@ -104,10 +104,7 @@ namespace Emby.Server.Implementations.LiveTv
         /// Gets the services.
         /// </summary>
         /// <value>The services.</value>
-        public IReadOnlyList<ILiveTvService> Services
-        {
-            get { return _services; }
-        }
+        public IReadOnlyList<ILiveTvService> Services => _services;
 
         private LiveTvOptions GetConfiguration()
         {
@@ -167,15 +164,9 @@ namespace Emby.Server.Implementations.LiveTv
             });
         }
 
-        public ITunerHost[] TunerHosts
-        {
-            get { return _tunerHosts; }
-        }
+        public ITunerHost[] TunerHosts => _tunerHosts;
 
-        public IListingsProvider[] ListingProviders
-        {
-            get { return _listingProviders; }
-        }
+        public IListingsProvider[] ListingProviders => _listingProviders;
 
         public List<NameIdPair> GetTunerHostTypes()
         {
@@ -323,7 +314,7 @@ namespace Emby.Server.Implementations.LiveTv
             return _services.FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
         }
 
-        private void Normalize(MediaSourceInfo mediaSource, ILiveTvService service, bool isVideo)
+        private static void Normalize(MediaSourceInfo mediaSource, ILiveTvService service, bool isVideo)
         {
             // Not all of the plugins are setting this
             mediaSource.IsInfiniteStream = true;
@@ -1418,6 +1409,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (query.IsInProgress ?? false)
             {
+                //TODO Fix The co-variant conversion between Video[] and BaseItem[], this can generate runtime issues.
                 result.Items = result
                     .Items
                     .OfType<Video>()
@@ -2188,7 +2180,7 @@ namespace Emby.Server.Implementations.LiveTv
             return Services.Select(GetServiceInfo).ToArray();
         }
 
-        private LiveTvServiceInfo GetServiceInfo(ILiveTvService service)
+        private static LiveTvServiceInfo GetServiceInfo(ILiveTvService service)
         {
             return new LiveTvServiceInfo
             {
@@ -2245,7 +2237,7 @@ namespace Emby.Server.Implementations.LiveTv
             return service.ResetTuner(parts[1], cancellationToken);
         }
 
-        private void RemoveFields(DtoOptions options)
+        private static void RemoveFields(DtoOptions options)
         {
             var fields = options.Fields.ToList();
 

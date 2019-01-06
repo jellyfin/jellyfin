@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -13,7 +13,6 @@ namespace MediaBrowser.Controller.Persistence
         /// Deletes the user.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         void DeleteUser(User user);
 

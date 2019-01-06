@@ -182,7 +182,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrEmpty(newName))
             {
-                throw new ArgumentNullException("newName");
+                throw new ArgumentNullException(nameof(newName));
             }
 
             // If only the casing is changing, leave the file system alone
@@ -259,7 +259,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (string.IsNullOrEmpty(username))
                 {
-                    throw new ArgumentNullException("username");
+                    throw new ArgumentNullException(nameof(username));
                 }
 
                 var safeFolderName = FileSystem.GetValidFilename(username);

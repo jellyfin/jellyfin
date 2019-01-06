@@ -1,4 +1,4 @@
-﻿using Emby.Naming.Common;
+using Emby.Naming.Common;
 using System;
 using System.Linq;
 
@@ -36,7 +36,7 @@ namespace Emby.Naming.Video
             return new Format3DResult();
         }
 
-        private Format3DResult Parse(string[] videoFlags, Format3DRule rule)
+        private static Format3DResult Parse(string[] videoFlags, Format3DRule rule)
         {
             var result = new Format3DResult();
 

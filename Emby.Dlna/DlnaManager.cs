@@ -95,7 +95,7 @@ namespace Emby.Dlna
         {
             if (deviceInfo == null)
             {
-                throw new ArgumentNullException("deviceInfo");
+                throw new ArgumentNullException(nameof(deviceInfo));
             }
 
             var profile = GetProfiles()
@@ -207,7 +207,7 @@ namespace Emby.Dlna
         {
             if (headers == null)
             {
-                throw new ArgumentNullException("headers");
+                throw new ArgumentNullException(nameof(headers));
             }
 
             // Convert to case insensitive
@@ -335,7 +335,7 @@ namespace Emby.Dlna
         {
             if (string.IsNullOrEmpty(id))
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             var info = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));

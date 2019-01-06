@@ -31,23 +31,11 @@ namespace Emby.Server.Implementations.Session
             Sockets = new List<IWebSocketConnection>();
         }
 
-        private bool HasOpenSockets
-        {
-            get { return GetActiveSockets().Any(); }
-        }
+        private bool HasOpenSockets => GetActiveSockets().Any();
 
-        public bool SupportsMediaControl
-        {
-            get { return HasOpenSockets; }
-        }
+        public bool SupportsMediaControl => HasOpenSockets;
 
-        public bool IsSessionActive
-        {
-            get
-            {
-                return HasOpenSockets;
-            }
-        }
+        public bool IsSessionActive => HasOpenSockets;
 
         private IEnumerable<IWebSocketConnection> GetActiveSockets()
         {

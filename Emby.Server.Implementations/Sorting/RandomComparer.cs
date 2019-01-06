@@ -25,9 +25,6 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return ItemSortBy.Random; }
-        }
+        public string Name => ItemSortBy.Random;
     }
 }

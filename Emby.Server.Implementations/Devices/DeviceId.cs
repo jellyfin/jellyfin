@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text;
 using MediaBrowser.Common.Configuration;
@@ -15,10 +15,7 @@ namespace Emby.Server.Implementations.Devices
 
         private readonly object _syncLock = new object();
 
-        private string CachePath
-        {
-            get { return Path.Combine(_appPaths.DataPath, "device.txt"); }
-        }
+        private string CachePath => Path.Combine(_appPaths.DataPath, "device.txt");
 
         private string GetCachedId()
         {
@@ -70,7 +67,7 @@ namespace Emby.Server.Implementations.Devices
             }
         }
 
-        private string GetNewId()
+        private static string GetNewId()
         {
             return Guid.NewGuid().ToString("N");
         }
@@ -93,7 +90,7 @@ namespace Emby.Server.Implementations.Devices
         public DeviceId(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
         {
 			if (fileSystem == null) {
-				throw new ArgumentNullException ("fileSystem");
+				throw new ArgumentNullException(nameof(fileSystem));
 			}
 
             _appPaths = appPaths;
@@ -101,9 +98,6 @@ namespace Emby.Server.Implementations.Devices
 			_fileSystem = fileSystem;
         }
 
-        public string Value
-        {
-            get { return _id ?? (_id = GetDeviceId()); }
-        }
+        public string Value => _id ?? (_id = GetDeviceId());
     }
 }

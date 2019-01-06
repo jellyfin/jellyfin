@@ -168,6 +168,7 @@ namespace SocketHttpListener.Net
             }
             catch (ObjectDisposedException)
             {
+                // TODO Investigate or properly fix.
             }
             catch (Exception ex)
             {

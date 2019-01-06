@@ -77,7 +77,7 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             TemporarilyIgnore(path);
@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             // This is an arbitraty amount of time, but delay it because file system writes often trigger events long after the file was actually written to.
@@ -145,7 +145,7 @@ namespace Emby.Server.Implementations.IO
         {
             if (taskManager == null)
             {
-                throw new ArgumentNullException("taskManager");
+                throw new ArgumentNullException(nameof(taskManager));
             }
 
             LibraryManager = libraryManager;
@@ -268,7 +268,7 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             path = path.TrimEnd(Path.DirectorySeparatorChar);
@@ -469,7 +469,7 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             var filename = Path.GetFileName(path);

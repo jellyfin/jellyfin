@@ -596,7 +596,7 @@ namespace MediaBrowser.Api.Playback
         private void ParseStreamOptions(StreamRequest request)
         {
             foreach (var param in Request.QueryString) {
-                if (Char.IsLower(param.Name[0])) {
+                if (char.IsLower(param.Name[0])) {
                     // This was probably not parsed initially and should be a StreamOptions
                     // TODO: This should be incorporated either in the lower framework for parsing requests
                     // or the generated URL should correctly serialize it

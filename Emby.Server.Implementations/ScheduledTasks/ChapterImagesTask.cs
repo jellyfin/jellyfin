@@ -70,10 +70,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             };
         }
 
-        public string Key
-        {
-            get { return "RefreshChapterImages"; }
-        }
+        public string Key => "RefreshChapterImages";
 
         /// <summary>
         /// Returns the task to be executed
@@ -156,6 +153,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 }
                 catch (ObjectDisposedException)
                 {
+                    //TODO Investigate and properly fix.
                     break;
                 }
             }
@@ -165,33 +163,18 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Gets the name of the task
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get
-            {
-                return "Chapter image extraction";
-            }
-        }
+        public string Name => "Chapter image extraction";
 
         /// <summary>
         /// Gets the description.
         /// </summary>
         /// <value>The description.</value>
-        public string Description
-        {
-            get { return "Creates thumbnails for videos that have chapters."; }
-        }
+        public string Description => "Creates thumbnails for videos that have chapters.";
 
         /// <summary>
         /// Gets the category.
         /// </summary>
         /// <value>The category.</value>
-        public string Category
-        {
-            get
-            {
-                return "Library";
-            }
-        }
+        public string Category => "Library";
     }
 }

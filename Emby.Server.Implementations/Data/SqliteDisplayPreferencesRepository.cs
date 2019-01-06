@@ -32,13 +32,7 @@ namespace Emby.Server.Implementations.Data
         /// Gets the name of the repository
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get
-            {
-                return "SQLite";
-            }
-        }
+        public string Name => "SQLite";
 
         /// <summary>
         /// The _json serializer
@@ -94,11 +88,11 @@ namespace Emby.Server.Implementations.Data
         {
             if (displayPreferences == null)
             {
-                throw new ArgumentNullException("displayPreferences");
+                throw new ArgumentNullException(nameof(displayPreferences));
             }
             if (string.IsNullOrEmpty(displayPreferences.Id))
             {
-                throw new ArgumentNullException("displayPreferences.Id");
+                throw new ArgumentNullException(nameof(displayPreferences.Id));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -142,7 +136,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (displayPreferences == null)
             {
-                throw new ArgumentNullException("displayPreferences");
+                throw new ArgumentNullException(nameof(displayPreferences));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -174,7 +168,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (string.IsNullOrEmpty(displayPreferencesId))
             {
-                throw new ArgumentNullException("displayPreferencesId");
+                throw new ArgumentNullException(nameof(displayPreferencesId));
             }
 
             var guidId = displayPreferencesId.GetMD5();

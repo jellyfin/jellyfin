@@ -67,7 +67,7 @@ namespace Emby.Server.Implementations.Library
 
             if (string.IsNullOrWhiteSpace(newPasswordHash))
             {
-                throw new ArgumentNullException("newPasswordHash");
+                throw new ArgumentNullException(nameof(newPasswordHash));
             }
 
             user.Password = newPasswordHash;

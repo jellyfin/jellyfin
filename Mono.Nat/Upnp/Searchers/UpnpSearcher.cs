@@ -65,7 +65,7 @@ namespace Mono.Nat
         {
             if (localAddress == null)
             {
-                throw new ArgumentNullException("localAddress");
+                throw new ArgumentNullException(nameof(localAddress));
             }
 
             try

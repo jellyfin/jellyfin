@@ -248,7 +248,7 @@ namespace SocketHttpListener.Net
         internal void CheckDisposed()
         {
             if (disposed)
-                throw new ObjectDisposedException(GetType().ToString());
+                throw new ObjectDisposedException(GetType().Name);
         }
 
         internal void RegisterContext(HttpListenerContext context)

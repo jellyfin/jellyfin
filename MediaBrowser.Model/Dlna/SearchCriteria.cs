@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Extensions;
 using System;
 using System.Text.RegularExpressions;
 
@@ -15,7 +15,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="term">The term.</param>
         /// <param name="limit">The limit.</param>
         /// <returns>System.String[].</returns>
-        private string[] RegexSplit(string str, string term, int limit)
+        private static string[] RegexSplit(string str, string term, int limit)
         {
             return new Regex(term).Split(str, limit);
         }
@@ -26,7 +26,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="str">The string.</param>
         /// <param name="term">The term.</param>
         /// <returns>System.String[].</returns>
-        private string[] RegexSplit(string str, string term)
+        private static string[] RegexSplit(string str, string term)
         {
             return Regex.Split(str, term, RegexOptions.IgnoreCase);
         }
@@ -35,15 +35,15 @@ namespace MediaBrowser.Model.Dlna
         {
             if (string.IsNullOrEmpty(search))
             {
-                throw new ArgumentNullException("search");
+                throw new ArgumentNullException(nameof(search));
             }
 
             SearchType = SearchType.Unknown;
 
-            String[] factors = RegexSplit(search, "(and|or)");
-            foreach (String factor in factors)
+            string[] factors = RegexSplit(search, "(and|or)");
+            foreach (string factor in factors)
             {
-                String[] subFactors = RegexSplit(factor.Trim().Trim('(').Trim(')').Trim(), "\\s", 3);
+                string[] subFactors = RegexSplit(factor.Trim().Trim('(').Trim(')').Trim(), "\\s", 3);
 
                 if (subFactors.Length == 3)
                 {

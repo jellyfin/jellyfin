@@ -14,10 +14,10 @@ namespace NLangDetect.Core.Extensions
     /// <exception cref="IndexOutOfRangeException"> if start or end are negative, if end is greater than length(), or if start is greater than end</exception>
     public static string SubSequence(this string s, int start, int end)
     {
-      if (start < 0) throw new ArgumentOutOfRangeException("start", "Argument must not be negative.");
-      if (end < 0) throw new ArgumentOutOfRangeException("end", "Argument must not be negative.");
-      if (end > s.Length) throw new ArgumentOutOfRangeException("end", "Argument must not be greater than the input string's length.");
-      if (start > end) throw new ArgumentOutOfRangeException("start", "Argument must not be greater than the 'end' argument.");
+      if (start < 0) throw new ArgumentOutOfRangeException(nameof(start), "Argument must not be negative.");
+      if (end < 0) throw new ArgumentOutOfRangeException(nameof(end), "Argument must not be negative.");
+      if (end > s.Length) throw new ArgumentOutOfRangeException(nameof(end), "Argument must not be greater than the input string's length.");
+      if (start > end) throw new ArgumentOutOfRangeException(nameof(start), "Argument must not be greater than the 'end' argument.");
       
       return s.Substring(start, end - start);
     }

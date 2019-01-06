@@ -84,7 +84,7 @@ namespace MediaBrowser.Providers.Music
 
             var artistMusicBrainzId = artist.GetProviderId(MetadataProviders.MusicBrainzArtist);
 
-            if (!String.IsNullOrEmpty(artistMusicBrainzId))
+            if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
                 await EnsureArtistJson(artistMusicBrainzId, cancellationToken).ConfigureAwait(false);
 
@@ -106,24 +106,24 @@ namespace MediaBrowser.Providers.Music
 
             var language = item.GetPreferredMetadataLanguage();
 
-            var isLanguageEn = String.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
+            var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 
             // Sort first by width to prioritize HD versions
             return list.OrderByDescending(i => i.Width ?? 0)
                 .ThenByDescending(i =>
                 {
-                    if (String.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
                     {
                         return 3;
                     }
                     if (!isLanguageEn)
                     {
-                        if (String.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
                         {
                             return 2;
                         }
                     }
-                    if (String.IsNullOrEmpty(i.Language))
+                    if (string.IsNullOrEmpty(i.Language))
                     {
                         return isLanguageEn ? 3 : 2;
                     }

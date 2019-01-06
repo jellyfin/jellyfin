@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using Emby.Dlna.Server;
 using Emby.Dlna.Service;
@@ -21,7 +21,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             throw new ResourceNotFoundException("Unexpected control request name: " + methodName);
         }
 
-        private IEnumerable<KeyValuePair<string, string>> HandleIsAuthorized()
+        private static IEnumerable<KeyValuePair<string, string>> HandleIsAuthorized()
         {
             return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -29,7 +29,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             };
         }
 
-        private IEnumerable<KeyValuePair<string, string>> HandleIsValidated()
+        private static IEnumerable<KeyValuePair<string, string>> HandleIsValidated()
         {
             return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
