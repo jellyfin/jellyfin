@@ -1148,11 +1148,7 @@ namespace Emby.Server.Implementations
 
         private IActivityRepository GetActivityLogRepository()
         {
-            var repo = new ActivityRepository(LoggerFactory, ServerConfigurationManager.ApplicationPaths, FileSystemManager);
-
-            repo.Initialize();
-
-            return repo;
+            return new ActivityRepository(ServerConfigurationManager.ApplicationPaths.DataPath);
         }
 
         /// <summary>

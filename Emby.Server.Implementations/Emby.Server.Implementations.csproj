@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.0" />
     <PackageReference Include="ServiceStack.Text.Core" Version="5.4.0" />
     <PackageReference Include="sharpcompress" Version="0.22.0" />
     <PackageReference Include="SimpleInjector" Version="4.4.2" />
