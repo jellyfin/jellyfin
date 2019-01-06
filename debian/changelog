@@ -4,7 +4,7 @@ jellyfin (10.0.0-1) unstable; urgency=medium
   * Numerous bugfixes and code readability improvements
   * Updated logging configuration, including flag for it and configdir
   * Updated theming including logo
-  * Dozens of other improvements as documented in PR#419
+  * Dozens of other improvements as documented in GitHub pull request #419
 
  -- Joshua Boniface <joshua@boniface.me>  Sat, 05 Jan 2019 15:39:25 -0500
 

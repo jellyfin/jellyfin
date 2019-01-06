@@ -52,8 +52,10 @@ case "$1" in
     [[ -f /usr/bin/jellyfin ]] && rm /usr/bin/jellyfin
     # Remove sudoers config
     [[ -f /etc/sudoers.d/jellyfin-sudoers ]] && rm /etc/sudoers.d/jellyfin-sudoers
-    # Remove /var/lib/jellyfin, just in case
-    [[ -d /var/lib/jellyfin ]] && rm -rf /var/lib/jellyfin
+    # Remove anything at the default locations; catches situations where the user moved the defaults
+    [[ -e /etc/jellyfin ]] && rm -rf /etc/jellyfin
+    [[ -e /var/log/jellyfin ]] && rm -rf /var/log/jellyfin
+    [[ -e /var/lib/jellyfin ]] && rm -rf /var/lib/jellyfin
     ;;
   remove)
     if [[ -x "/usr/bin/deb-systemd-helper" ]]; then

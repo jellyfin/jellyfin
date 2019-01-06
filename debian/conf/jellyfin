@@ -15,11 +15,9 @@
 # General options
 #
 
-# Data directory
+# Program directories
 JELLYFIN_DATA_DIRECTORY="/var/lib/jellyfin"
-# Config directory
 JELLYFIN_CONFIG_DIRECTORY="/etc/jellyfin"
-# Logging directory
 JELLYFIN_LOG_DIRECTORY="/var/log/jellyfin"
 # Restart script for in-app server control
 JELLYFIN_RESTART_SCRIPT="/usr/lib/jellyfin/restart.sh"
