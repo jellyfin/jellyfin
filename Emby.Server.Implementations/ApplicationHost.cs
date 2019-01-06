@@ -238,7 +238,6 @@ namespace Emby.Server.Implementations
         {
             get
             {
-
 #if BETA
                 return PackageVersionClass.Beta;
 #endif
@@ -552,7 +551,7 @@ namespace Emby.Server.Implementations
         protected void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
             where T : class
         {
-            Container.RegisterSingleton(obj);
+            Container.RegisterInstance<T>(obj);
 
             if (manageLifetime)
             {
@@ -617,7 +616,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error loading assembly {file}", file);
+                Logger.LogError(ex, "Error loading assembly {File}", file);
                 return null;
             }
         }

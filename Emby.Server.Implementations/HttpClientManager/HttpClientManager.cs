@@ -389,7 +389,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             {
                 options.ResourcePool?.Release();
 
-                throw new HttpException(string.Format("Connection to {0} timed out", options.Url)) { IsTimedOut = true };
+                throw new HttpException($"Connection to {options.Url} timed out") { IsTimedOut = true };
             }
 
             if (options.LogRequest)
