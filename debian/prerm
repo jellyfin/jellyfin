@@ -2,7 +2,6 @@
 set -e
 
 NAME=jellyfin
-CONF_FILE=/etc/${NAME}.conf
 DEFAULT_FILE=/etc/default/${NAME}
 
 # Source Jellyfin default configuration
@@ -10,13 +9,10 @@ if [[ -f $DEFAULT_FILE ]]; then
   . $DEFAULT_FILE
 fi
 
-# Source Jellyfin user configuration overrides
-if [[ -f $CONF_FILE ]]; then
-  . $CONF_FILE
-fi
-
-# Data directory where Jellyfin database, cache and logs are stored
-PROGRAMDATA=${JELLYFIN_DATA-/var/lib/$NAME}
+# Data directories for program data (cache, db), configs, and logs
+PROGRAMDATA=${JELLYFIN_DATA_DIRECTORY-/var/lib/$NAME}
+CONFIGDATA=${JELLYFIN_CONFIG_DIRECTORY-/etc/$NAME}
+LOGDATA=${JELLYFIN_DATA_DIRECTORY-/var/log/$NAME}
 
 case "$1" in
   remove|upgrade|deconfigure)
