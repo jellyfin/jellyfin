@@ -102,43 +102,84 @@ namespace Jellyfin.Server
 
         private static ServerApplicationPaths createApplicationPaths(StartupOptions options)
         {
-            string programDataPath;
-            if (options.ContainsOption("-programdata"))
+            string programDataPath = Environment.GetEnvironmentVariable("JELLYFIN_DATA_PATH");
+            if (string.IsNullOrEmpty(programDataPath))
             {
-                programDataPath = options.GetOption("-programdata");
-            }
-            else
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (options.ContainsOption("-programdata"))
                 {
-                    programDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    programDataPath = options.GetOption("-programdata");
                 }
                 else
                 {
-                    // $XDG_DATA_HOME defines the base directory relative to which user specific data files should be stored.
-                    programDataPath = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
-                    // If $XDG_DATA_HOME is either not set or empty, $HOME/.local/share should be used.
-                    if (string.IsNullOrEmpty(programDataPath))
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
+                        programDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                     }
+                    else
+                    {
+                        // $XDG_DATA_HOME defines the base directory relative to which user specific data files should be stored.
+                        programDataPath = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+                        // If $XDG_DATA_HOME is either not set or empty, $HOME/.local/share should be used.
+                        if (string.IsNullOrEmpty(programDataPath))
+                        {
+                            programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
+                        }
+                    }
+                    programDataPath = Path.Combine(programDataPath, "jellyfin");
+                    // Ensure the dir exists
+                    Directory.CreateDirectory(programDataPath);
                 }
-                programDataPath = Path.Combine(programDataPath, "jellyfin");
+            }
+
+            string configDir = Environment.GetEnvironmentVariable("JELLYFIN_CONFIG_DIR");
+            if (string.IsNullOrEmpty(configDir))
+            {
+                if (options.ContainsOption("-configdir"))
+                {
+                    configDir = options.GetOption("-configdir");
+                }
+                else
+                {
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        configDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    }
+                    else
+                    {
+                        // $XDG_CONFIG_HOME defines the base directory relative to which user specific configuration files should be stored.
+                        configDir = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
+                        // If $XDG_CONFIG_HOME is either not set or empty, $HOME/.config should be used.
+                        if (string.IsNullOrEmpty(configDir))
+                        {
+                            configDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
+                        }
+                    }
+                    configDir = Path.Combine(configDir, "jellyfin");
+                    // Ensure the dir exists
+                    Directory.CreateDirectory(configDir);
+                }
             }
 
             string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
             if (string.IsNullOrEmpty(logDir))
             {
-                logDir = Path.Combine(programDataPath, "logs");
-                // Ensure logDir exists
-                Directory.CreateDirectory(logDir);
+                if (options.ContainsOption("-logdir"))
+                {
+                    logDir = options.GetOption("-logdir");
+                }
+                else
+                {
+                    logDir = Path.Combine(programDataPath, "logs");
+                    // Ensure the dir exists
+                    Directory.CreateDirectory(logDir);
+                }
                 // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
                 Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", logDir);
             }
 
             string appPath = AppContext.BaseDirectory;
 
-            return new ServerApplicationPaths(programDataPath, appPath, appPath, logDir);
+            return new ServerApplicationPaths(programDataPath, appPath, appPath, logDir, configDir);
         }
 
         private static async Task createLogger(IApplicationPaths appPaths)
