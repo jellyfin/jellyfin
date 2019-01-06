@@ -39,15 +39,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             _mediaSourceManager = mediaSourceManager;
         }
 
-        public override string Type
-        {
-            get { return "m3u"; }
-        }
+        public override string Type => "m3u";
 
-        public virtual string Name
-        {
-            get { return "M3U Tuner"; }
-        }
+        public virtual string Name => "M3U Tuner";
 
         private string GetFullChannelIdPrefix(TunerHostInfo info)
         {

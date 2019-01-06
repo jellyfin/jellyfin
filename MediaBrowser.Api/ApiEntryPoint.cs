@@ -388,7 +388,7 @@ namespace MediaBrowser.Api
         {
             if (string.IsNullOrEmpty(playSessionId))
             {
-                throw new ArgumentNullException("playSessionId");
+                throw new ArgumentNullException(nameof(playSessionId));
             }
 
             //Logger.LogDebug("PingTranscodingJob PlaySessionId={0} isUsedPaused: {1}", playSessionId, isUserPaused);

@@ -30,7 +30,7 @@ namespace Rssdp
 		/// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="discoveredDevice"/> parameter is null.</exception>
 		public DeviceAvailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool isNewlyDiscovered)
 		{
-			if (discoveredDevice == null) throw new ArgumentNullException("discoveredDevice");
+			if (discoveredDevice == null) throw new ArgumentNullException(nameof(discoveredDevice));
 
 			_DiscoveredDevice = discoveredDevice;
 			_IsNewlyDiscovered = isNewlyDiscovered;

@@ -41,7 +41,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if (value.Value < 0 || value.Value > 10)
                     {
-                        throw new ArgumentOutOfRangeException("value", "A 0 to 10 rating is required for UserItemData.");
+                        throw new ArgumentOutOfRangeException(nameof(value), "A 0 to 10 rating is required for UserItemData.");
                     }
                 }
 

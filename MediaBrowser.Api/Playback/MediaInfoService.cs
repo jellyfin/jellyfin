@@ -262,6 +262,7 @@ namespace MediaBrowser.Api.Playback
                 catch (Exception ex)
                 {
                     mediaSources = new List<MediaSourceInfo>();
+                    // TODO Log exception
                     // TODO PlaybackException ??
                     //result.ErrorCode = ex.ErrorCode;
                 }

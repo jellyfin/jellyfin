@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -251,7 +251,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return numberString;
         }
 
-        private bool IsValidChannelNumber(string numberString)
+        private static bool IsValidChannelNumber(string numberString)
         {
             if (string.IsNullOrWhiteSpace(numberString) ||
                 string.Equals(numberString, "-1", StringComparison.OrdinalIgnoreCase) ||
@@ -269,7 +269,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return true;
         }
 
-        private string GetChannelName(string extInf, Dictionary<string, string> attributes)
+        private static string GetChannelName(string extInf, Dictionary<string, string> attributes)
         {
             var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
@@ -314,7 +314,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return name;
         }
 
-        private Dictionary<string, string> ParseExtInf(string line, out string remaining)
+        private static Dictionary<string, string> ParseExtInf(string line, out string remaining)
         {
             var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 

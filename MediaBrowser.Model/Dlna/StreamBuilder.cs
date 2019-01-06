@@ -700,7 +700,7 @@ namespace MediaBrowser.Model.Dlna
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
 
             var transcodeReasons = new List<TranscodeReason>();

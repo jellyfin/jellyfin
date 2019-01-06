@@ -1139,7 +1139,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (item == null)
             {
-                throw new ArgumentNullException("media");
+                throw new ArgumentNullException(nameof(item));
             }
 
             var protocol = item.PathProtocol;
@@ -1756,7 +1756,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             if (!IsVisibleViaTags(user))
@@ -1906,7 +1906,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             return IsParentalAllowed(user);
@@ -2087,7 +2087,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             var current = Studios;
@@ -2120,7 +2120,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             var genres = Genres;
@@ -2146,7 +2146,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (user == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(user));
             }
 
             var data = UserDataManager.GetUserData(user, this);
@@ -2181,7 +2181,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (user == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(user));
             }
 
             var data = UserDataManager.GetUserData(user, this);
@@ -2579,7 +2579,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             var userdata = UserDataManager.GetUserData(user, this);

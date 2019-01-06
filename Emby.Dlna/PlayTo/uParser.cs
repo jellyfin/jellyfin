@@ -26,7 +26,7 @@ namespace Emby.Dlna.PlayTo
             if (item == null)
                 return list;
 
-            var uPnpResponse = XElement.Parse((String)item);
+            var uPnpResponse = XElement.Parse((string)item);
 
             var uObjects = from container in uPnpResponse.Elements(uPnpNamespaces.containers)
                            select new uParserObject { Element = container };

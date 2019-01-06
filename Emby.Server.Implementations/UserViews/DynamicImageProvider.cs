@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -112,7 +112,7 @@ namespace Emby.Server.Implementations.UserViews
             return false;
         }
 
-        private bool IsUsingCollectionStrip(UserView view)
+        private static bool IsUsingCollectionStrip(UserView view)
         {
             string[] collectionStripViewTypes =
             {

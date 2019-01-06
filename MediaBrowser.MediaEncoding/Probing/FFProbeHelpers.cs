@@ -13,7 +13,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             if (result == null)
             {
-                throw new ArgumentNullException("result");
+                throw new ArgumentNullException(nameof(result));
             }
 
             if (result.format != null && result.format.tags != null)

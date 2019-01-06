@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.Library
             return list;
         }
 
-        private bool StreamSupportsExternalStream(MediaStream stream)
+        private static bool StreamSupportsExternalStream(MediaStream stream)
         {
             if (stream.IsExternal)
             {
@@ -261,7 +261,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private void SetKeyProperties(IMediaSourceProvider provider, MediaSourceInfo mediaSource)
+        private static void SetKeyProperties(IMediaSourceProvider provider, MediaSourceInfo mediaSource)
         {
             var prefix = provider.GetType().FullName.GetMD5().ToString("N") + LiveStreamIdDelimeter;
 
@@ -292,7 +292,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
 
             var hasMediaSources = (IHasMediaSources)item;
@@ -401,7 +401,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private IEnumerable<MediaSourceInfo> SortMediaSources(IEnumerable<MediaSourceInfo> sources)
+        private static IEnumerable<MediaSourceInfo> SortMediaSources(IEnumerable<MediaSourceInfo> sources)
         {
             return sources.OrderBy(i =>
             {
@@ -501,7 +501,7 @@ namespace Emby.Server.Implementations.Library
             }, liveStream as IDirectStreamProvider);
         }
 
-        private void AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio)
+        private static void AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio)
         {
             mediaSource.DefaultSubtitleStreamIndex = null;
 
@@ -629,6 +629,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogDebug(ex, "_jsonSerializer.DeserializeFromFile threw an exception.");
                 }
             }
 
@@ -759,7 +760,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrEmpty(id))
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             var info = await GetLiveStreamInfo(id, cancellationToken).ConfigureAwait(false);
@@ -770,7 +771,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrEmpty(id))
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -803,7 +804,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrEmpty(id))
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             await _liveStreamSemaphore.WaitAsync().ConfigureAwait(false);

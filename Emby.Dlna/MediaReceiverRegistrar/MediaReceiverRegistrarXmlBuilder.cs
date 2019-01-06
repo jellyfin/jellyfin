@@ -1,4 +1,4 @@
-﻿using Emby.Dlna.Common;
+using Emby.Dlna.Common;
 using Emby.Dlna.Service;
 using System.Collections.Generic;
 
@@ -12,7 +12,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
                 GetStateVariables());
         }
 
-        private IEnumerable<StateVariable> GetStateVariables()
+        private static IEnumerable<StateVariable> GetStateVariables()
         {
             var list = new List<StateVariable>();
 

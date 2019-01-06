@@ -83,7 +83,7 @@ namespace Priority_Queue
 #if DEBUG
             if (node == null)
             {
-                throw new ArgumentNullException("node");
+                throw new ArgumentNullException(nameof(node));
             }
             if (node.QueueIndex < 0 || node.QueueIndex >= _nodes.Length)
             {
@@ -106,7 +106,7 @@ namespace Priority_Queue
 #if DEBUG
             if (node == null)
             {
-                throw new ArgumentNullException("node");
+                throw new ArgumentNullException(nameof(node));
             }
             if (_numNodes >= _nodes.Length - 1)
             {
@@ -314,7 +314,7 @@ namespace Priority_Queue
 #if DEBUG
             if (node == null)
             {
-                throw new ArgumentNullException("node");
+                throw new ArgumentNullException(nameof(node));
             }
             if (!Contains(node))
             {
@@ -353,7 +353,7 @@ namespace Priority_Queue
 #if DEBUG
             if (node == null)
             {
-                throw new ArgumentNullException("node");
+                throw new ArgumentNullException(nameof(node));
             }
             if (!Contains(node))
             {

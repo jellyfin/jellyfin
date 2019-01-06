@@ -122,7 +122,7 @@ namespace MediaBrowser.Providers.BoxSets
         {
             if (string.IsNullOrEmpty(tmdbId))
             {
-                throw new ArgumentNullException("tmdbId");
+                throw new ArgumentNullException(nameof(tmdbId));
             }
 
             await EnsureInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);

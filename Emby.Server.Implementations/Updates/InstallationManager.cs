@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -42,10 +42,7 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         private ConcurrentBag<InstallationInfo> CompletedInstallationsInternal { get; set; }
 
-        public IEnumerable<InstallationInfo> CompletedInstallations
-        {
-            get { return CompletedInstallationsInternal; }
-        }
+        public IEnumerable<InstallationInfo> CompletedInstallations => CompletedInstallationsInternal;
 
         #region PluginUninstalled Event
         /// <summary>
@@ -129,7 +126,7 @@ namespace Emby.Server.Implementations.Updates
         {
             if (logger == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException(nameof(logger));
             }
 
             CurrentInstallations = new List<Tuple<InstallationInfo, CancellationTokenSource>>();
@@ -147,7 +144,7 @@ namespace Emby.Server.Implementations.Updates
             _logger = logger;
         }
 
-        private Version GetPackageVersion(PackageVersionInfo version)
+        private static Version GetPackageVersion(PackageVersionInfo version)
         {
             return new Version(ValueOrDefault(version.versionStr, "0.0.0.1"));
         }
@@ -214,7 +211,7 @@ namespace Emby.Server.Implementations.Updates
             {
                 Url = "https://www.mb3admin.local/admin/service/EmbyPackages.json",
                 CancellationToken = cancellationToken,
-                Progress = new SimpleProgress<Double>(),
+                Progress = new SimpleProgress<double>(),
                 CacheLength = GetCacheLength(),
                 CacheMode = CacheMode.Unconditional
 
@@ -232,7 +229,7 @@ namespace Emby.Server.Implementations.Updates
             return _applicationHost.SystemUpdateLevel;
         }
 
-        private TimeSpan GetCacheLength()
+        private static TimeSpan GetCacheLength()
         {
             return TimeSpan.FromMinutes(3);
         }
@@ -313,7 +310,7 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="packageVersionInfo">The package version info.</param>
         /// <param name="currentServerVersion">The current server version.</param>
         /// <returns><c>true</c> if [is package version up to date] [the specified package version info]; otherwise, <c>false</c>.</returns>
-        private bool IsPackageVersionUpToDate(PackageVersionInfo packageVersionInfo, Version currentServerVersion)
+        private static bool IsPackageVersionUpToDate(PackageVersionInfo packageVersionInfo, Version currentServerVersion)
         {
             if (string.IsNullOrEmpty(packageVersionInfo.requiredVersionStr))
             {
@@ -423,12 +420,12 @@ namespace Emby.Server.Implementations.Updates
         {
             if (package == null)
             {
-                throw new ArgumentNullException("package");
+                throw new ArgumentNullException(nameof(package));
             }
 
             if (progress == null)
             {
-                throw new ArgumentNullException("progress");
+                throw new ArgumentNullException(nameof(progress));
             }
 
             var installationInfo = new InstallationInfo
@@ -587,7 +584,7 @@ namespace Emby.Server.Implementations.Updates
             {
                 using (var stream = _fileSystem.OpenRead(tempFile))
                 {
-                    var check = Guid.Parse(BitConverter.ToString(_cryptographyProvider.ComputeMD5(stream)).Replace("-", String.Empty));
+                    var check = Guid.Parse(BitConverter.ToString(_cryptographyProvider.ComputeMD5(stream)).Replace("-", string.Empty));
                     if (check != packageChecksum)
                     {
                         throw new Exception(string.Format("Download validation failed for {0}.  Probably corrupted during transfer.", package.name));

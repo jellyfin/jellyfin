@@ -94,7 +94,7 @@ namespace Emby.Drawing.Common
                 }
             }
 
-            throw new ArgumentException(ErrorMessage, "binaryReader");
+            throw new ArgumentException(ErrorMessage, nameof(binaryReader));
         }
 
         /// <summary>

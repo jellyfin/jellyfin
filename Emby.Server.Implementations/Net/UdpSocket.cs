@@ -16,10 +16,7 @@ namespace Emby.Server.Implementations.Net
         private Socket _Socket;
         private int _LocalPort;
 
-        public Socket Socket
-        {
-            get { return _Socket; }
-        }
+        public Socket Socket => _Socket;
 
         private readonly SocketAsyncEventArgs _receiveSocketAsyncEventArgs = new SocketAsyncEventArgs()
         {
@@ -36,7 +33,7 @@ namespace Emby.Server.Implementations.Net
 
         public UdpSocket(Socket socket, int localPort, IPAddress ip)
         {
-            if (socket == null) throw new ArgumentNullException("socket");
+            if (socket == null) throw new ArgumentNullException(nameof(socket));
 
             _Socket = socket;
             _LocalPort = localPort;
@@ -102,7 +99,7 @@ namespace Emby.Server.Implementations.Net
 
         public UdpSocket(Socket socket, IpEndPointInfo endPoint)
         {
-            if (socket == null) throw new ArgumentNullException("socket");
+            if (socket == null) throw new ArgumentNullException(nameof(socket));
 
             _Socket = socket;
             _Socket.Connect(NetworkManager.ToIPEndPoint(endPoint));

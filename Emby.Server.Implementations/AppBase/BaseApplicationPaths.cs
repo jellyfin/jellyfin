@@ -55,61 +55,31 @@ namespace Emby.Server.Implementations.AppBase
         }
 
         private const string _virtualDataPath = "%AppDataPath%";
-        public string VirtualDataPath
-        {
-            get
-            {
-                return _virtualDataPath;
-            }
-        }
+        public string VirtualDataPath => _virtualDataPath;
 
         /// <summary>
         /// Gets the image cache path.
         /// </summary>
         /// <value>The image cache path.</value>
-        public string ImageCachePath
-        {
-            get
-            {
-                return Path.Combine(CachePath, "images");
-            }
-        }
+        public string ImageCachePath => Path.Combine(CachePath, "images");
 
         /// <summary>
         /// Gets the path to the plugin directory
         /// </summary>
         /// <value>The plugins path.</value>
-        public string PluginsPath
-        {
-            get
-            {
-                return Path.Combine(ProgramDataPath, "plugins");
-            }
-        }
+        public string PluginsPath => Path.Combine(ProgramDataPath, "plugins");
 
         /// <summary>
         /// Gets the path to the plugin configurations directory
         /// </summary>
         /// <value>The plugin configurations path.</value>
-        public string PluginConfigurationsPath
-        {
-            get
-            {
-                return Path.Combine(PluginsPath, "configurations");
-            }
-        }
+        public string PluginConfigurationsPath => Path.Combine(PluginsPath, "configurations");
 
         /// <summary>
         /// Gets the path to where temporary update files will be stored
         /// </summary>
         /// <value>The plugin configurations path.</value>
-        public string TempUpdatePath
-        {
-            get
-            {
-                return Path.Combine(ProgramDataPath, "updates");
-            }
-        }
+        public string TempUpdatePath => Path.Combine(ProgramDataPath, "updates");
 
         /// <summary>
         /// The _log directory
@@ -133,10 +103,7 @@ namespace Emby.Server.Implementations.AppBase
 
                 return _logDirectoryPath;
             }
-            set
-            {
-                _logDirectoryPath = value;
-            }
+            set => _logDirectoryPath = value;
         }
 
         /// <summary>
@@ -161,23 +128,14 @@ namespace Emby.Server.Implementations.AppBase
 
                 return _configurationDirectoryPath;
             }
-            set
-            {
-                _configurationDirectoryPath = value;
-            }
+            set => _configurationDirectoryPath = value;
         }
 
         /// <summary>
         /// Gets the path to the system configuration file
         /// </summary>
         /// <value>The system configuration file path.</value>
-        public string SystemConfigurationFilePath
-        {
-            get
-            {
-                return Path.Combine(ConfigurationDirectoryPath, "system.xml");
-            }
-        }
+        public string SystemConfigurationFilePath => Path.Combine(ConfigurationDirectoryPath, "system.xml");
 
         /// <summary>
         /// The _cache directory
@@ -200,22 +158,13 @@ namespace Emby.Server.Implementations.AppBase
 
                 return _cachePath;
             }
-            set
-            {
-                _cachePath = value;
-            }
+            set => _cachePath = value;
         }
 
         /// <summary>
         /// Gets the folder path to the temp directory within the cache folder
         /// </summary>
         /// <value>The temp directory.</value>
-        public string TempDirectory
-        {
-            get
-            {
-                return Path.Combine(CachePath, "temp");
-            }
-        }
+        public string TempDirectory => Path.Combine(CachePath, "temp");
     }
 }

@@ -36,7 +36,7 @@ namespace SocketHttpListener.Net
                 if (pair.StartsWith("version", StringComparison.OrdinalIgnoreCase))
                 {
                     if (cookie != null)
-                        cookie.Version = Int32.Parse(pair.GetValueInternal("=").Trim('"'));
+                        cookie.Version = int.Parse(pair.GetValueInternal("=").Trim('"'));
                 }
                 else if (pair.StartsWith("expires", StringComparison.OrdinalIgnoreCase))
                 {
@@ -58,7 +58,7 @@ namespace SocketHttpListener.Net
                 }
                 else if (pair.StartsWith("max-age", StringComparison.OrdinalIgnoreCase))
                 {
-                    var max = Int32.Parse(pair.GetValueInternal("=").Trim('"'));
+                    var max = int.Parse(pair.GetValueInternal("=").Trim('"'));
                     var expires = DateTime.Now.AddSeconds((double)max);
                     if (cookie != null)
                         cookie.Expires = expires;
@@ -113,7 +113,7 @@ namespace SocketHttpListener.Net
                         cookies.Add(cookie);
 
                     string name;
-                    string val = String.Empty;
+                    string val = string.Empty;
 
                     var pos = pair.IndexOf('=');
                     if (pos == -1)

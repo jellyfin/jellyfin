@@ -82,19 +82,19 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (socket == null)
             {
-                throw new ArgumentNullException("socket");
+                throw new ArgumentNullException(nameof(socket));
             }
             if (string.IsNullOrEmpty(remoteEndPoint))
             {
-                throw new ArgumentNullException("remoteEndPoint");
+                throw new ArgumentNullException(nameof(remoteEndPoint));
             }
             if (jsonSerializer == null)
             {
-                throw new ArgumentNullException("jsonSerializer");
+                throw new ArgumentNullException(nameof(jsonSerializer));
             }
             if (logger == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException(nameof(logger));
             }
 
             Id = Guid.NewGuid();
@@ -148,7 +148,8 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Called when [receive].
         /// </summary>
-        /// <param name="bytes">The bytes.</param>
+        /// <param name="memory">The memory block.</param>
+        /// <param name="length">The length of the memory block.</param>
         private void OnReceiveInternal(Memory<byte> memory, int length)
         {
             LastActivityDate = DateTime.UtcNow;
@@ -219,7 +220,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (message == null)
             {
-                throw new ArgumentNullException("message");
+                throw new ArgumentNullException(nameof(message));
             }
 
             var json = _jsonSerializer.SerializeToString(message);
@@ -237,7 +238,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (buffer == null)
             {
-                throw new ArgumentNullException("buffer");
+                throw new ArgumentNullException(nameof(buffer));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -249,7 +250,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (string.IsNullOrEmpty(text))
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -261,10 +262,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// Gets the state.
         /// </summary>
         /// <value>The state.</value>
-        public WebSocketState State
-        {
-            get { return _socket.State; }
-        }
+        public WebSocketState State => _socket.State;
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.

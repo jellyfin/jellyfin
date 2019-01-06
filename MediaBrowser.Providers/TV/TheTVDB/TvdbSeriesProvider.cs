@@ -195,7 +195,7 @@ namespace MediaBrowser.Providers.TV
         {
             if (string.IsNullOrWhiteSpace(seriesId))
             {
-                throw new ArgumentNullException("seriesId");
+                throw new ArgumentNullException(nameof(seriesId));
             }
 
             if (!string.Equals(idType, "tvdb", StringComparison.OrdinalIgnoreCase))
@@ -222,7 +222,7 @@ namespace MediaBrowser.Providers.TV
 
             if (string.IsNullOrWhiteSpace(seriesId))
             {
-                throw new ArgumentNullException("seriesId");
+                throw new ArgumentNullException(nameof(seriesId));
             }
 
             var url = string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, NormalizeLanguage(preferredMetadataLanguage));
@@ -272,7 +272,7 @@ namespace MediaBrowser.Providers.TV
 
         private async Task<string> GetSeriesByRemoteId(string id, string idType, string language, CancellationToken cancellationToken)
         {
-            String url;
+            string url;
             if (string.Equals(idType, MetadataProviders.Zap2It.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 url = string.Format(GetSeriesByZap2ItId, id, NormalizeLanguage(language));

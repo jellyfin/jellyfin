@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -147,13 +147,7 @@ namespace Emby.Server.Implementations.Library
         /// Gets the library items cache.
         /// </summary>
         /// <value>The library items cache.</value>
-        private ConcurrentDictionary<Guid, BaseItem> LibraryItemsCache
-        {
-            get
-            {
-                return _libraryItemsCache;
-            }
-        }
+        private ConcurrentDictionary<Guid, BaseItem> LibraryItemsCache => _libraryItemsCache;
 
         private readonly IFileSystem _fileSystem;
 
@@ -188,7 +182,6 @@ namespace Emby.Server.Implementations.Library
         /// Adds the parts.
         /// </summary>
         /// <param name="rules">The rules.</param>
-        /// <param name="pluginFolders">The plugin folders.</param>
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
@@ -277,7 +270,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
             if (item is IItemByName)
             {
@@ -317,7 +310,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
 
             var parent = item.GetOwner() ?? item.GetParent();
@@ -329,7 +322,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
 
             if (item.SourceType == SourceType.Channel)
@@ -449,7 +442,7 @@ namespace Emby.Server.Implementations.Library
             ReportItemRemoved(item, parent);
         }
 
-        private IEnumerable<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
+        private static IEnumerable<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
         {
             var list = new List<string>
             {
@@ -502,11 +495,11 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             if (key.StartsWith(ConfigurationManager.ApplicationPaths.ProgramDataPath))
@@ -542,7 +535,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (fileInfo == null)
             {
-                throw new ArgumentNullException("fileInfo");
+                throw new ArgumentNullException(nameof(fileInfo));
             }
 
             var fullPath = fileInfo.FullName;
@@ -823,7 +816,7 @@ namespace Emby.Server.Implementations.Library
 
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             //_logger.LogInformation("FindByPath {0}", path);
@@ -921,7 +914,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (value <= 0)
             {
-                throw new ArgumentOutOfRangeException("Years less than or equal to 0 are invalid.");
+                throw new ArgumentOutOfRangeException(nameof(value),"Years less than or equal to 0 are invalid.");
             }
 
             var name = value.ToString(CultureInfo.InvariantCulture);
@@ -1249,7 +1242,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (id.Equals(Guid.Empty))
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             BaseItem item;
@@ -1828,7 +1821,7 @@ namespace Emby.Server.Implementations.Library
         /// Creates the item.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="parent">The parent item.</param>
         /// <returns>Task.</returns>
         public void CreateItem(BaseItem item, BaseItem parent)
         {
@@ -2023,7 +2016,7 @@ namespace Emby.Server.Implementations.Library
             return GetCollectionFoldersInternal(item, allUserRootChildren);
         }
 
-        private List<Folder> GetCollectionFoldersInternal(BaseItem item, List<Folder> allUserRootChildren)
+        private static List<Folder> GetCollectionFoldersInternal(BaseItem item, List<Folder> allUserRootChildren)
         {
             return allUserRootChildren
                 .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path, StringComparer.OrdinalIgnoreCase))
@@ -2247,7 +2240,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (parent == null)
             {
-                throw new ArgumentNullException("parent");
+                throw new ArgumentNullException(nameof(parent));
             }
 
             var name = parent.Name;
@@ -2313,7 +2306,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             var parentIdString = parentId.Equals(Guid.Empty) ? null : parentId.ToString("N");
@@ -2708,15 +2701,15 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
             if (string.IsNullOrWhiteSpace(from))
             {
-                throw new ArgumentNullException("from");
+                throw new ArgumentNullException(nameof(from));
             }
             if (string.IsNullOrWhiteSpace(to))
             {
-                throw new ArgumentNullException("to");
+                throw new ArgumentNullException(nameof(to));
             }
 
             from = from.Trim();
@@ -2864,7 +2857,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             name = _fileSystem.GetValidFilename(name);
@@ -2937,7 +2930,7 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
-        private bool ValidateNetworkPath(string path)
+        private static bool ValidateNetworkPath(string path)
         {
             //if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             //{
@@ -2962,14 +2955,14 @@ namespace Emby.Server.Implementations.Library
         {
             if (pathInfo == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(pathInfo));
             }
 
             var path = pathInfo.Path;
 
             if (string.IsNullOrWhiteSpace(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             if (!_fileSystem.DirectoryExists(path))
@@ -3017,7 +3010,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (pathInfo == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(pathInfo));
             }
 
             if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !ValidateNetworkPath(pathInfo.NetworkPath))
@@ -3075,7 +3068,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
@@ -3116,7 +3109,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             var removeList = new List<NameValuePair>();
@@ -3148,7 +3141,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrEmpty(mediaPath))
             {
-                throw new ArgumentNullException("mediaPath");
+                throw new ArgumentNullException(nameof(mediaPath));
             }
 
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;

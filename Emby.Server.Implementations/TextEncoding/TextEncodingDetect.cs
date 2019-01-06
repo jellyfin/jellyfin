@@ -61,10 +61,7 @@
         /// </summary>
         public bool NullSuggestsBinary
         {
-            set
-            {
-                _nullSuggestsBinary = value;
-            }
+            set => _nullSuggestsBinary = value;
         }
 
         public double Utf16ExpectedNullPercent

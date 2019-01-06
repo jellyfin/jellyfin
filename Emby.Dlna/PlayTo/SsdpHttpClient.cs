@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Emby.Dlna.Common;
 using System;
@@ -47,7 +47,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private string NormalizeServiceUrl(string baseUrl, string serviceUrl)
+        private static string NormalizeServiceUrl(string baseUrl, string serviceUrl)
         {
             // If it's already a complete url, don't stick anything onto the front of it
             if (serviceUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))

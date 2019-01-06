@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Emby.Drawing")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Emby.Drawing")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCompany("Jellyfin Project")]
+[assembly: AssemblyProduct("Jellyfin: The Free Software Media System")]
+[assembly: AssemblyCopyright("Copyright ©  2019 Jellyfin Contributors. Code released under the GNU General Public License Version 2")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

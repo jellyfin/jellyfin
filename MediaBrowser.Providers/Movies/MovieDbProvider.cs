@@ -215,7 +215,7 @@ namespace MediaBrowser.Providers.Movies
         {
             if (string.IsNullOrEmpty(tmdbId))
             {
-                throw new ArgumentNullException("tmdbId");
+                throw new ArgumentNullException(nameof(tmdbId));
             }
 
             var path = GetDataFilePath(tmdbId, language);
@@ -238,7 +238,7 @@ namespace MediaBrowser.Providers.Movies
         {
             if (string.IsNullOrEmpty(tmdbId))
             {
-                throw new ArgumentNullException("tmdbId");
+                throw new ArgumentNullException(nameof(tmdbId));
             }
 
             var path = GetMovieDataPath(_configurationManager.ApplicationPaths, tmdbId);

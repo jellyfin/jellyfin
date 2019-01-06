@@ -1,4 +1,4 @@
-﻿using Emby.Common.Implementations.Serialization;
+using Emby.Common.Implementations.Serialization;
 using Emby.Drawing;
 using Emby.Photos;
 using Emby.Dlna;
@@ -132,13 +132,7 @@ namespace Emby.Server.Implementations
         /// Gets or sets a value indicating whether this instance can self update.
         /// </summary>
         /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
-        public virtual bool CanSelfUpdate
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public virtual bool CanSelfUpdate => false;
 
         public virtual bool CanLaunchWebBrowser
         {
@@ -245,10 +239,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public virtual string OperatingSystemDisplayName
-        {
-            get { return EnvironmentInfo.OperatingSystemName; }
-        }
+        public virtual string OperatingSystemDisplayName => EnvironmentInfo.OperatingSystemName;
 
         /// <summary>
         /// The container
@@ -261,10 +252,7 @@ namespace Emby.Server.Implementations
         /// Gets the server configuration manager.
         /// </summary>
         /// <value>The server configuration manager.</value>
-        public IServerConfigurationManager ServerConfigurationManager
-        {
-            get { return (IServerConfigurationManager)ConfigurationManager; }
-        }
+        public IServerConfigurationManager ServerConfigurationManager => (IServerConfigurationManager)ConfigurationManager;
 
         /// <summary>
         /// Gets the configuration manager.
@@ -453,13 +441,7 @@ namespace Emby.Server.Implementations
         /// Gets the current application version
         /// </summary>
         /// <value>The application version.</value>
-        public Version ApplicationVersion
-        {
-            get
-            {
-                return _version ?? (_version = typeof(ApplicationHost).Assembly.GetName().Version);
-            }
-        }
+        public Version ApplicationVersion => _version ?? (_version = typeof(ApplicationHost).Assembly.GetName().Version);
 
         private DeviceId _deviceId;
         public string SystemId
@@ -479,15 +461,9 @@ namespace Emby.Server.Implementations
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get
-            {
-                return "Emby Server";
-            }
-        }
+        public string Name => "Emby Server";
 
-        private Tuple<Assembly, string> GetAssembly(Type type)
+        private static Tuple<Assembly, string> GetAssembly(Type type)
         {
             var assembly = type.GetTypeInfo().Assembly;
             string path = null;
@@ -513,7 +489,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Creates the instance safe.
         /// </summary>
-        /// <param name="type">The type.</param>
+        /// <param name="typeInfo">The type information.</param>
         /// <returns>System.Object.</returns>
         protected object CreateInstanceSafe(Tuple<Type, string> typeInfo)
         {
@@ -1004,13 +980,7 @@ namespace Emby.Server.Implementations
             return s => JsvReader.GetParseFn(propertyType)(s);
         }
 
-        public virtual string PackageRuntime
-        {
-            get
-            {
-                return "netcore";
-            }
-        }
+        public virtual string PackageRuntime => "netcore";
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths, EnvironmentInfo.EnvironmentInfo environmentInfo)
         {
@@ -1049,7 +1019,7 @@ namespace Emby.Server.Implementations
             return name + "/" + ApplicationVersion;
         }
 
-        private string FormatAttribute(string str)
+        private static string FormatAttribute(string str)
         {
             var arr = str.ToCharArray();
 
@@ -1066,13 +1036,7 @@ namespace Emby.Server.Implementations
             return result;
         }
 
-        protected virtual bool SupportsDualModeSockets
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected virtual bool SupportsDualModeSockets => true;
 
         private X509Certificate GetCertificate(CertificateInfo info)
         {
@@ -1927,18 +1891,9 @@ namespace Emby.Server.Implementations
             };
         }
 
-        public bool EnableHttps
-        {
-            get
-            {
-                return SupportsHttps && ServerConfigurationManager.Configuration.EnableHttps;
-            }
-        }
+        public bool EnableHttps => SupportsHttps && ServerConfigurationManager.Configuration.EnableHttps;
 
-        public bool SupportsHttps
-        {
-            get { return Certificate != null || ServerConfigurationManager.Configuration.IsBehindProxy; }
-        }
+        public bool SupportsHttps => Certificate != null || ServerConfigurationManager.Configuration.IsBehindProxy;
 
         public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken)
         {
@@ -2132,15 +2087,10 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public string FriendlyName
-        {
-            get
-            {
-                return string.IsNullOrEmpty(ServerConfigurationManager.Configuration.ServerName)
-                    ? Environment.MachineName
-                    : ServerConfigurationManager.Configuration.ServerName;
-            }
-        }
+        public string FriendlyName =>
+            string.IsNullOrEmpty(ServerConfigurationManager.Configuration.ServerName)
+                ? Environment.MachineName
+                : ServerConfigurationManager.Configuration.ServerName;
 
         public int HttpPort { get; private set; }
 
@@ -2177,7 +2127,7 @@ namespace Emby.Server.Implementations
         private bool _hasUpdateAvailable;
         public bool HasUpdateAvailable
         {
-            get { return _hasUpdateAvailable; }
+            get => _hasUpdateAvailable;
             set
             {
                 var fireEvent = value && !_hasUpdateAvailable;

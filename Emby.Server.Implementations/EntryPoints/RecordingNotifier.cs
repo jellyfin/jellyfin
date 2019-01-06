@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Controller.Library;
@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (ObjectDisposedException)
             {
-
+                // TODO Log exception or Investigate and properly fix.
             }
             catch (Exception ex)
             {

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Library;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -24,6 +24,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Initializes a new instance of the <see cref="PeopleValidationTask" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
+        /// <param name="appHost">The server application host</param>
         public PeopleValidationTask(ILibraryManager libraryManager, IServerApplicationHost appHost)
         {
             _libraryManager = libraryManager;
@@ -46,10 +47,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             };
         }
 
-        public string Key
-        {
-            get { return "RefreshPeople"; }
-        }
+        public string Key => "RefreshPeople";
 
         /// <summary>
         /// Returns the task to be executed
@@ -66,30 +64,18 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Gets the name of the task
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return "Refresh people"; }
-        }
+        public string Name => "Refresh people";
 
         /// <summary>
         /// Gets the description.
         /// </summary>
         /// <value>The description.</value>
-        public string Description
-        {
-            get { return "Updates metadata for actors and directors in your media library."; }
-        }
+        public string Description => "Updates metadata for actors and directors in your media library.";
 
         /// <summary>
         /// Gets the category.
         /// </summary>
         /// <value>The category.</value>
-        public string Category
-        {
-            get
-            {
-                return "Library";
-            }
-        }
+        public string Category => "Library";
     }
 }
