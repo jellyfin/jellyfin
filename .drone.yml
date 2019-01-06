@@ -1,32 +1,12 @@
 kind: pipeline
-name: build:debian
+name: build
 
 steps:
 - name: submodules
   image: docker:git
   commands:
     - git submodule update --init --recursive
-- name: build:debian
-  image: plugins/docker
-  group: build
-  settings:
-    repo: jellyfin/jellyfin
-    dry_run: true
-    dockerfile: Dockerfile.debian_package
-
-
----
-kind: pipeline
-name: build:docker
-
-steps:
-- name: submodules
-  image: docker:git
+- name: build
+  image: microsoft/dotnet:2-sdk
   commands:
-    - git submodule update --init --recursive
-- name: build:docker
-  image: plugins/docker
-  group: build
-  settings:
-    repo: jellyfin/jellyfin
-    dry_run: true
+    - dotnet publish --configuration release --output /release

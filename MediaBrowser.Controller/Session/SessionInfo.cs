@@ -22,9 +22,9 @@ namespace MediaBrowser.Controller.Session
             _sessionManager = sessionManager;
             _logger = logger;
 
-            AdditionalUsers = new SessionUserInfo[] { };
+            AdditionalUsers = Array.Empty<SessionUserInfo>();
             PlayState = new PlayerStateInfo();
-            SessionControllers = new ISessionController[] { };
+            SessionControllers = Array.Empty<ISessionController>();
         }
 
         public PlayerStateInfo PlayState { get; set; }
@@ -49,7 +49,7 @@ namespace MediaBrowser.Controller.Session
             {
                 if (Capabilities == null)
                 {
-                    return new string[] {};
+                    return Array.Empty<string>();
                 }
                 return Capabilities.PlayableMediaTypes;
             }
@@ -363,7 +363,7 @@ namespace MediaBrowser.Controller.Session
             StopAutomaticProgress();
 
             var controllers = SessionControllers.ToList();
-            SessionControllers = new ISessionController[] { };
+            SessionControllers = Array.Empty<ISessionController>();
 
             foreach (var controller in controllers)
             {

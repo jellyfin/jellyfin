@@ -2,7 +2,6 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -135,7 +134,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="user">The user.</param>
         private void OnUserUpdated(User user)
         {
-            EventHelper.FireEventIfNotNull(UserUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
+            UserUpdated?.Invoke(this, new GenericEventArgs<User> { Argument = user });
         }
         #endregion
 
@@ -150,7 +149,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="user">The user.</param>
         private void OnUserDeleted(User user)
         {
-            EventHelper.FireEventIfNotNull(UserDeleted, this, new GenericEventArgs<User> { Argument = user }, _logger);
+            UserDeleted?.Invoke(this, new GenericEventArgs<User> { Argument = user });
         }
         #endregion
 
@@ -471,10 +470,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (fireLockout)
                 {
-                    if (UserLockedOut != null)
-                    {
-                        EventHelper.FireEventIfNotNull(UserLockedOut, this, new GenericEventArgs<User>(user), _logger);
-                    }
+                    UserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
                 }
             }
         }
@@ -820,7 +816,7 @@ namespace Emby.Server.Implementations.Library
 
             UpdateUser(user);
 
-            EventHelper.FireEventIfNotNull(UserPasswordChanged, this, new GenericEventArgs<User>(user), _logger);
+            UserPasswordChanged?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
         public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
@@ -844,7 +840,7 @@ namespace Emby.Server.Implementations.Library
 
             UpdateUser(user);
 
-            EventHelper.FireEventIfNotNull(UserPasswordChanged, this, new GenericEventArgs<User>(user), _logger);
+            UserPasswordChanged?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
         /// <summary>
@@ -1088,7 +1084,7 @@ namespace Emby.Server.Implementations.Library
 
             if (fireEvent)
             {
-                EventHelper.FireEventIfNotNull(UserPolicyUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
+                UserPolicyUpdated?.Invoke(this, new GenericEventArgs<User> { Argument = user });
             }
         }
 
@@ -1183,7 +1179,7 @@ namespace Emby.Server.Implementations.Library
 
             if (fireEvent)
             {
-                EventHelper.FireEventIfNotNull(UserConfigurationUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
+                UserConfigurationUpdated?.Invoke(this, new GenericEventArgs<User> { Argument = user });
             }
         }
     }

@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
@@ -60,7 +59,7 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="plugin">The plugin.</param>
         private void OnPluginUninstalled(IPlugin plugin)
         {
-            EventHelper.FireEventIfNotNull(PluginUninstalled, this, new GenericEventArgs<IPlugin> { Argument = plugin }, _logger);
+            PluginUninstalled?.Invoke(this, new GenericEventArgs<IPlugin> { Argument = plugin });
         }
         #endregion
 
@@ -78,7 +77,7 @@ namespace Emby.Server.Implementations.Updates
         {
             _logger.LogInformation("Plugin updated: {0} {1} {2}", newVersion.name, newVersion.versionStr ?? string.Empty, newVersion.classification);
 
-            EventHelper.FireEventIfNotNull(PluginUpdated, this, new GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> { Argument = new Tuple<IPlugin, PackageVersionInfo>(plugin, newVersion) }, _logger);
+            PluginUpdated?.Invoke(this, new GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> { Argument = new Tuple<IPlugin, PackageVersionInfo>(plugin, newVersion) });
 
             _applicationHost.NotifyPendingRestart();
         }
@@ -97,7 +96,7 @@ namespace Emby.Server.Implementations.Updates
         {
             _logger.LogInformation("New plugin installed: {0} {1} {2}", package.name, package.versionStr ?? string.Empty, package.classification);
 
-            EventHelper.FireEventIfNotNull(PluginInstalled, this, new GenericEventArgs<PackageVersionInfo> { Argument = package }, _logger);
+            PluginInstalled?.Invoke(this, new GenericEventArgs<PackageVersionInfo> { Argument = package });
 
             _applicationHost.NotifyPendingRestart();
         }
@@ -469,7 +468,7 @@ namespace Emby.Server.Implementations.Updates
                 PackageVersionInfo = package
             };
 
-            EventHelper.FireEventIfNotNull(PackageInstalling, this, installationEventArgs, _logger);
+            PackageInstalling?.Invoke(this, installationEventArgs);
 
             try
             {
@@ -482,7 +481,7 @@ namespace Emby.Server.Implementations.Updates
 
                 CompletedInstallationsInternal.Add(installationInfo);
 
-                EventHelper.FireEventIfNotNull(PackageInstallationCompleted, this, installationEventArgs, _logger);
+                PackageInstallationCompleted?.Invoke(this, installationEventArgs);
             }
             catch (OperationCanceledException)
             {
@@ -493,7 +492,7 @@ namespace Emby.Server.Implementations.Updates
 
                 _logger.LogInformation("Package installation cancelled: {0} {1}", package.name, package.versionStr);
 
-                EventHelper.FireEventIfNotNull(PackageInstallationCancelled, this, installationEventArgs, _logger);
+                PackageInstallationCancelled?.Invoke(this, installationEventArgs);
 
                 throw;
             }
@@ -506,12 +505,11 @@ namespace Emby.Server.Implementations.Updates
                     CurrentInstallations.Remove(tuple);
                 }
 
-                EventHelper.FireEventIfNotNull(PackageInstallationFailed, this, new InstallationFailedEventArgs
+                PackageInstallationFailed?.Invoke(this, new InstallationFailedEventArgs
                 {
                     InstallationInfo = installationInfo,
                     Exception = ex
-
-                }, _logger);
+                });
 
                 throw;
             }
@@ -549,13 +547,13 @@ namespace Emby.Server.Implementations.Updates
             // Do plugin-specific processing
             if (isPlugin)
             {
-                if (plugin != null)
+                if (plugin == null)
                 {
-                    OnPluginUpdated(plugin, package);
+                    OnPluginInstalled(package);
                 }
                 else
                 {
-                    OnPluginInstalled(package);
+                    OnPluginUpdated(plugin, package);
                 }
             }
         }

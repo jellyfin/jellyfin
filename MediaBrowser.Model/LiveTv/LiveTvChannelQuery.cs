@@ -98,7 +98,7 @@ namespace MediaBrowser.Model.LiveTv
         public LiveTvChannelQuery()
         {
             EnableUserData = true;
-            SortBy = new string[] {};
+            SortBy = Array.Empty<string>();
         }
     }
 }

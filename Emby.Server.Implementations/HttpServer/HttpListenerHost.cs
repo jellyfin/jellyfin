@@ -8,7 +8,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,17 +15,12 @@ using Emby.Server.Implementations.Services;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Controller;
-using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
 using System.Net.Sockets;
 using Emby.Server.Implementations.Net;
-using MediaBrowser.Common.Events;
 using MediaBrowser.Model.Events;
 
 namespace Emby.Server.Implementations.HttpServer
@@ -184,7 +178,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (WebSocketConnected != null)
             {
-                EventHelper.FireEventIfNotNull(WebSocketConnected, this, new GenericEventArgs<IWebSocketConnection>(connection), _logger);
+                WebSocketConnected?.Invoke(this, new GenericEventArgs<IWebSocketConnection>(connection));
             }
         }
 

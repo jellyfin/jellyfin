@@ -6,7 +6,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\SharedVersion.cs"/>
+    <Compile Include="..\SharedVersion.cs" />
   </ItemGroup>
 
   <PropertyGroup>

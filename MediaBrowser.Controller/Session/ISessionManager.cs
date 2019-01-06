@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Threading;

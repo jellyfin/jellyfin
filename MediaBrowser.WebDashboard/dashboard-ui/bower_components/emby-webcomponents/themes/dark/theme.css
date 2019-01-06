@@ -1,6 +1,13 @@
+.skinHeader,
 html {
     color: #ddd;
     color: rgba(255, 255, 255, .8)
+}
+
+.wizardStartForm,
+.ui-corner-all,
+.ui-shadow {
+  background-color: #1f1f1f
 }
 
 .emby-collapsible-button {

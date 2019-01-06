@@ -136,19 +136,15 @@ namespace Emby.Common.Implementations.Serialization
             return ServiceStack.Text.JsonSerializer.DeserializeFromStream<T>(stream);
         }
 
-        public async Task<T> DeserializeFromStreamAsync<T>(Stream stream)
+        public Task<T> DeserializeFromStreamAsync<T>(Stream stream)
         {
             if (stream == null)
             {
                 throw new ArgumentNullException("stream");
             }
 
-            using (var reader = new StreamReader(stream))
-            {
-                var json = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                return ServiceStack.Text.JsonSerializer.DeserializeFromString<T>(json);
-            }
+            return ServiceStack.Text.JsonSerializer.DeserializeFromStreamAsync<T>(stream);
         }
 
         /// <summary>

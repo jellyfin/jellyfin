@@ -2,14 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Extensions;
 using Microsoft.Extensions.Logging;
@@ -133,7 +128,7 @@ namespace Emby.Server.Implementations.IO
             Logger.LogDebug("Timer stopped.");
 
             DisposeTimer();
-            EventHelper.FireEventIfNotNull(Completed, this, EventArgs.Empty, Logger);
+            Completed?.Invoke(this, EventArgs.Empty);
 
             try
             {

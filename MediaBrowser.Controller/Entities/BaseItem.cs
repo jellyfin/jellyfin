@@ -35,24 +35,24 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public abstract class BaseItem : IHasProviderIds, IHasLookupInfo<ItemLookupInfo>
     {
-        protected static MetadataFields[] EmptyMetadataFieldsArray = new MetadataFields[] { };
-        protected static MediaUrl[] EmptyMediaUrlArray = new MediaUrl[] { };
-        protected static ItemImageInfo[] EmptyItemImageInfoArray = new ItemImageInfo[] { };
-        public static readonly LinkedChild[] EmptyLinkedChildArray = new LinkedChild[] { };
+        protected static MetadataFields[] EmptyMetadataFieldsArray = Array.Empty<MetadataFields>();
+        protected static MediaUrl[] EmptyMediaUrlArray = Array.Empty<MediaUrl>();
+        protected static ItemImageInfo[] EmptyItemImageInfoArray = Array.Empty<ItemImageInfo>();
+        public static readonly LinkedChild[] EmptyLinkedChildArray = Array.Empty<LinkedChild>();
 
         protected BaseItem()
         {
-            ThemeSongIds = new Guid[] {};
-            ThemeVideoIds = new Guid[] {};
-            Tags = new string[] {};
-            Genres = new string[] {};
-            Studios = new string[] {};
+            ThemeSongIds = Array.Empty<Guid>();
+            ThemeVideoIds = Array.Empty<Guid>();
+            Tags = Array.Empty<string>();
+            Genres = Array.Empty<string>();
+            Studios = Array.Empty<string>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             LockedFields = EmptyMetadataFieldsArray;
             ImageInfos = EmptyItemImageInfoArray;
-            ProductionLocations = new string[] {};
-            RemoteTrailers = new MediaUrl[] { };
-            ExtraIds = new Guid[] {};
+            ProductionLocations = Array.Empty<string>();
+            RemoteTrailers = Array.Empty<MediaUrl>();
+            ExtraIds = Array.Empty<Guid>();
         }
 
         public static readonly char[] SlugReplaceChars = { '?', '/', '&' };
@@ -62,7 +62,6 @@ namespace MediaBrowser.Controller.Entities
         /// The supported image extensions
         /// </summary>
         public static readonly string[] SupportedImageExtensions = { ".png", ".jpg", ".jpeg", ".tbn", ".gif" };
-        public static readonly List<string> SupportedImageExtensionsList = SupportedImageExtensions.ToList();
 
         /// <summary>
         /// The trailer folder name
@@ -2895,6 +2894,10 @@ namespace MediaBrowser.Controller.Entities
             return ThemeVideoIds.Select(LibraryManager.GetItemById).Where(i => i.ExtraType.Equals(Model.Entities.ExtraType.ThemeVideo)).OrderBy(i => i.SortName);
         }
 
+        /// <summary>
+        /// Gets or sets the remote trailers.
+        /// </summary>
+        /// <value>The remote trailers.</value>
         public MediaUrl[] RemoteTrailers { get; set; }
 
         public IEnumerable<BaseItem> GetExtras()
@@ -2913,21 +2916,24 @@ namespace MediaBrowser.Controller.Entities
         }
 
         public virtual bool IsHD { 
-            get{ 
+            get
+            {
                 return Height >= 720;
-            } 
+            }
         }
         public bool IsShortcut{ get; set;}
         public string ShortcutPath{ get; set;}
         public int Width { get; set; }
         public int Height { get; set; }
         public Guid[] ExtraIds { get; set; }
-        public virtual long GetRunTimeTicksForPlayState() {
+        public virtual long GetRunTimeTicksForPlayState()
+        {
             return RunTimeTicks ?? 0;
         }
         // what does this do?
         public static ExtraType[] DisplayExtraTypes = new[] {Model.Entities.ExtraType.ThemeSong, Model.Entities.ExtraType.ThemeVideo };
-        public virtual bool SupportsExternalTransfer {
+        public virtual bool SupportsExternalTransfer
+        {
             get {
                 return false;
             }

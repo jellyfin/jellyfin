@@ -78,7 +78,7 @@ namespace MediaBrowser.Model.Users
         public UserPolicy()
         {
             EnableContentDeletion = true;
-            EnableContentDeletionFromFolders = new string[] { };
+            EnableContentDeletionFromFolders = Array.Empty<string>();
 
             EnableSyncTranscoding = true;
             EnableMediaConversion = true;
@@ -97,20 +97,20 @@ namespace MediaBrowser.Model.Users
 
             EnableSharedDeviceControl = true;
 
-            BlockedTags = new string[] { };
-            BlockUnratedItems = new UnratedItem[] { };
+            BlockedTags = Array.Empty<string>();
+            BlockUnratedItems = Array.Empty<UnratedItem>();
 
             EnableUserPreferenceAccess = true;
 
-            AccessSchedules = new AccessSchedule[] { };
+            AccessSchedules = Array.Empty<AccessSchedule>();
 
             EnableAllChannels = true;
-            EnabledChannels = new string[] { };
+            EnabledChannels = Array.Empty<string>();
 
             EnableAllFolders = true;
-            EnabledFolders = new string[] { };
+            EnabledFolders = Array.Empty<string>();
 
-            EnabledDevices = new string[] { };
+            EnabledDevices = Array.Empty<string>();
             EnableAllDevices = true;
 
             EnableContentDownloading = true;

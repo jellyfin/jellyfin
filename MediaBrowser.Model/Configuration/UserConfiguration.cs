@@ -57,10 +57,10 @@ namespace MediaBrowser.Model.Configuration
             HidePlayedInLatest = true;
             PlayDefaultAudioTrack = true;
 
-            LatestItemsExcludes = new string[] {};
-            OrderedViews = new string[] {};
-            MyMediaExcludes = new string[] {};
-            GroupedFolders = new string[] {};
+            LatestItemsExcludes = Array.Empty<string>();
+            OrderedViews = Array.Empty<string>();
+            MyMediaExcludes = Array.Empty<string>();
+            GroupedFolders = Array.Empty<string>();
         }
     }
 }

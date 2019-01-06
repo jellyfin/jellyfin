@@ -1,6 +1,6 @@
 define(function() {
     "use strict";
-    var addRedirectPrevention = null != self.dashboardVersion && self.Dashboard && !self.Dashboard.isConnectMode();
+    var addRedirectPrevention = null != self.dashboardVersion && self.Dashboard && !self.AppInfo.isNativeApp;
     return {
         load: function(url, req, load, config) {
             -1 === url.indexOf("://") && (url = config.baseUrl + url), config.urlArgs && (url += config.urlArgs(url, url)), addRedirectPrevention && (-1 === url.indexOf("?") ? url += "?" : url += "&", url += "r=0");

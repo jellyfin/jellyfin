@@ -1,46 +1,33 @@
 ﻿using System;
 using System.IO;
 using MediaBrowser.Model.System;
+using System.Runtime.InteropServices;
 
 namespace Emby.Server.Implementations.EnvironmentInfo
 {
+    // TODO: Rework @bond
     public class EnvironmentInfo : IEnvironmentInfo
     {
-        private Architecture? _customArchitecture;
-        private MediaBrowser.Model.System.OperatingSystem? _customOperatingSystem;
-
-        public virtual MediaBrowser.Model.System.OperatingSystem OperatingSystem
+        public EnvironmentInfo(MediaBrowser.Model.System.OperatingSystem operatingSystem)
         {
-            get
-            {
-                if (_customOperatingSystem.HasValue)
-                {
-                    return _customOperatingSystem.Value;
-                }
-
-                switch (Environment.OSVersion.Platform)
-                {
-                    case PlatformID.MacOSX:
-                        return MediaBrowser.Model.System.OperatingSystem.OSX;
-                    case PlatformID.Win32NT:
-                        return MediaBrowser.Model.System.OperatingSystem.Windows;
-                    case PlatformID.Unix:
-                        return MediaBrowser.Model.System.OperatingSystem.Linux;
-                }
-
-                return MediaBrowser.Model.System.OperatingSystem.Windows;
-            }
-            set
-            {
-                _customOperatingSystem = value;
-            }
+            OperatingSystem = operatingSystem;
         }
+
+        public MediaBrowser.Model.System.OperatingSystem OperatingSystem { get; private set; }
 
         public string OperatingSystemName
         {
             get
             {
-                return Environment.OSVersion.Platform.ToString();
+                switch (OperatingSystem)
+                {
+                    case MediaBrowser.Model.System.OperatingSystem.Android: return "Android";
+                    case MediaBrowser.Model.System.OperatingSystem.BSD: return "BSD";
+                    case MediaBrowser.Model.System.OperatingSystem.Linux: return "Linux";
+                    case MediaBrowser.Model.System.OperatingSystem.OSX: return "macOS";
+                    case MediaBrowser.Model.System.OperatingSystem.Windows: return "Windows";
+                    default: throw new Exception($"Unknown OS {OperatingSystem}");
+                }
             }
         }
 
@@ -60,22 +47,7 @@ namespace Emby.Server.Implementations.EnvironmentInfo
             }
         }
 
-        public Architecture SystemArchitecture
-        {
-            get
-            {
-                if (_customArchitecture.HasValue)
-                {
-                    return _customArchitecture.Value;
-                }
-
-                return Environment.Is64BitOperatingSystem ? MediaBrowser.Model.System.Architecture.X64 : MediaBrowser.Model.System.Architecture.X86;
-            }
-            set
-            {
-                _customArchitecture = value;
-            }
-        }
+        public Architecture SystemArchitecture { get { return RuntimeInformation.OSArchitecture; } }
 
         public string GetEnvironmentVariable(string name)
         {

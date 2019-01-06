@@ -57,9 +57,9 @@ namespace MediaBrowser.Model.Search
             IncludePeople = true;
             IncludeStudios = true;
 
-            MediaTypes = new string[] {};
-            IncludeItemTypes = new string[] {};
-            ExcludeItemTypes = new string[] {};
+            MediaTypes = Array.Empty<string>();
+            IncludeItemTypes = Array.Empty<string>();
+            ExcludeItemTypes = Array.Empty<string>();
         }
     }
 }
