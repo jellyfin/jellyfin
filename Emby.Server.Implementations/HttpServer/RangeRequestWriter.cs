@@ -40,8 +40,6 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public List<Cookie> Cookies { get; private set; }
-
         /// <summary>
         /// Additional HTTP Headers
         /// </summary>
@@ -75,7 +73,6 @@ namespace Emby.Server.Implementations.HttpServer
             Headers["Accept-Ranges"] = "bytes";
             StatusCode = HttpStatusCode.PartialContent;
 
-            Cookies = new List<Cookie>();
             SetRangeValues(contentLength);
         }
 
@@ -223,7 +220,5 @@ namespace Emby.Server.Implementations.HttpServer
             get { return (HttpStatusCode)Status; }
             set { Status = (int)value; }
         }
-
-        public string StatusDescription { get; set; }
     }
 }

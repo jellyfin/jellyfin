@@ -412,8 +412,10 @@ namespace Emby.Server.Implementations.HttpServer
                     serializer.WriteObject(xw, from);
                     xw.Flush();
                     ms.Seek(0, SeekOrigin.Begin);
-                    var reader = new StreamReader(ms);
-                    return reader.ReadToEnd();
+                    using (var reader = new StreamReader(ms))
+                    {
+                        return reader.ReadToEnd();
+                    }
                 }
             }
         }
@@ -425,7 +427,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             responseHeaders["ETag"] = string.Format("\"{0}\"", cacheKeyString);
 
-            var noCache = (requestContext.Headers.Get("Cache-Control") ?? string.Empty).IndexOf("no-cache", StringComparison.OrdinalIgnoreCase) != -1;
+            bool noCache = (requestContext.Headers.Get("Cache-Control") ?? string.Empty).IndexOf("no-cache", StringComparison.OrdinalIgnoreCase) != -1;
 
             if (!noCache)
             {
@@ -463,8 +465,7 @@ namespace Emby.Server.Implementations.HttpServer
             });
         }
 
-        public Task<object> GetStaticFileResult(IRequest requestContext,
-            StaticFileResultOptions options)
+        public Task<object> GetStaticFileResult(IRequest requestContext, StaticFileResultOptions options)
         {
             var path = options.Path;
             var fileShare = options.FileShare;
@@ -699,36 +700,26 @@ namespace Emby.Server.Implementations.HttpServer
 
             var ifModifiedSinceHeader = requestContext.Headers.Get("If-Modified-Since");
 
-            if (!string.IsNullOrEmpty(ifModifiedSinceHeader))
+            if (!string.IsNullOrEmpty(ifModifiedSinceHeader)
+                && DateTime.TryParse(ifModifiedSinceHeader, out DateTime ifModifiedSince)
+                && IsNotModified(ifModifiedSince.ToUniversalTime(), cacheDuration, lastDateModified))
             {
-                DateTime ifModifiedSince;
-
-                if (DateTime.TryParse(ifModifiedSinceHeader, out ifModifiedSince))
-                {
-                    if (IsNotModified(ifModifiedSince.ToUniversalTime(), cacheDuration, lastDateModified))
-                    {
-                        return true;
-                    }
-                }
+                return true;
             }
 
             var ifNoneMatchHeader = requestContext.Headers.Get("If-None-Match");
 
-            var hasCacheKey = !cacheKey.Equals(Guid.Empty);
+            bool hasCacheKey = !cacheKey.Equals(Guid.Empty);
 
             // Validate If-None-Match
-            if ((hasCacheKey || !string.IsNullOrEmpty(ifNoneMatchHeader)))
+            if ((hasCacheKey && !string.IsNullOrEmpty(ifNoneMatchHeader)))
             {
-                Guid ifNoneMatch;
-
                 ifNoneMatchHeader = (ifNoneMatchHeader ?? string.Empty).Trim('\"');
 
-                if (Guid.TryParse(ifNoneMatchHeader, out ifNoneMatch))
+                if (Guid.TryParse(ifNoneMatchHeader, out Guid ifNoneMatch)
+                    && cacheKey.Equals(ifNoneMatch))
                 {
-                    if (hasCacheKey && cacheKey.Equals(ifNoneMatch))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
