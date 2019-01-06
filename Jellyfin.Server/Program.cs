@@ -46,6 +46,8 @@ namespace Jellyfin.Server
             }
 
             ServerApplicationPaths appPaths = createApplicationPaths(options);
+            // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
+            Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
             await createLogger(appPaths);
             _loggerFactory = new SerilogLoggerFactory();
             _logger = _loggerFactory.CreateLogger("Main");
@@ -138,23 +140,8 @@ namespace Jellyfin.Server
                 }
                 else
                 {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        configDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    }
-                    else
-                    {
-                        // $XDG_CONFIG_HOME defines the base directory relative to which user specific configuration files should be stored.
-                        configDir = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
-                        // If $XDG_CONFIG_HOME is either not set or empty, $HOME/.config should be used.
-                        if (string.IsNullOrEmpty(configDir))
-                        {
-                            configDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
-                        }
-                    }
-                    configDir = Path.Combine(configDir, "jellyfin");
-                    // Ensure the dir exists
-                    Directory.CreateDirectory(configDir);
+                    // Let BaseApplicationPaths set up the default value
+                    configDir = null;
                 }
             }
 
@@ -167,12 +154,9 @@ namespace Jellyfin.Server
                 }
                 else
                 {
-                    logDir = Path.Combine(programDataPath, "logs");
-                    // Ensure the dir exists
-                    Directory.CreateDirectory(logDir);
+                    // Let BaseApplicationPaths set up the default value
+                    logDir = null;
                 }
-                // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
-                Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", logDir);
             }
 
             string appPath = AppContext.BaseDirectory;
