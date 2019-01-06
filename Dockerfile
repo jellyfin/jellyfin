@@ -19,6 +19,4 @@ RUN apt update \
  && curl ${FFMPEG_URL} | tar Jxf - -C /usr/bin --wildcards --strip-components=1 ffmpeg*/ffmpeg ffmpeg*/ffprobe \
  && apt remove -y xz-utils
 
-ENTRYPOINT if [ -n "$PUID$PGUID" ]; \
-    then echo "PUID/PGID are deprecated. Use Docker user param." >&2; exit 1; \
-    else dotnet /jellyfin/jellyfin.dll -programdata /config; fi
+ENTRYPOINT dotnet /jellyfin/jellyfin.dll -programdata /config
