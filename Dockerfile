@@ -21,4 +21,4 @@ RUN apt update \
 
 ENTRYPOINT if [ -n "$PUID$PGUID" ]; \
     then echo "PUID/PGID are deprecated. Use Docker user param." >&2; exit 1; \
-    else dotnet /jellyfin/jellyfin.dll -programdata /config; fi
+    else dotnet /jellyfin/jellyfin.dll -programdata /config -configdir /config/config; fi

@@ -14,4 +14,4 @@ EXPOSE 8096
 RUN apt update \
  && apt install -y ffmpeg
 VOLUME /config /media
-ENTRYPOINT dotnet /jellyfin/jellyfin.dll -programdata /config
+ENTRYPOINT dotnet /jellyfin/jellyfin.dll -programdata /config -configdir /config/config
