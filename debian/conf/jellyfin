@@ -15,8 +15,10 @@
 # General options
 #
 
-# Data directory
-JELLYFIN_DATA="/var/lib/jellyfin"
+# Program directories
+JELLYFIN_DATA_DIRECTORY="/var/lib/jellyfin"
+JELLYFIN_CONFIG_DIRECTORY="/etc/jellyfin"
+JELLYFIN_LOG_DIRECTORY="/var/log/jellyfin"
 # Restart script for in-app server control
 JELLYFIN_RESTART_SCRIPT="/usr/lib/jellyfin/restart.sh"
 # Additional options for the binary
@@ -29,4 +31,4 @@ JELLYFIN_ADD_OPTS=""
 # Application username
 JELLYFIN_USER="jellyfin"
 # Full application command
-JELLYFIN_ARGS="-programdata $JELLYFIN_DATA -restartpath $JELLYFIN_RESTART_SCRIPT $JELLYFIN_ADD_OPTS"
+JELLYFIN_ARGS="-programdata $JELLYFIN_DATA_DIRECTORY -configdir $JELLYFIN_CONFIG_DIRECTORY -logdir $JELLYFIN_LOG_DIRECTORY -restartpath $JELLYFIN_RESTART_SCRIPT $JELLYFIN_ADD_OPTS"

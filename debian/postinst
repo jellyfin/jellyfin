@@ -2,7 +2,6 @@
 set -e
 
 NAME=jellyfin
-CONF_FILE=/etc/${NAME}.conf
 DEFAULT_FILE=/etc/default/${NAME}
 
 # Source Jellyfin default configuration
@@ -10,13 +9,10 @@ if [[ -f $DEFAULT_FILE ]]; then
   . $DEFAULT_FILE
 fi
 
-# Source Jellyfin user configuration overrides
-if [[ -f $CONF_FILE ]]; then
-  . $CONF_FILE
-fi
-
-# Data directory where Jellyfin database, cache and logs are stored
-PROGRAMDATA=${JELLYFIN_DATA-/var/lib/$NAME}
+# Data directories for program data (cache, db), configs, and logs
+PROGRAMDATA=${JELLYFIN_DATA_DIRECTORY-/var/lib/$NAME}
+CONFIGDATA=${JELLYFIN_CONFIG_DIRECTORY-/etc/$NAME}
+LOGDATA=${JELLYFIN_LOG_DIRECTORY-/var/log/$NAME}
 
 case "$1" in
   configure)
@@ -34,8 +30,18 @@ case "$1" in
       mkdir $PROGRAMDATA
       chown -R jellyfin:jellyfin $PROGRAMDATA
     fi
+    # ensure $JELLYFIN_CONFIG_DIRECTORY has appropriate permissions
+    if [[ -n $JELLYFIN_CONFIG_DIRECTORY && ! -d $JELLYFIN_CONFIG_DIRECTORY ]]; then
+      mkdir $JELLYFIN_CONFIG_DIRECTORY
+      chown -R jellyfin:jellyfin $JELLYFIN_CONFIG_DIRECTORY
+    fi
+    # ensure $JELLYFIN_LOG_DIRECTORY has appropriate permissions
+    if [[ -n $JELLYFIN_LOG_DIRECTORY && ! -d $JELLYFIN_LOG_DIRECTORY ]]; then
+      mkdir $JELLYFIN_LOG_DIRECTORY
+      chown -R jellyfin:jellyfin $JELLYFIN_LOG_DIRECTORY
+    fi
 
-    chmod +x ${JELLYFIN_DIR}/restart.sh > /dev/null 2>&1 || true
+    chmod +x /usr/lib/jellyfin/restart.sh > /dev/null 2>&1 || true
 
     # Install jellyfin symlink into /usr/bin
     ln -sf /usr/lib/jellyfin/bin/jellyfin /usr/bin/jellyfin
