@@ -24,12 +24,6 @@ namespace MediaBrowser.Controller
 
         Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Gets a value indicating whether [supports automatic run at startup].
-        /// </summary>
-        /// <value><c>true</c> if [supports automatic run at startup]; otherwise, <c>false</c>.</value>
-        bool SupportsAutoRunAtStartup { get; }
-
         bool CanLaunchWebBrowser { get; }
 
         /// <summary>
