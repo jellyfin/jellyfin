@@ -1,1 +1,5 @@
 .git
+.dockerignore
+Dockerfile
+CONTRIBUTORS.md
+README.md

@@ -160,9 +160,9 @@ namespace Emby.Server.Implementations.Library
                 list.Add(source);
             }
 
-            foreach (var source in list)
+            if (user != null)
             {
-                if (user != null)
+                foreach (var source in list)
                 {
                     if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
                     {

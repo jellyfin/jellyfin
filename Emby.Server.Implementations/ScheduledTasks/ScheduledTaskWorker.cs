@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Events;
@@ -465,11 +464,10 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             CurrentProgress = e;
 
-            EventHelper.FireEventIfNotNull(TaskProgress, this, new GenericEventArgs<double>
+            TaskProgress?.Invoke(this, new GenericEventArgs<double>
             {
                 Argument = e
-
-            }, Logger);
+            });
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Events;
 using Microsoft.Extensions.Logging;
@@ -30,7 +29,7 @@ namespace Emby.Server.Implementations.Activity
 
             _repo.Create(entry);
 
-            EventHelper.FireEventIfNotNull(EntryCreated, this, new GenericEventArgs<ActivityLogEntry>(entry), _logger);
+            EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(entry));
         }
 
         public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit)

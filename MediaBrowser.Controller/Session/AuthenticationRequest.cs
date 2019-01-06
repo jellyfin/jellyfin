@@ -1,6 +1,5 @@
 ﻿using System;
 
-
 namespace MediaBrowser.Controller.Session
 {
     public class AuthenticationRequest
@@ -9,7 +8,6 @@ namespace MediaBrowser.Controller.Session
         public Guid UserId { get; set; }
         public string Password { get; set; }
         public string PasswordSha1 { get; set; }
-        public string PasswordMd5 { get; set; }
         public string App { get; set; }
         public string AppVersion { get; set; }
         public string DeviceId { get; set; }

@@ -14,8 +14,8 @@ namespace MediaBrowser.Model.Connect
 
         public ConnectAuthorization()
         {
-            EnabledLibraries = new string[] {};
-            EnabledChannels = new string[] {};
+            EnabledLibraries = Array.Empty<string>();
+            EnabledChannels = Array.Empty<string>();
         }
     }
 }

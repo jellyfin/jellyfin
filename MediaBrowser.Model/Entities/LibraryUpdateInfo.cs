@@ -51,12 +51,12 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public LibraryUpdateInfo()
         {
-            FoldersAddedTo = new string[] { };
-            FoldersRemovedFrom = new string[] { };
-            ItemsAdded = new string[] { };
-            ItemsRemoved = new string[] { };
-            ItemsUpdated = new string[] { };
-            CollectionFolders = new string[] { };
+            FoldersAddedTo = Array.Empty<string>();
+            FoldersRemovedFrom = Array.Empty<string>();
+            ItemsAdded = Array.Empty<string>();
+            ItemsRemoved = Array.Empty<string>();
+            ItemsUpdated = Array.Empty<string>();
+            CollectionFolders = Array.Empty<string>();
         }
     }
 }

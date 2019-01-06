@@ -86,12 +86,6 @@ namespace MediaBrowser.Common
         IEnumerable<T> GetExports<T>(bool manageLiftime = true);
 
         /// <summary>
-        /// Checks for update.
-        /// </summary>
-        /// <returns>Task{CheckForUpdateResult}.</returns>
-        Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress);
-
-        /// <summary>
         /// Updates the application.
         /// </summary>
         /// <returns>Task.</returns>
@@ -141,7 +135,5 @@ namespace MediaBrowser.Common
         object CreateInstance(Type type);
 
         PackageVersionClass SystemUpdateLevel { get; }
-
-        string GetValue(string name);
     }
 }

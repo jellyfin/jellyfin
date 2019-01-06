@@ -129,13 +129,12 @@ namespace MediaBrowser.Controller.Entities.Audio
             return base.IsSaveLocalMetadataEnabled();
         }
 
-        private readonly Task _cachedTask = Task.FromResult(true);
         protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
             if (IsAccessedByName)
             {
                 // Should never get in here anyway
-                return _cachedTask;
+                return Task.CompletedTask;
             }
 
             return base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService);

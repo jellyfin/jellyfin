@@ -7,8 +7,6 @@ namespace MediaBrowser.Model.MediaInfo
 {
     public class MediaInfo : MediaSourceInfo, IHasProviderIds
     {
-        private static readonly string[] EmptyStringArray = new string[] {};
-
         public ChapterInfo[] Chapters { get; set; }
 
         /// <summary>
@@ -56,12 +54,12 @@ namespace MediaBrowser.Model.MediaInfo
 
         public MediaInfo()
         {
-            Chapters = new ChapterInfo[] { };
-            Artists = new string[] {};
-            AlbumArtists = EmptyStringArray;
-            Studios = new string[] {};
-            Genres = new string[] {};
-            People = new BaseItemPerson[] { };
+            Chapters = Array.Empty<ChapterInfo>();
+            Artists = Array.Empty<string>();
+            AlbumArtists = Array.Empty<string>();
+            Studios = Array.Empty<string>();
+            Genres = Array.Empty<string>();
+            People = Array.Empty<BaseItemPerson>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }

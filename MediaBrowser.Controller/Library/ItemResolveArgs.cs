@@ -2,10 +2,7 @@
 using MediaBrowser.Controller.Providers;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 
@@ -169,6 +166,7 @@ namespace MediaBrowser.Controller.Library
             AdditionalLocations.Add(path);
         }
 
+        // REVIEW: @bond
         /// <summary>
         /// Gets the physical locations.
         /// </summary>
@@ -177,7 +175,7 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                var paths = string.IsNullOrEmpty(Path) ? new string[] { } : new[] { Path };
+                var paths = string.IsNullOrEmpty(Path) ? Array.Empty<string>() : new[] { Path };
                 return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations).ToArray();
             }
         }
@@ -261,7 +259,7 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
-        /// Equalses the specified args.
+        /// Equals the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>

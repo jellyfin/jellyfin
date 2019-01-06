@@ -52,7 +52,7 @@ namespace MediaBrowser.Model.LiveTv
 
         public LiveTvServiceInfo()
         {
-            Tuners = new string[] { };
+            Tuners = Array.Empty<string>();
         }
     }
 }

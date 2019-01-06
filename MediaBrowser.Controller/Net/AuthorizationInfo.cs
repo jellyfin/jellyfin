@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using System;
 
-
 namespace MediaBrowser.Controller.Net
 {
     public class AuthorizationInfo
@@ -12,12 +11,7 @@ namespace MediaBrowser.Controller.Net
         /// <value>The user identifier.</value>
         public Guid UserId { 
             get {
-                if (User == null) {
-                    return Guid.Empty;
-                }
-                else {
-                    return User.Id;
-                }
+                return User == null ? Guid.Empty : User.Id;
             }
         }
                 

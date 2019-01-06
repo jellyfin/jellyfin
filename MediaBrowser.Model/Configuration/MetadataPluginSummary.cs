@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Configuration
@@ -25,8 +25,8 @@ namespace MediaBrowser.Model.Configuration
 
         public MetadataPluginSummary()
         {
-            SupportedImageTypes = new ImageType[] { };
-            Plugins = new MetadataPlugin[] { };
+            SupportedImageTypes = Array.Empty<ImageType>();
+            Plugins = Array.Empty<MetadataPlugin>();
         }
     }
 }

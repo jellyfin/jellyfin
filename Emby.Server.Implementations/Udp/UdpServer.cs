@@ -40,6 +40,7 @@ namespace Emby.Server.Implementations.Udp
             _json = json;
             _socketFactory = socketFactory;
 
+            AddMessageResponder("who is JellyfinServer?", true, RespondToV2Message);
             AddMessageResponder("who is EmbyServer?", true, RespondToV2Message);
             AddMessageResponder("who is MediaBrowserServer_v2?", false, RespondToV2Message);
         }

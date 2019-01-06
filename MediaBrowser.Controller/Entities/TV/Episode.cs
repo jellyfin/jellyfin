@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
@@ -19,13 +19,12 @@ namespace MediaBrowser.Controller.Entities.TV
         public Episode()
         {
             RemoteTrailers = EmptyMediaUrlArray;
-            LocalTrailerIds = new Guid[] {};
-            RemoteTrailerIds = new Guid[] {};
+            LocalTrailerIds = Array.Empty<Guid>();
+            RemoteTrailerIds = Array.Empty<Guid>();
         }
 
         public Guid[] LocalTrailerIds { get; set; }
         public Guid[] RemoteTrailerIds { get; set; }
-        public MediaUrl[] RemoteTrailers { get; set; }
 
         /// <summary>
         /// Gets the season in which it aired.
@@ -112,10 +111,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 return 0;
             }
 
-            double value = 16;
-            value /= 9;
-
-            return value;
+            return 16 / 9;
         }
 
         public override List<string> GetUserDataKeys()

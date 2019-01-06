@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Notifications
 {
@@ -21,8 +20,6 @@ namespace MediaBrowser.Model.Notifications
         /// The corresponding type name used in configuration. Not for display.
         /// </summary>
         public string NotificationType { get; set; }
-
-        public Dictionary<string, string> Variables { get; set; }
 
         public SendToUserType? SendToUserMode { get; set; }
 

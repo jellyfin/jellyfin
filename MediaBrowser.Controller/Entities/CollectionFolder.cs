@@ -31,17 +31,9 @@ namespace MediaBrowser.Controller.Entities
 
         public CollectionFolder()
         {
-            PhysicalLocationsList = new string[] { };
-            PhysicalFolderIds = new Guid[] { };
+            PhysicalLocationsList = Array.Empty<string>();
+            PhysicalFolderIds = Array.Empty<Guid>();
         }
-
-        //public override double? GetDefaultPrimaryImageAspectRatio()
-        //{
-        //    double value = 16;
-        //    value /= 9;
-
-        //    return value;
-        //}
 
         [IgnoreDataMember]
         public override bool SupportsPlayedStatus
@@ -339,7 +331,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         /// <summary>

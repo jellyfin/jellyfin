@@ -6,7 +6,6 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -71,13 +70,27 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly string _originalFFMpegPath;
         private readonly string _originalFFProbePath;
         private readonly int DefaultImageExtractionTimeoutMs;
-        private readonly bool EnableEncoderFontFile;
-
         private readonly IEnvironmentInfo _environmentInfo;
 
-        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, bool hasExternalEncoder, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager, IHttpClient httpClient, IZipClient zipClient, IProcessFactory processFactory,
+        public MediaEncoder(ILogger logger,
+            IJsonSerializer jsonSerializer,
+            string ffMpegPath,
+            string ffProbePath,
+            bool hasExternalEncoder,
+            IServerConfigurationManager configurationManager,
+            IFileSystem fileSystem,
+            ILiveTvManager liveTvManager,
+            IIsoManager isoManager,
+            ILibraryManager libraryManager,
+            IChannelManager channelManager,
+            ISessionManager sessionManager,
+            Func<ISubtitleEncoder> subtitleEncoder,
+            Func<IMediaSourceManager> mediaSourceManager,
+            IHttpClient httpClient,
+            IZipClient zipClient,
+            IProcessFactory processFactory,
             int defaultImageExtractionTimeoutMs,
-            bool enableEncoderFontFile, IEnvironmentInfo environmentInfo)
+            IEnvironmentInfo environmentInfo)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
@@ -94,7 +107,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _zipClient = zipClient;
             _processFactory = processFactory;
             DefaultImageExtractionTimeoutMs = defaultImageExtractionTimeoutMs;
-            EnableEncoderFontFile = enableEncoderFontFile;
             _environmentInfo = environmentInfo;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
@@ -176,18 +188,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 var result = new EncoderValidator(_logger, _processFactory).Validate(FFMpegPath);
 
-                SetAvailableDecoders(result.Item1);
-                SetAvailableEncoders(result.Item2);
-
-                if (EnableEncoderFontFile)
-                {
-                    var directory = FileSystem.GetDirectoryName(FFMpegPath);
-
-                    if (!string.IsNullOrWhiteSpace(directory) && FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.ProgramDataPath, directory))
-                    {
-                        new FontConfigLoader(_httpClient, ConfigurationManager.ApplicationPaths, _logger, _zipClient, FileSystem).DownloadFonts(directory).ConfigureAwait(false);
-                    }
-                }
+                SetAvailableDecoders(result.decoders);
+                SetAvailableEncoders(result.encoders);
             }
         }
 
@@ -402,14 +404,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         private List<string> _encoders = new List<string>();
-        public void SetAvailableEncoders(List<string> list)
+        public void SetAvailableEncoders(IEnumerable<string> list)
         {
             _encoders = list.ToList();
             //_logger.Info("Supported encoders: {0}", string.Join(",", list.ToArray()));
         }
 
         private List<string> _decoders = new List<string>();
-        public void SetAvailableDecoders(List<string> list)
+        public void SetAvailableDecoders(IEnumerable<string> list)
         {
             _decoders = list.ToList();
             //_logger.Info("Supported decoders: {0}", string.Join(",", list.ToArray()));
@@ -550,7 +552,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     //process.BeginErrorReadLine();
 
-                    var result = _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
+                    var result = await _jsonSerializer.DeserializeFromStreamAsync<InternalMediaInfoResult>(process.StandardOutput.BaseStream).ConfigureAwait(false);
 
                     if (result == null || (result.streams == null && result.format == null))
                     {

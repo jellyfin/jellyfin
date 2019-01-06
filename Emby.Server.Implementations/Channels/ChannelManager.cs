@@ -901,8 +901,8 @@ namespace Emby.Server.Implementations.Channels
         private T GetItemById<T>(string idString, string channelName, out bool isNew)
             where T : BaseItem, new()
         {
-            var id = GetIdToHash(idString, channelName).GetMBId(typeof(T));
-
+            var id = _libraryManager.GetNewItemId(GetIdToHash(idString, channelName), typeof(T));
+ 
             T item = null;
 
             try
