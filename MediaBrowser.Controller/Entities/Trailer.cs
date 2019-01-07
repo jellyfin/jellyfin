@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.Entities
         public TrailerType[] TrailerTypes { get; set; }
 
         public override double GetDefaultPrimaryImageAspectRatio()
-            => 2 / 3;
+            => 2.0 / 3;
 
         public override UnratedItem GetBlockUnratedType()
         {
