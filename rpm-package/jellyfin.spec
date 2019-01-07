@@ -62,12 +62,16 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime linux-x64
 %{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/%{name}/LICENSE
 %{__install} -D -m 0644 debian/conf/jellyfin.service.conf %{buildroot}%{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
+%{__install} -D -m 0644 debian/conf/logging.json %{buildroot}%{_sysconfdir}/%{name}/logging.json
 %{__mkdir} -p %{buildroot}%{_bindir}
 tee %{buildroot}%{_bindir}/jellyfin << EOF
 #!/bin/sh
 exec %{_libdir}/%{name}/%{name} \${@}
 EOF
 %{__mkdir} -p %{buildroot}%{_sharedstatedir}/jellyfin
+%{__mkdir} -p %{buildroot}%{_sysconfdir}/%{name}
+%{__mkdir} -p %{buildroot}%{_var}/log/jellyfin
+
 %{__install} -D -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.service
 %{__install} -D -m 0644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
 %{__install} -D -m 0600 %{SOURCE3} %{buildroot}%{_sysconfdir}/sudoers.d/%{name}-sudoers
@@ -90,10 +94,13 @@ EOF
 %attr(755,root,root) %{_datadir}/%{name}/update-db-paths.sh
 %attr(750,root,root) %{_libexecdir}/%{name}/restart.sh
 %attr(644,root,root) %{_prefix}/lib/firewalld/service/%{name}.xml
+%attr(755,jellyfin,jellyfin) %dir %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/sysconfig/%{name}
 %config(noreplace) %attr(600,root,root) %{_sysconfdir}/sudoers.d/%{name}-sudoers
 %config(noreplace) %{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
+%config(noreplace) %attr(644,jellyfin,jellyfin) %{_sysconfdir}/%{name}/logging.json
 %attr(-,jellyfin,jellyfin) %dir %{_sharedstatedir}/jellyfin
+%attr(-,jellyfin,jellyfin) %dir %{_var}/log/jellyfin
 %if 0%{?fedora}
 %license LICENSE
 %else
@@ -117,8 +124,9 @@ exit 0
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
-* Sat Jan 05 2019 Thomas Büttner <thomas@vergesslicher.tech> - 10.0.0-1
+* Mon Jan 07 2019 Thomas Büttner <thomas@vergesslicher.tech> - 10.0.0-1
 - Bump version to 10.0.0
+- Add logging and config directories
 
 * Sat Jan 05 2019 Thomas Büttner <thomas@vergesslicher.tech> - 3.5.2-5
 - Add firewalld service.xml
