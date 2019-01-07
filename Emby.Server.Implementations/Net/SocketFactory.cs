@@ -10,11 +10,11 @@ namespace Emby.Server.Implementations.Net
 {
     public class SocketFactory : ISocketFactory
     {
-        // THIS IS A LINKED FILE - SHARED AMONGST MULTIPLE PLATFORMS	
+        // THIS IS A LINKED FILE - SHARED AMONGST MULTIPLE PLATFORMS
         // Be careful to check any changes compile and work for all platform projects it is shared in.
 
         // Not entirely happy with this. Would have liked to have done something more generic/reusable,
-        // but that wasn't really the point so kept to YAGNI principal for now, even if the 
+        // but that wasn't really the point so kept to YAGNI principal for now, even if the
         // interfaces are a bit ugly, specific and make assumptions.
 
         private readonly ILogger _logger;

@@ -70,7 +70,7 @@ namespace MediaBrowser.Providers.Movies
         {
             return new List<ImageType>
             {
-                ImageType.Primary, 
+                ImageType.Primary,
                 ImageType.Thumb,
                 ImageType.Art,
                 ImageType.Logo,
@@ -270,7 +270,7 @@ namespace MediaBrowser.Providers.Movies
 
             var path = GetFanartJsonPath(id);
 
-			_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
             try
             {
