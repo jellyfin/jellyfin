@@ -2,7 +2,7 @@
 using MediaBrowser.Controller.Configuration;
 using Emby.Dlna.Common;
 using Emby.Dlna.Ssdp;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
@@ -108,7 +108,7 @@ namespace Emby.Dlna.PlayTo
 
         public void Start()
         {
-            _logger.Debug("Dlna Device.Start");
+            _logger.LogDebug("Dlna Device.Start");
             _timer = _timerFactory.Create(TimerCallback, null, 1000, Timeout.Infinite);
         }
 
@@ -140,7 +140,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error updating device volume info for {0}", ex, Properties.Name);
+                _logger.LogError(ex, "Error updating device volume info for {DeviceName}", Properties.Name);
             }
         }
 
@@ -259,7 +259,7 @@ namespace Emby.Dlna.PlayTo
                 return false;
             }
 
-            _logger.Debug("Setting mute");
+            _logger.LogDebug("Setting mute");
             var value = mute ? 1 : 0;
 
             await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, rendererCommands.BuildPost(command, service.ServiceType, value))
@@ -323,7 +323,7 @@ namespace Emby.Dlna.PlayTo
 
             url = url.Replace("&", "&amp;");
 
-            _logger.Debug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", Properties.Name, url, header);
+            _logger.LogDebug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", Properties.Name, url, header);
 
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetAVTransportURI");
             if (command == null)
@@ -507,7 +507,7 @@ namespace Emby.Dlna.PlayTo
                 if (_disposed)
                     return;
 
-                //_logger.ErrorException("Error updating device info for {0}", ex, Properties.Name);
+                _logger.LogError(ex, "Error updating device info for {DeviceName}", Properties.Name);
 
                 _connectFailureCount++;
 
@@ -516,7 +516,7 @@ namespace Emby.Dlna.PlayTo
                     var action = OnDeviceUnavailable;
                     if (action != null)
                     {
-                        _logger.Debug("Disposing device due to loss of connection");
+                        _logger.LogDebug("Disposing device due to loss of connection");
                         action();
                         return;
                     }
@@ -767,7 +767,7 @@ namespace Emby.Dlna.PlayTo
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Unable to parse xml {0}", ex, trackString);
+                    _logger.LogError(ex, "Unable to parse xml {0}", trackString);
                     return new Tuple<bool, uBaseObject>(true, null);
                 }
             }
@@ -887,7 +887,7 @@ namespace Emby.Dlna.PlayTo
             string url = NormalizeUrl(Properties.BaseUrl, avService.ScpdUrl);
 
             var httpClient = new SsdpHttpClient(_httpClient, _config);
-            _logger.Debug("Dlna Device.GetRenderingProtocolAsync");
+            _logger.LogDebug("Dlna Device.GetRenderingProtocolAsync");
             var document = await httpClient.GetDataAsync(url, cancellationToken).ConfigureAwait(false);
 
             rendererCommands = TransportCommands.Create(document);

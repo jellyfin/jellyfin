@@ -8,7 +8,7 @@ using Emby.Dlna.Profiles;
 using Emby.Dlna.Server;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -58,7 +58,7 @@ namespace Emby.Dlna
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error extracting DLNA profiles.", ex);
+                _logger.LogError(ex, "Error extracting DLNA profiles.");
             }
         }
 
@@ -103,7 +103,7 @@ namespace Emby.Dlna
 
             if (profile != null)
             {
-                _logger.Debug("Found matching device profile: {0}", profile.Name);
+                _logger.LogDebug("Found matching device profile: {0}", profile.Name);
             }
             else
             {
@@ -117,6 +117,7 @@ namespace Emby.Dlna
         {
             var builder = new StringBuilder();
 
+            builder.AppendLine("No matching device profile found. The default will need to be used.");
             builder.AppendLine(string.Format("DeviceDescription:{0}", profile.DeviceDescription ?? string.Empty));
             builder.AppendLine(string.Format("FriendlyName:{0}", profile.FriendlyName ?? string.Empty));
             builder.AppendLine(string.Format("Manufacturer:{0}", profile.Manufacturer ?? string.Empty));
@@ -127,7 +128,7 @@ namespace Emby.Dlna
             builder.AppendLine(string.Format("ModelUrl:{0}", profile.ModelUrl ?? string.Empty));
             builder.AppendLine(string.Format("SerialNumber:{0}", profile.SerialNumber ?? string.Empty));
 
-            _logger.LogMultiline("No matching device profile found. The default will need to be used.", LogSeverity.Info, builder);
+            _logger.LogInformation(builder.ToString());
         }
 
         private bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
@@ -197,7 +198,7 @@ namespace Emby.Dlna
             }
             catch (ArgumentException ex)
             {
-                _logger.ErrorException("Error evaluating regex pattern {0}", ex, pattern);
+                _logger.LogError(ex, "Error evaluating regex pattern {Pattern}", pattern);
                 return false;
             }
         }
@@ -216,12 +217,12 @@ namespace Emby.Dlna
 
             if (profile != null)
             {
-                _logger.Debug("Found matching device profile: {0}", profile.Name);
+                _logger.LogDebug("Found matching device profile: {0}", profile.Name);
             }
             else
             {
                 var headerString = string.Join(", ", headers.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray());
-                _logger.Debug("No matching device profile found. {0}", headerString);
+                _logger.LogDebug("No matching device profile found. {0}", headerString);
             }
 
             return profile;
@@ -250,7 +251,7 @@ namespace Emby.Dlna
                         return string.Equals(value, header.Value, StringComparison.OrdinalIgnoreCase);
                     case HeaderMatchType.Substring:
                         var isMatch = value.IndexOf(header.Value, StringComparison.OrdinalIgnoreCase) != -1;
-                        //_logger.Debug("IsMatch-Substring value: {0} testValue: {1} isMatch: {2}", value, header.Value, isMatch);
+                        //_logger.LogDebug("IsMatch-Substring value: {0} testValue: {1} isMatch: {2}", value, header.Value, isMatch);
                         return isMatch;
                     case HeaderMatchType.Regex:
                         return Regex.IsMatch(value, header.Value, RegexOptions.IgnoreCase);
@@ -323,7 +324,7 @@ namespace Emby.Dlna
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error parsing profile file: {0}", ex, path);
+                    _logger.LogError(ex, "Error parsing profile file: {Path}", path);
 
                     return null;
                 }
@@ -530,8 +531,8 @@ namespace Emby.Dlna
             };
         }
     }
-
-    class DlnaProfileEntryPoint /*: IServerEntryPoint*/
+    /*
+    class DlnaProfileEntryPoint : IServerEntryPoint
     {
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
@@ -551,7 +552,7 @@ namespace Emby.Dlna
 
         private void DumpProfiles()
         {
-            var list = new List<DeviceProfile>
+            DeviceProfile[] list = new []
             {
                 new SamsungSmartTvProfile(),
                 new XboxOneProfile(),
@@ -596,5 +597,5 @@ namespace Emby.Dlna
         public void Dispose()
         {
         }
-    }
+    }*/
 }

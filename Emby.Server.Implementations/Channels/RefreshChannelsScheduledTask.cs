@@ -1,8 +1,9 @@
 ﻿using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Tasks;
@@ -54,7 +55,7 @@ namespace Emby.Server.Implementations.Channels
             get { return true; }
         }
 
-        public async Task Execute(System.Threading.CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var manager = (ChannelManager)_channelManager;
 

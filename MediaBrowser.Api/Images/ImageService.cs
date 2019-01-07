@@ -21,6 +21,8 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 
+using Microsoft.Extensions.Logging;
+
 namespace MediaBrowser.Api.Images
 {
     /// <summary>
@@ -360,7 +362,7 @@ namespace MediaBrowser.Api.Images
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error getting image information for {0}", ex, info.Path);
+                Logger.LogError(ex, "Error getting image information for {path}", info.Path);
 
                 return null;
             }
@@ -673,7 +675,7 @@ namespace MediaBrowser.Api.Images
 
         private ImageFormat[] GetClientSupportedFormats()
         {
-            //Logger.Debug("Request types: {0}", string.Join(",", Request.AcceptTypes ?? Array.Empty<string>()));
+            //logger.LogDebug("Request types: {0}", string.Join(",", Request.AcceptTypes ?? Array.Empty<string>()));
             var supportedFormats = (Request.AcceptTypes ?? Array.Empty<string>()).Select(i => i.Split(';')[0]).ToArray();
             var acceptParam = Request.QueryString["accept"];
 

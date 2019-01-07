@@ -7,7 +7,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System.Xml;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
@@ -81,7 +81,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 }
                                 catch (Exception ex)
                                 {
-                                    Logger.ErrorException("Error parsing set node", ex);
+                                    Logger.LogError(ex, "Error parsing set node");
                                 }
                             }
                         }

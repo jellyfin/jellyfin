@@ -12,7 +12,7 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Querying;
 using Emby.Naming.Audio;
 using Emby.Naming.Common;
@@ -351,7 +351,7 @@ namespace Emby.Server.Implementations.Library
 
             if (item is LiveTvProgram)
             {
-                _logger.Debug("Deleting item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                _logger.LogDebug("Deleting item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
                     item.GetType().Name,
                     item.Name ?? "Unknown name",
                     item.Path ?? string.Empty,
@@ -359,7 +359,7 @@ namespace Emby.Server.Implementations.Library
             }
             else
             {
-                _logger.Info("Deleting item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                _logger.LogInformation("Deleting item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
                     item.GetType().Name,
                     item.Name ?? "Unknown name",
                     item.Path ?? string.Empty,
@@ -372,7 +372,7 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var metadataPath in GetMetadataPaths(item, children))
             {
-                _logger.Debug("Deleting path {0}", metadataPath);
+                _logger.LogDebug("Deleting path {0}", metadataPath);
 
                 try
                 {
@@ -384,7 +384,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error deleting {0}", ex, metadataPath);
+                    _logger.LogError(ex, "Error deleting {metadataPath}", metadataPath);
                 }
             }
 
@@ -398,14 +398,13 @@ namespace Emby.Server.Implementations.Library
                 {
                     try
                     {
+                         _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
                         if (fileSystemInfo.IsDirectory)
                         {
-                            _logger.Debug("Deleting path {0}", fileSystemInfo.FullName);
                             _fileSystem.DeleteDirectory(fileSystemInfo.FullName, true);
                         }
                         else
                         {
-                            _logger.Debug("Deleting path {0}", fileSystemInfo.FullName);
                             _fileSystem.DeleteFile(fileSystemInfo.FullName);
                         }
                     }
@@ -489,7 +488,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error in {0} resolving {1}", ex, resolver.GetType().Name, args.Path);
+                _logger.LogError(ex, "Error in {resolver} resolving {path}", resolver.GetType().Name, args.Path);
                 return null;
             }
         }
@@ -587,7 +586,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     if (parent != null && parent.IsPhysicalRoot)
                     {
-                        _logger.ErrorException("Error in GetFilteredFileSystemEntries isPhysicalRoot: {0} IsVf: {1}", ex, isPhysicalRoot, isVf);
+                        _logger.LogError(ex, "Error in GetFilteredFileSystemEntries isPhysicalRoot: {0} IsVf: {1}", isPhysicalRoot, isVf);
 
                         files = new FileSystemMetadata[] { };
                     }
@@ -639,7 +638,7 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var dupe in dupes)
             {
-                _logger.Info("Found duplicate path: {0}", dupe);
+                _logger.LogInformation("Found duplicate path: {0}", dupe);
             }
 
             var newList = list.Except(dupes, StringComparer.OrdinalIgnoreCase).Select(_fileSystem.GetDirectoryInfo).ToList();
@@ -713,7 +712,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error resolving path {0}", ex, f.FullName);
+                    _logger.LogError(ex, "Error resolving path {path}", f.FullName);
                     return null;
                 }
             }).Where(i => i != null);
@@ -735,7 +734,7 @@ namespace Emby.Server.Implementations.Library
             // In case program data folder was moved
             if (!string.Equals(rootFolder.Path, rootFolderPath, StringComparison.Ordinal))
             {
-                _logger.Info("Resetting root folder path to {0}", rootFolderPath);
+                _logger.LogInformation("Resetting root folder path to {0}", rootFolderPath);
                 rootFolder.Path = rootFolderPath;
             }
 
@@ -805,7 +804,7 @@ namespace Emby.Server.Implementations.Library
                         // In case program data folder was moved
                         if (!string.Equals(tmpItem.Path, userRootPath, StringComparison.Ordinal))
                         {
-                            _logger.Info("Resetting user root folder path to {0}", userRootPath);
+                            _logger.LogInformation("Resetting user root folder path to {0}", userRootPath);
                             tmpItem.Path = userRootPath;
                         }
 
@@ -827,7 +826,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException("path");
             }
 
-            //_logger.Info("FindByPath {0}", path);
+            //_logger.LogInformation("FindByPath {0}", path);
 
             var query = new InternalItemsQuery
             {
@@ -1065,11 +1064,11 @@ namespace Emby.Server.Implementations.Library
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             // Start by just validating the children of the root, but go no further
-            await RootFolder.ValidateChildren(new SimpleProgress<double>(), cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: false);
+            await RootFolder.ValidateChildren(new SimpleProgress<double>(), cancellationToken, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), recursive: false);
 
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
-            await GetUserRootFolder().ValidateChildren(new SimpleProgress<double>(), cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: false).ConfigureAwait(false);
+            await GetUserRootFolder().ValidateChildren(new SimpleProgress<double>(), cancellationToken, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), recursive: false).ConfigureAwait(false);
 
             // Quickly scan CollectionFolders for changes
             foreach (var folder in GetUserRootFolder().Children.OfType<Folder>().ToList())
@@ -1080,7 +1079,7 @@ namespace Emby.Server.Implementations.Library
 
         private async Task PerformLibraryValidation(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            _logger.Info("Validating media library");
+            _logger.LogInformation("Validating media library");
 
             await ValidateTopLibraryFolders(cancellationToken).ConfigureAwait(false);
 
@@ -1089,7 +1088,7 @@ namespace Emby.Server.Implementations.Library
             innerProgress.RegisterAction(pct => progress.Report(pct * .96));
 
             // Now validate the entire media library
-            await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: true).ConfigureAwait(false);
+            await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), recursive: true).ConfigureAwait(false);
 
             progress.Report(96);
 
@@ -1135,7 +1134,7 @@ namespace Emby.Server.Implementations.Library
                     progress.Report(innerPercent);
                 });
 
-                _logger.Debug("Running post-scan task {0}", task.GetType().Name);
+                _logger.LogDebug("Running post-scan task {0}", task.GetType().Name);
 
                 try
                 {
@@ -1143,12 +1142,12 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger.Info("Post-scan task cancelled: {0}", task.GetType().Name);
+                    _logger.LogInformation("Post-scan task cancelled: {0}", task.GetType().Name);
                     throw;
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error running postscan task", ex);
+                    _logger.LogError(ex, "Error running postscan task");
                 }
 
                 numComplete++;
@@ -1199,7 +1198,7 @@ namespace Emby.Server.Implementations.Library
                         }
                         catch (Exception ex)
                         {
-                            _logger.ErrorException("Error resolving shortcut file {0}", ex, i);
+                            _logger.LogError(ex, "Error resolving shortcut file {file}", i);
                             return null;
                         }
                     })
@@ -1262,7 +1261,7 @@ namespace Emby.Server.Implementations.Library
 
             item = RetrieveItem(id);
 
-            //_logger.Debug("GetitemById {0}", id);
+            //_logger.LogDebug("GetitemById {0}", id);
 
             if (item != null)
             {
@@ -1440,7 +1439,7 @@ namespace Emby.Server.Implementations.Library
                     return true;
                 }
 
-                //_logger.Debug("Query requires ancestor query due to type: " + i.GetType().Name);
+                //_logger.LogDebug("Query requires ancestor query due to type: " + i.GetType().Name);
                 return false;
 
             }))
@@ -1506,7 +1505,7 @@ namespace Emby.Server.Implementations.Library
                     return true;
                 }
 
-                //_logger.Debug("Query requires ancestor query due to type: " + i.GetType().Name);
+                //_logger.LogDebug("Query requires ancestor query due to type: " + i.GetType().Name);
                 return false;
 
             }))
@@ -1650,7 +1649,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting intros", ex);
+                _logger.LogError(ex, "Error getting intros");
 
                 return new List<IntroInfo>();
             }
@@ -1670,7 +1669,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error getting intro files", ex);
+                    _logger.LogError(ex, "Error getting intro files");
 
                     return new List<string>();
                 }
@@ -1693,7 +1692,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (video == null)
                 {
-                    _logger.Error("Unable to locate item with Id {0}.", info.ItemId.Value);
+                    _logger.LogError("Unable to locate item with Id {ID}.", info.ItemId.Value);
                 }
             }
             else if (!string.IsNullOrEmpty(info.Path))
@@ -1705,7 +1704,7 @@ namespace Emby.Server.Implementations.Library
 
                     if (video == null)
                     {
-                        _logger.Error("Intro resolver returned null for {0}.", info.Path);
+                        _logger.LogError("Intro resolver returned null for {path}.", info.Path);
                     }
                     else
                     {
@@ -1724,12 +1723,12 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error resolving path {0}.", ex, info.Path);
+                    _logger.LogError(ex, "Error resolving path {path}.", info.Path);
                 }
             }
             else
             {
-                _logger.Error("IntroProvider returned an IntroInfo with null Path and ItemId.");
+                _logger.LogError("IntroProvider returned an IntroInfo with null Path and ItemId.");
             }
 
             return video;
@@ -1873,7 +1872,7 @@ namespace Emby.Server.Implementations.Library
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error in ItemAdded event handler", ex);
+                        _logger.LogError(ex, "Error in ItemAdded event handler");
                     }
                 }
             }
@@ -1904,7 +1903,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             //var logName = item.LocationType == LocationType.Remote ? item.Name ?? item.Path : item.Path ?? item.Name;
-            //_logger.Debug("Saving {0} to database.", logName);
+            //_logger.LogDebug("Saving {0} to database.", logName);
 
             ItemRepository.SaveItems(items, cancellationToken);
 
@@ -1929,7 +1928,7 @@ namespace Emby.Server.Implementations.Library
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error in ItemUpdated event handler", ex);
+                        _logger.LogError(ex, "Error in ItemUpdated event handler");
                     }
                 }
             }
@@ -1965,7 +1964,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in ItemRemoved event handler", ex);
+                    _logger.LogError(ex, "Error in ItemRemoved event handler");
                 }
             }
         }
@@ -2176,7 +2175,7 @@ namespace Emby.Server.Implementations.Library
             if (refresh)
             {
                 item.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None);
-                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem), RefreshPriority.Normal);
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), RefreshPriority.Normal);
             }
 
             return item;
@@ -2231,7 +2230,7 @@ namespace Emby.Server.Implementations.Library
 
             if (refresh)
             {
-                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
                 {
                     // Need to force save to increment DateLastSaved
                     ForceSave = true
@@ -2295,7 +2294,7 @@ namespace Emby.Server.Implementations.Library
 
             if (refresh)
             {
-                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
                 {
                     // Need to force save to increment DateLastSaved
                     ForceSave = true
@@ -2369,7 +2368,7 @@ namespace Emby.Server.Implementations.Library
 
             if (refresh)
             {
-                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
                 {
                     // Need to force save to increment DateLastSaved
                     ForceSave = true
@@ -2808,7 +2807,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error getting person", ex);
+                    _logger.LogError(ex, "Error getting person");
                     return null;
                 }
 
@@ -2836,7 +2835,7 @@ namespace Emby.Server.Implementations.Library
             {
                 try
                 {
-                    _logger.Debug("ConvertImageToLocal item {0} - image url: {1}", item.Id, url);
+                    _logger.LogDebug("ConvertImageToLocal item {0} - image url: {1}", item.Id, url);
 
                     await _providerManagerFactory().SaveImage(item, url, image.Type, imageIndex, CancellationToken.None).ConfigureAwait(false);
 

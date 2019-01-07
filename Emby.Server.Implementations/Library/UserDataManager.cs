@@ -1,17 +1,14 @@
-﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
 using System.Globalization;
 
@@ -32,10 +29,10 @@ namespace Emby.Server.Implementations.Library
 
         private Func<IUserManager> _userManager;
 
-        public UserDataManager(ILogManager logManager, IServerConfigurationManager config, Func<IUserManager> userManager)
+        public UserDataManager(ILoggerFactory loggerFactory, IServerConfigurationManager config, Func<IUserManager> userManager)
         {
             _config = config;
-            _logger = logManager.GetLogger(GetType().Name);
+            _logger = loggerFactory.CreateLogger(GetType().Name);
             _userManager = userManager;
         }
 
@@ -77,15 +74,14 @@ namespace Emby.Server.Implementations.Library
             var cacheKey = GetCacheKey(userId, item.Id);
             _userData.AddOrUpdate(cacheKey, userData, (k, v) => userData);
 
-            EventHelper.FireEventIfNotNull(UserDataSaved, this, new UserDataSaveEventArgs
+            UserDataSaved?.Invoke(this, new UserDataSaveEventArgs
             {
                 Keys = keys,
                 UserData = userData,
                 SaveReason = reason,
                 UserId = user.Id,
                 Item = item
-
-            }, _logger);
+            });
         }
 
         /// <summary>

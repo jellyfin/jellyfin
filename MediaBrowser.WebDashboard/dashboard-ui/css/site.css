@@ -74,7 +74,7 @@ div[data-role=page] {
 .padded-bottom-page,
 .page,
 .pageWithAbsoluteTabs .pageTabContent {
-    padding-bottom: 14em !important
+    padding-bottom: 2em !important
 }
 
 .supporterPromotionContainer {

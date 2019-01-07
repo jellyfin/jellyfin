@@ -1,11 +1,10 @@
 ﻿using MediaBrowser.Controller.Providers;
 using System;
 using System.Collections.Generic;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -137,7 +136,7 @@ namespace MediaBrowser.Controller.Entities
             var newPath = GetRebasedPath();
             if (!string.Equals(Path, newPath, StringComparison.Ordinal))
             {
-                Logger.Debug("{0} path has changed from {1} to {2}", GetType().Name, Path, newPath);
+                Logger.LogDebug("{0} path has changed from {1} to {2}", GetType().Name, Path, newPath);
                 return true;
             }
             return base.RequiresRefresh();

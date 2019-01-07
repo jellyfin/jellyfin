@@ -2,7 +2,7 @@
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -119,7 +119,7 @@ namespace Emby.Dlna.Ssdp
                 }
             };
 
-            EventHelper.FireEventIfNotNull(DeviceDiscoveredInternal, this, args, _logger);
+            DeviceDiscoveredInternal?.Invoke(this, args);
         }
 
         private void _DeviceLocator_DeviceUnavailable(object sender, DeviceUnavailableEventArgs e)
@@ -139,7 +139,7 @@ namespace Emby.Dlna.Ssdp
                 }
             };
 
-            EventHelper.FireEventIfNotNull(DeviceLeft, this, args, _logger);
+            DeviceLeft?.Invoke(this, args);
         }
 
         public void Dispose()

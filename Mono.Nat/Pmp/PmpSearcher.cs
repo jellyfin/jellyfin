@@ -37,7 +37,7 @@ using Mono.Nat.Pmp;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System.Linq;
 
 namespace Mono.Nat
@@ -208,7 +208,7 @@ namespace Mono.Nat
                 return;
             int errorcode = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(response, 2));
             if (errorcode != 0)
-                _logger.Debug("Non zero error: {0}", errorcode);
+                _logger.LogDebug("Non zero error: {0}", errorcode);
 
             IPAddress publicIp = new IPAddress(new byte[] { response[8], response[9], response[10], response[11] });
             nextSearch = DateTime.Now.AddMinutes(5);

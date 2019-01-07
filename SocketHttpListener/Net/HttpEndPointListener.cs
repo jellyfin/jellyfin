@@ -8,7 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
@@ -173,7 +173,7 @@ namespace SocketHttpListener.Net
             {
                 HttpEndPointListener epl = (HttpEndPointListener)acceptEventArg.UserToken;
 
-                epl._logger.ErrorException("Error in socket.AcceptAsync", ex);
+                epl._logger.LogError(ex, "Error in socket.AcceptAsync");
             }
         }
 
@@ -204,7 +204,7 @@ namespace SocketHttpListener.Net
 
             if (socketError == SocketError.ConnectionReset)
             {
-                epl._logger.Error("SocketError.ConnectionReset reported. Attempting to re-accept.");
+                epl._logger.LogError("SocketError.ConnectionReset reported. Attempting to re-accept.");
                 return;
             }
 
@@ -223,13 +223,13 @@ namespace SocketHttpListener.Net
             {
                 var remoteEndPointString = accepted.RemoteEndPoint == null ? string.Empty : accepted.RemoteEndPoint.ToString();
                 var localEndPointString = accepted.LocalEndPoint == null ? string.Empty : accepted.LocalEndPoint.ToString();
-                //_logger.Info("HttpEndPointListener Accepting connection from {0} to {1} secure connection requested: {2}", remoteEndPointString, localEndPointString, _secure);
+                //_logger.LogInformation("HttpEndPointListener Accepting connection from {0} to {1} secure connection requested: {2}", remoteEndPointString, localEndPointString, _secure);
 
                 HttpConnection conn = new HttpConnection(epl._logger, accepted, epl, epl._secure, epl._cert, epl._cryptoProvider, epl._streamHelper, epl._textEncoding, epl._fileSystem, epl._environment);
 
                 await conn.Init().ConfigureAwait(false);
 
-                //_logger.Debug("Adding unregistered connection to {0}. Id: {1}", accepted.RemoteEndPoint, connectionId);
+                //_logger.LogDebug("Adding unregistered connection to {0}. Id: {1}", accepted.RemoteEndPoint, connectionId);
                 lock (epl._unregisteredConnections)
                 {
                     epl._unregisteredConnections[conn] = conn;
@@ -238,7 +238,7 @@ namespace SocketHttpListener.Net
             }
             catch (Exception ex)
             {
-                epl._logger.ErrorException("Error in ProcessAccept", ex);
+                epl._logger.LogError(ex, "Error in ProcessAccept");
 
                 TryClose(accepted);
                 epl.Accept();

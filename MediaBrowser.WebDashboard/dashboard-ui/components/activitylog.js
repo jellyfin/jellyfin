@@ -4,7 +4,7 @@ define(["events", "globalize", "dom", "datetime", "userSettings", "serverNotific
     function getEntryHtml(entry, apiClient) {
         var html = "";
         html += '<div class="listItem listItem-border">';
-        var color = "Error" == entry.Severity || "Fatal" == entry.Severity || "Warn" == entry.Severity ? "#cc0000" : "#52B54B";
+        var color = "Error" == entry.Severity || "Fatal" == entry.Severity || "Warn" == entry.Severity ? "#cc0000" : "#00a4dc";
         if (entry.UserId && entry.UserPrimaryImageTag) {
             html += '<i class="listItemIcon md-icon" style="width:2em!important;height:2em!important;padding:0;color:transparent;background-color:' + color + ";background-image:url('" + apiClient.getUserImageUrl(entry.UserId, {
                 type: "Primary",

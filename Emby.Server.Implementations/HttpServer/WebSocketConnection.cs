@@ -1,7 +1,6 @@
 ﻿using System.Text;
-using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -118,7 +117,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         void socket_Closed(object sender, EventArgs e)
         {
-            EventHelper.FireEventIfNotNull(Closed, this, EventArgs.Empty, _logger);
+            Closed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -180,7 +179,7 @@ namespace Emby.Server.Implementations.HttpServer
             if (!message.StartsWith("{", StringComparison.OrdinalIgnoreCase))
             {
                 // This info is useful sometimes but also clogs up the log
-                //_logger.Error("Received web socket message that is not a json structure: " + message);
+                _logger.LogDebug("Received web socket message that is not a json structure: {message}", message);
                 return;
             }
 
@@ -204,7 +203,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error processing web socket message", ex);
+                _logger.LogError(ex, "Error processing web socket message");
             }
         }
 

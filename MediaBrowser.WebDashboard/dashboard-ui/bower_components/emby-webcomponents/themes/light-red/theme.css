@@ -4,6 +4,12 @@ html {
     color: rgba(0, 0, 0, .87)
 }
 
+.wizardStartForm,
+.ui-corner-all,
+.ui-shadow {
+  background-color: #c33
+}
+
 .emby-collapsible-button {
     border-color: #ccc;
     border-color: rgba(0, 0, 0, .158)
@@ -388,11 +394,11 @@ html {
 
 .guide-date-tab-button.emby-tab-button-active,
 .guide-date-tab-button:focus {
-    color: #52B54B
+    color: #00a4dc
 }
 
 .guide-date-tab-button.emby-button-tv:focus {
-    background-color: #52B54B;
+    background-color: #00a4dc;
     color: #fff
 }
 

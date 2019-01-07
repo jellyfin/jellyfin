@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Savers

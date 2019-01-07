@@ -16,7 +16,7 @@ using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
@@ -225,7 +225,7 @@ namespace Emby.Server.Implementations.Dto
                 catch (Exception ex)
                 {
                     // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
+                    _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {itemName}", item.Name);
                 }
             }
 
@@ -547,7 +547,7 @@ namespace Emby.Server.Implementations.Dto
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting {0} image info", ex, type);
+                _logger.LogError(ex, "Error getting {type} image info", type);
                 return null;
             }
         }
@@ -560,7 +560,7 @@ namespace Emby.Server.Implementations.Dto
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting {0} image info for {1}", ex, image.Type, image.Path);
+                _logger.LogError(ex, "Error getting {imageType} image info for {path}", image.Type, image.Path);
                 return null;
             }
         }
@@ -619,7 +619,7 @@ namespace Emby.Server.Implementations.Dto
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error getting person {0}", ex, c);
+                        _logger.LogError(ex, "Error getting person {Name}", c);
                         return null;
                     }
 
@@ -1451,7 +1451,7 @@ namespace Emby.Server.Implementations.Dto
                 }
                 catch (Exception ex)
                 {
-                    //_logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, imageInfo.Path);
+                    _logger.LogError(ex, "Failed to determine primary image aspect ratio for {0}", imageInfo.Path);
                     return null;
                 }
             }
@@ -1464,7 +1464,7 @@ namespace Emby.Server.Implementations.Dto
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in image enhancer: {0}", ex, enhancer.GetType().Name);
+                    _logger.LogError(ex, "Error in image enhancer: {0}", enhancer.GetType().Name);
                 }
             }
 

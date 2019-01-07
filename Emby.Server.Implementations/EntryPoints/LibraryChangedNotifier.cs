@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -331,7 +331,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in GetLibraryUpdateInfo", ex);
+                    _logger.LogError(ex, "Error in GetLibraryUpdateInfo");
                     return;
                 }
 
@@ -346,7 +346,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error sending LibraryChanged message", ex);
+                    _logger.LogError(ex, "Error sending LibraryChanged message");
                 }
             }
         }

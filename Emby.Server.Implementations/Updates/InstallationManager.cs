@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
@@ -16,7 +15,7 @@ using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Controller.Configuration;
@@ -60,7 +59,7 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="plugin">The plugin.</param>
         private void OnPluginUninstalled(IPlugin plugin)
         {
-            EventHelper.FireEventIfNotNull(PluginUninstalled, this, new GenericEventArgs<IPlugin> { Argument = plugin }, _logger);
+            PluginUninstalled?.Invoke(this, new GenericEventArgs<IPlugin> { Argument = plugin });
         }
         #endregion
 
@@ -76,9 +75,9 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="newVersion">The new version.</param>
         private void OnPluginUpdated(IPlugin plugin, PackageVersionInfo newVersion)
         {
-            _logger.Info("Plugin updated: {0} {1} {2}", newVersion.name, newVersion.versionStr ?? string.Empty, newVersion.classification);
+            _logger.LogInformation("Plugin updated: {0} {1} {2}", newVersion.name, newVersion.versionStr ?? string.Empty, newVersion.classification);
 
-            EventHelper.FireEventIfNotNull(PluginUpdated, this, new GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> { Argument = new Tuple<IPlugin, PackageVersionInfo>(plugin, newVersion) }, _logger);
+            PluginUpdated?.Invoke(this, new GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> { Argument = new Tuple<IPlugin, PackageVersionInfo>(plugin, newVersion) });
 
             _applicationHost.NotifyPendingRestart();
         }
@@ -95,9 +94,9 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="package">The package.</param>
         private void OnPluginInstalled(PackageVersionInfo package)
         {
-            _logger.Info("New plugin installed: {0} {1} {2}", package.name, package.versionStr ?? string.Empty, package.classification);
+            _logger.LogInformation("New plugin installed: {0} {1} {2}", package.name, package.versionStr ?? string.Empty, package.classification);
 
-            EventHelper.FireEventIfNotNull(PluginInstalled, this, new GenericEventArgs<PackageVersionInfo> { Argument = package }, _logger);
+            PluginInstalled?.Invoke(this, new GenericEventArgs<PackageVersionInfo> { Argument = package });
 
             _applicationHost.NotifyPendingRestart();
         }
@@ -469,7 +468,7 @@ namespace Emby.Server.Implementations.Updates
                 PackageVersionInfo = package
             };
 
-            EventHelper.FireEventIfNotNull(PackageInstalling, this, installationEventArgs, _logger);
+            PackageInstalling?.Invoke(this, installationEventArgs);
 
             try
             {
@@ -482,7 +481,7 @@ namespace Emby.Server.Implementations.Updates
 
                 CompletedInstallationsInternal.Add(installationInfo);
 
-                EventHelper.FireEventIfNotNull(PackageInstallationCompleted, this, installationEventArgs, _logger);
+                PackageInstallationCompleted?.Invoke(this, installationEventArgs);
             }
             catch (OperationCanceledException)
             {
@@ -491,27 +490,26 @@ namespace Emby.Server.Implementations.Updates
                     CurrentInstallations.Remove(tuple);
                 }
 
-                _logger.Info("Package installation cancelled: {0} {1}", package.name, package.versionStr);
+                _logger.LogInformation("Package installation cancelled: {0} {1}", package.name, package.versionStr);
 
-                EventHelper.FireEventIfNotNull(PackageInstallationCancelled, this, installationEventArgs, _logger);
+                PackageInstallationCancelled?.Invoke(this, installationEventArgs);
 
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Package installation failed", ex);
+                _logger.LogError(ex, "Package installation failed");
 
                 lock (CurrentInstallations)
                 {
                     CurrentInstallations.Remove(tuple);
                 }
 
-                EventHelper.FireEventIfNotNull(PackageInstallationFailed, this, new InstallationFailedEventArgs
+                PackageInstallationFailed?.Invoke(this, new InstallationFailedEventArgs
                 {
                     InstallationInfo = installationInfo,
                     Exception = ex
-
-                }, _logger);
+                });
 
                 throw;
             }
@@ -549,13 +547,13 @@ namespace Emby.Server.Implementations.Updates
             // Do plugin-specific processing
             if (isPlugin)
             {
-                if (plugin != null)
+                if (plugin == null)
                 {
-                    OnPluginUpdated(plugin, package);
+                    OnPluginInstalled(package);
                 }
                 else
                 {
-                    OnPluginInstalled(package);
+                    OnPluginUpdated(plugin, package);
                 }
             }
         }
@@ -610,9 +608,9 @@ namespace Emby.Server.Implementations.Updates
                     _fileSystem.WriteAllText(target + ".ver", package.versionStr);
                 }
             }
-            catch (IOException e)
+            catch (IOException ex)
             {
-                _logger.ErrorException("Error attempting to move file from {0} to {1}", e, tempFile, target);
+                _logger.LogError(ex, "Error attempting to move file from {TempFile} to {TargetFile}", tempFile, target);
                 throw;
             }
 
@@ -620,10 +618,10 @@ namespace Emby.Server.Implementations.Updates
             {
                 _fileSystem.DeleteFile(tempFile);
             }
-            catch (IOException e)
+            catch (IOException ex)
             {
                 // Don't fail because of this
-                _logger.ErrorException("Error deleting temp file {0]", e, tempFile);
+                _logger.LogError(ex, "Error deleting temp file {TempFile}", tempFile);
             }
         }
 
@@ -640,7 +638,7 @@ namespace Emby.Server.Implementations.Updates
             _applicationHost.RemovePlugin(plugin);
 
             var path = plugin.AssemblyFilePath;
-            _logger.Info("Deleting plugin file {0}", path);
+            _logger.LogInformation("Deleting plugin file {0}", path);
 
             // Make this case-insensitive to account for possible incorrect assembly naming
             var file = _fileSystem.GetFilePaths(_fileSystem.GetDirectoryName(path))

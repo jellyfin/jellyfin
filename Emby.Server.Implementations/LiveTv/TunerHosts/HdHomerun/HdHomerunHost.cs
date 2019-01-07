@@ -4,7 +4,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -303,7 +303,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error getting tuner info", ex);
+                    Logger.LogError(ex, "Error getting tuner info");
                 }
             }
 
@@ -581,7 +581,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var profile = streamId.Split('_')[0];
 
-            Logger.Info("GetChannelStream: channel id: {0}. stream id: {1} profile: {2}", channelInfo.Id, streamId, profile);
+            Logger.LogInformation("GetChannelStream: channel id: {0}. stream id: {1} profile: {2}", channelInfo.Id, streamId, profile);
 
             var hdhrId = GetHdHrIdFromChannelId(channelInfo.Id);
 

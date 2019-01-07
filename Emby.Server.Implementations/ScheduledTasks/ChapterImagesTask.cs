@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -44,9 +44,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
         /// </summary>
-        public ChapterImagesTask(ILogManager logManager, ILibraryManager libraryManager, IItemRepository itemRepo, IApplicationPaths appPaths, IEncodingManager encodingManager, IFileSystem fileSystem)
+        public ChapterImagesTask(ILoggerFactory loggerFactory, ILibraryManager libraryManager, IItemRepository itemRepo, IApplicationPaths appPaths, IEncodingManager encodingManager, IFileSystem fileSystem)
         {
-            _logger = logManager.GetLogger(GetType().Name);
+            _logger = loggerFactory.CreateLogger(GetType().Name);
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _appPaths = appPaths;
@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 previouslyFailedImages = new List<string>();
             }
 
-            var directoryService = new DirectoryService(_fileSystem);
+            var directoryService = new DirectoryService(_logger, _fileSystem);
 
             foreach (var video in videos)
             {

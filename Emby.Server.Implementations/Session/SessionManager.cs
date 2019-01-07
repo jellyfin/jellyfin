@@ -15,10 +15,9 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Library;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -248,18 +247,17 @@ namespace Emby.Server.Implementations.Session
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error updating user", ex);
+                        _logger.LogError("Error updating user", ex);
                     }
                 }
             }
 
             if ((activityDate - lastActivityDate).TotalSeconds > 10)
             {
-                EventHelper.FireEventIfNotNull(SessionActivity, this, new SessionEventArgs
+                SessionActivity?.Invoke(this, new SessionEventArgs
                 {
                     SessionInfo = session
-
-                }, _logger);
+                });
             }
 
             return session;
@@ -528,7 +526,7 @@ namespace Emby.Server.Implementations.Session
 
                 foreach (var session in idle)
                 {
-                    _logger.Debug("Session {0} has gone idle while playing", session.Id);
+                    _logger.LogDebug("Session {0} has gone idle while playing", session.Id);
 
                     try
                     {
@@ -543,7 +541,7 @@ namespace Emby.Server.Implementations.Session
                     }
                     catch (Exception ex)
                     {
-                        _logger.Debug("Error calling OnPlaybackStopped", ex);
+                        _logger.LogDebug("Error calling OnPlaybackStopped", ex);
                     }
                 }
 
@@ -693,7 +691,7 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            EventHelper.FireEventIfNotNull(PlaybackProgress, this, new PlaybackProgressEventArgs
+            PlaybackProgress?.Invoke(this, new PlaybackProgressEventArgs
             {
                 Item = libraryItem,
                 Users = users,
@@ -707,8 +705,7 @@ namespace Emby.Server.Implementations.Session
                 PlaySessionId = info.PlaySessionId,
                 IsAutomated = isAutomated,
                 Session = session
-
-            }, _logger);
+            });
 
             if (!isAutomated)
             {
@@ -847,7 +844,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var msString = info.PositionTicks.HasValue ? (info.PositionTicks.Value / 10000).ToString(CultureInfo.InvariantCulture) : "unknown";
 
-                _logger.Info("Playback stopped reported by app {0} {1} playing {2}. Stopped at {3} ms",
+                _logger.LogInformation("Playback stopped reported by app {0} {1} playing {2}. Stopped at {3} ms",
                     session.Client,
                     session.ApplicationVersion,
                     info.Item.Name,
@@ -882,7 +879,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error closing live stream", ex);
+                    _logger.LogError("Error closing live stream", ex);
                 }
             }
 
@@ -1095,7 +1092,7 @@ namespace Emby.Server.Implementations.Session
 
             if (item == null)
             {
-                _logger.Error("A non-existant item Id {0} was passed into TranslateItemForPlayback", id);
+                _logger.LogError("A non-existant item Id {0} was passed into TranslateItemForPlayback", id);
                 return new List<BaseItem>();
             }
 
@@ -1151,7 +1148,7 @@ namespace Emby.Server.Implementations.Session
 
             if (item == null)
             {
-                _logger.Error("A non-existant item Id {0} was passed into TranslateItemForInstantMix", id);
+                _logger.LogError("A non-existant item Id {0} was passed into TranslateItemForInstantMix", id);
                 return new List<BaseItem>();
             }
 
@@ -1222,7 +1219,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in SendRestartRequiredNotification.", ex);
+                    _logger.LogError("Error in SendRestartRequiredNotification.", ex);
                 }
 
             }, cancellationToken)).ToArray();
@@ -1249,7 +1246,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in SendServerShutdownNotification.", ex);
+                    _logger.LogError("Error in SendServerShutdownNotification.", ex);
                 }
 
             }, cancellationToken)).ToArray();
@@ -1266,7 +1263,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            _logger.Debug("Beginning SendServerRestartNotification");
+            _logger.LogDebug("Beginning SendServerRestartNotification");
 
             var sessions = Sessions.ToList();
 
@@ -1278,7 +1275,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in SendServerRestartNotification.", ex);
+                    _logger.LogError("Error in SendServerRestartNotification.", ex);
                 }
 
             }, cancellationToken)).ToArray();
@@ -1399,7 +1396,7 @@ namespace Emby.Server.Implementations.Session
 
                 if (result == null)
                 {
-                    EventHelper.FireEventIfNotNull(AuthenticationFailed, this, new GenericEventArgs<AuthenticationRequest>(request), _logger);
+                    AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
 
                     throw new SecurityException("Invalid user or password entered.");
                 }
@@ -1424,7 +1421,7 @@ namespace Emby.Server.Implementations.Session
                 ServerId = _appHost.SystemId
             };
 
-            EventHelper.FireEventIfNotNull(AuthenticationSucceeded, this, new GenericEventArgs<AuthenticationResult>(returnResult), _logger);
+            AuthenticationSucceeded?.Invoke(this, new GenericEventArgs<AuthenticationResult>(returnResult));
 
             return returnResult;
         }
@@ -1462,7 +1459,7 @@ namespace Emby.Server.Implementations.Session
 
             if (existing != null)
             {
-                _logger.Info("Reissuing access token: " + existing.AccessToken);
+                _logger.LogInformation("Reissuing access token: " + existing.AccessToken);
                 return existing.AccessToken;
             }
 
@@ -1481,7 +1478,7 @@ namespace Emby.Server.Implementations.Session
                 UserName = user.Name
             };
 
-            _logger.Info("Creating new access token for user {0}", user.Id);
+            _logger.LogInformation("Creating new access token for user {0}", user.Id);
             _authRepo.Create(newToken);
 
             return newToken.AccessToken;
@@ -1513,7 +1510,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            _logger.Info("Logging out access token {0}", existing.AccessToken);
+            _logger.LogInformation("Logging out access token {0}", existing.AccessToken);
 
             _authRepo.Delete(existing);
 
@@ -1529,7 +1526,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error reporting session ended", ex);
+                    _logger.LogError("Error reporting session ended", ex);
                 }
             }
         }
@@ -1577,21 +1574,12 @@ namespace Emby.Server.Implementations.Session
         {
             session.Capabilities = capabilities;
 
-            if (!string.IsNullOrEmpty(capabilities.PushToken))
-            {
-                if (string.Equals(capabilities.PushTokenType, "firebase", StringComparison.OrdinalIgnoreCase) && FirebaseSessionController.IsSupported(_appHost))
-                {
-                    EnsureFirebaseController(session, capabilities.PushToken);
-                }
-            }
-
             if (saveCapabilities)
             {
-                EventHelper.FireEventIfNotNull(CapabilitiesChanged, this, new SessionEventArgs
+                CapabilitiesChanged?.Invoke(this, new SessionEventArgs
                 {
                     SessionInfo = session
-
-                }, _logger);
+                });
 
                 try
                 {
@@ -1599,14 +1587,9 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error saving device capabilities", ex);
+                    _logger.LogError("Error saving device capabilities", ex);
                 }
             }
-        }
-
-        private void EnsureFirebaseController(SessionInfo session, string token)
-        {
-            session.EnsureController<FirebaseSessionController>(s => new FirebaseSessionController(_httpClient, _appHost, _jsonSerializer, s, token, this));
         }
 
         private ClientCapabilities GetSavedCapabilities(string deviceId)
@@ -1692,7 +1675,7 @@ namespace Emby.Server.Implementations.Session
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting {0} image info", ex, type);
+                _logger.LogError("Error getting {0} image info", ex, type);
                 return null;
             }
         }
@@ -1818,7 +1801,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error sending message", ex);
+                    _logger.LogError("Error sending message", ex);
                 }
 
             }, cancellationToken)).ToArray();
@@ -1840,7 +1823,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error sending message", ex);
+                    _logger.LogError("Error sending message", ex);
                 }
 
             }, cancellationToken)).ToArray();
@@ -1862,7 +1845,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error sending message", ex);
+                    _logger.LogError("Error sending message", ex);
                 }
 
             }, cancellationToken)).ToArray();
@@ -1886,7 +1869,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error sending message", ex);
+                    _logger.LogError("Error sending message", ex);
                 }
 
             }, cancellationToken)).ToArray();

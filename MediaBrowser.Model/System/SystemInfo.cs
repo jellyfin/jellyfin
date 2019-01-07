@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Updates;
-using System.Collections.Generic;
-using System;
+using System.Runtime.InteropServices;
 
 namespace MediaBrowser.Model.System
 {
@@ -118,12 +117,6 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
         public bool HasUpdateAvailable { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [supports automatic run at startup].
-        /// </summary>
-        /// <value><c>true</c> if [supports automatic run at startup]; otherwise, <c>false</c>.</value>
-        public bool SupportsAutoRunAtStartup { get; set; }
 
         public string EncoderLocationType { get; set; }
 

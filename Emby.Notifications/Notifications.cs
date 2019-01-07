@@ -8,7 +8,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Tasks;
 using System;
@@ -137,7 +137,7 @@ namespace Emby.Notifications
 
             var notification = new NotificationRequest
             {
-                Description = "Please see emby.media for details.",
+                Description = "Please see jellyfin.media for details.",
                 NotificationType = type,
                 Name = _localization.GetLocalizedString("NewVersionIsAvailable")
             };
@@ -273,7 +273,7 @@ namespace Emby.Notifications
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error sending notification", ex);
+                _logger.LogError(ex, "Error sending notification");
             }
         }
 

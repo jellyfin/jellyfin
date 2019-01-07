@@ -8,7 +8,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.XbmcMetadata.Configuration;
 using System;
 using System.Collections.Generic;
@@ -230,7 +230,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
             catch (Exception ex)
             {
-                Logger.Error("Error setting hidden attribute on {0} - {1}", path, ex.Message);
+                Logger.LogError(ex, "Error setting hidden attribute on {path}", path);
             }
         }
 
@@ -283,7 +283,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 }
                 catch (XmlException ex)
                 {
-                    Logger.ErrorException("Error reading existng nfo", ex);
+                    Logger.LogError(ex, "Error reading existing nfo");
                 }
 
                 writer.WriteEndElement();
@@ -353,7 +353,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (!string.IsNullOrEmpty(stream.Language))
                 {
-                    // https://emby.media/community/index.php?/topic/49071-nfo-not-generated-on-actualize-or-rescan-or-identify
+                    // http://web.archive.org/web/20181230211547/https://emby.media/community/index.php?/topic/49071-nfo-not-generated-on-actualize-or-rescan-or-identify
+                    // Web Archive version of link since it's not really explained in the thread.
                     writer.WriteElementString("language", RemoveInvalidXMLChars(stream.Language));
                 }
 
@@ -774,9 +775,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
                         try
                         {
                             var tagName = GetTagForProviderKey(providerKey);
-                            //Logger.Debug("Verifying custom provider tagname {0}", tagName);
+                            //logger.LogDebug("Verifying custom provider tagname {0}", tagName);
                             XmlConvert.VerifyName(tagName);
-                            //Logger.Debug("Saving custom provider tagname {0}", tagName);
+                            //logger.LogDebug("Saving custom provider tagname {0}", tagName);
 
                             writer.WriteElementString(GetTagForProviderKey(providerKey), providerId);
                         }
@@ -1000,7 +1001,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                         }
                         catch (Exception ex)
                         {
-                            logger.ErrorException("Error reading existing xml tags from {0}.", ex, path);
+                            logger.LogError(ex, "Error reading existing xml tags from {path}.", path);
                             return;
                         }
 

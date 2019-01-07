@@ -1,21 +1,18 @@
 ﻿using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.Serialization;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Collections;
 
 namespace MediaBrowser.Controller.Entities
 {
     public class UserView : Folder, IHasCollectionType
     {
         public string ViewType { get; set; }
-        public Guid DisplayParentId { get; set; }
+        public new Guid DisplayParentId { get; set; }
 
         public Guid? UserId { get; set; }
 
@@ -67,14 +64,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
         }
-
-        //public override double? GetDefaultPrimaryImageAspectRatio()
-        //{
-        //    double value = 16;
-        //    value /= 9;
-
-        //    return value;
-        //}
 
         public override int GetChildCount(User user)
         {
@@ -161,8 +150,8 @@ namespace MediaBrowser.Controller.Entities
 
         public static bool IsEligibleForGrouping(Folder folder)
         {
-            var collectionFolder = folder as ICollectionFolder;
-            return collectionFolder != null && IsEligibleForGrouping(collectionFolder.CollectionType);
+            return folder is ICollectionFolder collectionFolder
+                    && IsEligibleForGrouping(collectionFolder.CollectionType);
         }
 
         private static string[] ViewTypesEligibleForGrouping = new string[]
@@ -195,7 +184,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected override Task ValidateChildrenInternal(IProgress<double> progress, System.Threading.CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, Providers.MetadataRefreshOptions refreshOptions, Providers.IDirectoryService directoryService)
         {
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         [IgnoreDataMember]

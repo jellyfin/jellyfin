@@ -7,7 +7,7 @@ using System.Threading;
 using Emby.Server.Implementations.Data;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Security;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Querying;
 using SQLitePCL.pretty;
 using MediaBrowser.Model.Extensions;
@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Security
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error migrating authentication database", ex);
+                Logger.LogError(ex, "Error migrating authentication database");
             }
         }
 

@@ -8,10 +8,10 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Session;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -207,7 +207,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            return new string[] { };
+            return Array.Empty<string>();
         }
 
         public string GetRequestedLevel(string codec)
@@ -317,10 +317,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             _logger = logger;
             TranscodingType = jobType;
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            PlayableStreamFileNames = new string[] { };
-            SupportedAudioCodecs = new string[] { };
-            SupportedVideoCodecs = new string[] { };
-            SupportedSubtitleCodecs = new string[] { };
+            PlayableStreamFileNames = Array.Empty<string>();
+            SupportedAudioCodecs = Array.Empty<string>();
+            SupportedVideoCodecs = Array.Empty<string>();
+            SupportedSubtitleCodecs = Array.Empty<string>();
         }
 
         public bool IsSegmentedLiveStream
@@ -727,7 +727,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return count;
         }
-
         protected void DisposeIsoMount()
         {
             if (IsoMount != null)
@@ -738,7 +737,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error disposing iso mount", ex);
+                    _logger.LogError(ex, "Error disposing iso mount");
                 }
 
                 IsoMount = null;

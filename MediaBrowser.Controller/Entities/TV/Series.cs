@@ -23,9 +23,9 @@ namespace MediaBrowser.Controller.Entities.TV
         public Series()
         {
             RemoteTrailers = EmptyMediaUrlArray;
-            LocalTrailerIds = new Guid[] {};
-            RemoteTrailerIds = new Guid[] {};
-            AirDays = new DayOfWeek[] { };
+            LocalTrailerIds = Array.Empty<Guid>();
+            RemoteTrailerIds = Array.Empty<Guid>();
+            AirDays = Array.Empty<DayOfWeek>();
         }
 
         public DayOfWeek[] AirDays { get; set; }
@@ -72,8 +72,6 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public Guid[] LocalTrailerIds { get; set; }
         public Guid[] RemoteTrailerIds { get; set; }
-
-        public MediaUrl[] RemoteTrailers { get; set; }
 
         /// <summary>
         /// airdate, dvd or absolute

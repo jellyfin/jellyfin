@@ -8,13 +8,13 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Common.Plugins;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -230,9 +230,9 @@ namespace MediaBrowser.Api
                         .ToArray();
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                //Logger.ErrorException("Error getting plugin list", ex);
+                Logger.LogError(ex, "Error getting plugin list");
                 // Play it safe here
                 if (requireAppStoreEnabled)
                 {

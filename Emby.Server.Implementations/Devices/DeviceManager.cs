@@ -1,12 +1,11 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
@@ -145,7 +144,8 @@ namespace Emby.Server.Implementations.Devices
                 HasUser = true
 
             }).Items;
-
+            
+            // TODO: DeviceQuery doesn't seem to be used from client. Not even Swagger.
             if (query.SupportsSync.HasValue)
             {
                 var val = query.SupportsSync.Value;
@@ -253,14 +253,14 @@ namespace Emby.Server.Implementations.Devices
 
             if (CameraImageUploaded != null)
             {
-                EventHelper.FireEventIfNotNull(CameraImageUploaded, this, new GenericEventArgs<CameraImageUploadInfo>
+                CameraImageUploaded?.Invoke(this, new GenericEventArgs<CameraImageUploadInfo>
                 {
                     Argument = new CameraImageUploadInfo
                     {
                         Device = device,
                         FileInfo = file
                     }
-                }, _logger);
+                });
             }
         }
 
@@ -434,7 +434,7 @@ namespace Emby.Server.Implementations.Devices
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error creating camera uploads library", ex);
+                        _logger.LogError(ex, "Error creating camera uploads library");
                     }
 
                     _config.Configuration.CameraUploadUpgraded = true;

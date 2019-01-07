@@ -1,19 +1,14 @@
-﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Serialization;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
-
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.Events;
+using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Threading;
-using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -24,14 +19,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public event EventHandler<GenericEventArgs<TimerInfo>> TimerFired;
         private readonly ITimerFactory _timerFactory;
-        private readonly IPowerManagement _powerManagement;
 
-        public TimerManager(IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, string dataPath, ILogger logger1, ITimerFactory timerFactory, IPowerManagement powerManagement)
+        public TimerManager(IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, string dataPath, ILogger logger1, ITimerFactory timerFactory)
             : base(fileSystem, jsonSerializer, logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
             _logger = logger1;
             _timerFactory = timerFactory;
-            _powerManagement = powerManagement;
         }
 
         public void RestartTimers()
@@ -40,7 +33,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             foreach (var item in GetAll().ToList())
             {
-                AddOrUpdateSystemTimer(item, false);
+                AddOrUpdateSystemTimer(item);
             }
         }
 
@@ -63,7 +56,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         public override void Update(TimerInfo item)
         {
             base.Update(item);
-            AddOrUpdateSystemTimer(item, false);
+            AddOrUpdateSystemTimer(item);
         }
 
         public void AddOrUpdate(TimerInfo item, bool resetTimer)
@@ -94,7 +87,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             base.Add(item);
-            AddOrUpdateSystemTimer(item, true);
+            AddOrUpdateSystemTimer(item);
         }
 
         private bool ShouldStartTimer(TimerInfo item)
@@ -108,7 +101,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return true;
         }
 
-        private void AddOrUpdateSystemTimer(TimerInfo item, bool scheduleSystemWakeTimer)
+        private void AddOrUpdateSystemTimer(TimerInfo item)
         {
             StopTimer(item);
 
@@ -122,29 +115,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (startDate < now)
             {
-                EventHelper.FireEventIfNotNull(TimerFired, this, new GenericEventArgs<TimerInfo> { Argument = item }, Logger);
+                TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo> { Argument = item });
                 return;
             }
 
             var dueTime = startDate - now;
             StartTimer(item, dueTime);
-
-            if (scheduleSystemWakeTimer && dueTime >= TimeSpan.FromMinutes(15))
-            {
-                ScheduleSystemWakeTimer(startDate, item.Name);
-            }
-        }
-
-        private void ScheduleSystemWakeTimer(DateTime startDate, string displayName)
-        {
-            try
-            {
-                _powerManagement.ScheduleWake(startDate.AddMinutes(-5), displayName);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error scheduling wake timer", ex);
-            }
         }
 
         private void StartTimer(TimerInfo item, TimeSpan dueTime)
@@ -153,12 +129,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (_timers.TryAdd(item.Id, timer))
             {
-                _logger.Info("Creating recording timer for {0}, {1}. Timer will fire in {2} minutes", item.Id, item.Name, dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture));
+                _logger.LogInformation("Creating recording timer for {id}, {name}. Timer will fire in {minutes} minutes", item.Id, item.Name, dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture));
             }
             else
             {
                 timer.Dispose();
-                _logger.Warn("Timer already exists for item {0}", item.Id);
+                _logger.LogWarning("Timer already exists for item {id}", item.Id);
             }
         }
 
@@ -178,7 +154,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var timer = GetAll().FirstOrDefault(i => string.Equals(i.Id, timerId, StringComparison.OrdinalIgnoreCase));
             if (timer != null)
             {
-                EventHelper.FireEventIfNotNull(TimerFired, this, new GenericEventArgs<TimerInfo> { Argument = timer }, Logger);
+                TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo> { Argument = timer });
             }
         }
 

@@ -1,3 +1,4 @@
+using System;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -9,8 +10,8 @@ namespace MediaBrowser.Controller.Providers
 
         public SongInfo()
         {
-            Artists = EmptyStringArray;
-            AlbumArtists = EmptyStringArray;
+            Artists = Array.Empty<string>();
+            AlbumArtists = Array.Empty<string>();
         }
     }
 }

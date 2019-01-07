@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Xml.Serialization;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dlna
@@ -17,7 +15,7 @@ namespace MediaBrowser.Model.Dlna
 
         public ContainerProfile()
         {
-            Conditions = new ProfileCondition[] { };
+            Conditions = Array.Empty<ProfileCondition>();
         }
 
         public string[] GetContainers()
@@ -25,13 +23,11 @@ namespace MediaBrowser.Model.Dlna
             return SplitValue(Container);
         }
 
-        private static readonly string[] EmptyStringArray = Array.Empty<string>();
-
         public static string[] SplitValue(string value)
         {
             if (string.IsNullOrEmpty(value))
             {
-                return EmptyStringArray;
+                return Array.Empty<string>();
             }
 
             return value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);

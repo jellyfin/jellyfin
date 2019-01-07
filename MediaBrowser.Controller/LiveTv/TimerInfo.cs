@@ -10,11 +10,11 @@ namespace MediaBrowser.Controller.LiveTv
     {
         public TimerInfo()
         {
-            Genres = new string[] { };
+            Genres = Array.Empty<string>();
             KeepUntil = KeepUntil.UntilDeleted;
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            Tags = new string[] { };
+            Tags = Array.Empty<string>();
         }
 
         public Dictionary<string, string> ProviderIds { get; set; }

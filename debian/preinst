@@ -2,7 +2,6 @@
 set -e
 
 NAME=jellyfin
-CONF_FILE=/etc/${NAME}.conf
 DEFAULT_FILE=/etc/default/${NAME}
 
 # Source Jellyfin default configuration
@@ -10,13 +9,10 @@ if [[ -f $DEFAULT_FILE ]]; then
   . $DEFAULT_FILE
 fi
 
-# Source Jellyfin user configuration overrides
-if [[ -f $CONF_FILE ]]; then
-  . $CONF_FILE
-fi
-
-# Data directory where Jellyfin database, cache and logs are stored
-PROGRAMDATA=${JELLYFIN_DATA-/var/lib/$NAME}
+# Data directories for program data (cache, db), configs, and logs
+PROGRAMDATA=${JELLYFIN_DATA_DIRECTORY-/var/lib/$NAME}
+CONFIGDATA=${JELLYFIN_CONFIG_DIRECTORY-/etc/$NAME}
+LOGDATA=${JELLYFIN_DATA_DIRECTORY-/var/log/$NAME}
 
 # In case this system is running systemd, we make systemd reload the unit files
 # to pick up changes.
@@ -56,6 +52,14 @@ case "$1" in
 
     # Clean up old Emby cruft that can break the user's system
     [[ -f /etc/sudoers.d/emby ]] && rm -f /etc/sudoers.d/emby
+
+    # If we have existing config or log dirs in /var/lib/jellyfin, move them into the right place
+    if [[ -d $PROGRAMDATA/config ]]; then
+        mv $PROGRAMDATA/config $CONFIGDATA
+    fi
+    if [[ -d $PROGRAMDATA/logs ]]; then
+        mv $PROGRAMDATA/logs $LOGDATA
+    fi
 
     ;;
   abort-upgrade)

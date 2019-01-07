@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using MediaBrowser.Model.IO;

@@ -34,7 +34,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public VirtualFolderInfo()
         {
-            Locations = new string[] {};
+            Locations = Array.Empty<string>();
         }
 
         /// <summary>

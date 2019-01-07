@@ -2,17 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Threading;
@@ -38,7 +33,7 @@ namespace Emby.Server.Implementations.IO
 
         public FileRefresher(string path, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ITaskManager taskManager, ILogger logger, ITimerFactory timerFactory, IEnvironmentInfo environmentInfo, ILibraryManager libraryManager1)
         {
-            logger.Debug("New file refresher created for {0}", path);
+            logger.LogDebug("New file refresher created for {0}", path);
             Path = path;
 
             _fileSystem = fileSystem;
@@ -108,7 +103,7 @@ namespace Emby.Server.Implementations.IO
         {
             lock (_timerLock)
             {
-                Logger.Debug("Resetting file refresher from {0} to {1}", Path, path);
+                Logger.LogDebug("Resetting file refresher from {0} to {1}", Path, path);
 
                 Path = path;
                 AddAffectedPath(path);
@@ -130,10 +125,10 @@ namespace Emby.Server.Implementations.IO
                 paths = _affectedPaths.ToList();
             }
 
-            Logger.Debug("Timer stopped.");
+            Logger.LogDebug("Timer stopped.");
 
             DisposeTimer();
-            EventHelper.FireEventIfNotNull(Completed, this, EventArgs.Empty, Logger);
+            Completed?.Invoke(this, EventArgs.Empty);
 
             try
             {
@@ -141,7 +136,7 @@ namespace Emby.Server.Implementations.IO
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error processing directory changes", ex);
+                Logger.LogError(ex, "Error processing directory changes");
             }
         }
 
@@ -161,7 +156,7 @@ namespace Emby.Server.Implementations.IO
                     continue;
                 }
 
-                Logger.Info(item.Name + " (" + item.Path + ") will be refreshed.");
+                Logger.LogInformation("{name} ({path}}) will be refreshed.", item.Name, item.Path);
 
                 try
                 {
@@ -172,11 +167,11 @@ namespace Emby.Server.Implementations.IO
                     // For now swallow and log. 
                     // Research item: If an IOException occurs, the item may be in a disconnected state (media unavailable)
                     // Should we remove it from it's parent?
-                    Logger.ErrorException("Error refreshing {0}", ex, item.Name);
+                    Logger.LogError(ex, "Error refreshing {name}", item.Name);
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error refreshing {0}", ex, item.Name);
+                    Logger.LogError(ex, "Error refreshing {name}", item.Name);
                 }
             }
         }

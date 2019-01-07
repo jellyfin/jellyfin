@@ -91,7 +91,7 @@ define(["appSettings", "dom", "connectionManager", "loading", "cardStyle", "emby
                 users.length ? users.length && users[0].EnableAutoLogin ? authenticateUserByName(view, apiClient, users[0].Name, "") : (showVisualForm(), loadUserList(view, apiClient, users)) : (view.querySelector("#txtManualName").value = "", showManualForm(view, !1, !1)), loading.hide()
             }), apiClient.getJSON(apiClient.getUrl("Branding/Configuration")).then(function(options) {
                 view.querySelector(".disclaimer").textContent = options.LoginDisclaimer || ""
-            }), Dashboard.isConnectMode() ? view.querySelector(".connectButtons").classList.remove("hide") : view.querySelector(".connectButtons").classList.add("hide")
+            }), AppInfo.isNativeApp ? view.querySelector(".connectButtons").classList.remove("hide") : view.querySelector(".connectButtons").classList.add("hide")
         })
     }
 });

@@ -9,7 +9,7 @@ using System.Linq;
 
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library
 {

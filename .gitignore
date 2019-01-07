@@ -1,5 +1,7 @@
 !*
 
+.directory
+
 #################
 ## Eclipse
 #################
@@ -245,6 +247,8 @@ MediaBrowser.WebDashboard/dashboard-ui/.idea/
 #########################
 
 debian/.debhelper/
+debian/*.debhelper
+debian/debhelper-build-stamp
 debian/files
 debian/jellyfin.substvars
 debian/jellyfin/

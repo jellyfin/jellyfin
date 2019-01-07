@@ -4,6 +4,12 @@ html {
     color: rgba(0, 0, 0, .87)
 }
 
+.wizardStartForm,
+.ui-corner-all,
+.ui-shadow {
+  background-color: #303030
+}
+
 .emby-collapsible-button {
     border-color: #ccc;
     border-color: rgba(0, 0, 0, .158)
@@ -54,8 +60,8 @@ html {
 }
 
 .paper-icon-button-light:focus {
-    color: #52B54B;
-    background-color: rgba(82, 181, 75, .2)
+    color: #00a4dc;
+    background-color: rgba(0,164,220, .2)
 }
 
 .fab,
@@ -70,12 +76,12 @@ html {
 }
 
 .button-submit {
-    background: #52B54B;
+    background: #00a4dc;
     color: #fff
 }
 
 .button-submit:focus {
-    background: #5EC157
+    background: #0cb0e8
 }
 
 .checkboxLabel {
@@ -127,7 +133,7 @@ html {
 }
 
 .formDialogHeader:not(.formDialogHeader-clear) {
-    background-color: #52B54B;
+    background-color: #00a4dc;
     color: #fff
 }
 
@@ -191,16 +197,16 @@ html {
 }
 
 .itemSelectionPanel {
-    border: 1px solid #52B54B
+    border: 1px solid #00a4dc
 }
 
 .selectionCommandsPanel {
-    background: #52B54B;
+    background: #00a4dc;
     color: #fff
 }
 
 .upNextDialog-countdownText {
-    color: #52B54B
+    color: #00a4dc
 }
 
 .alphaPickerButton {
@@ -211,7 +217,7 @@ html {
 
 .alphaPickerButton-selected,
 .alphaPickerButton-tv:focus {
-    background-color: #52B54B;
+    background-color: #00a4dc;
     color: #fff !important
 }
 
@@ -228,7 +234,7 @@ html {
 }
 
 .progressring-spiner {
-    border-color: #52B54B
+    border-color: #00a4dc
 }
 
 .mediaInfoText {
@@ -252,7 +258,7 @@ html {
 
 .emby-input:focus,
 .emby-textarea:focus {
-    border-color: #52B54B
+    border-color: #00a4dc
 }
 
 .emby-select-withcolor {
@@ -263,7 +269,7 @@ html {
 
 .emby-checkbox:checked+span+span+.checkboxOutline,
 .emby-select-withcolor:focus {
-    border-color: #52B54B
+    border-color: #00a4dc
 }
 
 .emby-select-withcolor>option {
@@ -272,17 +278,17 @@ html {
 }
 
 .emby-select-tv-withcolor:focus {
-    background-color: #52B54B;
+    background-color: #00a4dc;
     color: #fff
 }
 
 .emby-checkbox:focus+span+.emby-checkbox-focushelper {
-    background-color: rgba(82, 181, 75, .26)
+    background-color: rgba(0,164,220, .26)
 }
 
 .emby-checkbox:checked+span+span+.checkboxOutline,
 .itemProgressBarForeground {
-    background-color: #52B54B
+    background-color: #00a4dc
 }
 
 .itemProgressBarForeground-recording {
@@ -292,7 +298,7 @@ html {
 .countIndicator,
 .fullSyncIndicator,
 .playedIndicator {
-    background: #52B54B
+    background: #00a4dc
 }
 
 .fullSyncIndicator {
@@ -308,12 +314,12 @@ html {
 }
 
 .navMenuOption-selected {
-    background: #52B54B !important;
+    background: #00a4dc !important;
     color: #fff
 }
 
 .emby-button-focusscale:focus {
-    background: #52B54B;
+    background: #00a4dc;
     color: #fff
 }
 
@@ -323,7 +329,7 @@ html {
 }
 
 .emby-tab-button-active {
-    color: #52B54B
+    color: #00a4dc
 }
 
 .emby-tab-button-active.emby-button-tv {
@@ -331,7 +337,7 @@ html {
 }
 
 .emby-tab-button.emby-button-tv:focus {
-    color: #52B54B;
+    color: #00a4dc;
     background: 0 0
 }
 
@@ -363,7 +369,7 @@ html {
 
 .guide-channelHeaderCell:focus,
 .programCell:focus {
-    background-color: #52B54B !important;
+    background-color: #00a4dc !important;
     color: #fff !important
 }
 
@@ -383,11 +389,11 @@ html {
 
 .guide-date-tab-button.emby-tab-button-active,
 .guide-date-tab-button:focus {
-    color: #52B54B
+    color: #00a4dc
 }
 
 .guide-date-tab-button.emby-button-tv:focus {
-    background-color: #52B54B;
+    background-color: #00a4dc;
     color: #fff
 }
 
@@ -424,5 +430,5 @@ html {
 }
 
 .card:focus .card-focuscontent {
-    border-color: #52B54B
+    border-color: #00a4dc
 }

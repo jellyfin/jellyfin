@@ -7,7 +7,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
@@ -105,7 +105,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             OnTranscodeBeginning(encodingJob);
 
             var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
-            Logger.Info(commandLineLogMessage);
+            Logger.LogInformation(commandLineLogMessage);
 
             var logFilePath = Path.Combine(ConfigurationManager.CommonApplicationPaths.LogDirectoryPath, "transcode-" + Guid.NewGuid() + ".txt");
             FileSystem.CreateDirectory(FileSystem.GetDirectoryName(logFilePath));
@@ -124,7 +124,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error starting ffmpeg", ex);
+                Logger.LogError(ex, "Error starting ffmpeg");
 
                 OnTranscodeFailedToStart(encodingJob.OutputFilePath, encodingJob);
 
@@ -150,7 +150,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private void Cancel(IProcess process, EncodingJob job)
         {
-            Logger.Info("Killing ffmpeg process for {0}", job.OutputFilePath);
+            Logger.LogInformation("Killing ffmpeg process for {0}", job.OutputFilePath);
 
             //process.Kill();
             process.StandardInput.WriteLine("q");
@@ -167,7 +167,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             job.HasExited = true;
 
-            Logger.Debug("Disposing stream resources");
+            Logger.LogDebug("Disposing stream resources");
             job.Dispose();
 
             var isSuccesful = false;
@@ -175,13 +175,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             try
             {
                 var exitCode = process.ExitCode;
-                Logger.Info("FFMpeg exited with code {0}", exitCode);
+                Logger.LogInformation("FFMpeg exited with code {0}", exitCode);
 
                 isSuccesful = exitCode == 0;
             }
-            catch
+            catch (Exception ex)
             {
-                Logger.Error("FFMpeg exited with an error.");
+                Logger.LogError(ex, "FFMpeg exited with an error.");
             }
 
             if (isSuccesful && !job.IsCancelled)
@@ -231,7 +231,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             //}
             //catch (Exception ex)
             //{
-            //    Logger.ErrorException("Error disposing ffmpeg.", ex);
+            //    Logger.LogError("Error disposing ffmpeg.", ex);
             //}
         }
 

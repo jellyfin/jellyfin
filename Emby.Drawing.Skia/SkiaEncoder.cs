@@ -3,7 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using SkiaSharp;
 using System;
 using System.IO;
@@ -81,7 +81,7 @@ namespace Emby.Drawing.Skia
             // test an operation that requires the native library
             SKPMColor.PreMultiply(SKColors.Black);
 
-            _logger.Info("SkiaSharp version: " + GetVersion());
+            _logger.LogInformation("SkiaSharp version: " + GetVersion());
         }
 
         public static string GetVersion()
@@ -530,7 +530,7 @@ namespace Emby.Drawing.Skia
                     throw new ArgumentOutOfRangeException(string.Format("Skia unable to read image {0}", inputPath));
                 }
 
-                //_logger.Info("Color type {0}", bitmap.Info.ColorType);
+                //_logger.LogInformation("Color type {0}", bitmap.Info.ColorType);
 
                 var originalImageSize = new ImageSize(bitmap.Width, bitmap.Height);
 
@@ -548,9 +548,7 @@ namespace Emby.Drawing.Skia
                 using (var resizedBitmap = new SKBitmap(width, height))//, bitmap.ColorType, bitmap.AlphaType))
                 {
                     // scale image
-                    var resizeMethod = SKBitmapResizeMethod.Lanczos3;
-
-                    bitmap.Resize(resizedBitmap, resizeMethod);
+                    bitmap.ScalePixels(resizedBitmap, SKFilterQuality.High);
 
                     // If all we're doing is resizing then we can stop now
                     if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
@@ -558,8 +556,11 @@ namespace Emby.Drawing.Skia
                         _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
                         using (var outputStream = new SKFileWStream(outputPath))
                         {
-                            resizedBitmap.Encode(outputStream, skiaOutputFormat, quality);
-                            return outputPath;
+                            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels()))
+                            {
+                                pixmap.Encode(outputStream, skiaOutputFormat, quality);
+                                return outputPath;
+                            }
                         }
                     }
 
@@ -593,8 +594,7 @@ namespace Emby.Drawing.Skia
                         // If foreground layer present then draw
                         if (hasForegroundColor)
                         {
-                            Double opacity;
-                            if (!Double.TryParse(options.ForegroundLayer, out opacity))
+                            if (!Double.TryParse(options.ForegroundLayer, out double opacity))
                             {
                                 opacity = .4;
                             }
@@ -610,7 +610,10 @@ namespace Emby.Drawing.Skia
                         _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
                         using (var outputStream = new SKFileWStream(outputPath))
                         {
-                            saveBitmap.Encode(outputStream, skiaOutputFormat, quality);
+                            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels()))
+                            {
+                                pixmap.Encode(outputStream, skiaOutputFormat, quality);
+                            }
                         }
                     }
                 }
@@ -660,7 +663,7 @@ namespace Emby.Drawing.Skia
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error drawing indicator overlay", ex);
+                _logger.LogError(ex, "Error drawing indicator overlay");
             }
         }
 
