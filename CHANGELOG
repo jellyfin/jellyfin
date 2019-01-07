@@ -1,0 +1,9 @@
+Style Guide:
+#PR Number at top
+ADD for items added
+REM for items removed
+MOD for items changed
+FIX for fixes
+
+#484
+ADD: Created changelog
