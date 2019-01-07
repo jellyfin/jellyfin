@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using System;
@@ -40,14 +40,14 @@ namespace Emby.Server.Implementations.Session
         /// Initializes a new instance of the <see cref="SessionWebSocketListener" /> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
-        /// <param name="logManager">The log manager.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="json">The json.</param>
         /// <param name="httpServer">The HTTP server.</param>
         /// <param name="serverManager">The server manager.</param>
-        public SessionWebSocketListener(ISessionManager sessionManager, ILogManager logManager, IJsonSerializer json, IHttpServer httpServer)
+        public SessionWebSocketListener(ISessionManager sessionManager, ILoggerFactory loggerFactory, IJsonSerializer json, IHttpServer httpServer)
         {
             _sessionManager = sessionManager;
-            _logger = logManager.GetLogger(GetType().Name);
+            _logger = loggerFactory.CreateLogger(GetType().Name);
             _json = json;
             _httpServer = httpServer;
             httpServer.WebSocketConnected += _serverManager_WebSocketConnected;
@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.Session
             }
             else
             {
-                _logger.Warn("Unable to determine session based on url: {0}", e.Argument.Url);
+                _logger.LogWarning("Unable to determine session based on url: {0}", e.Argument.Url);
             }
         }
 

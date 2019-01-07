@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using System;
@@ -126,7 +126,7 @@ namespace MediaBrowser.Providers.Manager
 
                     if (!HasImage(item, imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
-                        _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
+                        _logger.LogDebug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
 
                         var response = await provider.GetImage(item, imageType, cancellationToken).ConfigureAwait(false);
 
@@ -136,7 +136,7 @@ namespace MediaBrowser.Providers.Manager
                             {
                                 if (response.Protocol == MediaProtocol.Http)
                                 {
-                                    _logger.Debug("Setting image url into item {0}", item.Id);
+                                    _logger.LogDebug("Setting image url into item {0}", item.Id);
                                     item.SetImage(new ItemImageInfo
                                     {
                                         Path = response.Path,
@@ -173,7 +173,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 result.ErrorMessage = ex.Message;
-                _logger.ErrorException("Error in {0}", ex, provider.Name);
+                _logger.LogError(ex, "Error in {provider}", provider.Name);
             }
         }
 
@@ -264,7 +264,7 @@ namespace MediaBrowser.Providers.Manager
                     return;
                 }
 
-                _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
+                _logger.LogDebug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
 
                 var images = await _providerManager.GetAvailableRemoteImages(item, new RemoteImageQuery
                 {
@@ -310,7 +310,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 result.ErrorMessage = ex.Message;
-                _logger.ErrorException("Error in {0}", ex, provider.Name);
+                _logger.LogError(ex, "Error in {provider}", provider.Name);
             }
         }
 
@@ -577,7 +577,7 @@ namespace MediaBrowser.Providers.Manager
                         }
                         catch (IOException ex)
                         {
-                            _logger.ErrorException("Error examining images", ex);
+                            _logger.LogError(ex, "Error examining images");
                         }
                     }
 
@@ -586,7 +586,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (HttpException ex)
                 {
-                    // Sometimes providers send back bad url's. Just move onto the next image
+                    // Sometimes providers send back bad urls. Just move onto the next image
                     if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                     {
                         continue;

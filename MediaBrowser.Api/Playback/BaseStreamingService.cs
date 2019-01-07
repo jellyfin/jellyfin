@@ -24,6 +24,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -248,7 +249,7 @@ namespace MediaBrowser.Api.Playback
                 cancellationTokenSource);
 
             var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
-            Logger.Info(commandLineLogMessage);
+            Logger.LogInformation(commandLineLogMessage);
 
             var logFilePrefix = "ffmpeg-transcode";
             if (state.VideoRequest != null && string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) && string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
@@ -277,7 +278,7 @@ namespace MediaBrowser.Api.Playback
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error starting ffmpeg", ex);
+                Logger.LogError(ex, "Error starting ffmpeg");
 
                 ApiEntryPoint.Instance.OnTranscodeFailedToStart(outputPath, TranscodingJobType, state);
 
@@ -351,16 +352,16 @@ namespace MediaBrowser.Api.Playback
                 job.HasExited = true;
             }
 
-            Logger.Debug("Disposing stream resources");
+            Logger.LogDebug("Disposing stream resources");
             state.Dispose();
 
             try
             {
-                Logger.Info("FFMpeg exited with code {0}", process.ExitCode);
+                Logger.LogInformation("FFMpeg exited with code {0}", process.ExitCode);
             }
             catch
             {
-                Logger.Error("FFMpeg exited with an error.");
+                Logger.LogError("FFMpeg exited with an error.");
             }
 
             // This causes on exited to be called twice:
@@ -371,7 +372,7 @@ namespace MediaBrowser.Api.Playback
             //}
             //catch (Exception ex)
             //{
-            //    Logger.ErrorException("Error disposing ffmpeg.", ex);
+            //    Logger.LogError(ex, "Error disposing ffmpeg.");
             //}
         }
 
@@ -589,6 +590,22 @@ namespace MediaBrowser.Api.Playback
         }
 
         /// <summary>
+        /// Parses query parameters as StreamOptions
+        /// <summary>
+        /// <param name="request">The stream request.</param>
+        private void ParseStreamOptions(StreamRequest request)
+        {
+            foreach (var param in Request.QueryString) {
+                if (Char.IsLower(param.Name[0])) {
+                    // This was probably not parsed initially and should be a StreamOptions
+                    // TODO: This should be incorporated either in the lower framework for parsing requests
+                    // or the generated URL should correctly serialize it
+                    request.StreamOptions[param.Name] = param.Value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Parses the dlna headers.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -666,6 +683,8 @@ namespace MediaBrowser.Api.Playback
                 ParseParams(request);
             }
 
+            ParseStreamOptions(request);
+
             var url = Request.PathInfo;
 
             if (string.IsNullOrEmpty(request.AudioCodec))
@@ -685,7 +704,7 @@ namespace MediaBrowser.Api.Playback
             };
 
             var auth = AuthorizationContext.GetAuthorizationInfo(Request);
-            if (auth.UserId != null)
+            if (!auth.UserId.Equals(Guid.Empty))
             {
                 state.User = UserManager.GetUserById(auth.UserId);
             }

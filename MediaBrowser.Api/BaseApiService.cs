@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,12 +55,11 @@ namespace MediaBrowser.Api
             return Request.Headers[name];
         }
 
-        private static readonly string[] EmptyStringArray = Array.Empty<string>();
         public static string[] SplitValue(string value, char delim)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                return EmptyStringArray;
+                return Array.Empty<string>();
             }
 
             return value.Split(new[] { delim }, StringSplitOptions.RemoveEmptyEntries);

@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Events;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
-using System.IO;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -185,7 +184,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             if (scheduledTask == null)
             {
-                Logger.Error("Unable to find scheduled task of type {0} in QueueScheduledTask.", typeof(T).Name);
+                Logger.LogError("Unable to find scheduled task of type {0} in QueueScheduledTask.", typeof(T).Name);
             }
             else
             {
@@ -217,13 +216,13 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             if (scheduledTask == null)
             {
-                Logger.Error("Unable to find scheduled task of type {0} in Execute.", typeof(T).Name);
+                Logger.LogError("Unable to find scheduled task of type {0} in Execute.", typeof(T).Name);
             }
             else
             {
                 var type = scheduledTask.ScheduledTask.GetType();
 
-                Logger.Info("Queueing task {0}", type.Name);
+                Logger.LogInformation("Queueing task {0}", type.Name);
 
                 lock (_taskQueue)
                 {
@@ -246,7 +245,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             if (scheduledTask == null)
             {
-                Logger.Error("Unable to find scheduled task of type {0} in QueueScheduledTask.", task.GetType().Name);
+                Logger.LogError("Unable to find scheduled task of type {0} in QueueScheduledTask.", task.GetType().Name);
             }
             else
             {
@@ -263,7 +262,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var type = task.ScheduledTask.GetType();
 
-            Logger.Info("Queueing task {0}", type.Name);
+            Logger.LogInformation("Queueing task {0}", type.Name);
 
             lock (_taskQueue)
             {
@@ -331,11 +330,10 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="task">The task.</param>
         internal void OnTaskExecuting(IScheduledTaskWorker task)
         {
-            EventHelper.FireEventIfNotNull(TaskExecuting, this, new GenericEventArgs<IScheduledTaskWorker>
+            TaskExecuting?.Invoke(this, new GenericEventArgs<IScheduledTaskWorker>
             {
                 Argument = task
-
-            }, Logger);
+            });
         }
 
         /// <summary>
@@ -345,12 +343,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="result">The result.</param>
         internal void OnTaskCompleted(IScheduledTaskWorker task, TaskResult result)
         {
-            EventHelper.FireEventIfNotNull(TaskCompleted, task, new TaskCompletionEventArgs
+            TaskCompleted?.Invoke(task, new TaskCompletionEventArgs
             {
                 Result = result,
                 Task = task
-
-            }, Logger);
+            });
 
             ExecuteQueuedTasks();
         }
@@ -360,7 +357,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         private void ExecuteQueuedTasks()
         {
-            Logger.Info("ExecuteQueuedTasks");
+            Logger.LogInformation("ExecuteQueuedTasks");
 
             // Execute queued tasks
             lock (_taskQueue)

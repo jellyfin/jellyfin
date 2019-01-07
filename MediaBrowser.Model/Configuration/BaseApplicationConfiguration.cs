@@ -9,6 +9,7 @@ namespace MediaBrowser.Model.Configuration
     /// </summary>
     public class BaseApplicationConfiguration
     {
+        // TODO: @bond Remove?
         /// <summary>
         /// Gets or sets a value indicating whether [enable debug level logging].
         /// </summary>
@@ -21,17 +22,12 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if [enable auto update]; otherwise, <c>false</c>.</value>
         public bool EnableAutoUpdate { get; set; }
 
+        // TODO: @bond Remove?
         /// <summary>
         /// The number of days we should retain log files
         /// </summary>
         /// <value>The log file retention days.</value>
         public int LogFileRetentionDays { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [run at startup].
-        /// </summary>
-        /// <value><c>true</c> if [run at startup]; otherwise, <c>false</c>.</value>
-        public bool RunAtStartup { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is first run.

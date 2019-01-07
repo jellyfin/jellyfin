@@ -14,7 +14,7 @@ using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
@@ -86,7 +86,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     if (streamFileNames.Length == 0)
                     {
-                        _logger.Error("No playable vobs found in dvd structure, skipping ffprobe.");
+                        _logger.LogError("No playable vobs found in dvd structure, skipping ffprobe.");
                         return ItemUpdateType.MetadataImport;
                     }
                 }
@@ -101,7 +101,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     if (streamFileNames.Length == 0)
                     {
-                        _logger.Error("No playable vobs found in bluray structure, skipping ffprobe.");
+                        _logger.LogError("No playable vobs found in bluray structure, skipping ffprobe.");
                         return ItemUpdateType.MetadataImport;
                     }
                 }
@@ -342,7 +342,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting BDInfo", ex);
+                _logger.LogError(ex, "Error getting BDInfo");
                 return null;
             }
         }

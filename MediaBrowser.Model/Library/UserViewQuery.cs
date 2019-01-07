@@ -27,7 +27,7 @@ namespace MediaBrowser.Model.Library
         public UserViewQuery()
         {
             IncludeExternalContent = true;
-            PresetViews = new string[] {};
+            PresetViews = Array.Empty<string>();
         }
     }
 }

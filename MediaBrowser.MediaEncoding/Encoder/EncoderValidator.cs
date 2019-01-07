@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
+using System.Text.RegularExpressions;
 using MediaBrowser.Model.Diagnostics;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -18,21 +19,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _processFactory = processFactory;
         }
 
-        public Tuple<List<string>, List<string>> Validate(string encoderPath)
+        public (IEnumerable<string> decoders, IEnumerable<string> encoders) Validate(string encoderPath)
         {
-            _logger.Info("Validating media encoder at {0}", encoderPath);
+            _logger.LogInformation("Validating media encoder at {EncoderPath}", encoderPath);
 
-            var decoders = GetDecoders(encoderPath);
-            var encoders = GetEncoders(encoderPath);
+            var decoders = GetCodecs(encoderPath, Codec.Decoder);
+            var encoders = GetCodecs(encoderPath, Codec.Encoder);
 
-            _logger.Info("Encoder validation complete");
+            _logger.LogInformation("Encoder validation complete");
 
-            return new Tuple<List<string>, List<string>>(decoders, encoders);
+            return (decoders, encoders);
         }
 
         public bool ValidateVersion(string encoderAppPath, bool logOutput)
         {
-            string output = string.Empty;
+            string output = null;
             try
             {
                 output = GetProcessOutput(encoderAppPath, "-version");
@@ -41,7 +42,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (logOutput)
                 {
-                    _logger.ErrorException("Error validating encoder", ex);
+                    _logger.LogError(ex, "Error validating encoder");
                 }
             }
 
@@ -50,7 +51,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return false;
             }
 
-            _logger.Info("ffmpeg info: {0}", output);
+            _logger.LogDebug("ffmpeg output: {Output}", output);
 
             if (output.IndexOf("Libav developers", StringComparison.OrdinalIgnoreCase) != -1)
             {
@@ -71,20 +72,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return true;
         }
 
-        private List<string> GetDecoders(string encoderAppPath)
-        {
-            string output = string.Empty;
-            try
-            {
-                output = GetProcessOutput(encoderAppPath, "-decoders");
-            }
-            catch (Exception )
-            {
-                //_logger.ErrorException("Error detecting available decoders", ex);
-            }
-
-            var found = new List<string>();
-            var required = new[]
+        private static readonly string[] requiredDecoders = new[]
             {
                 "mpeg2video",
                 "h264_qsv",
@@ -101,33 +89,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "hevc"
             };
 
-            foreach (var codec in required)
-            {
-                var srch = " " + codec + "  ";
-
-                if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    _logger.Info("Decoder available: " + codec);
-                    found.Add(codec);
-                }
-            }
-
-            return found;
-        }
-
-        private List<string> GetEncoders(string encoderAppPath)
-        {
-            string output = null;
-            try
-            {
-                output = GetProcessOutput(encoderAppPath, "-encoders");
-            }
-            catch
-            {
-            }
-
-            var found = new List<string>();
-            var required = new[]
+        private static readonly string[] requiredEncoders = new[]
             {
                 "libx264",
                 "libx265",
@@ -151,32 +113,46 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "ac3"
             };
 
-            output = output ?? string.Empty;
+        private enum Codec
+        {
+            Encoder,
+            Decoder
+        }
 
-            var index = 0;
-
-            foreach (var codec in required)
+        private IEnumerable<string> GetCodecs(string encoderAppPath, Codec codec)
+        {
+            string codecstr = codec == Codec.Encoder ? "encoders" : "decoders";
+            string output = null;
+            try
             {
-                var srch = " " + codec + "  ";
-
-                if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    if (index < required.Length - 1)
-                    {
-                        _logger.Info("Encoder available: " + codec);
-                    }
-
-                    found.Add(codec);
-                }
-                index++;
+                output = GetProcessOutput(encoderAppPath, "-" + codecstr);
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error detecting available {Codec}", codecstr);
+            }
+
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            var required = codec == Codec.Encoder ? requiredEncoders : requiredDecoders;
+
+            var found = Regex
+                .Matches(output, @"^\s\S{6}\s(?<codec>[\w|-]+)\s+.+$", RegexOptions.Multiline)
+                .Cast<Match>()
+                .Select(x => x.Groups["codec"].Value)
+                .Where(x => required.Contains(x));
+
+            _logger.LogInformation("Available {Codec}: {Codecs}", codecstr, found);
 
             return found;
         }
 
         private string GetProcessOutput(string path, string arguments)
         {
-            var process = _processFactory.Create(new ProcessOptions
+            IProcess process = _processFactory.Create(new ProcessOptions
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
@@ -184,10 +160,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Arguments = arguments,
                 IsHidden = true,
                 ErrorDialog = false,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                // ffmpeg uses stderr to log info, don't show this
+                RedirectStandardError = true
             });
 
-            _logger.Info("Running {0} {1}", path, arguments);
+            _logger.LogDebug("Running {Path} {Arguments}", path, arguments);
 
             using (process)
             {
@@ -199,16 +177,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch
                 {
-                    _logger.Info("Killing process {0} {1}", path, arguments);
+                    _logger.LogWarning("Killing process {Path} {Arguments}", path, arguments);
 
                     // Hate having to do this
                     try
                     {
                         process.Kill();
                     }
-                    catch (Exception ex1)
+                    catch (Exception ex)
                     {
-                        _logger.ErrorException("Error killing process", ex1);
+                        _logger.LogError(ex, "Error killing process");
                     }
 
                     throw;

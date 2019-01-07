@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Notifications;
 using System;
 using System.Collections.Generic;
@@ -25,11 +25,11 @@ namespace Emby.Notifications
         private INotificationService[] _services;
         private INotificationTypeFactory[] _typeFactories;
 
-        public NotificationManager(ILogManager logManager, IUserManager userManager, IServerConfigurationManager config)
+        public NotificationManager(ILoggerFactory loggerFactory, IUserManager userManager, IServerConfigurationManager config)
         {
             _userManager = userManager;
             _config = config;
-            _logger = logManager.GetLogger(GetType().Name);
+            _logger = loggerFactory.CreateLogger(GetType().Name);
         }
 
         private NotificationOptions GetConfiguration()
@@ -126,7 +126,7 @@ namespace Emby.Notifications
                 User = user
             };
 
-            _logger.Debug("Sending notification via {0} to user {1}", service.Name, user.Name);
+            _logger.LogDebug("Sending notification via {0} to user {1}", service.Name, user.Name);
 
             try
             {
@@ -134,7 +134,7 @@ namespace Emby.Notifications
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error sending notification to {0}", ex, service.Name);
+                _logger.LogError(ex, "Error sending notification to {0}", service.Name);
             }
         }
 
@@ -146,7 +146,7 @@ namespace Emby.Notifications
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error in IsEnabledForUser", ex);
+                _logger.LogError(ex, "Error in IsEnabledForUser");
                 return false;
             }
         }
@@ -177,7 +177,7 @@ namespace Emby.Notifications
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in GetNotificationTypes", ex);
+                    _logger.LogError(ex, "Error in GetNotificationTypes");
                     return new List<NotificationTypeInfo>();
                 }
 

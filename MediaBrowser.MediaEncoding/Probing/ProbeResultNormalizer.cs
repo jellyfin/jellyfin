@@ -1,20 +1,17 @@
-﻿using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using MediaBrowser.Model.IO;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Probing
 {
@@ -1351,11 +1348,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                     {
                         video.Timestamp = GetMpegTimestamp(video.Path);
 
-                        _logger.Debug("Video has {0} timestamp", video.Timestamp);
+                        _logger.LogDebug("Video has {timestamp} timestamp", video.Timestamp);
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error extracting timestamp info from {0}", ex, video.Path);
+                        _logger.LogError(ex, "Error extracting timestamp info from {path}", video.Path);
                         video.Timestamp = null;
                     }
                 }

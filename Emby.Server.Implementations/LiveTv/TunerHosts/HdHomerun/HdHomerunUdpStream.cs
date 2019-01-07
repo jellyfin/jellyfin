@@ -7,7 +7,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.LiveTv;
@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             FileSystem.CreateDirectory(FileSystem.GetDirectoryName(TempFilePath));
 
-            Logger.Info("Opening HDHR UDP Live stream from {0}", uri.Host);
+            Logger.LogInformation("Opening HDHR UDP Live stream from {host}", uri.Host);
 
             var remoteAddress = IPAddress.Parse(uri.Host);
             var embyRemoteAddress = _networkManager.ParseIpAddress(uri.Host);
@@ -69,9 +69,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     localAddress = ((IPEndPoint)tcpSocket.LocalEndPoint).Address;
                     tcpSocket.Close();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Logger.Error("Unable to determine local ip address for Legacy HDHomerun stream.");
+                    Logger.LogError(ex, "Unable to determine local ip address for Legacy HDHomerun stream.");
                     return;
                 }
             }
@@ -87,21 +87,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             catch (Exception ex)
             {
                 using (udpClient)
+                using (hdHomerunManager)
                 {
-                    using (hdHomerunManager)
+                    if (!(ex is OperationCanceledException))
                     {
-                        if (!(ex is OperationCanceledException))
-                        {
-                            Logger.ErrorException("Error opening live stream:", ex);
-                        }
-                        throw;
+                        Logger.LogError(ex, "Error opening live stream:");
                     }
+                    throw;
                 }
             }
 
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
-            StartStreaming(udpClient, hdHomerunManager, remoteAddress, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
+            await StartStreaming(udpClient, hdHomerunManager, remoteAddress, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
 
             //OpenedMediaSource.Protocol = MediaProtocol.File;
             //OpenedMediaSource.Path = tempFile;
@@ -122,26 +120,24 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return Task.Run(async () =>
             {
                 using (udpClient)
+                using (hdHomerunManager)
                 {
-                    using (hdHomerunManager)
+                    try
                     {
-                        try
-                        {
-                            await CopyTo(udpClient, TempFilePath, openTaskCompletionSource, cancellationToken).ConfigureAwait(false);
-                        }
-                        catch (OperationCanceledException ex)
-                        {
-                            Logger.Info("HDHR UDP stream cancelled or timed out from {0}", remoteAddress);
-                            openTaskCompletionSource.TrySetException(ex);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.ErrorException("Error opening live stream:", ex);
-                            openTaskCompletionSource.TrySetException(ex);
-                        }
-
-                        EnableStreamSharing = false;
+                        await CopyTo(udpClient, TempFilePath, openTaskCompletionSource, cancellationToken).ConfigureAwait(false);
                     }
+                    catch (OperationCanceledException ex)
+                    {
+                        Logger.LogInformation("HDHR UDP stream cancelled or timed out from {0}", remoteAddress);
+                        openTaskCompletionSource.TrySetException(ex);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Error opening live stream:");
+                        openTaskCompletionSource.TrySetException(ex);
+                    }
+
+                    EnableStreamSharing = false;
                 }
 
                 await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);
@@ -166,30 +162,28 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var resolved = false;
 
             using (var source = _socketFactory.CreateNetworkStream(udpClient, false))
+            using (var fileStream = FileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
             {
-                using (var fileStream = FileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
+                var currentCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token).Token;
+
+                while ((read = await source.ReadAsync(buffer, 0, buffer.Length, currentCancellationToken).ConfigureAwait(false)) != 0)
                 {
-                    var currentCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token).Token;
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                    while ((read = await source.ReadAsync(buffer, 0, buffer.Length, currentCancellationToken).ConfigureAwait(false)) != 0)
+                    currentCancellationToken = cancellationToken;
+
+                    read -= RtpHeaderBytes;
+
+                    if (read > 0)
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
+                        fileStream.Write(buffer, RtpHeaderBytes, read);
+                    }
 
-                        currentCancellationToken = cancellationToken;
-
-                        read -= RtpHeaderBytes;
-
-                        if (read > 0)
-                        {
-                            fileStream.Write(buffer, RtpHeaderBytes, read);
-                        }
-
-                        if (!resolved)
-                        {
-                            resolved = true;
-                            DateOpened = DateTime.UtcNow;
-                            Resolve(openTaskCompletionSource);
-                        }
+                    if (!resolved)
+                    {
+                        resolved = true;
+                        DateOpened = DateTime.UtcNow;
+                        Resolve(openTaskCompletionSource);
                     }
                 }
             }

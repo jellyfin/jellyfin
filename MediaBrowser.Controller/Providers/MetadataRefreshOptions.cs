@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Providers
@@ -23,11 +21,6 @@ namespace MediaBrowser.Controller.Providers
 
         public bool ForceSave { get; set; }
         public bool EnableRemoteContentProbe { get; set; }
-
-        public MetadataRefreshOptions(IFileSystem fileSystem)
-			: this(new DirectoryService(new NullLogger(), fileSystem))
-        {
-        }
 
         public MetadataRefreshOptions(IDirectoryService directoryService)
             : base(directoryService)
@@ -52,7 +45,7 @@ namespace MediaBrowser.Controller.Providers
             {
                 if (RefreshPaths == null)
                 {
-                    RefreshPaths = new string[] { };
+                    RefreshPaths = Array.Empty<string>();
                 }
 
                 RefreshPaths = copy.RefreshPaths.ToArray();

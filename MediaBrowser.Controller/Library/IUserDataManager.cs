@@ -5,7 +5,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Threading;
-using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Library
 {

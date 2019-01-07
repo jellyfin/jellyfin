@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using MediaBrowser.Common.Configuration;
 
 namespace Emby.Server.Implementations.AppBase
@@ -13,10 +12,16 @@ namespace Emby.Server.Implementations.AppBase
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths"/> class.
         /// </summary>
-        protected BaseApplicationPaths(string programDataPath, string appFolderPath)
+        protected BaseApplicationPaths(
+            string programDataPath,
+            string appFolderPath,
+            string logDirectoryPath = null,
+            string configurationDirectoryPath = null)
         {
             ProgramDataPath = programDataPath;
             ProgramSystemPath = appFolderPath;
+            LogDirectoryPath = logDirectoryPath;
+            ConfigurationDirectoryPath = configurationDirectoryPath;
         }
 
         public string ProgramDataPath { get; private set; }
@@ -107,6 +112,11 @@ namespace Emby.Server.Implementations.AppBase
         }
 
         /// <summary>
+        /// The _log directory
+        /// </summary>
+        private string _logDirectoryPath;
+
+        /// <summary>
         /// Gets the path to the log directory
         /// </summary>
         /// <value>The log directory path.</value>
@@ -114,9 +124,25 @@ namespace Emby.Server.Implementations.AppBase
         {
             get
             {
-                return Path.Combine(ProgramDataPath, "logs");
+                if (string.IsNullOrEmpty(_logDirectoryPath))
+                {
+                    _logDirectoryPath = Path.Combine(ProgramDataPath, "logs");
+
+                    Directory.CreateDirectory(_logDirectoryPath);
+                }
+
+                return _logDirectoryPath;
+            }
+            set
+            {
+                _logDirectoryPath = value;
             }
         }
+
+        /// <summary>
+        /// The _config directory
+        /// </summary>
+        private string _configurationDirectoryPath;
 
         /// <summary>
         /// Gets the path to the application configuration root directory
@@ -126,7 +152,18 @@ namespace Emby.Server.Implementations.AppBase
         {
             get
             {
-                return Path.Combine(ProgramDataPath, "config");
+                if (string.IsNullOrEmpty(_configurationDirectoryPath))
+                {
+                    _configurationDirectoryPath = Path.Combine(ProgramDataPath, "config");
+
+                    Directory.CreateDirectory(_configurationDirectoryPath);
+                }
+
+                return _configurationDirectoryPath;
+            }
+            set
+            {
+                _configurationDirectoryPath = value;
             }
         }
 

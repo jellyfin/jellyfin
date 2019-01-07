@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using System.Numerics;
@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.Networking
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error binding to NetworkAddressChanged event", ex);
+                    Logger.LogError(ex, "Error binding to NetworkAddressChanged event");
                 }
 
                 try
@@ -45,20 +45,20 @@ namespace Emby.Server.Implementations.Networking
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error binding to NetworkChange_NetworkAvailabilityChanged event", ex);
+                    Logger.LogError(ex, "Error binding to NetworkChange_NetworkAvailabilityChanged event");
                 }
             }
         }
 
         private void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
-            Logger.Debug("NetworkAvailabilityChanged");
+            Logger.LogDebug("NetworkAvailabilityChanged");
             OnNetworkChanged();
         }
 
         private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
         {
-            Logger.Debug("NetworkAddressChanged");
+            Logger.LogDebug("NetworkAddressChanged");
             OnNetworkChanged();
         }
 
@@ -189,7 +189,7 @@ namespace Emby.Server.Implementations.Networking
 
                 foreach (var subnet_Match in subnets)
                 {
-                    //Logger.Debug("subnet_Match:" + subnet_Match);
+                    //logger.LogDebug("subnet_Match:" + subnet_Match);
 
                     if (endpoint.StartsWith(subnet_Match + ".", StringComparison.OrdinalIgnoreCase))
                     {
@@ -355,13 +355,13 @@ namespace Emby.Server.Implementations.Networking
                     try
                     {
                         var host = uri.DnsSafeHost;
-                        Logger.Debug("Resolving host {0}", host);
+                        Logger.LogDebug("Resolving host {0}", host);
 
                         address = GetIpAddresses(host).Result.FirstOrDefault();
 
                         if (address != null)
                         {
-                            Logger.Debug("{0} resolved to {1}", host, address);
+                            Logger.LogDebug("{0} resolved to {1}", host, address);
 
                             return IsInLocalNetworkInternal(address.ToString(), false);
                         }
@@ -372,7 +372,7 @@ namespace Emby.Server.Implementations.Networking
                     }
                     catch (Exception ex)
                     {
-                        Logger.ErrorException("Error resovling hostname", ex);
+                        Logger.LogError(ex, "Error resolving hostname");
                     }
                 }
             }
@@ -399,7 +399,7 @@ namespace Emby.Server.Implementations.Networking
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error in GetAllNetworkInterfaces", ex);
+                Logger.LogError(ex, "Error in GetAllNetworkInterfaces");
                 return new List<IPAddress>();
             }
 
@@ -409,7 +409,7 @@ namespace Emby.Server.Implementations.Networking
                 try
                 {
                     // suppress logging because it might be causing nas device wake up
-                    //Logger.Debug("Querying interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
+                    //logger.LogDebug("Querying interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
 
                     var ipProperties = network.GetIPProperties();
 
@@ -428,7 +428,7 @@ namespace Emby.Server.Implementations.Networking
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error querying network interface", ex);
+                    Logger.LogError(ex, "Error querying network interface");
                     return new List<IPAddress>();
                 }
 

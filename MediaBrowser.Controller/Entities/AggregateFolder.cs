@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Entities
     {
         public AggregateFolder()
         {
-            PhysicalLocationsList = new string[] { };
+            PhysicalLocationsList = Array.Empty<string>();
         }
 
         [IgnoreDataMember]

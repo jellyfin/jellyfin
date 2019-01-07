@@ -12,7 +12,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
@@ -88,7 +88,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 if (line.StartsWith(ExtInfPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     extInf = line.Substring(ExtInfPrefix.Length).Trim();
-                    _logger.Info("Found m3u channel: {0}", extInf);
+                    _logger.LogInformation("Found m3u channel: {0}", extInf);
                 }
                 else if (!string.IsNullOrWhiteSpace(extInf) && !line.StartsWith("#", StringComparison.OrdinalIgnoreCase))
                 {

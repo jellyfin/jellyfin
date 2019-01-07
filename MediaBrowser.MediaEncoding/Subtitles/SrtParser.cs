@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -50,7 +50,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         // This occurs when subtitle text has an empty line as part of the text.
                         // Need to adjust the break statement below to resolve this.
-                        _logger.Warn("Unrecognized line in srt: {0}", line);
+                        _logger.LogWarning("Unrecognized line in srt: {0}", line);
                         continue;
                     }
                     subEvent.StartPositionTicks = GetTicks(time[0]);

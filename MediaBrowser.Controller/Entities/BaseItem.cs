@@ -1,41 +1,32 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Extensions;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -44,24 +35,24 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public abstract class BaseItem : IHasProviderIds, IHasLookupInfo<ItemLookupInfo>
     {
-        protected static MetadataFields[] EmptyMetadataFieldsArray = new MetadataFields[] { };
-        protected static MediaUrl[] EmptyMediaUrlArray = new MediaUrl[] { };
-        protected static ItemImageInfo[] EmptyItemImageInfoArray = new ItemImageInfo[] { };
-        public static readonly LinkedChild[] EmptyLinkedChildArray = new LinkedChild[] { };
+        protected static MetadataFields[] EmptyMetadataFieldsArray = Array.Empty<MetadataFields>();
+        protected static MediaUrl[] EmptyMediaUrlArray = Array.Empty<MediaUrl>();
+        protected static ItemImageInfo[] EmptyItemImageInfoArray = Array.Empty<ItemImageInfo>();
+        public static readonly LinkedChild[] EmptyLinkedChildArray = Array.Empty<LinkedChild>();
 
         protected BaseItem()
         {
-            ThemeSongIds = new Guid[] {};
-            ThemeVideoIds = new Guid[] {};
-            Tags = new string[] {};
-            Genres = new string[] {};
-            Studios = new string[] {};
+            ThemeSongIds = Array.Empty<Guid>();
+            ThemeVideoIds = Array.Empty<Guid>();
+            Tags = Array.Empty<string>();
+            Genres = Array.Empty<string>();
+            Studios = Array.Empty<string>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             LockedFields = EmptyMetadataFieldsArray;
             ImageInfos = EmptyItemImageInfoArray;
-            ProductionLocations = new string[] {};
-            RemoteTrailers = new MediaUrl[] { };
-            ExtraIds = new Guid[] {};
+            ProductionLocations = Array.Empty<string>();
+            RemoteTrailers = Array.Empty<MediaUrl>();
+            ExtraIds = Array.Empty<Guid>();
         }
 
         public static readonly char[] SlugReplaceChars = { '?', '/', '&' };
@@ -71,7 +62,6 @@ namespace MediaBrowser.Controller.Entities
         /// The supported image extensions
         /// </summary>
         public static readonly string[] SupportedImageExtensions = { ".png", ".jpg", ".jpeg", ".tbn", ".gif" };
-        public static readonly List<string> SupportedImageExtensionsList = SupportedImageExtensions.ToList();
 
         /// <summary>
         /// The trailer folder name
@@ -798,7 +788,7 @@ namespace MediaBrowser.Controller.Entities
 
                 builder.Append(chunkBuilder);
             }
-            //Logger.Debug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
+            //logger.LogDebug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
             return builder.ToString().RemoveDiacritics();
         }
 
@@ -1414,7 +1404,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error refreshing owned items for {0}", ex, Path ?? Name);
+                    Logger.LogError(ex, "Error refreshing owned items for {path}", Path ?? Name);
                 }
             }
 
@@ -1802,7 +1792,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (!isAllowed)
                 {
-                    Logger.Debug("{0} has an unrecognized parental rating of {1}.", Name, rating);
+                    Logger.LogDebug("{0} has an unrecognized parental rating of {1}.", Name, rating);
                 }
 
                 return isAllowed;
@@ -2058,7 +2048,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (itemByPath == null)
                 {
-                    //Logger.Warn("Unable to find linked item at path {0}", info.Path);
+                    //Logger.LogWarning("Unable to find linked item at path {0}", info.Path);
                 }
 
                 return itemByPath;
@@ -2070,7 +2060,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (item == null)
                 {
-                    //Logger.Warn("Unable to find linked item at path {0}", info.Path);
+                    //Logger.LogWarning("Unable to find linked item at path {0}", info.Path);
                 }
 
                 return item;
@@ -2213,7 +2203,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public virtual void ChangedExternally()
         {
-            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(FileSystem)
+            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(new DirectoryService(Logger, FileSystem))
             {
 
             }, RefreshPriority.High);
@@ -2904,6 +2894,10 @@ namespace MediaBrowser.Controller.Entities
             return ThemeVideoIds.Select(LibraryManager.GetItemById).Where(i => i.ExtraType.Equals(Model.Entities.ExtraType.ThemeVideo)).OrderBy(i => i.SortName);
         }
 
+        /// <summary>
+        /// Gets or sets the remote trailers.
+        /// </summary>
+        /// <value>The remote trailers.</value>
         public MediaUrl[] RemoteTrailers { get; set; }
 
         public IEnumerable<BaseItem> GetExtras()
@@ -2922,21 +2916,24 @@ namespace MediaBrowser.Controller.Entities
         }
 
         public virtual bool IsHD { 
-            get{ 
+            get
+            {
                 return Height >= 720;
-            } 
+            }
         }
         public bool IsShortcut{ get; set;}
         public string ShortcutPath{ get; set;}
         public int Width { get; set; }
         public int Height { get; set; }
         public Guid[] ExtraIds { get; set; }
-        public virtual long GetRunTimeTicksForPlayState() {
+        public virtual long GetRunTimeTicksForPlayState()
+        {
             return RunTimeTicks ?? 0;
         }
         // what does this do?
         public static ExtraType[] DisplayExtraTypes = new[] {Model.Entities.ExtraType.ThemeSong, Model.Entities.ExtraType.ThemeVideo };
-        public virtual bool SupportsExternalTransfer {
+        public virtual bool SupportsExternalTransfer
+        {
             get {
                 return false;
             }

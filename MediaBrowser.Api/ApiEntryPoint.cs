@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Threading;
 using System.Collections.Generic;
 using System.Threading;
@@ -147,7 +147,7 @@ namespace MediaBrowser.Api
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error deleting encoded media cache", ex);
+                Logger.LogError(ex, "Error deleting encoded media cache");
             }
         }
 
@@ -378,7 +378,7 @@ namespace MediaBrowser.Api
         public void OnTranscodeEndRequest(TranscodingJob job)
         {
             job.ActiveRequestCount--;
-            //Logger.Debug("OnTranscodeEndRequest job.ActiveRequestCount={0}", job.ActiveRequestCount);
+            //Logger.LogDebug("OnTranscodeEndRequest job.ActiveRequestCount={0}", job.ActiveRequestCount);
             if (job.ActiveRequestCount <= 0)
             {
                 PingTimer(job, false);
@@ -391,7 +391,7 @@ namespace MediaBrowser.Api
                 throw new ArgumentNullException("playSessionId");
             }
 
-            //Logger.Debug("PingTranscodingJob PlaySessionId={0} isUsedPaused: {1}", playSessionId, isUserPaused);
+            //Logger.LogDebug("PingTranscodingJob PlaySessionId={0} isUsedPaused: {1}", playSessionId, isUserPaused);
 
             List<TranscodingJob> jobs;
 
@@ -406,7 +406,7 @@ namespace MediaBrowser.Api
             {
                 if (isUserPaused.HasValue)
                 {
-                    //Logger.Debug("Setting job.IsUserPaused to {0}. jobId: {1}", isUserPaused, job.Id);
+                    //Logger.LogDebug("Setting job.IsUserPaused to {0}. jobId: {1}", isUserPaused, job.Id);
                     job.IsUserPaused = isUserPaused.Value;
                 }
                 PingTimer(job, true);
@@ -461,7 +461,7 @@ namespace MediaBrowser.Api
                 }
             }
 
-            Logger.Info("Transcoding kill timer stopped for JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
+            Logger.LogInformation("Transcoding kill timer stopped for JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
 
             KillTranscodingJob(job, true, path => true);
         }
@@ -525,7 +525,7 @@ namespace MediaBrowser.Api
         {
             job.DisposeKillTimer();
 
-            Logger.Debug("KillTranscodingJob - JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
+            Logger.LogDebug("KillTranscodingJob - JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
 
             lock (_activeTranscodingJobs)
             {
@@ -557,7 +557,7 @@ namespace MediaBrowser.Api
                 {
                     try
                     {
-                        Logger.Info("Stopping ffmpeg process with q command for {0}", job.Path);
+                        Logger.LogInformation("Stopping ffmpeg process with q command for {path}", job.Path);
 
                         //process.Kill();
                         process.StandardInput.WriteLine("q");
@@ -565,13 +565,13 @@ namespace MediaBrowser.Api
                         // Need to wait because killing is asynchronous
                         if (!process.WaitForExit(5000))
                         {
-                            Logger.Info("Killing ffmpeg process for {0}", job.Path);
+                            Logger.LogInformation("Killing ffmpeg process for {path}", job.Path);
                             process.Kill();
                         }
                     }
                     catch (Exception ex)
                     {
-                        Logger.ErrorException("Error killing transcoding job for {0}", ex, job.Path);
+                        Logger.LogError(ex, "Error killing transcoding job for {path}", job.Path);
                     }
                 }
             }
@@ -589,7 +589,7 @@ namespace MediaBrowser.Api
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error closing live stream for {0}", ex, job.Path);
+                    Logger.LogError(ex, "Error closing live stream for {path}", job.Path);
                 }
             }
         }
@@ -601,7 +601,7 @@ namespace MediaBrowser.Api
                 return;
             }
 
-            Logger.Info("Deleting partial stream file(s) {0}", path);
+            Logger.LogInformation("Deleting partial stream file(s) {0}", path);
 
             await Task.Delay(delayMs).ConfigureAwait(false);
 
@@ -620,15 +620,15 @@ namespace MediaBrowser.Api
             {
 
             }
-            catch (IOException)
+            catch (IOException ex)
             {
-                //Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
+                Logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
 
                 DeletePartialStreamFiles(path, jobType, retryCount + 1, 500);
             }
-            catch
+            catch (Exception ex)
             {
-                //Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
+                Logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
             }
         }
 
@@ -660,7 +660,7 @@ namespace MediaBrowser.Api
             {
                 try
                 {
-                    //Logger.Debug("Deleting HLS file {0}", file);
+                    //Logger.LogDebug("Deleting HLS file {0}", file);
                     _fileSystem.DeleteFile(file);
                 }
                 catch (FileNotFoundException)
@@ -670,7 +670,7 @@ namespace MediaBrowser.Api
                 catch (IOException ex)
                 {
                     e = ex;
-                    //Logger.ErrorException("Error deleting HLS file {0}", ex, file);
+                    Logger.LogError(ex, "Error deleting HLS file {path}", file);
                 }
             }
 
@@ -802,12 +802,12 @@ namespace MediaBrowser.Api
             {
                 if (KillTimer == null)
                 {
-                    //Logger.Debug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                    //Logger.LogDebug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
                     KillTimer = _timerFactory.Create(callback, this, intervalMs, Timeout.Infinite);
                 }
                 else
                 {
-                    //Logger.Debug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                    //Logger.LogDebug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
                     KillTimer.Change(intervalMs, Timeout.Infinite);
                 }
             }
@@ -826,7 +826,7 @@ namespace MediaBrowser.Api
                 {
                     var intervalMs = PingTimeout;
 
-                    //Logger.Debug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                    //Logger.LogDebug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
                     KillTimer.Change(intervalMs, Timeout.Infinite);
                 }
             }

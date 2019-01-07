@@ -1,14 +1,13 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,17 +15,12 @@ using Emby.Server.Implementations.Services;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Controller;
-using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
 using System.Net.Sockets;
 using Emby.Server.Implementations.Net;
-using MediaBrowser.Common.Events;
 using MediaBrowser.Model.Events;
 
 namespace Emby.Server.Implementations.HttpServer
@@ -184,7 +178,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (WebSocketConnected != null)
             {
-                EventHelper.FireEventIfNotNull(WebSocketConnected, this, new GenericEventArgs<IWebSocketConnection>(connection), _logger);
+                WebSocketConnected?.Invoke(this, new GenericEventArgs<IWebSocketConnection>(connection));
             }
         }
 
@@ -252,11 +246,11 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (logExceptionStackTrace)
                 {
-                    _logger.ErrorException("Error processing request", ex);
+                    _logger.LogError(ex, "Error processing request");
                 }
                 else if (logExceptionMessage)
                 {
-                    _logger.Error(ex.Message);
+                    _logger.LogError(ex.Message);
                 }
 
                 var httpRes = httpReq.Response;
@@ -272,9 +266,9 @@ namespace Emby.Server.Implementations.HttpServer
                 httpRes.ContentType = "text/html";
                 await Write(httpRes, NormalizeExceptionMessage(ex.Message)).ConfigureAwait(false);
             }
-            catch
+            catch (Exception errorEx)
             {
-                //_logger.ErrorException("Error this.ProcessRequest(context)(Exception while writing error to the response)", errorEx);
+                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response)");
             }
         }
 
@@ -320,10 +314,10 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (_listener != null)
             {
-                _logger.Info("Stopping HttpListener...");
+                _logger.LogInformation("Stopping HttpListener...");
                 var task = _listener.Stop();
                 Task.WaitAll(task);
-                _logger.Info("HttpListener stopped");
+                _logger.LogInformation("HttpListener stopped");
             }
         }
 
@@ -713,12 +707,12 @@ namespace Emby.Server.Implementations.HttpServer
             var pathParts = pathInfo.TrimStart('/').Split('/');
             if (pathParts.Length == 0)
             {
-                _logger.Error("Path parts empty for PathInfo: {0}, Url: {1}", pathInfo, httpReq.RawUrl);
+                _logger.LogError("Path parts empty for PathInfo: {pathInfo}, Url: {RawUrl}", pathInfo, httpReq.RawUrl);
                 return null;
             }
 
             string contentType;
-            var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, _logger, out contentType);
+            var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, out contentType);
 
             if (restPath != null)
             {
@@ -729,7 +723,7 @@ namespace Emby.Server.Implementations.HttpServer
                 };
             }
 
-            _logger.Error("Could not find handler for {0}", pathInfo);
+            _logger.LogError("Could not find handler for {pathInfo}", pathInfo);
             return null;
         }
 
@@ -783,7 +777,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             ServiceController = new ServiceController();
 
-            _logger.Info("Calling ServiceStack AppHost.Init");
+            _logger.LogInformation("Calling ServiceStack AppHost.Init");
 
             var types = services.Select(r => r.GetType()).ToArray();
 
@@ -853,7 +847,7 @@ namespace Emby.Server.Implementations.HttpServer
             //using (var reader = new StreamReader(stream))
             //{
             //    var json = reader.ReadToEnd();
-            //    Logger.Info(json);
+            //    logger.LogInformation(json);
             //    return _jsonSerializer.DeserializeFromString(json, type);
             //}
             return _jsonSerializer.DeserializeFromStreamAsync(stream, type);
@@ -919,7 +913,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return Task.CompletedTask;
             }
 
-            //_logger.Debug("Websocket message received: {0}", result.MessageType);
+            _logger.LogDebug("Websocket message received: {0}", result.MessageType);
 
             var tasks = _webSocketListeners.Select(i => Task.Run(async () =>
             {
@@ -929,7 +923,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("{0} failed processing WebSocket message {1}", ex, i.GetType().Name, result.MessageType ?? string.Empty);
+                    _logger.LogError(ex, "{0} failed processing WebSocket message {1}", i.GetType().Name, result.MessageType ?? string.Empty);
                 }
             }));
 

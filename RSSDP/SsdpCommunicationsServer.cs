@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 
 namespace Rssdp.Infrastructure
@@ -131,7 +131,7 @@ namespace Rssdp.Infrastructure
                         }
                         catch (Exception ex)
                         {
-                            _logger.ErrorException("Error in BeginListeningForBroadcasts", ex);
+                            _logger.LogError(ex, "Error in BeginListeningForBroadcasts");
                         }
                     }
                 }
@@ -148,7 +148,7 @@ namespace Rssdp.Infrastructure
             {
                 if (_BroadcastListenSocket != null)
                 {
-                    _logger.Info("{0} disposing _BroadcastListenSocket.", GetType().Name);
+                    _logger.LogInformation("{0} disposing _BroadcastListenSocket.", GetType().Name);
                     _BroadcastListenSocket.Dispose();
                     _BroadcastListenSocket = null;
                 }
@@ -197,7 +197,7 @@ namespace Rssdp.Infrastructure
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error sending socket message from {0} to {1}", ex, socket.LocalIPAddress.ToString(), destination.ToString());
+                _logger.LogError(ex, "Error sending socket message from {0} to {1}", socket.LocalIPAddress.ToString(), destination.ToString());
             }
         }
 
@@ -282,11 +282,11 @@ namespace Rssdp.Infrastructure
                     var sockets = _sendSockets.ToList();
                     _sendSockets = null;
 
-                    _logger.Info("{0} Disposing {1} sendSockets", GetType().Name, sockets.Count);
+                    _logger.LogInformation("{0} Disposing {1} sendSockets", GetType().Name, sockets.Count);
 
                     foreach (var socket in sockets)
                     {
-                        _logger.Info("{0} disposing sendSocket from {1}", GetType().Name, socket.LocalIPAddress);
+                        _logger.LogInformation("{0} disposing sendSocket from {1}", GetType().Name, socket.LocalIPAddress);
                         socket.Dispose();
                     }
                 }
@@ -376,7 +376,7 @@ namespace Rssdp.Infrastructure
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error in CreateSsdpUdpSocket. IPAddress: {0}", ex, address);
+                        _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: {0}", address);
                     }
                 }
             }

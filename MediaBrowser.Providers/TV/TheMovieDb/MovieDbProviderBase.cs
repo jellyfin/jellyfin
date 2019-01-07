@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Movies;
 using System;
@@ -26,14 +26,14 @@ namespace MediaBrowser.Providers.TV
         private readonly ILocalizationManager _localization;
         private readonly ILogger _logger;
 
-        public MovieDbProviderBase(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILogManager logManager)
+        public MovieDbProviderBase(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILoggerFactory loggerFactory)
         {
             _httpClient = httpClient;
             _configurationManager = configurationManager;
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
             _localization = localization;
-            _logger = logManager.GetLogger(GetType().Name);
+            _logger = loggerFactory.CreateLogger(GetType().Name);
         }
 
         protected ILogger Logger

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 using System.Linq;
 using SQLitePCL;
@@ -75,22 +75,22 @@ namespace Emby.Server.Implementations.Data
                 if (!_versionLogged)
                 {
                     _versionLogged = true;
-                    Logger.Info("Sqlite version: " + SQLite3.Version);
-                    Logger.Info("Sqlite compiler options: " + string.Join(",", SQLite3.CompilerOptions.ToArray()));
+                    Logger.LogInformation("Sqlite version: " + SQLite3.Version);
+                    Logger.LogInformation("Sqlite compiler options: " + string.Join(",", SQLite3.CompilerOptions.ToArray()));
                 }
 
                 ConnectionFlags connectionFlags;
 
                 if (isReadOnly)
                 {
-                    //Logger.Info("Opening read connection");
+                    //Logger.LogInformation("Opening read connection");
                     //connectionFlags = ConnectionFlags.ReadOnly;
                     connectionFlags = ConnectionFlags.Create;
                     connectionFlags |= ConnectionFlags.ReadWrite;
                 }
                 else
                 {
-                    //Logger.Info("Opening write connection");
+                    //Logger.LogInformation("Opening write connection");
                     connectionFlags = ConnectionFlags.Create;
                     connectionFlags |= ConnectionFlags.ReadWrite;
                 }
@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.Data
                     {
                         _defaultWal = db.Query("PRAGMA journal_mode").SelectScalarString().First();
 
-                        Logger.Info("Default journal_mode for {0} is {1}", DbFilePath, _defaultWal);
+                        Logger.LogInformation("Default journal_mode for {0} is {1}", DbFilePath, _defaultWal);
                     }
 
                     var queries = new List<string>
@@ -235,7 +235,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             db.ExecuteAll(string.Join(";", queries.ToArray()));
-            Logger.Info("PRAGMA synchronous=" + db.Query("PRAGMA synchronous").SelectScalarString().First());
+            Logger.LogInformation("PRAGMA synchronous=" + db.Query("PRAGMA synchronous").SelectScalarString().First());
         }
 
         protected virtual bool EnableTempStoreMemory
@@ -323,7 +323,7 @@ namespace Emby.Server.Implementations.Data
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error disposing database", ex);
+                Logger.LogError(ex, "Error disposing database");
             }
         }
 

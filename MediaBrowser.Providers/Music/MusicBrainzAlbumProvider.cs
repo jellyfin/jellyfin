@@ -3,7 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
@@ -720,82 +720,6 @@ namespace MediaBrowser.Providers.Music
             return null;
         }
 
-        private long _lastMbzUrlQueryTicks = 0;
-        private List<MbzUrl> _mbzUrls = null;
-        private MbzUrl _chosenUrl;
-
-        private async Task<MbzUrl> GetMbzUrl(bool forceMusicBrainzProper = false)
-        {
-            if (_chosenUrl == null || _mbzUrls == null || (DateTime.UtcNow.Ticks - _lastMbzUrlQueryTicks) > TimeSpan.FromHours(12).Ticks)
-            {
-                var urls = await RefreshMzbUrls(forceMusicBrainzProper).ConfigureAwait(false);
-
-                if (urls.Count > 1)
-                {
-                    _chosenUrl = urls[new Random().Next(0, urls.Count)];
-                }
-                else
-                {
-                    _chosenUrl = urls[0];
-                }
-            }
-
-            return _chosenUrl;
-        }
-
-        private async Task<List<MbzUrl>> RefreshMzbUrls(bool forceMusicBrainzProper = false)
-        {
-            List<MbzUrl> list = null;
-
-            if (!forceMusicBrainzProper)
-            {
-                var musicbrainzadminurl = _appHost.GetValue("musicbrainzadminurl");
-
-                if (!string.IsNullOrEmpty(musicbrainzadminurl))
-                {
-                    try
-                    {
-                        var options = new HttpRequestOptions
-                        {
-                            Url = musicbrainzadminurl,
-                            UserAgent = _appHost.Name + "/" + _appHost.ApplicationVersion
-                        };
-
-                        using (var response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false))
-                        {
-                            using (var stream = response.Content)
-                            {
-                                var results = await _json.DeserializeFromStreamAsync<List<MbzUrl>>(stream).ConfigureAwait(false);
-
-                                list = results;
-                            }
-                        }
-                        _lastMbzUrlQueryTicks = DateTime.UtcNow.Ticks;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error getting music brainz info", ex);
-                    }
-                }
-            }
-
-            if (list == null)
-            {
-                list = new List<MbzUrl>
-                {
-                    new MbzUrl
-                    {
-                        url = MusicBrainzBaseUrl,
-                        throttleMs = 1000
-                    }
-                };
-            }
-
-            _mbzUrls = list.ToList();
-
-            return list;
-        }
-
         internal Task<HttpResponseInfo> GetMusicBrainzResponse(string url, bool isSearch, CancellationToken cancellationToken)
         {
             return GetMusicBrainzResponse(url, isSearch, false, cancellationToken);
@@ -806,13 +730,13 @@ namespace MediaBrowser.Providers.Music
         /// </summary>
         internal async Task<HttpResponseInfo> GetMusicBrainzResponse(string url, bool isSearch, bool forceMusicBrainzProper, CancellationToken cancellationToken)
         {
-            var urlInfo = await GetMbzUrl(forceMusicBrainzProper).ConfigureAwait(false);
+            var urlInfo = new MbzUrl(MusicBrainzBaseUrl, 1000);
             var throttleMs = urlInfo.throttleMs;
 
             if (throttleMs > 0)
             {
                 // MusicBrainz is extremely adamant about limiting to one request per second
-                _logger.Debug("Throttling MusicBrainz by {0}ms", throttleMs.ToString(CultureInfo.InvariantCulture));
+                _logger.LogDebug("Throttling MusicBrainz by {0}ms", throttleMs.ToString(CultureInfo.InvariantCulture));
                 await Task.Delay(throttleMs, cancellationToken).ConfigureAwait(false);
             }
 
@@ -841,6 +765,12 @@ namespace MediaBrowser.Providers.Music
 
         internal class MbzUrl
         {
+            internal MbzUrl(string url, int throttleMs)
+            {
+                this.url = url;
+                this.throttleMs = throttleMs;
+            }
+
             public string url { get; set; }
             public int throttleMs { get; set; }
         }

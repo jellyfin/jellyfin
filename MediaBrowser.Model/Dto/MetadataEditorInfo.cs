@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Providers;
-using System.Collections.Generic;
+using System;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -17,11 +17,11 @@ namespace MediaBrowser.Model.Dto
 
         public MetadataEditorInfo()
         {
-            ParentalRatingOptions = new ParentalRating[] { };
-            Countries = new CountryInfo[] { };
-            Cultures = new CultureDto[] { };
-            ExternalIdInfos = new ExternalIdInfo[] { };
-            ContentTypeOptions = new NameValuePair[] { };
+            ParentalRatingOptions = Array.Empty<ParentalRating>();
+            Countries = Array.Empty<CountryInfo>();
+            Cultures = Array.Empty<CultureDto>();
+            ExternalIdInfos = Array.Empty<ExternalIdInfo>();
+            ContentTypeOptions = Array.Empty<NameValuePair>();
         }
     }
 }

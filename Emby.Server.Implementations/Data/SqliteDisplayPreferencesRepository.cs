@@ -7,7 +7,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using SQLitePCL.pretty;
 
@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Data
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error loading database file. Will reset and retry.", ex);
+                Logger.LogError(ex, "Error loading database file. Will reset and retry.");
 
                 FileSystem.DeleteFile(DbFilePath);
 

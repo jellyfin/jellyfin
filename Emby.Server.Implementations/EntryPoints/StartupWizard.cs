@@ -1,7 +1,7 @@
 ﻿using Emby.Server.Implementations.Browser;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Controller.Configuration;
 
 namespace Emby.Server.Implementations.EntryPoints

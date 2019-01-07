@@ -5,22 +5,6 @@ namespace MediaBrowser.Model.Devices
 {
     public class DeviceInfo
     {
-        /// <summary>
-        /// Gets or sets the name of the reported.
-        /// </summary>
-        /// <value>The name of the reported.</value>
-        public string ReportedName { get; set; }
-        /// <summary>
-        /// Gets or sets the name of the custom.
-        /// </summary>
-        /// <value>The name of the custom.</value>
-        public string CustomName { get; set; }
-        /// <summary>
-        /// Gets or sets the camera upload path.
-        /// </summary>
-        /// <value>The camera upload path.</value>
-        public string CameraUploadPath { get; set; }
-
         public string Name { get; set; }
 
         /// <summary>

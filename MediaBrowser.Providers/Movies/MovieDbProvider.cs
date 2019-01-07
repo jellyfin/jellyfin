@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -146,7 +146,7 @@ namespace MediaBrowser.Providers.Movies
                 return _tmdbSettings;
             }
 
-            using (var response = await GetMovieDbResponse(new HttpRequestOptions
+            using (HttpResponseInfo response = await GetMovieDbResponse(new HttpRequestOptions
             {
                 Url = string.Format(TmdbConfigUrl, ApiKey),
                 CancellationToken = cancellationToken,
@@ -154,7 +154,7 @@ namespace MediaBrowser.Providers.Movies
 
             }).ConfigureAwait(false))
             {
-                using (var json = response.Content)
+                using (Stream json = response.Content)
                 {
                     _tmdbSettings = await _jsonSerializer.DeserializeFromStreamAsync<TmdbSettingsResult>(json).ConfigureAwait(false);
 
@@ -287,7 +287,8 @@ namespace MediaBrowser.Providers.Movies
             if (!string.IsNullOrEmpty(language))
             {
                 // They require this to be uppercase
-                // https://emby.media/community/index.php?/topic/32454-fr-follow-tmdbs-new-language-api-update/?p=311148
+                // Everything after the hyphen must be written in uppercase due to a way TMDB wrote their api.
+                // See here: https://www.themoviedb.org/talk/5119221d760ee36c642af4ad?page=3#56e372a0c3a3685a9e0019ab
                 var parts = language.Split('-');
 
                 if (parts.Length == 2)
@@ -378,7 +379,7 @@ namespace MediaBrowser.Providers.Movies
                 !string.IsNullOrEmpty(language) &&
                 !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
             {
-                _logger.Info("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
+                _logger.LogInformation("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
 
                 url = string.Format(GetMovieInfo3, id, ApiKey) + "&language=en";
 
@@ -424,7 +425,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (delayMs > 0)
             {
-                _logger.Debug("Throttling Tmdb by {0} ms", delayMs);
+                _logger.LogDebug("Throttling Tmdb by {0} ms", delayMs);
                 await Task.Delay(Convert.ToInt32(delayMs)).ConfigureAwait(false);
             }
 

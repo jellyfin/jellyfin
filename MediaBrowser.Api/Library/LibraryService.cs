@@ -32,6 +32,7 @@ using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Library
 {
@@ -1000,7 +1001,7 @@ namespace MediaBrowser.Api.Library
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error refreshing library", ex);
+                    Logger.LogError(ex, "Error refreshing library");
                 }
             });
         }

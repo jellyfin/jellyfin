@@ -7,7 +7,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
@@ -164,7 +164,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 var currentPath = currentImagePath;
 
-                _logger.Info("Deleting previous image {0}", currentPath);
+                _logger.LogInformation("Deleting previous image {0}", currentPath);
 
                 _libraryMonitor.ReportFileSystemChangeBeginning(currentPath);
 
@@ -197,7 +197,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (retry)
                 {
-                    _logger.Error("UnauthorizedAccessException - Access to path {0} is denied. Will retry saving to {1}", path, retryPath);
+                    _logger.LogError("UnauthorizedAccessException - Access to path {0} is denied. Will retry saving to {1}", path, retryPath);
                 }
                 else
                 {
@@ -211,7 +211,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (retry)
                 {
-                    _logger.Error("IOException saving to {0}. {2}. Will retry saving to {1}", path, retryPath, ex.Message);
+                    _logger.LogError(ex, "IOException saving to {0}. Will retry saving to {1}", path, retryPath);
                 }
                 else
                 {
@@ -233,7 +233,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task.</returns>
         private async Task SaveImageToLocation(Stream source, string path, CancellationToken cancellationToken)
         {
-            _logger.Debug("Saving image to {0}", path);
+            _logger.LogDebug("Saving image to {0}", path);
 
             var parentFolder = _fileSystem.GetDirectoryName(path);
 
@@ -271,7 +271,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                _logger.Error("Error setting hidden attribute on {0} - {1}", path, ex.Message);
+                _logger.LogError(ex, "Error setting hidden attribute on {0}", path);
             }
         }
 

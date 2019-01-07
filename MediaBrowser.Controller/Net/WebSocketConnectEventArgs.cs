@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Specialized;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
@@ -7,7 +6,6 @@ namespace MediaBrowser.Controller.Net
     /// <summary>
     /// Class WebSocketConnectEventArgs
     /// </summary>
-
     public class WebSocketConnectingEventArgs : EventArgs
     {
         /// <summary>

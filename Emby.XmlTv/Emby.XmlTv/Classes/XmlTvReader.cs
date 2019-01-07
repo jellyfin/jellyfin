@@ -87,7 +87,7 @@ namespace Emby.XmlTv.Classes
 
             if (string.IsNullOrEmpty(id))
             {
-                //Logger.Error("No id found for channel row");
+                // LogError("No id found for channel row");
                 // Log.Error("  channel#{0} doesnt contain an id", iChannel);
                 return null;
             }
@@ -130,7 +130,7 @@ namespace Emby.XmlTv.Classes
 
             if (string.IsNullOrEmpty(result.DisplayName))
             {
-                //Logger.Error("No display-name found for channel {0}", id);
+                // LogError("No display-name found for channel {0}", id);
                 return null;
             }
 
@@ -302,7 +302,7 @@ namespace Emby.XmlTv.Classes
             var results = new Dictionary<string, int>();
 
             //Loop through and parse out all elements and then lang= attributes
-            //Logger.Info("Loading file {0}", _fileName);
+            //logger.LogInformation("Loading file {0}", _fileName);
             using (var reader = CreateXmlTextReader(_fileName))
             {
                 while (reader.Read())
@@ -1062,7 +1062,7 @@ namespace Emby.XmlTv.Classes
                 }
                 else
                 {
-                    //Logger.Warn("Unable to parse the date {0} from standardised form {1}", dateValue, standardDate);
+                    //Logger.LogWarning("Unable to parse the date {0} from standardised form {1}", dateValue, standardDate);
                 }
             }
 

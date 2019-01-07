@@ -2,7 +2,6 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -15,7 +14,7 @@ using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 using System;
@@ -135,7 +134,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="user">The user.</param>
         private void OnUserUpdated(User user)
         {
-            EventHelper.FireEventIfNotNull(UserUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
+            UserUpdated?.Invoke(this, new GenericEventArgs<User> { Argument = user });
         }
         #endregion
 
@@ -150,7 +149,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="user">The user.</param>
         private void OnUserDeleted(User user)
         {
-            EventHelper.FireEventIfNotNull(UserDeleted, this, new GenericEventArgs<User> { Argument = user }, _logger);
+            UserDeleted?.Invoke(this, new GenericEventArgs<User> { Argument = user });
         }
         #endregion
 
@@ -340,7 +339,7 @@ namespace Emby.Server.Implementations.Library
                 UpdateInvalidLoginAttemptCount(user, user.Policy.InvalidLoginAttemptCount + 1);
             }
 
-            _logger.Info("Authentication request for {0} {1}.", user.Name, success ? "has succeeded" : "has been denied");
+            _logger.LogInformation("Authentication request for {0} {1}.", user.Name, success ? "has succeeded" : "has been denied");
 
             return success ? user : null;
         }
@@ -392,7 +391,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error authenticating with provider {0}", ex, provider.Name);
+                _logger.LogError(ex, "Error authenticating with provider {provider}", provider.Name);
 
                 return false;
             }
@@ -461,7 +460,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (newValue >= maxCount)
                 {
-                    //_logger.Debug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue.ToString(CultureInfo.InvariantCulture));
+                    //_logger.LogDebug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue.ToString(CultureInfo.InvariantCulture));
                     //user.Policy.IsDisabled = true;
 
                     //fireLockout = true;
@@ -471,10 +470,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (fireLockout)
                 {
-                    if (UserLockedOut != null)
-                    {
-                        EventHelper.FireEventIfNotNull(UserLockedOut, this, new GenericEventArgs<User>(user), _logger);
-                    }
+                    UserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
                 }
             }
         }
@@ -575,7 +571,7 @@ namespace Emby.Server.Implementations.Library
                 catch (Exception ex)
                 {
                     // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, user.Name);
+                    _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {user}", user.Name);
                 }
             }
 
@@ -599,7 +595,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting {0} image info for {1}", ex, image.Type, image.Path);
+                _logger.LogError(ex, "Error getting {imageType} image info for {imagePath}", image.Type, image.Path);
                 return null;
             }
         }
@@ -613,7 +609,7 @@ namespace Emby.Server.Implementations.Library
         {
             foreach (var user in Users)
             {
-                await user.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken).ConfigureAwait(false);
+                await user.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -775,7 +771,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (IOException ex)
                 {
-                    _logger.ErrorException("Error deleting file {0}", ex, configPath);
+                    _logger.LogError(ex, "Error deleting file {path}", configPath);
                 }
 
                 DeleteUserPolicy(user);
@@ -820,7 +816,7 @@ namespace Emby.Server.Implementations.Library
 
             UpdateUser(user);
 
-            EventHelper.FireEventIfNotNull(UserPasswordChanged, this, new GenericEventArgs<User>(user), _logger);
+            UserPasswordChanged?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
         public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
@@ -844,7 +840,7 @@ namespace Emby.Server.Implementations.Library
 
             UpdateUser(user);
 
-            EventHelper.FireEventIfNotNull(UserPasswordChanged, this, new GenericEventArgs<User>(user), _logger);
+            UserPasswordChanged?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
         /// <summary>
@@ -1045,7 +1041,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error reading policy file: {0}", ex, path);
+                _logger.LogError(ex, "Error reading policy file: {path}", path);
 
                 return GetDefaultPolicy(user);
             }
@@ -1088,7 +1084,7 @@ namespace Emby.Server.Implementations.Library
 
             if (fireEvent)
             {
-                EventHelper.FireEventIfNotNull(UserPolicyUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
+                UserPolicyUpdated?.Invoke(this, new GenericEventArgs<User> { Argument = user });
             }
         }
 
@@ -1109,7 +1105,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error deleting policy file", ex);
+                _logger.LogError(ex, "Error deleting policy file");
             }
         }
 
@@ -1144,7 +1140,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error reading policy file: {0}", ex, path);
+                _logger.LogError(ex, "Error reading policy file: {path}", path);
 
                 return new UserConfiguration();
             }
@@ -1183,7 +1179,7 @@ namespace Emby.Server.Implementations.Library
 
             if (fireEvent)
             {
-                EventHelper.FireEventIfNotNull(UserConfigurationUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
+                UserConfigurationUpdated?.Invoke(this, new GenericEventArgs<User> { Argument = user });
             }
         }
     }

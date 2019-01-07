@@ -9,7 +9,7 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 
 namespace Emby.Server.Implementations.AppBase
@@ -97,14 +97,14 @@ namespace Emby.Server.Implementations.AppBase
         /// Initializes a new instance of the <see cref="BaseConfigurationManager" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
-        /// <param name="logManager">The log manager.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
-        protected BaseConfigurationManager(IApplicationPaths applicationPaths, ILogManager logManager, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
+        protected BaseConfigurationManager(IApplicationPaths applicationPaths, ILoggerFactory loggerFactory, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
         {
             CommonApplicationPaths = applicationPaths;
             XmlSerializer = xmlSerializer;
             FileSystem = fileSystem;
-            Logger = logManager.GetLogger(GetType().Name);
+            Logger = loggerFactory.CreateLogger(GetType().Name);
 
             UpdateCachePath();
         }
@@ -123,7 +123,7 @@ namespace Emby.Server.Implementations.AppBase
         /// </summary>
         public void SaveConfiguration()
         {
-            Logger.Info("Saving system configuration");
+            Logger.LogInformation("Saving system configuration");
             var path = CommonApplicationPaths.SystemConfigurationFilePath;
 
             FileSystem.CreateDirectory(FileSystem.GetDirectoryName(path));
@@ -259,7 +259,7 @@ namespace Emby.Server.Implementations.AppBase
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error loading configuration file: {0}", ex, path);
+                Logger.LogError(ex, "Error loading configuration file: {path}", path);
 
                 return Activator.CreateInstance(configurationType);
             }
@@ -283,12 +283,11 @@ namespace Emby.Server.Implementations.AppBase
                 validatingStore.Validate(currentConfiguration, configuration);
             }
 
-            EventHelper.FireEventIfNotNull(NamedConfigurationUpdating, this, new ConfigurationUpdateEventArgs
+            NamedConfigurationUpdating?.Invoke( this, new ConfigurationUpdateEventArgs
             {
                 Key = key,
                 NewConfiguration = configuration
-
-            }, Logger);
+            });
 
             _configurations.AddOrUpdate(key, configuration, (k, v) => configuration);
 
@@ -305,12 +304,11 @@ namespace Emby.Server.Implementations.AppBase
 
         protected virtual void OnNamedConfigurationUpdated(string key, object configuration)
         {
-            EventHelper.FireEventIfNotNull(NamedConfigurationUpdated, this, new ConfigurationUpdateEventArgs
+            NamedConfigurationUpdated?.Invoke(this, new ConfigurationUpdateEventArgs
             {
                 Key = key,
                 NewConfiguration = configuration
-
-            }, Logger);
+            });
         }
 
         public Type GetConfigurationType(string key)

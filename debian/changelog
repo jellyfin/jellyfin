@@ -1,3 +1,13 @@
+jellyfin (10.0.0-1) unstable; urgency=medium
+
+  * The first Jellyfin release under our new versioning scheme
+  * Numerous bugfixes and code readability improvements
+  * Updated logging configuration, including flag for it and configdir
+  * Updated theming including logo
+  * Dozens of other improvements as documented in GitHub pull request #419
+
+ -- Joshua Boniface <joshua@boniface.me>  Sat, 05 Jan 2019 15:39:25 -0500
+
 jellyfin (3.5.2-5) unstable; urgency=medium
 
   * Fully GPL'd release - remove tainted code from MediaBrowser.Common
@@ -34,16 +44,3 @@ jellyfin (3.5.2) unstable; urgency=medium
   * Rename from emby-server on version 3.5.2
 
  -- Joshua Boniface <joshua@boniface.me>  Sun, 9 Dec 2018 15:20:58 -0400
-
-emby-server (3.5.2-unlocked) unstable; urgency=medium
-
-  * Taking changes from upstream 3.5.2, beautifying some JS files
-
- -- Vasily <just.one.man@yandex.ru>  Mon, 22 Oct 2018 03:45:13 +0400
-
-emby-server (3.4.1.18-unlocked) unstable; urgency=medium
-
-  * Hard fork of Emby 3.4.1.18 including premium unlock
-
- -- Joshua Boniface <joshua@boniface.me>  Thu, 9 Aug 2018 00:33:19 -0400
-

@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.IO;
@@ -77,7 +77,7 @@ namespace MediaBrowser.Controller.IO
                         if (string.IsNullOrEmpty(newPath))
                         {
                             //invalid shortcut - could be old or target could just be unavailable
-                            logger.Warn("Encountered invalid shortcut: " + fullName);
+                            logger.LogWarning("Encountered invalid shortcut: " + fullName);
                             continue;
                         }
 
@@ -91,7 +91,7 @@ namespace MediaBrowser.Controller.IO
                     }
                     catch (Exception ex)
                     {
-                        logger.ErrorException("Error resolving shortcut from {0}", ex, fullName);
+                        logger.LogError(ex, "Error resolving shortcut from {path}", fullName);
                     }
                 }
                 else if (flattenFolderDepth > 0 && isDirectory)

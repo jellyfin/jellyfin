@@ -28,7 +28,7 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Mono.Nat.Upnp
 {
@@ -42,10 +42,10 @@ namespace Mono.Nat.Upnp
             : base(null)
         {
             if (string.IsNullOrEmpty(description))
-                _logger.Warn("Description is null");
+                _logger.LogWarning("Description is null");
 
             if (hostAddress == null)
-                _logger.Warn("hostaddress is null");
+                _logger.LogWarning("hostaddress is null");
 
             this.servicesDescriptionUrl = description;
             this.hostAddress = hostAddress;

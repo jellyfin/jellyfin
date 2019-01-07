@@ -102,10 +102,11 @@ namespace MediaBrowser.Controller.Entities.TV
             get
             {
                 var seriesId = SeriesId;
-                if (seriesId.Equals(Guid.Empty)) {
+                if (seriesId == Guid.Empty)
+                {
                     seriesId = FindSeriesId();
                 }
-                return !seriesId.Equals(Guid.Empty) ? (LibraryManager.GetItemById(seriesId) as Series) : null;
+                return seriesId == Guid.Empty ? null : (LibraryManager.GetItemById(seriesId) as Series);
             }
         }
 
@@ -227,7 +228,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public Guid FindSeriesId()
         {
             var series = FindParent<Series>();
-            return series == null ? Guid.Empty: series.Id;
+            return series == null ? Guid.Empty : series.Id;
         }
 
         /// <summary>

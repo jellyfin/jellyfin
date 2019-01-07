@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -185,7 +186,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected virtual async Task WaitForMinimumSegmentCount(string playlist, int segmentCount, CancellationToken cancellationToken)
         {
-            Logger.Debug("Waiting for {0} segments in {1}", segmentCount, playlist);
+            Logger.LogDebug("Waiting for {0} segments in {1}", segmentCount, playlist);
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -207,7 +208,7 @@ namespace MediaBrowser.Api.Playback.Hls
                                     count++;
                                     if (count >= segmentCount)
                                     {
-                                        Logger.Debug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
+                                        Logger.LogDebug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
                                         return;
                                     }
                                 }

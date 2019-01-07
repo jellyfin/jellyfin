@@ -11,7 +11,7 @@ using Emby.Dlna.ContentDirectory;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.Globalization;
@@ -173,16 +173,6 @@ namespace Emby.Dlna.Didl
             writer.WriteFullEndElement();
         }
 
-        private ILogger GetStreamBuilderLogger(DlnaOptions options)
-        {
-            if (options.EnableDebugLog)
-            {
-                return _logger;
-            }
-
-            return new NullLogger();
-        }
-
         private string GetMimeType(string input)
         {
             var mime = MimeTypes.GetMimeType(input);
@@ -202,7 +192,7 @@ namespace Emby.Dlna.Didl
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(video, true, _user);
 
-                streamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger(options)).BuildVideoItem(new VideoOptions
+                streamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildVideoItem(new VideoOptions
                 {
                     ItemId = video.Id,
                     MediaSources = sources.ToArray(),
@@ -509,7 +499,7 @@ namespace Emby.Dlna.Didl
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(audio, true, _user);
 
-                streamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger(options)).BuildAudioItem(new AudioOptions
+                streamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildAudioItem(new AudioOptions
                 {
                     ItemId = audio.Id,
                     MediaSources = sources.ToArray(),
@@ -923,9 +913,9 @@ namespace Emby.Dlna.Didl
 
                 writer.WriteFullEndElement();
             }
-            catch (XmlException)
+            catch (XmlException ex)
             {
-                //_logger.Error("Error adding xml value: " + value);
+                _logger.LogError(ex, "Error adding xml value: {value}", name);
             }
         }
 
@@ -935,9 +925,9 @@ namespace Emby.Dlna.Didl
             {
                 writer.WriteElementString(prefix, name, namespaceUri, value);
             }
-            catch (XmlException)
+            catch (XmlException ex)
             {
-                //_logger.Error("Error adding xml value: " + value);
+                _logger.LogError(ex, "Error adding xml value: {value}", value);
             }
         }
 
@@ -1080,9 +1070,9 @@ namespace Emby.Dlna.Didl
             {
                 tag = _imageProcessor.GetImageCacheTag(item, type);
             }
-            catch
+            catch (Exception ex)
             {
-
+                _logger.LogError(ex, "Error getting image cache tag");
             }
 
             int? width = imageInfo.Width;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Cryptography;
 using Emby.Server.Implementations.LiveTv.TunerHosts;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MediaBrowser.Tests

@@ -25,9 +25,9 @@ namespace MediaBrowser.Model.LiveTv
 
         public LiveTvOptions()
         {
-            TunerHosts = new TunerHostInfo[] { };
-            ListingProviders = new ListingsProviderInfo[] { };
-            MediaLocationsCreated = new string[] { };
+            TunerHosts = Array.Empty<TunerHostInfo>();
+            ListingProviders = Array.Empty<ListingsProviderInfo>();
+            MediaLocationsCreated = Array.Empty<string>();
             RecordingPostProcessorArguments = "\"{path}\"";
         }
     }
@@ -76,13 +76,13 @@ namespace MediaBrowser.Model.LiveTv
 
         public ListingsProviderInfo()
         {
-            NewsCategories = new string[] { "news", "journalism", "documentary", "current affairs" };
-            SportsCategories = new string[] { "sports", "basketball", "baseball", "football" };
-            KidsCategories = new string[] { "kids", "family", "children", "childrens", "disney" };
-            MovieCategories = new string[] { "movie" };
-            EnabledTuners = new string[] { };
+            NewsCategories = new [] { "news", "journalism", "documentary", "current affairs" };
+            SportsCategories = new [] { "sports", "basketball", "baseball", "football" };
+            KidsCategories = new [] { "kids", "family", "children", "childrens", "disney" };
+            MovieCategories = new [] { "movie" };
+            EnabledTuners = Array.Empty<string>();
             EnableAllTuners = true;
-            ChannelMappings = new NameValuePair[] {};
+            ChannelMappings = Array.Empty<NameValuePair>();
         }
     }
 }

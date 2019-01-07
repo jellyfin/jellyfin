@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
@@ -259,10 +259,9 @@ namespace MediaBrowser.Controller.Entities
                     {
                         return _libraryManager.GetGenre(i);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Full exception logged at lower levels
-                        _logger.Error("Error getting genre");
+                        _logger.LogError(ex, "Error getting genre");
                         return null;
                     }
 
@@ -383,10 +382,9 @@ namespace MediaBrowser.Controller.Entities
                     {
                         return _libraryManager.GetGenre(i);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Full exception logged at lower levels
-                        _logger.Error("Error getting genre");
+                        _logger.LogError(ex, "Error getting genre");
                         return null;
                     }
 

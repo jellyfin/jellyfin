@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
@@ -18,13 +19,12 @@ namespace MediaBrowser.Controller.Entities.TV
         public Episode()
         {
             RemoteTrailers = EmptyMediaUrlArray;
-            LocalTrailerIds = new Guid[] {};
-            RemoteTrailerIds = new Guid[] {};
+            LocalTrailerIds = Array.Empty<Guid>();
+            RemoteTrailerIds = Array.Empty<Guid>();
         }
 
         public Guid[] LocalTrailerIds { get; set; }
         public Guid[] RemoteTrailerIds { get; set; }
-        public MediaUrl[] RemoteTrailers { get; set; }
 
         /// <summary>
         /// Gets the season in which it aired.
@@ -111,10 +111,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 return 0;
             }
 
-            double value = 16;
-            value /= 9;
-
-            return value;
+            return 16 / 9;
         }
 
         public override List<string> GetUserDataKeys()
@@ -363,7 +360,7 @@ namespace MediaBrowser.Controller.Entities.TV
                     }
                     catch (Exception ex)
                     {
-                        Logger.ErrorException("Error in FillMissingEpisodeNumbersFromPath. Episode: {0}", ex, Path ?? Name ?? Id.ToString());
+                        Logger.LogError(ex, "Error in FillMissingEpisodeNumbersFromPath. Episode: {Episode}", Path ?? Name ?? Id.ToString());
                     }
                 }
             }

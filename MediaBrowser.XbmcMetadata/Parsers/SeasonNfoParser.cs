@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Xml;
 using MediaBrowser.Model.IO;
