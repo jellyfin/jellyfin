@@ -431,10 +431,6 @@ define(["events", "appStorage", "wakeOnLan"], function(events, appStorage, wakeO
             name: name
         });
         return val.substring(val.indexOf("=") + 1).replace("'", "%27")
-    }, ApiClient.prototype.getProductNews = function(options) {
-        options = options || {};
-        var url = this.getUrl("News/Product", options);
-        return this.getJSON(url)
     }, ApiClient.prototype.getDownloadSpeed = function(byteSize) {
         var url = this.getUrl("Playback/BitrateTest", {
                 Size: byteSize
