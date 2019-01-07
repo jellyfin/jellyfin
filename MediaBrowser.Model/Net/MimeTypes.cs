@@ -228,10 +228,10 @@ namespace MediaBrowser.Model.Net
             if (StringHelper.EqualsIgnoreCase(ext, ".oga"))
             {
                 return "audio/ogg";
-			}
-			if (StringHelper.EqualsIgnoreCase(ext, ".opus"))
-			{
-				return "audio/ogg";
+            }
+            if (StringHelper.EqualsIgnoreCase(ext, ".opus"))
+            {
+                return "audio/ogg";
             }
             if (StringHelper.EqualsIgnoreCase(ext, ".ac3"))
             {
