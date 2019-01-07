@@ -238,15 +238,6 @@ define(["datetime", "events", "itemHelper", "serverNotifications", "dom", "globa
                     StartIndex: DashboardPage.newsStartIndex,
                     Limit: 4
                 };
-                ApiClient.getProductNews(query).then(function(result) {
-                    var html = result.Items.map(function(item) {
-                        var itemHtml = "";
-                        itemHtml += '<a class="clearLink" href="' + item.Link + '" target="_blank">', itemHtml += '<div class="listItem listItem-border">', itemHtml += '<i class="listItemIcon md-icon">dvr</i>', itemHtml += '<div class="listItemBody two-line">', itemHtml += '<div class="listItemBodyText">', itemHtml += item.Title, itemHtml += "</div>", itemHtml += '<div class="listItemBodyText secondary">';
-                        var date = datetime.parseISO8601Date(item.Date, !0);
-                        return itemHtml += datetime.toLocaleDateString(date), itemHtml += "</div>", itemHtml += "</div>", itemHtml += "</div>", itemHtml += "</a>"
-                    });
-                    page.querySelector(".latestNewsItems").innerHTML = html.join("")
-                })
             },
             startInterval: function(apiClient) {
                 apiClient.sendMessage("SessionsStart", "0,1500"), apiClient.sendMessage("ScheduledTasksInfoStart", "0,1000")
@@ -510,19 +501,17 @@ define(["datetime", "events", "itemHelper", "serverNotifications", "dom", "globa
                 var page = this,
                     apiClient = ApiClient;
                 if (apiClient) {
-                    DashboardPage.newsStartIndex = 0, loading.show(), pollForInfo(page, apiClient), DashboardPage.startInterval(apiClient), events.on(serverNotifications, "RestartRequired", onRestartRequired), events.on(serverNotifications, "ServerShuttingDown", onServerShuttingDown), events.on(serverNotifications, "ServerRestarting", onServerRestarting), events.on(serverNotifications, "PackageInstalling", onPackageInstalling), events.on(serverNotifications, "PackageInstallationCompleted", onPackageInstallationCompleted), events.on(serverNotifications, "Sessions", onSessionsUpdate),
+                    loading.show(), pollForInfo(page, apiClient), DashboardPage.startInterval(apiClient), events.on(serverNotifications, "RestartRequired", onRestartRequired), events.on(serverNotifications, "ServerShuttingDown", onServerShuttingDown), events.on(serverNotifications, "ServerRestarting", onServerRestarting), events.on(serverNotifications, "PackageInstalling", onPackageInstalling), events.on(serverNotifications, "PackageInstallationCompleted", onPackageInstallationCompleted), events.on(serverNotifications, "Sessions", onSessionsUpdate),
                         events.on(serverNotifications, "ScheduledTasksInfo", onScheduledTasksUpdate), DashboardPage.lastAppUpdateCheck = null, DashboardPage.lastPluginUpdateCheck = null, getPluginSecurityInfo().then(function(pluginSecurityInfo) {
                             DashboardPage.renderSupporterIcon(page, pluginSecurityInfo)
-                        }), reloadSystemInfo(page, ApiClient), DashboardPage.reloadNews(page), page.userActivityLog || (page.userActivityLog = new ActivityLog({
+                        }), reloadSystemInfo(page, ApiClient), page.userActivityLog || (page.userActivityLog = new ActivityLog({
                             serverId: ApiClient.serverId(),
                             element: page.querySelector(".userActivityItems")
                         })), ApiClient.isMinServerVersion("3.4.1.25") && (page.serverActivityLog || (page.serverActivityLog = new ActivityLog({
                             serverId: ApiClient.serverId(),
                             element: page.querySelector(".serverActivityItems")
                         })));
-                    //FIXME: There is no jellyfin swagger instance, as such this url is currently invalid
-                    var swaggerUrl = "http://swagger.jellyfin.media?url=" + ApiClient.getUrl("openapi");
-                    swaggerUrl = swaggerUrl + "&api_key=" + ApiClient.accessToken(), page.querySelector(".swaggerLink").setAttribute("href", swaggerUrl), refreshActiveRecordings(view, apiClient)
+                    refreshActiveRecordings(view, apiClient), loading.hide()
                 }
             }), view.addEventListener("viewbeforehide", function() {
                 var apiClient = ApiClient;
