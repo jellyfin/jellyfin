@@ -808,16 +808,6 @@ define(["events", "appStorage", "wakeOnLan"], function(events, appStorage, wakeO
             },
             url = this.getUrl("Packages/" + name, options);
         return this.getJSON(url)
-    }, ApiClient.prototype.getAvailableApplicationUpdate = function() {
-        var url = this.getUrl("Packages/Updates", {
-            PackageType: "System"
-        });
-        return this.getJSON(url)
-    }, ApiClient.prototype.getAvailablePluginUpdates = function() {
-        var url = this.getUrl("Packages/Updates", {
-            PackageType: "UserInstalled"
-        });
-        return this.getJSON(url)
     }, ApiClient.prototype.getVirtualFolders = function() {
         var url = "Library/VirtualFolders";
         return url = this.getUrl(url), this.getJSON(url)
