@@ -21,4 +21,4 @@ trap cleanup EXIT INT
 docker build . -t "$image_name" -f ./Dockerfile.debian_package
 docker run --rm -v "$package_temporary_dir:/temp" "$image_name" cp -r /dist /temp/
 sudo chown -R "$current_user" "$package_temporary_dir"
-mv "$package_temporary_dir"/dist/*.deb ../
+mv "$package_temporary_dir"/dist/* ../

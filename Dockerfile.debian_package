@@ -17,6 +17,6 @@ COPY . .
 RUN yes|mk-build-deps -i \
  && dpkg-buildpackage -us -uc \
  && mkdir /dist \
- && mv /jellyfin*deb /dist
+ && mv /jellyfin* /dist
 
 WORKDIR /dist
