@@ -59,7 +59,7 @@
 }
 
 .mdl-switch__input:checked+.mdl-switch__label+.mdl-switch__trackContainer>.mdl-switch__track {
-    background: rgba(82, 181, 75, .5)
+    background: rgba(0,164,220, .5)
 }
 
 .mdl-switch__input[disabled]+.mdl-switch__label+.mdl-switch__trackContainer>.mdl-switch__track {
@@ -100,7 +100,7 @@
 }
 
 .mdl-switch__input:checked+.mdl-switch__label+.mdl-switch__trackContainer>.mdl-switch__thumb {
-    background: #52b54b;
+    background: #00a4dc;
     left: 1.466em;
     -webkit-box-shadow: 0 3px .28em 0 rgba(0, 0, 0, .14), 0 3px 3px -2px rgba(0, 0, 0, .2), 0 1px .56em 0 rgba(0, 0, 0, .12);
     box-shadow: 0 3px .28em 0 rgba(0, 0, 0, .14), 0 3px 3px -2px rgba(0, 0, 0, .2), 0 1px .56em 0 rgba(0, 0, 0, .12)
@@ -133,9 +133,9 @@
 }
 
 .mdl-switch__input:checked:focus+.mdl-switch__label+.mdl-switch__trackContainer .mdl-switch__focus-helper {
-    -webkit-box-shadow: 0 0 0 1.39em rgba(82, 181, 75, .26);
-    box-shadow: 0 0 0 1.39em rgba(82, 181, 75, .26);
-    background-color: rgba(82, 181, 75, .26)
+    -webkit-box-shadow: 0 0 0 1.39em rgba(0,164,220, .26);
+    box-shadow: 0 0 0 1.39em rgba(0,164,220, .26);
+    background-color: rgba(0,164,220, .26)
 }
 
 .mdl-switch__label {
