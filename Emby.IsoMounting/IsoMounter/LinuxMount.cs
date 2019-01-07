@@ -48,7 +48,7 @@ namespace IsoMounter
             if (disposed) {
                 return;
             }
-            
+
             if (disposing) {
 
                 //

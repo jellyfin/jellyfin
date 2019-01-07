@@ -25,7 +25,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IMediaEncoder _mediaEncoder;
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         public EncodingJobFactory(ILogger logger, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager, IConfigurationManager config, IMediaEncoder mediaEncoder)
         {
             _logger = logger;
@@ -255,7 +255,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (profile == null)
             {
-                // Don't use settings from the default profile. 
+                // Don't use settings from the default profile.
                 // Only use a specific profile if it was requested.
                 return;
             }

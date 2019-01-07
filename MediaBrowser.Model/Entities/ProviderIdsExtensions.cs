@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.Entities
         {
             return !string.IsNullOrEmpty(instance.GetProviderId(provider.ToString()));
         }
-        
+
         /// <summary>
         /// Gets a provider id
         /// </summary>
@@ -65,7 +65,7 @@ namespace MediaBrowser.Model.Entities
             {
                 throw new ArgumentNullException("instance");
             }
-            
+
             // If it's null remove the key from the dictionary
             if (string.IsNullOrEmpty(value))
             {

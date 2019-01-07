@@ -28,7 +28,7 @@ namespace MediaBrowser.Model.Net
         public HttpException(string message, Exception innerException)
             : base(message, innerException)
         {
-            
+
         }
 
         /// <summary>

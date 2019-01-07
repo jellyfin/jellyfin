@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.Net
 
         protected virtual void ParseMessageParams(string[] values)
         {
-            
+
         }
 
         /// <summary>

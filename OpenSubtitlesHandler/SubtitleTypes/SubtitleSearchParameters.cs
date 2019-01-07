@@ -68,7 +68,7 @@ namespace OpenSubtitlesHandler
         /// </summary>
         public string MovieHash { get { return movieHash; } set { movieHash = value; } }
         /// <summary>
-        /// Size of video file in bytes 
+        /// Size of video file in bytes
         /// </summary>
         public long MovieByteSize { get { return movieByteSize; } set { movieByteSize = value; } }
         /// <summary>

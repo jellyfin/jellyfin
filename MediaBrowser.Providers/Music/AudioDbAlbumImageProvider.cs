@@ -29,7 +29,7 @@ namespace MediaBrowser.Providers.Music
         {
             return new List<ImageType>
             {
-                ImageType.Primary, 
+                ImageType.Primary,
                 ImageType.Disc
             };
         }
@@ -81,7 +81,7 @@ namespace MediaBrowser.Providers.Music
 
             return list;
         }
-        
+
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClient.GetResponse(new HttpRequestOptions

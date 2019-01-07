@@ -55,7 +55,7 @@ namespace Emby.Naming.Video
         /// Gets or sets the type of the stub.
         /// </summary>
         /// <value>The type of the stub.</value>
-        public string StubType { get; set; }        
+        public string StubType { get; set; }
         /// <summary>
         /// Gets or sets the type.
         /// </summary>

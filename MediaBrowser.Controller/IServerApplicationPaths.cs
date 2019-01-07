@@ -16,7 +16,7 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The application resources path.</value>
         string ApplicationResourcesPath { get; }
-        
+
         /// <summary>
         /// Gets the path to the default user view directory.  Used if no specific user view is defined.
         /// </summary>

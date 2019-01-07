@@ -57,7 +57,7 @@ namespace MediaBrowser.Providers.Music
         {
             return new List<ImageType>
             {
-                ImageType.Primary, 
+                ImageType.Primary,
                 ImageType.Disc
             };
         }

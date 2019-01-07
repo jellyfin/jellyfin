@@ -159,7 +159,7 @@ namespace Emby.Server.Implementations.IO
             var firstChar = filePath[0];
             if (firstChar == '/')
             {
-                // For this we don't really know. 
+                // For this we don't really know.
                 return filePath;
             }
             if (firstChar == '\\') //relative path

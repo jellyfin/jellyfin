@@ -167,9 +167,9 @@ namespace Priority_Queue
         }
 
         /// <summary>
-        /// Removes an item from the queue.  The item does not need to be the head of the queue.  
+        /// Removes an item from the queue.  The item does not need to be the head of the queue.
         /// If the item is not in the queue, an exception is thrown.  If unsure, check Contains() first.
-        /// If multiple copies of the item are enqueued, only the first one is removed. 
+        /// If multiple copies of the item are enqueued, only the first one is removed.
         /// O(n)
         /// </summary>
         public void Remove(TItem item)

@@ -41,7 +41,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             {
                 // Behind special folder resolver
                 return ResolverPriority.Second;
-            } 
+            }
         }
 
         /// <summary>

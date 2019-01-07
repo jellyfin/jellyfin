@@ -739,7 +739,7 @@ namespace Emby.Dlna.PlayTo
 
             if (track == null)
             {
-                //If track is null, some vendors do this, use GetMediaInfo instead                    
+                //If track is null, some vendors do this, use GetMediaInfo instead
                 return new Tuple<bool, uBaseObject>(true, null);
             }
 

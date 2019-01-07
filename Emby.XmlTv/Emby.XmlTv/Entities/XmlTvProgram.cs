@@ -13,7 +13,7 @@ namespace Emby.XmlTv.Entities
         public DateTimeOffset EndDate { get; set; }
 
         public string Title { get; set; }
-        
+
         public string Description { get; set; }
         public string ProgramId { get; set; }
         public string Quality { get; set; }

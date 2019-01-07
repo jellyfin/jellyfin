@@ -315,9 +315,9 @@ namespace IsoMounter
                 );
 
             } else {
-                
+
                 throw new ArgumentNullException(nameof(isoPath));
-            
+
             }
 
             try
@@ -397,9 +397,9 @@ namespace IsoMounter
                 );
 
             } else {
-                
+
                 throw new ArgumentNullException(nameof(mount));
-            
+
             }
 
             if (GetUID() == 0) {
@@ -444,7 +444,7 @@ namespace IsoMounter
         }
 
         #endregion
-  
+
         #region Internal Methods
 
         internal void OnUnmount(LinuxMount mount)

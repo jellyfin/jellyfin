@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The name.</value>
         public string DisplayName { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the game count.
         /// </summary>

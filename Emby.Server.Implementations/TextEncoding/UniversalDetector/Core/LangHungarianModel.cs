@@ -36,15 +36,15 @@
  * ***** END LICENSE BLOCK ***** */
 
 namespace UniversalDetector.Core
-{   
+{
     public abstract class HungarianModel : SequenceModel
     {
-        //Model Table: 
+        //Model Table:
         //total sequences: 100%
         //first 512 sequences: 94.7368%
         //first 1024 sequences:5.2623%
         //rest  sequences:     0.8894%
-        //negative sequences:  0.0009% 
+        //negative sequences:  0.0009%
         private readonly static byte[] HUNGARIAN_LANG_MODEL = {
             0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
             3,3,3,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,3,2,2,3,3,1,1,2,2,2,2,2,1,2,
@@ -176,13 +176,13 @@ namespace UniversalDetector.Core
             0,1,1,1,1,1,1,0,1,1,0,1,0,1,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,
         };
 
-        public HungarianModel(byte[] charToOrderMap, string name) 
-            : base(charToOrderMap, HUNGARIAN_LANG_MODEL, 0.947368f, 
+        public HungarianModel(byte[] charToOrderMap, string name)
+            : base(charToOrderMap, HUNGARIAN_LANG_MODEL, 0.947368f,
                    false, name)
         {
-        }        
+        }
     }
-    
+
     public class Latin2HungarianModel : HungarianModel
     {
         private readonly static byte[] LATIN2_CHAR_TO_ORDER_MAP = {
@@ -203,12 +203,12 @@ namespace UniversalDetector.Core
              82, 14, 74,242, 70, 80,243, 72,244, 15, 83, 77, 84, 30, 76, 85,
             245,246,247, 25, 73, 42, 24,248,249,250, 31, 56, 29,251,252,253,
         };
-        
+
         public Latin2HungarianModel() : base(LATIN2_CHAR_TO_ORDER_MAP, "ISO-8859-2")
         {
         }
     }
-    
+
     public class Win1250HungarianModel : HungarianModel
     {
         private readonly static byte[] WIN1250_CHAR_TO_ORDER_MAP = {
@@ -229,7 +229,7 @@ namespace UniversalDetector.Core
              84, 14, 75,242, 71, 82,243, 73,244, 15, 85, 79, 86, 30, 77, 87,
             245,246,247, 25, 74, 42, 24,248,249,250, 31, 56, 29,251,252,253,
         };
-        
+
         public Win1250HungarianModel() : base(WIN1250_CHAR_TO_ORDER_MAP, "windows-1250")
         {
         }

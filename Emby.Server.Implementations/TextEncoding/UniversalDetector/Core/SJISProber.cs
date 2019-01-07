@@ -21,7 +21,7 @@
  * Contributor(s):
  *          Shy Shalom <shooshX@gmail.com>
  *          Rudi Pettazzi <rudi.pettazzi@gmail.com> (C# port)
- * 
+ *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -50,25 +50,25 @@ namespace UniversalDetector.Core
         private SJISContextAnalyser contextAnalyser;
         private SJISDistributionAnalyser distributionAnalyser;
         private byte[] lastChar = new byte[2];
-    
+
         public SJISProber()
         {
             codingSM = new CodingStateMachine(new SJISSMModel());
             distributionAnalyser = new SJISDistributionAnalyser();
-            contextAnalyser = new SJISContextAnalyser(); 
+            contextAnalyser = new SJISContextAnalyser();
             Reset();
         }
-        
+
         public override string GetCharsetName()
         {
-            return "Shift-JIS";        
+            return "Shift-JIS";
         }
-        
+
         public override ProbingState HandleData(byte[] buf, int offset, int len)
         {
             int codingState;
             int max = offset + len;
-            
+
             for (int i = offset; i < max; i++) {
                 codingState = codingSM.NextState(buf[i]);
                 if (codingState == SMModel.ERROR) {
@@ -90,7 +90,7 @@ namespace UniversalDetector.Core
                         distributionAnalyser.HandleOneChar(buf, i-1, charLen);
                     }
                 }
-            } 
+            }
             lastChar[0] = buf[max-1];
             if (state == ProbingState.Detecting)
                 if (contextAnalyser.GotEnoughData() && GetConfidence() > SHORTCUT_THRESHOLD)
@@ -100,12 +100,12 @@ namespace UniversalDetector.Core
 
         public override void Reset()
         {
-            codingSM.Reset(); 
+            codingSM.Reset();
             state = ProbingState.Detecting;
             contextAnalyser.Reset();
             distributionAnalyser.Reset();
         }
-        
+
         public override float GetConfidence()
         {
             float contxtCf = contextAnalyser.GetConfidence();

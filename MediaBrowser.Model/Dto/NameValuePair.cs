@@ -5,7 +5,7 @@ namespace MediaBrowser.Model.Dto
     {
         public NameValuePair()
         {
-            
+
         }
 
         public NameValuePair(string name, string value)

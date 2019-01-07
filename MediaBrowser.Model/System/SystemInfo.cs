@@ -17,7 +17,7 @@ namespace MediaBrowser.Model.System
         public string OperatingSystemDisplayName { get; set; }
 
         public string PackageName { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance has pending restart.
         /// </summary>

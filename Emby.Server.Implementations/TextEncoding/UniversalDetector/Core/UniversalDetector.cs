@@ -21,7 +21,7 @@
  * Contributor(s):
  *          Shy Shalom <shooshX@gmail.com>
  *          Rudi Pettazzi <rudi.pettazzi@gmail.com> (C# port)
- * 
+ *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -41,7 +41,7 @@ namespace UniversalDetector.Core
 
     enum InputState { PureASCII=0, EscASCII=1, Highbyte=2 };
 
-    public abstract class UniversalDetector 
+    public abstract class UniversalDetector
     {
         protected const int FILTER_CHINESE_SIMPLIFIED = 1;
         protected const int FILTER_CHINESE_TRADITIONAL = 2;
@@ -49,12 +49,12 @@ namespace UniversalDetector.Core
         protected const int FILTER_KOREAN = 8;
         protected const int FILTER_NON_CJK = 16;
         protected const int FILTER_ALL = 31;
-        protected static int FILTER_CHINESE = 
+        protected static int FILTER_CHINESE =
             FILTER_CHINESE_SIMPLIFIED | FILTER_CHINESE_TRADITIONAL;
-        protected static int FILTER_CJK = 
-                FILTER_JAPANESE | FILTER_KOREAN | FILTER_CHINESE_SIMPLIFIED 
+        protected static int FILTER_CJK =
+                FILTER_JAPANESE | FILTER_KOREAN | FILTER_CHINESE_SIMPLIFIED
                 | FILTER_CHINESE_TRADITIONAL;
-        
+
         protected const float SHORTCUT_THRESHOLD = 0.95f;
         protected const float MINIMUM_THRESHOLD = 0.20f;
 
@@ -70,16 +70,16 @@ namespace UniversalDetector.Core
         protected CharsetProber escCharsetProber;
         protected string detectedCharset;
 
-        public UniversalDetector(int languageFilter) { 
+        public UniversalDetector(int languageFilter) {
             this.start = true;
             this.inputState = InputState.PureASCII;
-            this.lastChar = 0x00;   
+            this.lastChar = 0x00;
             this.bestGuess = -1;
             this.languageFilter = languageFilter;
         }
 
         public virtual void Feed(byte[] buf, int offset, int len)
-        { 
+        {
             if (done) {
                 return;
             }
@@ -125,7 +125,7 @@ namespace UniversalDetector.Core
             }
 
             for (int i = 0; i < len; i++) {
-                
+
                 // other than 0xa0, if every other character is ascii, the page is ascii
                 if ((buf[i] & 0x80) != 0 && buf[i] != 0xA0)  {
                     // we got a non-ascii byte (high-byte)
@@ -143,9 +143,9 @@ namespace UniversalDetector.Core
                         if (charsetProbers[1] == null)
                             charsetProbers[1] = new SBCSGroupProber();
                         if (charsetProbers[2] == null)
-                            charsetProbers[2] = new Latin1Prober(); 
+                            charsetProbers[2] = new Latin1Prober();
                     }
-                } else { 
+                } else {
                     if (inputState == InputState.PureASCII &&
                         (buf[i] == 0x33 || (buf[i] == 0x7B && lastChar == 0x7E))) {
                         // found escape character or HZ "~{"
@@ -154,9 +154,9 @@ namespace UniversalDetector.Core
                     lastChar = buf[i];
                 }
             }
-            
+
             ProbingState st = ProbingState.NotMe;
-            
+
             switch (inputState) {
                 case InputState.EscASCII:
                     if (escCharsetProber == null) {
@@ -172,18 +172,18 @@ namespace UniversalDetector.Core
                     for (int i = 0; i < PROBERS_NUM; i++) {
                         if (charsetProbers[i] != null) {
                             st = charsetProbers[i].HandleData(buf, offset, len);
-                            #if DEBUG                            
+                            #if DEBUG
                             charsetProbers[i].DumpStatus();
-                            #endif                        
+                            #endif
                             if (st == ProbingState.FoundIt) {
                                 done = true;
                                 detectedCharset = charsetProbers[i].GetCharsetName();
                                 return;
-                            }  
+                            }
                         }
                     }
                     break;
-                default:  
+                default:
                     // pure ascii
                     break;
             }
@@ -191,13 +191,13 @@ namespace UniversalDetector.Core
         }
 
         /// <summary>
-        /// Notify detector that no further data is available. 
+        /// Notify detector that no further data is available.
         /// </summary>
         public virtual void DataEnd()
         {
             if (!gotData) {
-                // we haven't got any data yet, return immediately 
-                // caller program sometimes call DataEnd before anything has 
+                // we haven't got any data yet, return immediately
+                // caller program sometimes call DataEnd before anything has
                 // been sent to detector
                 return;
             }
@@ -206,7 +206,7 @@ namespace UniversalDetector.Core
                 done = true;
                 Report(detectedCharset, 1.0f);
                 return;
-            } 
+            }
 
             if (inputState == InputState.Highbyte) {
                 float proberConfidence = 0.0f;
@@ -221,22 +221,22 @@ namespace UniversalDetector.Core
                         }
                     }
                 }
-                
+
                 if (maxProberConfidence > MINIMUM_THRESHOLD) {
                     Report(charsetProbers[maxProber].GetCharsetName(), maxProberConfidence);
-                } 
-                
+                }
+
             } else if (inputState == InputState.PureASCII) {
                 Report("ASCII", 1.0f);
-            } 
+            }
         }
 
         /// <summary>
         /// Clear internal state of charset detector.
-        /// In the original interface this method is protected. 
+        /// In the original interface this method is protected.
         /// </summary>
-        public virtual void Reset() 
-        { 
+        public virtual void Reset()
+        {
             done = false;
             start = true;
             detectedCharset = null;
@@ -250,7 +250,7 @@ namespace UniversalDetector.Core
                 if (charsetProbers[i] != null)
                     charsetProbers[i].Reset();
         }
-        
+
         protected abstract void Report(string charset, float confidence);
 
     }
