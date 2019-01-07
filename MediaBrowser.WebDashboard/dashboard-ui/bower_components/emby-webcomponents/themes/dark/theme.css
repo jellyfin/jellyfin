@@ -310,15 +310,16 @@ html {
 }
 
 .emby-tab-button-active {
-    color: #00a4dc
-}
-
-.emby-tab-button-active.emby-button-tv {
     color: #fff
 }
 
+.emby-tab-button-active.emby-button-tv {
+    color: #999;
+    color: rgba(255, 255, 255, .4)
+}
+
 .emby-tab-button.emby-button-tv:focus {
-    color: #00a4dc;
+    color: #fff;
     background: 0 0
 }
 
