@@ -7,7 +7,7 @@ html {
 .wizardStartForm,
 .ui-corner-all,
 .ui-shadow {
-  background-color: #1a1a1a
+  background-color: #101010
 }
 
 .emby-collapsible-button {
@@ -16,7 +16,7 @@ html {
 }
 
 .skinHeader-withBackground {
-    background-color: #1a1a1a
+    background-color: #101010
 }
 
 .skinHeader.semiTransparent {
@@ -36,7 +36,7 @@ html {
 .backgroundContainer,
 .dialog,
 html {
-    background-color: #1a1a1a
+    background-color: #101010
 }
 
 .backgroundContainer.withBackdrop {
@@ -379,10 +379,10 @@ html {
 }
 
 .itemBackdropFader {
-    background: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0)), to(#1a1a1a));
-    background: -webkit-linear-gradient(rgba(0, 0, 0, 0), #1a1a1a);
-    background: -o-linear-gradient(rgba(0, 0, 0, 0), #1a1a1a);
-    background: linear-gradient(rgba(0, 0, 0, 0), #1a1a1a)
+    background: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0)), to(#101010));
+    background: -webkit-linear-gradient(rgba(0, 0, 0, 0), #101010);
+    background: -o-linear-gradient(rgba(0, 0, 0, 0), #101010);
+    background: linear-gradient(rgba(0, 0, 0, 0), #101010)
 }
 
 .infoBanner {
