@@ -28,11 +28,11 @@ namespace SocketHttpListener.Net
         // The raw path is parsed by looping through all characters from left to right. 'rawOctets'
         // is used to store consecutive percent encoded octets as actual byte values: e.g. for path /pa%C3%84th%2F/
         // rawOctets will be set to { 0xC3, 0x84 } when we reach character 't' and it will be { 0x2F } when
-        // we reach the final '/'. I.e. after a sequence of percent encoded octets ends, we use rawOctets as 
+        // we reach the final '/'. I.e. after a sequence of percent encoded octets ends, we use rawOctets as
         // input to the encoding and percent encode the resulting string into UTF-8 octets.
         //
         // When parsing ANSI (Latin 1) encoded path '/pa%C4th/', %C4 will be added to rawOctets and when
-        // we reach 't', the content of rawOctets { 0xC4 } will be fed into the ANSI encoding. The resulting 
+        // we reach 't', the content of rawOctets { 0xC4 } will be fed into the ANSI encoding. The resulting
         // string 'Ä' will be percent encoded into UTF-8 octets and appended to requestUriString. The final
         // path will be '/pa%C3%84th/', where '%C3%84' is the UTF-8 percent encoded character 'Ä'.
         private List<byte> _rawOctets;
@@ -146,7 +146,7 @@ namespace SocketHttpListener.Net
 
                 if (!Uri.TryCreate(_requestUriString.ToString(), UriKind.Absolute, out _requestUri))
                 {
-                    // If we can't create a Uri from the string, this is an invalid string and it doesn't make 
+                    // If we can't create a Uri from the string, this is an invalid string and it doesn't make
                     // sense to try another encoding.
                     result = ParsingResult.InvalidString;
                 }
@@ -196,7 +196,7 @@ namespace SocketHttpListener.Net
                     }
                     else
                     {
-                        // We found '%', but not followed by 'u', i.e. we have a percent encoded octed: %XX 
+                        // We found '%', but not followed by 'u', i.e. we have a percent encoded octed: %XX
                         if (!AddPercentEncodedOctetToRawOctetsList(encoding, _rawPath.Substring(index, 2)))
                         {
                             return ParsingResult.InvalidString;
@@ -207,7 +207,7 @@ namespace SocketHttpListener.Net
                 else
                 {
                     // We found a non-'%' character: decode the content of rawOctets into percent encoded
-                    // UTF-8 characters and append it to the result. 
+                    // UTF-8 characters and append it to the result.
                     if (!EmptyDecodeAndAppendRawOctetsList(encoding))
                     {
                         return ParsingResult.EncodingError;
@@ -402,7 +402,7 @@ namespace SocketHttpListener.Net
 
             // Find end of path: The path is terminated by
             // - the first '?' character
-            // - the first '#' character: This is never the case here, since http.sys won't accept 
+            // - the first '#' character: This is never the case here, since http.sys won't accept
             //   Uris containing fragments. Also, RFC2616 doesn't allow fragments in request Uris.
             // - end of Uri string
             int queryIndex = uriString.IndexOf('?');

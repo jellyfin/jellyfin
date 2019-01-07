@@ -41,7 +41,7 @@ namespace Emby.Server.Implementations.Browser
             }
             catch (NotSupportedException)
             {
-                
+
             }
             catch (Exception)
             {

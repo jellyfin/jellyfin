@@ -62,13 +62,13 @@ namespace MediaBrowser.Controller.Entities
                 item.SetImagePath(imageType, BaseItem.FileSystem.GetFileInfo(file));
             }
         }
-        
+
         /// <summary>
         /// Copies all properties on object. Skips properties that do not exist.
         /// </summary>
         /// <param name="source">The source object.</param>
         /// <param name="dest">The destination object.</param>
-        public static void DeepCopy<T, TU>(this T source, TU dest) 
+        public static void DeepCopy<T, TU>(this T source, TU dest)
         where T : BaseItem
         where TU : BaseItem
         {
@@ -82,7 +82,7 @@ namespace MediaBrowser.Controller.Entities
                 if (destProps.Any(x => x.Name == sourceProp.Name))
                 {
                     var p = destProps.First(x => x.Name == sourceProp.Name);
-                    p.SetValue(dest, sourceProp.GetValue(source, null), null);                    
+                    p.SetValue(dest, sourceProp.GetValue(source, null), null);
                 }
 
             }
@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.Entities
         /// Copies all properties on newly created object. Skips properties that do not exist.
         /// </summary>
         /// <param name="source">The source object.</param>
-        public static TU DeepCopy<T, TU>(this T source) 
+        public static TU DeepCopy<T, TU>(this T source)
         where T : BaseItem
         where TU : BaseItem, new()
         {

@@ -118,7 +118,7 @@ namespace MediaBrowser.Api.Playback
             var authInfo = _authContext.GetAuthorizationInfo(Request);
 
             var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None).ConfigureAwait(false);
-           
+
             var profile = request.DeviceProfile;
             if (profile == null)
             {
@@ -386,10 +386,10 @@ namespace MediaBrowser.Api.Playback
             }
             else
             {
-                Logger.LogInformation("User policy for {0}. EnablePlaybackRemuxing: {1} EnableVideoPlaybackTranscoding: {2} EnableAudioPlaybackTranscoding: {3}", 
+                Logger.LogInformation("User policy for {0}. EnablePlaybackRemuxing: {1} EnableVideoPlaybackTranscoding: {2} EnableAudioPlaybackTranscoding: {3}",
                     user.Name,
                     user.Policy.EnablePlaybackRemuxing,
-                    user.Policy.EnableVideoPlaybackTranscoding, 
+                    user.Policy.EnableVideoPlaybackTranscoding,
                     user.Policy.EnableAudioPlaybackTranscoding);
             }
 

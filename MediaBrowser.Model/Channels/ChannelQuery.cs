@@ -14,7 +14,7 @@ namespace MediaBrowser.Model.Channels
         public bool? EnableImages { get; set; }
         public int? ImageTypeLimit { get; set; }
         public ImageType[] EnableImageTypes { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the user identifier.
         /// </summary>

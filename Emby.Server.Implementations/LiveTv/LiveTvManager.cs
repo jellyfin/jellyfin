@@ -1993,7 +1993,7 @@ namespace Emby.Server.Implementations.LiveTv
                     Name = program.Name,
                     OfficialRating = program.OfficialRating
                 };
-            } 
+            }
 
             if (service == null)
             {

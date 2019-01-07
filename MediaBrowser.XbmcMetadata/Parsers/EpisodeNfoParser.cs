@@ -18,7 +18,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
     {
         public void Fetch(MetadataResult<Episode> item,
             List<LocalImageInfo> images,
-            string metadataFile, 
+            string metadataFile,
             CancellationToken cancellationToken)
         {
             Fetch(item, metadataFile, cancellationToken);

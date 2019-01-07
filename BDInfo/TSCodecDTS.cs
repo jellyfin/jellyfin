@@ -148,7 +148,7 @@ namespace BDInfo
                     stream.IsVBR = true;
                     stream.IsInitialized = true;
                     break;
-                
+
                 default:
                     stream.IsVBR = false;
                     stream.IsInitialized = true;

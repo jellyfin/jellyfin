@@ -311,7 +311,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             // Bounce them to the startup wizard if it hasn't been completed yet
             if (!_serverConfigurationManager.Configuration.IsStartupWizardCompleted &&
-                Request.RawUrl.IndexOf("wizard", StringComparison.OrdinalIgnoreCase) == -1 && 
+                Request.RawUrl.IndexOf("wizard", StringComparison.OrdinalIgnoreCase) == -1 &&
                 GetPackageCreator(basePath).IsCoreHtml(path))
             {
                 // But don't redirect if an html import is being requested.

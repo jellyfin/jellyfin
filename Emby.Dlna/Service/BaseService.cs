@@ -14,7 +14,7 @@ namespace Emby.Dlna.Service
         protected BaseService(ILogger logger, IHttpClient httpClient)
         {
             Logger = logger;
-            HttpClient = httpClient;  
+            HttpClient = httpClient;
 
             EventManager = new EventManager(Logger, HttpClient);
         }

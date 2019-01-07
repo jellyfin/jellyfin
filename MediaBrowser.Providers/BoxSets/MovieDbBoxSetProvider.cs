@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.BoxSets
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        
+
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(BoxSetInfo searchInfo, CancellationToken cancellationToken)
         {
             var tmdbId = searchInfo.GetProviderId(MetadataProviders.Tmdb);
@@ -73,7 +73,7 @@ namespace MediaBrowser.Providers.BoxSets
                     Name = info.name,
 
                     SearchProviderName = Name,
-                    
+
                     ImageUrl = images.Count == 0 ? null : (tmdbImageUrl + images[0].file_path)
                 };
 

@@ -282,7 +282,7 @@ namespace Emby.Server.Implementations.Library
 
             if (includeItemTypes.Length == 0)
             {
-                // Handle situations with the grouping setting, e.g. movies showing up in tv, etc. 
+                // Handle situations with the grouping setting, e.g. movies showing up in tv, etc.
                 // Thanks to mixed content libraries included in the UserView
                 var hasCollectionType = parents.OfType<UserView>().ToArray();
                 if (hasCollectionType.Length > 0)

@@ -1,6 +1,6 @@
 ﻿
 namespace Emby.Dlna.Common
-{  
+{
     public class Argument
     {
         public string Name { get;  set; }
