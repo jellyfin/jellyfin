@@ -38,7 +38,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 return false;
             }
 
-			return updateType >= MinimumUpdateType || (updateType >= ItemUpdateType.MetadataImport && FileSystem.FileExists(GetSavePath(item)));
+            return updateType >= MinimumUpdateType || (updateType >= ItemUpdateType.MetadataImport && FileSystem.FileExists(GetSavePath(item)));
         }
 
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
@@ -62,7 +62,15 @@ namespace MediaBrowser.XbmcMetadata.Savers
             return list;
         }
 
-        public SeasonNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger, xmlReaderSettingsFactory)
+        public SeasonNfoSaver(
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager,
+            ILogger logger,
+            IXmlReaderSettingsFactory xmlReaderSettingsFactory)
+            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger, xmlReaderSettingsFactory)
         {
         }
     }

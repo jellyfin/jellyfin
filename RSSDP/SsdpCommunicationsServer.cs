@@ -20,22 +20,19 @@ namespace Rssdp.Infrastructure
 
         #region Fields
 
-        /* 
-		  
-		 We could technically use one socket listening on port 1900 for everything.
-		 This should get both multicast (notifications) and unicast (search response) messages, however 
-		 this often doesn't work under Windows because the MS SSDP service is running. If that service 
-		 is running then it will steal the unicast messages and we will never see search responses. 
-		 Since stopping the service would be a bad idea (might not be allowed security wise and might 
-		 break other apps running on the system) the only other work around is to use two sockets.
-		
-		 We use one socket to listen for/receive notifications and search requests (_BroadcastListenSocket).
-		 We use a second socket, bound to a different local port, to send search requests and listen for 
-		 responses (_SendSocket). The responses  are sent to the local port this socket is bound to, 
-		 which isn't port 1900 so the MS service doesn't steal them. While the caller can specify a  local 
-		 port to use, we will default to 0 which allows the underlying system to auto-assign a free port.
-		  
-		*/
+        /* We could technically use one socket listening on port 1900 for everything.
+         * This should get both multicast (notifications) and unicast (search response) messages, however
+         * this often doesn't work under Windows because the MS SSDP service is running. If that service
+         * is running then it will steal the unicast messages and we will never see search responses.
+         * Since stopping the service would be a bad idea (might not be allowed security wise and might
+         * break other apps running on the system) the only other work around is to use two sockets.
+         *
+         * We use one socket to listen for/receive notifications and search requests (_BroadcastListenSocket).
+         * We use a second socket, bound to a different local port, to send search requests and listen for
+         * responses (_SendSocket). The responses  are sent to the local port this socket is bound to,
+         * which isn't port 1900 so the MS service doesn't steal them. While the caller can specify a  local
+         * port to use, we will default to 0 which allows the underlying system to auto-assign a free port.
+         */
 
         private object _BroadcastListenSocketSynchroniser = new object();
         private ISocket _BroadcastListenSocket;
@@ -443,7 +440,7 @@ namespace Rssdp.Infrastructure
         private void ProcessMessage(string data, IpEndPointInfo endPoint, IpAddressInfo receivedOnLocalIpAddress)
         {
             //Responses start with the HTTP version, prefixed with HTTP/ while
-            //requests start with a method which can vary and might be one we haven't 
+            //requests start with a method which can vary and might be one we haven't
             //seen/don't know. We'll check if this message is a request or a response
             //by checking for the HTTP/ prefix on the start of the message.
             if (data.StartsWith("HTTP/", StringComparison.OrdinalIgnoreCase))

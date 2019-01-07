@@ -143,7 +143,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seriesDataPath">The series data path.</param>
         /// <param name="searchInfo">The search information.</param>
         /// <returns>List{FileInfo}.</returns>
-		internal List<XmlReader> GetEpisodeXmlNodes(string seriesDataPath, EpisodeInfo searchInfo)
+        internal List<XmlReader> GetEpisodeXmlNodes(string seriesDataPath, EpisodeInfo searchInfo)
         {
             var seriesXmlPath = TvdbSeriesProvider.Current.GetSeriesXmlPath(searchInfo.SeriesProviderIds, searchInfo.MetadataLanguage);
 
