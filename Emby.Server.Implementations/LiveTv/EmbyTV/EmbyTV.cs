@@ -2394,45 +2394,41 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     TimerCreated?.Invoke(this, new GenericEventArgs<TimerInfo>(timer));
                 }
-                else
+                // Only update if not currently active - test both new timer and existing in case Id's are different
+                // Id's could be different if the timer was created manually prior to series timer creation
+                else if (!_activeRecordings.TryGetValue(timer.Id, out _) && !_activeRecordings.TryGetValue(existingTimer.Id, out _))
                 {
-                    // Only update if not currently active - test both new timer and existing in case Id's are different
-                    // Id's could be different if the timer was created manually prior to series timer creation
-                    ActiveRecordingInfo activeRecordingInfo;
-                    if (!_activeRecordings.TryGetValue(timer.Id, out activeRecordingInfo) && !_activeRecordings.TryGetValue(existingTimer.Id, out activeRecordingInfo))
+                    UpdateExistingTimerWithNewMetadata(existingTimer, timer);
+
+                    // Needed by ShouldCancelTimerForSeriesTimer
+                    timer.IsManual = existingTimer.IsManual;
+
+                    if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
                     {
-                        UpdateExistingTimerWithNewMetadata(existingTimer, timer);
-
-                        // Needed by ShouldCancelTimerForSeriesTimer
-                        timer.IsManual = existingTimer.IsManual;
-
-                        if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
-                        {
-                            existingTimer.Status = RecordingStatus.Cancelled;
-                        }
-                        else if (!existingTimer.IsManual)
-                        {
-                            existingTimer.Status = RecordingStatus.New;
-                        }
-
-                        if (existingTimer.Status != RecordingStatus.Cancelled)
-                        {
-                            enabledTimersForSeries.Add(existingTimer);
-                        }
-
-                        if (updateTimerSettings)
-                        {
-                            existingTimer.KeepUntil = seriesTimer.KeepUntil;
-                            existingTimer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
-                            existingTimer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
-                            existingTimer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
-                            existingTimer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
-                            existingTimer.Priority = seriesTimer.Priority;
-                        }
-
-                        existingTimer.SeriesTimerId = seriesTimer.Id;
-                        _timerProvider.Update(existingTimer);
+                        existingTimer.Status = RecordingStatus.Cancelled;
                     }
+                    else if (!existingTimer.IsManual)
+                    {
+                        existingTimer.Status = RecordingStatus.New;
+                    }
+
+                    if (existingTimer.Status != RecordingStatus.Cancelled)
+                    {
+                        enabledTimersForSeries.Add(existingTimer);
+                    }
+
+                    if (updateTimerSettings)
+                    {
+                        existingTimer.KeepUntil = seriesTimer.KeepUntil;
+                        existingTimer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
+                        existingTimer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
+                        existingTimer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
+                        existingTimer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
+                        existingTimer.Priority = seriesTimer.Priority;
+                    }
+
+                    existingTimer.SeriesTimerId = seriesTimer.Id;
+                    _timerProvider.Update(existingTimer);
                 }
             }
 
@@ -2760,7 +2756,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (configuredDevice != null && !string.Equals(device.Url, configuredDevice.Url, StringComparison.OrdinalIgnoreCase))
                 {
-                    _logger.LogInformation("Tuner url has changed from {0} to {1}", configuredDevice.Url, device.Url);
+                    _logger.LogInformation("Tuner url has changed from {PreviousUrl} to {NewUrl}", configuredDevice.Url, device.Url);
 
                     configuredDevice.Url = device.Url;
                     await _liveTvManager.SaveTunerHost(configuredDevice).ConfigureAwait(false);
