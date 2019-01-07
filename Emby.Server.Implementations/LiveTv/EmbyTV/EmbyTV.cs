@@ -452,18 +452,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             public ChannelInfo GetChannelByNumber(string number)
             {
-                ChannelInfo result = null;
-
-                ChannelsByNumber.TryGetValue(number, out result);
+                ChannelsByNumber.TryGetValue(number, out var result);
 
                 return result;
             }
 
             public ChannelInfo GetChannelByName(string name)
             {
-                ChannelInfo result = null;
-
-                ChannelsByName.TryGetValue(name, out result);
+                ChannelsByName.TryGetValue(name, out var result);
 
                 return result;
             }
@@ -2396,10 +2392,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                     _timerProvider.Add(timer);
 
-                    if (TimerCreated != null)
-                    {
-                        TimerCreated(this, new GenericEventArgs<TimerInfo>(timer));
-                    }
+                    TimerCreated?.Invoke(this, new GenericEventArgs<TimerInfo>(timer));
                 }
                 else
                 {
@@ -2508,9 +2501,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (string.IsNullOrWhiteSpace(channelId) && !parent.ChannelId.Equals(Guid.Empty))
             {
-                LiveTvChannel channel;
-
-                if (!tempChannelCache.TryGetValue(parent.ChannelId, out channel))
+                if (!tempChannelCache.TryGetValue(parent.ChannelId, out var channel))
                 {
                     channel = _libraryManager.GetItemList(new InternalItemsQuery
                     {
@@ -2569,9 +2560,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (!programInfo.ChannelId.Equals(Guid.Empty))
             {
-                LiveTvChannel channel;
-
-                if (!tempChannelCache.TryGetValue(programInfo.ChannelId, out channel))
+                if (!tempChannelCache.TryGetValue(programInfo.ChannelId, out var channel))
                 {
                     channel = _libraryManager.GetItemList(new InternalItemsQuery
                     {
@@ -2769,15 +2758,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 var configuredDevice = configuredDevices.FirstOrDefault(i => string.Equals(i.DeviceId, device.DeviceId, StringComparison.OrdinalIgnoreCase));
 
-                if (configuredDevice != null)
+                if (configuredDevice != null && !string.Equals(device.Url, configuredDevice.Url, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!string.Equals(device.Url, configuredDevice.Url, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _logger.LogInformation("Tuner url has changed from {0} to {1}", configuredDevice.Url, device.Url);
+                    _logger.LogInformation("Tuner url has changed from {0} to {1}", configuredDevice.Url, device.Url);
 
-                        configuredDevice.Url = device.Url;
-                        await _liveTvManager.SaveTunerHost(configuredDevice).ConfigureAwait(false);
-                    }
+                    configuredDevice.Url = device.Url;
+                    await _liveTvManager.SaveTunerHost(configuredDevice).ConfigureAwait(false);
                 }
             }
         }
