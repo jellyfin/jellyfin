@@ -7,7 +7,7 @@ html {
 .wizardStartForm,
 .ui-corner-all,
 .ui-shadow {
-  background-color: #1f1f1f
+  background-color: #1a1a1a
 }
 
 .emby-collapsible-button {
@@ -16,7 +16,7 @@ html {
 }
 
 .skinHeader-withBackground {
-    background-color: #1f1f1f
+    background-color: #1a1a1a
 }
 
 .skinHeader.semiTransparent {
