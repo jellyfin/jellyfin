@@ -45,7 +45,6 @@
     <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\*" />
     <EmbeddedResource Include="TextEncoding\NLangDetect\Utils\messages.properties" />
     <EmbeddedResource Include="Localization\Ratings\*.txt" />
-    <EmbeddedResource Include="values.txt" />
   </ItemGroup>
 
 </Project>
