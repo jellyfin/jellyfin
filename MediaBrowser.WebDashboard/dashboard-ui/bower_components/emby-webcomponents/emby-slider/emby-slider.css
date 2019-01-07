@@ -18,7 +18,7 @@ _:-ms-input-placeholder {
     user-select: none;
     outline: 0;
     padding: 1em 0;
-    color: #52B54B;
+    color: #00a4dc;
     -webkit-align-self: center;
     align-self: center;
     z-index: 1;
@@ -46,7 +46,7 @@ _:-ms-input-placeholder {
 }
 
 .mdl-slider::-moz-range-progress {
-    background: #52B54B
+    background: #00a4dc
 }
 
 .mdl-slider::-ms-track {
@@ -73,7 +73,7 @@ _:-ms-input-placeholder {
     box-sizing: border-box;
     -webkit-border-radius: 50%;
     border-radius: 50%;
-    background: #52B54B;
+    background: #00a4dc;
     border: none;
     -webkit-transition: -webkit-transform .3s cubic-bezier(.4, 0, .2, 1), border .18s cubic-bezier(.4, 0, .2, 1), -webkit-box-shadow .18s cubic-bezier(.4, 0, .2, 1), background .28s cubic-bezier(.4, 0, .2, 1);
     transition: transform .3s cubic-bezier(.4, 0, .2, 1), border .18s cubic-bezier(.4, 0, .2, 1), box-shadow .18s cubic-bezier(.4, 0, .2, 1), background .28s cubic-bezier(.4, 0, .2, 1)
@@ -100,7 +100,7 @@ _:-ms-input-placeholder {
     height: 1.8em;
     box-sizing: border-box;
     border-radius: 50%;
-    background: #52B54B;
+    background: #00a4dc;
     border: none
 }
 
@@ -110,7 +110,7 @@ _:-ms-input-placeholder {
     height: 1.8em;
     box-sizing: border-box;
     border-radius: 50%;
-    background: #52B54B;
+    background: #00a4dc;
     border: none;
     transition: transform .3s cubic-bezier(.4, 0, .2, 1), border .18s cubic-bezier(.4, 0, .2, 1), box-shadow .18s cubic-bezier(.4, 0, .2, 1), background .28s cubic-bezier(.4, 0, .2, 1)
 }
@@ -184,7 +184,7 @@ _:-ms-input-placeholder {
     width: 0;
     top: 0;
     bottom: 0;
-    background-color: #52B54B
+    background-color: #00a4dc
 }
 
 .mdl-slider-background-lower-clear {

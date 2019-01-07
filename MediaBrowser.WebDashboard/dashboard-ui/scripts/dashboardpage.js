@@ -473,7 +473,7 @@ define(["datetime", "events", "itemHelper", "serverNotifications", "dom", "globa
                 var supporterPromotionElem = page.querySelector(".supporterPromotion");
                 if (supporterPromotionElem && supporterPromotionElem.parentNode.removeChild(supporterPromotionElem), !pluginSecurityInfo.IsMBSupporter) {
                     var html = '<div class="supporterPromotionContainer"><div class="supporterPromotion">';
-                    html += '<a is="emby-linkbutton" href="https://github.com/jellyfin/jellyfin" target="_blank" class="raised block" style="background-color:#52B54B;color:#fff;"><div>' + globalize.translate("HeaderSupportTheTeam") + '</div><div style="font-weight:normal;margin-top:5px;">' + globalize.translate("TextEnjoyBonusFeatures") + "</div></a></div></div>", page.querySelector(".content-primary").insertAdjacentHTML("afterbegin", html)
+                    html += '<a is="emby-linkbutton" href="https://github.com/jellyfin/jellyfin" target="_blank" class="raised block" style="background-color:#00a4dc;color:#fff;"><div>' + globalize.translate("HeaderSupportTheTeam") + '</div><div style="font-weight:normal;margin-top:5px;">' + globalize.translate("TextEnjoyBonusFeatures") + "</div></a></div></div>", page.querySelector(".content-primary").insertAdjacentHTML("afterbegin", html)
                 }
             })
         }),

@@ -394,11 +394,11 @@ html {
 
 .guide-date-tab-button.emby-tab-button-active,
 .guide-date-tab-button:focus {
-    color: #52B54B
+    color: #00a4dc
 }
 
 .guide-date-tab-button.emby-button-tv:focus {
-    background-color: #52B54B;
+    background-color: #00a4dc;
     color: #fff
 }
 

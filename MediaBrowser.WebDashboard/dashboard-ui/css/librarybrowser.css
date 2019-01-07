@@ -120,10 +120,6 @@
     width: 13.2em
 }
 
-.pageTitleWithDefaultLogo {
-    height: 1.22em
-}
-
 .skinHeader {
     position: fixed;
     right: 0;
@@ -1066,7 +1062,7 @@
 }
 
 .button-accent-flat {
-    color: #52B54B !important
+    color: #00a4dc !important
 }
 
 .clearLink {
