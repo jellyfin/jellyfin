@@ -183,6 +183,10 @@ namespace MediaBrowser.Model.Net
             {
                 return "text/plain";
             }
+            if (StringHelper.EqualsIgnoreCase(ext, ".log"))
+            {
+                return "text/plain";
+            }
             if (StringHelper.EqualsIgnoreCase(ext, ".xml"))
             {
                 return "application/xml";
