@@ -14,7 +14,7 @@ define(["scripts/userpasswordpage", "loading", "libraryMenu", "apphost", "emby-l
                 type: "Primary"
             }) : "css/images/logindefault.png", fldImage.classList.remove("hide"), fldImage.innerHTML = "<img width='140px' src='" + imageUrl + "' />";
             var showImageEditing = !1;
-            "Guest" == user.ConnectLinkType ? page.querySelector(".connectMessage").classList.remove("hide") : (user.PrimaryImageTag, showImageEditing = !0, page.querySelector(".connectMessage").classList.add("hide")), Dashboard.getCurrentUser().then(function(loggedInUser) {
+            Dashboard.getCurrentUser().then(function(loggedInUser) {
                 showImageEditing && appHost.supports("fileinput") && (loggedInUser.Policy.IsAdministrator || user.Policy.EnableUserPreferenceAccess) ? (page.querySelector(".newImageForm").classList.remove("hide"), user.PrimaryImageTag ? page.querySelector("#btnDeleteImage").classList.remove("hide") : page.querySelector("#btnDeleteImage").classList.add("hide")) : (page.querySelector(".newImageForm").classList.add("hide"), page.querySelector("#btnDeleteImage").classList.add("hide"))
             }), loading.hide()
         })
