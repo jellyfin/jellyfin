@@ -10,7 +10,7 @@
  - [Bond_009](https://github.com/Bond-009)
  - [AnthonyLavado](https://github.com/anthonylavado)
  - [sparky8251](https://github.com/sparky8251)
- - [LeoVerto](https://github.com/LeoVerto]
+ - [LeoVerto](https://github.com/LeoVerto)
 
 # Emby Contributors
 
