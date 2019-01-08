@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\SharedVersion.cs" />
+    <Compile Include="..\Jellyfin.Versioning\SharedVersion.cs" />
   </ItemGroup>
 
   <PropertyGroup>

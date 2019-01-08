@@ -6,11 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Jellyfin.Versioning\SharedVersion.cs" />
+    <None Remove="jellyfin_version.ini" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Jellyfin.Versioning\Jellyfin.Versioning.csproj" />
+    <EmbeddedResource Include="jellyfin_version.ini" />
   </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="$(ProjectDir)update-version" />
+  </Target>
 
 </Project>

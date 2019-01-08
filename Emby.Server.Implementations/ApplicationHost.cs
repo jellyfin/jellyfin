@@ -47,6 +47,7 @@ using Emby.Server.Implementations.Threading;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Emby.Server.Implementations.Xml;
+using Jellyfin.Versioning;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -434,7 +435,30 @@ namespace Emby.Server.Implementations
         /// Gets the current application version
         /// </summary>
         /// <value>The application version.</value>
-        public Version ApplicationVersion => _version ?? (_version = typeof(ApplicationHost).Assembly.GetName().Version);
+        public Version ApplicationVersion => _version ?? (_version = ApplicationExtendedVersion.ApiVersion);
+
+        private Version _serverVersion;
+        /// <summary>
+        /// Gets the current application server version
+        /// </summary>
+        /// <value>The application server version.</value>
+        public Version ApplicationServerVersion => _serverVersion ?? (_serverVersion = typeof(ApplicationHost).Assembly.GetName().Version);
+
+        private ExtendedVersion _extendedVersion;
+        /// <summary>
+        /// Gets the current application server version
+        /// </summary>
+        /// <value>The application server version.</value>
+        public ExtendedVersion ApplicationExtendedVersion => _extendedVersion ??
+            (_extendedVersion = typeof(ApplicationHost).Assembly.GetCustomAttributes(typeof(AssemblyExtendedVersion), false)
+            .Cast<AssemblyExtendedVersion>().FirstOrDefault().ExtendedVersion);
+
+        private string _productName;
+        /// <summary>
+        /// Gets the current application name
+        /// </summary>
+        /// <value>The application name.</value>
+        public string ApplicationProductName => _productName ?? (_productName = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductName);
 
         private DeviceId _deviceId;
         public string SystemId
@@ -1826,6 +1850,9 @@ namespace Emby.Server.Implementations
                 HasPendingRestart = HasPendingRestart,
                 IsShuttingDown = IsShuttingDown,
                 Version = ApplicationVersion.ToString(),
+                ServerVersion = ApplicationServerVersion.ToString(),
+                ExtendedVersion = ApplicationExtendedVersion,
+                ProductName = ApplicationProductName,
                 WebSocketPortNumber = HttpPort,
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
                 Id = SystemId,
@@ -1872,6 +1899,8 @@ namespace Emby.Server.Implementations
             return new PublicSystemInfo
             {
                 Version = ApplicationVersion.ToString(),
+                ServerVersion = ApplicationServerVersion.ToString(),
+                ExtendedVersion = ApplicationExtendedVersion,
                 Id = SystemId,
                 OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
                 WanAddress = wanAddress,
