@@ -95,7 +95,7 @@ EOF
 %attr(755,root,root) %{_libexecdir}/%{name}/restart.sh
 %attr(644,root,root) %{_prefix}/lib/firewalld/service/%{name}.xml
 %attr(755,jellyfin,jellyfin) %dir %{_sysconfdir}/%{name}
-%config(noreplace) %{_sysconfdir}/sysconfig/%{name}
+%config %{_sysconfdir}/sysconfig/%{name}
 %config(noreplace) %attr(600,root,root) %{_sysconfdir}/sudoers.d/%{name}-sudoers
 %config(noreplace) %{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
 %config(noreplace) %attr(644,jellyfin,jellyfin) %{_sysconfdir}/%{name}/logging.json
@@ -115,6 +115,21 @@ getent passwd jellyfin >/dev/null || \
 exit 0
 
 %post
+# Move existing configuration to /etc/jellyfin and symlink config to /etc/jellyfin
+if [ $1 -gt 1 ] ; then
+    if [ ! -L %{_sharedstatedir}/%{name}/config ]; then
+        service_state=$(systemctl is-active jellyfin.service)
+        if [ "${service_state}" = "active" ]; then
+            systemctl stop jellyfin.service
+        fi
+        mv %{_sharedstatedir}/%{name}/config/* %{_sysconfdir}/%{name}/
+        rmdir %{_sharedstatedir}/%{name}/config
+        ln -sf %{_sysconfdir}/%{name}  %{_sharedstatedir}/%{name}/config
+        if [ "${service_state}" = "active" ]; then
+            systemctl start jellyfin.service
+        fi
+    fi
+fi
 %systemd_post jellyfin.service
 
 %preun
@@ -127,6 +142,7 @@ exit 0
 * Mon Jan 07 2019 Thomas Büttner <thomas@vergesslicher.tech> - 10.0.0-1
 - Bump version to 10.0.0
 - Add logging and config directories
+- Add %post script to move exitsting config to /etc/jellyfin and symlink it.
 
 * Sat Jan 05 2019 Thomas Büttner <thomas@vergesslicher.tech> - 3.5.2-5
 - Add firewalld service.xml
