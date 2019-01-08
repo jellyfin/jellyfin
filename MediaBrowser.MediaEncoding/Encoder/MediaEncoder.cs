@@ -70,7 +70,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly string _originalFFMpegPath;
         private readonly string _originalFFProbePath;
         private readonly int DefaultImageExtractionTimeoutMs;
-        private readonly IEnvironmentInfo _environmentInfo;
 
         public MediaEncoder(ILogger logger,
             IJsonSerializer jsonSerializer,
@@ -89,8 +88,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IHttpClient httpClient,
             IZipClient zipClient,
             IProcessFactory processFactory,
-            int defaultImageExtractionTimeoutMs,
-            IEnvironmentInfo environmentInfo)
+            int defaultImageExtractionTimeoutMs)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
@@ -107,44 +105,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _zipClient = zipClient;
             _processFactory = processFactory;
             DefaultImageExtractionTimeoutMs = defaultImageExtractionTimeoutMs;
-            _environmentInfo = environmentInfo;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
             _originalFFProbePath = ffProbePath;
             _originalFFMpegPath = ffMpegPath;
-
             _hasExternalEncoder = hasExternalEncoder;
-        }
-
-        private readonly object _logLock = new object();
-        public void SetLogFilename(string name)
-        {
-            lock (_logLock)
-            {
-                try
-                {
-                    _environmentInfo.SetProcessEnvironmentVariable("FFREPORT", "file=" + name + ":level=32");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error setting FFREPORT environment variable");
-                }
-            }
-        }
-
-        public void ClearLogFilename()
-        {
-            lock (_logLock)
-            {
-                try
-                {
-                    _environmentInfo.SetProcessEnvironmentVariable("FFREPORT", null);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error setting FFREPORT environment variable");
-                }
-            }
         }
 
         public string EncoderLocationType
@@ -362,7 +327,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private Tuple<string, string> GetPathsFromDirectory(string path)
         {
-            // Since we can't predict the file extension, first try directly within the folder 
+            // Since we can't predict the file extension, first try directly within the folder
             // If that doesn't pan out, then do a recursive search
             var files = FileSystem.GetFilePaths(path);
 
@@ -525,7 +490,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 CreateNoWindow = true,
                 UseShellExecute = false,
 
-                // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
+                // Must consume both or ffmpeg may hang due to deadlocks. See comments below.
                 RedirectStandardOutput = true,
                 FileName = FFProbePath,
                 Arguments = string.Format(args, probeSizeArgument, inputPath).Trim(),
@@ -648,7 +613,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var tempExtractPath = Path.Combine(ConfigurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".jpg");
             FileSystem.CreateDirectory(FileSystem.GetDirectoryName(tempExtractPath));
 
-            // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar then scale to width 600. 
+            // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar then scale to width 600.
             // This filter chain may have adverse effects on recorded tv thumbnails if ar changes during presentation ex. commercials @ diff ar
             var vf = "scale=600:trunc(600/dar/2)*2";
 
@@ -676,7 +641,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         break;
                 }
             }
-            
+
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
 
             var enableThumbnail = !new List<string> { "wtv" }.Contains(container ?? string.Empty, StringComparer.OrdinalIgnoreCase);
