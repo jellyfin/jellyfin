@@ -117,17 +117,22 @@ exit 0
 %post
 # Move existing configuration to /etc/jellyfin and symlink config to /etc/jellyfin
 if [ $1 -gt 1 ] ; then
+    service_state=$(systemctl is-active jellyfin.service)
+    if [ "${service_state}" = "active" ]; then
+        systemctl stop jellyfin.service
+    fi
     if [ ! -L %{_sharedstatedir}/%{name}/config ]; then
-        service_state=$(systemctl is-active jellyfin.service)
-        if [ "${service_state}" = "active" ]; then
-            systemctl stop jellyfin.service
-        fi
         mv %{_sharedstatedir}/%{name}/config/* %{_sysconfdir}/%{name}/
         rmdir %{_sharedstatedir}/%{name}/config
         ln -sf %{_sysconfdir}/%{name}  %{_sharedstatedir}/%{name}/config
-        if [ "${service_state}" = "active" ]; then
-            systemctl start jellyfin.service
-        fi
+    fi
+    if [ ! -L %{_sharedstatedir}/%{name}/logs ]; then
+        mv %{_sharedstatedir}/%{name}/logs/* %{_var}/log/jellyfin
+        rmdir %{_sharedstatedir}/%{name}/logs
+        ln -sf %{_var}/log/jellyfin  %{_sharedstatedir}/%{name}/logs
+    fi
+    if [ "${service_state}" = "active" ]; then
+        systemctl start jellyfin.service
     fi
 fi
 %systemd_post jellyfin.service
@@ -139,23 +144,9 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
-* Mon Jan 07 2019 Thomas Büttner <thomas@vergesslicher.tech> - 10.0.0-1
-- Bump version to 10.0.0
-- Add logging and config directories
-- Add %post script to move exitsting config to /etc/jellyfin and symlink it.
-
-* Sat Jan 05 2019 Thomas Büttner <thomas@vergesslicher.tech> - 3.5.2-5
-- Add firewalld service.xml
-
-* Sat Jan 05 2019 Thomas Büttner <thomas@vergesslicher.tech> - 3.5.2-4
-- Re-added sudoers policy
-
-* Sat Jan 05 2019 Thomas Büttner <thomas@vergesslicher.tech> - 3.5.2-3
-- Added script for database migration
-
-* Fri Jan 04 2019 Thomas Büttner <thomas@vergesslicher.tech> - 3.5.2-2
-- Moved sudoers policy and added a note for In-App service control
-- Set Restart=on-failure in jellyfin.service
-
-* Thu Jan 03 2019 Thomas Büttner <thomas@vergesslicher.tech> - 3.5.2-1
-- Initial RPM package
+* Tue Jan 08 2019 Thomas Büttner <thomas@vergesslicher.tech> - 10.0.0-1
+- The first Jellyfin release under our new versioning scheme
+- Numerous bugfixes and code readability improvements
+- Updated logging configuration, including flag for it and configdir
+- Updated theming including logo
+- Dozens of other improvements as documented in GitHub pull request 419
