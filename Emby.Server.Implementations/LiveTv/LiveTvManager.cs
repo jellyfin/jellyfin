@@ -1056,7 +1056,7 @@ namespace Emby.Server.Implementations.LiveTv
             var numComplete = 0;
             double progressPerService = _services.Length == 0
                 ? 0
-                : 1 / _services.Length;
+                : 1.0 / _services.Length;
 
             var newChannelIdList = new List<Guid>();
             var newProgramIdList = new List<Guid>();
@@ -1262,7 +1262,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
 
                 numComplete++;
-                double percent = numComplete / allChannelsList.Count;
+                double percent = numComplete / (double) allChannelsList.Count;
 
                 progress.Report(85 * percent + 15);
             }
@@ -1307,7 +1307,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
 
                 numComplete++;
-                double percent = numComplete / list.Count;
+                double percent = numComplete / (double) list.Count;
 
                 progress.Report(100 * percent);
             }
