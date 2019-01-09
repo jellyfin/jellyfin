@@ -111,7 +111,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 return 0;
             }
 
-            return 16 / 9;
+            return 16.0 / 9;
         }
 
         public override List<string> GetUserDataKeys()

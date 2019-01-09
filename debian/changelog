@@ -1,3 +1,16 @@
+jellyfin (10.0.1-1) unstable; urgency=medium
+
+  * Hotfix release, corrects several small bugs from 10.0.0
+  * #512: Fix CONTRIBUTORS.md formatting
+  * #501: Fix regression in integer divisions in latest movies category
+  * #498: Change contributing link in settings to readthedocs.io
+  * #493: Remove unused values.txt resource
+  * #491: Fix userprofile.js crash
+  * #519: Fix the DecodeJfif function to get proper image sizes
+  * #486: Add NuGet package info to plugin projects
+
+ -- Joshua Boniface <joshua@boniface.me>  Tue, 08 Jan 2019 20:06:01 -0500
+
 jellyfin (10.0.0-1) unstable; urgency=medium
 
   * The first Jellyfin release under our new versioning scheme

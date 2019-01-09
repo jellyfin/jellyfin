@@ -183,6 +183,10 @@ namespace MediaBrowser.Model.Net
             {
                 return "text/plain";
             }
+            if (StringHelper.EqualsIgnoreCase(ext, ".log"))
+            {
+                return "text/plain";
+            }
             if (StringHelper.EqualsIgnoreCase(ext, ".xml"))
             {
                 return "application/xml";
@@ -228,10 +232,10 @@ namespace MediaBrowser.Model.Net
             if (StringHelper.EqualsIgnoreCase(ext, ".oga"))
             {
                 return "audio/ogg";
-			}
-			if (StringHelper.EqualsIgnoreCase(ext, ".opus"))
-			{
-				return "audio/ogg";
+            }
+            if (StringHelper.EqualsIgnoreCase(ext, ".opus"))
+            {
+                return "audio/ogg";
             }
             if (StringHelper.EqualsIgnoreCase(ext, ".ac3"))
             {
