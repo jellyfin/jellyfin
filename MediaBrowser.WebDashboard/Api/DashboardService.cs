@@ -150,7 +150,7 @@ namespace MediaBrowser.WebDashboard.Api
                     return _serverConfigurationManager.Configuration.DashboardSourcePath;
                 }
 
-                return Path.Combine(_serverConfigurationManager.ApplicationPaths.ApplicationResourcesPath, "jellyfin-web/src");
+                return Path.Combine(_serverConfigurationManager.ApplicationPaths.ApplicationResourcesPath, "jellyfin-web", "src");
             }
         }
 
