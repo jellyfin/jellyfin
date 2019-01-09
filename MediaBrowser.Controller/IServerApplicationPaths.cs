@@ -12,7 +12,6 @@ namespace MediaBrowser.Controller
 
         /// <summary>
         /// Gets the application resources path. This is the path to the folder containing resources that are deployed as part of the application
-        /// For example, this folder contains dashboard-ui and swagger-ui
         /// </summary>
         /// <value>The application resources path.</value>
         string ApplicationResourcesPath { get; }
