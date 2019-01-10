@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Containers>
-  <TemplateURL>https://raw.githubusercontent.com/jellyfin/jellyfin/unRaid/docker-templates/jellyfin.xml</TemplateURL>
+  <TemplateURL>https://raw.githubusercontent.com/jellyfin/jellyfin/deployment/unraid/docker-templates/jellyfin.xml</TemplateURL>
   <Beta>False</Beta>
   <Category>MediaApp:Video MediaApp:Music MediaApp:Photos MediaServer:Video MediaServer:Music MediaServer:Photos</Category>
   <Name>JellyFin</Name>
