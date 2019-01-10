@@ -1418,7 +1418,7 @@ namespace Emby.Server.Implementations.Dto
 
             var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary);
 
-            ImageSize size;
+            MediaBrowser.Model.Drawing.ImageSize size;
 
             var defaultAspectRatio = item.GetDefaultPrimaryImageAspectRatio();
 
@@ -1431,7 +1431,7 @@ namespace Emby.Server.Implementations.Dto
 
                 double dummyWidth = 200;
                 double dummyHeight = dummyWidth / defaultAspectRatio;
-                size = new ImageSize(dummyWidth, dummyHeight);
+                size = new MediaBrowser.Model.Drawing.ImageSize(dummyWidth, dummyHeight);
             }
             else
             {

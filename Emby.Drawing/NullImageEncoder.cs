@@ -57,7 +57,7 @@ namespace Emby.Drawing
             get { return false; }
         }
 
-        public ImageSize GetImageSize(string path)
+        public MediaBrowser.Model.Drawing.ImageSize GetImageSize(string path)
         {
             throw new NotImplementedException();
         }

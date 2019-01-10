@@ -14,4 +14,8 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ImageSize.Net" Version="0.1.0-beta001" />
+  </ItemGroup>
+
 </Project>

@@ -16,12 +16,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
-using Emby.Drawing.Common;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Threading;
 using MediaBrowser.Model.Extensions;
+using Image = ImageSize.Image;
 
 namespace Emby.Drawing
 {
@@ -119,7 +119,10 @@ namespace Emby.Drawing
                     "astc",
                     "ktx",
                     "pkm",
-                    "wbmp"
+                    "wbmp",
+                    "jng",
+                    "mng",
+                    "dib"
                 };
             }
         }
@@ -196,7 +199,7 @@ namespace Emby.Drawing
 
             var originalImagePath = originalImage.Path;
             var dateModified = originalImage.DateModified;
-            var originalImageSize = originalImage.Width > 0 && originalImage.Height > 0 ? new ImageSize(originalImage.Width, originalImage.Height) : (ImageSize?)null;
+            var originalImageSize = originalImage.Width > 0 && originalImage.Height > 0 ? new MediaBrowser.Model.Drawing.ImageSize(originalImage.Width, originalImage.Height) : (MediaBrowser.Model.Drawing.ImageSize?)null;
 
             if (!_imageEncoder.SupportsImageEncoding)
             {
@@ -257,7 +260,7 @@ namespace Emby.Drawing
                 return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
-            //ImageSize? originalImageSize = GetSavedImageSize(originalImagePath, dateModified);
+            //MediaBrowser.Model.Drawing.ImageSize? originalImageSize = GetSavedImageSize(originalImagePath, dateModified);
             //if (originalImageSize.HasValue && options.HasDefaultOptions(originalImagePath, originalImageSize.Value) && !autoOrient)
             //{
             //    // Just spit out the original file if all the options are default
@@ -395,7 +398,7 @@ namespace Emby.Drawing
         /// <summary>
         /// Gets the cache file path based on a set of parameters
         /// </summary>
-        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, int? blur, string backgroundColor, string foregroundLayer)
+        private string GetCacheFilePath(string originalPath, MediaBrowser.Model.Drawing.ImageSize outputSize, int quality, DateTime dateModified, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, int? blur, string backgroundColor, string foregroundLayer)
         {
             var filename = originalPath;
 
@@ -444,19 +447,19 @@ namespace Emby.Drawing
             return GetCachePath(ResizedImageCachePath, filename, "." + format.ToString().ToLower());
         }
 
-        public ImageSize GetImageSize(BaseItem item, ItemImageInfo info)
+        public MediaBrowser.Model.Drawing.ImageSize GetImageSize(BaseItem item, ItemImageInfo info)
         {
             return GetImageSize(item, info, false, true);
         }
 
-        public ImageSize GetImageSize(BaseItem item, ItemImageInfo info, bool allowSlowMethods, bool updateItem)
+        public MediaBrowser.Model.Drawing.ImageSize GetImageSize(BaseItem item, ItemImageInfo info, bool allowSlowMethods, bool updateItem)
         {
             var width = info.Width;
             var height = info.Height;
 
             if (height > 0 && width > 0)
             {
-                return new ImageSize
+                return new MediaBrowser.Model.Drawing.ImageSize
                 {
                     Width = width,
                     Height = height
@@ -479,7 +482,7 @@ namespace Emby.Drawing
             return size;
         }
 
-        public ImageSize GetImageSize(string path)
+        public MediaBrowser.Model.Drawing.ImageSize GetImageSize(string path)
         {
             return GetImageSize(path, true);
         }
@@ -487,7 +490,7 @@ namespace Emby.Drawing
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
-        private ImageSize GetImageSize(string path, bool allowSlowMethod)
+        private MediaBrowser.Model.Drawing.ImageSize GetImageSize(string path, bool allowSlowMethod)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -496,10 +499,12 @@ namespace Emby.Drawing
 
             try
             {
-                return ImageHeader.GetDimensions(path, _logger, _fileSystem);
+                var size = Image.GetSize(path);
+                return new MediaBrowser.Model.Drawing.ImageSize(size.width, size.height);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, "Failed to get image size for {Path}", path);
                 if (!allowSlowMethod)
                 {
                     throw;
