@@ -8,7 +8,7 @@ define([], function() {
                 message: msg,
                 title: Globalize.translate("HeaderPasswordReset"),
                 callback: function() {
-                    window.location.href = "login.html"
+                    window.location.href = "index.html"
                 }
             })
         }
