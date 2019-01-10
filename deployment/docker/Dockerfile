@@ -15,7 +15,7 @@ WORKDIR /repo
 COPY . .
 RUN export DOTNET_CLI_TELEMETRY_OPTOUT=1 \
  && dotnet clean \
- && dotnet publish --configuration release --output /jellyfin
+ && dotnet publish --configuration release --output /jellyfin Jellyfin.Server
 
 
 FROM microsoft/dotnet:${DOTNET_VERSION}-runtime
@@ -24,5 +24,5 @@ COPY --from=ffmpeg /ffmpeg-bin/* /usr/bin/
 EXPOSE 8096
 VOLUME /config /media
 RUN apt update \
- && apt install -y libfontconfig1  # needed for Skia
+ && apt install -y libfontconfig1 --no-install-recommends  # needed for Skia
 ENTRYPOINT dotnet /jellyfin/jellyfin.dll -programdata /config

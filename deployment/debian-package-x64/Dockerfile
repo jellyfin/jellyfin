@@ -1,4 +1,6 @@
 FROM debian:9
+ARG SOURCEDIR=/repo 
+ENV DEB_BUILD_OPTIONS=noddebs
 
 # https://dotnet.microsoft.com/download/linux-package-manager/debian9/sdk-current
 RUN apt-get update \
@@ -11,12 +13,11 @@ RUN apt-get update \
  && chown root:root /etc/apt/sources.list.d/microsoft-prod.list \
  && apt-get update
 
-WORKDIR /repo
+WORKDIR ${SOURCEDIR}
 COPY . .
+COPY ./deployment/debian-x64/pkg-src ./debian
 
-RUN yes|mk-build-deps -i \
- && dpkg-buildpackage -us -uc \
- && mkdir /dist \
- && mv /jellyfin*deb /dist
+RUN yes | mk-build-deps -i debian/control \
+    && dpkg-buildpackage -us -uc
 
-WORKDIR /dist
+WORKDIR /
