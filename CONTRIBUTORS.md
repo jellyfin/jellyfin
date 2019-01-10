@@ -11,6 +11,7 @@
  - [AnthonyLavado](https://github.com/anthonylavado)
  - [sparky8251](https://github.com/sparky8251)
  - [LeoVerto](https://github.com/LeoVerto)
+ - [wtayl0r](https://github.com/wtayl0r)
 
 # Emby Contributors
 

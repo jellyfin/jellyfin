@@ -16,14 +16,7 @@ namespace Jellyfin.Server
         {
         }
 
-        public override bool CanSelfRestart
-        {
-            get
-            {
-                // A restart script must be provided
-                return StartupOptions.ContainsOption("-restartpath");
-            }
-        }
+        public override bool CanSelfRestart => StartupOptions.ContainsOption("-restartpath");
 
         protected override void RestartInternal() => Program.Restart();
 
@@ -32,18 +25,12 @@ namespace Jellyfin.Server
 
         protected override void ShutdownInternal() => Program.Shutdown();
 
-        protected override bool SupportsDualModeSockets
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool SupportsDualModeSockets => true;
 
         protected override IHttpListener CreateHttpListener()
             => new WebSocketSharpListener(
                 Logger,
-                Certificate,
+                null,
                 StreamHelper,
                 TextEncoding,
                 NetworkManager,
