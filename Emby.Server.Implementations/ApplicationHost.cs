@@ -1188,8 +1188,7 @@ namespace Emby.Server.Implementations
                 HttpClient,
                 ZipClient,
                 ProcessFactory,
-                5000,
-                EnvironmentInfo);
+                5000);
 
             MediaEncoder = mediaEncoder;
             RegisterSingleInstance(MediaEncoder);
@@ -1647,25 +1646,25 @@ namespace Emby.Server.Implementations
             // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
             // This will prevent the .dll file from getting locked, and allow us to replace it when needed
 
-            // Include composable parts in the Api assembly 
+            // Include composable parts in the Api assembly
             list.Add(GetAssembly(typeof(ApiEntryPoint)));
 
-            // Include composable parts in the Dashboard assembly 
+            // Include composable parts in the Dashboard assembly
             list.Add(GetAssembly(typeof(DashboardService)));
 
-            // Include composable parts in the Model assembly 
+            // Include composable parts in the Model assembly
             list.Add(GetAssembly(typeof(SystemInfo)));
 
-            // Include composable parts in the Common assembly 
+            // Include composable parts in the Common assembly
             list.Add(GetAssembly(typeof(IApplicationHost)));
 
-            // Include composable parts in the Controller assembly 
+            // Include composable parts in the Controller assembly
             list.Add(GetAssembly(typeof(IServerApplicationHost)));
 
-            // Include composable parts in the Providers assembly 
+            // Include composable parts in the Providers assembly
             list.Add(GetAssembly(typeof(ProviderUtils)));
 
-            // Include composable parts in the Photos assembly 
+            // Include composable parts in the Photos assembly
             list.Add(GetAssembly(typeof(PhotoProvider)));
 
             // Emby.Server implementations
@@ -1674,16 +1673,16 @@ namespace Emby.Server.Implementations
             // MediaEncoding
             list.Add(GetAssembly(typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder)));
 
-            // Dlna 
+            // Dlna
             list.Add(GetAssembly(typeof(DlnaEntryPoint)));
 
-            // Local metadata 
+            // Local metadata
             list.Add(GetAssembly(typeof(BoxSetXmlSaver)));
 
             // Notifications
             list.Add(GetAssembly(typeof(NotificationManager)));
 
-            // Xbmc 
+            // Xbmc
             list.Add(GetAssembly(typeof(ArtistNfoProvider)));
 
             list.AddRange(GetAssembliesWithPartsInternal().Select(i => new Tuple<Assembly, string>(i, null)));
@@ -2219,7 +2218,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// This returns localhost in the case of no external dns, and the hostname if the 
+        /// This returns localhost in the case of no external dns, and the hostname if the
         /// dns is prefixed with a valid Uri prefix.
         /// </summary>
         /// <param name="externalDns">The external dns prefix to get the hostname of.</param>
