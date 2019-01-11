@@ -90,7 +90,6 @@ EOF
 %attr(755,root,root) %{_libdir}/%{name}/jellyfin
 %attr(644,root,root) %{_libdir}/%{name}/sosdocsunix.txt
 %attr(644,root,root) %{_unitdir}/%{name}.service
-%attr(755,root,root) %{_datadir}/%{name}/update-db-paths.sh
 %attr(755,root,root) %{_libexecdir}/%{name}/restart.sh
 %attr(644,root,root) %{_prefix}/lib/firewalld/service/%{name}.xml
 %attr(755,jellyfin,jellyfin) %dir %{_sysconfdir}/%{name}
