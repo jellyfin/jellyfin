@@ -1,12 +1,12 @@
 %global         debug_package %{nil}
 # jellyfin tag to package
-%global         gittag v10.0.0
+%global         gittag v10.0.2
 # Taglib-sharp commit of the submodule since github archive doesn't include submodules
 %global         taglib_commit ee5ab21742b71fd1b87ee24895582327e9e04776
 %global         taglib_shortcommit %(c=%{taglib_commit}; echo ${c:0:7})
 
 Name:           jellyfin
-Version:        10.0.0
+Version:        10.0.2
 Release:        1%{?dist}
 Summary:        The Free Software Media Browser.
 License:        GPLv2
@@ -76,7 +76,7 @@ EOF
 %{__install} -D -m 0644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
 %{__install} -D -m 0600 %{SOURCE3} %{buildroot}%{_sysconfdir}/sudoers.d/%{name}-sudoers
 %{__install} -D -m 0755 %{SOURCE4} %{buildroot}%{_libexecdir}/%{name}/restart.sh
-%{__install} -D -m 0755 %{SOURCE7} %{buildroot}%{_prefix}/lib/firewalld/service/%{name}.xml
+%{__install} -D -m 0644 %{SOURCE7} %{buildroot}%{_prefix}/lib/firewalld/service/%{name}.xml
 
 %files
 %{_libdir}/%{name}/dashboard-ui/*
@@ -142,9 +142,5 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
-* Tue Jan 08 2019 Thomas Büttner <thomas@vergesslicher.tech> - 10.0.0-1
-- The first Jellyfin release under our new versioning scheme
-- Numerous bugfixes and code readability improvements
-- Updated logging configuration, including flag for it and configdir
-- Updated theming including logo
-- Dozens of other improvements as documented in GitHub pull request 419
+* Fri Jan 11 2019 Thomas Büttner <thomas@vergesslicher.tech> - 10.0.2-1
+- TODO Changelog for 10.0.2
