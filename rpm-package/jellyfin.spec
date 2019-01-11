@@ -19,6 +19,7 @@ Source4:        restart.sh
 Source5:        https://github.com/mono/taglib-sharp/archive/%{taglib_commit}/taglib-sharp-%{taglib_shortcommit}.tar.gz
 Source6:        update-db.sh
 Source7:        jellyfin-firewalld.xml
+Source8:        jellyfin.override.conf
 
 %{?systemd_requires}
 BuildRequires:  systemd
@@ -61,8 +62,8 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime linux-x64
 %{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/%{name}/LICENSE
-%{__install} -D -m 0644 debian/conf/jellyfin.service.conf %{buildroot}%{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
-%{__install} -D -m 0644 debian/conf/logging.json %{buildroot}%{_sysconfdir}/%{name}/logging.json
+%{__install} -D -m 0644 %{SOURCE8} %{buildroot}%{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
+%{__install} -D -m 0644 Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/%{name}/logging.json
 %{__mkdir} -p %{buildroot}%{_bindir}
 tee %{buildroot}%{_bindir}/jellyfin << EOF
 #!/bin/sh
