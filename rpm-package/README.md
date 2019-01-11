@@ -20,7 +20,7 @@ $ sudo yum localinstall --nogpgcheck https://download1.rpmfusion.org/free/el/rpm
 
 ## ISO mounting
 
-To allow Jellyfin to mount/umonut ISO files uncomment these two lines in `/etc/sudoers.d/jellyfin-sudoers`
+To allow Jellyfin to mount/umount ISO files uncomment these two lines in `/etc/sudoers.d/jellyfin-sudoers`
 ```
 # %jellyfin ALL=(ALL) NOPASSWD: /bin/mount
 # %jellyfin ALL=(ALL) NOPASSWD: /bin/umount
