@@ -19,7 +19,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{ImageType}.</returns>
         IEnumerable<ImageType> GetSupportedImages(BaseItem item);
-        
+
         /// <summary>
         /// Gets the images.
         /// </summary>

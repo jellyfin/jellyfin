@@ -53,7 +53,7 @@ namespace Rssdp.Infrastructure
         #region Events
 
         /// <summary>
-        /// Raised for when 
+        /// Raised for when
         /// <list type="bullet">
         /// <item>An 'alive' notification is received that a device, regardless of whether or not that device is not already in the cache or has previously raised this event.</item>
         /// <item>For each item found during a device <see cref="SearchAsync()"/> (cached or not), allowing clients to respond to found devices before the entire search is complete.</item>

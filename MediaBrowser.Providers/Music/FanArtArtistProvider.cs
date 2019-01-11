@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.Music
         {
             return new List<ImageType>
             {
-                ImageType.Primary, 
+                ImageType.Primary,
                 ImageType.Logo,
                 ImageType.Art,
                 ImageType.Banner,

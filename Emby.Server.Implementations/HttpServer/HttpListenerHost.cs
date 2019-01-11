@@ -103,7 +103,7 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <summary>
-        /// Applies the request filters. Returns whether or not the request has been handled 
+        /// Applies the request filters. Returns whether or not the request has been handled
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>

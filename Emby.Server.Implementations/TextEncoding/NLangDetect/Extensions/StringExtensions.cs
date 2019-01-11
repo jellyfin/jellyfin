@@ -18,7 +18,7 @@ namespace NLangDetect.Core.Extensions
       if (end < 0) throw new ArgumentOutOfRangeException("end", "Argument must not be negative.");
       if (end > s.Length) throw new ArgumentOutOfRangeException("end", "Argument must not be greater than the input string's length.");
       if (start > end) throw new ArgumentOutOfRangeException("start", "Argument must not be greater than the 'end' argument.");
-      
+
       return s.Substring(start, end - start);
     }
   }

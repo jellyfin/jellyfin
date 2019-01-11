@@ -43,7 +43,7 @@ namespace MediaBrowser.Providers.Movies
             var tmdbId = itemId.GetProviderId(MetadataProviders.Tmdb);
             var imdbId = itemId.GetProviderId(MetadataProviders.Imdb);
 
-            // Don't search for music video id's because it is very easy to misidentify. 
+            // Don't search for music video id's because it is very easy to misidentify.
             if (string.IsNullOrEmpty(tmdbId) && string.IsNullOrEmpty(imdbId) && typeof(T) != typeof(MusicVideo))
             {
                 var searchResults = await new MovieDbSearch(_logger, _jsonSerializer, _libraryManager).GetMovieSearchResults(itemId, cancellationToken).ConfigureAwait(false);

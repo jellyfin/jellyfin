@@ -46,15 +46,15 @@ namespace UniversalDetector.Core
         public EUCKRProber()
         {
             codingSM = new CodingStateMachine(new EUCKRSMModel());
-            distributionAnalyser = new EUCKRDistributionAnalyser(); 
+            distributionAnalyser = new EUCKRDistributionAnalyser();
             Reset();
         }
-        
+
         public override string GetCharsetName()
         {
-            return "EUC-KR";        
+            return "EUC-KR";
         }
-        
+
         public override ProbingState HandleData(byte[] buf, int offset, int len)
         {
             int codingState;
@@ -81,12 +81,12 @@ namespace UniversalDetector.Core
                 }
             }
             lastChar[0] = buf[max-1];
-            
+
             if (state == ProbingState.Detecting)
                 if (distributionAnalyser.GotEnoughData() && GetConfidence() > SHORTCUT_THRESHOLD)
                     state = ProbingState.FoundIt;
             return state;
-        
+
         }
 
         public override float GetConfidence()
@@ -96,7 +96,7 @@ namespace UniversalDetector.Core
 
         public override void Reset()
         {
-            codingSM.Reset(); 
+            codingSM.Reset();
             state = ProbingState.Detecting;
             distributionAnalyser.Reset();
             //mContextAnalyser.Reset();

@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             get
             {
                 // Give plugins a chance to catch iso's first
-                // Also since we have to loop through child files looking for videos, 
+                // Also since we have to loop through child files looking for videos,
                 // see if we can avoid some of that by letting other resolvers claim folders first
                 // Also run after series resolver
                 return ResolverPriority.Third;

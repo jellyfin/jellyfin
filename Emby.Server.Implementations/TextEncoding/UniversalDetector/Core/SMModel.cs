@@ -52,9 +52,9 @@ namespace UniversalDetector.Core
         public BitPackage classTable;
         public BitPackage stateTable;
         public int[] charLenTable;
-        
+
         private string name;
-        
+
         public string Name {
             get { return name;  }
         }
@@ -74,10 +74,10 @@ namespace UniversalDetector.Core
             this.charLenTable = charLenTable;
             this.name = name;
         }
-        
+
         public int GetClass(byte b)
-        {        
-            return classTable.Unpack((int)b);            
+        {
+            return classTable.Unpack((int)b);
         }
-    }    
+    }
 }

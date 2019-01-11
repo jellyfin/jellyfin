@@ -55,7 +55,7 @@ namespace MediaBrowser.Model.Dlna
         /// </summary>
         /// <value>The audio transcoding bitrate.</value>
         public int? AudioTranscodingBitrate { get; set; }
-        
+
         /// <summary>
         /// Gets the maximum bitrate.
         /// </summary>

@@ -75,7 +75,7 @@ namespace Rssdp
 
             return rootDevice;
         }
-        
+
         #region Public Properties
 
         #region UPnP Device Description Properties
@@ -330,7 +330,7 @@ namespace Rssdp
         /// </summary>
         /// <param name="device">The <see cref="SsdpEmbeddedDevice"/> instance added to the <see cref="Devices"/> collection.</param>
         /// <seealso cref="AddDevice"/>
-        /// <seealso cref="DeviceAdded"/>		
+        /// <seealso cref="DeviceAdded"/>
         protected virtual void OnDeviceAdded(SsdpEmbeddedDevice device)
         {
             var handlers = this.DeviceAdded;

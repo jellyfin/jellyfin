@@ -43,7 +43,7 @@ namespace MediaBrowser.Controller.Session
         event EventHandler<SessionEventArgs> SessionEnded;
 
         event EventHandler<SessionEventArgs> SessionActivity;
-        
+
         /// <summary>
         /// Occurs when [capabilities changed].
         /// </summary>
@@ -58,7 +58,7 @@ namespace MediaBrowser.Controller.Session
         /// Occurs when [authentication succeeded].
         /// </summary>
         event EventHandler<GenericEventArgs<AuthenticationResult>> AuthenticationSucceeded;
-        
+
         /// <summary>
         /// Gets the sessions.
         /// </summary>
@@ -119,7 +119,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendGeneralCommand(string controllingSessionId, string sessionId, GeneralCommand command, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Sends the message command.
         /// </summary>
@@ -189,7 +189,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendMessageToUserDeviceSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Sends the restart required message.
         /// </summary>

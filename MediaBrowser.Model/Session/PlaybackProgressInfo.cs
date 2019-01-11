@@ -25,7 +25,7 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The item identifier.</value>
         public Guid ItemId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the session id.
         /// </summary>

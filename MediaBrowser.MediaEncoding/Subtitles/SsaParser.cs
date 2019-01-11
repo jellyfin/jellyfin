@@ -129,8 +129,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                             }
                         }
                     }
-                } 
-                
+                }
+
                 //if (header.Length > 0)
                     //subtitle.Header = header.ToString();
 

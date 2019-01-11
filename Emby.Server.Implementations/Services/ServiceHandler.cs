@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.Services
                     return deserializer(requestType, httpReq.InputStream);
                 }
             }
-            return Task.FromResult(host.CreateInstance(requestType)); 
+            return Task.FromResult(host.CreateInstance(requestType));
         }
 
         public static RestPath FindMatchingRestPath(string httpMethod, string pathInfo, out string contentType)

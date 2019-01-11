@@ -90,7 +90,7 @@ namespace MediaBrowser.Controller.Entities
         public int? SubtitleStreamIndex { get; set; }
 
         public const double MinLikeValue = 6.5;
-    
+
         /// <summary>
         /// This is an interpreted property to indicate likes or dislikes
         /// This should never be serialized.

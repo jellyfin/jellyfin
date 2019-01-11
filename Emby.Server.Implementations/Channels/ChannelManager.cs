@@ -902,7 +902,7 @@ namespace Emby.Server.Implementations.Channels
             where T : BaseItem, new()
         {
             var id = _libraryManager.GetNewItemId(GetIdToHash(idString, channelName), typeof(T));
- 
+
             T item = null;
 
             try

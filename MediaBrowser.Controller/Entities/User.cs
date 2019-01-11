@@ -19,7 +19,7 @@ namespace MediaBrowser.Controller.Entities
         public static IXmlSerializer XmlSerializer { get; set; }
 
         /// <summary>
-        /// From now on all user paths will be Id-based. 
+        /// From now on all user paths will be Id-based.
         /// This is for backwards compatibility.
         /// </summary>
         public bool UsesIdForConfigurationPath { get; set; }

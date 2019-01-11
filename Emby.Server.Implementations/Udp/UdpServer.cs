@@ -182,7 +182,7 @@ namespace Emby.Server.Implementations.Udp
             {
                 return;
             }
-            
+
             try
             {
                 var socketResult = _udpClient.EndReceive(result);

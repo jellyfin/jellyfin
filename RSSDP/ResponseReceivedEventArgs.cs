@@ -8,53 +8,52 @@ using MediaBrowser.Model.Net;
 
 namespace Rssdp.Infrastructure
 {
-	/// <summary>
-	/// Provides arguments for the <see cref="ISsdpCommunicationsServer.ResponseReceived"/> event.
-	/// </summary>
-	public sealed class ResponseReceivedEventArgs : EventArgs
-	{
+    /// <summary>
+    /// Provides arguments for the <see cref="ISsdpCommunicationsServer.ResponseReceived"/> event.
+    /// </summary>
+    public sealed class ResponseReceivedEventArgs : EventArgs
+    {
 
         public IpAddressInfo LocalIpAddress { get; set; }
 
         #region Fields
 
         private readonly HttpResponseMessage _Message;
-		private readonly IpEndPointInfo _ReceivedFrom;
+        private readonly IpEndPointInfo _ReceivedFrom;
 
-		#endregion
+        #endregion
 
-		#region Constructors
+        #region Constructors
 
-		/// <summary>
-		/// Full constructor.
-		/// </summary>
-		public ResponseReceivedEventArgs(HttpResponseMessage message, IpEndPointInfo receivedFrom)
-		{
-			_Message = message;
-			_ReceivedFrom = receivedFrom;
-		}
+        /// <summary>
+        /// Full constructor.
+        /// </summary>
+        public ResponseReceivedEventArgs(HttpResponseMessage message, IpEndPointInfo receivedFrom)
+        {
+            _Message = message;
+            _ReceivedFrom = receivedFrom;
+        }
 
-		#endregion
+        #endregion
 
-		#region Public Properties
+        #region Public Properties
 
-		/// <summary>
-		/// The <see cref="HttpResponseMessage"/> that was received.
-		/// </summary>
-		public HttpResponseMessage Message
-		{
-			get { return _Message; }
-		}
+        /// <summary>
+        /// The <see cref="HttpResponseMessage"/> that was received.
+        /// </summary>
+        public HttpResponseMessage Message
+        {
+            get { return _Message; }
+        }
 
-		/// <summary>
-		/// The <see cref="UdpEndPoint"/> the response came from.
-		/// </summary>
-		public IpEndPointInfo ReceivedFrom
-		{
-			get { return _ReceivedFrom; }
-		}
+        /// <summary>
+        /// The <see cref="UdpEndPoint"/> the response came from.
+        /// </summary>
+        public IpEndPointInfo ReceivedFrom
+        {
+            get { return _ReceivedFrom; }
+        }
 
-		#endregion
-
-	}
+        #endregion
+    }
 }
