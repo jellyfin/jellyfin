@@ -28,8 +28,8 @@ If applicable, add screenshots to help explain your problem.
 
 **System (please complete the following information):**
  - OS: [e.g. Docker, Debian, Windows]
- - Browser [e.g. Firefox, Chrome, Safari]
- - Version [e.g. 10.0.1]
+ - Browser: [e.g. Firefox, Chrome, Safari]
+ - Version: [e.g. 10.0.1]
 
 **Additional context**
 Add any other context about the problem here.
