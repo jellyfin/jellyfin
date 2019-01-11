@@ -87,7 +87,7 @@ EOF
 %{_libdir}/%{name}/*.so
 %{_libdir}/%{name}/*.a
 %{_libdir}/%{name}/createdump
-# Needs 755 else only root can run it since binary build by dotnet is 744
+# Needs 755 else only root can run it since binary build by dotnet is 722
 %attr(755,root,root) %{_libdir}/%{name}/jellyfin
 %{_libdir}/%{name}/sosdocsunix.txt
 %{_unitdir}/%{name}.service
