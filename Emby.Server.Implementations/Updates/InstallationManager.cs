@@ -597,7 +597,7 @@ namespace Emby.Server.Implementations.Updates
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Success - move it to the real target 
+            // Success - move it to the real target
             try
             {
                 _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(target));

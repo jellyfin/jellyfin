@@ -58,7 +58,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteAttributeString("cache", string.Format("{0}.xml", tvdb));
                 writer.WriteString(string.Format("http://www.thetvdb.com/api/1D62F2F90030C444/series/{0}/all/{1}.zip", tvdb, language));
                 writer.WriteEndElement();
-                
+
                 writer.WriteEndElement();
             }
 

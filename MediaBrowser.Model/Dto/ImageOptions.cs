@@ -92,7 +92,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The un played count.</value>
         public int? UnPlayedCount { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the color of the background.
         /// </summary>

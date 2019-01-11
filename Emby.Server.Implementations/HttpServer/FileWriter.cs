@@ -148,7 +148,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private string[] SkipLogExtensions = new string[] 
+        private string[] SkipLogExtensions = new string[]
         {
             ".js",
             ".html",

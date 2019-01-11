@@ -38,7 +38,7 @@ namespace Emby.Naming.Video
             }
             catch (ArgumentException)
             {
-                
+
             }
 
             var result = _options.CleanDateTimeRegexes.Select(i => Clean(name, i))

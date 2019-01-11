@@ -397,7 +397,7 @@ namespace MediaBrowser.Api
 
             lock (_activeTranscodingJobs)
             {
-                // This is really only needed for HLS. 
+                // This is really only needed for HLS.
                 // Progressive streams can stop on their own reliably
                 jobs = _activeTranscodingJobs.Where(j => string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase)).ToList();
             }
@@ -499,7 +499,7 @@ namespace MediaBrowser.Api
 
             lock (_activeTranscodingJobs)
             {
-                // This is really only needed for HLS. 
+                // This is really only needed for HLS.
                 // Progressive streams can stop on their own reliably
                 jobs.AddRange(_activeTranscodingJobs.Where(killJob));
             }

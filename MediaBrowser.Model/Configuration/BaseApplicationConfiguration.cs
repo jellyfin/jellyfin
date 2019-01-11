@@ -40,7 +40,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The cache path.</value>
         public string CachePath { get; set; }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationConfiguration" /> class.
         /// </summary>

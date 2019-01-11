@@ -1705,7 +1705,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                // These are just far too slow. 
+                // These are just far too slow.
                 if (this is ICollectionFolder)
                 {
                     return false;

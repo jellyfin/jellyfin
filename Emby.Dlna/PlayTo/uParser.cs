@@ -20,7 +20,7 @@ namespace Emby.Dlna.PlayTo
 
             if (document == null)
                 return list;
-            
+
             var item = (from result in document.Descendants("Result") select result).FirstOrDefault();
 
             if (item == null)

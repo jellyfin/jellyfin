@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.TV
 {
     public class MovieDbEpisodeImageProvider :
             MovieDbProviderBase,
-            IRemoteImageProvider, 
+            IRemoteImageProvider,
             IHasOrder
     {
         public MovieDbEpisodeImageProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILoggerFactory loggerFactory)

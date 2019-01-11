@@ -214,13 +214,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var outputParam = string.Empty;
 
-            var commandLineArgs = string.Format("-i \"{0}\"{5} {2} -map_metadata -1 -threads 0 {3}{4}{6} -y \"{1}\"", 
-                inputTempFile, 
-                targetFile, 
-                videoArgs, 
-                GetAudioArgs(mediaSource), 
-                subtitleArgs, 
-                durationParam, 
+            var commandLineArgs = string.Format("-i \"{0}\"{5} {2} -map_metadata -1 -threads 0 {3}{4}{6} -y \"{1}\"",
+                inputTempFile,
+                targetFile,
+                videoArgs,
+                GetAudioArgs(mediaSource),
+                subtitleArgs,
+                durationParam,
                 outputParam);
 
             return inputModifier + " " + commandLineArgs;

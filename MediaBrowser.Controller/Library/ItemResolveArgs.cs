@@ -126,7 +126,7 @@ namespace MediaBrowser.Controller.Library
             {
                 var item = parent as T;
 
-                // Just in case the user decided to nest episodes. 
+                // Just in case the user decided to nest episodes.
                 // Not officially supported but in some cases we can handle it.
                 if (item == null)
                 {

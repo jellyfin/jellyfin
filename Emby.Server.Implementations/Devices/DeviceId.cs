@@ -10,8 +10,8 @@ namespace Emby.Server.Implementations.Devices
     public class DeviceId
     {
         private readonly IApplicationPaths _appPaths;
-		private readonly ILogger _logger;
-		private readonly IFileSystem _fileSystem;
+        private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
 
         private readonly object _syncLock = new object();
 
@@ -26,7 +26,7 @@ namespace Emby.Server.Implementations.Devices
             {
                 lock (_syncLock)
                 {
-					var value = File.ReadAllText(CachePath, Encoding.UTF8);
+                    var value = File.ReadAllText(CachePath, Encoding.UTF8);
 
                     Guid guid;
                     if (Guid.TryParse(value, out guid))
@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.Devices
             {
                 var path = CachePath;
 
-				_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
                 lock (_syncLock)
                 {
@@ -92,13 +92,13 @@ namespace Emby.Server.Implementations.Devices
 
         public DeviceId(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
         {
-			if (fileSystem == null) {
-				throw new ArgumentNullException ("fileSystem");
-			}
+            if (fileSystem == null) {
+                throw new ArgumentNullException ("fileSystem");
+            }
 
             _appPaths = appPaths;
             _logger = logger;
-			_fileSystem = fileSystem;
+            _fileSystem = fileSystem;
         }
 
         public string Value

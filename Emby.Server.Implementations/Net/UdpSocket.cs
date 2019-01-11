@@ -8,7 +8,7 @@ using MediaBrowser.Model.Net;
 
 namespace Emby.Server.Implementations.Net
 {
-    // THIS IS A LINKED FILE - SHARED AMONGST MULTIPLE PLATFORMS	
+    // THIS IS A LINKED FILE - SHARED AMONGST MULTIPLE PLATFORMS
     // Be careful to check any changes compile and work for all platform projects it is shared in.
 
     public sealed class UdpSocket : DisposableManagedObjectBase, ISocket

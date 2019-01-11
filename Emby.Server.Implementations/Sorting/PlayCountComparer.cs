@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Sorting
         /// </summary>
         /// <value>The user data repository.</value>
         public IUserDataManager UserDataRepository { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the user manager.
         /// </summary>

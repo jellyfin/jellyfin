@@ -33,7 +33,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         /// <value>The web socket connecting.</value>
         Action<WebSocketConnectingEventArgs> WebSocketConnecting { get; set; }
-        
+
         /// <summary>
         /// Starts this instance.
         /// </summary>

@@ -882,7 +882,7 @@ namespace MediaBrowser.Api.Playback
 
             if (profile == null)
             {
-                // Don't use settings from the default profile. 
+                // Don't use settings from the default profile.
                 // Only use a specific profile if it was requested.
                 return;
             }

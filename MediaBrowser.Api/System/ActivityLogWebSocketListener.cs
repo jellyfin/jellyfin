@@ -47,7 +47,7 @@ namespace MediaBrowser.Api.System
         {
             return Task.FromResult(new List<ActivityLogEntry>());
         }
-        
+
 
         protected override void Dispose(bool dispose)
         {

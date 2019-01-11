@@ -4,7 +4,7 @@ namespace MediaBrowser.Controller.MediaEncoding
     public class ImageEncodingOptions
     {
         public string InputPath { get; set; }
-        
+
         public int? Width { get; set; }
 
         public int? Height { get; set; }
@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public int? MaxHeight { get; set; }
 
         public int? Quality { get; set; }
-        
+
         public string Format { get; set; }
     }
 }

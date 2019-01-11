@@ -35,7 +35,7 @@ namespace SocketHttpListener.Net
         bool listening;
         bool disposed;
 
-        Dictionary<HttpListenerContext, HttpListenerContext> registry;   // Dictionary<HttpListenerContext,HttpListenerContext> 
+        Dictionary<HttpListenerContext, HttpListenerContext> registry;   // Dictionary<HttpListenerContext,HttpListenerContext>
         Dictionary<HttpConnection, HttpConnection> connections;
         private ILogger _logger;
         private X509Certificate _certificate;

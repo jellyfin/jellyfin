@@ -155,7 +155,7 @@ namespace MediaBrowser.Api.ScheduledTasks
                     return isEnabled == val;
                 });
             }
-            
+
             var infos = result
                 .Select(ScheduledTaskHelpers.GetTaskInfo)
                 .ToArray();

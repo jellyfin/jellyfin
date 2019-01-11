@@ -1055,7 +1055,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             _logger.LogInformation("Streaming Channel " + channelId);
 
-            var result = string.IsNullOrEmpty(streamId) ? 
+            var result = string.IsNullOrEmpty(streamId) ?
                 null :
                 currentLiveStreams.FirstOrDefault(i => string.Equals(i.OriginalStreamId, streamId, StringComparison.OrdinalIgnoreCase));
 

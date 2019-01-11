@@ -21,7 +21,7 @@
  * Contributor(s):
  *          Shy Shalom <shooshX@gmail.com>
  *          Rudi Pettazzi <rudi.pettazzi@gmail.com> (C# port)
- * 
+ *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -39,36 +39,36 @@
 using System;
 
 namespace UniversalDetector.Core
-{   
+{
     public abstract class SequenceModel
     {
         // [256] table use to find a char's order
         protected byte[] charToOrderMap;
-        
-        // [SAMPLE_SIZE][SAMPLE_SIZE] table to find a 2-char sequence's 
-        // frequency        
+
+        // [SAMPLE_SIZE][SAMPLE_SIZE] table to find a 2-char sequence's
+        // frequency
         protected byte[] precedenceMatrix;
-        
+
         // freqSeqs / totalSeqs
         protected float typicalPositiveRatio;
-        
+
         public float TypicalPositiveRatio {
             get { return typicalPositiveRatio; }
         }
-        
-        // not used            
+
+        // not used
         protected bool keepEnglishLetter;
-        
+
         public bool KeepEnglishLetter {
             get { return keepEnglishLetter; }
         }
-        
+
         protected String charsetName;
 
         public string CharsetName {
             get { return charsetName; }
         }
-        
+
         public SequenceModel(
                 byte[] charToOrderMap,
                 byte[] precedenceMatrix,
@@ -82,16 +82,16 @@ namespace UniversalDetector.Core
             this.keepEnglishLetter = keepEnglishLetter;
             this.charsetName = charsetName;
         }
-        
+
         public byte GetOrder(byte b)
         {
             return charToOrderMap[b];
         }
-        
+
         public byte GetPrecedence(int pos)
         {
             return precedenceMatrix[pos];
         }
-        
+
     }
 }

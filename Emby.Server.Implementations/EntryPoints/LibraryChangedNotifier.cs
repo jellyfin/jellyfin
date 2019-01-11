@@ -471,7 +471,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer.Dispose();
                     LibraryUpdateTimer = null;
                 }
-                
+
                 _libraryManager.ItemAdded -= libraryManager_ItemAdded;
                 _libraryManager.ItemUpdated -= libraryManager_ItemUpdated;
                 _libraryManager.ItemRemoved -= libraryManager_ItemRemoved;
