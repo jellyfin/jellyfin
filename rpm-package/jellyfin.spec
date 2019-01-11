@@ -75,23 +75,23 @@ EOF
 %{__install} -D -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.service
 %{__install} -D -m 0644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
 %{__install} -D -m 0600 %{SOURCE3} %{buildroot}%{_sysconfdir}/sudoers.d/%{name}-sudoers
-%{__install} -D -m 0750 %{SOURCE4} %{buildroot}%{_libexecdir}/%{name}/restart.sh
+%{__install} -D -m 0755 %{SOURCE4} %{buildroot}%{_libexecdir}/%{name}/restart.sh
 %{__install} -D -m 0755 %{SOURCE7} %{buildroot}%{_prefix}/lib/firewalld/service/%{name}.xml
 
 %files
 %{_libdir}/%{name}/dashboard-ui/*
 %attr(755,root,root) %{_bindir}/%{name}
-%attr(644,root,root) %{_libdir}/%{name}/*.json
-%attr(644,root,root) %{_libdir}/%{name}/*.pdb
-%attr(755,root,root) %{_libdir}/%{name}/*.dll
-%attr(755,root,root) %{_libdir}/%{name}/*.so
-%attr(755,root,root) %{_libdir}/%{name}/*.a
-%attr(755,root,root) %{_libdir}/%{name}/createdump
-%attr(755,root,root) %{_libdir}/%{name}/jellyfin
-%attr(644,root,root) %{_libdir}/%{name}/sosdocsunix.txt
-%attr(644,root,root) %{_unitdir}/%{name}.service
-%attr(755,root,root) %{_libexecdir}/%{name}/restart.sh
-%attr(644,root,root) %{_prefix}/lib/firewalld/service/%{name}.xml
+%{_libdir}/%{name}/*.json
+%{_libdir}/%{name}/*.pdb
+%{_libdir}/%{name}/*.dll
+%{_libdir}/%{name}/*.so
+%{_libdir}/%{name}/*.a
+%{_libdir}/%{name}/createdump
+%{_libdir}/%{name}/jellyfin
+%{_libdir}/%{name}/sosdocsunix.txt
+%{_unitdir}/%{name}.service
+%{_libexecdir}/%{name}/restart.sh
+%{_prefix}/lib/firewalld/service/%{name}.xml
 %attr(755,jellyfin,jellyfin) %dir %{_sysconfdir}/%{name}
 %config %{_sysconfdir}/sysconfig/%{name}
 %config(noreplace) %attr(600,root,root) %{_sysconfdir}/sudoers.d/%{name}-sudoers
