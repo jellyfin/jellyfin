@@ -6,12 +6,10 @@ RUN mkdir /build && \
     rpmdev-setuptree
 
 WORKDIR /build/rpmbuild
-COPY jellyfin.spec SPECS
+COPY ./deployment/fedora-package-x64/pkg-src/jellyfin.spec SPECS
 COPY . SOURCES
 
 RUN spectool -g -R SPECS/jellyfin.spec && \
     rpmbuild -bs SPECS/jellyfin.spec && \
     dnf build-dep -y SRPMS/jellyfin-*.src.rpm && \
-    rpmbuild -bb SPECS/jellyfin.spec && \
-    mkdir /jellyfin && \
-    find . -name 'jellyfin-*.rpm' -print -exec cp {} /jellyfin \;
+    rpmbuild -bb SPECS/jellyfin.spec;
