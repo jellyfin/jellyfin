@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace System.Net
 {
     /// <summary>
-    /// IP Network utility class. 
+    /// IP Network utility class.
     /// Use IPNetwork.Parse to create instances.
     /// </summary>
     public class IPNetwork : IComparable<IPNetwork>
@@ -179,7 +179,7 @@ namespace System.Net
 
         /// <summary>
         /// 192.168.168.100 - 255.255.255.0
-        /// 
+        ///
         /// Network   : 192.168.168.0
         /// Netmask   : 255.255.255.0
         /// Cidr      : 24
@@ -200,7 +200,7 @@ namespace System.Net
 
         /// <summary>
         /// 192.168.168.100/24
-        /// 
+        ///
         /// Network   : 192.168.168.0
         /// Netmask   : 255.255.255.0
         /// Cidr      : 24
@@ -222,7 +222,7 @@ namespace System.Net
 
         /// <summary>
         /// 192.168.168.100 255.255.255.0
-        /// 
+        ///
         /// Network   : 192.168.168.0
         /// Netmask   : 255.255.255.0
         /// Cidr      : 24
@@ -245,7 +245,7 @@ namespace System.Net
         /// <summary>
         /// 192.168.0.1/24
         /// 192.168.0.1 255.255.255.0
-        /// 
+        ///
         /// Network   : 192.168.0.0
         /// Netmask   : 255.255.255.0
         /// Cidr      : 24
@@ -272,7 +272,7 @@ namespace System.Net
 
         /// <summary>
         /// 192.168.168.100 - 255.255.255.0
-        /// 
+        ///
         /// Network   : 192.168.168.0
         /// Netmask   : 255.255.255.0
         /// Cidr      : 24
@@ -298,7 +298,7 @@ namespace System.Net
 
         /// <summary>
         /// 192.168.168.100/24
-        /// 
+        ///
         /// Network   : 192.168.168.0
         /// Netmask   : 255.255.255.0
         /// Cidr      : 24
@@ -323,7 +323,7 @@ namespace System.Net
         /// <summary>
         /// 192.168.0.1/24
         /// 192.168.0.1 255.255.255.0
-        /// 
+        ///
         /// Network   : 192.168.0.0
         /// Netmask   : 255.255.255.0
         /// Cidr      : 24
@@ -348,7 +348,7 @@ namespace System.Net
         /// <summary>
         /// 192.168.0.1/24
         /// 192.168.0.1 255.255.255.0
-        /// 
+        ///
         /// Network   : 192.168.0.0
         /// Netmask   : 255.255.255.0
         /// Cidr      : 24
@@ -378,7 +378,7 @@ namespace System.Net
 
         /// <summary>
         /// 192.168.168.100 - 255.255.255.0
-        /// 
+        ///
         /// Network   : 192.168.168.0
         /// Netmask   : 255.255.255.0
         /// Cidr      : 24
@@ -489,7 +489,7 @@ namespace System.Net
 
         /// <summary>
         /// 192.168.168.100 255.255.255.0
-        /// 
+        ///
         /// Network   : 192.168.168.0
         /// Netmask   : 255.255.255.0
         /// Cidr      : 24
@@ -547,7 +547,7 @@ namespace System.Net
 
         /// <summary>
         /// 192.168.168.100/24
-        /// 
+        ///
         /// Network   : 192.168.168.0
         /// Netmask   : 255.255.255.0
         /// Cidr      : 24
@@ -931,7 +931,7 @@ namespace System.Net
 
             /// 20180217 lduchosal
             /// impossible to reach code, byte cannot be negative :
-            /// 
+            ///
             /// if (cidr < 0) {
             ///     if (tryParse == false) {
             ///         throw new ArgumentOutOfRangeException("cidr");
@@ -1226,7 +1226,7 @@ namespace System.Net
         public static IPNetwork IANA_CBLK_RESERVED1 => _iana_cblock_reserved.Value;
 
         /// <summary>
-        /// return true if ipaddress is contained in 
+        /// return true if ipaddress is contained in
         /// IANA_ABLK_RESERVED1, IANA_BBLK_RESERVED1, IANA_CBLK_RESERVED1
         /// </summary>
         /// <param name="ipaddress"></param>
@@ -1245,7 +1245,7 @@ namespace System.Net
         }
 
         /// <summary>
-        /// return true if ipnetwork is contained in 
+        /// return true if ipnetwork is contained in
         /// IANA_ABLK_RESERVED1, IANA_BBLK_RESERVED1, IANA_CBLK_RESERVED1
         /// </summary>
         /// <returns></returns>
@@ -1346,9 +1346,9 @@ namespace System.Net
 
         /// <summary>
         /// Supernet two consecutive cidr equal subnet into a single one
-        /// 192.168.0.0/24 + 192.168.1.0/24 = 192.168.0.0/23 
+        /// 192.168.0.0/24 + 192.168.1.0/24 = 192.168.0.0/23
         /// 10.1.0.0/16 + 10.0.0.0/16 = 10.0.0.0/15
-        /// 192.168.0.0/24 + 192.168.0.0/25 = 192.168.0.0/24 
+        /// 192.168.0.0/24 + 192.168.0.0/25 = 192.168.0.0/24
         /// </summary>
         /// <param name="network2"></param>
         /// <returns></returns>
@@ -1361,9 +1361,9 @@ namespace System.Net
 
         /// <summary>
         /// Try to supernet two consecutive cidr equal subnet into a single one
-        /// 192.168.0.0/24 + 192.168.1.0/24 = 192.168.0.0/23 
+        /// 192.168.0.0/24 + 192.168.1.0/24 = 192.168.0.0/23
         /// 10.1.0.0/16 + 10.0.0.0/16 = 10.0.0.0/15
-        /// 192.168.0.0/24 + 192.168.0.0/25 = 192.168.0.0/24 
+        /// 192.168.0.0/24 + 192.168.0.0/25 = 192.168.0.0/24
         /// </summary>
         /// <param name="network2"></param>
         /// <returns></returns>
@@ -1791,13 +1791,13 @@ namespace System.Net
         #region TryGuessCidr
 
         /// <summary>
-        /// 
-        /// Class              Leading bits    Default netmask
-        ///     A (CIDR /8)	       00           255.0.0.0
-        ///     A (CIDR /8)	       01           255.0.0.0
-        ///     B (CIDR /16)	   10           255.255.0.0
-        ///     C (CIDR /24)       11 	        255.255.255.0
-        ///  
+        ///
+        /// Class            Leading bits Default netmask
+        ///     A (CIDR /8)  00           255.0.0.0
+        ///     A (CIDR /8)  01           255.0.0.0
+        ///     B (CIDR /16) 10           255.255.0.0
+        ///     C (CIDR /24) 11           255.255.255.0
+        ///
         /// </summary>
         /// <param name="ip"></param>
         /// <param name="cidr"></param>
@@ -1881,7 +1881,7 @@ namespace System.Net
 
         /**
          * Need a better way to do it
-         * 
+         *
 #region TrySubstractNetwork
 
         public static bool TrySubstractNetwork(IPNetwork[] ipnetworks, IPNetwork substract, out IEnumerable<IPNetwork> result) {

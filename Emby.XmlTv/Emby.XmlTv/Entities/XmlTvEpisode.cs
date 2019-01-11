@@ -49,5 +49,5 @@ namespace Emby.XmlTv.Entities
         }
     }
 
-    
+
 }

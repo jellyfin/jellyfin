@@ -171,7 +171,7 @@ namespace Emby.Dlna.PlayTo
             if (state != null)
             {
                 var sendValue = state.AllowedValues.FirstOrDefault(a => string.Equals(a, commandParameter, StringComparison.OrdinalIgnoreCase)) ??
-                                 state.AllowedValues.FirstOrDefault() ?? 
+                                 state.AllowedValues.FirstOrDefault() ??
                                  value;
 
                 return string.Format("<{0} xmlns:dt=\"urn:schemas-microsoft-com:datatypes\" dt:dt=\"{1}\">{2}</{0}>", argument.Name, state.DataType ?? "string", sendValue);

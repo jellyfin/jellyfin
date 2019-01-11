@@ -48,7 +48,7 @@ namespace MediaBrowser.Model.Dlna
                 if (subFactors.Length == 3)
                 {
 
-                    if (StringHelper.EqualsIgnoreCase("upnp:class", subFactors[0]) && 
+                    if (StringHelper.EqualsIgnoreCase("upnp:class", subFactors[0]) &&
                         (StringHelper.EqualsIgnoreCase("=", subFactors[1]) || StringHelper.EqualsIgnoreCase("derivedfrom", subFactors[1])))
                     {
                         if (StringHelper.EqualsIgnoreCase("\"object.item.imageItem\"", subFactors[2]) || StringHelper.EqualsIgnoreCase("\"object.item.imageItem.photo\"", subFactors[2]))

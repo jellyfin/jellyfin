@@ -132,7 +132,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 if (!string.IsNullOrWhiteSpace(iTunEXTC))
                 {
                     var parts = iTunEXTC.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-                    // Example 
+                    // Example
                     // mpaa|G|100|For crude humor
                     if (parts.Length > 1)
                     {
@@ -423,7 +423,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                         Type = PersonType.Writer
                     });
                 }
-               
+
             }
             else if (string.Equals(key, "producers", StringComparison.OrdinalIgnoreCase))
             {
@@ -619,7 +619,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 else if (string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
                 {
                     // How to differentiate between video and embedded image?
-                    // The only difference I've seen thus far is presence of codec tag, also embedded images have high (unusual) framerates 
+                    // The only difference I've seen thus far is presence of codec tag, also embedded images have high (unusual) framerates
                     if (!string.IsNullOrWhiteSpace(stream.CodecTag))
                     {
                         stream.Type = MediaStreamType.Video;
@@ -1054,7 +1054,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <returns>System.String[][].</returns>
         private IEnumerable<string> Split(string val, bool allowCommaDelimiter)
         {
-            // Only use the comma as a delimeter if there are no slashes or pipes. 
+            // Only use the comma as a delimeter if there are no slashes or pipes.
             // We want to be careful not to split names that have commas in them
             var delimeter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.IndexOf(i) != -1) ?
                 _nameDelimiters :

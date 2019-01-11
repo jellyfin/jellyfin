@@ -2100,7 +2100,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    var list = 
+                    var list =
                     Studios = current.Concat(new [] { name }).ToArray();
                 }
             }
@@ -2915,7 +2915,7 @@ namespace MediaBrowser.Controller.Entities
             return GetExtras();
         }
 
-        public virtual bool IsHD { 
+        public virtual bool IsHD {
             get
             {
                 return Height >= 720;

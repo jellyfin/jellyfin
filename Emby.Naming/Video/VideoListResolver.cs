@@ -55,9 +55,9 @@ namespace Emby.Naming.Video
 
                 info.Year = info.Files.First().Year;
 
-                var extraBaseNames = new List<string> 
+                var extraBaseNames = new List<string>
                 {
-                    stack.Name, 
+                    stack.Name,
                     Path.GetFileNameWithoutExtension(stack.Files[0])
                 };
 

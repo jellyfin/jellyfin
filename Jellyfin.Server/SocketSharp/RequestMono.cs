@@ -97,12 +97,12 @@ namespace Jellyfin.SocketSharp
             }
 
 #if NET_4_0
-				if (validateRequestNewMode && !checked_form) {
-					// Setting this before calling the validator prevents
-					// possible endless recursion
-					checked_form = true;
-					ValidateNameValueCollection ("Form", query_string_nvc, RequestValidationSource.Form);
-				} else
+            if (validateRequestNewMode && !checked_form) {
+                // Setting this before calling the validator prevents
+                // possible endless recursion
+                checked_form = true;
+                ValidateNameValueCollection ("Form", query_string_nvc, RequestValidationSource.Form);
+            } else
 #endif
             if (validate_form && !checked_form)
             {
@@ -546,7 +546,7 @@ namespace Jellyfin.SocketSharp
 
             const byte HYPHEN = (byte)'-', LF = (byte)'\n', CR = (byte)'\r';
 
-            // See RFC 2046 
+            // See RFC 2046
             // In the case of multipart entities, in which one or more different
             // sets of data are combined in a single body, a "multipart" media type
             // field must appear in the entity's header.  The body must then contain

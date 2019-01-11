@@ -580,7 +580,7 @@ namespace Emby.XmlTv.Classes
 
         public void ParseEpisodeDataForOnScreen(XmlReader reader, XmlTvProgram result)
         {
-            //// example: 'Episode #FFEE' 
+            //// example: 'Episode #FFEE'
             //serEpNum = ConvertHTMLToAnsi(nodeEpisodeNum);
             //int num1 = serEpNum.IndexOf("#", 0);
             //if (num1 < 0) num1 = 0;
@@ -832,23 +832,22 @@ namespace Emby.XmlTv.Classes
 
         public void ProcessNode(XmlReader reader, Action<string> setter, string languageRequired = null, Action<string> allOccurrencesSetter = null)
         {
-            /*
-            <title lang="es">Homes Under the Hammer - Spanish</title>
-		    <title lang="es">Homes Under the Hammer - Spanish 2</title>
-		    <title lang="en">Homes Under the Hammer - English</title>
-		    <title lang="en">Homes Under the Hammer - English 2</title>
-		    <title lang="">Homes Under the Hammer - Empty Language</title>
-		    <title lang="">Homes Under the Hammer - Empty Language 2</title>
-		    <title>Homes Under the Hammer - No Language</title>
-		    <title>Homes Under the Hammer - No Language 2</title>
-            */
+            /* <title lang="es">Homes Under the Hammer - Spanish</title>
+             * <title lang="es">Homes Under the Hammer - Spanish 2</title>
+             * <title lang="en">Homes Under the Hammer - English</title>
+             * <title lang="en">Homes Under the Hammer - English 2</title>
+             * <title lang="">Homes Under the Hammer - Empty Language</title>
+             * <title lang="">Homes Under the Hammer - Empty Language 2</title>
+             * <title>Homes Under the Hammer - No Language</title>
+             * <title>Homes Under the Hammer - No Language 2</title>
+             */
 
-            /*  Expected Behaviour:
-                - Language = Null   Homes Under the Hammer - No Language
-                - Language = ""   Homes Under the Hammer - No Language
-                - Language = es     Homes Under the Hammer - Spanish
-                - Language = en     Homes Under the Hammer - English
-            */
+            /* Expected Behaviour:
+             *  - Language = Null   Homes Under the Hammer - No Language
+             *  - Language = ""     Homes Under the Hammer - No Language
+             *  - Language = es     Homes Under the Hammer - Spanish
+             *  - Language = en     Homes Under the Hammer - English
+             */
 
             var results = new List<Tuple<string, string>>();
 
@@ -921,23 +920,22 @@ namespace Emby.XmlTv.Classes
 
         public void ProcessMultipleNodes(XmlReader reader, Action<string> setter, string languageRequired = null)
         {
-            /*
-            <category lang="en">Property - English</category>
-		    <category lang="en">Property - English 2</category>
-		    <category lang="es">Property - Spanish</category>
-		    <category lang="es">Property - Spanish 2</category>
-		    <category lang="">Property - Empty Language</category>
-		    <category lang="">Property - Empty Language 2</category>
-		    <category>Property - No Language</category>
-		    <category>Property - No Language 2</category>
-            */
+            /* <category lang="en">Property - English</category>
+             * <category lang="en">Property - English 2</category>
+             * <category lang="es">Property - Spanish</category>
+             * <category lang="es">Property - Spanish 2</category>
+             * <category lang="">Property - Empty Language</category>
+             * <category lang="">Property - Empty Language 2</category>
+             * <category>Property - No Language</category>
+             * <category>Property - No Language 2</category>
+             */
 
-            /*  Expected Behaviour:
-                - Language = Null   Property - No Language / Property - No Language 2
-                - Language = ""     Property - Empty Language / Property - Empty Language 2
-                - Language = es     Property - Spanish / Property - Spanish 2
-                - Language = en     Property - English / Property - English 2
-            */
+            /* Expected Behaviour:
+             *  - Language = Null   Property - No Language / Property - No Language 2
+             *  - Language = ""     Property - Empty Language / Property - Empty Language 2
+             *  - Language = es     Property - Spanish / Property - Spanish 2
+             *  - Language = en     Property - English / Property - English 2
+             */
 
             var currentElementName = reader.Name;
             var values = new[] { new { Language = reader.GetAttribute("lang"), Value = reader.ReadElementContentAsString() } }.ToList();

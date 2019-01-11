@@ -420,7 +420,7 @@ namespace MediaBrowser.Model.Entities
 
             var fromCodec = Codec;
 
-            // Can't convert from this 
+            // Can't convert from this
             if (StringHelper.EqualsIgnoreCase(fromCodec, "ass"))
             {
                 return false;
@@ -430,7 +430,7 @@ namespace MediaBrowser.Model.Entities
                 return false;
             }
 
-            // Can't convert to this 
+            // Can't convert to this
             if (StringHelper.EqualsIgnoreCase(toCodec, "ass"))
             {
                 return false;

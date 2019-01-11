@@ -79,16 +79,16 @@ namespace Rssdp.Infrastructure
             }
         }
 
-		/// <summary>
-		/// Returns a boolean indicating whether the specified HTTP header name represents a content header (true), or a message header (false).
-		/// </summary>
-		/// <param name="headerName">A string containing the name of the header to return the type of.</param>
-		protected override bool IsContentHeader(string headerName)
-		{
-			return ContentHeaderNames.Contains(headerName, StringComparer.OrdinalIgnoreCase);
-		}
+        /// <summary>
+        /// Returns a boolean indicating whether the specified HTTP header name represents a content header (true), or a message header (false).
+        /// </summary>
+        /// <param name="headerName">A string containing the name of the header to return the type of.</param>
+        protected override bool IsContentHeader(string headerName)
+        {
+            return ContentHeaderNames.Contains(headerName, StringComparer.OrdinalIgnoreCase);
+        }
 
-		#endregion
+        #endregion
 
-	}
+    }
 }

@@ -103,7 +103,7 @@ namespace Emby.Drawing
                     "crw",
 
                     // Remove until supported
-                    //"nef", 
+                    //"nef",
                     "orf",
                     "pef",
                     "arw",

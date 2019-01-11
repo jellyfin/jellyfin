@@ -91,7 +91,6 @@ namespace Rssdp.Infrastructure
             }
         }
 
-		#endregion
-
-	}
+        #endregion
+    }
 }

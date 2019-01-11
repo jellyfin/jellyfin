@@ -334,7 +334,7 @@ namespace Emby.Dlna.ContentDirectory
 
             return action;
         }
-        
+
         private ServiceAction GetXSetBookmarkAction()
         {
             var action = new ServiceAction

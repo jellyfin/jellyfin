@@ -36,8 +36,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[] 
-            { 
+            return new[]
+            {
                 // Every so often
                 new TaskTriggerInfo
                 {

@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.Services
         public int PathComponentsCount { get; set; }
 
         /// <summary>
-        /// The total number of segments after subparts have been exploded ('.') 
+        /// The total number of segments after subparts have been exploded ('.')
         /// e.g. /path/to/here.ext == 4
         /// </summary>
         public int TotalComponentsCount { get; set; }

@@ -98,7 +98,7 @@ namespace MediaBrowser.Model.Dlna
         public bool IsVideoAudioConditionSatisfied(ProfileCondition condition,
             int? audioChannels,
             int? audioBitrate,
-            int? audioSampleRate, 
+            int? audioSampleRate,
             int? audioBitDepth,
             string audioProfile,
             bool? isSecondaryTrack)

@@ -12,17 +12,17 @@ namespace Rssdp.Infrastructure
 			if (source == null) throw new ArgumentNullException(nameof(source));
 			if (selector == null) throw new ArgumentNullException(nameof(selector));
 
-			return !source.Any() ? source :
-					source.Concat(
-							source
-							.SelectMany(i => selector(i).EmptyIfNull())
-							.SelectManyRecursive(selector)
-					);
-		}
+            return !source.Any() ? source :
+                source.Concat(
+                    source
+                    .SelectMany(i => selector(i).EmptyIfNull())
+                    .SelectManyRecursive(selector)
+                );
+        }
 
-		public static IEnumerable<T> EmptyIfNull<T>(this IEnumerable<T> source)
-		{
-			return source ?? Enumerable.Empty<T>();
-		}
-	}
+        public static IEnumerable<T> EmptyIfNull<T>(this IEnumerable<T> source)
+        {
+            return source ?? Enumerable.Empty<T>();
+        }
+    }
 }

@@ -41,7 +41,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Client", Description = "Client", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Client { get; set; }
     }
-    
+
     /// <summary>
     /// Class DisplayPreferencesService
     /// </summary>

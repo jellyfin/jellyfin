@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Photos
                 Parent = item,
                 DtoOptions = new DtoOptions(true),
                 ImageTypes = new ImageType[] { ImageType.Primary },
-                OrderBy = new System.ValueTuple<string, SortOrder>[] 
+                OrderBy = new System.ValueTuple<string, SortOrder>[]
                 {
                     new System.ValueTuple<string, SortOrder>(ItemSortBy.IsFolder, SortOrder.Ascending),
                     new System.ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending)

@@ -740,7 +740,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 level = NormalizeTranscodingLevel(state.OutputVideoCodec, level);
 
                 // h264_qsv and h264_nvenc expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
-                // also needed for libx264 due to https://trac.ffmpeg.org/ticket/3307                
+                // also needed for libx264 due to https://trac.ffmpeg.org/ticket/3307
                 if (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1706,7 +1706,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals(outputVideoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
             {
                 // per docs:
-                // -threads	number of threads to use for encoding, can't be 0 [auto] with VP8	(recommended value : number of real cores - 1)
+                // -threads    number of threads to use for encoding, can't be 0 [auto] with VP8
+                //             (recommended value : number of real cores - 1)
                 return Math.Max(Environment.ProcessorCount - 1, 1);
             }
 

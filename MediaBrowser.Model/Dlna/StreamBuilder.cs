@@ -951,7 +951,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (audioStream != null)
             {
-                // Seeing webm encoding failures when source has 1 audio channel and 22k bitrate. 
+                // Seeing webm encoding failures when source has 1 audio channel and 22k bitrate.
                 // Any attempts to transcode over 64k will fail
                 if (audioStream.Channels.HasValue &&
                     audioStream.Channels.Value == 1)

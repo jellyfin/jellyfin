@@ -418,7 +418,7 @@ namespace Rssdp.Infrastructure
 
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            // If needed later for non-server devices, these headers will need to be dynamic 
+            // If needed later for non-server devices, these headers will need to be dynamic
             values["HOST"] = "239.255.255.250:1900";
             values["DATE"] = DateTime.UtcNow.ToString("r");
             values["CACHE-CONTROL"] = "max-age = " + rootDevice.CacheLifetime.TotalSeconds;
@@ -463,7 +463,7 @@ namespace Rssdp.Infrastructure
 
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            // If needed later for non-server devices, these headers will need to be dynamic 
+            // If needed later for non-server devices, these headers will need to be dynamic
             values["HOST"] = "239.255.255.250:1900";
             values["DATE"] = DateTime.UtcNow.ToString("r");
             values["SERVER"] = string.Format("{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, ServerVersion);
@@ -538,9 +538,9 @@ namespace Rssdp.Infrastructure
                 //According to SSDP/UPnP spec, ignore message if missing these headers.
                 // Edit: But some devices do it anyway
                 //if (!e.Message.Headers.Contains("MX"))
-                //	WriteTrace("Ignoring search request - missing MX header.");
+                //    WriteTrace("Ignoring search request - missing MX header.");
                 //else if (!e.Message.Headers.Contains("MAN"))
-                //	WriteTrace("Ignoring search request - missing MAN header.");
+                //    WriteTrace("Ignoring search request - missing MAN header.");
                 //else
                 ProcessSearchRequest(GetFirstHeaderValue(e.Message.Headers, "MX"), GetFirstHeaderValue(e.Message.Headers, "ST"), e.ReceivedFrom, e.LocalIpAddress, CancellationToken.None);
             }

@@ -265,7 +265,7 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <summary>
-        /// Returns the optimized result for the IRequestContext. 
+        /// Returns the optimized result for the IRequestContext.
         /// Does not use or store results in any cache.
         /// </summary>
         /// <param name="request"></param>
