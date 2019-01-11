@@ -178,9 +178,9 @@ namespace SocketHttpListener.Net
             }
         }
 
-        // This method is the callback method associated with Socket.AcceptAsync  
-        // operations and is invoked when an accept operation is complete 
-        // 
+        // This method is the callback method associated with Socket.AcceptAsync
+        // operations and is invoked when an accept operation is complete
+        //
         private static void OnAccept(object sender, SocketAsyncEventArgs e)
         {
             ProcessAccept(e);

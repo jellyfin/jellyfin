@@ -46,7 +46,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The type of the source.</value>
         public string SourceType { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the playlist item identifier.
         /// </summary>

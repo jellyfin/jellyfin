@@ -164,7 +164,7 @@ namespace Emby.Server.Implementations.IO
                 }
                 catch (IOException ex)
                 {
-                    // For now swallow and log. 
+                    // For now swallow and log.
                     // Research item: If an IOException occurs, the item may be in a disconnected state (media unavailable)
                     // Should we remove it from it's parent?
                     Logger.LogError(ex, "Error refreshing {name}", item.Name);

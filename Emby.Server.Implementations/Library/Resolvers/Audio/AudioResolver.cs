@@ -228,7 +228,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 }
 
                 var firstMedia = resolvedItem.Files.First();
-                
+
                 var libraryItem = new T
                 {
                     Path = firstMedia.Path,

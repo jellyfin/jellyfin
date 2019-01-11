@@ -68,7 +68,7 @@ namespace DvdLib.Ifo
             ProhibitedUserOperations = (UserOperation)br.ReadUInt32();
             AudioStreamControl = br.ReadBytes(16);
             SubpictureStreamControl = br.ReadBytes(128);
-            
+
             _nextProgramNumber = br.ReadUInt16();
             _prevProgramNumber = br.ReadUInt16();
             _goupProgramNumber = br.ReadUInt16();

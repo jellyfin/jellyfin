@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.Sorting
         /// </summary>
         /// <value>The user data repository.</value>
         public IUserDataManager UserDataRepository { get; set; }
-        
+
         /// <summary>
         /// Compares the specified x.
         /// </summary>

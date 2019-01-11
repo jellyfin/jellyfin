@@ -787,7 +787,7 @@ namespace MediaBrowser.Providers.TV
             {
                 if ((int)c >= 0x2B0 && (int)c <= 0x0333)
                 {
-                    // skip char modifier and diacritics 
+                    // skip char modifier and diacritics
                 }
                 else if (remove.IndexOf(c) > -1)
                 {

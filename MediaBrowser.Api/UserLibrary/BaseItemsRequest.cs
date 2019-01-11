@@ -214,7 +214,7 @@ namespace MediaBrowser.Api.UserLibrary
         public string Genres { get; set; }
 
         public string GenreIds { get; set; }
-        
+
         [ApiMember(Name = "OfficialRatings", Description = "Optional. If specified, results will be filtered based on OfficialRating. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string OfficialRatings { get; set; }
 
@@ -412,7 +412,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             return val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (VideoType)Enum.Parse(typeof(VideoType), v, true)).ToArray();
         }
-        
+
         /// <summary>
         /// Gets the filters.
         /// </summary>

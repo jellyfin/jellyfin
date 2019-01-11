@@ -4038,7 +4038,7 @@ namespace Emby.Server.Implementations.Data
 
             if (query.PersonIds.Length > 0)
             {
-                // TODO: Should this query with CleanName ? 
+                // TODO: Should this query with CleanName ?
 
                 var clauses = new List<string>();
                 var index = 0;
@@ -5399,7 +5399,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             var itemIdBlob = itemId.ToGuidBlob();
 
-            // First delete 
+            // First delete
             deleteAncestorsStatement.Reset();
             deleteAncestorsStatement.TryBind("@ItemId", itemIdBlob);
             deleteAncestorsStatement.MoveNext();
@@ -5927,7 +5927,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             var guidBlob = itemId.ToGuidBlob();
 
-            // First delete 
+            // First delete
             db.Execute("delete from ItemValues where ItemId=@Id", guidBlob);
 
             InsertItemValues(guidBlob, values, db);

@@ -21,7 +21,7 @@
  * Contributor(s):
  *          Shy Shalom <shooshX@gmail.com>
  *          Rudi Pettazzi <rudi.pettazzi@gmail.com> (C# port)
- * 
+ *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -46,11 +46,11 @@ namespace UniversalDetector.Core
 
         public UTF8Prober()
         {
-            numOfMBChar = 0; 
+            numOfMBChar = 0;
             codingSM = new CodingStateMachine(new UTF8SMModel());
             Reset();
         }
-        
+
         public override string GetCharsetName() {
             return "UTF-8";
         }
@@ -66,7 +66,7 @@ namespace UniversalDetector.Core
         {
             int codingState = SMModel.START;
             int max = offset + len;
-            
+
             for (int i = offset; i < max; i++) {
 
                 codingState = codingSM.NextState(buf[i]);
@@ -97,7 +97,7 @@ namespace UniversalDetector.Core
         {
             float unlike = 0.99f;
             float confidence = 0.0f;
-            
+
             if (numOfMBChar < 6) {
                 for (int i = 0; i < numOfMBChar; i++)
                     unlike *= ONE_CHAR_PROB;

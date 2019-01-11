@@ -270,7 +270,7 @@ namespace MediaBrowser.Providers.Omdb
 
         public static string GetOmdbUrl(string query, IApplicationHost appHost, CancellationToken cancellationToken)
         {
-            const string url = "https://www.omdbapi.com?apikey=fe53f97e";
+            const string url = "https://www.omdbapi.com?apikey=2c9d9507";
 
             if (string.IsNullOrWhiteSpace(query))
             {

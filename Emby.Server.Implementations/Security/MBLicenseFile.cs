@@ -165,7 +165,7 @@ namespace Emby.Server.Implementations.Security
             //build our array
             var lines = new List<string>
             {
-                RegKey, 
+                RegKey,
 
                 // Legacy key
                 string.Empty

@@ -15,10 +15,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -58,8 +58,8 @@ namespace Mono.Nat
         }
 
         public void Search()
-		{
-		}
+        {
+        }
 
         public async Task Handle(IPAddress localAddress, UpnpDeviceInfo deviceInfo, IPEndPoint endpoint)
         {
@@ -70,16 +70,16 @@ namespace Mono.Nat
 
             try
             {
-                /* For UPnP Port Mapping we need ot find either WANPPPConnection or WANIPConnection. 
-				 Any other device type is no good to us for this purpose. See the IGP overview paper 
-				 page 5 for an overview of device types and their hierarchy.
-				 http://upnp.org/specs/gw/UPnP-gw-InternetGatewayDevice-v1-Device.pdf */
+                /* For UPnP Port Mapping we need ot find either WANPPPConnection or WANIPConnection.
+                 * Any other device type is no good to us for this purpose. See the IGP overview paper
+                 * page 5 for an overview of device types and their hierarchy.
+                 * http://upnp.org/specs/gw/UPnP-gw-InternetGatewayDevice-v1-Device.pdf */
 
                 /* TODO: Currently we are assuming version 1 of the protocol. We should figure out which
-				 version it is and apply the correct URN. */
+                 * version it is and apply the correct URN. */
 
                 /* Some routers don't correctly implement the version ID on the URN, so we only search for the type
-				 prefix. */
+                 * prefix. */
 
                 // We have an internet gateway device now
                 UpnpNatDevice d = new UpnpNatDevice(localAddress, deviceInfo, endpoint, string.Empty, _logger, _httpClient);

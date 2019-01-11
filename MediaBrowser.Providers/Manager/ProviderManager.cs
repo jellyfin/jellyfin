@@ -156,7 +156,7 @@ namespace MediaBrowser.Providers.Manager
 
             }).ConfigureAwait(false))
             {
-                // Workaround for tvheadend channel icons	
+                // Workaround for tvheadend channel icons
                 // TODO: Isolate this hack into the tvh plugin
                 if (string.IsNullOrEmpty(response.ContentType))
                 {

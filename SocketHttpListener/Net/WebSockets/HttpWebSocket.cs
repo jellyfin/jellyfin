@@ -30,7 +30,7 @@ namespace SocketHttpListener.Net.WebSockets
             return retVal;
         }
 
-        // return value here signifies if a Sec-WebSocket-Protocol header should be returned by the server. 
+        // return value here signifies if a Sec-WebSocket-Protocol header should be returned by the server.
         internal static bool ProcessWebSocketProtocolHeader(string clientSecWebSocketProtocol,
             string subProtocol,
             out string acceptProtocol)
@@ -44,7 +44,7 @@ namespace SocketHttpListener.Net.WebSockets
                     // If the server specified _anything_ this isn't valid.
                     throw new WebSocketException("UnsupportedProtocol");
                 }
-                // Treat empty and null from the server as the same thing here, server should not send headers. 
+                // Treat empty and null from the server as the same thing here, server should not send headers.
                 return false;
             }
 
@@ -52,7 +52,7 @@ namespace SocketHttpListener.Net.WebSockets
 
             if (subProtocol == null)
             {
-                // client specified some protocols, server specified 'null'. So server should send headers.                 
+                // client specified some protocols, server specified 'null'. So server should send headers.
                 return true;
             }
 
@@ -63,8 +63,8 @@ namespace SocketHttpListener.Net.WebSockets
                 StringSplitOptions.RemoveEmptyEntries);
             acceptProtocol = subProtocol;
 
-            // client specified protocols, serverOptions has exactly 1 non-empty entry. Check that 
-            // this exists in the list the client specified. 
+            // client specified protocols, serverOptions has exactly 1 non-empty entry. Check that
+            // this exists in the list the client specified.
             for (int i = 0; i < requestProtocols.Length; i++)
             {
                 string currentRequestProtocol = requestProtocols[i].Trim();

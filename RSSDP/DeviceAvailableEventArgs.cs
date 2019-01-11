@@ -6,11 +6,11 @@ using MediaBrowser.Model.Net;
 
 namespace Rssdp
 {
-	/// <summary>
-	/// Event arguments for the <see cref="Rssdp.Infrastructure.SsdpDeviceLocatorBase.DeviceAvailable"/> event.
-	/// </summary>
-	public sealed class DeviceAvailableEventArgs : EventArgs
-	{
+    /// <summary>
+    /// Event arguments for the <see cref="Rssdp.Infrastructure.SsdpDeviceLocatorBase.DeviceAvailable"/> event.
+    /// </summary>
+    public sealed class DeviceAvailableEventArgs : EventArgs
+    {
         public IpAddressInfo LocalIpAddress { get; set; }
 
         #region Fields

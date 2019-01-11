@@ -15,13 +15,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// ChannelId of the recording.
         /// </summary>
         public string ChannelId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the program identifier.
         /// </summary>
         /// <value>The program identifier.</value>
         public string ProgramId { get; set; }
-        
+
         /// <summary>
         /// Name of the recording.
         /// </summary>
@@ -66,7 +66,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if [record new only]; otherwise, <c>false</c>.</value>
         public bool RecordNewOnly { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the days.
         /// </summary>
@@ -108,7 +108,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The series identifier.</value>
         public string SeriesId { get; set; }
-        
+
         public SeriesTimerInfo()
         {
             Days = new List<DayOfWeek>();

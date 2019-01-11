@@ -47,7 +47,7 @@ namespace OpenSubtitlesHandler
         /// <returns>The hash as Hexadecimal string</returns>
         public static string ComputeHash(Stream stream)
         {
-			byte[] hash = MovieHasher.ComputeMovieHash(stream);
+            byte[] hash = MovieHasher.ComputeMovieHash(stream);
             return MovieHasher.ToHexadecimal(hash);
         }
         /// <summary>

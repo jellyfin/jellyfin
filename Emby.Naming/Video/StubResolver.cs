@@ -18,7 +18,7 @@ namespace Emby.Naming.Video
         {
             var result = new StubResult();
             var extension = Path.GetExtension(path) ?? string.Empty;
-            
+
             if (_options.StubFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
             {
                 result.IsStub = true;

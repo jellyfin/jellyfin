@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.Security
         /// </summary>
         /// <value>The access token.</value>
         public string AccessToken { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.Security
         /// </summary>
         /// <value><c>null</c> if [has user] contains no value, <c>true</c> if [has user]; otherwise, <c>false</c>.</value>
         public bool? HasUser { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the start index.
         /// </summary>

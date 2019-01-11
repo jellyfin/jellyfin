@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.Localization
                 catch (ArgumentException)
                 {
                     // will throw if input contains invalid unicode chars
-                    // https://mnaoumov.wordpress.com/2014/06/14/stripping-invalid-characters-from-utf-16-strings/   
+                    // https://mnaoumov.wordpress.com/2014/06/14/stripping-invalid-characters-from-utf-16-strings/
                     text = StripInvalidUnicodeCharacters(text);
                     return Normalize(text, form, false);
                 }

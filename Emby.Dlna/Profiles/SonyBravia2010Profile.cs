@@ -41,7 +41,7 @@ namespace Emby.Dlna.Profiles
 
             EnableSingleAlbumArtLimit = true;
             EnableAlbumArtInDidl = true;
-            
+
             TranscodingProfiles = new[]
             {
                 new TranscodingProfile

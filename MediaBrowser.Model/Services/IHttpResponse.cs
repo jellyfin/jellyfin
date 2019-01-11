@@ -17,7 +17,7 @@ namespace MediaBrowser.Model.Services
         void SetCookie(Cookie cookie);
 
         /// <summary>
-        /// Removes all pending Set-Cookie instructions 
+        /// Removes all pending Set-Cookie instructions
         /// </summary>
         void ClearCookies();
     }

@@ -25,10 +25,10 @@ namespace Emby.Dlna.PlayTo
             _config = config;
         }
 
-        public async Task<XDocument> SendCommandAsync(string baseUrl, 
-            DeviceService service, 
-            string command, 
-            string postData, 
+        public async Task<XDocument> SendCommandAsync(string baseUrl,
+            DeviceService service,
+            string command,
+            string postData,
             bool logRequest = true,
             string header = null)
         {
@@ -62,12 +62,12 @@ namespace Emby.Dlna.PlayTo
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        
-        public async Task SubscribeAsync(string url, 
-            string ip, 
-            int port, 
-            string localIp, 
-            int eventport, 
+
+        public async Task SubscribeAsync(string url,
+            string ip,
+            int port,
+            string localIp,
+            int eventport,
             int timeOut = 3600)
         {
             var options = new HttpRequestOptions
@@ -121,9 +121,9 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private Task<HttpResponseInfo> PostSoapDataAsync(string url, 
-            string soapAction, 
-            string postData, 
+        private Task<HttpResponseInfo> PostSoapDataAsync(string url,
+            string soapAction,
+            string postData,
             string header,
             bool logRequest,
             CancellationToken cancellationToken)

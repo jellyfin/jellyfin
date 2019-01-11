@@ -58,27 +58,27 @@ namespace MediaBrowser.Providers.TV
                 // Process images
                 var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, series.ProviderIds);
 
-				var nodes = TvdbEpisodeProvider.Current.GetEpisodeXmlNodes(seriesDataPath, episode.GetLookupInfo());
+                var nodes = TvdbEpisodeProvider.Current.GetEpisodeXmlNodes(seriesDataPath, episode.GetLookupInfo());
 
                 var result = nodes.Select(i => GetImageInfo(i, cancellationToken))
                     .Where(i => i != null)
-					.ToList();
+                    .ToList();
 
-				return Task.FromResult<IEnumerable<RemoteImageInfo>>(result);
+                return Task.FromResult<IEnumerable<RemoteImageInfo>>(result);
             }
 
             return Task.FromResult<IEnumerable<RemoteImageInfo>>(new RemoteImageInfo[] { });
         }
 
-		private RemoteImageInfo GetImageInfo(XmlReader reader, CancellationToken cancellationToken)
+        private RemoteImageInfo GetImageInfo(XmlReader reader, CancellationToken cancellationToken)
         {
             var height = 225;
             var width = 400;
             var url = string.Empty;
 
-			// Use XmlReader for best performance
-			using (reader)
-			{
+            // Use XmlReader for best performance
+            using (reader)
+            {
                 reader.MoveToContent();
                 reader.Read();
 
@@ -146,7 +146,7 @@ namespace MediaBrowser.Providers.TV
                         reader.Read();
                     }
                 }
-			}
+            }
 
             if (string.IsNullOrEmpty(url))
             {

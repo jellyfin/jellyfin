@@ -28,7 +28,7 @@ namespace MediaBrowser.Providers.Music
 {
     public class FanartArtistProvider : IRemoteImageProvider, IHasOrder
     {
-        internal const string ApiKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
+        internal const string ApiKey = "184e1a2b1fe3b94935365411f919f638";
         private const string FanArtBaseUrl = "https://webservice.fanart.tv/v3.1/music/{1}?api_key={0}";
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.Music
         {
             return new List<ImageType>
             {
-                ImageType.Primary, 
+                ImageType.Primary,
                 ImageType.Logo,
                 ImageType.Art,
                 ImageType.Banner,

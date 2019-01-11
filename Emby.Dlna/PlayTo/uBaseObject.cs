@@ -2,7 +2,7 @@
 
 namespace Emby.Dlna.PlayTo
 {
-    public class uBaseObject 
+    public class uBaseObject
     {
         public string Id { get; set; }
 

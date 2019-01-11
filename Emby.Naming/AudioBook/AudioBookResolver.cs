@@ -46,7 +46,7 @@ namespace Emby.Naming.AudioBook
 
             var parsingResult = new AudioBookFilePathParser(_options)
                 .Parse(path, IsDirectory);
-            
+
             return new AudioBookFileInfo
             {
                 Path = path,

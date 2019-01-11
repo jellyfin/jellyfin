@@ -41,7 +41,7 @@ using System.IO;
 namespace UniversalDetector
 {
     /// <summary>
-    /// Default implementation of charset detection interface. 
+    /// Default implementation of charset detection interface.
     /// The detector can be fed by a System.IO.Stream:
     /// <example>
     /// <code>
@@ -52,9 +52,9 @@ namespace UniversalDetector
     ///    Console.WriteLine("{0}, {1}", cdet.Charset, cdet.Confidence);
     /// </code>
     /// </example>
-    /// 
+    ///
     ///  or by a byte a array:
-    /// 
+    ///
     /// <example>
     /// <code>
     /// byte[] buff = new byte[1024];
@@ -64,23 +64,23 @@ namespace UniversalDetector
     /// cdet.DataEnd();
     /// Console.WriteLine("{0}, {1}", cdet.Charset, cdet.Confidence);
     /// </code>
-    /// </example> 
-    /// </summary>                
+    /// </example>
+    /// </summary>
     public class CharsetDetector : Core.UniversalDetector, ICharsetDetector
     {
         private string charset;
-        
+
         private float confidence;
-        
+
         //public event DetectorFinished Finished;
-        
+
         public CharsetDetector() : base(FILTER_ALL)
         {
-            
+
         }
 
         public void Feed(Stream stream)
-        { 
+        {
             byte[] buff = new byte[1024];
             int read;
             while ((read = stream.Read(buff, 0, buff.Length)) > 0 && !done)
@@ -88,12 +88,12 @@ namespace UniversalDetector
                 Feed(buff, 0, read);
             }
         }
-        
-        public bool IsDone() 
+
+        public bool IsDone()
         {
             return done;
         }
-        
+
         public override void Reset()
         {
             this.charset = null;
@@ -114,7 +114,7 @@ namespace UniversalDetector
 //            }
         }
     }
-    
+
     //public delegate void DetectorFinished(string charset, float confidence);
 
 }

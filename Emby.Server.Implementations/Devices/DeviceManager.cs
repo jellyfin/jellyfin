@@ -144,7 +144,7 @@ namespace Emby.Server.Implementations.Devices
                 HasUser = true
 
             }).Items;
-            
+
             // TODO: DeviceQuery doesn't seem to be used from client. Not even Swagger.
             if (query.SupportsSync.HasValue)
             {
