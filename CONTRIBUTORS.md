@@ -11,7 +11,8 @@
  - [AnthonyLavado](https://github.com/anthonylavado)
  - [sparky8251](https://github.com/sparky8251)
  - [LeoVerto](https://github.com/LeoVerto)
-
+ - [grafixeyehero](https://github.com/grafixeyehero)
+ 
 # Emby Contributors
 
  - [LukePulverenti](https://github.com/LukePulverenti)
