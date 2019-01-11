@@ -8,7 +8,7 @@
 //
 //    This Source Code Form is subject to the terms of the Mozilla Public
 //    License, v. 2.0. If a copy of the MPL was not distributed with this file,
-//    You can obtain one at http:#mozilla.org/MPL/2.0/.
+//    You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //    All copyright belongs to the Jellyfin contributors; a full list can
 //    be found in the file CONTRIBUTORS.md
@@ -27,4 +27,4 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with this program. If not, see <https:#www.gnu.org/licenses/>.
+//    along with this program. If not, see <https://www.gnu.org/licenses/>.
