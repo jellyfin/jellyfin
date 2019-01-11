@@ -15,7 +15,7 @@ RUN apt-get update \
 
 WORKDIR ${SOURCEDIR}
 COPY . .
-COPY ./deployment/debian-x64/pkg-src ./debian
+COPY ./deployment/debian-package-x64/pkg-src ./debian
 
 RUN yes | mk-build-deps -i debian/control \
     && dpkg-buildpackage -us -uc
