@@ -87,7 +87,8 @@ EOF
 %{_libdir}/%{name}/*.so
 %{_libdir}/%{name}/*.a
 %{_libdir}/%{name}/createdump
-%{_libdir}/%{name}/jellyfin
+# Needs 755 else only root can run it since binary build by dotnet is 744
+%attr(755,root,root) %{_libdir}/%{name}/jellyfin
 %{_libdir}/%{name}/sosdocsunix.txt
 %{_unitdir}/%{name}.service
 %{_libexecdir}/%{name}/restart.sh
