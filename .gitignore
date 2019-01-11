@@ -249,14 +249,14 @@ pip-log.txt
 #########################
 
 # Artifacts for debian-x64
-deployment/debian-x64/pkg-src/.debhelper/
-deployment/debian-x64/pkg-src/*.debhelper
-deployment/debian-x64/pkg-src/debhelper-build-stamp
-deployment/debian-x64/pkg-src/files
-deployment/debian-x64/pkg-src/jellyfin.substvars
-deployment/debian-x64/pkg-src/jellyfin/
+deployment/debian-package-x64/pkg-src/.debhelper/
+deployment/debian-package-x64/pkg-src/*.debhelper
+deployment/debian-package-x64/pkg-src/debhelper-build-stamp
+deployment/debian-package-x64/pkg-src/files
+deployment/debian-package-x64/pkg-src/jellyfin.substvars
+deployment/debian-package-x64/pkg-src/jellyfin/
 # Don't ignore the debian/bin folder
-!deployment/debian-x64/pkg-src/bin/
+!deployment/debian-package-x64/pkg-src/bin/
 
 deployment/**/dist/
 deployment/**/pkg-dist/
