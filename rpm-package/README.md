@@ -26,15 +26,6 @@ To allow Jellyfin to mount/umonut ISO files uncomment these two lines in `/etc/s
 # %jellyfin ALL=(ALL) NOPASSWD: /bin/umount
 ```
 
-## Database patching
-
-You may need to install sqlite since CentOS has no `Recommends:` with `yum install sqlite`.
-To fix the paths in the emby database for a migration to jellyfin run the script:
-```shell
-/usr/share/jellyfin/update-db-paths.sh <path-to-library.db> <path-to-emby-data> <path-to-jellyfin-data>
-```
-PS: Please **backup your emby database beforehand**.
-
 ## Building with dotnet
 
 Jellyfin is build with `--self-contained` so no dotnet required for runtime.
