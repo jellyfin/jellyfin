@@ -20,23 +20,27 @@
         }
 
         public static FFMpegInstallInfo Linux = new FFMpegInstallInfo(
-            "20170308",
-            "ffmpeg",
-            "ffprobe",
-            "7z");
+            version: "20170308",
+            ffMpegFilename: "ffmpeg",
+            ffProbeFilename: "ffprobe",
+            archiveType: "7z");
 
         public static FFMpegInstallInfo Windows = new FFMpegInstallInfo(
-            "20170308",
-            "ffmpeg.exe",
-            "ffprobe.exe",
-            "7z");
+            version: "20170308",
+            ffMpegFilename:"ffmpeg.exe",
+            ffProbeFilename:"ffprobe.exe",
+            archiveType: "7z");
 
         public static FFMpegInstallInfo OSX = new FFMpegInstallInfo(
-            version:"20170308",
-            ffMpegFilename:"ffmpeg",
-            ffProbeFilename:"ffprobe",
-            archiveType:"7z");
+            version: "20170308",
+            ffMpegFilename: "ffmpeg",
+            ffProbeFilename: "ffprobe",
+            archiveType: "7z");
 
-        public static FFMpegInstallInfo Default = new FFMpegInstallInfo("Path", "ffmpeg", "ffprobe", null);
+        public static FFMpegInstallInfo Default = new FFMpegInstallInfo(
+            version: "Path",
+            ffMpegFilename: "ffmpeg",
+            ffProbeFilename: "ffprobe",
+            archiveType: null);
     }
 }

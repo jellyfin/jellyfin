@@ -172,17 +172,17 @@ namespace Emby.Server.Implementations
         protected ILogger Logger { get; set; }
 
         public IPlugin[] Plugins { get; protected set; }
-        public ILoggerFactory LoggerFactory { get; protected set; }
+        private ILoggerFactory LoggerFactory { get; set; }
 
-        protected ServerApplicationPaths ApplicationPaths { get; set; }
+        private ServerApplicationPaths ApplicationPaths { get; set; }
 
-        public Tuple<Type, string>[] AllConcreteTypes { get; protected set; }
+        private Tuple<Type, string>[] AllConcreteTypes { get; set; }
 
-        protected readonly List<IDisposable> DisposableParts = new List<IDisposable>();
+        private readonly List<IDisposable> DisposableParts = new List<IDisposable>();
 
-        protected IConfigurationManager ConfigurationManager { get; set; }
+        private IConfigurationManager ConfigurationManager { get; set; }
 
-        public IFileSystem FileSystemManager { get; set; }
+        protected IFileSystem FileSystemManager { get; set; }
 
         protected IEnvironmentInfo EnvironmentInfo { get; set; }
 
@@ -199,20 +199,17 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public virtual string OperatingSystemDisplayName
-        {
-            get { return EnvironmentInfo.OperatingSystemName; }
-        }
+        public virtual string OperatingSystemDisplayName => EnvironmentInfo.OperatingSystemName;
 
 
-        protected readonly SimpleInjector.Container Container = new SimpleInjector.Container();
+        private readonly SimpleInjector.Container Container = new SimpleInjector.Container();
 
-        protected ISystemEvents SystemEvents { get; set; }
+        private ISystemEvents SystemEvents { get; set; }
 
-        public IServerConfigurationManager ServerConfigurationManager =>
+        private IServerConfigurationManager ServerConfigurationManager =>
             (IServerConfigurationManager)ConfigurationManager;
 
-        protected IConfigurationManager GetConfigurationManager()
+        private IConfigurationManager GetConfigurationManager()
         {
             return new ServerConfigurationManager(ApplicationPaths, LoggerFactory, XmlSerializer, FileSystemManager);
         }
@@ -222,8 +219,8 @@ namespace Emby.Server.Implementations
             return new ResourceFileManager(HttpResultFactory, LoggerFactory.CreateLogger("ResourceManager"), FileSystemManager);
         }
 
-        public IUserManager UserManager { get; set; }
-        internal ILibraryManager LibraryManager { get; set; }
+        private IUserManager UserManager { get; set; }
+        private ILibraryManager LibraryManager { get; set; }
         private ILibraryMonitor LibraryMonitor { get; set; }
         private IProviderManager ProviderManager { get; set; }
         private IHttpServer HttpServer { get; set; }
@@ -245,15 +242,15 @@ namespace Emby.Server.Implementations
 
         private IUserDataManager UserDataManager { get; set; }
         private IUserRepository UserRepository { get; set; }
-        internal IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
-        internal IItemRepository ItemRepository { get; set; }
+        private IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
+        private IItemRepository ItemRepository { get; set; }
 
         private INotificationManager NotificationManager { get; set; }
         private ISubtitleManager SubtitleManager { get; set; }
         private IChapterManager ChapterManager { get; set; }
         private IDeviceManager DeviceManager { get; set; }
 
-        internal IUserViewManager UserViewManager { get; set; }
+        private IUserViewManager UserViewManager { get; set; }
 
         private IAuthenticationRepository AuthenticationRepository { get; set; }
         private ITVSeriesManager TVSeriesManager { get; set; }
@@ -261,29 +258,29 @@ namespace Emby.Server.Implementations
         private IMediaSourceManager MediaSourceManager { get; set; }
         private IPlaylistManager PlaylistManager { get; set; }
 
-        protected IInstallationManager InstallationManager { get; private set; }
+        private IInstallationManager InstallationManager { get; set; }
 
-        protected ISecurityManager SecurityManager { get; private set; }
+        private ISecurityManager SecurityManager { get; set; }
 
-        protected IZipClient ZipClient { get; private set; }
-        protected IHttpResultFactory HttpResultFactory { get; private set; }
-        protected IAuthService AuthService { get; private set; }
+        private IZipClient ZipClient { get; set; }
+        private IHttpResultFactory HttpResultFactory { get; set; }
+        private IAuthService AuthService { get; set; }
 
         public StartupOptions StartupOptions { get; private set; }
 
-        internal IImageEncoder ImageEncoder { get; private set; }
+        private IImageEncoder ImageEncoder { get; set; }
 
-        protected IProcessFactory ProcessFactory { get; private set; }
-        protected ITimerFactory TimerFactory { get; private set; }
+        private IProcessFactory ProcessFactory { get; set; }
+        private ITimerFactory TimerFactory { get; set; }
         protected ICryptoProvider CryptographyProvider = new CryptographyProvider();
-        protected readonly IXmlSerializer XmlSerializer;
+        private readonly IXmlSerializer XmlSerializer;
 
         protected ISocketFactory SocketFactory { get; private set; }
-        protected ITaskManager TaskManager { get; private set; }
+        private ITaskManager TaskManager { get; set; }
         public IHttpClient HttpClient { get; private set; }
         protected INetworkManager NetworkManager { get; set; }
-        public IJsonSerializer JsonSerializer { get; private set; }
-        protected IIsoManager IsoManager { get; private set; }
+        private IJsonSerializer JsonSerializer { get; set; }
+        private IIsoManager IsoManager { get; set; }
 
         public ApplicationHost(ServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
@@ -370,7 +367,7 @@ namespace Emby.Server.Implementations
             return new Tuple<Assembly, string>(assembly, path);
         }
 
-        public virtual IStreamHelper CreateStreamHelper() => new StreamHelper();
+        private IStreamHelper CreateStreamHelper() => new StreamHelper();
 
         /// <summary>
         /// Creates an instance of type and resolves all constructor dependancies
@@ -387,7 +384,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
-        protected object CreateInstanceSafe(Tuple<Type, string> typeInfo)
+        private object CreateInstanceSafe(Tuple<Type, string> typeInfo)
         {
             var type = typeInfo.Item1;
 
@@ -409,7 +406,7 @@ namespace Emby.Server.Implementations
         /// <typeparam name="T"></typeparam>
         /// <param name="obj">The obj.</param>
         /// <param name="manageLifetime">if set to <c>true</c> [manage lifetime].</param>
-        protected void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
+        private void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
             where T : class
         {
             Container.RegisterSingleton(obj);
@@ -425,7 +422,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        protected void RegisterSingleInstance<T>(Func<T> func)
+        private void RegisterSingleInstance<T>(Func<T> func)
             where T : class
         {
             Container.RegisterSingleton(func);
@@ -447,7 +444,7 @@ namespace Emby.Server.Implementations
             return (T)result.GetInstance();
         }
 
-        protected Tuple<Assembly, string> LoadAssembly(string file)
+        private Tuple<Assembly, string> LoadAssembly(string file)
         {
             try
             {
@@ -462,7 +459,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public IEnumerable<Tuple<Type, string>> GetExportTypes<T>()
+        private IEnumerable<Tuple<Type, string>> GetExportTypes<T>()
         {
             var currentType = typeof(T);
 
@@ -487,7 +484,7 @@ namespace Emby.Server.Implementations
             return parts;
         }
 
-        public List<Tuple<T, string>> GetExportsWithInfo<T>(bool manageLifetime = true)
+        private List<Tuple<T, string>> GetExportsWithInfo<T>(bool manageLifetime = true)
         {
             var parts = GetExportTypes<T>()
                 .Select(i =>
@@ -612,7 +609,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-        protected void RegisterResources()
+        private void RegisterResources()
         {
             RegisterSingleInstance(ConfigurationManager);
             RegisterSingleInstance<IApplicationHost>(this);
@@ -859,7 +856,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        protected string GetDefaultUserAgent() => $"{FormatAttribute(Name)}/{ApplicationVersion}";
+        private string GetDefaultUserAgent() => $"{FormatAttribute(Name)}/{ApplicationVersion}";
 
         private string FormatAttribute(string str)
         {
@@ -900,7 +897,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        protected FFMpegInfo GetFFMpegInfo()
+        private FFMpegInfo GetFFMpegInfo()
         {
             return new FFMpegLoader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager, GetFfmpegInstallInfo())
                 .GetFFMpegInfo(StartupOptions);
@@ -998,7 +995,7 @@ namespace Emby.Server.Implementations
             AuthenticatedAttribute.AuthService = AuthService;
         }
 
-        protected void FindParts()
+        private void FindParts()
         {
             if (!ServerConfigurationManager.Configuration.IsPortAuthorized)
             {
@@ -1090,7 +1087,7 @@ namespace Emby.Server.Implementations
             return plugin;
         }
 
-        protected void DiscoverTypes()
+        private void DiscoverTypes()
         {
             Logger.LogInformation("Loading assemblies");
 
@@ -1125,7 +1122,7 @@ namespace Emby.Server.Implementations
         /// Gets a list of types within an assembly
         /// This will handle situations that would normally throw an exception - such as a type within the assembly that depends on some other non-existant reference
         /// </summary>
-        protected List<Tuple<Type, string>> GetTypes(Tuple<Assembly, string> assemblyInfo)
+        private List<Tuple<Type, string>> GetTypes(Tuple<Assembly, string> assemblyInfo)
         {
             if (assemblyInfo == null)
             {
@@ -1311,7 +1308,7 @@ namespace Emby.Server.Implementations
         /// Gets the composable part assemblies.
         /// </summary>
         /// <returns>IEnumerable{Assembly}.</returns>
-        protected List<Tuple<Assembly, string>> GetComposablePartAssemblies()
+        private List<Tuple<Assembly, string>> GetComposablePartAssemblies()
         {
             var list = GetPluginAssemblies();
 
@@ -1913,7 +1910,7 @@ namespace Emby.Server.Implementations
 
         public virtual void EnableLoopback(string appName) { }
 
-        protected void OnApplicationUpdated(PackageVersionInfo package)
+        private void OnApplicationUpdated(PackageVersionInfo package)
         {
             Logger.LogInformation("Application has been updated to version {0}", package.versionStr);
 
