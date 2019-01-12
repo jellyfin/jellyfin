@@ -7,7 +7,7 @@ RUN mkdir /build && \
 
 WORKDIR /build/rpmbuild
 COPY ./deployment/fedora-package-x64/pkg-src/jellyfin.spec SPECS
-COPY . SOURCES
+COPY ./deployment/fedora-package-x64/pkg-src/ SOURCES
 
 RUN spectool -g -R SPECS/jellyfin.spec && \
     rpmbuild -bs SPECS/jellyfin.spec && \

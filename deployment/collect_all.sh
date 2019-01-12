@@ -15,6 +15,6 @@ do
     echo "Collecting everything from '$directory'.."
     PLATFORM=$(basename "$(dirname "$directory")")
     # Copy all artifacts with extensions tar.gz, deb, exe, zip, rpm and add the platform name to resolve any duplicates.
-    find $directory \( -name "jellyfin*.tar.gz" -o -name "jellyfin*.deb" -o -name "jellyfin*.rpm" -o -name "jellyfin*.zip" -o -name "jellyfin*.exe" \) -exec sh -c 'cp "$1" "'${COLLECT_DIR}'/jellyfin_'${PLATFORM}'_${1#*jellyfin_}"' _ {} \;
+    find $directory \( -name "jellyfin*.tar.gz" -o -name "jellyfin*.deb" -o -name "jellyfin*.rpm" -o -name "jellyfin*.zip" -o -name "jellyfin*.exe" \) -exec sh -c 'cp "$1" "'${COLLECT_DIR}'/jellyfin_'${PLATFORM}'_${1#*jellyfin}"' _ {} \;
 
 done <<< "${DIRS}"

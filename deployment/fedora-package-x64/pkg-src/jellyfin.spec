@@ -1,24 +1,23 @@
 %global         debug_package %{nil}
 # jellyfin tag to package
-%global         gittag v10.0.2
+%global         gittag v10.0.1
 # Taglib-sharp commit of the submodule since github archive doesn't include submodules
 %global         taglib_commit ee5ab21742b71fd1b87ee24895582327e9e04776
 %global         taglib_shortcommit %(c=%{taglib_commit}; echo ${c:0:7})
 
 Name:           jellyfin
-Version:        10.0.2
+Version:        10.0.1
 Release:        1%{?dist}
-Summary:        The Free Software Media Browser.
+Summary:        The Free Software Media Browser
 License:        GPLv2
 URL:            https://jellyfin.media
-Source0:        https://github.com/%{name}/%{name}/archive/%{gittag}.tar.gz
+Source0:        %{name}-%{version}.tar.gz
 Source1:        jellyfin.service
 Source2:        jellyfin.env
 Source3:        jellyfin.sudoers
 Source4:        restart.sh
-Source5:        https://github.com/mono/taglib-sharp/archive/%{taglib_commit}/taglib-sharp-%{taglib_shortcommit}.tar.gz
-Source6:        jellyfin.override.conf
-Source7:        jellyfin-firewalld.xml
+Source5:        jellyfin.override.conf
+Source6:        jellyfin-firewalld.xml
 
 %{?systemd_requires}
 BuildRequires:  systemd
@@ -45,23 +44,15 @@ Jellyfin is a free software media system that puts you in control of managing an
 
 %prep
 %autosetup -n %{name}-%{version}
-pushd ThirdParty
-    tar xf %{S:5}
-    rm -rf taglib-sharp
-    mv taglib-sharp-%{taglib_commit} taglib-sharp
-popd
 
 %build
-export DOTNET_CLI_TELEMETRY_OPTOUT=1
-export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-dotnet build --runtime fedora-x64 Jellyfin.Server
 
 %install
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime fedora-x64 Jellyfin.Server
 %{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/%{name}/LICENSE
-%{__install} -D -m 0644 %{SOURCE6} %{buildroot}%{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
+%{__install} -D -m 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
 %{__install} -D -m 0644 Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/%{name}/logging.json
 %{__mkdir} -p %{buildroot}%{_bindir}
 tee %{buildroot}%{_bindir}/jellyfin << EOF
@@ -76,10 +67,10 @@ EOF
 %{__install} -D -m 0644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
 %{__install} -D -m 0600 %{SOURCE3} %{buildroot}%{_sysconfdir}/sudoers.d/%{name}-sudoers
 %{__install} -D -m 0755 %{SOURCE4} %{buildroot}%{_libexecdir}/%{name}/restart.sh
-%{__install} -D -m 0644 %{SOURCE7} %{buildroot}%{_prefix}/lib/firewalld/service/%{name}.xml
+%{__install} -D -m 0644 %{SOURCE6} %{buildroot}%{_prefix}/lib/firewalld/service/%{name}.xml
 
 %files
-%{_libdir}/%{name}/dashboard-ui/*
+%{_libdir}/%{name}/jellyfin-web/*
 %attr(755,root,root) %{_bindir}/%{name}
 %{_libdir}/%{name}/*.json
 %{_libdir}/%{name}/*.pdb
