@@ -82,7 +82,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>Task.</returns>
-        Task<Tuple<string, string, DateTime>> ProcessImage(ImageProcessingOptions options);
+        Task<(string path, string mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options);
 
         /// <summary>
         /// Gets the enhanced image.
