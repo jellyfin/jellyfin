@@ -103,7 +103,7 @@ namespace Jellyfin.Server
             {
                 appHost.Init();
 
-                appHost.ImageProcessor.ImageEncoder = getImageEncoder(_logger, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo, appHost.LocalizationManager);
+                appHost.ImageProcessor.ImageEncoder = GetImageEncoder(_logger, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo, appHost.LocalizationManager);
 
                 _logger.LogInformation("Running startup tasks");
 
@@ -256,13 +256,12 @@ namespace Jellyfin.Server
             }
         }
 
-        public static IImageEncoder getImageEncoder(
+        public static IImageEncoder GetImageEncoder(
             ILogger logger,
             IFileSystem fileSystem,
             StartupOptions startupOptions,
             Func<IHttpClient> httpClient,
             IApplicationPaths appPaths,
-            IEnvironmentInfo environment,
             ILocalizationManager localizationManager)
         {
             try
