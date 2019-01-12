@@ -46,13 +46,13 @@ build_jellyfin_docker()
     DOCKERFILE=${2-$DEFAULT_DOCKERFILE}
     IMAGE_TAG=${3-$DEFAULT_IMAGE_TAG}
 
-    echo -e "${CYAN}Building jellyfin docker image in '${ROOT}' with Dockerfile ${CONFIG} and tag '${IMAGE_TAG}'.${NC}"
-    docker build -t ${IMAGE_TAG} -f ${DOCKERFILE} ${ROOT}
+    echo -e "${CYAN}Building jellyfin docker image in '${BUILD_CONTEXT}' with Dockerfile '${DOCKERFILE}' and tag '${IMAGE_TAG}'.${NC}"
+    docker build -t ${IMAGE_TAG} -f ${DOCKERFILE} ${BUILD_CONTEXT}
     EXIT_CODE=$?
     if [ $EXIT_CODE -eq 0 ]; then
-        echo -e "${GREEN}[DONE] Building jellyfin docker image in '${ROOT}' with Dockerfile ${CONFIG} and tag '${IMAGE_TAG}' complete.${NC}"
+        echo -e "${GREEN}[DONE] Building jellyfin docker image in '${BUILD_CONTEXT}' with Dockerfile '${DOCKERFILE}' and tag '${IMAGE_TAG}' complete.${NC}"
     else
-        echo -e "${RED}[FAIL] Building jellyfin docker image in '${ROOT}' with Dockerfile ${CONFIG} and tag '${IMAGE_TAG}' FAILED.${NC}"
+        echo -e "${RED}[FAIL] Building jellyfin docker image in '${BUILD_CONTEXT}' with Dockerfile '${DOCKERFILE}' and tag '${IMAGE_TAG}' FAILED.${NC}"
     fi    
 )
 
