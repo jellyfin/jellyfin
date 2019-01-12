@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Security;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Loader;
 using System.Threading.Tasks;
 using Emby.Drawing;
 using Emby.Drawing.Skia;
@@ -52,8 +53,15 @@ namespace Jellyfin.Server
             _loggerFactory = new SerilogLoggerFactory();
             _logger = _loggerFactory.CreateLogger("Main");
 
-            AppDomain.CurrentDomain.UnhandledException += (sender, e) 
+            AppDomain.CurrentDomain.UnhandledException += (sender, e)
                 => _logger.LogCritical((Exception)e.ExceptionObject, "Unhandled Exception");
+
+            // Register a SIGTERM handler
+            AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+            {
+                _logger.LogInformation("Received a SIGTERM signal, shutting down");
+                Shutdown();
+            };
 
             _logger.LogInformation("Jellyfin version: {Version}", version);
 
@@ -208,9 +216,9 @@ namespace Jellyfin.Server
         }
 
         public static IImageEncoder getImageEncoder(
-            ILogger logger, 
-            IFileSystem fileSystem, 
-            StartupOptions startupOptions, 
+            ILogger logger,
+            IFileSystem fileSystem,
+            StartupOptions startupOptions,
             Func<IHttpClient> httpClient,
             IApplicationPaths appPaths,
             IEnvironmentInfo environment,
@@ -287,7 +295,7 @@ namespace Jellyfin.Server
             }
             else
             {
-                commandLineArgsString = string .Join(" ", 
+                commandLineArgsString = string .Join(" ",
                     Environment.GetCommandLineArgs()
                         .Skip(1)
                         .Select(NormalizeCommandLineArgument)
