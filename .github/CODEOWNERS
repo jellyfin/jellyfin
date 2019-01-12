@@ -1,0 +1,4 @@
+# Jellyfin CODEOWNERS file (`master` branch)
+
+# Require org owner approvals for all files, when merging to master
+*   @joshuaboniface @nvllsvm
