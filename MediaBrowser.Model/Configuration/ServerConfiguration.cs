@@ -266,16 +266,16 @@ namespace MediaBrowser.Model.Configuration
                     DisabledMetadataFetchers = new [] { "TheMovieDb" },
                     DisabledImageFetchers = new [] { "TheMovieDb" }
                 },
-                new MetadataOptions
-                {
-                    ItemType = "MusicAlbum",
-                    DisabledMetadataFetchers = new [] { "TheAudioDB" }
-                },
-                new MetadataOptions
-                {
-                    ItemType = "MusicArtist",
-                    DisabledMetadataFetchers = new [] { "TheAudioDB" }
-                },
+///                new MetadataOptions
+///                {
+///                    ItemType = "MusicAlbum",
+///                    DisabledMetadataFetchers = new [] { "TheAudioDB" }
+///                },
+///                new MetadataOptions
+///                {
+///                    ItemType = "MusicArtist",
+///                    DisabledMetadataFetchers = new [] { "TheAudioDB" }
+///                },
                 new MetadataOptions
                 {
                     ItemType = "BoxSet"

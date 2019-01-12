@@ -438,10 +438,10 @@ namespace MediaBrowser.Api.Library
                 {
                     return false;
                 }
-                else if (string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
+///                else if (string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase))
+///                {
+///                    return true;
+///                }
                 else if (string.Equals(name, "MusicBrainz", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
@@ -506,10 +506,10 @@ namespace MediaBrowser.Api.Library
                     }
                     return true;
                 }
-                else if (string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
+///                else if (string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase))
+///                {
+///                    return true;
+///                }
                 else if (string.Equals(name, "Emby Designs", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
