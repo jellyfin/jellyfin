@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
 using System;
@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.Sorting
 
             return hasSeries != null ? hasSeries.FindSeriesSortName() : null;
         }
-        
+
         /// <summary>
         /// Gets the name.
         /// </summary>

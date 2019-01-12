@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(person.Name))
             {
-                throw new ArgumentException("The person's name was empty or null.",nameof(person));
+                throw new ArgumentException("The person's name was empty or null.", nameof(person));
             }
 
             // Normalize

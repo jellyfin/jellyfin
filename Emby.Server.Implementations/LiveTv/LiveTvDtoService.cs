@@ -332,7 +332,7 @@ namespace Emby.Server.Implementations.LiveTv
                     {
                         try
                         {
-                            dto.ParentBackdropImageTags = new []
+                            dto.ParentBackdropImageTags = new[]
                             {
                                     _imageProcessor.GetImageCacheTag(program, image)
                             };

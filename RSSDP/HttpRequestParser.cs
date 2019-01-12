@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -8,70 +8,70 @@ using System.Threading.Tasks;
 
 namespace Rssdp.Infrastructure
 {
-	/// <summary>
-	/// Parses a string into a <see cref="System.Net.Http.HttpRequestMessage"/> or throws an exception.
-	/// </summary>
-	public sealed class HttpRequestParser : HttpParserBase<HttpRequestMessage>
-	{
+    /// <summary>
+    /// Parses a string into a <see cref="System.Net.Http.HttpRequestMessage"/> or throws an exception.
+    /// </summary>
+    public sealed class HttpRequestParser : HttpParserBase<HttpRequestMessage>
+    {
 
-		#region Fields & Constants
+        #region Fields & Constants
 
-		private readonly string[] ContentHeaderNames = new string[]
-				{
-					"Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
-				};
+        private readonly string[] ContentHeaderNames = new string[]
+                {
+                    "Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
+                };
 
-		#endregion
+        #endregion
 
-		#region Public Methods
+        #region Public Methods
 
-		/// <summary>
-		/// Parses the specified data into a <see cref="System.Net.Http.HttpRequestMessage"/> instance.
-		/// </summary>
-		/// <param name="data">A string containing the data to parse.</param>
-		/// <returns>A <see cref="System.Net.Http.HttpRequestMessage"/> instance containing the parsed data.</returns>
-		public override System.Net.Http.HttpRequestMessage Parse(string data)
-		{
-			System.Net.Http.HttpRequestMessage retVal = null;
+        /// <summary>
+        /// Parses the specified data into a <see cref="System.Net.Http.HttpRequestMessage"/> instance.
+        /// </summary>
+        /// <param name="data">A string containing the data to parse.</param>
+        /// <returns>A <see cref="System.Net.Http.HttpRequestMessage"/> instance containing the parsed data.</returns>
+        public override System.Net.Http.HttpRequestMessage Parse(string data)
+        {
+            System.Net.Http.HttpRequestMessage retVal = null;
 
-			try
-			{
-				retVal = new System.Net.Http.HttpRequestMessage();
+            try
+            {
+                retVal = new System.Net.Http.HttpRequestMessage();
 
-				Parse(retVal, retVal.Headers, data);
+                Parse(retVal, retVal.Headers, data);
 
-				return retVal;
-			}
-			finally
-			{
-				if (retVal != null)
-					retVal.Dispose();
-			}
-		}
+                return retVal;
+            }
+            finally
+            {
+                if (retVal != null)
+                    retVal.Dispose();
+            }
+        }
 
-		#endregion
+        #endregion
 
-		#region Overrides
+        #region Overrides
 
-		/// <summary>
-		/// Used to parse the first line of an HTTP request or response and assign the values to the appropriate properties on the <paramref name="message"/>.
-		/// </summary>
-		/// <param name="data">The first line of the HTTP message to be parsed.</param>
-		/// <param name="message">Either a <see cref="System.Net.Http.HttpResponseMessage"/> or <see cref="System.Net.Http.HttpRequestMessage"/> to assign the parsed values to.</param>
-		protected override void ParseStatusLine(string data, HttpRequestMessage message)
-		{
-			if (data == null) throw new ArgumentNullException(nameof(data));
-			if (message == null) throw new ArgumentNullException(nameof(message));
+        /// <summary>
+        /// Used to parse the first line of an HTTP request or response and assign the values to the appropriate properties on the <paramref name="message"/>.
+        /// </summary>
+        /// <param name="data">The first line of the HTTP message to be parsed.</param>
+        /// <param name="message">Either a <see cref="System.Net.Http.HttpResponseMessage"/> or <see cref="System.Net.Http.HttpRequestMessage"/> to assign the parsed values to.</param>
+        protected override void ParseStatusLine(string data, HttpRequestMessage message)
+        {
+            if (data == null) throw new ArgumentNullException(nameof(data));
+            if (message == null) throw new ArgumentNullException(nameof(message));
 
-			var parts = data.Split(' ');
-			if (parts.Length < 2) throw new ArgumentException("Status line is invalid. Insufficient status parts.", nameof(data));
+            var parts = data.Split(' ');
+            if (parts.Length < 2) throw new ArgumentException("Status line is invalid. Insufficient status parts.", nameof(data));
 
-			message.Method = new HttpMethod(parts[0].Trim());
-			Uri requestUri;
-			if (Uri.TryCreate(parts[1].Trim(), UriKind.RelativeOrAbsolute, out requestUri))
-				message.RequestUri = requestUri;
-			else
-				System.Diagnostics.Debug.WriteLine(parts[1]);
+            message.Method = new HttpMethod(parts[0].Trim());
+            Uri requestUri;
+            if (Uri.TryCreate(parts[1].Trim(), UriKind.RelativeOrAbsolute, out requestUri))
+                message.RequestUri = requestUri;
+            else
+                System.Diagnostics.Debug.WriteLine(parts[1]);
 
             if (parts.Length >= 3)
             {

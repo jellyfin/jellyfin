@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -29,7 +29,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <value>The scheduled task.</value>
         public IScheduledTask ScheduledTask { get; private set; }
 
-        /// <summary>
         /// Gets or sets the json serializer.
         /// </summary>
         /// <value>The json serializer.</value>
