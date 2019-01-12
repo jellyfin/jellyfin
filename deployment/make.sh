@@ -3,8 +3,7 @@
 git submodule update --init --recursive
 
 pushd ../Jellyfin.Versioning
-#TODO Uncomment the next line with PR is merged.
-#./update-version
+./update-version
 popd
 
 #TODO enabled proper flag parsing for enabling and disabling building, signing, packaging and publishing
