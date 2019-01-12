@@ -105,9 +105,16 @@ namespace Jellyfin.Server
                 await appHost.RunStartupTasks();
 
                 // TODO: read input for a stop command
-                // Block main thread until shutdown
-                await Task.Delay(-1, _tokenSource.Token)
-                    .ContinueWith(delegate{}); // Don't throw on cancellation
+
+                try
+                {
+                    // Block main thread until shutdown
+                    await Task.Delay(-1, _tokenSource.Token);
+                }
+                catch (TaskCanceledException)
+                {
+                    // Don't throw on cancellation
+                }
 
                 _logger.LogInformation("Disposing app host");
             }
