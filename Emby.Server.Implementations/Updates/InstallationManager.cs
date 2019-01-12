@@ -125,7 +125,7 @@ namespace Emby.Server.Implementations.Updates
             IApplicationHost appHost,
             IApplicationPaths appPaths,
             IHttpClient httpClient,
-            IJsonSerializer jsonSerializer, 
+            IJsonSerializer jsonSerializer,
             IServerConfigurationManager config,
             IFileSystem fileSystem,
             ICryptoProvider cryptographyProvider,
@@ -169,7 +169,7 @@ namespace Emby.Server.Implementations.Updates
             string packageType = null,
             Version applicationVersion = null)
         {
-            // TODO cvium
+            // TODO cvium: when plugins get back this would need to be fixed
             // var packages = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
             return new List<PackageInfo>(); //FilterPackages(packages, packageType, applicationVersion);
