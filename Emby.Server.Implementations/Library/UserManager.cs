@@ -888,7 +888,7 @@ namespace Emby.Server.Implementations.Library
 
             text.AppendLine("Use your web browser to visit:");
             text.AppendLine(string.Empty);
-            text.AppendLine(localAddress + "/web/forgotpasswordpin.html");
+            text.AppendLine(localAddress + "/web/index.html#!/forgotpasswordpin.html");
             text.AppendLine(string.Empty);
             text.AppendLine("Enter the following pin code:");
             text.AppendLine(string.Empty);
