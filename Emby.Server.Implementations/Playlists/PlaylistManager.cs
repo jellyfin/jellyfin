@@ -459,7 +459,7 @@ namespace Emby.Server.Implementations.Playlists
         {
             if (string.IsNullOrEmpty(folderPath))
             {
-                throw new ArgumentException("Folder path was null or empty.",nameof(folderPath));
+                throw new ArgumentException("Folder path was null or empty.", nameof(folderPath));
             }
 
             if (string.IsNullOrEmpty(fileAbsolutePath))

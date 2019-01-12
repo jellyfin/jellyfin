@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -18,14 +18,14 @@ namespace Rssdp
 
         #region Constructors
 
-		/// <summary>
-		/// Constructs a new instance for the specified <see cref="SsdpDevice"/>.
-		/// </summary>
-		/// <param name="device">The <see cref="SsdpDevice"/> associated with the event this argument class is being used for.</param>
-		/// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
-		public DeviceEventArgs(SsdpDevice device)
-		{
-			if (device == null) throw new ArgumentNullException(nameof(device));
+        /// <summary>
+        /// Constructs a new instance for the specified <see cref="SsdpDevice"/>.
+        /// </summary>
+        /// <param name="device">The <see cref="SsdpDevice"/> associated with the event this argument class is being used for.</param>
+        /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
+        public DeviceEventArgs(SsdpDevice device)
+        {
+            if (device == null) throw new ArgumentNullException(nameof(device));
 
             _Device = device;
         }

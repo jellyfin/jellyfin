@@ -116,7 +116,6 @@ namespace Emby.Server.Implementations.Services
             {
                 if (string.IsNullOrEmpty(component)) continue;
 
-         
                 if (StringContains(component, VariablePrefix)
                     && component.IndexOf(ComponentSeperator) != -1)
                 {
@@ -352,7 +351,7 @@ namespace Emby.Server.Implementations.Services
 
             if (withPathInfoParts.Length != this.PathComponentsCount && !this.IsWildCardPath)
             {
-               return false;
+                return false;
             }
 
             if (!Verbs.Contains(httpMethod, StringComparer.OrdinalIgnoreCase))

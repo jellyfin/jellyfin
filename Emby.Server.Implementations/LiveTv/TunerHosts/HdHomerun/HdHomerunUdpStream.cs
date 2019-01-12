@@ -207,7 +207,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     throw new ArgumentNullException(nameof(buffer));
 
                 if (offset + count < 0)
-                    throw new ArgumentOutOfRangeException(nameof(offset),"offset + count must not be negative");
+                    throw new ArgumentOutOfRangeException(nameof(offset), "offset + count must not be negative");
 
                 if (offset + count > buffer.Length)
                     throw new ArgumentException("offset + count must not be greater than the length of buffer");

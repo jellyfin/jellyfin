@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -320,7 +320,7 @@ namespace MediaBrowser.Providers.Omdb
         {
             if (string.IsNullOrWhiteSpace(seriesImdbId))
             {
-                throw new ArgumentException("The series IMDb ID was null or whitespace.",nameof(seriesImdbId));
+                throw new ArgumentException("The series IMDb ID was null or whitespace.", nameof(seriesImdbId));
             }
 
             var imdbParam = seriesImdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? seriesImdbId : "tt" + seriesImdbId;

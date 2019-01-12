@@ -89,9 +89,10 @@ namespace Emby.Server.Implementations.Devices
 
         public DeviceId(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
         {
-			if (fileSystem == null) {
-				throw new ArgumentNullException(nameof(fileSystem));
-			}
+            if (fileSystem == null)
+            {
+                throw new ArgumentNullException(nameof(fileSystem));
+            }
 
             _appPaths = appPaths;
             _logger = logger;

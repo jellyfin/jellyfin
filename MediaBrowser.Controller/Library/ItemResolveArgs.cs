@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using System;
 using System.Collections.Generic;
@@ -155,7 +155,7 @@ namespace MediaBrowser.Controller.Library
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentException("The path was empty or null.",nameof(path));
+                throw new ArgumentException("The path was empty or null.", nameof(path));
             }
 
             if (AdditionalLocations == null)

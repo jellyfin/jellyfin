@@ -77,7 +77,7 @@ namespace Emby.Dlna.ConnectionManager
 
             return action;
         }
-        
+
         private static ServiceAction GetCurrentConnectionInfo()
         {
             var action = new ServiceAction
