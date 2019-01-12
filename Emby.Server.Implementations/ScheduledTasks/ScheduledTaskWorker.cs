@@ -29,6 +29,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <value>The scheduled task.</value>
         public IScheduledTask ScheduledTask { get; private set; }
 
+        /// <summary>
         /// Gets or sets the json serializer.
         /// </summary>
         /// <value>The json serializer.</value>
