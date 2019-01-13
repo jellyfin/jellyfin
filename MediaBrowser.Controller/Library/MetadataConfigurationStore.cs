@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Library
 {

@@ -3,7 +3,6 @@ using System.Linq;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {

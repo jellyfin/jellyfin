@@ -1,9 +1,9 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Notifications;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
 
 namespace MediaBrowser.Controller.Notifications
 {

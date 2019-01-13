@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Controller.Playlists;
-using MediaBrowser.Controller.TV;
-using MediaBrowser.Model.Querying;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Model.Serialization;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Controller.TV;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {

@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Model.LiveTv;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.LiveTv

@@ -1,9 +1,9 @@
-using MediaBrowser.Model.Extensions;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using MediaBrowser.Model.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.MediaEncoding

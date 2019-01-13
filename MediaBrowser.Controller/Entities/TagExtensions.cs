@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    item.Tags = current.Concat(new [] { name }).ToArray();
+                    item.Tags = current.Concat(new[] { name }).ToArray();
                 }
             }
         }

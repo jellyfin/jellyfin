@@ -1,9 +1,9 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.IO
 {

@@ -1,12 +1,12 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.LiveTv;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 
@@ -313,6 +313,6 @@ namespace MediaBrowser.Controller.LiveTv
             return list;
         }
 
-        public string SeriesName { get; set;}
+        public string SeriesName { get; set; }
     }
 }

@@ -1,12 +1,10 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Channels;
-using MediaBrowser.Model.Querying;
-using System;
+﻿using System;
 using System.Linq;
-using MediaBrowser.Model.Serialization;
 using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Channels
 {

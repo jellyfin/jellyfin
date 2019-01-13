@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Model.Serialization;
+﻿using System;
+using System.Collections.Generic;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
-using System;
-using System.Collections.Generic;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities

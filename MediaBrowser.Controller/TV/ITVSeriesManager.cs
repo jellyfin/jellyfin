@@ -1,7 +1,6 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Querying;
-using System.Collections.Generic;
-using MediaBrowser.Controller.Dto;
 
 namespace MediaBrowser.Controller.TV
 {

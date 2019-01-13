@@ -1,12 +1,12 @@
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Threading;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.WebSockets;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
+using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Net

@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using MediaBrowser.Model.Channels;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Channels
 {

@@ -1,14 +1,14 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
-using System.Collections.Generic;
-using System.Globalization;
 using MediaBrowser.Model.Serialization;
-using System;
-using System.Linq;
 
 namespace MediaBrowser.Controller.LiveTv
 {
