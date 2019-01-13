@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;

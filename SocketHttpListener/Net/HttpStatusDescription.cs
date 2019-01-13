@@ -1,4 +1,4 @@
-﻿namespace SocketHttpListener.Net
+namespace SocketHttpListener.Net
 {
     internal static class HttpStatusDescription
     {

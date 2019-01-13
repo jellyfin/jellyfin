@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
