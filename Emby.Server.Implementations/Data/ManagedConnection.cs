@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
-    public class ManagedConnection :  IDisposable
+    public class ManagedConnection : IDisposable
     {
         private SQLiteDatabaseConnection db;
         private readonly bool _closeOnDispose;
