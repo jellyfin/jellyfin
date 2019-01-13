@@ -1,4 +1,4 @@
-﻿
+
 namespace Mono.Nat
 {
     public enum NatProtocol

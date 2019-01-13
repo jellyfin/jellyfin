@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
