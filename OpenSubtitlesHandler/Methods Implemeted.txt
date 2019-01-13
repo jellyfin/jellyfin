@@ -1,4 +1,4 @@
-﻿List of available OpenSubtitles.org server XML-RPC methods.
+List of available OpenSubtitles.org server XML-RPC methods.
 ==========================================================
 Legends:
 * OK: this method is fully implemented, tested and works fine.

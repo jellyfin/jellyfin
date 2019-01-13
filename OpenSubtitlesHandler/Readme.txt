@@ -1,4 +1,4 @@
-﻿OpenSubtitlesHandler
+OpenSubtitlesHandler
 ====================
 This project is for OpenSubtitles.org integration‏. The point is to allow user to access OpenSubtitles.org database directly
 within ASM without the need to open internet browser.
