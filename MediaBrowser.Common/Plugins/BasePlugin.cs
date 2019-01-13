@@ -1,8 +1,8 @@
+using System;
+using System.IO;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
-using System;
-using System.IO;
 
 namespace MediaBrowser.Common.Plugins
 {

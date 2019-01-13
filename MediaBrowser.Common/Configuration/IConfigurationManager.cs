@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Model.Configuration;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Common.Configuration
 {

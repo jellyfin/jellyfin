@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Plugins;
-using System;
+﻿using System;
+using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Common.Plugins
 {
