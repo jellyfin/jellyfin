@@ -1,6 +1,6 @@
-using MediaBrowser.Controller.Security;
 using System;
 using System.Text;
+using MediaBrowser.Controller.Security;
 
 namespace Emby.Server.Implementations.Security
 {

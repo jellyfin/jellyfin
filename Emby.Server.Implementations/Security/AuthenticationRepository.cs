@@ -3,16 +3,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Emby.Server.Implementations.Data;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Security;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Querying;
-using SQLitePCL.pretty;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Devices;
+using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Logging;
+using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Security
 {
