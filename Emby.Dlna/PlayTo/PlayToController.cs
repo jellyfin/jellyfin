@@ -854,7 +854,7 @@ namespace Emby.Dlna.PlayTo
                 if (index == -1) return request;
 
                 var query = url.Substring(index + 1);
-                QueryParamCollection values = MyHttpUtility.ParseQueryString(query);
+                var values = MyHttpUtility.ParseQueryString(query);
 
                 request.DeviceProfileId = values.Get("DeviceProfileId");
                 request.DeviceId = values.Get("DeviceId");

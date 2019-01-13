@@ -193,7 +193,7 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns>DtoUserItemData.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         private UserItemDataDto GetUserItemDataDto(UserItemData data)
         {
             if (data == null)

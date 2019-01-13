@@ -43,7 +43,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="options">The options.</param>
         /// <returns>Task{System.String}.</returns>
         /// <exception cref="System.ArgumentNullException">progress</exception>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
+        /// <exception cref="Model.Net.HttpException"></exception>
         Task<string> GetTempFile(HttpRequestOptions options);
 
         /// <summary>

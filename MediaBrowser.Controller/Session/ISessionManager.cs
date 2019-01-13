@@ -90,7 +90,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         Task OnPlaybackProgress(PlaybackProgressInfo info);
 
         Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated);
@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         Task OnPlaybackStopped(PlaybackStopInfo info);
 
         /// <summary>

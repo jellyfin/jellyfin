@@ -245,7 +245,7 @@ namespace MediaBrowser.Providers.Subtitles
         {
             if (video.VideoType != VideoType.VideoFile)
             {
-                return Task.FromResult<RemoteSubtitleInfo[]>(new RemoteSubtitleInfo[] { });
+                return Task.FromResult(new RemoteSubtitleInfo[] { });
             }
 
             VideoContentType mediaType;
@@ -261,7 +261,7 @@ namespace MediaBrowser.Providers.Subtitles
             else
             {
                 // These are the only supported types
-                return Task.FromResult<RemoteSubtitleInfo[]>(new RemoteSubtitleInfo[] { });
+                return Task.FromResult(new RemoteSubtitleInfo[] { });
             }
 
             var request = new SubtitleSearchRequest

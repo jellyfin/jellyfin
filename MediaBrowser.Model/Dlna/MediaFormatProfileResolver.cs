@@ -91,7 +91,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (StringHelper.EqualsIgnoreCase(videoCodec, "mpeg2video"))
             {
-                List<MediaFormatProfile> list = new List<MediaFormatProfile>();
+                var list = new List<MediaFormatProfile>();
 
                 list.Add(ValueOf("MPEG_TS_SD_NA" + suffix));
                 list.Add(ValueOf("MPEG_TS_SD_EU" + suffix));

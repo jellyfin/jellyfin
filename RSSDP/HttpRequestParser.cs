@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Rssdp.Infrastructure
 {
     /// <summary>
-    /// Parses a string into a <see cref="System.Net.Http.HttpRequestMessage"/> or throws an exception.
+    /// Parses a string into a <see cref="HttpRequestMessage"/> or throws an exception.
     /// </summary>
     public sealed class HttpRequestParser : HttpParserBase<HttpRequestMessage>
     {
@@ -26,17 +26,17 @@ namespace Rssdp.Infrastructure
         #region Public Methods
 
         /// <summary>
-        /// Parses the specified data into a <see cref="System.Net.Http.HttpRequestMessage"/> instance.
+        /// Parses the specified data into a <see cref="HttpRequestMessage"/> instance.
         /// </summary>
         /// <param name="data">A string containing the data to parse.</param>
-        /// <returns>A <see cref="System.Net.Http.HttpRequestMessage"/> instance containing the parsed data.</returns>
-        public override System.Net.Http.HttpRequestMessage Parse(string data)
+        /// <returns>A <see cref="HttpRequestMessage"/> instance containing the parsed data.</returns>
+        public override HttpRequestMessage Parse(string data)
         {
-            System.Net.Http.HttpRequestMessage retVal = null;
+            HttpRequestMessage retVal = null;
 
             try
             {
-                retVal = new System.Net.Http.HttpRequestMessage();
+                retVal = new HttpRequestMessage();
 
                 Parse(retVal, retVal.Headers, data);
 
@@ -57,7 +57,7 @@ namespace Rssdp.Infrastructure
         /// Used to parse the first line of an HTTP request or response and assign the values to the appropriate properties on the <paramref name="message"/>.
         /// </summary>
         /// <param name="data">The first line of the HTTP message to be parsed.</param>
-        /// <param name="message">Either a <see cref="System.Net.Http.HttpResponseMessage"/> or <see cref="System.Net.Http.HttpRequestMessage"/> to assign the parsed values to.</param>
+        /// <param name="message">Either a <see cref="HttpResponseMessage"/> or <see cref="HttpRequestMessage"/> to assign the parsed values to.</param>
         protected override void ParseStatusLine(string data, HttpRequestMessage message)
         {
             if (data == null) throw new ArgumentNullException(nameof(data));

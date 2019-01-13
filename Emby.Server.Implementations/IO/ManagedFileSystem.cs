@@ -101,7 +101,7 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns><c>true</c> if the specified filename is shortcut; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.ArgumentNullException">filename</exception>
+        /// <exception cref="ArgumentNullException">filename</exception>
         public virtual bool IsShortcut(string filename)
         {
             if (string.IsNullOrEmpty(filename))
@@ -118,7 +118,7 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">filename</exception>
+        /// <exception cref="ArgumentNullException">filename</exception>
         public virtual string ResolveShortcut(string filename)
         {
             if (string.IsNullOrEmpty(filename))
@@ -185,7 +185,7 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="shortcutPath">The shortcut path.</param>
         /// <param name="target">The target.</param>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// shortcutPath
         /// or
         /// target
@@ -344,7 +344,7 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">filename</exception>
+        /// <exception cref="ArgumentNullException">filename</exception>
         public string GetValidFilename(string filename)
         {
             var builder = new StringBuilder(filename);
@@ -526,7 +526,7 @@ namespace Emby.Server.Implementations.IO
                 }
                 else
                 {
-                    FileAttributes attributes = File.GetAttributes(path);
+                    var attributes = File.GetAttributes(path);
                     attributes = RemoveAttribute(attributes, FileAttributes.Hidden);
                     File.SetAttributes(path, attributes);
                 }
@@ -550,7 +550,7 @@ namespace Emby.Server.Implementations.IO
                 }
                 else
                 {
-                    FileAttributes attributes = File.GetAttributes(path);
+                    var attributes = File.GetAttributes(path);
                     attributes = RemoveAttribute(attributes, FileAttributes.ReadOnly);
                     File.SetAttributes(path, attributes);
                 }

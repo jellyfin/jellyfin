@@ -822,7 +822,7 @@ namespace Emby.Server.Implementations
             RegisterSingleInstance(ServerConfigurationManager);
 
             IAssemblyInfo assemblyInfo = new AssemblyInfo();
-            RegisterSingleInstance<IAssemblyInfo>(assemblyInfo);
+            RegisterSingleInstance(assemblyInfo);
 
             LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer, LoggerFactory.CreateLogger("LocalizationManager"), assemblyInfo, new TextLocalizer());
             StringExtensions.LocalizationManager = LocalizationManager;
@@ -920,7 +920,7 @@ namespace Emby.Server.Implementations
             RegisterSingleInstance(CollectionManager);
 
             PlaylistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LoggerFactory.CreateLogger("PlaylistManager"), UserManager, ProviderManager);
-            RegisterSingleInstance<IPlaylistManager>(PlaylistManager);
+            RegisterSingleInstance(PlaylistManager);
 
             LiveTvManager = new LiveTvManager(this, HttpClient, ServerConfigurationManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, ProviderManager, FileSystemManager, SecurityManager, () => ChannelManager);
             RegisterSingleInstance(LiveTvManager);
@@ -938,7 +938,7 @@ namespace Emby.Server.Implementations
 
             RegisterMediaEncoder(assemblyInfo);
 
-            EncodingManager = new Emby.Server.Implementations.MediaEncoder.EncodingManager(FileSystemManager, Logger, MediaEncoder, ChapterManager, LibraryManager);
+            EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, Logger, MediaEncoder, ChapterManager, LibraryManager);
             RegisterSingleInstance(EncodingManager);
 
             var activityLogRepo = GetActivityLogRepository();
@@ -950,7 +950,7 @@ namespace Emby.Server.Implementations
             RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
 
             AuthService = new AuthService(UserManager, authContext, ServerConfigurationManager, SessionManager, NetworkManager);
-            RegisterSingleInstance<IAuthService>(AuthService);
+            RegisterSingleInstance(AuthService);
 
             SubtitleEncoder = new MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder(LibraryManager, LoggerFactory.CreateLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, ProcessFactory, TextEncoding);
             RegisterSingleInstance(SubtitleEncoder);
@@ -1023,7 +1023,7 @@ namespace Emby.Server.Implementations
         {
             var arr = str.ToCharArray();
 
-            arr = Array.FindAll<char>(arr, (c => (char.IsLetterOrDigit(c)
+            arr = Array.FindAll(arr, (c => (char.IsLetterOrDigit(c)
                                                   || char.IsWhiteSpace(c))));
 
             var result = new string(arr);
@@ -1057,7 +1057,7 @@ namespace Emby.Server.Implementations
                 // Don't use an empty string password
                 var password = string.IsNullOrWhiteSpace(info.Password) ? null : info.Password;
 
-                X509Certificate2 localCert = new X509Certificate2(certificateLocation, password);
+                var localCert = new X509Certificate2(certificateLocation, password);
                 //localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
                 if (!localCert.HasPrivateKey)
                 {

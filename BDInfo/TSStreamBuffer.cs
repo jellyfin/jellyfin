@@ -111,7 +111,7 @@ namespace BDInfo
                 data += (Stream.ReadByte() << shift);
                 shift -= 8;
             }
-            BitVector32 vector = new BitVector32(data);
+            var vector = new BitVector32(data);
 
             int value = 0;
             for (int i = SkipBits; i < SkipBits + bits; i++)

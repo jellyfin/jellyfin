@@ -168,7 +168,7 @@ namespace UniversalDetector.Core
                 }
             }
 
-            ProbingState st = ProbingState.NotMe;
+            var st = ProbingState.NotMe;
 
             switch (inputState)
             {

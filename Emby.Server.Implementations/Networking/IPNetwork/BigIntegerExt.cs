@@ -7,7 +7,7 @@ namespace System.Net
     using System.Text;
 
     /// <summary>
-    /// Extension methods to convert <see cref="System.Numerics.BigInteger"/>
+    /// Extension methods to convert <see cref="BigInteger"/>
     /// instances to hexadecimal, octal, and binary strings.
     /// </summary>
     public static class BigIntegerExtensions
@@ -17,7 +17,7 @@ namespace System.Net
         /// </summary>
         /// <param name="bigint">A <see cref="BigInteger"/>.</param>
         /// <returns>
-        /// A <see cref="System.String"/> containing a binary
+        /// A <see cref="string"/> containing a binary
         /// representation of the supplied <see cref="BigInteger"/>.
         /// </returns>
         public static string ToBinaryString(this BigInteger bigint)
@@ -54,7 +54,7 @@ namespace System.Net
         /// </summary>
         /// <param name="bigint">A <see cref="BigInteger"/>.</param>
         /// <returns>
-        /// A <see cref="System.String"/> containing a hexadecimal
+        /// A <see cref="string"/> containing a hexadecimal
         /// representation of the supplied <see cref="BigInteger"/>.
         /// </returns>
         public static string ToHexadecimalString(this BigInteger bigint)
@@ -67,7 +67,7 @@ namespace System.Net
         /// </summary>
         /// <param name="bigint">A <see cref="BigInteger"/>.</param>
         /// <returns>
-        /// A <see cref="System.String"/> containing an octal
+        /// A <see cref="string"/> containing an octal
         /// representation of the supplied <see cref="BigInteger"/>.
         /// </returns>
         public static string ToOctalString(this BigInteger bigint)

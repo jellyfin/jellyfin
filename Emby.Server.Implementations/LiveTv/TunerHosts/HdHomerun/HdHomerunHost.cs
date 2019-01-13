@@ -262,7 +262,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     var name = string.Format("Tuner {0}", i + 1);
                     var currentChannel = "none"; /// @todo Get current channel and map back to Station Id
                     var isAvailable = await manager.CheckTunerAvailability(ipInfo, i, cancellationToken).ConfigureAwait(false);
-                    LiveTvTunerStatus status = isAvailable ? LiveTvTunerStatus.Available : LiveTvTunerStatus.LiveTv;
+                    var status = isAvailable ? LiveTvTunerStatus.Available : LiveTvTunerStatus.LiveTv;
                     tuners.Add(new LiveTvTunerInfo
                     {
                         Name = name,

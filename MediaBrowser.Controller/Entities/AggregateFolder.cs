@@ -164,7 +164,7 @@ namespace MediaBrowser.Controller.Entities
         /// Adds the virtual child.
         /// </summary>
         /// <param name="child">The child.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public void AddVirtualChild(BaseItem child)
         {
             if (child == null)
@@ -180,7 +180,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id</exception>
         public BaseItem FindVirtualChild(Guid id)
         {
             if (id.Equals(Guid.Empty))

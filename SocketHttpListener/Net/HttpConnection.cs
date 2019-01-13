@@ -212,7 +212,7 @@ namespace SocketHttpListener.Net
 
         private static void OnRead(IAsyncResult ares)
         {
-            HttpConnection cnc = (HttpConnection)ares.AsyncState;
+            var cnc = (HttpConnection)ares.AsyncState;
             cnc.OnReadInternal(ares);
         }
 
@@ -269,7 +269,7 @@ namespace SocketHttpListener.Net
                     Close(true);
                     return;
                 }
-                HttpListener listener = _epl.Listener;
+                var listener = _epl.Listener;
                 if (_lastListener != listener)
                 {
                     RemoveConnection();
@@ -417,7 +417,7 @@ namespace SocketHttpListener.Net
         {
             try
             {
-                HttpListenerResponse response = _context.Response;
+                var response = _context.Response;
                 response.StatusCode = status;
                 response.ContentType = "text/html";
                 string description = HttpStatusDescription.Get(status);
@@ -509,7 +509,7 @@ namespace SocketHttpListener.Net
                     return;
                 }
 
-                Socket s = _socket;
+                var s = _socket;
                 _socket = null;
                 try
                 {

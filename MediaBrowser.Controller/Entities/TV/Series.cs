@@ -119,7 +119,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 IncludeItemTypes = new[] { typeof(Season).Name },
                 IsVirtualItem = false,
                 Limit = 0,
-                DtoOptions = new Dto.DtoOptions(false)
+                DtoOptions = new DtoOptions(false)
                 {
                     EnableImages = false
                 }
@@ -136,7 +136,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
-                DtoOptions = new Dto.DtoOptions(false)
+                DtoOptions = new DtoOptions(false)
                 {
                     EnableImages = false
                 }

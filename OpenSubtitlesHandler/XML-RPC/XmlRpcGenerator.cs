@@ -50,17 +50,17 @@ namespace XmlRpcHandler
             if (methods.Length == 0)
                 throw new Exception("No method to write !");
             // Create xml
-            XmlWriterSettings sett = new XmlWriterSettings();
+            var sett = new XmlWriterSettings();
             sett.Indent = true;
 
             sett.Encoding = Encoding.UTF8;
 
             using (var ms = new MemoryStream())
             {
-                using (XmlWriter XMLwrt = XmlWriter.Create(ms, sett))
+                using (var XMLwrt = XmlWriter.Create(ms, sett))
                 {
                     // Let's write the methods
-                    foreach (XmlRpcMethodCall method in methods)
+                    foreach (var method in methods)
                     {
                         XMLwrt.WriteStartElement("methodCall");//methodCall
                         XMLwrt.WriteStartElement("methodName");//methodName
@@ -68,7 +68,7 @@ namespace XmlRpcHandler
                         XMLwrt.WriteEndElement();//methodName
                         XMLwrt.WriteStartElement("params");//params
                                                            // Write values
-                        foreach (IXmlRpcValue p in method.Parameters)
+                        foreach (var p in method.Parameters)
                         {
                             XMLwrt.WriteStartElement("param");//param
                             if (p is XmlRpcValueBasic)
@@ -101,8 +101,8 @@ namespace XmlRpcHandler
         /// <returns></returns>
         public static XmlRpcMethodCall[] DecodeMethodResponse(string xmlResponse)
         {
-            List<XmlRpcMethodCall> methods = new List<XmlRpcMethodCall>();
-            XmlReaderSettings sett = new XmlReaderSettings();
+            var methods = new List<XmlRpcMethodCall>();
+            var sett = new XmlReaderSettings();
             sett.DtdProcessing = DtdProcessing.Ignore;
             sett.IgnoreWhitespace = true;
             MemoryStream str;
@@ -116,15 +116,15 @@ namespace XmlRpcHandler
             }
             using (str)
             {
-                using (XmlReader XMLread = XmlReader.Create(str, sett))
+                using (var XMLread = XmlReader.Create(str, sett))
                 {
-                    XmlRpcMethodCall call = new XmlRpcMethodCall("methodResponse");
+                    var call = new XmlRpcMethodCall("methodResponse");
                     // Read parameters
                     while (XMLread.Read())
                     {
                         if (XMLread.Name == "param" && XMLread.IsStartElement())
                         {
-                            IXmlRpcValue val = ReadValue(XMLread);
+                            var val = ReadValue(XMLread);
                             if (val != null)
                                 call.Parameters.Add(val);
                         }
@@ -169,7 +169,7 @@ namespace XmlRpcHandler
                     // Get date time format
                     if (val.Data != null)
                     {
-                        DateTime time = (DateTime)val.Data;
+                        var time = (DateTime)val.Data;
                         string dt = time.Year + time.Month.ToString("D2") + time.Day.ToString("D2") +
                             "T" + time.Hour.ToString("D2") + ":" + time.Minute.ToString("D2") + ":" +
                             time.Second.ToString("D2");
@@ -190,7 +190,7 @@ namespace XmlRpcHandler
         {
             XMLwrt.WriteStartElement("value");//value
             XMLwrt.WriteStartElement("struct");//struct
-            foreach (XmlRpcStructMember member in val.Members)
+            foreach (var member in val.Members)
             {
                 XMLwrt.WriteStartElement("member");//member
 
@@ -221,7 +221,7 @@ namespace XmlRpcHandler
             XMLwrt.WriteStartElement("value");//value
             XMLwrt.WriteStartElement("array");//array
             XMLwrt.WriteStartElement("data");//data
-            foreach (IXmlRpcValue o in val.Values)
+            foreach (var o in val.Values)
             {
                 if (o is XmlRpcValueBasic)
                 {
@@ -283,7 +283,7 @@ namespace XmlRpcHandler
                         int hour = int.Parse(date.Substring(9, 2), UsCulture);
                         int minute = int.Parse(date.Substring(12, 2), UsCulture);//19980717T14:08:55
                         int sec = int.Parse(date.Substring(15, 2), UsCulture);
-                        DateTime time = new DateTime(year, month, day, hour, minute, sec);
+                        var time = new DateTime(year, month, day, hour, minute, sec);
                         return new XmlRpcValueBasic(time, XmlRpcBasicValueType.dateTime_iso8601);
                     }
                     else if (xmlReader.Name == "base64" && xmlReader.IsStartElement())
@@ -293,17 +293,17 @@ namespace XmlRpcHandler
                     }
                     else if (xmlReader.Name == "struct" && xmlReader.IsStartElement())
                     {
-                        XmlRpcValueStruct strct = new XmlRpcValueStruct(new List<XmlRpcStructMember>());
+                        var strct = new XmlRpcValueStruct(new List<XmlRpcStructMember>());
                         // Read members...
                         while (xmlReader.Read())
                         {
                             if (xmlReader.Name == "member" && xmlReader.IsStartElement())
                             {
-                                XmlRpcStructMember member = new XmlRpcStructMember("", null);
+                                var member = new XmlRpcStructMember("", null);
                                 xmlReader.Read();// read name
                                 member.Name = ReadString(xmlReader);
 
-                                IXmlRpcValue val = ReadValue(xmlReader, true);
+                                var val = ReadValue(xmlReader, true);
                                 if (val != null)
                                 {
                                     member.Data = val;
@@ -319,7 +319,7 @@ namespace XmlRpcHandler
                     }
                     else if (xmlReader.Name == "array" && xmlReader.IsStartElement())
                     {
-                        XmlRpcValueArray array = new XmlRpcValueArray();
+                        var array = new XmlRpcValueArray();
                         // Read members...
                         while (xmlReader.Read())
                         {
@@ -329,7 +329,7 @@ namespace XmlRpcHandler
                             }
                             else
                             {
-                                IXmlRpcValue val = ReadValue(xmlReader);
+                                var val = ReadValue(xmlReader);
                                 if (val != null)
                                     array.Values.Add(val);
                             }

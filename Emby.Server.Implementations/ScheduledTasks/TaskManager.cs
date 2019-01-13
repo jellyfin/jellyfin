@@ -61,7 +61,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
-        /// <exception cref="System.ArgumentException">kernel</exception>
+        /// <exception cref="ArgumentException">kernel</exception>
         public TaskManager(IApplicationPaths applicationPaths, IJsonSerializer jsonSerializer, ILogger logger, IFileSystem fileSystem, ISystemEvents systemEvents)
         {
             ApplicationPaths = applicationPaths;

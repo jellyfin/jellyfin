@@ -11,7 +11,7 @@ namespace Emby.Server.Implementations.Security
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">value</exception>
+        /// <exception cref="ArgumentNullException">value</exception>
         public string EncryptString(string value)
         {
             if (value == null)
@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.Security
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">value</exception>
+        /// <exception cref="ArgumentNullException">value</exception>
         public string DecryptString(string value)
         {
             if (value == null)

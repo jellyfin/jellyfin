@@ -234,7 +234,7 @@ namespace SocketHttpListener.Net
 
         internal string ToStringMultiValue()
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             int count = base.Count;
             for (int i = 0; i < count; i++)
@@ -263,7 +263,7 @@ namespace SocketHttpListener.Net
 
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             int count = base.Count;
             for (int i = 0; i < count; i++)

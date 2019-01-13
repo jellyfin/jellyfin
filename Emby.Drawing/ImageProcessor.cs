@@ -491,7 +491,7 @@ namespace Emby.Drawing
         /// <param name="item">The item.</param>
         /// <param name="image">The image.</param>
         /// <returns>Guid.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         public string GetImageCacheTag(BaseItem item, ItemImageInfo image)
         {
             var supportedEnhancers = GetSupportedEnhancers(item, image.Type);
@@ -523,7 +523,7 @@ namespace Emby.Drawing
         /// <param name="image">The image.</param>
         /// <param name="imageEnhancers">The image enhancers.</param>
         /// <returns>Guid.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         public string GetImageCacheTag(BaseItem item, ItemImageInfo image, IImageEnhancer[] imageEnhancers)
         {
             var originalImagePath = image.Path;
@@ -744,7 +744,7 @@ namespace Emby.Drawing
         /// <param name="uniqueName">Name of the unique.</param>
         /// <param name="fileExtension">The file extension.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// path
         /// or
         /// uniqueName
@@ -778,7 +778,7 @@ namespace Emby.Drawing
         /// <param name="path">The path.</param>
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// path
         /// or
         /// filename

@@ -130,7 +130,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 CloseOutput = false
             };
 
-            using (XmlWriter writer = XmlWriter.Create(stream, settings))
+            using (var writer = XmlWriter.Create(stream, settings))
             {
                 var root = GetRootElementName(item);
 

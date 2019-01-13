@@ -4,7 +4,7 @@ namespace MediaBrowser.Model.System
 {
     public interface IEnvironmentInfo
     {
-        MediaBrowser.Model.System.OperatingSystem OperatingSystem { get; }
+        OperatingSystem OperatingSystem { get; }
         string OperatingSystemName { get; }
         string OperatingSystemVersion { get; }
         Architecture SystemArchitecture { get; }

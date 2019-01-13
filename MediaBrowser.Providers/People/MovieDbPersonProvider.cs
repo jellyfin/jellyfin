@@ -265,7 +265,7 @@ namespace MediaBrowser.Providers.People
         public class PersonSearchResult
         {
             /// <summary>
-            /// Gets or sets a value indicating whether this <see cref="MovieDbPersonProvider.PersonSearchResult" /> is adult.
+            /// Gets or sets a value indicating whether this <see cref="PersonSearchResult" /> is adult.
             /// </summary>
             /// <value><c>true</c> if adult; otherwise, <c>false</c>.</value>
             public bool Adult { get; set; }
@@ -300,7 +300,7 @@ namespace MediaBrowser.Providers.People
             /// Gets or sets the results.
             /// </summary>
             /// <value>The results.</value>
-            public List<MovieDbPersonProvider.PersonSearchResult> Results { get; set; }
+            public List<PersonSearchResult> Results { get; set; }
             /// <summary>
             /// Gets or sets the total_ pages.
             /// </summary>

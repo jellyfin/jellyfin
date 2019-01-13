@@ -51,7 +51,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// <param name="item">The item.</param>
         /// <param name="metadataFile">The metadata file.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
         {
             if (item == null)
@@ -102,7 +102,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         {
             item.ResetPeople();
 
-            using (Stream fileStream = FileSystem.OpenRead(metadataFile))
+            using (var fileStream = FileSystem.OpenRead(metadataFile))
             {
                 using (var streamReader = new StreamReader(fileStream, encoding))
                 {
@@ -263,7 +263,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             {
                                 MetadataFields field;
 
-                                if (Enum.TryParse<MetadataFields>(i, true, out field))
+                                if (Enum.TryParse(i, true, out field))
                                 {
                                     return (MetadataFields?)field;
                                 }
@@ -384,7 +384,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "Director":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new Controller.Entities.PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -396,7 +396,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     }
                 case "Writer":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new Controller.Entities.PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -421,7 +421,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         else
                         {
                             // Old-style piped string
-                            foreach (var p in SplitNames(actors).Select(v => new Controller.Entities.PersonInfo { Name = v.Trim(), Type = PersonType.Actor }))
+                            foreach (var p in SplitNames(actors).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Actor }))
                             {
                                 if (string.IsNullOrWhiteSpace(p.Name))
                                 {
@@ -435,7 +435,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "GuestStars":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new Controller.Entities.PersonInfo { Name = v.Trim(), Type = PersonType.GuestStar }))
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.GuestStar }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {

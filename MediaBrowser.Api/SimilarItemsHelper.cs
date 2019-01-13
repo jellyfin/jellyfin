@@ -95,7 +95,7 @@ namespace MediaBrowser.Api
             var items = GetSimilaritems(item, libraryManager, inputItems, getSimilarityScore)
                 .ToList();
 
-            List<BaseItem> returnItems = items;
+            var returnItems = items;
 
             if (request.Limit.HasValue)
             {

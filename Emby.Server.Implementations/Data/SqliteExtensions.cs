@@ -128,7 +128,7 @@ namespace Emby.Server.Implementations.Data
         /// Serializes to bytes.
         /// </summary>
         /// <returns>System.Byte[][].</returns>
-        /// <exception cref="System.ArgumentNullException">obj</exception>
+        /// <exception cref="ArgumentNullException">obj</exception>
         public static byte[] SerializeToBytes(this IJsonSerializer json, object obj)
         {
             if (obj == null)

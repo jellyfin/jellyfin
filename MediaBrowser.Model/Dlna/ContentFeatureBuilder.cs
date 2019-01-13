@@ -24,14 +24,14 @@ namespace MediaBrowser.Model.Dlna
             // 0 = native, 1 = transcoded
             var orgCi = isDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
 
-            DlnaFlags flagValue = DlnaFlags.BackgroundTransferMode |
+            var flagValue = DlnaFlags.BackgroundTransferMode |
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
             string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
              DlnaMaps.FlagsToString(flagValue));
 
-            ResponseProfile mediaProfile = _profile.GetImageMediaProfile(container,
+            var mediaProfile = _profile.GetImageMediaProfile(container,
                 width,
                 height);
 
@@ -66,7 +66,7 @@ namespace MediaBrowser.Model.Dlna
             // 0 = native, 1 = transcoded
             string orgCi = isDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
 
-            DlnaFlags flagValue = DlnaFlags.StreamingTransferMode |
+            var flagValue = DlnaFlags.StreamingTransferMode |
                             DlnaFlags.BackgroundTransferMode |
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
@@ -83,7 +83,7 @@ namespace MediaBrowser.Model.Dlna
             string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
              DlnaMaps.FlagsToString(flagValue));
 
-            ResponseProfile mediaProfile = _profile.GetAudioMediaProfile(container,
+            var mediaProfile = _profile.GetAudioMediaProfile(container,
                 audioCodec,
                 audioChannels,
                 audioBitrate,
@@ -131,7 +131,7 @@ namespace MediaBrowser.Model.Dlna
             // 0 = native, 1 = transcoded
             string orgCi = isDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
 
-            DlnaFlags flagValue = DlnaFlags.StreamingTransferMode |
+            var flagValue = DlnaFlags.StreamingTransferMode |
                             DlnaFlags.BackgroundTransferMode |
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
@@ -148,7 +148,7 @@ namespace MediaBrowser.Model.Dlna
             string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
              DlnaMaps.FlagsToString(flagValue));
 
-            ResponseProfile mediaProfile = _profile.GetVideoMediaProfile(container,
+            var mediaProfile = _profile.GetVideoMediaProfile(container,
                 audioCodec,
                 videoCodec,
                 width,
@@ -168,7 +168,7 @@ namespace MediaBrowser.Model.Dlna
                 videoCodecTag,
                 isAvc);
 
-            List<string> orgPnValues = new List<string>();
+            var orgPnValues = new List<string>();
 
             if (mediaProfile != null && !string.IsNullOrEmpty(mediaProfile.OrgPn))
             {
@@ -183,7 +183,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            List<string> contentFeatureList = new List<string>();
+            var contentFeatureList = new List<string>();
 
             foreach (string orgPn in orgPnValues)
             {

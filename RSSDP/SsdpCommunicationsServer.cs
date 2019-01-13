@@ -73,7 +73,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Minimum constructor.
         /// </summary>
-        /// <exception cref="System.ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
         public SsdpCommunicationsServer(ISocketFactory socketFactory, INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
             : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger, enableMultiSocketBinding)
         {
@@ -82,8 +82,8 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Full constructor.
         /// </summary>
-        /// <exception cref="System.ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
-        /// <exception cref="System.ArgumentOutOfRangeException">The <paramref name="multicastTimeToLive"/> argument is less than or equal to zero.</exception>
+        /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">The <paramref name="multicastTimeToLive"/> argument is less than or equal to zero.</exception>
         public SsdpCommunicationsServer(ISocketFactory socketFactory, int localPort, int multicastTimeToLive, INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
         {
             if (socketFactory == null) throw new ArgumentNullException(nameof(socketFactory));
@@ -111,7 +111,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Causes the server to begin listening for multicast messages, being SSDP search requests and notifications.
         /// </summary>
-        /// <exception cref="System.ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
+        /// <exception cref="ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
         public void BeginListeningForBroadcasts()
         {
             ThrowIfDisposed();
@@ -138,7 +138,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Causes the server to stop listening for multicast messages, being SSDP search requests and notifications.
         /// </summary>
-        /// <exception cref="System.ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
+        /// <exception cref="ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
         public void StopListeningForBroadcasts()
         {
             lock (_BroadcastListenSocketSynchroniser)
@@ -269,7 +269,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Stops listening for search responses on the local, unicast socket.
         /// </summary>
-        /// <exception cref="System.ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
+        /// <exception cref="ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
         public void StopListeningForResponses()
         {
             lock (_SendSocketSynchroniser)

@@ -80,7 +80,7 @@ namespace Priority_Queue
                         throw new InvalidOperationException("Cannot call .First on an empty queue");
                     }
 
-                    SimpleNode first = _queue.First;
+                    var first = _queue.First;
                     return (first != null ? first.Data : default(TItem));
                 }
             }
@@ -155,7 +155,7 @@ namespace Priority_Queue
         {
             lock (_queue)
             {
-                SimpleNode node = new SimpleNode(item);
+                var node = new SimpleNode(item);
                 if (_queue.Count == _queue.MaxSize)
                 {
                     _queue.Resize(_queue.MaxSize * 2 + 1);
@@ -199,7 +199,7 @@ namespace Priority_Queue
             {
                 try
                 {
-                    SimpleNode updateMe = GetExistingNode(item);
+                    var updateMe = GetExistingNode(item);
                     _queue.UpdatePriority(updateMe, priority);
                 }
                 catch (InvalidOperationException ex)
@@ -211,7 +211,7 @@ namespace Priority_Queue
 
         public IEnumerator<TItem> GetEnumerator()
         {
-            List<TItem> queueData = new List<TItem>();
+            var queueData = new List<TItem>();
             lock (_queue)
             {
                 //Copy to a separate list because we don't want to 'yield return' inside a lock

@@ -36,8 +36,8 @@ namespace Jellyfin.Server
 
         public static async Task<int> Main(string[] args)
         {
-            StartupOptions options = new StartupOptions(args);
-            Version version = Assembly.GetEntryAssembly().GetName().Version;
+            var options = new StartupOptions(args);
+            var version = Assembly.GetEntryAssembly().GetName().Version;
 
             if (options.ContainsOption("-v") || options.ContainsOption("--version"))
             {
@@ -45,7 +45,7 @@ namespace Jellyfin.Server
                 return 0;
             }
 
-            ServerApplicationPaths appPaths = createApplicationPaths(options);
+            var appPaths = createApplicationPaths(options);
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
             await createLogger(appPaths);
@@ -57,7 +57,7 @@ namespace Jellyfin.Server
 
             _logger.LogInformation("Jellyfin version: {Version}", version);
 
-            EnvironmentInfo environmentInfo = new EnvironmentInfo(getOperatingSystem());
+            var environmentInfo = new EnvironmentInfo(getOperatingSystem());
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths, environmentInfo);
 
             SQLitePCL.Batteries_V2.Init();
@@ -173,7 +173,7 @@ namespace Jellyfin.Server
                 if (!File.Exists(configPath))
                 {
                     // For some reason the csproj name is used instead of the assembly name
-                    using (Stream rscstr = typeof(Program).Assembly
+                    using (var rscstr = typeof(Program).Assembly
                         .GetManifestResourceStream("Jellyfin.Server.Resources.Configuration.logging.json"))
                     using (Stream fstr = File.Open(configPath, FileMode.CreateNew))
                     {

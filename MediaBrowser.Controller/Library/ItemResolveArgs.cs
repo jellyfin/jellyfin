@@ -138,7 +138,7 @@ namespace MediaBrowser.Controller.Library
         /// Adds the additional location.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public void AddAdditionalLocation(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -173,7 +173,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>FileSystemInfo.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public FileSystemMetadata GetFileSystemEntryByName(string name)
         {
             if (string.IsNullOrEmpty(name))
@@ -189,7 +189,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>FileSystemInfo.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public FileSystemMetadata GetFileSystemEntryByPath(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -228,10 +228,10 @@ namespace MediaBrowser.Controller.Library
         #region Equality Overrides
 
         /// <summary>
-        /// Determines whether the specified <see cref="System.Object" /> is equal to this instance.
+        /// Determines whether the specified <see cref="object" /> is equal to this instance.
         /// </summary>
         /// <param name="obj">The object to compare with the current object.</param>
-        /// <returns><c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
+        /// <returns><c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
         public override bool Equals(object obj)
         {
             return Equals(obj as ItemResolveArgs);

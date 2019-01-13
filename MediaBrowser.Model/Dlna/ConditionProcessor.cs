@@ -267,7 +267,7 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            TransportStreamTimestamp expected = (TransportStreamTimestamp)Enum.Parse(typeof(TransportStreamTimestamp), condition.Value, true);
+            var expected = (TransportStreamTimestamp)Enum.Parse(typeof(TransportStreamTimestamp), condition.Value, true);
 
             switch (condition.Condition)
             {

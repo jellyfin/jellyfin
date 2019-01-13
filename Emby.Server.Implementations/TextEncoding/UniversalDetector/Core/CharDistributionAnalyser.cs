@@ -83,7 +83,7 @@ namespace UniversalDetector.Core
         /// convert this encoding string to a number, here called order.
         /// This allow multiple encoding of a language to share one frequency table
         /// </summary>
-        /// <param name="buf">A <see cref="System.Byte"/></param>
+        /// <param name="buf">A <see cref="byte"/></param>
         /// <param name="offset"></param>
         /// <returns></returns>
         public abstract int GetOrder(byte[] buf, int offset);
@@ -91,7 +91,7 @@ namespace UniversalDetector.Core
         /// <summary>
         /// Feed a character with known length
         /// </summary>
-        /// <param name="buf">A <see cref="System.Byte"/></param>
+        /// <param name="buf">A <see cref="byte"/></param>
         /// <param name="offset">buf offset</param>
         public void HandleOneChar(byte[] buf, int offset, int charLen)
         {

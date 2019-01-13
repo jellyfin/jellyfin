@@ -173,7 +173,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     continue;
 
                 var commandList = commands.GetCommands();
-                foreach (Tuple<string, string> command in commandList)
+                foreach (var command in commandList)
                 {
                     var channelMsg = CreateSetMessage(i, command.Item1, command.Item2, lockKeyValue);
                     await tcpClient.SendToAsync(channelMsg, 0, channelMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
@@ -216,7 +216,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 var commandList = commands.GetCommands();
                 var receiveBuffer = new byte[8192];
 
-                foreach (Tuple<string, string> command in commandList)
+                foreach (var command in commandList)
                 {
                     var channelMsg = CreateSetMessage(_activeTuner, command.Item1, command.Item2, _lockkey);
                     await tcpClient.SendToAsync(channelMsg, 0, channelMsg.Length, new IpEndPointInfo(_remoteIp, HdHomeRunPort), cancellationToken).ConfigureAwait(false);

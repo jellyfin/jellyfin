@@ -149,7 +149,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="newName">The new name.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public Task Rename(string newName)
         {
             if (string.IsNullOrEmpty(newName))

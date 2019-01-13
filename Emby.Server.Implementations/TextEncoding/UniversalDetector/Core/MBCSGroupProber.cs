@@ -122,7 +122,7 @@ namespace UniversalDetector.Core
                 }
             }
 
-            ProbingState st = ProbingState.NotMe;
+            var st = ProbingState.NotMe;
 
             for (int i = 0; i < probers.Length; i++)
             {

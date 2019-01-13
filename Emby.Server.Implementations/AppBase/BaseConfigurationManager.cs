@@ -151,7 +151,7 @@ namespace Emby.Server.Implementations.AppBase
         /// Replaces the configuration.
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
-        /// <exception cref="System.ArgumentNullException">newConfiguration</exception>
+        /// <exception cref="ArgumentNullException">newConfiguration</exception>
         public virtual void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
             if (newConfiguration == null)
@@ -188,7 +188,7 @@ namespace Emby.Server.Implementations.AppBase
         /// Replaces the cache path.
         /// </summary>
         /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <exception cref="DirectoryNotFoundException"></exception>
         private void ValidateCachePath(BaseApplicationConfiguration newConfig)
         {
             var newPath = newConfig.CachePath;

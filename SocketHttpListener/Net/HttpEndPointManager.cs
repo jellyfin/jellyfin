@@ -17,7 +17,7 @@ namespace SocketHttpListener.Net
 
         public static void AddListener(ILogger logger, HttpListener listener)
         {
-            List<string> added = new List<string>();
+            var added = new List<string>();
             try
             {
                 lock ((s_ipEndPoints as ICollection).SyncRoot)
@@ -64,7 +64,7 @@ namespace SocketHttpListener.Net
                 }
             }
 
-            ListenerPrefix lp = new ListenerPrefix(p);
+            var lp = new ListenerPrefix(p);
             if (lp.Host != "*" && lp.Host != "+" && Uri.CheckHostName(lp.Host) == UriHostNameType.Unknown)
                 throw new HttpListenerException((int)HttpStatusCode.BadRequest, "net_listener_host");
 
@@ -75,7 +75,7 @@ namespace SocketHttpListener.Net
                 throw new HttpListenerException((int)HttpStatusCode.BadRequest, "net_invalid_path");
 
             // listens on all the interfaces if host name cannot be parsed by IPAddress.
-            HttpEndPointListener epl = GetEPListener(logger, lp.Host, lp.Port, listener, lp.Secure);
+            var epl = GetEPListener(logger, lp.Host, lp.Port, listener, lp.Secure);
             epl.AddPrefix(lp, listener);
         }
 
@@ -179,14 +179,14 @@ namespace SocketHttpListener.Net
 
         private static void RemovePrefixInternal(ILogger logger, string prefix, HttpListener listener)
         {
-            ListenerPrefix lp = new ListenerPrefix(prefix);
+            var lp = new ListenerPrefix(prefix);
             if (lp.Path.IndexOf('%') != -1)
                 return;
 
             if (lp.Path.IndexOf("//", StringComparison.Ordinal) != -1)
                 return;
 
-            HttpEndPointListener epl = GetEPListener(logger, lp.Host, lp.Port, listener, lp.Secure);
+            var epl = GetEPListener(logger, lp.Host, lp.Port, listener, lp.Secure);
             epl.RemovePrefix(lp, listener);
         }
     }

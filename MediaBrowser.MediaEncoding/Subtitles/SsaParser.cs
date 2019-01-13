@@ -16,7 +16,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         public SubtitleTrackInfo Parse(Stream stream, CancellationToken cancellationToken)
         {
             var trackInfo = new SubtitleTrackInfo();
-            List<SubtitleTrackEvent> trackEvents = new List<SubtitleTrackEvent>();
+            var trackEvents = new List<SubtitleTrackEvent>();
 
             using (var reader = new StreamReader(stream))
             {

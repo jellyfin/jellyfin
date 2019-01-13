@@ -34,7 +34,7 @@ namespace Emby.XmlTv.Classes
 
         private static XmlReader CreateXmlTextReader(string path)
         {
-            XmlReaderSettings settings = new XmlReaderSettings();
+            var settings = new XmlReaderSettings();
 
             // https://msdn.microsoft.com/en-us/library/system.xml.xmlreadersettings.xmlresolver(v=vs.110).aspx
             // Looks like we don't need this anyway?

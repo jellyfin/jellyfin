@@ -48,7 +48,7 @@ namespace MediaBrowser.Model.Net
 
         private static Dictionary<string, string> GetVideoFileExtensionsDictionary()
         {
-            Dictionary<string, string> dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (string ext in VideoFileExtensions)
             {
@@ -65,7 +65,7 @@ namespace MediaBrowser.Model.Net
 
         private static Dictionary<string, string> GetMimeTypeLookup()
         {
-            Dictionary<string, string> dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             dict.Add(".jpg", "image/jpeg");
             dict.Add(".jpeg", "image/jpeg");

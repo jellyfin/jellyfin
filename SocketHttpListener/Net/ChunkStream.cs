@@ -108,7 +108,7 @@ namespace SocketHttpListener.Net
             var chunksForRemoving = new List<Chunk>(count);
             for (int i = 0; i < count; i++)
             {
-                Chunk chunk = _chunks[i];
+                var chunk = _chunks[i];
 
                 if (chunk.Offset == chunk.Bytes.Length)
                 {
@@ -189,7 +189,7 @@ namespace SocketHttpListener.Net
                 int count = _chunks.Count;
                 for (int i = 0; i < count; i++)
                 {
-                    Chunk ch = _chunks[i];
+                    var ch = _chunks[i];
                     if (ch == null || ch.Bytes == null)
                         continue;
                     if (ch.Bytes.Length > 0 && ch.Offset < ch.Bytes.Length)
@@ -368,7 +368,7 @@ namespace SocketHttpListener.Net
                 return State.Trailer;
             }
 
-            StringReader reader = new StringReader(_saved.ToString());
+            var reader = new StringReader(_saved.ToString());
             string line;
             while ((line = reader.ReadLine()) != null && line != "")
                 _headers.Add(line);
@@ -378,7 +378,7 @@ namespace SocketHttpListener.Net
 
         private static void ThrowProtocolViolation(string message)
         {
-            WebException we = new WebException(message, null, WebExceptionStatus.ServerProtocolViolation, null);
+            var we = new WebException(message, null, WebExceptionStatus.ServerProtocolViolation, null);
             throw we;
         }
     }

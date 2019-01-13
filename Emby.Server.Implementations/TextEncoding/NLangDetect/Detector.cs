@@ -164,7 +164,7 @@ namespace NLangDetect.Core
 
         public string Detect()
         {
-            List<Language> probabilities = GetProbabilities();
+            var probabilities = GetProbabilities();
 
             return
               probabilities.Count > 0
@@ -179,7 +179,7 @@ namespace NLangDetect.Core
                 DetectBlock();
             }
 
-            List<Language> list = SortProbability(_langprob);
+            var list = SortProbability(_langprob);
 
             return list;
         }
@@ -241,7 +241,7 @@ namespace NLangDetect.Core
         {
             CleanText();
 
-            List<string> ngrams = ExtractNGrams();
+            var ngrams = ExtractNGrams();
 
             if (ngrams.Count == 0)
             {
@@ -250,7 +250,7 @@ namespace NLangDetect.Core
 
             _langprob = new double[_langlist.Count];
 
-            Random rand = (_seed.HasValue ? new Random(_seed.Value) : new Random());
+            var rand = (_seed.HasValue ? new Random(_seed.Value) : new Random());
 
             for (int t = 0; t < _trialsCount; t++)
             {
@@ -305,7 +305,7 @@ namespace NLangDetect.Core
         private List<string> ExtractNGrams()
         {
             var list = new List<string>();
-            NGram ngram = new NGram();
+            var ngram = new NGram();
 
             for (int i = 0; i < _text.Length; i++)
             {
@@ -332,7 +332,7 @@ namespace NLangDetect.Core
                 return;
             }
 
-            ProbVector langProbMap = _wordLangProbMap[word];
+            var langProbMap = _wordLangProbMap[word];
             double weight = alpha / _BaseFreq;
 
             for (int i = 0; i < prob.Length; i++)

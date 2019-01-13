@@ -711,7 +711,7 @@ namespace Emby.Server.Implementations.Library
         /// Creates the root media folder
         /// </summary>
         /// <returns>AggregateFolder.</returns>
-        /// <exception cref="System.InvalidOperationException">Cannot create the root folder until plugins have loaded</exception>
+        /// <exception cref="InvalidOperationException">Cannot create the root folder until plugins have loaded</exception>
         public AggregateFolder CreateRootFolder()
         {
             var rootFolderPath = ConfigurationManager.ApplicationPaths.RootFolderPath;
@@ -905,7 +905,7 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>Task{Year}.</returns>
-        /// <exception cref="System.ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public Year GetYear(int value)
         {
             if (value <= 0)
@@ -1233,7 +1233,7 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id</exception>
         public BaseItem GetItemById(Guid id)
         {
             if (id.Equals(Guid.Empty))
@@ -2075,7 +2075,7 @@ namespace Emby.Server.Implementations.Library
 
         public string GetConfiguredContentType(BaseItem item, bool inheritConfiguredPath)
         {
-            ICollectionFolder collectionFolder = item as ICollectionFolder;
+            var collectionFolder = item as ICollectionFolder;
             if (collectionFolder != null)
             {
                 return collectionFolder.CollectionType;
@@ -2417,11 +2417,11 @@ namespace Emby.Server.Implementations.Library
 
             var episodeInfo = episode.IsFileProtocol ?
                 resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) :
-                new Emby.Naming.TV.EpisodeInfo();
+                new Naming.TV.EpisodeInfo();
 
             if (episodeInfo == null)
             {
-                episodeInfo = new Emby.Naming.TV.EpisodeInfo();
+                episodeInfo = new Naming.TV.EpisodeInfo();
             }
 
             var changed = false;

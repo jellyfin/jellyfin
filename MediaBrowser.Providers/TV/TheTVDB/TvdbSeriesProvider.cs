@@ -1118,7 +1118,7 @@ namespace MediaBrowser.Providers.TV
 
         private void FetchDataFromSeriesNode(MetadataResult<Series> result, XmlReader reader, CancellationToken cancellationToken)
         {
-            Series item = result.Item;
+            var item = result.Item;
 
             reader.MoveToContent();
             reader.Read();

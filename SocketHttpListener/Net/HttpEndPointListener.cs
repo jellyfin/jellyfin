@@ -160,7 +160,7 @@ namespace SocketHttpListener.Net
             }
             catch (Exception ex)
             {
-                HttpEndPointListener epl = (HttpEndPointListener)acceptEventArg.UserToken;
+                var epl = (HttpEndPointListener)acceptEventArg.UserToken;
 
                 epl._logger.LogError(ex, "Error in socket.AcceptAsync");
             }
@@ -176,7 +176,7 @@ namespace SocketHttpListener.Net
 
         private static async void ProcessAccept(SocketAsyncEventArgs args)
         {
-            HttpEndPointListener epl = (HttpEndPointListener)args.UserToken;
+            var epl = (HttpEndPointListener)args.UserToken;
 
             if (epl._closed)
             {
@@ -214,7 +214,7 @@ namespace SocketHttpListener.Net
                 var localEndPointString = accepted.LocalEndPoint == null ? string.Empty : accepted.LocalEndPoint.ToString();
                 //_logger.LogInformation("HttpEndPointListener Accepting connection from {0} to {1} secure connection requested: {2}", remoteEndPointString, localEndPointString, _secure);
 
-                HttpConnection conn = new HttpConnection(epl._logger, accepted, epl, epl._secure, epl._cert, epl._cryptoProvider, epl._streamHelper, epl._textEncoding, epl._fileSystem, epl._environment);
+                var conn = new HttpConnection(epl._logger, accepted, epl, epl._secure, epl._cert, epl._cryptoProvider, epl._streamHelper, epl._textEncoding, epl._fileSystem, epl._environment);
 
                 await conn.Init().ConfigureAwait(false);
 
@@ -276,9 +276,9 @@ namespace SocketHttpListener.Net
 
         public bool BindContext(HttpListenerContext context)
         {
-            HttpListenerRequest req = context.Request;
+            var req = context.Request;
             ListenerPrefix prefix;
-            HttpListener listener = SearchListener(req.Url, out prefix);
+            var listener = SearchListener(req.Url, out prefix);
             if (listener == null)
                 return false;
 
@@ -310,8 +310,8 @@ namespace SocketHttpListener.Net
 
             if (host != null && host != "")
             {
-                Dictionary<ListenerPrefix, HttpListener> localPrefixes = _prefixes;
-                foreach (ListenerPrefix p in localPrefixes.Keys)
+                var localPrefixes = _prefixes;
+                foreach (var p in localPrefixes.Keys)
                 {
                     string ppath = p.Path;
                     if (ppath.Length < bestLength)
@@ -331,7 +331,7 @@ namespace SocketHttpListener.Net
                     return bestMatch;
             }
 
-            List<ListenerPrefix> list = _unhandledPrefixes;
+            var list = _unhandledPrefixes;
             bestMatch = MatchFromList(host, path, list, out prefix);
 
             if (path != pathSlash && bestMatch == null)
@@ -361,7 +361,7 @@ namespace SocketHttpListener.Net
             HttpListener bestMatch = null;
             int bestLength = -1;
 
-            foreach (ListenerPrefix p in list)
+            foreach (var p in list)
             {
                 string ppath = p.Path;
                 if (ppath.Length < bestLength)
@@ -383,7 +383,7 @@ namespace SocketHttpListener.Net
             if (list == null)
                 return;
 
-            foreach (ListenerPrefix p in list)
+            foreach (var p in list)
             {
                 if (p.Path == prefix.Path)
                     throw new Exception("net_listener_already");
@@ -399,7 +399,7 @@ namespace SocketHttpListener.Net
             int c = list.Count;
             for (int i = 0; i < c; i++)
             {
-                ListenerPrefix p = list[i];
+                var p = list[i];
                 if (p.Path == prefix.Path)
                 {
                     list.RemoveAt(i);
@@ -414,7 +414,7 @@ namespace SocketHttpListener.Net
             if (_prefixes.Count > 0)
                 return;
 
-            List<ListenerPrefix> list = _unhandledPrefixes;
+            var list = _unhandledPrefixes;
             if (list != null && list.Count > 0)
                 return;
 
@@ -434,7 +434,7 @@ namespace SocketHttpListener.Net
                 // Clone the list because RemoveConnection can be called from Close
                 var connections = new List<HttpConnection>(_unregisteredConnections.Keys);
 
-                foreach (HttpConnection c in connections)
+                foreach (var c in connections)
                     c.Close(true);
                 _unregisteredConnections.Clear();
             }

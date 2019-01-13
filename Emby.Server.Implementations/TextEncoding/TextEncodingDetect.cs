@@ -150,7 +150,7 @@ namespace Emby.Server.Implementations.TextEncoding
         public CharacterEncoding DetectEncoding(byte[] buffer, int size)
         {
             // First check if we have a BOM and return that if so
-            CharacterEncoding encoding = CheckBom(buffer, size);
+            var encoding = CheckBom(buffer, size);
             if (encoding != CharacterEncoding.None)
             {
                 return encoding;

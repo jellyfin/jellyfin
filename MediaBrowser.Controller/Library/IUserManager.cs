@@ -43,7 +43,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>User.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         User GetUserById(Guid id);
 
         /// <summary>
@@ -73,16 +73,16 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <param name="newName">The new name.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentException"></exception>
         Task RenameUser(User user, string newName);
 
         /// <summary>
         /// Updates the user.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <exception cref="System.ArgumentNullException">user</exception>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentException"></exception>
         void UpdateUser(User user);
 
         /// <summary>
@@ -90,8 +90,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>User.</returns>
-        /// <exception cref="System.ArgumentNullException">name</exception>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">name</exception>
+        /// <exception cref="ArgumentException"></exception>
         Task<User> CreateUser(string name);
 
         /// <summary>
@@ -99,8 +99,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentException"></exception>
         Task DeleteUser(User user);
 
         /// <summary>

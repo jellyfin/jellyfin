@@ -30,7 +30,7 @@ namespace NLangDetect.Core.Utils
         {
             var manifestName = typeof(Messages).Assembly.GetManifestResourceNames().FirstOrDefault(i => i.IndexOf("messages.properties", StringComparison.Ordinal) != -1);
 
-            Stream messagesStream =
+            var messagesStream =
               typeof(Messages).Assembly
                 .GetManifestResourceStream(manifestName);
 

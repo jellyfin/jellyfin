@@ -56,9 +56,9 @@ namespace OpenSubtitlesHandler
         /// <returns>Bytes array of decompressed data</returns>
         public static byte[] Decompress(Stream dataToDecompress)
         {
-            using (MemoryStream target = new MemoryStream())
+            using (var target = new MemoryStream())
             {
-                using (System.IO.Compression.GZipStream decompressionStream = new System.IO.Compression.GZipStream(dataToDecompress, System.IO.Compression.CompressionMode.Decompress))
+                using (var decompressionStream = new System.IO.Compression.GZipStream(dataToDecompress, System.IO.Compression.CompressionMode.Decompress))
                 {
                     decompressionStream.CopyTo(target);
                 }
@@ -116,7 +116,7 @@ namespace OpenSubtitlesHandler
             using (responseStream)
             {
                 // Handle response, should be XML text.
-                List<byte> data = new List<byte>();
+                var data = new List<byte>();
                 while (true)
                 {
                     int r = responseStream.ReadByte();

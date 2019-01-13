@@ -168,7 +168,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>IEnumerable{TaskInfo}.</returns>
-        /// <exception cref="MediaBrowser.Common.Extensions.ResourceNotFoundException">Task not found</exception>
+        /// <exception cref="ResourceNotFoundException">Task not found</exception>
         public object Get(GetScheduledTask request)
         {
             var task = TaskManager.ScheduledTasks.FirstOrDefault(i => string.Equals(i.Id, request.Id));
@@ -187,7 +187,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        /// <exception cref="MediaBrowser.Common.Extensions.ResourceNotFoundException">Task not found</exception>
+        /// <exception cref="ResourceNotFoundException">Task not found</exception>
         public void Post(StartScheduledTask request)
         {
             var task = TaskManager.ScheduledTasks.FirstOrDefault(i => string.Equals(i.Id, request.Id));
@@ -214,7 +214,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        /// <exception cref="MediaBrowser.Common.Extensions.ResourceNotFoundException">Task not found</exception>
+        /// <exception cref="ResourceNotFoundException">Task not found</exception>
         public void Delete(StopScheduledTask request)
         {
             var task = TaskManager.ScheduledTasks.FirstOrDefault(i => string.Equals(i.Id, request.Id));
@@ -231,7 +231,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        /// <exception cref="MediaBrowser.Common.Extensions.ResourceNotFoundException">Task not found</exception>
+        /// <exception cref="ResourceNotFoundException">Task not found</exception>
         public void Post(UpdateScheduledTaskTriggers request)
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream

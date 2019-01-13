@@ -201,8 +201,8 @@ namespace Emby.Server.Implementations.Session
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
-        /// <exception cref="System.UnauthorizedAccessException"></exception>
+        /// <exception cref="ArgumentNullException">user</exception>
+        /// <exception cref="UnauthorizedAccessException"></exception>
         public SessionInfo LogSessionActivity(string appName,
             string appVersion,
             string deviceId,
@@ -365,7 +365,7 @@ namespace Emby.Server.Implementations.Session
         /// Removes the now playing item id.
         /// </summary>
         /// <param name="session">The session.</param>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         private void RemoveNowPlayingItem(SessionInfo session)
         {
             session.NowPlayingItem = null;
@@ -404,7 +404,7 @@ namespace Emby.Server.Implementations.Session
 
             CheckDisposed();
 
-            SessionInfo sessionInfo = _activeConnections.GetOrAdd(key, k =>
+            var sessionInfo = _activeConnections.GetOrAdd(key, k =>
             {
                 return CreateSession(k, appName, appVersion, deviceId, deviceName, remoteEndPoint, user);
             });
@@ -571,7 +571,7 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">info</exception>
+        /// <exception cref="ArgumentNullException">info</exception>
         public async Task OnPlaybackStart(PlaybackStartInfo info)
         {
             CheckDisposed();
@@ -784,8 +784,8 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">info</exception>
-        /// <exception cref="System.ArgumentOutOfRangeException">positionTicks</exception>
+        /// <exception cref="ArgumentNullException">info</exception>
+        /// <exception cref="ArgumentOutOfRangeException">positionTicks</exception>
         public async Task OnPlaybackStopped(PlaybackStopInfo info)
         {
             CheckDisposed();
@@ -1284,8 +1284,8 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="userId">The user identifier.</param>
-        /// <exception cref="System.UnauthorizedAccessException">Cannot modify additional users without authenticating first.</exception>
-        /// <exception cref="System.ArgumentException">The requested user is already the primary user of the session.</exception>
+        /// <exception cref="UnauthorizedAccessException">Cannot modify additional users without authenticating first.</exception>
+        /// <exception cref="ArgumentException">The requested user is already the primary user of the session.</exception>
         public void AddAdditionalUser(string sessionId, Guid userId)
         {
             CheckDisposed();
@@ -1318,8 +1318,8 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="userId">The user identifier.</param>
-        /// <exception cref="System.UnauthorizedAccessException">Cannot modify additional users without authenticating first.</exception>
-        /// <exception cref="System.ArgumentException">The requested user is already the primary user of the session.</exception>
+        /// <exception cref="UnauthorizedAccessException">Cannot modify additional users without authenticating first.</exception>
+        /// <exception cref="ArgumentException">The requested user is already the primary user of the session.</exception>
         public void RemoveAdditionalUser(string sessionId, Guid userId)
         {
             CheckDisposed();

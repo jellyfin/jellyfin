@@ -29,8 +29,8 @@ namespace Emby.Server.Implementations.Sorting
                 char thisCh = s1[thisMarker];
                 char thatCh = s2[thatMarker];
 
-                StringBuilder thisChunk = new StringBuilder();
-                StringBuilder thatChunk = new StringBuilder();
+                var thisChunk = new StringBuilder();
+                var thatChunk = new StringBuilder();
 
                 while ((thisMarker < s1.Length) && (thisChunk.Length == 0 || SortHelper.InChunk(thisCh, thisChunk[0])))
                 {

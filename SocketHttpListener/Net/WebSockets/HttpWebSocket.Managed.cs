@@ -16,8 +16,8 @@ namespace SocketHttpListener.Net.WebSockets
             ValidateOptions(subProtocol, receiveBufferSize, MinSendBufferSize, keepAliveInterval);
 
             // get property will create a new response if one doesn't exist.
-            HttpListenerResponse response = context.Response;
-            HttpListenerRequest request = context.Request;
+            var response = context.Response;
+            var request = context.Request;
             ValidateWebSocketHeaders(context);
 
             string secWebSocketVersion = request.Headers[HttpKnownHeaderNames.SecWebSocketVersion];
@@ -50,15 +50,15 @@ namespace SocketHttpListener.Net.WebSockets
             response.StatusCode = (int)HttpStatusCode.SwitchingProtocols; // HTTP 101
             response.StatusDescription = HttpStatusDescription.Get(HttpStatusCode.SwitchingProtocols);
 
-            HttpResponseStream responseStream = response.OutputStream as HttpResponseStream;
+            var responseStream = response.OutputStream as HttpResponseStream;
 
             // Send websocket handshake headers
             await responseStream.WriteWebSocketHandshakeHeadersAsync().ConfigureAwait(false);
 
             //WebSocket webSocket = WebSocket.CreateFromStream(context.Connection.ConnectedStream, isServer: true, subProtocol, keepAliveInterval);
-            WebSocket webSocket = new WebSocket(subProtocol);
+            var webSocket = new WebSocket(subProtocol);
 
-            HttpListenerWebSocketContext webSocketContext = new HttpListenerWebSocketContext(
+            var webSocketContext = new HttpListenerWebSocketContext(
                                                                 request.Url,
                                                                 request.Headers,
                                                                 request.Cookies,

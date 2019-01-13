@@ -109,7 +109,7 @@ namespace BDInfo
 
         public TSDescriptor Clone()
         {
-            TSDescriptor descriptor =
+            var descriptor =
                 new TSDescriptor(Name, (byte)Value.Length);
             Value.CopyTo(descriptor.Value, 0);
             return descriptor;
@@ -404,7 +404,7 @@ namespace BDInfo
             if (Descriptors != null)
             {
                 stream.Descriptors = new List<TSDescriptor>();
-                foreach (TSDescriptor descriptor in Descriptors)
+                foreach (var descriptor in Descriptors)
                 {
                     stream.Descriptors.Add(descriptor.Clone());
                 }
@@ -553,7 +553,7 @@ namespace BDInfo
 
         public override TSStream Clone()
         {
-            TSVideoStream stream = new TSVideoStream();
+            var stream = new TSVideoStream();
             CopyTo(stream);
 
             stream.VideoFormat = _VideoFormat;
@@ -727,7 +727,7 @@ namespace BDInfo
 
         public override TSStream Clone()
         {
-            TSAudioStream stream = new TSAudioStream();
+            var stream = new TSAudioStream();
             CopyTo(stream);
 
             stream.SampleRate = SampleRate;
@@ -756,7 +756,7 @@ namespace BDInfo
 
         public override TSStream Clone()
         {
-            TSGraphicsStream stream = new TSGraphicsStream();
+            var stream = new TSGraphicsStream();
             CopyTo(stream);
             return stream;
         }
@@ -772,7 +772,7 @@ namespace BDInfo
 
         public override TSStream Clone()
         {
-            TSTextStream stream = new TSTextStream();
+            var stream = new TSTextStream();
             CopyTo(stream);
             return stream;
         }

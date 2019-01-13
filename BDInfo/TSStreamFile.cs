@@ -283,7 +283,7 @@ namespace BDInfo
 
             bool isAVC = false;
             bool isMVC = false;
-            foreach (TSStream finishedStream in Streams.Values)
+            foreach (var finishedStream in Streams.Values)
             {
                 if (!finishedStream.IsInitialized)
                 {
@@ -327,10 +327,10 @@ namespace BDInfo
                 UpdateStreamBitrate(PID, PTSPID, PTS, PTSDiff);
             }
 
-            foreach (TSPlaylistFile playlist in Playlists)
+            foreach (var playlist in Playlists)
             {
                 double packetSeconds = 0;
-                foreach (TSStreamClip clip in playlist.StreamClips)
+                foreach (var clip in playlist.StreamClips)
                 {
                     if (clip.AngleIndex == 0)
                     {
@@ -339,7 +339,7 @@ namespace BDInfo
                 }
                 if (packetSeconds > 0)
                 {
-                    foreach (TSStream playlistStream in playlist.SortedStreams)
+                    foreach (var playlistStream in playlist.SortedStreams)
                     {
                         if (playlistStream.IsVBR)
                         {
@@ -366,14 +366,14 @@ namespace BDInfo
         {
             if (Playlists == null) return;
 
-            TSStreamState streamState = StreamStates[PID];
+            var streamState = StreamStates[PID];
             double streamTime = (double)PTS / 90000;
             double streamInterval = (double)PTSDiff / 90000;
             double streamOffset = streamTime + streamInterval;
 
-            foreach (TSPlaylistFile playlist in Playlists)
+            foreach (var playlist in Playlists)
             {
-                foreach (TSStreamClip clip in playlist.StreamClips)
+                foreach (var clip in playlist.StreamClips)
                 {
                     if (clip.Name != this.Name) continue;
 
@@ -390,7 +390,7 @@ namespace BDInfo
                             clip.PacketSeconds = streamOffset - clip.TimeIn;
                         }
 
-                        Dictionary<ushort, TSStream> playlistStreams = playlist.Streams;
+                        var playlistStreams = playlist.Streams;
                         if (clip.AngleIndex > 0 &&
                             clip.AngleIndex < playlist.AngleStreams.Count + 1)
                         {
@@ -398,7 +398,7 @@ namespace BDInfo
                         }
                         if (playlistStreams.ContainsKey(PID))
                         {
-                            TSStream stream = playlistStreams[PID];
+                            var stream = playlistStreams[PID];
 
                             stream.PayloadBytes += streamState.WindowBytes;
                             stream.PacketCount += streamState.WindowPackets;
@@ -425,13 +425,13 @@ namespace BDInfo
 
             if (Streams.ContainsKey(PID))
             {
-                TSStream stream = Streams[PID];
+                var stream = Streams[PID];
                 stream.PayloadBytes += streamState.WindowBytes;
                 stream.PacketCount += streamState.WindowPackets;
 
                 if (stream.IsVideoStream)
                 {
-                    TSStreamDiagnostics diag = new TSStreamDiagnostics();
+                    var diag = new TSStreamDiagnostics();
                     diag.Marker = (double)PTS / 90000;
                     diag.Interval = (double)PTSDiff / 90000;
                     diag.Bytes = streamState.WindowBytes;
@@ -482,7 +482,7 @@ namespace BDInfo
                 StreamStates.Clear();
                 StreamDiagnostics.Clear();
 
-                TSPacketParser parser =
+                var parser =
                     new TSPacketParser();
 
                 long fileLength = (uint)fileStream.Length;
@@ -839,7 +839,7 @@ namespace BDInfo
 
                                                 if (!Streams.ContainsKey(streamPID))
                                                 {
-                                                    List<TSDescriptor> streamDescriptors =
+                                                    var streamDescriptors =
                                                         new List<TSDescriptor>();
 
                                                     /*
@@ -996,7 +996,7 @@ namespace BDInfo
                                     {
                                         --parser.PMTProgramDescriptorLength;
 
-                                        TSDescriptor descriptor = parser.PMTProgramDescriptors[
+                                        var descriptor = parser.PMTProgramDescriptors[
                                             parser.PMTProgramDescriptors.Count - 1];
 
                                         int valueIndex =
@@ -1026,8 +1026,8 @@ namespace BDInfo
                             parser.StreamState != null &&
                             parser.TransportScramblingControl == 0)
                         {
-                            TSStream stream = parser.Stream;
-                            TSStreamState streamState = parser.StreamState;
+                            var stream = parser.Stream;
+                            var streamState = parser.StreamState;
 
                             streamState.Parse =
                                 (streamState.Parse << 8) + buffer[i];
@@ -1461,7 +1461,7 @@ namespace BDInfo
 
                 ulong PTSLast = 0;
                 ulong PTSDiff = 0;
-                foreach (TSStream stream in Streams.Values)
+                foreach (var stream in Streams.Values)
                 {
                     if (!stream.IsVideoStream) continue;
 

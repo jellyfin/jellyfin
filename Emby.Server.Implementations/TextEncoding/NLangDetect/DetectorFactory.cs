@@ -54,7 +54,7 @@ namespace NLangDetect.Core
 
         public static Detector Create(double alpha)
         {
-            Detector detector = CreateDetector();
+            var detector = CreateDetector();
 
             detector.SetAlpha(alpha);
 

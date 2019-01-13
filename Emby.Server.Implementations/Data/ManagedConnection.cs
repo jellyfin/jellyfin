@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.Data
 
         public T RunInTransaction<T>(Func<IDatabaseConnection, T> action, TransactionMode mode)
         {
-            return db.RunInTransaction<T>(action, mode);
+            return db.RunInTransaction(action, mode);
         }
 
         public IEnumerable<IReadOnlyList<IResultSetValue>> Query(string sql)

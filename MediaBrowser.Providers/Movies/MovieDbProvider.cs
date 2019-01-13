@@ -140,7 +140,7 @@ namespace MediaBrowser.Providers.Movies
                 return _tmdbSettings;
             }
 
-            using (HttpResponseInfo response = await GetMovieDbResponse(new HttpRequestOptions
+            using (var response = await GetMovieDbResponse(new HttpRequestOptions
             {
                 Url = string.Format(TmdbConfigUrl, ApiKey),
                 CancellationToken = cancellationToken,
@@ -148,7 +148,7 @@ namespace MediaBrowser.Providers.Movies
 
             }).ConfigureAwait(false))
             {
-                using (Stream json = response.Content)
+                using (var json = response.Content)
                 {
                     _tmdbSettings = await _jsonSerializer.DeserializeFromStreamAsync<TmdbSettingsResult>(json).ConfigureAwait(false);
 

@@ -415,7 +415,7 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">package</exception>
+        /// <exception cref="ArgumentNullException">package</exception>
         public async Task InstallPackage(PackageVersionInfo package, bool isPlugin, IProgress<double> progress, CancellationToken cancellationToken)
         {
             if (package == null)
@@ -626,7 +626,7 @@ namespace Emby.Server.Implementations.Updates
         /// Uninstalls a plugin
         /// </summary>
         /// <param name="plugin">The plugin.</param>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         public void UninstallPlugin(IPlugin plugin)
         {
             plugin.OnUninstalling();

@@ -478,7 +478,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private static string GetMappedChannel(string channelId, NameValuePair[] mappings)
         {
-            foreach (NameValuePair mapping in mappings)
+            foreach (var mapping in mappings)
             {
                 if (StringHelper.EqualsIgnoreCase(mapping.Name, channelId))
                 {
@@ -2002,7 +2002,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     CloseOutput = false
                 };
 
-                using (XmlWriter writer = XmlWriter.Create(stream, settings))
+                using (var writer = XmlWriter.Create(stream, settings))
                 {
                     writer.WriteStartDocument(true);
                     writer.WriteStartElement("tvshow");
@@ -2069,7 +2069,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 var isSeriesEpisode = timer.IsProgramSeries;
 
-                using (XmlWriter writer = XmlWriter.Create(stream, settings))
+                using (var writer = XmlWriter.Create(stream, settings))
                 {
                     writer.WriteStartDocument(true);
 

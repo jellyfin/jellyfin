@@ -43,7 +43,7 @@ namespace MediaBrowser.Providers.Omdb
                 throw new ArgumentNullException(nameof(imdbId));
             }
 
-            T item = itemResult.Item;
+            var item = itemResult.Item;
 
             var result = await GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
 
@@ -113,7 +113,7 @@ namespace MediaBrowser.Providers.Omdb
                 throw new ArgumentNullException(nameof(seriesImdbId));
             }
 
-            T item = itemResult.Item;
+            var item = itemResult.Item;
 
             var seasonResult = await GetSeasonRootObject(seriesImdbId, seasonNumber, cancellationToken).ConfigureAwait(false);
 
@@ -220,7 +220,7 @@ namespace MediaBrowser.Providers.Omdb
 
             string resultString;
 
-            using (Stream stream = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+            using (var stream = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
             {
                 using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
                 {
@@ -239,7 +239,7 @@ namespace MediaBrowser.Providers.Omdb
 
             string resultString;
 
-            using (Stream stream = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+            using (var stream = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
             {
                 using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
                 {
@@ -394,7 +394,7 @@ namespace MediaBrowser.Providers.Omdb
         private void ParseAdditionalMetadata<T>(MetadataResult<T> itemResult, RootObject result)
             where T : BaseItem
         {
-            T item = itemResult.Item;
+            var item = itemResult.Item;
 
             var isConfiguredForEnglish = IsConfiguredForEnglish(item) || _configurationManager.Configuration.EnableNewOmdbSupport;
 

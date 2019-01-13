@@ -45,7 +45,7 @@ namespace DvdLib.Ifo
             {
                 using (var vmgFs = _fileSystem.GetFileStream(vmgPath.FullName, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
                 {
-                    using (BigEndianBinaryReader vmgRead = new BigEndianBinaryReader(vmgFs))
+                    using (var vmgRead = new BigEndianBinaryReader(vmgFs))
                     {
                         vmgFs.Seek(0x3E, SeekOrigin.Begin);
                         _titleSetCount = vmgRead.ReadUInt16();
@@ -71,7 +71,7 @@ namespace DvdLib.Ifo
             read.BaseStream.Seek(6, SeekOrigin.Current);
             for (uint titleNum = 1; titleNum <= _titleCount; titleNum++)
             {
-                Title t = new Title(titleNum);
+                var t = new Title(titleNum);
                 t.ParseTT_SRPT(read);
                 Titles.Add(t);
             }
@@ -98,7 +98,7 @@ namespace DvdLib.Ifo
 
             using (var vtsFs = _fileSystem.GetFileStream(vtsPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
             {
-                using (BigEndianBinaryReader vtsRead = new BigEndianBinaryReader(vtsFs))
+                using (var vtsRead = new BigEndianBinaryReader(vtsFs))
                 {
                     // Read VTS_PTT_SRPT
                     vtsFs.Seek(0xC8, SeekOrigin.Begin);
@@ -119,7 +119,7 @@ namespace DvdLib.Ifo
                     {
                         uint chapNum = 1;
                         vtsFs.Seek(baseAddr + offsets[titleNum], SeekOrigin.Begin);
-                        Title t = Titles.FirstOrDefault(vtst => vtst.IsVTSTitle(vtsNum, titleNum + 1));
+                        var t = Titles.FirstOrDefault(vtst => vtst.IsVTSTitle(vtsNum, titleNum + 1));
                         if (t == null) continue;
 
                         do
@@ -149,7 +149,7 @@ namespace DvdLib.Ifo
                         vtsFs.Seek(3, SeekOrigin.Current);
                         uint vtsPgcOffset = vtsRead.ReadUInt32();
 
-                        Title t = Titles.FirstOrDefault(vtst => vtst.IsVTSTitle(vtsNum, titleNum));
+                        var t = Titles.FirstOrDefault(vtst => vtst.IsVTSTitle(vtsNum, titleNum));
                         if (t != null) t.AddPgc(vtsRead, startByte + vtsPgcOffset, entryPgc, pgcNum);
                     }
                 }

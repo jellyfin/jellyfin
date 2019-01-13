@@ -300,7 +300,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         private void ReadFromDictNode(XmlReader reader, MediaInfo info)
         {
             string currentKey = null;
-            List<NameValuePair> pairs = new List<NameValuePair>();
+            var pairs = new List<NameValuePair>();
 
             reader.MoveToContent();
             reader.Read();
@@ -360,7 +360,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         private List<NameValuePair> ReadValueArray(XmlReader reader)
         {
 
-            List<NameValuePair> pairs = new List<NameValuePair>();
+            var pairs = new List<NameValuePair>();
 
             reader.MoveToContent();
             reader.Read();
@@ -881,7 +881,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
         }
 
-        private void SetSize(InternalMediaInfoResult data, Model.MediaInfo.MediaInfo info)
+        private void SetSize(InternalMediaInfoResult data, MediaInfo info)
         {
             if (data.format != null)
             {
@@ -901,7 +901,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             var composer = FFProbeHelpers.GetDictionaryValue(tags, "composer");
             if (!string.IsNullOrWhiteSpace(composer))
             {
-                List<BaseItemPerson> peoples = new List<BaseItemPerson>();
+                var peoples = new List<BaseItemPerson>();
                 foreach (var person in Split(composer, false))
                 {
                     peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Composer });
@@ -932,7 +932,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (!string.IsNullOrWhiteSpace(writer))
             {
-                List<BaseItemPerson> peoples = new List<BaseItemPerson>();
+                var peoples = new List<BaseItemPerson>();
                 foreach (var person in Split(writer, false))
                 {
                     peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Writer });
@@ -1125,7 +1125,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (!string.IsNullOrEmpty(val))
             {
                 var studios = Split(val, true);
-                List<string> studioList = new List<string>();
+                var studioList = new List<string>();
 
                 foreach (var studio in studios)
                 {
@@ -1160,7 +1160,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (!string.IsNullOrEmpty(val))
             {
-                List<string> genres = new List<string>(info.Genres);
+                var genres = new List<string>(info.Genres);
                 foreach (var genre in Split(val, true))
                 {
                     genres.Add(genre);

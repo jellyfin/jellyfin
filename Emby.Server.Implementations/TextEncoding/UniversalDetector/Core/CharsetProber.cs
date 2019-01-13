@@ -108,7 +108,7 @@ namespace UniversalDetector.Core
         {
             byte[] result = null;
 
-            using (MemoryStream ms = new MemoryStream(buf.Length))
+            using (var ms = new MemoryStream(buf.Length))
             {
 
                 bool meetMSB = false;
@@ -156,7 +156,7 @@ namespace UniversalDetector.Core
         {
             byte[] result = null;
 
-            using (MemoryStream ms = new MemoryStream(buf.Length))
+            using (var ms = new MemoryStream(buf.Length))
             {
 
                 bool inTag = false;

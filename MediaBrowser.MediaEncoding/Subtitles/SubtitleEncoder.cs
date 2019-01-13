@@ -408,7 +408,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// inputPath
         /// or
         /// outputPath
@@ -525,7 +525,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentException">Must use inputPath list overload</exception>
+        /// <exception cref="ArgumentException">Must use inputPath list overload</exception>
         private async Task ExtractTextSubtitle(
             string[] inputFiles,
             MediaProtocol protocol,
@@ -734,7 +734,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (protocol == MediaProtocol.Http)
             {
-                HttpRequestOptions opts = new HttpRequestOptions()
+                var opts = new HttpRequestOptions()
                 {
                     Url = path,
                     CancellationToken = cancellationToken
