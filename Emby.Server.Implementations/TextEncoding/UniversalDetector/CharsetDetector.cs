@@ -100,7 +100,7 @@ namespace UniversalDetector
             this.confidence = 0.0f;
             base.Reset();
         }
-        
+
         public string Charset => charset;
 
         public float Confidence => confidence;
@@ -109,9 +109,9 @@ namespace UniversalDetector
         {
             this.charset = charset;
             this.confidence = confidence;
-//            if (Finished != null) {
-//                Finished(charset, confidence);
-//            }
+            //            if (Finished != null) {
+            //                Finished(charset, confidence);
+            //            }
         }
     }
 

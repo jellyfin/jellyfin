@@ -36,7 +36,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-using System;
 
 namespace UniversalDetector.Core
 {
@@ -67,7 +66,8 @@ namespace UniversalDetector.Core
 
         public override string GetCharsetName()
         {
-            if (bestGuess == -1) {
+            if (bestGuess == -1)
+            {
                 GetConfidence();
                 if (bestGuess == -1)
                     bestGuess = 0;
@@ -78,13 +78,17 @@ namespace UniversalDetector.Core
         public override void Reset()
         {
             activeNum = 0;
-            for (int i = 0; i < probers.Length; i++) {
-                if (probers[i] != null) {
-                   probers[i].Reset();
-                   isActive[i] = true;
-                   ++activeNum;
-                } else {
-                   isActive[i] = false;
+            for (int i = 0; i < probers.Length; i++)
+            {
+                if (probers[i] != null)
+                {
+                    probers[i].Reset();
+                    isActive[i] = true;
+                    ++activeNum;
+                }
+                else
+                {
+                    isActive[i] = false;
                 }
             }
             bestGuess = -1;
@@ -100,13 +104,18 @@ namespace UniversalDetector.Core
             bool keepNext = true;
             int max = offset + len;
 
-            for (int i = offset; i < max; i++) {
-                if ((buf[i] & 0x80) != 0) {
+            for (int i = offset; i < max; i++)
+            {
+                if ((buf[i] & 0x80) != 0)
+                {
                     highbyteBuf[hptr++] = buf[i];
                     keepNext = true;
-                } else {
+                }
+                else
+                {
                     //if previous is highbyte, keep this even it is a ASCII
-                    if (keepNext) {
+                    if (keepNext)
+                    {
                         highbyteBuf[hptr++] = buf[i];
                         keepNext = false;
                     }
@@ -115,18 +124,23 @@ namespace UniversalDetector.Core
 
             ProbingState st = ProbingState.NotMe;
 
-            for (int i = 0; i < probers.Length; i++) {
+            for (int i = 0; i < probers.Length; i++)
+            {
                 if (!isActive[i])
                     continue;
                 st = probers[i].HandleData(highbyteBuf, 0, hptr);
-                if (st == ProbingState.FoundIt) {
+                if (st == ProbingState.FoundIt)
+                {
                     bestGuess = i;
                     state = ProbingState.FoundIt;
                     break;
-                } else if (st == ProbingState.NotMe) {
+                }
+                else if (st == ProbingState.NotMe)
+                {
                     isActive[i] = false;
                     activeNum--;
-                    if (activeNum <= 0) {
+                    if (activeNum <= 0)
+                    {
                         state = ProbingState.NotMe;
                         break;
                     }
@@ -140,16 +154,23 @@ namespace UniversalDetector.Core
             float bestConf = 0.0f;
             float cf = 0.0f;
 
-            if (state == ProbingState.FoundIt) {
+            if (state == ProbingState.FoundIt)
+            {
                 return 0.99f;
-            } else if (state == ProbingState.NotMe) {
+            }
+            else if (state == ProbingState.NotMe)
+            {
                 return 0.01f;
-            } else {
-                for (int i = 0; i < PROBERS_NUM; i++) {
+            }
+            else
+            {
+                for (int i = 0; i < PROBERS_NUM; i++)
+                {
                     if (!isActive[i])
                         continue;
                     cf = probers[i].GetConfidence();
-                    if (bestConf < cf) {
+                    if (bestConf < cf)
+                    {
                         bestConf = cf;
                         bestGuess = i;
                     }
@@ -162,10 +183,14 @@ namespace UniversalDetector.Core
         {
             float cf;
             GetConfidence();
-            for (int i = 0; i < PROBERS_NUM; i++) {
-                if (!isActive[i]) {
+            for (int i = 0; i < PROBERS_NUM; i++)
+            {
+                if (!isActive[i])
+                {
                     //Console.WriteLine("  MBCS inactive: {0} (confidence is too low).", ProberName[i]);
-                } else {
+                }
+                else
+                {
                     cf = probers[i].GetConfidence();
                     //Console.WriteLine("  MBCS {0}: [{1}]", cf, ProberName[i]);
                 }

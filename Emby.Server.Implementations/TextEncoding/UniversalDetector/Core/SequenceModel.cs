@@ -36,7 +36,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-using System;
 
 namespace UniversalDetector.Core
 {
@@ -51,12 +50,12 @@ namespace UniversalDetector.Core
 
         // freqSeqs / totalSeqs
         protected float typicalPositiveRatio;
-        
+
         public float TypicalPositiveRatio => typicalPositiveRatio;
 
         // not used            
         protected bool keepEnglishLetter;
-        
+
         public bool KeepEnglishLetter => keepEnglishLetter;
 
         protected string charsetName;

@@ -97,9 +97,11 @@ namespace UniversalDetector.Core
         {
             //we only care about 2-bytes character in our distribution analysis
             int order = (charLen == 2) ? GetOrder(buf, offset) : -1;
-            if (order >= 0) {
+            if (order >= 0)
+            {
                 totalChars++;
-                if (order < tableSize) { // order is valid
+                if (order < tableSize)
+                { // order is valid
                     if (512 > charToFreqOrder[order])
                         freqChars++;
                 }
@@ -124,7 +126,8 @@ namespace UniversalDetector.Core
             // negative answer
             if (totalChars <= 0 || freqChars <= MINIMUM_DATA_THRESHOLD)
                 return SURE_NO;
-            if (totalChars != freqChars) {
+            if (totalChars != freqChars)
+            {
                 float r = freqChars / ((totalChars - freqChars) * typicalDistributionRatio);
                 if (r < SURE_YES)
                     return r;
@@ -610,8 +613,8 @@ namespace UniversalDetector.Core
         /// <returns></returns>
         public override int GetOrder(byte[] buf, int offset)
         {
-            if (buf[offset] >= 0xB0 && buf[offset+1] >= 0xA1)
-                return 94 * (buf[offset] - 0xb0) + buf[offset+1] - 0xA1;
+            if (buf[offset] >= 0xB0 && buf[offset + 1] >= 0xA1)
+                return 94 * (buf[offset] - 0xb0) + buf[offset + 1] - 0xA1;
             else
                 return -1;
         }
@@ -1040,7 +1043,7 @@ namespace UniversalDetector.Core
         public override int GetOrder(byte[] buf, int offset)
         {
             if (buf[offset] >= 0xC4)
-                return 94 * (buf[offset] - 0xC4) + buf[offset+1] - 0xA1;
+                return 94 * (buf[offset] - 0xC4) + buf[offset + 1] - 0xA1;
             else
                 return -1;
         }
@@ -1048,7 +1051,7 @@ namespace UniversalDetector.Core
 
     public class EUCKRDistributionAnalyser : CharDistributionAnalyser
     {
-                // Sampling from about 20M text materials include literature and computer technology
+        // Sampling from about 20M text materials include literature and computer technology
         /*
          * 128  --> 0.79
          * 256  --> 0.92
@@ -1634,7 +1637,7 @@ namespace UniversalDetector.Core
         public override int GetOrder(byte[] buf, int offset)
         {
             if (buf[offset] >= 0xB0)
-                return 94 * (buf[offset] - 0xB0) + buf[offset+1] - 0xA1;
+                return 94 * (buf[offset] - 0xB0) + buf[offset + 1] - 0xA1;
             else
                 return -1;
         }
@@ -2559,12 +2562,15 @@ namespace UniversalDetector.Core
         /// </summary>
         public override int GetOrder(byte[] buf, int offset)
         {
-            if (buf[offset] >= 0xA4) {
-                if (buf[offset+1] >= 0xA1)
-                    return 157 * (buf[offset] - 0xA4) + buf[offset+1] - 0xA1 + 63;
+            if (buf[offset] >= 0xA4)
+            {
+                if (buf[offset + 1] >= 0xA1)
+                    return 157 * (buf[offset] - 0xA4) + buf[offset + 1] - 0xA1 + 63;
                 else
-                    return 157 * (buf[offset] - 0xA4) + buf[offset+1] - 0x40;
-            } else {
+                    return 157 * (buf[offset] - 0xA4) + buf[offset + 1] - 0x40;
+            }
+            else
+            {
                 return -1;
             }
         }
@@ -3140,9 +3146,9 @@ namespace UniversalDetector.Core
                 order = 188 * (buf[offset] - 0xE0 + 31);
             else
                 return -1;
-            order += buf[offset+1] - 0x40;
+            order += buf[offset + 1] - 0x40;
 
-            if (buf[offset+1] > 0x7F)
+            if (buf[offset + 1] > 0x7F)
                 order--;
             return order;
         }
@@ -3162,7 +3168,7 @@ namespace UniversalDetector.Core
         public override int GetOrder(byte[] buf, int offset)
         {
             if (buf[offset] >= 0xA0)
-                return 94 * (buf[offset] - 0xA1) + buf[offset+1] - 0xA1;
+                return 94 * (buf[offset] - 0xA1) + buf[offset + 1] - 0xA1;
             else
                 return -1;
         }

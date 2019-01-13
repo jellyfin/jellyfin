@@ -36,7 +36,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-using System;
 
 namespace UniversalDetector.Core
 {
@@ -49,7 +48,7 @@ namespace UniversalDetector.Core
         private const float NEGATIVE_SHORTCUT_THRESHOLD = 0.05f;
         private const int SYMBOL_CAT_ORDER = 250;
         private const int NUMBER_OF_SEQ_CAT = 4;
-        private const int POSITIVE_CAT = NUMBER_OF_SEQ_CAT-1;
+        private const int POSITIVE_CAT = NUMBER_OF_SEQ_CAT - 1;
         private const int NEGATIVE_CAT = 0;
 
         protected SequenceModel model;
@@ -89,28 +88,33 @@ namespace UniversalDetector.Core
         {
             int max = offset + len;
 
-            for (int i = offset; i < max; i++) {
+            for (int i = offset; i < max; i++)
+            {
                 byte order = model.GetOrder(buf[i]);
 
                 if (order < SYMBOL_CAT_ORDER)
                     totalChar++;
 
-                if (order < SAMPLE_SIZE) {
+                if (order < SAMPLE_SIZE)
+                {
                     freqChar++;
 
-                    if (lastOrder < SAMPLE_SIZE) {
+                    if (lastOrder < SAMPLE_SIZE)
+                    {
                         totalSeqs++;
                         if (!reversed)
-                            ++(seqCounters[model.GetPrecedence(lastOrder*SAMPLE_SIZE+order)]);
+                            ++(seqCounters[model.GetPrecedence(lastOrder * SAMPLE_SIZE + order)]);
                         else // reverse the order of the letters in the lookup
-                            ++(seqCounters[model.GetPrecedence(order*SAMPLE_SIZE+lastOrder)]);
+                            ++(seqCounters[model.GetPrecedence(order * SAMPLE_SIZE + lastOrder)]);
                     }
                 }
                 lastOrder = order;
             }
 
-            if (state == ProbingState.Detecting) {
-                if (totalSeqs > SB_ENOUGH_REL_THRESHOLD) {
+            if (state == ProbingState.Detecting)
+            {
+                if (totalSeqs > SB_ENOUGH_REL_THRESHOLD)
+                {
                     float cf = GetConfidence();
                     if (cf > POSITIVE_SHORTCUT_THRESHOLD)
                         state = ProbingState.FoundIt;
@@ -139,7 +143,8 @@ namespace UniversalDetector.Core
             // POSITIVE_APPROACH
             float r = 0.0f;
 
-            if (totalSeqs > 0) {
+            if (totalSeqs > 0)
+            {
                 r = 1.0f * seqCounters[POSITIVE_CAT] / totalSeqs / model.TypicalPositiveRatio;
                 r = r * freqChar / totalChar;
                 if (r >= 1.0f)
