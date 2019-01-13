@@ -1,37 +1,30 @@
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Channels;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Channels
 {
@@ -625,7 +618,7 @@ namespace Emby.Server.Implementations.Channels
 
             if (sortByPremiereDate)
             {
-                query.OrderBy = new []
+                query.OrderBy = new[]
                 {
                     new ValueTuple<string, SortOrder>(ItemSortBy.PremiereDate, SortOrder.Descending),
                     new ValueTuple<string, SortOrder>(ItemSortBy.ProductionYear, SortOrder.Descending),
@@ -634,7 +627,7 @@ namespace Emby.Server.Implementations.Channels
             }
             else
             {
-                query.OrderBy = new []
+                query.OrderBy = new[]
                 {
                     new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending)
                 };

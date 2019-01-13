@@ -8,8 +8,8 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Configuration
 {

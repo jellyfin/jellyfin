@@ -6,11 +6,10 @@ using System.Linq;
 using Emby.Server.Implementations.Data;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Activity;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Querying;
-using SQLitePCL.pretty;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Logging;
+using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Activity
 {

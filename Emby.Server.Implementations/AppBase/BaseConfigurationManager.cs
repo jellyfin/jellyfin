@@ -9,8 +9,8 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.AppBase
 {
@@ -284,7 +284,7 @@ namespace Emby.Server.Implementations.AppBase
                 validatingStore.Validate(currentConfiguration, configuration);
             }
 
-            NamedConfigurationUpdating?.Invoke( this, new ConfigurationUpdateEventArgs
+            NamedConfigurationUpdating?.Invoke(this, new ConfigurationUpdateEventArgs
             {
                 Key = key,
                 NewConfiguration = configuration
