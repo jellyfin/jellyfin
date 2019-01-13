@@ -15,7 +15,10 @@ WORKDIR /repo
 COPY . .
 RUN export DOTNET_CLI_TELEMETRY_OPTOUT=1 \
  && dotnet clean \
- && dotnet publish --configuration release --output /jellyfin
+ && dotnet publish \
+    --configuration release \
+    --output /jellyfin \
+    Jellyfin.Server
 
 
 FROM microsoft/dotnet:${DOTNET_VERSION}-runtime
