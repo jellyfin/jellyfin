@@ -21,7 +21,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Text;
 
@@ -446,7 +445,7 @@ namespace BDInfo
                     chapterIndex < chapterCount;
                     chapterIndex++)
                 {
-                    int chapterType = data[pos+1];
+                    int chapterType = data[pos + 1];
 
                     if (chapterType == 1)
                     {
