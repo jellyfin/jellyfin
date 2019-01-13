@@ -20,7 +20,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public EncodingJobOptions Options
         {
-            get { return (EncodingJobOptions) BaseRequest; }
+            get { return (EncodingJobOptions)BaseRequest; }
             set { BaseRequest = value; }
         }
 

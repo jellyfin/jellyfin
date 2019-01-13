@@ -1,12 +1,12 @@
-﻿using MediaBrowser.Model.Extensions;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
@@ -25,7 +25,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             var trackInfo = new SubtitleTrackInfo();
             List<SubtitleTrackEvent> trackEvents = new List<SubtitleTrackEvent>();
-            using ( var reader = new StreamReader(stream))
+            using (var reader = new StreamReader(stream))
             {
                 string line;
                 while ((line = reader.ReadLine()) != null)
@@ -36,7 +36,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         continue;
                     }
-                    var subEvent = new SubtitleTrackEvent {Id = line};
+                    var subEvent = new SubtitleTrackEvent { Id = line };
                     line = reader.ReadLine();
 
                     if (string.IsNullOrWhiteSpace(line))
@@ -81,7 +81,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return trackInfo;
         }
 
-        long GetTicks(string time) {
+        long GetTicks(string time)
+        {
             TimeSpan span;
             return TimeSpan.TryParseExact(time, @"hh\:mm\:ss\.fff", _usCulture, out span)
                 ? span.Ticks

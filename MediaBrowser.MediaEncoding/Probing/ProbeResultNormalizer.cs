@@ -955,7 +955,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 var artist = FFProbeHelpers.GetDictionaryValue(tags, "artist");
                 if (string.IsNullOrWhiteSpace(artist))
                 {
-                    audio.Artists = new string[] {};
+                    audio.Artists = new string[] { };
                 }
                 else
                 {
@@ -977,7 +977,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (string.IsNullOrWhiteSpace(albumArtist))
             {
-                audio.AlbumArtists = new string[] {};
+                audio.AlbumArtists = new string[] { };
             }
             else
             {
