@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {

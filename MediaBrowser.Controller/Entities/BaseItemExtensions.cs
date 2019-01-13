@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 

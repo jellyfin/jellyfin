@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;

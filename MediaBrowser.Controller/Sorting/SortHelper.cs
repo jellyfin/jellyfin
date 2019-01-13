@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Controller.Sorting
+namespace MediaBrowser.Controller.Sorting
 {
     public static class SortHelper
     {

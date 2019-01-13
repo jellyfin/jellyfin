@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;

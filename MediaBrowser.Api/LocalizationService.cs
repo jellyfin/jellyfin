@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Services;

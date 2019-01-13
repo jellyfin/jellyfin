@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;

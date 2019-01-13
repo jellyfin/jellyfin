@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Controller.Channels
+namespace MediaBrowser.Controller.Channels
 {
     public enum ChannelParentalRating
     {
