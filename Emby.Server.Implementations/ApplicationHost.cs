@@ -1,9 +1,24 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Emby.Common.Implementations.Serialization;
-using Emby.Drawing;
-using Emby.Photos;
 using Emby.Dlna;
 using Emby.Dlna.Main;
 using Emby.Dlna.Ssdp;
+using Emby.Drawing;
+using Emby.Notifications;
+using Emby.Photos;
 using Emby.Server.Implementations.Activity;
 using Emby.Server.Implementations.Archiving;
 using Emby.Server.Implementations.Channels;
@@ -22,7 +37,6 @@ using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Net;
-using Emby.Notifications;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Reflection;
 using Emby.Server.Implementations.ScheduledTasks;
@@ -40,10 +54,10 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Collections;
@@ -76,6 +90,7 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -94,26 +109,11 @@ using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
+using Microsoft.Extensions.Logging;
 using ServiceStack;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using ServiceStack.Text.Jsv;
 using StringExtensions = MediaBrowser.Controller.Extensions.StringExtensions;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
-using MediaBrowser.Controller.Authentication;
-using System.Diagnostics;
-using ServiceStack.Text.Jsv;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations
 {
@@ -1936,7 +1936,7 @@ namespace Emby.Server.Implementations
                     return GetLocalApiUrl(response.ReadToEnd().Trim());
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Logger.LogError(ex, "Error getting WAN Ip address information");
             }

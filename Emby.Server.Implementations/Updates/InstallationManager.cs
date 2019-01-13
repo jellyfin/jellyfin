@@ -12,13 +12,13 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
-using MediaBrowser.Controller.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Updates
 {
