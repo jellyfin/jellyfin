@@ -1,6 +1,6 @@
-﻿using SkiaSharp;
+﻿using System;
 using MediaBrowser.Model.Drawing;
-using System;
+using SkiaSharp;
 
 namespace Emby.Drawing.Skia
 {

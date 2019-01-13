@@ -1,9 +1,9 @@
-using SkiaSharp;
-using MediaBrowser.Common.Configuration;
 using System;
-using System.IO;
-using MediaBrowser.Model.IO;
 using System.Collections.Generic;
+using System.IO;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.IO;
+using SkiaSharp;
 
 namespace Emby.Drawing.Skia
 {

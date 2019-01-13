@@ -1,18 +1,17 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
-using SkiaSharp;
-using System;
+﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Extensions;
-using System.Globalization;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
+using SkiaSharp;
 
 namespace Emby.Drawing.Skia
 {
