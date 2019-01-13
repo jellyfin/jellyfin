@@ -53,7 +53,7 @@ namespace UniversalDetector.Core
 
         public float TypicalPositiveRatio => typicalPositiveRatio;
 
-        // not used            
+        // not used
         protected bool keepEnglishLetter;
 
         public bool KeepEnglishLetter => keepEnglishLetter;
