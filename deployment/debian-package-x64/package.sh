@@ -25,9 +25,7 @@ docker build ../.. -t "$image_name" -f ./Dockerfile --build-arg SOURCEDIR="/jell
 mkdir -p "$package_temporary_dir"
 mkdir -p "$output_dir"
 docker run --rm -v "$package_temporary_dir:/temp" "$image_name" sh -c 'find / -maxdepth 1 -type f -name "jellyfin*" -exec mv {} /temp \;'
-chown -R "$current_user" "$package_temporary_dir"
-if [ $? -ne 0 ]; then
-	# Some platforms need this to chown the file properly. (Platforms with native docker, not just the client)
-    sudo chown -R "$current_user" "$package_temporary_dir"
-fi
+chown -R "$current_user" "$package_temporary_dir" \
+|| sudo chown -R "$current_user" "$package_temporary_dir"
+
 mv "$package_temporary_dir"/* "$output_dir"
