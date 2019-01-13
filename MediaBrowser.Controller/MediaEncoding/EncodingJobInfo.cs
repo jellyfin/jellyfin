@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
@@ -12,13 +11,17 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
+using System.IO;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Controller.Library;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
     // For now, a common base class until the API and MediaEncoding classes are unified
-    public abstract class EncodingJobInfo
+    public class EncodingJobInfo
     {
-        private readonly ILogger _logger;
+        protected readonly IMediaSourceManager MediaSourceManager;
 
         public MediaStream VideoStream { get; set; }
         public VideoType VideoType { get; set; }
@@ -42,6 +45,21 @@ namespace MediaBrowser.Controller.MediaEncoding
         public long? RunTimeTicks { get; set; }
 
         public bool ReadInputAtNativeFramerate { get; set; }
+
+        public string OutputFilePath { get; set; }
+
+        public string MimeType { get; set; }
+        public long? EncodingDurationTicks { get; set; }
+
+        public string GetMimeType(string outputPath, bool enableStreamDefault = true)
+        {
+            if (!string.IsNullOrEmpty(MimeType))
+            {
+                return MimeType;
+            }
+
+            return MimeTypes.GetMimeType(outputPath, enableStreamDefault);
+        }
 
         private TranscodeReason[] _transcodeReasons = null;
         public TranscodeReason[] TranscodeReasons
@@ -266,9 +284,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         public bool IsVideoRequest { get; set; }
         public TranscodingJobType TranscodingType { get; set; }
 
-        public EncodingJobInfo(ILogger logger, IMediaSourceManager unused, TranscodingJobType jobType)
+        public EncodingJobInfo(TranscodingJobType jobType)
         {
-            _logger = logger;
             TranscodingType = jobType;
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             PlayableStreamFileNames = Array.Empty<string>();
@@ -602,6 +619,28 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
+        public string ActualOutputAudioCodec
+        {
+            get
+            {
+                var codec = OutputAudioCodec;
+
+                if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+                {
+                    var stream = AudioStream;
+
+                    if (stream != null)
+                    {
+                        return stream.Codec;
+                    }
+
+                    return null;
+                }
+
+                return codec;
+            }
+        }
+
         public bool? IsTargetInterlaced
         {
             get
@@ -657,6 +696,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
+        public int HlsListSize
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
         private int? GetMediaStreamCount(MediaStreamType type, int limit)
         {
             var count = MediaSource.GetStreamCount(type);
@@ -667,22 +714,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return count;
-        }
-        protected void DisposeIsoMount()
-        {
-            if (IsoMount != null)
-            {
-                try
-                {
-                    IsoMount.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error disposing iso mount");
-                }
-
-                IsoMount = null;
-            }
         }
 
         public IProgress<double> Progress { get; set; }
