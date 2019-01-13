@@ -1,4 +1,4 @@
-﻿using System.Xml.Serialization;
+using System.Xml.Serialization;
 using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dlna

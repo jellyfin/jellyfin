@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Model.Services
+namespace MediaBrowser.Model.Services
 {
     public interface IHttpRequest : IRequest
     {

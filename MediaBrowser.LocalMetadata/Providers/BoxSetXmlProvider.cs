@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Threading;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;

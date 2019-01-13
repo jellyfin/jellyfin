@@ -1,4 +1,4 @@
-﻿
+
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>

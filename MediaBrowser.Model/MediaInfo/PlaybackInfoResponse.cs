@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.MediaInfo

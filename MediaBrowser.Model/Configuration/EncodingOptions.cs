@@ -1,4 +1,4 @@
-﻿
+
 namespace MediaBrowser.Model.Configuration
 {
     public class EncodingOptions

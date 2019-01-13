@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Model.Dlna
+namespace MediaBrowser.Model.Dlna
 {
     /// <summary>
     /// Class VideoOptions.

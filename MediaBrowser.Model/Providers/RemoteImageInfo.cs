@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Providers

@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Model.MediaInfo
+namespace MediaBrowser.Model.MediaInfo
 {
     public class SubtitleFormat
     {

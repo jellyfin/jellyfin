@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.LocalMetadata.Parsers;
