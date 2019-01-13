@@ -1708,7 +1708,8 @@ namespace System.Net
 
 
             IPNetwork[] nnin = Array.FindAll<IPNetwork>(ipnetworks, new Predicate<IPNetwork>(
-                delegate (IPNetwork ipnet) {
+                delegate (IPNetwork ipnet)
+                {
                     return ipnet != null;
                 }
             ));

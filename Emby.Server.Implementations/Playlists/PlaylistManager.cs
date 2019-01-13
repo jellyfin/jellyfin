@@ -1,11 +1,3 @@
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Playlists;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Playlists;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,12 +5,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Extensions;
-using PlaylistsNET;
+using MediaBrowser.Model.Playlists;
+using Microsoft.Extensions.Logging;
 using PlaylistsNET.Content;
 using PlaylistsNET.Models;
-using PlaylistsNET.Utils;
 
 namespace Emby.Server.Implementations.Playlists
 {

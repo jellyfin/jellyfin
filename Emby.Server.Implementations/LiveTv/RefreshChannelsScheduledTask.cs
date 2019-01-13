@@ -1,10 +1,9 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Tasks;
 
 namespace Emby.Server.Implementations.LiveTv

@@ -3,8 +3,8 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using Emby.Server.Implementations.Networking;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Net
 {

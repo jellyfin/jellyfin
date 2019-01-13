@@ -1,21 +1,15 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Server.Implementations.IO;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.System;
-using System.Globalization;
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
-using System.Collections.Generic;
+using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
