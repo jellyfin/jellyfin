@@ -1,17 +1,17 @@
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Reflection;
+using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Localization
 {
@@ -138,7 +138,7 @@ namespace Emby.Server.Implementations.Localization
                 new ParentalRating("FSK-18", 9)
             });
 
-            LoadRatings("ru", new [] {
+            LoadRatings("ru", new[] {
 
                 new ParentalRating("RU-0+", 1),
                 new ParentalRating("RU-6+", 3),

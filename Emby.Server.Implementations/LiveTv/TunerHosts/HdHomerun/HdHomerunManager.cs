@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Controller.LiveTv;
-using System.Net;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {

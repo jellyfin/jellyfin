@@ -9,10 +9,9 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
-using System.Numerics;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Networking
 {

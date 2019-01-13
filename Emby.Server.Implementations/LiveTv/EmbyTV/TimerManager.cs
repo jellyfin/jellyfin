@@ -4,11 +4,11 @@ using System.Globalization;
 using System.Linq;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Events;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {

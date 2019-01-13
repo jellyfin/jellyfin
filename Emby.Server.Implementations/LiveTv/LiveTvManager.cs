@@ -1,10 +1,23 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Emby.Server.Implementations.Library;
+using Emby.Server.Implementations.LiveTv.Listings;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
+using MediaBrowser.Common.Security;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -12,28 +25,15 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.LiveTv;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Common.Security;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
-using Emby.Server.Implementations.LiveTv.Listings;
-using MediaBrowser.Controller.Channels;
-using Emby.Server.Implementations.Library;
-using MediaBrowser.Controller;
-using MediaBrowser.Common.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv
 {
@@ -908,10 +908,10 @@ namespace Emby.Server.Implementations.LiveTv
             }
 
             return new QueryResult<BaseItem>
-                {
-                    Items = programs.ToArray(),
-                    TotalRecordCount = totalCount
-                };
+            {
+                Items = programs.ToArray(),
+                TotalRecordCount = totalCount
+            };
         }
 
         public QueryResult<BaseItemDto> GetRecommendedPrograms(InternalItemsQuery query, DtoOptions options, CancellationToken cancellationToken)
@@ -926,10 +926,10 @@ namespace Emby.Server.Implementations.LiveTv
             var internalResult = GetRecommendedProgramsInternal(query, options, cancellationToken);
 
             return new QueryResult<BaseItemDto>
-                {
-                    Items = _dtoService.GetBaseItemDtos(internalResult.Items, options, query.User),
-                    TotalRecordCount = internalResult.TotalRecordCount
-                };
+            {
+                Items = _dtoService.GetBaseItemDtos(internalResult.Items, options, query.User),
+                TotalRecordCount = internalResult.TotalRecordCount
+            };
         }
 
         private int GetRecommendationScore(LiveTvProgram program, User user, bool factorChannelWatchCount)
@@ -1253,7 +1253,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
 
                 numComplete++;
-                double percent = numComplete / (double) allChannelsList.Count;
+                double percent = numComplete / (double)allChannelsList.Count;
 
                 progress.Report(85 * percent + 15);
             }
@@ -1298,7 +1298,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
 
                 numComplete++;
-                double percent = numComplete / (double) list.Count;
+                double percent = numComplete / (double)list.Count;
 
                 progress.Report(100 * percent);
             }
@@ -1954,7 +1954,7 @@ namespace Emby.Server.Implementations.LiveTv
             ILiveTvService service = null;
             ProgramInfo programInfo = null;
 
-            if(program != null)
+            if (program != null)
             {
                 service = GetService(program);
 
