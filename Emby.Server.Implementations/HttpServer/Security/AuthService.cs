@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
@@ -173,7 +173,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return false;
         }
 
-        private void ValidateRoles(string[] roles, User user)
+        private static void ValidateRoles(string[] roles, User user)
         {
             if (roles.Contains("admin", StringComparer.OrdinalIgnoreCase))
             {
@@ -207,7 +207,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             }
         }
 
-        private AuthenticationInfo GetTokenInfo(IRequest request)
+        private static AuthenticationInfo GetTokenInfo(IRequest request)
         {
             object info;
             request.Items.TryGetValue("OriginalAuthenticationInfo", out info);

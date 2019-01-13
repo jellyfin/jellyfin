@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,13 +28,7 @@ namespace Emby.Server.Implementations.Data
         /// Gets the name of the repository
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get
-            {
-                return "SQLite";
-            }
-        }
+        public string Name => "SQLite";
 
         /// <summary>
         /// Opens the connection to the database
@@ -136,13 +130,7 @@ namespace Emby.Server.Implementations.Data
             return list;
         }
 
-        protected override bool EnableTempStoreMemory
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableTempStoreMemory => true;
 
         /// <summary>
         /// Saves the user data.
@@ -151,15 +139,15 @@ namespace Emby.Server.Implementations.Data
         {
             if (userData == null)
             {
-                throw new ArgumentNullException("userData");
+                throw new ArgumentNullException(nameof(userData));
             }
             if (internalUserId <= 0)
             {
-                throw new ArgumentNullException("internalUserId");
+                throw new ArgumentNullException(nameof(internalUserId));
             }
             if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
 
             PersistUserData(internalUserId, key, userData, cancellationToken);
@@ -169,11 +157,11 @@ namespace Emby.Server.Implementations.Data
         {
             if (userData == null)
             {
-                throw new ArgumentNullException("userData");
+                throw new ArgumentNullException(nameof(userData));
             }
             if (internalUserId <= 0)
             {
-                throw new ArgumentNullException("internalUserId");
+                throw new ArgumentNullException(nameof(internalUserId));
             }
 
             PersistAllUserData(internalUserId, userData, cancellationToken);
@@ -182,7 +170,7 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Persists the user data.
         /// </summary>
-        /// <param name="userId">The user id.</param>
+        /// <param name="internalUserId">The user id.</param>
         /// <param name="key">The key.</param>
         /// <param name="userData">The user data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -203,7 +191,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void SaveUserData(IDatabaseConnection db, long internalUserId, string key, UserItemData userData)
+        private static void SaveUserData(IDatabaseConnection db, long internalUserId, string key, UserItemData userData)
         {
             using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
             {
@@ -280,7 +268,7 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Gets the user data.
         /// </summary>
-        /// <param name="userId">The user id.</param>
+        /// <param name="internalUserId">The user id.</param>
         /// <param name="key">The key.</param>
         /// <returns>Task{UserItemData}.</returns>
         /// <exception cref="System.ArgumentNullException">
@@ -292,11 +280,11 @@ namespace Emby.Server.Implementations.Data
         {
             if (internalUserId <= 0)
             {
-                throw new ArgumentNullException("internalUserId");
+                throw new ArgumentNullException(nameof(internalUserId));
             }
             if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
 
             using (WriteLock.Read())
@@ -323,7 +311,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (keys == null)
             {
-                throw new ArgumentNullException("keys");
+                throw new ArgumentNullException(nameof(keys));
             }
 
             if (keys.Count == 0)
@@ -337,13 +325,13 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Return all user-data associated with the given user
         /// </summary>
-        /// <param name="userId"></param>
+        /// <param name="internalUserId"></param>
         /// <returns></returns>
         public List<UserItemData> GetAllUserData(long internalUserId)
         {
             if (internalUserId <= 0)
             {
-                throw new ArgumentNullException("internalUserId");
+                throw new ArgumentNullException(nameof(internalUserId));
             }
 
             var list = new List<UserItemData>();

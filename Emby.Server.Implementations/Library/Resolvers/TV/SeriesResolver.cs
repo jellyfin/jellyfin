@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
@@ -38,13 +38,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
-        public override ResolverPriority Priority
-        {
-            get
-            {
-                return ResolverPriority.Second;
-            }
-        }
+        public override ResolverPriority Priority => ResolverPriority.Second;
 
         /// <summary>
         /// Resolves the specified args.
@@ -195,7 +189,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             var extension = Path.GetExtension(path);
@@ -236,7 +230,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="path">The path.</param>
-        private void SetProviderIdFromPath(Series item, string path)
+        private static void SetProviderIdFromPath(Series item, string path)
         {
             var justName = Path.GetFileName(path);
 

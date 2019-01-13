@@ -187,7 +187,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (child == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(child));
             }
 
             _virtualChildren.Add(child);
@@ -203,7 +203,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (id.Equals(Guid.Empty))
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             foreach (var child in _virtualChildren)

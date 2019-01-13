@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -59,7 +59,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="path">The path.</param>
         /// <param name="format">The format.</param>
         /// <returns><c>true</c> if the specified path is HTML; otherwise, <c>false</c>.</returns>
-        private bool IsFormat(string path, string format)
+        private static bool IsFormat(string path, string format)
         {
             return Path.GetExtension(path).EndsWith(format, StringComparison.OrdinalIgnoreCase);
         }

@@ -32,7 +32,7 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <value>The alternate versions.</value>
         public List<VideoFileInfo> AlternateVersions { get; set; }
-        
+
         public VideoInfo()
         {
             Files = new List<VideoFileInfo>();

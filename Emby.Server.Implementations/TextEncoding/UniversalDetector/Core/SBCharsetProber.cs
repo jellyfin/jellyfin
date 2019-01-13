@@ -20,7 +20,7 @@
  *
  * Contributor(s):
  *          Shy Shalom <shooshX@gmail.com>
- *          Rudi Pettazzi <rudi.pettazzi@gmail.com> (C# port) 
+ *          Rudi Pettazzi <rudi.pettazzi@gmail.com> (C# port)
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -51,11 +51,11 @@ namespace UniversalDetector.Core
         private const int NUMBER_OF_SEQ_CAT = 4;
         private const int POSITIVE_CAT = NUMBER_OF_SEQ_CAT-1;
         private const int NEGATIVE_CAT = 0;
-        
+
         protected SequenceModel model;
-        
-        // true if we need to reverse every pair in the model lookup        
-        bool reversed; 
+
+        // true if we need to reverse every pair in the model lookup
+        bool reversed;
 
         // char order of last character
         byte lastOrder;
@@ -63,38 +63,38 @@ namespace UniversalDetector.Core
         int totalSeqs;
         int totalChar;
         int[] seqCounters = new int[NUMBER_OF_SEQ_CAT];
-        
+
         // characters that fall in our sampling range
         int freqChar;
-  
+
         // Optional auxiliary prober for name decision. created and destroyed by the GroupProber
-        CharsetProber nameProber; 
-                    
-        public SingleByteCharSetProber(SequenceModel model) 
+        CharsetProber nameProber;
+
+        public SingleByteCharSetProber(SequenceModel model)
             : this(model, false, null)
         {
-            
+
         }
-    
-        public SingleByteCharSetProber(SequenceModel model, bool reversed, 
+
+        public SingleByteCharSetProber(SequenceModel model, bool reversed,
                                        CharsetProber nameProber)
         {
             this.model = model;
             this.reversed = reversed;
             this.nameProber = nameProber;
-            Reset();            
+            Reset();
         }
 
         public override ProbingState HandleData(byte[] buf, int offset, int len)
         {
             int max = offset + len;
-            
+
             for (int i = offset; i < max; i++) {
                 byte order = model.GetOrder(buf[i]);
 
                 if (order < SYMBOL_CAT_ORDER)
                     totalChar++;
-                    
+
                 if (order < SAMPLE_SIZE) {
                     freqChar++;
 
@@ -120,7 +120,7 @@ namespace UniversalDetector.Core
             }
             return state;
         }
-                
+
         public override void DumpStatus()
         {
             //Console.WriteLine("  SBCS: {0} [{1}]", GetConfidence(), GetCharsetName());
@@ -146,9 +146,9 @@ namespace UniversalDetector.Core
                     r = 0.99f;
                 return r;
             }
-            return 0.01f;            
+            return 0.01f;
         }
-        
+
         public override void Reset()
         {
             state = ProbingState.Detecting;
@@ -159,12 +159,12 @@ namespace UniversalDetector.Core
             totalChar = 0;
             freqChar = 0;
         }
-        
-        public override string GetCharsetName() 
+
+        public override string GetCharsetName()
         {
             return (nameProber == null) ? model.CharsetName
                                         : nameProber.GetCharsetName();
         }
-        
+
     }
 }

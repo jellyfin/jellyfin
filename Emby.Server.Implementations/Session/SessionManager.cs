@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -148,10 +148,7 @@ namespace Emby.Server.Implementations.Session
         /// Gets all connections.
         /// </summary>
         /// <value>All connections.</value>
-        public IEnumerable<SessionInfo> Sessions
-        {
-            get { return _activeConnections.Values.OrderByDescending(c => c.LastActivityDate).ToList(); }
-        }
+        public IEnumerable<SessionInfo> Sessions => _activeConnections.Values.OrderByDescending(c => c.LastActivityDate).ToList();
 
         private void OnSessionStarted(SessionInfo info)
         {
@@ -218,15 +215,15 @@ namespace Emby.Server.Implementations.Session
 
             if (string.IsNullOrEmpty(appName))
             {
-                throw new ArgumentNullException("appName");
+                throw new ArgumentNullException(nameof(appName));
             }
             if (string.IsNullOrEmpty(appVersion))
             {
-                throw new ArgumentNullException("appVersion");
+                throw new ArgumentNullException(nameof(appVersion));
             }
             if (string.IsNullOrEmpty(deviceId))
             {
-                throw new ArgumentNullException("deviceId");
+                throw new ArgumentNullException(nameof(deviceId));
             }
 
             var activityDate = DateTime.UtcNow;
@@ -381,7 +378,7 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
-        private string GetSessionKey(string appName, string deviceId)
+        private static string GetSessionKey(string appName, string deviceId)
         {
             return appName + deviceId;
         }
@@ -402,7 +399,7 @@ namespace Emby.Server.Implementations.Session
 
             if (string.IsNullOrEmpty(deviceId))
             {
-                throw new ArgumentNullException("deviceId");
+                throw new ArgumentNullException(nameof(deviceId));
             }
             var key = GetSessionKey(appName, deviceId);
 
@@ -582,7 +579,7 @@ namespace Emby.Server.Implementations.Session
 
             if (info == null)
             {
-                throw new ArgumentNullException("info");
+                throw new ArgumentNullException(nameof(info));
             }
 
             var session = GetSession(info.SessionId);
@@ -631,7 +628,7 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Called when [playback start].
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
+        /// <param name="user">The user object.</param>
         /// <param name="item">The item.</param>
         private void OnPlaybackStart(User user, BaseItem item)
         {
@@ -669,7 +666,7 @@ namespace Emby.Server.Implementations.Session
 
             if (info == null)
             {
-                throw new ArgumentNullException("info");
+                throw new ArgumentNullException(nameof(info));
             }
 
             var session = GetSession(info.SessionId);
@@ -742,7 +739,7 @@ namespace Emby.Server.Implementations.Session
 
         }
 
-        private bool UpdatePlaybackSettings(User user, PlaybackProgressInfo info, UserItemData data)
+        private static bool UpdatePlaybackSettings(User user, PlaybackProgressInfo info, UserItemData data)
         {
             var changed = false;
 
@@ -796,12 +793,12 @@ namespace Emby.Server.Implementations.Session
 
             if (info == null)
             {
-                throw new ArgumentNullException("info");
+                throw new ArgumentNullException(nameof(info));
             }
 
             if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
             {
-                throw new ArgumentOutOfRangeException("positionTicks");
+                throw new ArgumentOutOfRangeException(nameof(info),"The PlaybackStopInfo's PositionTicks was negative.");
             }
 
             var session = GetSession(info.SessionId);
@@ -993,7 +990,7 @@ namespace Emby.Server.Implementations.Session
             return SendMessageToSession(session, "GeneralCommand", command, cancellationToken);
         }
 
-        private async Task SendMessageToSession<T>(SessionInfo session, string name, T data, CancellationToken cancellationToken)
+        private static async Task SendMessageToSession<T>(SessionInfo session, string name, T data, CancellationToken cancellationToken)
         {
             var controllers = session.SessionControllers.ToArray();
             var messageId = Guid.NewGuid().ToString("N");
@@ -1192,11 +1189,11 @@ namespace Emby.Server.Implementations.Session
         {
             if (session == null)
             {
-                throw new ArgumentNullException("session");
+                throw new ArgumentNullException(nameof(session));
             }
             if (controllingSession == null)
             {
-                throw new ArgumentNullException("controllingSession");
+                throw new ArgumentNullException(nameof(controllingSession));
             }
         }
 
@@ -1490,7 +1487,7 @@ namespace Emby.Server.Implementations.Session
 
             if (string.IsNullOrEmpty(accessToken))
             {
-                throw new ArgumentNullException("accessToken");
+                throw new ArgumentNullException(nameof(accessToken));
             }
 
             var existing = _authRepo.Get(new AuthenticationInfoQuery
@@ -1611,7 +1608,7 @@ namespace Emby.Server.Implementations.Session
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
 
             var dtoOptions = _itemInfoDtoOptions;
@@ -1684,7 +1681,7 @@ namespace Emby.Server.Implementations.Session
         {
             if (string.IsNullOrEmpty(itemId))
             {
-                throw new ArgumentNullException("itemId");
+                throw new ArgumentNullException(nameof(itemId));
             }
 
             //var item = _libraryManager.GetItemById(new Guid(itemId));
@@ -1726,7 +1723,7 @@ namespace Emby.Server.Implementations.Session
         {
             if (info == null)
             {
-                throw new ArgumentNullException("info");
+                throw new ArgumentNullException(nameof(info));
             }
 
             var user = info.UserId.Equals(Guid.Empty)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -254,27 +254,15 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (requiresRefresh)
             {
-                await _libraryManager.ValidateMediaLibrary(new SimpleProgress<Double>(), CancellationToken.None);
+                await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
             }
         }
 
-        public string Name
-        {
-            get { return "Emby"; }
-        }
+        public string Name => "Emby";
 
-        public string DataPath
-        {
-            get { return Path.Combine(_config.CommonApplicationPaths.DataPath, "livetv"); }
-        }
+        public string DataPath => Path.Combine(_config.CommonApplicationPaths.DataPath, "livetv");
 
-        private string DefaultRecordingPath
-        {
-            get
-            {
-                return Path.Combine(DataPath, "recordings");
-            }
-        }
+        private string DefaultRecordingPath => Path.Combine(DataPath, "recordings");
 
         private string RecordingPath
         {
@@ -288,10 +276,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        public string HomePageUrl
-        {
-            get { return "https://github.com/jellyfin/jellyfin"; }
-        }
+        public string HomePageUrl => "https://github.com/jellyfin/jellyfin";
 
         public async Task RefreshSeriesTimers(CancellationToken cancellationToken, IProgress<double> progress)
         {
@@ -491,7 +476,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return GetEpgChannelFromTunerChannel(info, tunerChannel, epgChannels);
         }
 
-        private string GetMappedChannel(string channelId, NameValuePair[] mappings)
+        private static string GetMappedChannel(string channelId, NameValuePair[] mappings)
         {
             foreach (NameValuePair mapping in mappings)
             {
@@ -850,7 +835,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return Task.CompletedTask;
         }
 
-        private void UpdateExistingTimerWithNewMetadata(TimerInfo existingTimer, TimerInfo updatedTimer)
+        private static void UpdateExistingTimerWithNewMetadata(TimerInfo existingTimer, TimerInfo updatedTimer)
         {
             // Update the program info but retain the status
             existingTimer.ChannelId = updatedTimer.ChannelId;
@@ -980,7 +965,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (string.IsNullOrWhiteSpace(tunerHostId))
             {
-                throw new ArgumentNullException("tunerHostId");
+                throw new ArgumentNullException(nameof(tunerHostId));
             }
 
             return info.EnabledTuners.Contains(tunerHostId, StringComparer.OrdinalIgnoreCase);
@@ -1055,7 +1040,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             _logger.LogInformation("Streaming Channel " + channelId);
 
-            var result = string.IsNullOrEmpty(streamId) ? 
+            var result = string.IsNullOrEmpty(streamId) ?
                 null :
                 currentLiveStreams.FirstOrDefault(i => string.Equals(i.OriginalStreamId, streamId, StringComparison.OrdinalIgnoreCase));
 
@@ -1114,7 +1099,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             if (string.IsNullOrWhiteSpace(channelId))
             {
-                throw new ArgumentNullException("channelId");
+                throw new ArgumentNullException(nameof(channelId));
             }
 
             foreach (var hostInstance in _liveTvManager.TunerHosts)
@@ -1342,7 +1327,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             if (timer == null)
             {
-                throw new ArgumentNullException("timer");
+                throw new ArgumentNullException(nameof(timer));
             }
 
             LiveTvProgram programInfo = null;
@@ -1795,7 +1780,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private string GetPostProcessArguments(string path, string arguments)
+        private static string GetPostProcessArguments(string path, string arguments)
         {
             return arguments.Replace("{path}", path, StringComparison.OrdinalIgnoreCase);
         }
@@ -2501,7 +2486,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             if (seriesTimer == null)
             {
-                throw new ArgumentNullException("seriesTimer");
+                throw new ArgumentNullException(nameof(seriesTimer));
             }
 
             var query = new InternalItemsQuery

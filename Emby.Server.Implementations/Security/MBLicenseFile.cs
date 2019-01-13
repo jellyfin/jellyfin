@@ -19,7 +19,7 @@ namespace Emby.Server.Implementations.Security
 
         public string RegKey
         {
-            get { return _regKey; }
+            get => _regKey;
             set
             {
                 _updateRecords.Clear();
@@ -27,13 +27,7 @@ namespace Emby.Server.Implementations.Security
             }
         }
 
-        private string Filename
-        {
-            get
-            {
-                return Path.Combine(_appPaths.ConfigurationDirectoryPath, "mb.lic");
-            }
-        }
+        private string Filename => Path.Combine(_appPaths.ConfigurationDirectoryPath, "mb.lic");
 
         private readonly ConcurrentDictionary<Guid, FeatureRegInfo> _updateRecords = new ConcurrentDictionary<Guid, FeatureRegInfo>();
         private readonly object _fileLock = new object();
@@ -171,7 +165,7 @@ namespace Emby.Server.Implementations.Security
             //build our array
             var lines = new List<string>
             {
-                RegKey, 
+                RegKey,
 
                 // Legacy key
                 string.Empty

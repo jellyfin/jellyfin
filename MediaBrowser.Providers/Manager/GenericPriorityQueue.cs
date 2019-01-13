@@ -83,7 +83,7 @@ namespace Priority_Queue
 #if DEBUG
             if (node == null)
             {
-                throw new ArgumentNullException("node");
+                throw new ArgumentNullException(nameof(node));
             }
             if (node.QueueIndex < 0 || node.QueueIndex >= _nodes.Length)
             {
@@ -106,7 +106,7 @@ namespace Priority_Queue
 #if DEBUG
             if (node == null)
             {
-                throw new ArgumentNullException("node");
+                throw new ArgumentNullException(nameof(node));
             }
             if (_numNodes >= _nodes.Length - 1)
             {
@@ -303,7 +303,7 @@ namespace Priority_Queue
         }
 
         /// <summary>
-        /// This method must be called on a node every time its priority changes while it is in the queue.  
+        /// This method must be called on a node every time its priority changes while it is in the queue.
         /// <b>Forgetting to call this method will result in a corrupted queue!</b>
         /// Calling this method on a node not in the queue results in undefined behavior
         /// O(log n)
@@ -314,7 +314,7 @@ namespace Priority_Queue
 #if DEBUG
             if (node == null)
             {
-                throw new ArgumentNullException("node");
+                throw new ArgumentNullException(nameof(node));
             }
             if (!Contains(node))
             {
@@ -344,7 +344,7 @@ namespace Priority_Queue
         }
 
         /// <summary>
-        /// Removes a node from the queue.  The node does not need to be the head of the queue.  
+        /// Removes a node from the queue.  The node does not need to be the head of the queue.
         /// If the node is not in the queue, the result is undefined.  If unsure, check Contains() first
         /// O(log n)
         /// </summary>
@@ -353,7 +353,7 @@ namespace Priority_Queue
 #if DEBUG
             if (node == null)
             {
-                throw new ArgumentNullException("node");
+                throw new ArgumentNullException(nameof(node));
             }
             if (!Contains(node))
             {

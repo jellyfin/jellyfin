@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -144,7 +144,7 @@ namespace Emby.Server.Implementations.Devices
                 HasUser = true
 
             }).Items;
-            
+
             // TODO: DeviceQuery doesn't seem to be used from client. Not even Swagger.
             if (query.SupportsSync.HasValue)
             {
@@ -360,10 +360,7 @@ namespace Emby.Server.Implementations.Devices
             return path;
         }
 
-        private string DefaultCameraUploadsPath
-        {
-            get { return Path.Combine(_config.CommonApplicationPaths.DataPath, "camerauploads"); }
-        }
+        private string DefaultCameraUploadsPath => Path.Combine(_config.CommonApplicationPaths.DataPath, "camerauploads");
 
         public bool CanAccessDevice(User user, string deviceId)
         {
@@ -373,7 +370,7 @@ namespace Emby.Server.Implementations.Devices
             }
             if (string.IsNullOrEmpty(deviceId))
             {
-                throw new ArgumentNullException("deviceId");
+                throw new ArgumentNullException(nameof(deviceId));
             }
 
             if (!CanAccessDevice(user.Policy, deviceId))
@@ -389,7 +386,7 @@ namespace Emby.Server.Implementations.Devices
             return true;
         }
 
-        private bool CanAccessDevice(UserPolicy policy, string id)
+        private static bool CanAccessDevice(UserPolicy policy, string id)
         {
             if (policy.EnableAllDevices)
             {

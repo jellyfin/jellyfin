@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Net
 
         object GetResult(IRequest requestContext, byte[] content, string contentType, IDictionary<string, string> responseHeaders = null);
         object GetResult(IRequest requestContext, Stream content, string contentType, IDictionary<string, string> responseHeaders = null);
-		object GetResult(IRequest requestContext, string content, string contentType, IDictionary<string, string> responseHeaders = null);
+        object GetResult(IRequest requestContext, string content, string contentType, IDictionary<string, string> responseHeaders = null);
 
         object GetRedirectResult(string url);
 
@@ -43,10 +43,10 @@ namespace MediaBrowser.Controller.Net
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
-        Task<object> GetStaticResult(IRequest requestContext, 
-            Guid cacheKey, 
+        Task<object> GetStaticResult(IRequest requestContext,
+            Guid cacheKey,
             DateTime? lastDateModified,
-            TimeSpan? cacheDuration, 
+            TimeSpan? cacheDuration,
             string contentType, Func<Task<Stream>> factoryFn,
             IDictionary<string, string> responseHeaders = null,
             bool isHeadRequest = false);
@@ -74,7 +74,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="requestContext">The request context.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.Object.</returns>
-        Task<object> GetStaticFileResult(IRequest requestContext, 
+        Task<object> GetStaticFileResult(IRequest requestContext,
             StaticFileResultOptions options);
     }
 }

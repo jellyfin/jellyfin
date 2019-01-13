@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using Microsoft.Extensions.Logging;
@@ -89,13 +89,7 @@ namespace Emby.Server.Implementations.HttpServer
                 {typeof (ArgumentException), 400}
             };
 
-        protected ILogger Logger
-        {
-            get
-            {
-                return _logger;
-            }
-        }
+        protected ILogger Logger => _logger;
 
         public object CreateInstance(Type type)
         {
@@ -103,7 +97,7 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <summary>
-        /// Applies the request filters. Returns whether or not the request has been handled 
+        /// Applies the request filters. Returns whether or not the request has been handled
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
@@ -190,10 +184,9 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private Exception GetActualException(Exception ex)
+        private static Exception GetActualException(Exception ex)
         {
-            var agg = ex as AggregateException;
-            if (agg != null)
+            if (ex is AggregateException agg)
             {
                 var inner = agg.InnerException;
                 if (inner != null)
@@ -346,7 +339,7 @@ namespace Emby.Server.Implementations.HttpServer
             return false;
         }
 
-        private string GetExtension(string url)
+        private static string GetExtension(string url)
         {
             var parts = url.Split(new[] { '?' }, 2);
 
@@ -379,18 +372,18 @@ namespace Emby.Server.Implementations.HttpServer
             string pagePathWithoutQueryString = url.Split(new[] { '?' }, StringSplitOptions.RemoveEmptyEntries)[0];
 
             return newQueryString.Count > 0
-                ? String.Format("{0}?{1}", pagePathWithoutQueryString, newQueryString)
+                ? string.Format("{0}?{1}", pagePathWithoutQueryString, newQueryString)
                 : pagePathWithoutQueryString;
         }
 
-        private string GetUrlToLog(string url)
+        private static string GetUrlToLog(string url)
         {
             url = RemoveQueryStringByKey(url, "api_key");
 
             return url;
         }
 
-        private string NormalizeConfiguredLocalAddress(string address)
+        private static string NormalizeConfiguredLocalAddress(string address)
         {
             var index = address.Trim('/').IndexOf('/');
 
@@ -727,7 +720,7 @@ namespace Emby.Server.Implementations.HttpServer
             return null;
         }
 
-        private Task Write(IResponse response, string text)
+        private static Task Write(IResponse response, string text)
         {
             var bOutput = Encoding.UTF8.GetBytes(text);
             response.SetContentLength(bOutput.Length);
@@ -853,7 +846,9 @@ namespace Emby.Server.Implementations.HttpServer
             return _jsonSerializer.DeserializeFromStreamAsync(stream, type);
         }
 
-        private string NormalizeEmbyRoutePath(string path)
+        //TODO Add Jellyfin Route Path Normalizer
+
+        private static string NormalizeEmbyRoutePath(string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {
@@ -863,7 +858,7 @@ namespace Emby.Server.Implementations.HttpServer
             return "emby/" + path;
         }
 
-        private string NormalizeMediaBrowserRoutePath(string path)
+        private static string NormalizeMediaBrowserRoutePath(string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {
@@ -873,7 +868,7 @@ namespace Emby.Server.Implementations.HttpServer
             return "mediabrowser/" + path;
         }
 
-        private string DoubleNormalizeEmbyRoutePath(string path)
+        private static string DoubleNormalizeEmbyRoutePath(string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {

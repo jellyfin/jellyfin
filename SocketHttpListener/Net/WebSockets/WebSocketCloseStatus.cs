@@ -22,9 +22,9 @@ namespace SocketHttpListener.Net.WebSockets
         // 0 - 999 Status codes in the range 0-999 are not used.
         // 1000 - 1999 Status codes in the range 1000-1999 are reserved for definition by this protocol.
         // 2000 - 2999 Status codes in the range 2000-2999 are reserved for use by extensions.
-        // 3000 - 3999 Status codes in the range 3000-3999 MAY be used by libraries and frameworks. The 
-        //             interpretation of these codes is undefined by this protocol. End applications MUST 
-        //             NOT use status codes in this range.       
+        // 3000 - 3999 Status codes in the range 3000-3999 MAY be used by libraries and frameworks. The
+        //             interpretation of these codes is undefined by this protocol. End applications MUST
+        //             NOT use status codes in this range.
         // 4000 - 4999 Status codes in the range 4000-4999 MAY be used by application code. The interpretation
         //             of these codes is undefined by this protocol.
     }

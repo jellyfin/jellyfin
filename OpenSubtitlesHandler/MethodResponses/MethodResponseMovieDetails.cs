@@ -36,7 +36,7 @@ namespace OpenSubtitlesHandler
         private string title;
         private string year;
         private string coverLink;
-       
+
         private string duration;
         private string tagline;
         private string plot;

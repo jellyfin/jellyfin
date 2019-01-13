@@ -29,7 +29,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 while ((line = reader.ReadLine()) != null)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     if (string.IsNullOrWhiteSpace(line))
                     {
                         continue;
@@ -49,7 +49,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     RemoteNativeFormatting(subEvent);
 
                     subEvent.Text = subEvent.Text.Replace("\\n", ParserValues.NewLine, StringComparison.OrdinalIgnoreCase);
-                    
+
                     subEvent.Text = Regex.Replace(subEvent.Text, @"\{(\\[\w]+\(?([\w\d]+,?)+\)?)+\}", string.Empty, RegexOptions.IgnoreCase);
 
                     trackEvents.Add(subEvent);

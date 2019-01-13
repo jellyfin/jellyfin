@@ -69,7 +69,7 @@ namespace MediaBrowser.Api.UserLibrary
             var dtoOptions = GetDtoOptions(AuthorizationContext, request);
 
             var item = GetGenre(request.Name, LibraryManager, dtoOptions);
-            
+
             if (!request.UserId.Equals(Guid.Empty))
             {
                 var user = UserManager.GetUserById(request.UserId);

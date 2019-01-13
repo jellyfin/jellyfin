@@ -155,7 +155,7 @@ namespace MediaBrowser.Api
         {
             if (jsonSerializer == null)
             {
-                throw new ArgumentNullException("jsonSerializer");
+                throw new ArgumentNullException(nameof(jsonSerializer));
             }
 
             _appHost = appHost;
@@ -225,7 +225,7 @@ namespace MediaBrowser.Api
                         {
                             var pkg = packages.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.guid) && new Guid(plugin.Id).Equals(new Guid(i.guid)));
                             return pkg != null && pkg.enableInAppStore;
-                  
+
                         })
                         .ToArray();
                 }

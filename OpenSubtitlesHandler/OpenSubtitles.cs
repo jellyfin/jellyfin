@@ -132,17 +132,17 @@ namespace OpenSubtitlesHandler
                         {
                             switch (MEMBER.Name)
                             {
-                                case "token": 
-                                    re.Token = TOKEN = MEMBER.Data.Data.ToString(); 
-                                    OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); 
+                                case "token":
+                                    re.Token = TOKEN = MEMBER.Data.Data.ToString();
+                                    OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString());
                                     break;
                                 case "seconds":
                                     re.Seconds = double.Parse(MEMBER.Data.Data.ToString(), CultureInfo.InvariantCulture);
-                                    OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); 
+                                    OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString());
                                     break;
-                                case "status": 
-                                    re.Status = MEMBER.Data.Data.ToString(); 
-                                    OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); 
+                                case "status":
+                                    re.Status = MEMBER.Data.Data.ToString();
+                                    OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString());
                                     break;
                             }
                         }
@@ -157,7 +157,7 @@ namespace OpenSubtitlesHandler
             }
             return new MethodResponseError("Fail", "Log in failed !");
         }
-        
+
         /// <summary>
         /// Log out from the server. Call this to terminate the session.
         /// </summary>
@@ -203,7 +203,7 @@ namespace OpenSubtitlesHandler
             return new MethodResponseError("Fail", "Log out failed !");
         }
         /// <summary>
-        /// keep-alive user's session, verify token/session validity 
+        /// keep-alive user's session, verify token/session validity
         /// </summary>
         /// <returns>Status of the call operation</returns>
         public static IMethodResponse NoOperation()
@@ -270,7 +270,7 @@ namespace OpenSubtitlesHandler
         }
         /*Search and download*/
         /// <summary>
-        /// Search for subtitle files matching your videos using either video file hashes or IMDb IDs. 
+        /// Search for subtitle files matching your videos using either video file hashes or IMDb IDs.
         /// </summary>
         /// <param name="parameters">List of search subtitle parameters which each one represents 'struct parameter' as descriped at http://trac.opensubtitles.org/projects/opensubtitles/wiki/XmlRpcSearchSubtitles </param>
         /// <returns>Status of the call operation. If the call success the response will be 'MethodResponseSubtitleSearch'</returns>
@@ -284,12 +284,12 @@ namespace OpenSubtitlesHandler
             if (parameters == null)
             {
                 OSHConsole.UpdateLine("No subtitle search parameter passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle search parameter passed"); ;
+                return new MethodResponseError("Fail", "No subtitle search parameter passed");
             }
             if (parameters.Length == 0)
             {
                 OSHConsole.UpdateLine("No subtitle search parameter passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle search parameter passed"); ;
+                return new MethodResponseError("Fail", "No subtitle search parameter passed");
             }
             // Method call ..
             List<IXmlRpcValue> parms = new List<IXmlRpcValue>();
@@ -349,7 +349,7 @@ namespace OpenSubtitlesHandler
 
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -461,12 +461,12 @@ namespace OpenSubtitlesHandler
             if (parameters == null)
             {
                 OSHConsole.UpdateLine("No subtitle search parameter passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle search parameter passed"); ;
+                return new MethodResponseError("Fail", "No subtitle search parameter passed");
             }
             if (parameters.Length == 0)
             {
                 OSHConsole.UpdateLine("No subtitle search parameter passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle search parameter passed"); ;
+                return new MethodResponseError("Fail", "No subtitle search parameter passed");
             }
             // Method call ..
             List<IXmlRpcValue> parms = new List<IXmlRpcValue>();
@@ -529,7 +529,7 @@ namespace OpenSubtitlesHandler
 
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -630,7 +630,7 @@ namespace OpenSubtitlesHandler
             }
             return new MethodResponseError("Fail", "Search Subtitles call failed !");
         }
-        
+
         /// <summary>
         /// Download subtitle file(s)
         /// </summary>
@@ -646,12 +646,12 @@ namespace OpenSubtitlesHandler
             if (subIDS == null)
             {
                 OSHConsole.UpdateLine("No subtitle id passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle id passed"); ;
+                return new MethodResponseError("Fail", "No subtitle id passed");
             }
             if (subIDS.Length == 0)
             {
                 OSHConsole.UpdateLine("No subtitle id passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle id passed"); ;
+                return new MethodResponseError("Fail", "No subtitle id passed");
             }
             // Method call ..
             List<IXmlRpcValue> parms = new List<IXmlRpcValue>();
@@ -672,7 +672,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -753,12 +753,12 @@ namespace OpenSubtitlesHandler
             if (subIDS == null)
             {
                 OSHConsole.UpdateLine("No subtitle id passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle id passed"); ;
+                return new MethodResponseError("Fail", "No subtitle id passed");
             }
             if (subIDS.Length == 0)
             {
                 OSHConsole.UpdateLine("No subtitle id passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle id passed"); ;
+                return new MethodResponseError("Fail", "No subtitle id passed");
             }
             // Method call ..
             List<IXmlRpcValue> parms = new List<IXmlRpcValue>();
@@ -782,7 +782,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(httpResponse);
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -852,7 +852,7 @@ namespace OpenSubtitlesHandler
             }
             return new MethodResponseError("Fail", "DownloadSubtitles call failed !");
         }
-        
+
         /// <summary>
         /// Returns comments for subtitles
         /// </summary>
@@ -868,12 +868,12 @@ namespace OpenSubtitlesHandler
             if (subIDS == null)
             {
                 OSHConsole.UpdateLine("No subtitle id passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle id passed"); ;
+                return new MethodResponseError("Fail", "No subtitle id passed");
             }
             if (subIDS.Length == 0)
             {
                 OSHConsole.UpdateLine("No subtitle id passed !!", DebugCode.Error);
-                return new MethodResponseError("Fail", "No subtitle id passed"); ;
+                return new MethodResponseError("Fail", "No subtitle id passed");
             }
             // Method call ..
             List<IXmlRpcValue> parms = new List<IXmlRpcValue>();
@@ -890,7 +890,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -996,7 +996,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -1029,7 +1029,7 @@ namespace OpenSubtitlesHandler
         }
         /*Movies*/
         /// <summary>
-        /// Search for a movie (using movie title) 
+        /// Search for a movie (using movie title)
         /// </summary>
         /// <param name="query">Movie title user is searching for, this is cleaned-up a bit (remove dvdrip, etc.) before searching </param>
         /// <returns>Status of the call operation. If the call success the response will be 'MethodResponseSubtitleSearch'</returns>
@@ -1053,7 +1053,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -1120,7 +1120,7 @@ namespace OpenSubtitlesHandler
             return new MethodResponseError("Fail", "SearchMoviesOnIMDB call failed !");
         }
         /// <summary>
-        /// Get movie details for given IMDb ID 
+        /// Get movie details for given IMDb ID
         /// </summary>
         /// <param name="imdbid">http://www.imdb.com/</param>
         /// <returns>Status of the call operation. If the call success the response will be 'MethodResponseMovieDetails'</returns>
@@ -1144,7 +1144,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -1288,7 +1288,7 @@ namespace OpenSubtitlesHandler
             return new MethodResponseError("Fail", "GetIMDBMovieDetails call failed !");
         }
         /// <summary>
-        /// Allows registered users to insert new movies (not stored in IMDb) to the database. 
+        /// Allows registered users to insert new movies (not stored in IMDb) to the database.
         /// </summary>
         /// <param name="movieName">Movie title </param>
         /// <param name="movieyear">Release year </param>
@@ -1316,7 +1316,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -1390,7 +1390,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -1458,7 +1458,7 @@ namespace OpenSubtitlesHandler
         }
         /*Reporting and rating*/
         /// <summary>
-        /// Get basic server information and statistics 
+        /// Get basic server information and statistics
         /// </summary>
         /// <returns>Status of the call operation. If the call success the response will be 'MethodResponseServerInfo'</returns>
         public static IMethodResponse ServerInfo()
@@ -1479,7 +1479,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -1609,7 +1609,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -1647,9 +1647,9 @@ namespace OpenSubtitlesHandler
             return new MethodResponseError("Fail", "ReportWrongMovieHash call failed !");
         }
         /// <summary>
-        /// This method is needed to report bad movie hash for imdbid. This method should be used for correcting wrong entries, 
-        /// when using CheckMovieHash2. Pass moviehash and moviebytesize for file, and imdbid as new, corrected one IMDBID 
-        /// (id number without trailing zeroes). After some reports, moviehash will be linked to new imdbid. 
+        /// This method is needed to report bad movie hash for imdbid. This method should be used for correcting wrong entries,
+        /// when using CheckMovieHash2. Pass moviehash and moviebytesize for file, and imdbid as new, corrected one IMDBID
+        /// (id number without trailing zeroes). After some reports, moviehash will be linked to new imdbid.
         /// </summary>
         /// <param name="moviehash">The movie hash</param>
         /// <param name="moviebytesize">The movie size in bytes</param>
@@ -1677,7 +1677,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -1709,7 +1709,7 @@ namespace OpenSubtitlesHandler
             return new MethodResponseError("Fail", "ReportWrongImdbMovie call failed !");
         }
         /// <summary>
-        /// Rate subtitles 
+        /// Rate subtitles
         /// </summary>
         /// <param name="idsubtitle">Id of subtitle (NOT subtitle file) user wants to rate </param>
         /// <param name="score">Subtitle rating, must be in interval 1 (worst) to 10 (best). </param>
@@ -1735,7 +1735,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -1780,7 +1780,7 @@ namespace OpenSubtitlesHandler
             return new MethodResponseError("Fail", "SubtitlesVote call failed !");
         }
         /// <summary>
-        /// Add comment to a subtitle 
+        /// Add comment to a subtitle
         /// </summary>
         /// <param name="idsubtitle">Subtitle identifier (BEWARE! this is not the ID of subtitle file but of the whole subtitle (a subtitle can contain multiple subtitle files))</param>
         /// <param name="comment">User's comment</param>
@@ -1808,7 +1808,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -1868,7 +1868,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -1933,7 +1933,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -1993,7 +1993,7 @@ namespace OpenSubtitlesHandler
             return new MethodResponseError("Fail", "GetSubLanguages call failed !");
         }
         /// <summary>
-        /// Detect language for given strings 
+        /// Detect language for given strings
         /// </summary>
         /// <param name="texts">Array of strings you want language detected for</param>
         /// <param name="encodingUsed">The encoding that will be used to get buffer of given strings. (this is not OS official parameter)</param>
@@ -2029,7 +2029,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -2102,7 +2102,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -2161,7 +2161,7 @@ namespace OpenSubtitlesHandler
             return new MethodResponseError("Fail", "GetAvailableTranslations call failed !");
         }
         /// <summary>
-        /// Get a translation for given program and language 
+        /// Get a translation for given program and language
         /// </summary>
         /// <param name="iso639">language ​ISO639-1 2-letter code </param>
         /// <param name="format">available formats: [gnugettext compatible: mo, po] and [additional: txt, xml]</param>
@@ -2188,7 +2188,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -2221,7 +2221,7 @@ namespace OpenSubtitlesHandler
             return new MethodResponseError("Fail", "GetTranslation call failed !");
         }
         /// <summary>
-        /// Check for the latest version of given application 
+        /// Check for the latest version of given application
         /// </summary>
         /// <param name="program">name of the program/client application you want to check. (Currently supported values: subdownloader, oscar)</param>
         /// <returns>Status of the call operation. If the call success the response will be 'MethodResponseAutoUpdate'</returns>
@@ -2244,7 +2244,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -2303,7 +2303,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -2357,7 +2357,7 @@ namespace OpenSubtitlesHandler
             return new MethodResponseError("Fail", "CheckMovieHash call failed !");
         }
         /// <summary>
-        /// Check if video file hashes are already stored in the database. This method returns matching !MovieImdbID, MovieName, MovieYear, SeriesSeason, SeriesEpisode, 
+        /// Check if video file hashes are already stored in the database. This method returns matching !MovieImdbID, MovieName, MovieYear, SeriesSeason, SeriesEpisode,
         /// MovieKind if available for each $moviehash, always sorted by SeenCount DESC.
         /// </summary>
         /// <param name="hashes">Array of video file hashes</param>
@@ -2380,7 +2380,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -2444,7 +2444,7 @@ namespace OpenSubtitlesHandler
             return new MethodResponseError("Fail", "CheckMovieHash2 call failed !");
         }
         /// <summary>
-        /// Check if given subtitle files are already stored in the database 
+        /// Check if given subtitle files are already stored in the database
         /// </summary>
         /// <param name="hashes">Array of subtitle file hashes (MD5 hashes of subtitle file contents) </param>
         /// <returns>Status of the call operation. If the call success the response will be 'MethodResponseCheckSubHash'</returns>
@@ -2466,7 +2466,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -2511,7 +2511,7 @@ namespace OpenSubtitlesHandler
         }
         /*Upload*/
         /// <summary>
-        /// Try to upload subtitles, perform pre-upload checking (i.e. check if subtitles already exist on server) 
+        /// Try to upload subtitles, perform pre-upload checking (i.e. check if subtitles already exist on server)
         /// </summary>
         /// <param name="subs">The subtitle parameters collection to try to upload</param>
         /// <returns>Status of the call operation. If the call success the response will be 'MethodResponseTryUploadSubtitles'</returns>
@@ -2551,7 +2551,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {
@@ -2643,7 +2643,7 @@ namespace OpenSubtitlesHandler
             return new MethodResponseError("Fail", "TryUploadSubtitles call failed !");
         }
         /// <summary>
-        /// Upload given subtitles to OSDb server 
+        /// Upload given subtitles to OSDb server
         /// </summary>
         /// <param name="info">The pamaters of upload method</param>
         /// <returns>Status of the call operation. If the call success the response will be 'MethodResponseUploadSubtitles'</returns>
@@ -2664,7 +2664,7 @@ namespace OpenSubtitlesHandler
             XmlRpcStructMember member = new XmlRpcStructMember("baseinfo", null);
             XmlRpcValueStruct memberStruct = new XmlRpcValueStruct(new List<XmlRpcStructMember>());
             memberStruct.Members.Add(new XmlRpcStructMember("idmovieimdb", new XmlRpcValueBasic(info.idmovieimdb)));
-            memberStruct.Members.Add(new XmlRpcStructMember("sublanguageid", new XmlRpcValueBasic(info.sublanguageid))); 
+            memberStruct.Members.Add(new XmlRpcStructMember("sublanguageid", new XmlRpcValueBasic(info.sublanguageid)));
             memberStruct.Members.Add(new XmlRpcStructMember("moviereleasename", new XmlRpcValueBasic(info.moviereleasename)));
             memberStruct.Members.Add(new XmlRpcStructMember("movieaka", new XmlRpcValueBasic(info.movieaka)));
             memberStruct.Members.Add(new XmlRpcStructMember("subauthorcomment", new XmlRpcValueBasic(info.subauthorcomment)));
@@ -2704,7 +2704,7 @@ namespace OpenSubtitlesHandler
             string response = Utilities.GetStreamString(Utilities.SendRequest(XmlRpcGenerator.Generate(call), XML_PRC_USERAGENT));
             if (!response.Contains("ERROR:"))
             {
-                // No error occur, get and decode the response. 
+                // No error occur, get and decode the response.
                 XmlRpcMethodCall[] calls = XmlRpcGenerator.DecodeMethodResponse(response);
                 if (calls.Length > 0)
                 {

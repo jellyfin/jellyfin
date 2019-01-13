@@ -9,7 +9,7 @@ namespace Emby.XmlTv.Entities
 
         public override string ToString()
         {
-            return String.Format("{0} - ({1})", Name, Type);
+            return string.Format("{0} - ({1})", Name, Type);
         }
     }
 }

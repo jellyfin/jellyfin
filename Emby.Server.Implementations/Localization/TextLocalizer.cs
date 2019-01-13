@@ -12,13 +12,13 @@ namespace Emby.Server.Implementations.Localization
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             var chars = Normalize(text, NormalizationForm.FormD)
                 .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark);
 
-            return Normalize(String.Concat(chars), NormalizationForm.FormC);
+            return Normalize(string.Concat(chars), NormalizationForm.FormC);
         }
 
         private static string Normalize(string text, NormalizationForm form, bool stripStringOnFailure = true)
@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.Localization
                 catch (ArgumentException)
                 {
                     // will throw if input contains invalid unicode chars
-                    // https://mnaoumov.wordpress.com/2014/06/14/stripping-invalid-characters-from-utf-16-strings/   
+                    // https://mnaoumov.wordpress.com/2014/06/14/stripping-invalid-characters-from-utf-16-strings/
                     text = StripInvalidUnicodeCharacters(text);
                     return Normalize(text, form, false);
                 }

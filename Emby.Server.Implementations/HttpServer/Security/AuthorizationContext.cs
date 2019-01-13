@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Connect;
+using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using System;
@@ -115,7 +115,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                     {
                         info.Device = tokenInfo.DeviceName;
                     }
-                    
+
                     else if (!string.Equals(info.Device, tokenInfo.DeviceName, StringComparison.OrdinalIgnoreCase))
                     {
                         if (allowTokenInfoUpdate)
@@ -227,7 +227,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return result;
         }
 
-        private string NormalizeValue(string value)
+        private static string NormalizeValue(string value)
         {
             if (string.IsNullOrEmpty(value))
             {

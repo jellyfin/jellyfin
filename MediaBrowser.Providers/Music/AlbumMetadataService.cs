@@ -79,7 +79,7 @@ namespace MediaBrowser.Providers.Music
         private ItemUpdateType SetAlbumArtistFromSongs(MusicAlbum item, IEnumerable<Audio> songs)
         {
             var updateType = ItemUpdateType.None;
-            
+
             var artists = songs
                 .SelectMany(i => i.AlbumArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)

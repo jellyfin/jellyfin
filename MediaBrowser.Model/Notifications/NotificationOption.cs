@@ -21,7 +21,7 @@ namespace MediaBrowser.Model.Notifications
         /// </summary>
         /// <value><c>true</c> if enabled; otherwise, <c>false</c>.</value>
         public bool Enabled { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the disabled services.
         /// </summary>

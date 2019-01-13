@@ -3,11 +3,11 @@
 # For emacs, vim, np++ and other editors, see here: https://github.com/editorconfig
 ############################### 
 # Core EditorConfig Options   # 
-############################### 
+###############################
+root = true
 # All files 
 [*] 
 indent_style = space 
-root = true
 indent_size = 4
 charset = utf-8
 trim_trailing_whitespace = true

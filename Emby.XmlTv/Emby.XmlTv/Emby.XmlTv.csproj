@@ -6,4 +6,8 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\SharedVersion.cs" Link="SharedVersion.cs" />
+  </ItemGroup>
+
 </Project>

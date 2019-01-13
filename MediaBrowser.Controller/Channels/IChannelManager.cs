@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
@@ -46,14 +46,12 @@ namespace MediaBrowser.Controller.Channels
         /// Gets the channels internal.
         /// </summary>
         /// <param name="query">The query.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         QueryResult<Channel> GetChannelsInternal(ChannelQuery query);
 
         /// <summary>
         /// Gets the channels.
         /// </summary>
         /// <param name="query">The query.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         QueryResult<BaseItemDto> GetChannels(ChannelQuery query);
 
         /// <summary>

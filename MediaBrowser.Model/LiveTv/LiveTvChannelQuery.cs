@@ -37,7 +37,7 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>true</c> if [enable favorite sorting]; otherwise, <c>false</c>.</value>
         public bool EnableFavoriteSorting { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the user identifier.
         /// </summary>

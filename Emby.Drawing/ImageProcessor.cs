@@ -80,7 +80,7 @@ namespace Emby.Drawing
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
                 _imageEncoder = value;
@@ -103,7 +103,7 @@ namespace Emby.Drawing
                     "crw",
 
                     // Remove until supported
-                    //"nef", 
+                    //"nef",
                     "orf",
                     "pef",
                     "arw",
@@ -179,7 +179,7 @@ namespace Emby.Drawing
         {
             if (options == null)
             {
-                throw new ArgumentNullException("options");
+                throw new ArgumentNullException(nameof(options));
             }
 
             var originalImage = options.Image;
@@ -491,7 +491,7 @@ namespace Emby.Drawing
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             try
@@ -691,12 +691,12 @@ namespace Emby.Drawing
         {
             if (string.IsNullOrEmpty(originalImagePath))
             {
-                throw new ArgumentNullException("originalImagePath");
+                throw new ArgumentNullException(nameof(originalImagePath));
             }
 
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
 
             var treatmentRequiresTransparency = false;
@@ -779,16 +779,16 @@ namespace Emby.Drawing
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
             if (string.IsNullOrEmpty(uniqueName))
             {
-                throw new ArgumentNullException("uniqueName");
+                throw new ArgumentNullException(nameof(uniqueName));
             }
 
             if (string.IsNullOrEmpty(fileExtension))
             {
-                throw new ArgumentNullException("fileExtension");
+                throw new ArgumentNullException(nameof(fileExtension));
             }
 
             var filename = uniqueName.GetMD5() + fileExtension;
@@ -811,11 +811,11 @@ namespace Emby.Drawing
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
             if (string.IsNullOrEmpty(filename))
             {
-                throw new ArgumentNullException("filename");
+                throw new ArgumentNullException(nameof(filename));
             }
 
             var prefix = filename.Substring(0, 1);

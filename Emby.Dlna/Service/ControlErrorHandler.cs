@@ -10,7 +10,7 @@ namespace Emby.Dlna.Service
     public class ControlErrorHandler
     {
         private const string NS_SOAPENV = "http://schemas.xmlsoap.org/soap/envelope/";
-        
+
         public ControlResponse GetResponse(Exception ex)
         {
             var settings = new XmlWriterSettings

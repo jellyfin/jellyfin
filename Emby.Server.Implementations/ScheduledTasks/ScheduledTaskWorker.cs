@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -78,23 +78,23 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             if (scheduledTask == null)
             {
-                throw new ArgumentNullException("scheduledTask");
+                throw new ArgumentNullException(nameof(scheduledTask));
             }
             if (applicationPaths == null)
             {
-                throw new ArgumentNullException("applicationPaths");
+                throw new ArgumentNullException(nameof(applicationPaths));
             }
             if (taskManager == null)
             {
-                throw new ArgumentNullException("taskManager");
+                throw new ArgumentNullException(nameof(taskManager));
             }
             if (jsonSerializer == null)
             {
-                throw new ArgumentNullException("jsonSerializer");
+                throw new ArgumentNullException(nameof(jsonSerializer));
             }
             if (logger == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException(nameof(logger));
             }
 
             ScheduledTask = scheduledTask;
@@ -171,28 +171,19 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return ScheduledTask.Name; }
-        }
+        public string Name => ScheduledTask.Name;
 
         /// <summary>
         /// Gets the description.
         /// </summary>
         /// <value>The description.</value>
-        public string Description
-        {
-            get { return ScheduledTask.Description; }
-        }
+        public string Description => ScheduledTask.Description;
 
         /// <summary>
         /// Gets the category.
         /// </summary>
         /// <value>The category.</value>
-        public string Category
-        {
-            get { return ScheduledTask.Category; }
-        }
+        public string Category => ScheduledTask.Category;
 
         /// <summary>
         /// Gets the current cancellation token
@@ -241,15 +232,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <value>The triggers.</value>
         private Tuple<TaskTriggerInfo, ITaskTrigger>[] InternalTriggers
         {
-            get
-            {
-                return _triggers;
-            }
+            get => _triggers;
             set
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
                 // Cleanup current triggers
@@ -280,7 +268,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
                 // This null check is not great, but is needed to handle bad user input, or user mucking with the config file incorrectly
@@ -730,7 +718,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 if (!info.TimeOfDayTicks.HasValue)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentException("Info did not contain a TimeOfDayTicks.",nameof(info));
                 }
 
                 return new DailyTrigger
@@ -744,12 +732,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 if (!info.TimeOfDayTicks.HasValue)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentException("Info did not contain a TimeOfDayTicks.", nameof(info));
                 }
 
                 if (!info.DayOfWeek.HasValue)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentException("Info did not contain a DayOfWeek.", nameof(info));
                 }
 
                 return new WeeklyTrigger
@@ -764,7 +752,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 if (!info.IntervalTicks.HasValue)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentException("Info did not contain a IntervalTicks.", nameof(info));
                 }
 
                 return new IntervalTrigger
@@ -778,7 +766,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 if (!info.SystemEvent.HasValue)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentException("Info did not contain a SystemEvent.", nameof(info));
                 }
 
                 return new SystemEventTrigger(_systemEvents)

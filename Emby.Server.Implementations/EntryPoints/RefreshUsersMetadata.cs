@@ -30,10 +30,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         public string Description => "Refresh user infos";
 
-        public string Category
-        {
-            get { return "Library"; }
-        }
+        public string Category => "Library";
 
         public bool IsHidden => true;
 

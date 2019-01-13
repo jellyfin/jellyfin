@@ -250,7 +250,7 @@ namespace XmlRpcHandler
             }
             return reader.ReadContentAsString();
         }
-        
+
         private static IXmlRpcValue ReadValue(XmlReader xmlReader, bool skipRead = false)
         {
             while (skipRead || xmlReader.Read())
