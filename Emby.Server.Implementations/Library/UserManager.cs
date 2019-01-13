@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -44,7 +44,7 @@ namespace Emby.Server.Implementations.Library
         /// Gets the users.
         /// </summary>
         /// <value>The users.</value>
-        public IEnumerable<User> Users { get { return _users; } }
+        public IEnumerable<User> Users => _users;
 
         private User[] _users;
 
@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (id.Equals(Guid.Empty))
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             return Users.FirstOrDefault(u => u.Id == id);
@@ -183,7 +183,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             return Users.FirstOrDefault(u => string.Equals(u.Name, name, StringComparison.OrdinalIgnoreCase));
@@ -222,7 +222,7 @@ namespace Emby.Server.Implementations.Library
             return true;
         }
 
-        private bool IsValidUsernameCharacter(char i)
+        private static bool IsValidUsernameCharacter(char i)
         {
             return !char.Equals(i, '<') && !char.Equals(i, '>');
         }
@@ -251,7 +251,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(username))
             {
-                throw new ArgumentNullException("username");
+                throw new ArgumentNullException(nameof(username));
             }
 
             var user = Users
@@ -344,7 +344,7 @@ namespace Emby.Server.Implementations.Library
             return success ? user : null;
         }
 
-        private string GetAuthenticationProviderId(IAuthenticationProvider provider)
+        private static string GetAuthenticationProviderId(IAuthenticationProvider provider)
         {
             return provider.GetType().FullName;
         }
@@ -526,7 +526,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             var hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user).Result;
@@ -625,12 +625,12 @@ namespace Emby.Server.Implementations.Library
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             if (string.IsNullOrEmpty(newName))
             {
-                throw new ArgumentNullException("newName");
+                throw new ArgumentNullException(nameof(newName));
             }
 
             if (Users.Any(u => u.Id != user.Id && u.Name.Equals(newName, StringComparison.OrdinalIgnoreCase)))
@@ -658,7 +658,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             if (user.Id.Equals(Guid.Empty) || !Users.Any(u => u.Id.Equals(user.Id)))
@@ -689,7 +689,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             if (!IsValidUsername(name))
@@ -737,7 +737,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             var allUsers = Users.ToList();
@@ -804,7 +804,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             if (user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest)
@@ -823,7 +823,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             if (newPassword != null)
@@ -833,7 +833,7 @@ namespace Emby.Server.Implementations.Library
 
             if (string.IsNullOrWhiteSpace(newPasswordHash))
             {
-                throw new ArgumentNullException("newPasswordHash");
+                throw new ArgumentNullException(nameof(newPasswordHash));
             }
 
             user.EasyPassword = newPasswordHash;
@@ -848,7 +848,7 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>User.</returns>
-        private User InstantiateNewUser(string name)
+        private static User InstantiateNewUser(string name)
         {
             return new User
             {
@@ -861,10 +861,7 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
-        private string PasswordResetFile
-        {
-            get { return Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "passwordreset.txt"); }
-        }
+        private string PasswordResetFile => Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "passwordreset.txt");
 
         private string _lastPin;
         private PasswordPinCreationResult _lastPasswordPinCreationResult;
@@ -1047,7 +1044,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private UserPolicy GetDefaultPolicy(User user)
+        private static UserPolicy GetDefaultPolicy(User user)
         {
             return new UserPolicy
             {
@@ -1109,12 +1106,12 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private string GetPolicyFilePath(User user)
+        private static string GetPolicyFilePath(User user)
         {
             return Path.Combine(user.ConfigurationDirectoryPath, "policy.xml");
         }
 
-        private string GetConfigurationFilePath(User user)
+        private static string GetConfigurationFilePath(User user)
         {
             return Path.Combine(user.ConfigurationDirectoryPath, "config.xml");
         }

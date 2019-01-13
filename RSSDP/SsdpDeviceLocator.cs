@@ -39,7 +39,7 @@ namespace Rssdp.Infrastructure
         /// </summary>
         public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer, ITimerFactory timerFactory)
         {
-            if (communicationsServer == null) throw new ArgumentNullException("communicationsServer");
+            if (communicationsServer == null) throw new ArgumentNullException(nameof(communicationsServer));
 
             _CommunicationsServer = communicationsServer;
             _timerFactory = timerFactory;
@@ -164,8 +164,8 @@ namespace Rssdp.Infrastructure
 
         private Task SearchAsync(string searchTarget, TimeSpan searchWaitTime, CancellationToken cancellationToken)
         {
-            if (searchTarget == null) throw new ArgumentNullException("searchTarget");
-            if (searchTarget.Length == 0) throw new ArgumentException("searchTarget cannot be an empty string.", "searchTarget");
+            if (searchTarget == null) throw new ArgumentNullException(nameof(searchTarget));
+            if (searchTarget.Length == 0) throw new ArgumentException("searchTarget cannot be an empty string.", nameof(searchTarget));
             if (searchWaitTime.TotalSeconds < 0) throw new ArgumentException("searchWaitTime must be a positive time.");
             if (searchWaitTime.TotalSeconds > 0 && searchWaitTime.TotalSeconds <= 1) throw new ArgumentException("searchWaitTime must be zero (if you are not using the result and relying entirely in the events), or greater than one second.");
 

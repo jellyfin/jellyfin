@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
@@ -227,7 +227,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException("PortMapper");
+                throw new ObjectDisposedException(GetType().Name);
             }
 
             // On some systems the device discovered event seems to fire repeatedly

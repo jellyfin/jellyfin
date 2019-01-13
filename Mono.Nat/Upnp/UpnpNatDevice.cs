@@ -58,7 +58,7 @@ namespace Mono.Nat.Upnp
         {
             if (localAddress == null)
             {
-                throw new ArgumentNullException("localAddress");
+                throw new ArgumentNullException(nameof(localAddress));
             }
 
             this.LastSeen = DateTime.Now;

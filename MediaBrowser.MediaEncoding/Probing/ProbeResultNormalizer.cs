@@ -1301,7 +1301,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             // OR -> COMMENT. SUBTITLE: DESCRIPTION
             // e.g. -> 4/13. The Doctor's Wife: Science fiction drama. When he follows a Time Lord distress signal, the Doctor puts Amy, Rory and his beloved TARDIS in grave danger. Also in HD. [AD,S]
             // e.g. -> CBeebies Bedtime Hour. The Mystery: Animated adventures of two friends who live on an island in the middle of the big city. Some of Abney and Teal's favourite objects are missing. [S]
-            if (String.IsNullOrWhiteSpace(subTitle) && !String.IsNullOrWhiteSpace(description) && description.Substring(0, Math.Min(description.Length, MaxSubtitleDescriptionExtractionLength)).Contains(":")) // Check within the Subtitle size limit, otherwise from description it can get too long creating an invalid filename
+            if (string.IsNullOrWhiteSpace(subTitle) && !string.IsNullOrWhiteSpace(description) && description.Substring(0, Math.Min(description.Length, MaxSubtitleDescriptionExtractionLength)).Contains(":")) // Check within the Subtitle size limit, otherwise from description it can get too long creating an invalid filename
             {
                 string[] parts = description.Split(':');
                 if (parts.Length > 0)
@@ -1315,7 +1315,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                             video.IndexNumber = int.Parse(numbers[0].Replace(".", "").Split('/')[0]);
                             int totalEpisodesInSeason = int.Parse(numbers[0].Replace(".", "").Split('/')[1]);
 
-                            description = String.Join(" ", numbers, 1, numbers.Length - 1).Trim(); // Skip the first, concatenate the rest, clean up spaces and save it
+                            description = string.Join(" ", numbers, 1, numbers.Length - 1).Trim(); // Skip the first, concatenate the rest, clean up spaces and save it
                         }
                         else
                             throw new Exception(); // Switch to default parsing
@@ -1323,7 +1323,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     catch // Default parsing
                     {
                         if (subtitle.Contains(".")) // skip the comment, keep the subtitle
-                            description = String.Join(".", subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
+                            description = string.Join(".", subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
                         else
                             description = subtitle.Trim(); // Clean up whitespaces and save it
                     }

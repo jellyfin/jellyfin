@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.TextEncoding
             return Encoding.ASCII;
         }
 
-        private Encoding GetInitialEncoding(byte[] buffer, int count)
+        private static Encoding GetInitialEncoding(byte[] buffer, int count)
         {
             if (count >= 3)
             {
@@ -137,6 +137,7 @@ namespace Emby.Server.Implementations.TextEncoding
             }
             catch (NLangDetectException ex)
             {
+                _logger.LogDebug(ex, "LanguageDetector.DetectLanguage threw a NLangDetectException.");
             }
 
             try
@@ -145,6 +146,7 @@ namespace Emby.Server.Implementations.TextEncoding
             }
             catch (NLangDetectException ex)
             {
+                _logger.LogDebug(ex, "LanguageDetector.DetectLanguage threw a NLangDetectException.");
             }
 
             try
@@ -153,6 +155,7 @@ namespace Emby.Server.Implementations.TextEncoding
             }
             catch (NLangDetectException ex)
             {
+                _logger.LogDebug(ex, "LanguageDetector.DetectLanguage threw a NLangDetectException.");
             }
 
             return null;
@@ -162,7 +165,7 @@ namespace Emby.Server.Implementations.TextEncoding
         {
             if (string.IsNullOrWhiteSpace(charset))
             {
-                throw new ArgumentNullException("charset");
+                throw new ArgumentNullException(nameof(charset));
             }
 
             _logger.LogDebug("Getting encoding object for character set: {0}", charset);
@@ -187,7 +190,7 @@ namespace Emby.Server.Implementations.TextEncoding
             return GetEncodingFromCharset(charset);
         }
 
-        private string GetFileCharacterSetFromLanguage(string language)
+        private static string GetFileCharacterSetFromLanguage(string language)
         {
             // https://developer.xamarin.com/api/type/System.Text.Encoding/
 
@@ -245,7 +248,7 @@ namespace Emby.Server.Implementations.TextEncoding
             }
         }
 
-        private string DetectCharset(byte[] bytes, int index, int count, string language)
+        private static string DetectCharset(byte[] bytes, int index, int count, string language)
         {
             var detector = new CharsetDetector();
             detector.Feed(bytes, index, count);

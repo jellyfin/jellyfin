@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +28,7 @@ namespace Rssdp
         /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="discoveredDevice"/> parameter is null.</exception>
         public DeviceUnavailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool expired)
         {
-            if (discoveredDevice == null) throw new ArgumentNullException("discoveredDevice");
+            if (discoveredDevice == null) throw new ArgumentNullException(nameof(discoveredDevice));
 
             _DiscoveredDevice = discoveredDevice;
             _Expired = expired;

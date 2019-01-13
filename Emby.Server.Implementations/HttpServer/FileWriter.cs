@@ -38,10 +38,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// Gets the options.
         /// </summary>
         /// <value>The options.</value>
-        public IDictionary<string, string> Headers
-        {
-            get { return _options; }
-        }
+        public IDictionary<string, string> Headers => _options;
 
         public string Path { get; set; }
 
@@ -49,7 +46,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (string.IsNullOrEmpty(contentType))
             {
-                throw new ArgumentNullException("contentType");
+                throw new ArgumentNullException(nameof(contentType));
             }
 
             Path = path;
@@ -203,8 +200,8 @@ namespace Emby.Server.Implementations.HttpServer
 
         public HttpStatusCode StatusCode
         {
-            get { return (HttpStatusCode)Status; }
-            set { Status = (int)value; }
+            get => (HttpStatusCode)Status;
+            set => Status = (int)value;
         }
 
         public string StatusDescription { get; set; }

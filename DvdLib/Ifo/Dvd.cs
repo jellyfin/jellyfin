@@ -81,7 +81,7 @@ namespace DvdLib.Ifo
 
         private void ReadVTS(ushort vtsNum, List<FileSystemMetadata> allFiles)
         {
-            var filename = String.Format("VTS_{0:00}_0.IFO", vtsNum);
+            var filename = string.Format("VTS_{0:00}_0.IFO", vtsNum);
 
             var vtsPath = allFiles.FirstOrDefault(i => string.Equals(i.Name, filename, StringComparison.OrdinalIgnoreCase)) ??
                 allFiles.FirstOrDefault(i => string.Equals(i.Name, Path.ChangeExtension(filename, ".bup"), StringComparison.OrdinalIgnoreCase));

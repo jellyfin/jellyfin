@@ -14,7 +14,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (queries == null)
             {
-                throw new ArgumentNullException("queries");
+                throw new ArgumentNullException(nameof(queries));
             }
 
             connection.RunInTransaction(conn =>
@@ -134,7 +134,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (obj == null)
             {
-                throw new ArgumentNullException("obj");
+                throw new ArgumentNullException(nameof(obj));
             }
 
             using (var stream = new MemoryStream())

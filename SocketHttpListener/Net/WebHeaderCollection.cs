@@ -93,10 +93,10 @@ namespace SocketHttpListener.Net
         public void Add(string header)
         {
             if (header == null)
-                throw new ArgumentNullException("header");
+                throw new ArgumentNullException(nameof(header));
             int pos = header.IndexOf(':');
             if (pos == -1)
-                throw new ArgumentException("no colon found", "header");
+                throw new ArgumentException("no colon found", nameof(header));
 
             this.Add(header.Substring(0, pos), header.Substring(pos + 1));
         }
@@ -104,7 +104,7 @@ namespace SocketHttpListener.Net
         public override void Add(string name, string value)
         {
             if (name == null)
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
 
             this.AddWithoutValidate(name, value);
         }
@@ -112,13 +112,13 @@ namespace SocketHttpListener.Net
         protected void AddWithoutValidate(string headerName, string headerValue)
         {
             if (!IsHeaderName(headerName))
-                throw new ArgumentException("invalid header name: " + headerName, "headerName");
+                throw new ArgumentException("invalid header name: " + headerName, nameof(headerName));
             if (headerValue == null)
-                headerValue = String.Empty;
+                headerValue = string.Empty;
             else
                 headerValue = headerValue.Trim();
             if (!IsHeaderValue(headerValue))
-                throw new ArgumentException("invalid header value: " + headerValue, "headerValue");
+                throw new ArgumentException("invalid header value: " + headerValue, nameof(headerValue));
 
             AddValue(headerName, headerValue);
         }
@@ -131,7 +131,7 @@ namespace SocketHttpListener.Net
         internal List<string> GetValues_internal(string header, bool split)
         {
             if (header == null)
-                throw new ArgumentNullException("header");
+                throw new ArgumentNullException(nameof(header));
 
             var values = base.GetValues(header);
             if (values == null || values.Count == 0)
@@ -205,10 +205,10 @@ namespace SocketHttpListener.Net
         public static bool IsRestricted(string headerName, bool response)
         {
             if (headerName == null)
-                throw new ArgumentNullException("headerName");
+                throw new ArgumentNullException(nameof(headerName));
 
             if (headerName.Length == 0)
-                throw new ArgumentException("empty string", "headerName");
+                throw new ArgumentException("empty string", nameof(headerName));
 
             if (!IsHeaderName(headerName))
                 throw new ArgumentException("Invalid character in header");
@@ -224,11 +224,11 @@ namespace SocketHttpListener.Net
         public override void Set(string name, string value)
         {
             if (name == null)
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             if (!IsHeaderName(name))
                 throw new ArgumentException("invalid header name");
             if (value == null)
-                value = String.Empty;
+                value = string.Empty;
             else
                 value = value.Trim();
             if (!IsHeaderValue(value))
@@ -288,7 +288,7 @@ namespace SocketHttpListener.Net
         {
             int pos = header.IndexOf(':');
             if (pos == -1)
-                throw new ArgumentException("no colon found", "header");
+                throw new ArgumentException("no colon found", nameof(header));
 
             SetInternal(header.Substring(0, pos), header.Substring(pos + 1));
         }
@@ -296,7 +296,7 @@ namespace SocketHttpListener.Net
         internal void SetInternal(string name, string value)
         {
             if (value == null)
-                value = String.Empty;
+                value = string.Empty;
             else
                 value = value.Trim();
             if (!IsHeaderValue(value))

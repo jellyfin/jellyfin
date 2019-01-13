@@ -202,7 +202,7 @@ namespace Emby.Server.Implementations.Activity
             return name;
         }
 
-        private string GetPlaybackNotificationType(string mediaType)
+        private static string GetPlaybackNotificationType(string mediaType)
         {
             if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
             {
@@ -220,7 +220,7 @@ namespace Emby.Server.Implementations.Activity
             return null;
         }
 
-        private string GetPlaybackStoppedNotificationType(string mediaType)
+        private static string GetPlaybackStoppedNotificationType(string mediaType)
         {
             if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
             {
@@ -577,8 +577,8 @@ namespace Emby.Server.Implementations.Activity
         /// <param name="description">The name of this item (singular form)</param>
         private static string CreateValueString(int value, string description)
         {
-            return String.Format("{0:#,##0} {1}",
-                value, value == 1 ? description : String.Format("{0}s", description));
+            return string.Format("{0:#,##0} {1}",
+                value, value == 1 ? description : string.Format("{0}s", description));
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
@@ -30,10 +30,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
-        public override ResolverPriority Priority
-        {
-            get { return ResolverPriority.Fourth; }
-        }
+        public override ResolverPriority Priority => ResolverPriority.Fourth;
 
         public MultiItemResolverResult ResolveMultiple(Folder parent,
             List<FileSystemMetadata> files,
@@ -264,12 +261,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 result.Extras.Any(i => ContainsFile(i, file));
         }
 
-        private bool ContainsFile(AudioBookFileInfo result, FileSystemMetadata file)
+        private static bool ContainsFile(AudioBookFileInfo result, FileSystemMetadata file)
         {
             return string.Equals(result.Path, file.FullName, StringComparison.OrdinalIgnoreCase);
         }
 
-        private bool IsIgnored(string filename)
+        private static bool IsIgnored(string filename)
         {
             return false;
         }

@@ -138,7 +138,7 @@ namespace Jellyfin.SocketSharp
             if (v.Length > 20)
                 v = v.Substring(0, 16) + "...\"";
 
-            string msg = String.Format("A potentially dangerous Request.{0} value was " +
+            string msg = string.Format("A potentially dangerous Request.{0} value was " +
                             "detected from the client ({1}={2}).", name, key, v);
 
             throw new Exception(msg);
@@ -328,13 +328,13 @@ namespace Jellyfin.SocketSharp
                 public override int Read(byte[] buffer, int dest_offset, int count)
                 {
                     if (buffer == null)
-                        throw new ArgumentNullException("buffer");
+                        throw new ArgumentNullException(nameof(buffer));
 
                     if (dest_offset < 0)
-                        throw new ArgumentOutOfRangeException("dest_offset", "< 0");
+                        throw new ArgumentOutOfRangeException(nameof(dest_offset), "< 0");
 
                     if (count < 0)
-                        throw new ArgumentOutOfRangeException("count", "< 0");
+                        throw new ArgumentOutOfRangeException(nameof(count), "< 0");
 
                     int len = buffer.Length;
                     if (dest_offset > len)

@@ -14,7 +14,7 @@ namespace Emby.XmlTv.Entities
         /// The literal name of the rating system
         /// </summary>
         /// <example>MPAA</example>
-        public String System { get; set; }
+        public string System { get; set; }
 
         /// <summary>
         /// Describes the rating using the system specificed
@@ -25,12 +25,12 @@ namespace Emby.XmlTv.Entities
         public override string ToString()
         {
             var builder = new StringBuilder();
-            if (!String.IsNullOrEmpty(Value))
+            if (!string.IsNullOrEmpty(Value))
             {
                 builder.Append(Value);
             }
 
-            if (!String.IsNullOrEmpty(System))
+            if (!string.IsNullOrEmpty(System))
             {
                 builder.AppendFormat(" ({0})", System);
             }

@@ -192,7 +192,7 @@ namespace MediaBrowser.Api.Library
         {
             if (appPaths == null)
             {
-                throw new ArgumentNullException("appPaths");
+                throw new ArgumentNullException(nameof(appPaths));
             }
 
             _appPaths = appPaths;
@@ -244,12 +244,12 @@ namespace MediaBrowser.Api.Library
         {
             if (string.IsNullOrWhiteSpace(request.Name))
             {
-                throw new ArgumentNullException("request");
+                throw new ArgumentNullException(nameof(request));
             }
 
             if (string.IsNullOrWhiteSpace(request.NewName))
             {
-                throw new ArgumentNullException("request");
+                throw new ArgumentNullException(nameof(request));
             }
 
             var rootFolderPath = _appPaths.DefaultUserViewsPath;
@@ -322,7 +322,7 @@ namespace MediaBrowser.Api.Library
         {
             if (string.IsNullOrWhiteSpace(request.Name))
             {
-                throw new ArgumentNullException("request");
+                throw new ArgumentNullException(nameof(request));
             }
 
             _libraryMonitor.Stop();
@@ -370,7 +370,7 @@ namespace MediaBrowser.Api.Library
         {
             if (string.IsNullOrWhiteSpace(request.Name))
             {
-                throw new ArgumentNullException("request");
+                throw new ArgumentNullException(nameof(request));
             }
 
             _libraryManager.UpdateMediaPath(request.Name, request.PathInfo);
@@ -384,7 +384,7 @@ namespace MediaBrowser.Api.Library
         {
             if (string.IsNullOrWhiteSpace(request.Name))
             {
-                throw new ArgumentNullException("request");
+                throw new ArgumentNullException(nameof(request));
             }
 
             _libraryMonitor.Stop();

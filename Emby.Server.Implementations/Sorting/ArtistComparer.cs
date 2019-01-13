@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.Sorting
         /// </summary>
         /// <param name="x">The x.</param>
         /// <returns>System.String.</returns>
-        private string GetValue(BaseItem x)
+        private static string GetValue(BaseItem x)
         {
             var audio = x as Audio;
 
@@ -43,9 +43,6 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return ItemSortBy.Artist; }
-        }
+        public string Name => ItemSortBy.Artist;
     }
 }

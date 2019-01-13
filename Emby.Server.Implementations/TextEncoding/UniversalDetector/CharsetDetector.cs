@@ -100,14 +100,10 @@ namespace UniversalDetector
             this.confidence = 0.0f;
             base.Reset();
         }
+        
+        public string Charset => charset;
 
-        public string Charset {
-            get { return charset; }
-        }
-
-        public float Confidence {
-            get { return confidence; }
-        }
+        public float Confidence => confidence;
 
         protected override void Report(string charset, float confidence)
         {

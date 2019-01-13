@@ -101,7 +101,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         {
             if (taskManager == null)
             {
-                throw new ArgumentNullException("taskManager");
+                throw new ArgumentNullException(nameof(taskManager));
             }
 
             TaskManager = taskManager;

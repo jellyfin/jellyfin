@@ -62,35 +62,20 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return "Scan media library"; }
-        }
+        public string Name => "Scan media library";
 
         /// <summary>
         /// Gets the description.
         /// </summary>
         /// <value>The description.</value>
-        public string Description
-        {
-            get { return "Scans your media library and refreshes metatata based on configuration."; }
-        }
+        public string Description => "Scans your media library and refreshes metatata based on configuration.";
 
         /// <summary>
         /// Gets the category.
         /// </summary>
         /// <value>The category.</value>
-        public string Category
-        {
-            get
-            {
-                return "Library";
-            }
-        }
+        public string Category => "Library";
 
-        public string Key
-        {
-            get { return "RefreshLibrary"; }
-        }
+        public string Key => "RefreshLibrary";
     }
 }

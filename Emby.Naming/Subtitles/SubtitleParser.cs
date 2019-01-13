@@ -18,7 +18,7 @@ namespace Emby.Naming.Subtitles
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             var extension = Path.GetExtension(path);
@@ -52,7 +52,7 @@ namespace Emby.Naming.Subtitles
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             // Note: the tags need be be surrounded be either a space ( ), hyphen -, dot . or underscore _.

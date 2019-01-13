@@ -193,10 +193,7 @@ namespace Emby.Server.Implementations.Images
             return outputPath;
         }
 
-        public string Name
-        {
-            get { return "Dynamic Image Provider"; }
-        }
+        public string Name => "Dynamic Image Provider";
 
         protected virtual string CreateImage(BaseItem item,
             List<BaseItem> itemsWithImages,
@@ -232,10 +229,7 @@ namespace Emby.Server.Implementations.Images
             throw new ArgumentException("Unexpected image type");
         }
 
-        protected virtual int MaxImageAgeDays
-        {
-            get { return 7; }
-        }
+        protected virtual int MaxImageAgeDays => 7;
 
         public bool HasChanged(BaseItem item, IDirectoryService directoryServicee)
         {
@@ -293,14 +287,7 @@ namespace Emby.Server.Implementations.Images
             return true;
         }
 
-        public int Order
-        {
-            get
-            {
-                // Run before the default image provider which will download placeholders
-                return 0;
-            }
-        }
+        public int Order => 0;
 
         protected string CreateSingleImage(List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType)
         {

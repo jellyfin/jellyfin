@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -41,7 +41,7 @@ namespace MediaBrowser.Providers.Omdb
         {
             if (string.IsNullOrWhiteSpace(imdbId))
             {
-                throw new ArgumentNullException("imdbId");
+                throw new ArgumentNullException(nameof(imdbId));
             }
 
             T item = itemResult.Item;
@@ -111,7 +111,7 @@ namespace MediaBrowser.Providers.Omdb
         {
             if (string.IsNullOrWhiteSpace(seriesImdbId))
             {
-                throw new ArgumentNullException("seriesImdbId");
+                throw new ArgumentNullException(nameof(seriesImdbId));
             }
 
             T item = itemResult.Item;
@@ -283,7 +283,7 @@ namespace MediaBrowser.Providers.Omdb
         {
             if (string.IsNullOrWhiteSpace(imdbId))
             {
-                throw new ArgumentNullException("imdbId");
+                throw new ArgumentNullException(nameof(imdbId));
             }
 
             var imdbParam = imdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? imdbId : "tt" + imdbId;
@@ -320,7 +320,7 @@ namespace MediaBrowser.Providers.Omdb
         {
             if (string.IsNullOrWhiteSpace(seriesImdbId))
             {
-                throw new ArgumentNullException("imdbId");
+                throw new ArgumentException("The series IMDb ID was null or whitespace.", nameof(seriesImdbId));
             }
 
             var imdbParam = seriesImdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? seriesImdbId : "tt" + seriesImdbId;
@@ -368,7 +368,7 @@ namespace MediaBrowser.Providers.Omdb
         {
             if (string.IsNullOrEmpty(imdbId))
             {
-                throw new ArgumentNullException("imdbId");
+                throw new ArgumentNullException(nameof(imdbId));
             }
 
             var dataPath = Path.Combine(_configurationManager.ApplicationPaths.CachePath, "omdb");
@@ -382,7 +382,7 @@ namespace MediaBrowser.Providers.Omdb
         {
             if (string.IsNullOrEmpty(imdbId))
             {
-                throw new ArgumentNullException("imdbId");
+                throw new ArgumentNullException(nameof(imdbId));
             }
 
             var dataPath = Path.Combine(_configurationManager.ApplicationPaths.CachePath, "omdb");
