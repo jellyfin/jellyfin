@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -126,6 +126,10 @@ namespace Rssdp.Infrastructure
                         {
                             _BroadcastListenSocket = ListenForBroadcastsAsync();
                         }
+                        catch (SocketException ex)
+                        {
+                            _logger.LogError("Failed to bind to port 1900: {Message}. DLNA will be unavailable", ex.Message);
+                        }
                         catch (Exception ex)
                         {
                             _logger.LogError(ex, "Error in BeginListeningForBroadcasts");
@@ -145,7 +149,7 @@ namespace Rssdp.Infrastructure
             {
                 if (_BroadcastListenSocket != null)
                 {
-                    _logger.LogInformation("{0} disposing _BroadcastListenSocket.", GetType().Name);
+                    _logger.LogInformation("{0} disposing _BroadcastListenSocket", GetType().Name);
                     _BroadcastListenSocket.Dispose();
                     _BroadcastListenSocket = null;
                 }
