@@ -1,4 +1,4 @@
-﻿XML-RPC Specification
+XML-RPC Specification
 
 Tue, Jun 15, 1999; by Dave Winer.
 
