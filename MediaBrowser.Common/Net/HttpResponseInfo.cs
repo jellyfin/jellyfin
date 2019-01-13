@@ -50,7 +50,7 @@ namespace MediaBrowser.Common.Net
         /// Gets or sets the headers.
         /// </summary>
         /// <value>The headers.</value>
-        public Dictionary<string,string> Headers { get; set; }
+        public Dictionary<string, string> Headers { get; set; }
 
         private readonly IDisposable _disposable;
 

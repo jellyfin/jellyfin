@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading;
-using System.Text;
 
 namespace MediaBrowser.Common.Net
 {
@@ -133,7 +131,7 @@ namespace MediaBrowser.Common.Net
             TimeoutMs = 20000;
         }
 
-        public void SetPostData(IDictionary<string,string> values)
+        public void SetPostData(IDictionary<string, string> values)
         {
             var strings = values.Keys.Select(key => string.Format("{0}={1}", key, values[key]));
             var postContent = string.Join("&", strings.ToArray());

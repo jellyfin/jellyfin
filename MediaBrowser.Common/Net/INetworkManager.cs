@@ -1,8 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
-using System.Collections.Generic;
-using System;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Net
 {
