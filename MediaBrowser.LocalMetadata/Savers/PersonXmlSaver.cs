@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.LocalMetadata.Savers
+namespace MediaBrowser.LocalMetadata.Savers
 {
     ///// <summary>
     ///// Class PersonXmlSaver

@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Model.Notifications
+namespace MediaBrowser.Model.Notifications
 {
     public class NotificationTypeInfo
     {

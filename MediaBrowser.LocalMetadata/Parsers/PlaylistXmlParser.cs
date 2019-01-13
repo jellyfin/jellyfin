@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Xml;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Playlists;

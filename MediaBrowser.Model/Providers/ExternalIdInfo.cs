@@ -1,4 +1,4 @@
-﻿
+
 namespace MediaBrowser.Model.Providers
 {
     public class ExternalIdInfo

@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.MediaEncoding.Subtitles
+namespace MediaBrowser.MediaEncoding.Subtitles
 {
     public class ParserValues
     {

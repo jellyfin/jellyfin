@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Dto

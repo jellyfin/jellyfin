@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Providers;

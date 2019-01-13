@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Model.Devices
+namespace MediaBrowser.Model.Devices
 {
     public class ContentUploadHistory
     {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
