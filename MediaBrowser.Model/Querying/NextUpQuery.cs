@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
-using System;
+﻿using System;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Querying
 {
@@ -60,7 +60,7 @@ namespace MediaBrowser.Model.Querying
 
         public NextUpQuery()
         {
-            EnableImageTypes = new ImageType[] {};
+            EnableImageTypes = new ImageType[] { };
             EnableTotalRecordCount = true;
         }
     }

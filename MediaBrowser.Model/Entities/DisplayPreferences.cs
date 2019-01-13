@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Model.Drawing;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Entities
 {

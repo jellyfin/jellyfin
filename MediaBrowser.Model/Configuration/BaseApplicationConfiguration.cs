@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Model.Updates;
-
-namespace MediaBrowser.Model.Configuration
+﻿namespace MediaBrowser.Model.Configuration
 {
     /// <summary>
     /// Serves as a common base class for the Server and UI application Configurations

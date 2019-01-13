@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MediaBrowser.Model.Devices
+﻿namespace MediaBrowser.Model.Devices
 {
     public class ContentUploadHistory
     {

@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Dto;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Session
 {

@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Globalization;
 using MediaBrowser.Model.Entities;
-using System.Globalization;
 
 namespace MediaBrowser.Model.Globalization
 {

@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Model.MediaInfo
 {

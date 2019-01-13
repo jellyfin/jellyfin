@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using System;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Providers;
-using System;
 
 namespace MediaBrowser.Model.Dto
 {

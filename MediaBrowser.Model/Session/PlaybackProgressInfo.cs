@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
-using System;
+﻿using System;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Session
 {
@@ -112,7 +112,8 @@ namespace MediaBrowser.Model.Session
         RepeatOne = 2
     }
 
-    public class QueueItem {
+    public class QueueItem
+    {
         public Guid Id { get; set; }
         public string PlaylistItemId { get; set; }
     }

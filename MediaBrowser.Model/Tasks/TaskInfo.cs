@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MediaBrowser.Model.Tasks
+﻿namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
     /// Class TaskInfo
@@ -72,7 +70,7 @@ namespace MediaBrowser.Model.Tasks
         /// </summary>
         public TaskInfo()
         {
-            Triggers = new TaskTriggerInfo[]{};
+            Triggers = new TaskTriggerInfo[] { };
         }
     }
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MediaBrowser.Model.Services
+﻿namespace MediaBrowser.Model.Services
 {
     public interface IHttpRequest : IRequest
     {

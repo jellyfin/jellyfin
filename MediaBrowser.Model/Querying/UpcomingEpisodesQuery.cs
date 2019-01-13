@@ -51,7 +51,7 @@ namespace MediaBrowser.Model.Querying
 
         public UpcomingEpisodesQuery()
         {
-            EnableImageTypes = new ImageType[] {};
+            EnableImageTypes = new ImageType[] { };
         }
     }
 }

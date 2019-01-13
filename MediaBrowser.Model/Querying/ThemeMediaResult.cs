@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
-using System;
+﻿using System;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Querying
 {

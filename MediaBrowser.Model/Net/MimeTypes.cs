@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Model.Extensions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Net
 {

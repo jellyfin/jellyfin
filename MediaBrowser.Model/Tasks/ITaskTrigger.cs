@@ -1,5 +1,4 @@
 ﻿using System;
-using MediaBrowser.Model.Events;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Model.Tasks
