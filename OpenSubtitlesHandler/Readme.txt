@@ -12,7 +12,7 @@ mailto:ahdsoftwares@hotmail.com
 
 Resources:
 ==========
-* GetHash.dll: this dll is used to compute hash for movie. 
+* GetHash.dll: this dll is used to compute hash for movie.
   For more information please visit http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes#C2
 
 XML_RPC:

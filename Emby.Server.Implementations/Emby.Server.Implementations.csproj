@@ -1,50 +1,50 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="..\Emby.Naming\Emby.Naming.csproj" />
-    <ProjectReference Include="..\Emby.Notifications\Emby.Notifications.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj" />
-    <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj" />
-    <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
-    <ProjectReference Include="..\SocketHttpListener\SocketHttpListener.csproj" />
-    <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
-    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj" />
-    <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj" />
-    <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj" />
-    <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
-    <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
-    <ProjectReference Include="..\Emby.XmlTv\Emby.XmlTv\Emby.XmlTv.csproj" />
-    <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Emby.Naming\Emby.Naming.csproj" />
+        <ProjectReference Include="..\Emby.Notifications\Emby.Notifications.csproj" />
+        <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
+        <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
+        <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
+        <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj" />
+        <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj" />
+        <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
+        <ProjectReference Include="..\SocketHttpListener\SocketHttpListener.csproj" />
+        <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
+        <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj" />
+        <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj" />
+        <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj" />
+        <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj" />
+        <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
+        <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
+        <ProjectReference Include="..\Emby.XmlTv\Emby.XmlTv\Emby.XmlTv.csproj" />
+        <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="ServiceStack.Text.Core" Version="5.4.0" />
-    <PackageReference Include="sharpcompress" Version="0.22.0" />
-    <PackageReference Include="SimpleInjector" Version="4.4.2" />
-    <PackageReference Include="SQLitePCL.pretty.core" Version="1.1.8" />
-    <PackageReference Include="SQLitePCLRaw.core" Version="1.1.11" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="ServiceStack.Text.Core" Version="5.4.0" />
+        <PackageReference Include="sharpcompress" Version="0.22.0" />
+        <PackageReference Include="SimpleInjector" Version="4.4.2" />
+        <PackageReference Include="SQLitePCL.pretty.core" Version="1.1.8" />
+        <PackageReference Include="SQLitePCLRaw.core" Version="1.1.11" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\SharedVersion.cs" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Include="..\SharedVersion.cs" />
+    </ItemGroup>
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\iso6392.txt" />
-    <EmbeddedResource Include="Localization\countries.json" />
-    <EmbeddedResource Include="Localization\Core\*.json" />
-    <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\*" />
-    <EmbeddedResource Include="TextEncoding\NLangDetect\Utils\messages.properties" />
-    <EmbeddedResource Include="Localization\Ratings\*.txt" />
-  </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="Localization\iso6392.txt" />
+        <EmbeddedResource Include="Localization\countries.json" />
+        <EmbeddedResource Include="Localization\Core\*.json" />
+        <EmbeddedResource Include="TextEncoding\NLangDetect\Profiles\*" />
+        <EmbeddedResource Include="TextEncoding\NLangDetect\Utils\messages.properties" />
+        <EmbeddedResource Include="Localization\Ratings\*.txt" />
+    </ItemGroup>
 
 </Project>

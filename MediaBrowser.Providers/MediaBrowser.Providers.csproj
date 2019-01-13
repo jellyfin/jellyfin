@@ -1,22 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
-    <ProjectReference Include="..\DvdLib\DvdLib.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
+        <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
+        <ProjectReference Include="..\DvdLib\DvdLib.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\SharedVersion.cs" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Include="..\SharedVersion.cs" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="PlaylistsNET" Version="1.0.2" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="PlaylistsNET" Version="1.0.2" />
+    </ItemGroup>
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    </PropertyGroup>
 
 </Project>
