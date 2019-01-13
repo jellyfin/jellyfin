@@ -1,14 +1,11 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Collections.Generic;
+using System.Xml;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Xml;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
-using MediaBrowser.Model.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {

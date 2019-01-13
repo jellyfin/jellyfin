@@ -1,10 +1,8 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
-using System.IO;
+﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.LocalMetadata
@@ -77,7 +75,7 @@ namespace MediaBrowser.LocalMetadata
             }
         }
 
-        public  virtual int Order
+        public virtual int Order
         {
             get
             {
