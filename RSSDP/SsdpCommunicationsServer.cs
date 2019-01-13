@@ -126,9 +126,9 @@ namespace Rssdp.Infrastructure
                         {
                             _BroadcastListenSocket = ListenForBroadcastsAsync();
                         }
-                        catch (SocketException)
+                        catch (SocketException ex)
                         {
-                            _logger.LogError("Failed to bind to port 1900. DLNA will be unavailable");
+                            _logger.LogError("Failed to bind to port 1900: {Message}. DLNA will be unavailable", ex.Message);
                         }
                         catch (Exception ex)
                         {
