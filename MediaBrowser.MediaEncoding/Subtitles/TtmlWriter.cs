@@ -45,7 +45,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 writer.WriteLine("</div>");
                 writer.WriteLine("</body>");
-                
+
                 writer.WriteLine("</tt>");
             }
         }

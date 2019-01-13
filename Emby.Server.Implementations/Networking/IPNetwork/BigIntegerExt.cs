@@ -122,28 +122,28 @@ namespace System.Net
         }
 
         /// <summary>
-        /// 
+        ///
         /// Reverse a Positive BigInteger ONLY
         /// Bitwise ~ operator
-        /// 
+        ///
         /// Input  : FF FF FF FF
         /// Width  : 4
-        /// Result : 00 00 00 00 
-        /// 
-        /// 
+        /// Result : 00 00 00 00
+        ///
+        ///
         /// Input  : 00 00 00 00
         /// Width  : 4
-        /// Result : FF FF FF FF 
-        /// 
+        /// Result : FF FF FF FF
+        ///
         /// Input  : FF FF FF FF
         /// Width  : 8
         /// Result : FF FF FF FF 00 00 00 00
-        /// 
-        /// 
+        ///
+        ///
         /// Input  : 00 00 00 00
         /// Width  : 8
         /// Result : FF FF FF FF FF FF FF FF
-        /// 
+        ///
         /// </summary>
         /// <param name="input"></param>
         /// <param name="width"></param>

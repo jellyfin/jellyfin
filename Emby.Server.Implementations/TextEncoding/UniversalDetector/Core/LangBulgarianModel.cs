@@ -21,7 +21,7 @@
  * Contributor(s):
  *          Shy Shalom <shooshX@gmail.com>
  *          Rudi Pettazzi <rudi.pettazzi@gmail.com> (C# port)
- * 
+ *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -37,15 +37,15 @@
  * ***** END LICENSE BLOCK ***** */
 
 namespace UniversalDetector.Core
-{   
+{
     public abstract class BulgarianModel : SequenceModel
     {
-        //Model Table: 
+        //Model Table:
         //total sequences: 100%
         //first 512 sequences: 96.9392%
         //first 1024 sequences:3.0618%
         //rest  sequences:     0.2992%
-        //negative sequences:  0.0020% 
+        //negative sequences:  0.0020%
         private static byte[] BULGARIAN_LANG_MODEL = {
             0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,3,2,3,3,3,3,3,
             3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,3,3,3,2,2,3,2,2,1,2,2,
@@ -175,15 +175,15 @@ namespace UniversalDetector.Core
             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
             1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,1,0,1,1,1,1,1,0,1,0,0,
             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-            
+
         };
 
-        public BulgarianModel(byte[] charToOrderMap, string name) 
+        public BulgarianModel(byte[] charToOrderMap, string name)
             : base(charToOrderMap, BULGARIAN_LANG_MODEL, 0.969392f, false, name)
         {
-        }        
+        }
     }
-    
+
     public class Latin5BulgarianModel : BulgarianModel
     {
         //255: Control characters that usually does not exist in any text
@@ -191,7 +191,7 @@ namespace UniversalDetector.Core
         //253: symbol (punctuation) that does not belong to word
         //252: 0 - 9
         // Character Mapping Table:
-        // this table is modified base on win1251BulgarianCharToOrderMap, so 
+        // this table is modified base on win1251BulgarianCharToOrderMap, so
         // only number <64 is sure valid
         private static byte[] LATIN5_CHAR_TO_ORDER_MAP = {
             255,255,255,255,255,255,255,255,255,255,254,255,255,254,255,255,  //00
@@ -209,14 +209,14 @@ namespace UniversalDetector.Core
              39, 28, 34, 51, 48, 49, 53, 50, 54, 57, 61,239, 67,240, 60, 56,  //c0
               1, 18,  9, 20, 11,  3, 23, 15,  2, 26, 12, 10, 14,  6,  4, 13,  //d0
               7,  8,  5, 19, 29, 25, 22, 21, 27, 24, 17, 75, 52,241, 42, 16,  //e0
-             62,242,243,244, 58,245, 98,246,247,248,249,250,251, 91,252,253,  //f0 
+             62,242,243,244, 58,245, 98,246,247,248,249,250,251, 91,252,253,  //f0
         };
-        
+
         public Latin5BulgarianModel() : base(LATIN5_CHAR_TO_ORDER_MAP, "ISO-8859-5")
         {
         }
     }
-    
+
     public class Win1251BulgarianModel : BulgarianModel
     {
         private static byte[] WIN1251__CHAR_TO_ORDER_MAP = {
@@ -236,8 +236,8 @@ namespace UniversalDetector.Core
              39, 28, 34, 51, 48, 49, 53, 50, 54, 57, 61,251, 67,252, 60, 56,  //d0
               1, 18,  9, 20, 11,  3, 23, 15,  2, 26, 12, 10, 14,  6,  4, 13,  //e0
               7,  8,  5, 19, 29, 25, 22, 21, 27, 24, 17, 75, 52,253, 42, 16,  //f0
-        };    
-        
+        };
+
         public Win1251BulgarianModel() : base(WIN1251__CHAR_TO_ORDER_MAP, "windows-1251")
         {
         }

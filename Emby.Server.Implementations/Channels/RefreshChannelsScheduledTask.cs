@@ -25,35 +25,17 @@ namespace Emby.Server.Implementations.Channels
             _libraryManager = libraryManager;
         }
 
-        public string Name
-        {
-            get { return "Refresh Channels"; }
-        }
+        public string Name => "Refresh Channels";
 
-        public string Description
-        {
-            get { return "Refreshes internet channel information."; }
-        }
+        public string Description => "Refreshes internet channel information.";
 
-        public string Category
-        {
-            get { return "Internet Channels"; }
-        }
+        public string Category => "Internet Channels";
 
-        public bool IsHidden
-        {
-            get { return ((ChannelManager)_channelManager).Channels.Length == 0; }
-        }
+        public bool IsHidden => ((ChannelManager)_channelManager).Channels.Length == 0;
 
-        public bool IsEnabled
-        {
-            get { return true; }
-        }
+        public bool IsEnabled => true;
 
-        public bool IsLogged
-        {
-            get { return true; }
-        }
+        public bool IsLogged => true;
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
@@ -70,16 +52,13 @@ namespace Emby.Server.Implementations.Channels
         /// </summary>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[] { 
-            
+            return new[] {
+
                 // Every so often
                 new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks}
             };
         }
 
-        public string Key
-        {
-            get { return "RefreshInternetChannels"; }
-        }
+        public string Key => "RefreshInternetChannels";
     }
 }

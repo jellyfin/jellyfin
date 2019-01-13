@@ -35,10 +35,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// Gets the options.
         /// </summary>
         /// <value>The options.</value>
-        public IDictionary<string, string> Headers
-        {
-            get { return _options; }
-        }
+        public IDictionary<string, string> Headers => _options;
 
         public Action OnComplete { get; set; }
         public Action OnError { get; set; }
@@ -53,7 +50,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (string.IsNullOrEmpty(contentType))
             {
-                throw new ArgumentNullException("contentType");
+                throw new ArgumentNullException(nameof(contentType));
             }
 
             SourceStream = source;
@@ -77,7 +74,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (string.IsNullOrEmpty(contentType))
             {
-                throw new ArgumentNullException("contentType");
+                throw new ArgumentNullException(nameof(contentType));
             }
 
             SourceBytes = source;

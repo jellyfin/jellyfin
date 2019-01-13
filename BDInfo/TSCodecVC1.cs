@@ -50,18 +50,18 @@ namespace BDInfo
                         {
                             if ((parse & 0x80000000) == 0)
                             {
-                                pictureType = 
+                                pictureType =
                                     (uint)((parse & 0x78000000) >> 13);
                             }
                             else
                             {
-                                pictureType = 
+                                pictureType =
                                     (uint)((parse & 0x3c000000) >> 12);
                             }
                         }
                         else
                         {
-                            pictureType = 
+                            pictureType =
                                 (uint)((parse & 0xf0000000) >> 14);
                         }
 

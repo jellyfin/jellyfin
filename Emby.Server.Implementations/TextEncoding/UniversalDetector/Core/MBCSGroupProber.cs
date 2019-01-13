@@ -21,7 +21,7 @@
  * Contributor(s):
  *          Shy Shalom <shooshX@gmail.com>
  *          Rudi Pettazzi <rudi.pettazzi@gmail.com> (C# port)
- * 
+ *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -46,13 +46,13 @@ namespace UniversalDetector.Core
     public class MBCSGroupProber : CharsetProber
     {
         private const int PROBERS_NUM = 7;
-        private readonly static string[] ProberName = 
+        private readonly static string[] ProberName =
             { "UTF8", "SJIS", "EUCJP", "GB18030", "EUCKR", "Big5", "EUCTW" };
         private CharsetProber[] probers = new CharsetProber[PROBERS_NUM];
         private bool[] isActive = new bool[PROBERS_NUM];
         private int bestGuess;
         private int activeNum;
-            
+
         public MBCSGroupProber()
         {
             probers[0] = new UTF8Prober();
@@ -62,7 +62,7 @@ namespace UniversalDetector.Core
             probers[4] = new EUCKRProber();
             probers[5] = new Big5Prober();
             probers[6] = new EUCTWProber();
-            Reset();        
+            Reset();
         }
 
         public override string GetCharsetName()
@@ -99,7 +99,7 @@ namespace UniversalDetector.Core
             //assume previous is not ascii, it will do no harm except add some noise
             bool keepNext = true;
             int max = offset + len;
-            
+
             for (int i = offset; i < max; i++) {
                 if ((buf[i] & 0x80) != 0) {
                     highbyteBuf[hptr++] = buf[i];
@@ -112,9 +112,9 @@ namespace UniversalDetector.Core
                     }
                 }
             }
-            
+
             ProbingState st = ProbingState.NotMe;
-            
+
             for (int i = 0; i < probers.Length; i++) {
                 if (!isActive[i])
                     continue;
@@ -139,7 +139,7 @@ namespace UniversalDetector.Core
         {
             float bestConf = 0.0f;
             float cf = 0.0f;
-            
+
             if (state == ProbingState.FoundIt) {
                 return 0.99f;
             } else if (state == ProbingState.NotMe) {

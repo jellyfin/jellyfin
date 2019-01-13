@@ -156,7 +156,7 @@ namespace MediaBrowser.Providers.Manager
 
             }).ConfigureAwait(false))
             {
-                // Workaround for tvheadend channel icons	
+                // Workaround for tvheadend channel icons
                 // TODO: Isolate this hack into the tvh plugin
                 if (string.IsNullOrEmpty(response.ContentType))
                 {
@@ -179,7 +179,7 @@ namespace MediaBrowser.Providers.Manager
         {
             if (string.IsNullOrWhiteSpace(source))
             {
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException(nameof(source));
             }
 
             var fileStream = _fileSystem.GetFileStream(source, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);

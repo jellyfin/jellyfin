@@ -19,7 +19,7 @@ namespace MediaBrowser.Controller.Entities
         public static IXmlSerializer XmlSerializer { get; set; }
 
         /// <summary>
-        /// From now on all user paths will be Id-based. 
+        /// From now on all user paths will be Id-based.
         /// This is for backwards compatibility.
         /// </summary>
         public bool UsesIdForConfigurationPath { get; set; }
@@ -182,7 +182,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrEmpty(newName))
             {
-                throw new ArgumentNullException("newName");
+                throw new ArgumentNullException(nameof(newName));
             }
 
             // If only the casing is changing, leave the file system alone
@@ -259,7 +259,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (string.IsNullOrEmpty(username))
                 {
-                    throw new ArgumentNullException("username");
+                    throw new ArgumentNullException(nameof(username));
                 }
 
                 var safeFolderName = FileSystem.GetValidFilename(username);

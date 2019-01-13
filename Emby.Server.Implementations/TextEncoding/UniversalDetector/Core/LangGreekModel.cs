@@ -21,7 +21,7 @@
  * Contributor(s):
  *          Shy Shalom <shooshX@gmail.com>
  *          Rudi Pettazzi <rudi.pettazzi@gmail.com> (C# port)
- * 
+ *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -37,15 +37,15 @@
  * ***** END LICENSE BLOCK ***** */
 
 namespace UniversalDetector.Core
-{   
+{
     public abstract class GreekModel : SequenceModel
     {
-        // Model Table: 
+        // Model Table:
         // total sequences: 100%
         // first 512 sequences: 98.2851%
         // first 1024 sequences:1.7001%
         // rest  sequences:     0.0359%
-        // negative sequences:  0.0148% 
+        // negative sequences:  0.0148%
         private readonly static byte[] GREEK_LANG_MODEL = {
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -177,12 +177,12 @@ namespace UniversalDetector.Core
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
         };
 
-        public GreekModel(byte[] charToOrderMap, string name) 
+        public GreekModel(byte[] charToOrderMap, string name)
             : base(charToOrderMap, GREEK_LANG_MODEL, 0.982851f, false, name)
         {
-        }        
+        }
     }
-    
+
     public class Latin7Model : GreekModel
     {
         /****************************************************************
@@ -210,12 +210,12 @@ namespace UniversalDetector.Core
             124,  1, 29, 20, 21,  3, 32, 13, 25,  5, 11, 16, 10,  6, 30,  4,  //e0
               9,  8, 14,  7,  2, 12, 28, 23, 42, 24, 64, 75, 19, 26, 27,253,  //f0
         };
-        
+
         public Latin7Model() : base(LATIN7_CHAR_TO_ORDER_MAP, "ISO-8859-7")
         {
         }
     }
-    
+
     public class Win1253Model : GreekModel
     {
         private readonly static byte[] WIN1253__CHAR_TO_ORDER_MAP = {
@@ -235,8 +235,8 @@ namespace UniversalDetector.Core
              35, 48,250, 37, 33, 45, 56, 50, 84, 57,120,121, 17, 18, 22, 15,  //d0
             124,  1, 29, 20, 21,  3, 32, 13, 25,  5, 11, 16, 10,  6, 30,  4,  //e0
               9,  8, 14,  7,  2, 12, 28, 23, 42, 24, 64, 75, 19, 26, 27,253,  //f0
-        };    
-        
+        };
+
         public Win1253Model() : base(WIN1253__CHAR_TO_ORDER_MAP, "windows-1253")
         {
         }

@@ -97,12 +97,12 @@ namespace Jellyfin.SocketSharp
             }
 
 #if NET_4_0
-				if (validateRequestNewMode && !checked_form) {
-					// Setting this before calling the validator prevents
-					// possible endless recursion
-					checked_form = true;
-					ValidateNameValueCollection ("Form", query_string_nvc, RequestValidationSource.Form);
-				} else
+            if (validateRequestNewMode && !checked_form) {
+                // Setting this before calling the validator prevents
+                // possible endless recursion
+                checked_form = true;
+                ValidateNameValueCollection ("Form", query_string_nvc, RequestValidationSource.Form);
+            } else
 #endif
             if (validate_form && !checked_form)
             {
@@ -138,7 +138,7 @@ namespace Jellyfin.SocketSharp
             if (v.Length > 20)
                 v = v.Substring(0, 16) + "...\"";
 
-            string msg = String.Format("A potentially dangerous Request.{0} value was " +
+            string msg = string.Format("A potentially dangerous Request.{0} value was " +
                             "detected from the client ({1}={2}).", name, key, v);
 
             throw new Exception(msg);
@@ -328,13 +328,13 @@ namespace Jellyfin.SocketSharp
                 public override int Read(byte[] buffer, int dest_offset, int count)
                 {
                     if (buffer == null)
-                        throw new ArgumentNullException("buffer");
+                        throw new ArgumentNullException(nameof(buffer));
 
                     if (dest_offset < 0)
-                        throw new ArgumentOutOfRangeException("dest_offset", "< 0");
+                        throw new ArgumentOutOfRangeException(nameof(dest_offset), "< 0");
 
                     if (count < 0)
-                        throw new ArgumentOutOfRangeException("count", "< 0");
+                        throw new ArgumentOutOfRangeException(nameof(count), "< 0");
 
                     int len = buffer.Length;
                     if (dest_offset > len)
@@ -546,7 +546,7 @@ namespace Jellyfin.SocketSharp
 
             const byte HYPHEN = (byte)'-', LF = (byte)'\n', CR = (byte)'\r';
 
-            // See RFC 2046 
+            // See RFC 2046
             // In the case of multipart entities, in which one or more different
             // sets of data are combined in a single body, a "multipart" media type
             // field must appear in the entity's header.  The body must then contain

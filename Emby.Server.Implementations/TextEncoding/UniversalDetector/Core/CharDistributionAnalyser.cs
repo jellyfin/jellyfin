@@ -38,12 +38,11 @@
 namespace UniversalDetector.Core
 {
     /// <summary>
-    /// Base class for the Character Distribution Method, used for 
+    /// Base class for the Character Distribution Method, used for
     /// the CJK encodings
     /// </summary>
     public abstract class CharDistributionAnalyser
     {
-        
         protected const float SURE_YES = 0.99f;
         protected const float SURE_NO = 0.01f;
         protected const int MINIMUM_DATA_THRESHOLD = 4;
@@ -57,19 +56,19 @@ namespace UniversalDetector.Core
 
         //Total character encounted.
         protected int totalChars;
-        
+
         // Mapping table to get frequency order from char order (get from GetOrder())
         protected int[] charToFreqOrder;
 
         // Size of above table
         protected int tableSize;
 
-        //This is a constant value varies from language to language, it is used 
-        // in calculating confidence. 
-        protected float typicalDistributionRatio;        
+        //This is a constant value varies from language to language, it is used
+        // in calculating confidence.
+        protected float typicalDistributionRatio;
 
         public CharDistributionAnalyser()
-        { 
+        {
             Reset();
         }
 
@@ -77,10 +76,10 @@ namespace UniversalDetector.Core
         /// Feed a block of data and do distribution analysis
         /// </summary>
         /// </param>
-        //public abstract void HandleData(byte[] buf, int offset, int len); 
-                
+        //public abstract void HandleData(byte[] buf, int offset, int len);
+
         /// <summary>
-        /// we do not handle character base on its original encoding string, but 
+        /// we do not handle character base on its original encoding string, but
         /// convert this encoding string to a number, here called order.
         /// This allow multiple encoding of a language to share one frequency table
         /// </summary>
@@ -88,9 +87,9 @@ namespace UniversalDetector.Core
         /// <param name="offset"></param>
         /// <returns></returns>
         public abstract int GetOrder(byte[] buf, int offset);
-        
+
         /// <summary>
-        /// Feed a character with known length 
+        /// Feed a character with known length
         /// </summary>
         /// <param name="buf">A <see cref="System.Byte"/></param>
         /// <param name="offset">buf offset</param>
@@ -107,13 +106,13 @@ namespace UniversalDetector.Core
             }
         }
 
-        public virtual void Reset() 
+        public virtual void Reset()
         {
             done = false;
             totalChars = 0;
             freqChars = 0;
         }
-        
+
         /// <summary>
         /// return confidence base on received data
         /// </summary>
@@ -133,16 +132,16 @@ namespace UniversalDetector.Core
             //normalize confidence, (we don't want to be 100% sure)
             return SURE_YES;
         }
-        
+
         //It is not necessary to receive all data to draw conclusion. For charset detection,
         // certain amount of data is enough
-        public bool GotEnoughData() 
+        public bool GotEnoughData()
         {
             return totalChars > ENOUGH_DATA_THRESHOLD;
         }
 
     }
-    
+
     public class GB18030DistributionAnalyser : CharDistributionAnalyser
     {
         // GB2312 most frequently used character table
@@ -155,7 +154,7 @@ namespace UniversalDetector.Core
          *
          * Idea Distribution Ratio = 0.79135/(1-0.79135) = 3.79
          * Random Distribution Ration = 512 / (3755 - 512) = 0.157
-         * 
+         *
          * Typical Distribution Ratio about 25% of Ideal one, still much higher that RDR
          *****************************************************************************/
 
@@ -400,8 +399,8 @@ namespace UniversalDetector.Core
          381,1638,4592,1020, 516,3214, 458, 947,4575,1432, 211,1514,2926,1865,2142, 189,
          852,1221,1400,1486, 882,2299,4036, 351,  28,1122, 700,6479,6480,6481,6482,6483,  //last 512
 
-        /*************************************************************************************** 
-         *Everything below is of no interest for detection purpose							   *
+        /***************************************************************************************
+         *Everything below is of no interest for detection purpose                             *
          ***************************************************************************************
 
         5508,6484,3900,3414,3974,4441,4024,3537,4037,5628,5099,3633,6485,3148,6486,3636,
@@ -601,7 +600,7 @@ namespace UniversalDetector.Core
             tableSize = GB2312_TABLE_SIZE;
             typicalDistributionRatio = GB2312_TYPICAL_DISTRIBUTION_RATIO;
         }
-        
+
         /// <summary>
         /// for GB2312 encoding, we are interested
         ///   first  byte range: 0xb0 -- 0xfe
@@ -609,20 +608,20 @@ namespace UniversalDetector.Core
         /// no validation needed here. State machine has done that
         /// </summary>
         /// <returns></returns>
-        public override int GetOrder(byte[] buf, int offset) 
-        { 
-            if (buf[offset] >= 0xB0 && buf[offset+1] >= 0xA1)  
+        public override int GetOrder(byte[] buf, int offset)
+        {
+            if (buf[offset] >= 0xB0 && buf[offset+1] >= 0xA1)
                 return 94 * (buf[offset] - 0xb0) + buf[offset+1] - 0xA1;
             else
                 return -1;
         }
     }
-    
+
     public class EUCTWDistributionAnalyser : CharDistributionAnalyser
     {
         // EUCTW frequency table
-        // Converted from big5 work 
-        // by Taiwan's Mandarin Promotion Council 
+        // Converted from big5 work
+        // by Taiwan's Mandarin Promotion Council
         // <http://www.edu.tw:81/mandr/>
         /******************************************************************************
          * 128  --> 0.42261
@@ -633,7 +632,7 @@ namespace UniversalDetector.Core
          *
          * Idea Distribution Ratio = 0.74851/(1-0.74851) =2.98
          * Random Distribution Ration = 512/(5401-512)=0.105
-         * 
+         *
          * Typical Distribution Ratio about 25% of Ideal one, still much higher than RDR
          *****************************************************************************/
 
@@ -979,8 +978,8 @@ namespace UniversalDetector.Core
          890,3614,3864,8110,1877,3732,3402,8111,2183,2353,3403,1652,8112,8113,8114, 941, // 8086
         2294, 208,3499,4057,2019, 330,4294,3865,2892,2492,3733,4295,8115,8116,8117,8118, // 8102
 
-        /*************************************************************************************** 
-         *Everything below is of no interest for detection purpose							   *
+        /***************************************************************************************
+         *Everything below is of no interest for detection purpose                             *
          ***************************************************************************************
 
         2515,1613,4582,8119,3312,3866,2516,8120,4058,8121,1637,4059,2466,4583,3867,8122, // 8118
@@ -1022,7 +1021,7 @@ namespace UniversalDetector.Core
         8678,8679,8680,8681,8682,8683,8684,8685,8686,8687,8688,8689,8690,8691,8692,8693, // 8694
         8694,8695,8696,8697,8698,8699,8700,8701,8702,8703,8704,8705,8706,8707,8708,8709, // 8710
         8710,8711,8712,8713,8714,8715,8716,8717,8718,8719,8720,8721,8722,8723,8724,8725, // 8726
-        8726,8727,8728,8729,8730,8731,8732,8733,8734,8735,8736,8737,8738,8739,8740,8741, // 8742															 //13973
+        8726,8727,8728,8729,8730,8731,8732,8733,8734,8735,8736,8737,8738,8739,8740,8741, // 8742 //13973
         ****************************************************************************************/
         };
 
@@ -1038,15 +1037,15 @@ namespace UniversalDetector.Core
         ///  second byte range: 0xa1 -- 0xfe
         /// no validation needed here. State machine has done that
         /// </summary>
-        public override int GetOrder(byte[] buf, int offset) 
-        { 
-            if (buf[offset] >= 0xC4)  
+        public override int GetOrder(byte[] buf, int offset)
+        {
+            if (buf[offset] >= 0xC4)
                 return 94 * (buf[offset] - 0xC4) + buf[offset+1] - 0xA1;
             else
                 return -1;
         }
     }
-    
+
     public class EUCKRDistributionAnalyser : CharDistributionAnalyser
     {
                 // Sampling from about 20M text materials include literature and computer technology
@@ -1215,8 +1214,8 @@ namespace UniversalDetector.Core
         2629,2630,2631, 924, 648, 863, 603,2632,2633, 934,1540, 864, 865,2634, 642,1042,
          670,1190,2635,2636,2637,2638, 168,2639, 652, 873, 542,1054,1541,2640,2641,2642,  //512, 256
 
-        /*************************************************************************************** 
-         * Everything below is of no interest for detection purpose							   
+        /***************************************************************************************
+         * Everything below is of no interest for detection purpose                            *
          ***************************************************************************************
 
         2643,2644,2645,2646,2647,2648,2649,2650,2651,2652,2653,2654,2655,2656,2657,2658,
@@ -1619,32 +1618,32 @@ namespace UniversalDetector.Core
         8704,8705,8706,8707,8708,8709,8710,8711,8712,8713,8714,8715,8716,8717,8718,8719,
         8720,8721,8722,8723,8724,8725,8726,8727,8728,8729,8730,8731,8732,8733,8734,8735,
         8736,8737,8738,8739,8740,8741 */ };
-        
+
         public EUCKRDistributionAnalyser()
         {
             charToFreqOrder = EUCKR_CHAR2FREQ_ORDER;
             tableSize = EUCKR_TABLE_SIZE;
-            typicalDistributionRatio = EUCKR_TYPICAL_DISTRIBUTION_RATIO;        
+            typicalDistributionRatio = EUCKR_TYPICAL_DISTRIBUTION_RATIO;
         }
-        
+
         /// <summary>
         /// first  byte range: 0xb0 -- 0xfe
         ///  second byte range: 0xa1 -- 0xfe
         /// no validation needed here. State machine has done that
         /// </summary>
-        public override int GetOrder(byte[] buf, int offset) 
-        { 
-            if (buf[offset] >= 0xB0)  
+        public override int GetOrder(byte[] buf, int offset)
+        {
+            if (buf[offset] >= 0xB0)
                 return 94 * (buf[offset] - 0xB0) + buf[offset+1] - 0xA1;
             else
                 return -1;
         }
     }
-    
+
     public class BIG5DistributionAnalyser : CharDistributionAnalyser
     {
         // Big5 frequency table
-        // by Taiwan's Mandarin Promotion Council 
+        // by Taiwan's Mandarin Promotion Council
         // <http://www.edu.tw:81/mandr/>
         /******************************************************************************
          * 128  --> 0.42261
@@ -1655,7 +1654,7 @@ namespace UniversalDetector.Core
          *
          * Idea Distribution Ratio = 0.74851/(1-0.74851) =2.98
          * Random Distribution Ration = 512/(5401-512)=0.105
-         * 
+         *
          * Typical Distribution Ratio about 25% of Ideal one, still much higher than RDR
          *****************************************************************************/
 
@@ -2001,8 +2000,8 @@ namespace UniversalDetector.Core
          890,3669,3943,5791,1878,3798,3439,5792,2186,2358,3440,1652,5793,5794,5795, 941, // 5360
         2299, 208,3546,4161,2020, 330,4438,3944,2906,2499,3799,4439,4811,5796,5797,5798, // 5376  //last 512
 
-        /*************************************************************************************** 
-         *Everything below is of no interest for detection purpose							   *
+        /***************************************************************************************
+         *Everything below is of no interest for detection purpose                             *
          ***************************************************************************************
 
         2522,1613,4812,5799,3345,3945,2523,5800,4162,5801,1637,4163,2471,4813,3946,5802, // 5392
@@ -2545,29 +2544,29 @@ namespace UniversalDetector.Core
         13968,13969,13970,13971,13972, //13973
         ****************************************************************************************/
         };
-        
+
         public BIG5DistributionAnalyser()
         {
             charToFreqOrder = BIG5_CHAR2FREQ_ORDER;
             tableSize = BIG5_TABLE_SIZE;
-            typicalDistributionRatio = BIG5_TYPICAL_DISTRIBUTION_RATIO;        
+            typicalDistributionRatio = BIG5_TYPICAL_DISTRIBUTION_RATIO;
         }
-        
+
         /// <summary>
         /// first  byte range: 0xa4 -- 0xfe
         ///  second byte range: 0x40 -- 0x7e , 0xa1 -- 0xfe
         /// no validation needed here. State machine has done that
         /// </summary>
-        public override int GetOrder(byte[] buf, int offset) 
-        { 
+        public override int GetOrder(byte[] buf, int offset)
+        {
             if (buf[offset] >= 0xA4) {
                 if (buf[offset+1] >= 0xA1)
                     return 157 * (buf[offset] - 0xA4) + buf[offset+1] - 0xA1 + 63;
                 else
                     return 157 * (buf[offset] - 0xA4) + buf[offset+1] - 0x40;
             } else {
-                return -1;            
-            }  
+                return -1;
+            }
         }
     }
 
@@ -2575,7 +2574,7 @@ namespace UniversalDetector.Core
     {
         //Sampling from about 20M text materials include literature and computer technology
         // Japanese frequency table, applied to both S-JIS and EUC-JP
-        //They are sorted in order. 
+        //They are sorted in order.
 
         /******************************************************************************
          * 128  --> 0.77094
@@ -2586,8 +2585,8 @@ namespace UniversalDetector.Core
          *
          * Idea Distribution Ratio = 0.92635 / (1-0.92635) = 12.58
          * Random Distribution Ration = 512 / (2965+62+83+86-512) = 0.191
-         * 
-         * Typical Distribution Ratio, 25% of IDR 
+         *
+         * Typical Distribution Ratio, 25% of IDR
          *****************************************************************************/
 
         protected static float SJIS_TYPICAL_DISTRIBUTION_RATIO = 3.0f;
@@ -2869,8 +2868,8 @@ namespace UniversalDetector.Core
         1444,1698,2385,2251,3729,1365,2281,2235,1717,6188, 864,3841,2515, 444, 527,2767, // 4352
         2922,3625, 544, 461,6189, 566, 209,2437,3398,2098,1065,2068,3331,3626,3257,2137, // 4368  //last 512
 
-        /*************************************************************************************** 
-         *Everything below is of no interest for detection purpose							   *
+        /***************************************************************************************
+         *Everything below is of no interest for detection purpose                             *
          ***************************************************************************************
 
         2138,2122,3730,2888,1995,1820,1044,6190,6191,6192,6193,6194,6195,6196,6197,6198, // 4384
@@ -3118,31 +3117,31 @@ namespace UniversalDetector.Core
         8240,8241,8242,8243,8244,8245,8246,8247,8248,8249,8250,8251,8252,8253,8254,8255, // 8256
         8256,8257,8258,8259,8260,8261,8262,8263,8264,8265,8266,8267,8268,8269,8270,8271, // 8272
         ****************************************************************************************/
-        };        
+        };
         public SJISDistributionAnalyser()
         {
             charToFreqOrder = SJIS_CHAR2FREQ_ORDER;
             tableSize = SJIS_TABLE_SIZE;
-            typicalDistributionRatio = SJIS_TYPICAL_DISTRIBUTION_RATIO;        
+            typicalDistributionRatio = SJIS_TYPICAL_DISTRIBUTION_RATIO;
         }
-        
+
         /// <summary>
         /// first  byte range: 0x81 -- 0x9f , 0xe0 -- 0xfe
         ///  second byte range: 0x40 -- 0x7e,  0x81 -- oxfe
         /// no validation needed here. State machine has done that
         /// </summary>
-        public override int GetOrder(byte[] buf, int offset) 
-        { 
+        public override int GetOrder(byte[] buf, int offset)
+        {
             int order = 0;
-            
-            if (buf[offset] >= 0x81 && buf[offset] <= 0x9F)  
+
+            if (buf[offset] >= 0x81 && buf[offset] <= 0x9F)
                 order = 188 * (buf[offset] - 0x81);
-            else if (buf[offset] >= 0xE0 && buf[offset] <= 0xEF)  
+            else if (buf[offset] >= 0xE0 && buf[offset] <= 0xEF)
                 order = 188 * (buf[offset] - 0xE0 + 31);
             else
                 return -1;
             order += buf[offset+1] - 0x40;
-            
+
             if (buf[offset+1] > 0x7F)
                 order--;
             return order;
@@ -3154,20 +3153,18 @@ namespace UniversalDetector.Core
         public EUCJPDistributionAnalyser() : base()
         {
         }
-        
+
         /// <summary>
         /// first  byte range: 0xa0 -- 0xfe
         ///  second byte range: 0xa1 -- 0xfe
         /// no validation needed here. State machine has done that
         /// </summary>
-        public override int GetOrder(byte[] buf, int offset) 
-        { 
-            if (buf[offset] >= 0xA0)  
+        public override int GetOrder(byte[] buf, int offset)
+        {
+            if (buf[offset] >= 0xA0)
                 return 94 * (buf[offset] - 0xA1) + buf[offset+1] - 0xA1;
             else
                 return -1;
         }
     }
-
-    
 }

@@ -43,7 +43,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         continue;
                     }
-                    
+
                     var time = Regex.Split(line, @"[\t ]*-->[\t ]*");
 
                     if (time.Length < 2)
@@ -85,7 +85,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             TimeSpan span;
             return TimeSpan.TryParseExact(time, @"hh\:mm\:ss\.fff", _usCulture, out span)
                 ? span.Ticks
-                : (TimeSpan.TryParseExact(time, @"hh\:mm\:ss\,fff", _usCulture, out span) 
+                : (TimeSpan.TryParseExact(time, @"hh\:mm\:ss\,fff", _usCulture, out span)
                 ? span.Ticks : 0);
         }
     }

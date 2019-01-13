@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
@@ -163,7 +163,6 @@ namespace MediaBrowser.Controller.Library
         /// Adds the parts.
         /// </summary>
         /// <param name="rules">The rules.</param>
-        /// <param name="pluginFolders">The plugin folders.</param>
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
@@ -298,7 +297,7 @@ namespace MediaBrowser.Controller.Library
             string name,
             Guid parentId,
             string viewType,
-            string sortNamen);
+            string sortName);
 
         /// <summary>
         /// Gets the named view.

@@ -34,10 +34,7 @@ namespace Emby.Server.Implementations.Security
         }
 
         private MBLicenseFile _licenseFile;
-        private MBLicenseFile LicenseFile
-        {
-            get { return _licenseFile ?? (_licenseFile = new MBLicenseFile(_appPaths, _fileSystem, _cryptographyProvider)); }
-        }
+        private MBLicenseFile LicenseFile => _licenseFile ?? (_licenseFile = new MBLicenseFile(_appPaths, _fileSystem, _cryptographyProvider));
 
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
@@ -55,7 +52,7 @@ namespace Emby.Server.Implementations.Security
         {
             if (httpClient == null)
             {
-                throw new ArgumentNullException("httpClient");
+                throw new ArgumentNullException(nameof(httpClient));
             }
 
             _appHost = appHost;
@@ -82,14 +79,8 @@ namespace Emby.Server.Implementations.Security
         /// <value>The supporter key.</value>
         public string SupporterKey
         {
-            get
-            {
-                return LicenseFile.RegKey;
-            }
-            set
-            {
-                throw new Exception("Please call UpdateSupporterKey");
-            }
+            get => LicenseFile.RegKey;
+            set => throw new Exception("Please call UpdateSupporterKey");
         }
 
         public async Task UpdateSupporterKey(string newValue)
@@ -138,7 +129,7 @@ namespace Emby.Server.Implementations.Security
                         _logger.LogError(msg);
                         throw new ArgumentException(msg);
                     }
-                    if (!String.IsNullOrEmpty(reg.key))
+                    if (!string.IsNullOrEmpty(reg.key))
                     {
                         await UpdateSupporterKey(reg.key).ConfigureAwait(false);
                     }

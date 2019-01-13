@@ -30,7 +30,7 @@ namespace Emby.Naming.AudioBook
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
             if (IsDirectory)
                 return null;
@@ -46,7 +46,7 @@ namespace Emby.Naming.AudioBook
 
             var parsingResult = new AudioBookFilePathParser(_options)
                 .Parse(path, IsDirectory);
-            
+
             return new AudioBookFileInfo
             {
                 Path = path,

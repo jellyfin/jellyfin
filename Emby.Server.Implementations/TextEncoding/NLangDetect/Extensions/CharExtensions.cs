@@ -333,7 +333,7 @@ namespace NLangDetect.Core.Extensions
 
       if (!IsValidCodePoint(codePoint))
       {
-        throw new ArgumentException("Argument is not a valid code point.", "ch");
+        throw new ArgumentException("Argument is not a valid code point.", nameof(ch));
       }
 
       int top, bottom, current;

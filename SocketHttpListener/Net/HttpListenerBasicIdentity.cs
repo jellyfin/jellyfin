@@ -26,7 +26,7 @@ namespace SocketHttpListener.Net
         public GenericIdentity(string name)
         {
             if (name == null)
-                throw new System.ArgumentNullException("name");
+                throw new System.ArgumentNullException(nameof(name));
 
             m_name = name;
             m_type = "";
@@ -35,9 +35,9 @@ namespace SocketHttpListener.Net
         public GenericIdentity(string name, string type)
         {
             if (name == null)
-                throw new System.ArgumentNullException("name");
+                throw new System.ArgumentNullException(nameof(name));
             if (type == null)
-                throw new System.ArgumentNullException("type");
+                throw new System.ArgumentNullException(nameof(type));
 
             m_name = name;
             m_type = type;

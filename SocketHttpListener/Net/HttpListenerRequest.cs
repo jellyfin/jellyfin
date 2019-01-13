@@ -27,7 +27,7 @@ namespace SocketHttpListener.Net
 
         public string[] UserLanguages => Helpers.ParseMultivalueHeader(Headers[HttpKnownHeaderNames.AcceptLanguage]);
 
-        private CookieCollection ParseCookies(Uri uri, string setCookieHeader)
+        private static CookieCollection ParseCookies(Uri uri, string setCookieHeader)
         {
             CookieCollection cookies = new CookieCollection();
             return cookies;

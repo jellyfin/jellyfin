@@ -15,16 +15,13 @@ namespace Emby.Server.Implementations.IO
             _fileSystem = fileSystem;
         }
 
-        public string Extension
-        {
-            get { return ".mblink"; }
-        }
+        public string Extension => ".mblink";
 
         public string Resolve(string shortcutPath)
         {
             if (string.IsNullOrEmpty(shortcutPath))
             {
-                throw new ArgumentNullException("filenshortcutPathame");
+                throw new ArgumentException("Shortcut path is empty or null.", nameof(shortcutPath));
             }
 
             if (string.Equals(Path.GetExtension(shortcutPath), ".mblink", StringComparison.OrdinalIgnoreCase))
@@ -41,12 +38,12 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(shortcutPath))
             {
-                throw new ArgumentNullException("shortcutPath");
+                throw new ArgumentNullException(nameof(shortcutPath));
             }
 
             if (string.IsNullOrEmpty(targetPath))
             {
-                throw new ArgumentNullException("targetPath");
+                throw new ArgumentNullException(nameof(targetPath));
             }
 
             _fileSystem.WriteAllText(shortcutPath, targetPath);

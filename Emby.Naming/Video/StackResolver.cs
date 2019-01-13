@@ -126,7 +126,7 @@ namespace Emby.Naming.Video
                                             }
                                             stack.Files.Add(file2.FullName);
                                         }
-                                        else 
+                                        else
                                         {
                                             // Sequel
                                             offset = 0;

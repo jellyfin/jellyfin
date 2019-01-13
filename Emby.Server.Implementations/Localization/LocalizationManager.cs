@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -165,13 +165,7 @@ namespace Emby.Server.Implementations.Localization
         /// Gets the localization path.
         /// </summary>
         /// <value>The localization path.</value>
-        public string LocalizationPath
-        {
-            get
-            {
-                return Path.Combine(_configurationManager.ApplicationPaths.ProgramDataPath, "localization");
-            }
-        }
+        public string LocalizationPath => Path.Combine(_configurationManager.ApplicationPaths.ProgramDataPath, "localization");
 
         public string RemoveDiacritics(string text)
         {
@@ -357,7 +351,7 @@ namespace Emby.Server.Implementations.Localization
         {
             if (string.IsNullOrEmpty(rating))
             {
-                throw new ArgumentNullException("rating");
+                throw new ArgumentNullException(nameof(rating));
             }
 
             if (_unratedValues.Contains(rating, StringComparer.OrdinalIgnoreCase))
@@ -452,7 +446,7 @@ namespace Emby.Server.Implementations.Localization
         {
             if (string.IsNullOrEmpty(culture))
             {
-                throw new ArgumentNullException("culture");
+                throw new ArgumentNullException(nameof(culture));
             }
 
             const string prefix = "Core";
@@ -465,7 +459,7 @@ namespace Emby.Server.Implementations.Localization
         {
             if (string.IsNullOrEmpty(culture))
             {
-                throw new ArgumentNullException("culture");
+                throw new ArgumentNullException(nameof(culture));
             }
 
             var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -494,7 +488,7 @@ namespace Emby.Server.Implementations.Localization
             }
         }
 
-        private string GetResourceFilename(string culture)
+        private static string GetResourceFilename(string culture)
         {
             var parts = culture.Split('-');
 

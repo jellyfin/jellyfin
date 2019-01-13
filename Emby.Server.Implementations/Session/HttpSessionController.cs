@@ -36,26 +36,11 @@ namespace Emby.Server.Implementations.Session
             _sessionManager = sessionManager;
         }
 
-        private string PostUrl
-        {
-            get
-            {
-                return string.Format("http://{0}{1}", Session.RemoteEndPoint, _postUrl);
-            }
-        }
+        private string PostUrl => string.Format("http://{0}{1}", Session.RemoteEndPoint, _postUrl);
 
-        public bool IsSessionActive
-        {
-            get
-            {
-                return (DateTime.UtcNow - Session.LastActivityDate).TotalMinutes <= 5;
-            }
-        }
+        public bool IsSessionActive => (DateTime.UtcNow - Session.LastActivityDate).TotalMinutes <= 5;
 
-        public bool SupportsMediaControl
-        {
-            get { return true; }
-        }
+        public bool SupportsMediaControl => true;
 
         private Task SendMessage(string name, string messageId, CancellationToken cancellationToken)
         {
@@ -164,7 +149,7 @@ namespace Emby.Server.Implementations.Session
             {
                 if (typeof(T) == typeof(string))
                 {
-                    var str = data as String;
+                    var str = data as string;
                     if (!string.IsNullOrEmpty(str))
                     {
                         options.RequestContent = str;
@@ -189,7 +174,7 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
-        private string ToQueryString(Dictionary<string, string> nvc)
+        private static string ToQueryString(Dictionary<string, string> nvc)
         {
             var array = (from item in nvc
                          select string.Format("{0}={1}", WebUtility.UrlEncode(item.Key), WebUtility.UrlEncode(item.Value)))

@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Music
                 // They seem to throw bad request failures on any term with a slash
                 var nameToSearch = searchInfo.Name.Replace('/', ' ');
 
-                var url = String.Format("/ws/2/artist/?query=\"{0}\"&dismax=true", UrlEncode(nameToSearch));
+                var url = string.Format("/ws/2/artist/?query=\"{0}\"&dismax=true", UrlEncode(nameToSearch));
 
                 using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
                 {
@@ -66,7 +66,7 @@ namespace MediaBrowser.Providers.Music
                 if (HasDiacritics(searchInfo.Name))
                 {
                     // Try again using the search with accent characters url
-                    url = String.Format("/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
+                    url = string.Format("/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
 
                     using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
                     {
@@ -271,7 +271,7 @@ namespace MediaBrowser.Providers.Music
         /// <returns><c>true</c> if the specified text has diacritics; otherwise, <c>false</c>.</returns>
         private bool HasDiacritics(string text)
         {
-            return !String.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
+            return !string.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
         }
 
         /// <summary>

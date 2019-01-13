@@ -15,10 +15,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -108,8 +108,8 @@ namespace Mono.Nat
                         foreach (var unicast in properties.UnicastAddresses)
                         {
                             if (/*unicast.DuplicateAddressDetectionState == DuplicateAddressDetectionState.Preferred
-							    && unicast.AddressPreferredLifetime != UInt32.MaxValue
-							    && */unicast.Address.AddressFamily == AddressFamily.InterNetwork)
+                                && unicast.AddressPreferredLifetime != UInt32.MaxValue
+                                && */unicast.Address.AddressFamily == AddressFamily.InterNetwork)
                             {
                                 var bytes = unicast.Address.GetAddressBytes();
                                 bytes[3] = 1;
@@ -165,7 +165,7 @@ namespace Mono.Nat
 
         async Task Search(UdpClient client)
         {
-            // Sort out the time for the next search first. The spec says the 
+            // Sort out the time for the next search first. The spec says the
             // timeout should double after each attempt. Once it reaches 64 seconds
             // (and that attempt fails), assume no devices available
             nextSearch = DateTime.Now.AddMilliseconds(timeout);

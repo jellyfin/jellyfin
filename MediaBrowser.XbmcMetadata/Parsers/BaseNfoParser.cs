@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -60,12 +60,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             if (item == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(item));
             }
 
             if (string.IsNullOrEmpty(metadataFile))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentException("The metadata file was empty or null.", nameof(metadataFile));
             }
 
             var settings = XmlReaderSettingsFactory.Create(false);

@@ -41,19 +41,19 @@ namespace UniversalDetector.Core
     {
         private const int CHARSETS_NUM = 4;
         private string detectedCharset;
-        private CodingStateMachine[] codingSM; 
+        private CodingStateMachine[] codingSM;
         int activeSM;
 
         public EscCharsetProber()
         {
-            codingSM = new CodingStateMachine[CHARSETS_NUM]; 
+            codingSM = new CodingStateMachine[CHARSETS_NUM];
             codingSM[0] = new CodingStateMachine(new HZSMModel());
             codingSM[1] = new CodingStateMachine(new ISO2022CNSMModel());
             codingSM[2] = new CodingStateMachine(new ISO2022JPSMModel());
             codingSM[3] = new CodingStateMachine(new ISO2022KRSMModel());
             Reset();
         }
-        
+
         public override void Reset()
         {
             state = ProbingState.Detecting;
@@ -66,7 +66,7 @@ namespace UniversalDetector.Core
         public override ProbingState HandleData(byte[] buf, int offset, int len)
         {
             int max = offset + len;
-            
+
             for (int i = offset; i < max && state == ProbingState.Detecting; i++) {
                 for (int j = activeSM - 1; j >= 0; j--) {
                     // byte is feed to all active state machine
@@ -94,12 +94,12 @@ namespace UniversalDetector.Core
 
         public override string GetCharsetName()
         {
-            return detectedCharset;        
+            return detectedCharset;
         }
-        
+
         public override float GetConfidence()
         {
             return 0.99f;
-        }           
+        }
     }
 }

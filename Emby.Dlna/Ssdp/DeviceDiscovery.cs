@@ -83,8 +83,8 @@ namespace Emby.Dlna.Ssdp
                 {
                     _deviceLocator = new SsdpDeviceLocator(_commsServer, _timerFactory);
 
-                    // (Optional) Set the filter so we only see notifications for devices we care about 
-                    // (can be any search target value i.e device type, uuid value etc - any value that appears in the 
+                    // (Optional) Set the filter so we only see notifications for devices we care about
+                    // (can be any search target value i.e device type, uuid value etc - any value that appears in the
                     // DiscoverdSsdpDevice.NotificationType property or that is used with the searchTarget parameter of the Search method).
                     //_DeviceLocator.NotificationFilter = "upnp:rootdevice";
 

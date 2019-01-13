@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// The TVDB API key
         /// </summary>
-        public static readonly string TvdbApiKey = "B89CE93890E9419B";
+        public static readonly string TvdbApiKey = "OG4V3YJ3FAP7FP2K";
         public static readonly string TvdbBaseUrl = "https://www.thetvdb.com/";
         /// <summary>
         /// The banner URL

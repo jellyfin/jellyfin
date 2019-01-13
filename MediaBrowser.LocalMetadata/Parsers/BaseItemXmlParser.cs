@@ -56,12 +56,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
         {
             if (item == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(item));
             }
 
             if (string.IsNullOrEmpty(metadataFile))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentException("The metadata file was empty or null.",nameof(metadataFile));
             }
 
             var settings = XmlReaderSettingsFactory.Create(false);

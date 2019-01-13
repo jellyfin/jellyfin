@@ -37,7 +37,7 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The HTTPS port.</value>
         int HttpsPort { get; }
-        
+
         /// <summary>
         /// Gets a value indicating whether [supports HTTPS].
         /// </summary>

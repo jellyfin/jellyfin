@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -99,6 +99,7 @@ namespace Emby.Server.Implementations.AppBase
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
+        /// <param name="fileSystem">The file system</param>
         protected BaseConfigurationManager(IApplicationPaths applicationPaths, ILoggerFactory loggerFactory, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
         {
             CommonApplicationPaths = applicationPaths;
@@ -155,7 +156,7 @@ namespace Emby.Server.Implementations.AppBase
         {
             if (newConfiguration == null)
             {
-                throw new ArgumentNullException("newConfiguration");
+                throw new ArgumentNullException(nameof(newConfiguration));
             }
 
             ValidateCachePath(newConfiguration);

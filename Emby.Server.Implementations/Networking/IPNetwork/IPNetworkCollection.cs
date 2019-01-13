@@ -11,22 +11,12 @@ namespace System.Net
         private byte _cidrSubnet;
         private IPNetwork _ipnetwork;
 
-        private byte _cidr
-        {
-            get { return this._ipnetwork.Cidr; }
-        }
-        private BigInteger _broadcast
-        {
-            get { return IPNetwork.ToBigInteger(this._ipnetwork.Broadcast); }
-        }
-        private BigInteger _lastUsable
-        {
-            get { return IPNetwork.ToBigInteger(this._ipnetwork.LastUsable); }
-        }
-        private BigInteger _network
-        {
-            get { return IPNetwork.ToBigInteger(this._ipnetwork.Network); }
-        }
+        private byte _cidr => this._ipnetwork.Cidr;
+
+        private BigInteger _broadcast => IPNetwork.ToBigInteger(this._ipnetwork.Broadcast);
+
+        private BigInteger _lastUsable => IPNetwork.ToBigInteger(this._ipnetwork.LastUsable);
+        private BigInteger _network => IPNetwork.ToBigInteger(this._ipnetwork.Network);
 #if TRAVISCI
         public
 #else
@@ -38,7 +28,7 @@ namespace System.Net
             int maxCidr = ipnetwork.AddressFamily == Sockets.AddressFamily.InterNetwork ? 32 : 128;
             if (cidrSubnet > maxCidr)
             {
-                throw new ArgumentOutOfRangeException("cidrSubnet");
+                throw new ArgumentOutOfRangeException(nameof(cidrSubnet));
             }
 
             if (cidrSubnet < ipnetwork.Cidr)
@@ -68,7 +58,7 @@ namespace System.Net
             {
                 if (i >= this.Count)
                 {
-                    throw new ArgumentOutOfRangeException("i");
+                    throw new ArgumentOutOfRangeException(nameof(i));
                 }
 
                 BigInteger last = this._ipnetwork.AddressFamily == Sockets.AddressFamily.InterNetworkV6
@@ -96,10 +86,7 @@ namespace System.Net
 
         #region IEnumerator<IPNetwork> Members
 
-        public IPNetwork Current
-        {
-            get { return this[this._enumerator]; }
-        }
+        public IPNetwork Current => this[this._enumerator];
 
         #endregion
 
@@ -115,10 +102,7 @@ namespace System.Net
 
         #region IEnumerator Members
 
-        object IEnumerator.Current
-        {
-            get { return this.Current; }
-        }
+        object IEnumerator.Current => this.Current;
 
         public bool MoveNext()
         {
