@@ -1,10 +1,9 @@
 using System.Globalization;
+using Emby.Naming.TV;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
-using Emby.Naming.Common;
-using Emby.Naming.TV;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.TV

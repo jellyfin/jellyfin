@@ -1,23 +1,3 @@
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Querying;
-using Emby.Naming.Audio;
-using Emby.Naming.Common;
-using Emby.Naming.TV;
-using Emby.Naming.Video;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -27,26 +7,42 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Naming.Audio;
+using Emby.Naming.Common;
+using Emby.Naming.TV;
+using Emby.Naming.Video;
 using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
+using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Model.Channels;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Tasks;
+using MediaBrowser.Providers.MediaInfo;
+using Microsoft.Extensions.Logging;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
-using MediaBrowser.Common.Configuration;
-
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Tasks;
-using Emby.Server.Implementations.Playlists;
-using MediaBrowser.Providers.MediaInfo;
-using MediaBrowser.Controller;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -391,7 +387,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     try
                     {
-                         _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
+                        _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
                         if (fileSystemInfo.IsDirectory)
                         {
                             _fileSystem.DeleteDirectory(fileSystemInfo.FullName, true);
@@ -722,7 +718,7 @@ namespace Emby.Server.Implementations.Library
 
             _fileSystem.CreateDirectory(rootFolderPath);
 
-            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath))).DeepCopy<Folder,AggregateFolder>();
+            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath))).DeepCopy<Folder, AggregateFolder>();
 
             // In case program data folder was moved
             if (!string.Equals(rootFolder.Path, rootFolderPath, StringComparison.Ordinal))
@@ -791,7 +787,7 @@ namespace Emby.Server.Implementations.Library
 
                         if (tmpItem == null)
                         {
-                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath))).DeepCopy<Folder,UserRootFolder>();
+                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath))).DeepCopy<Folder, UserRootFolder>();
                         }
 
                         // In case program data folder was moved
@@ -914,7 +910,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (value <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(value),"Years less than or equal to 0 are invalid.");
+                throw new ArgumentOutOfRangeException(nameof(value), "Years less than or equal to 0 are invalid.");
             }
 
             var name = value.ToString(CultureInfo.InvariantCulture);
@@ -2375,7 +2371,7 @@ namespace Emby.Server.Implementations.Library
             string videoPath,
             string[] files)
         {
-             new SubtitleResolver(BaseItem.LocalizationManager, _fileSystem).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
+            new SubtitleResolver(BaseItem.LocalizationManager, _fileSystem).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
         }
 
         public bool IsVideoFile(string path, LibraryOptions libraryOptions)
@@ -2589,7 +2585,7 @@ namespace Emby.Server.Implementations.Library
                     video.ParentId = Guid.Empty;
                     video.OwnerId = owner.Id;
                     video.ExtraType = ExtraType.Trailer;
-                    video.TrailerTypes = new [] { TrailerType.LocalTrailer };
+                    video.TrailerTypes = new[] { TrailerType.LocalTrailer };
 
                     return video;
 

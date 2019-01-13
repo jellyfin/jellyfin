@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Playlists;
-using System;
+﻿using System;
 using System.IO;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Entities;
 using System.Linq;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {

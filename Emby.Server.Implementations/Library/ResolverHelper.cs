@@ -1,10 +1,9 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library
@@ -104,7 +103,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>System.String.</returns>
         private static string GetDisplayName(string path, bool isDirectory)
         {
-           return isDirectory ? Path.GetFileName(path) : Path.GetFileNameWithoutExtension(path);
+            return isDirectory ? Path.GetFileName(path) : Path.GetFileNameWithoutExtension(path);
         }
 
         /// <summary>

@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.System;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
 {

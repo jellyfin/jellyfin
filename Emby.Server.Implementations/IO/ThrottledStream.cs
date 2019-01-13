@@ -264,7 +264,7 @@ namespace Emby.Server.Implementations.IO
         {
             if (!ThrottleCheck(bufferSizeInBytes))
             {
-                return ;
+                return;
             }
 
             _byteCount += bufferSizeInBytes;

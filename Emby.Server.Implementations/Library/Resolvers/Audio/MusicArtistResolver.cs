@@ -1,15 +1,12 @@
-﻿using MediaBrowser.Controller.Entities.Audio;
+﻿using System;
+using System.Linq;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
-using System.Linq;
-
 using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Audio
 {
