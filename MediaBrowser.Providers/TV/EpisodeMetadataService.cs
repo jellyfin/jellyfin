@@ -4,13 +4,9 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Providers.Manager;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Providers.Manager;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV
 {

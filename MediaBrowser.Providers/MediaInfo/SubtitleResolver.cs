@@ -1,13 +1,13 @@
-﻿using MediaBrowser.Model.Extensions;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.MediaInfo
 {

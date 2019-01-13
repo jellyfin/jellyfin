@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Controller.Providers;
+﻿using System.Linq;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using System.Linq;
 
 namespace MediaBrowser.Providers.Music
 {

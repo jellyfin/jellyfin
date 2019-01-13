@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Controller.Entities.Audio;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Providers.Music
 {
