@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;

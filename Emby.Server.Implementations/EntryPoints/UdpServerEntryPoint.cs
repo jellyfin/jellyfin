@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Emby.Server.Implementations.Udp;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;

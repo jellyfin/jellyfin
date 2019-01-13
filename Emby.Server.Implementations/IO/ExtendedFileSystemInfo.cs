@@ -1,4 +1,4 @@
-﻿namespace Emby.Server.Implementations.IO
+namespace Emby.Server.Implementations.IO
 {
     public class ExtendedFileSystemInfo
     {

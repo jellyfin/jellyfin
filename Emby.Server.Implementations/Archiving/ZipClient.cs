@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using MediaBrowser.Model.IO;
 using SharpCompress.Archives.SevenZip;
 using SharpCompress.Archives.Tar;

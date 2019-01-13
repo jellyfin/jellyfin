@@ -1,4 +1,4 @@
-﻿namespace Emby.XmlTv.Entities
+namespace Emby.XmlTv.Entities
 {
     public class XmlTvCredit
     {

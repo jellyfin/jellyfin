@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;

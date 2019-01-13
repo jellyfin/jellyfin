@@ -1,4 +1,4 @@
-﻿namespace NLangDetect.Core
+namespace NLangDetect.Core
 {
     public enum ErrorCode
     {

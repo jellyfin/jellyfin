@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Emby.Server.Implementations.Images;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
