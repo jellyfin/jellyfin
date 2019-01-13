@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Globalization;
+using System.Text;
 
 namespace SocketHttpListener.Net
 {

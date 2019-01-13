@@ -1,21 +1,15 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
-using SocketHttpListener.Primitives;
-using ProtocolType = MediaBrowser.Model.Net.ProtocolType;
-using SocketType = MediaBrowser.Model.Net.SocketType;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace SocketHttpListener.Net
 {
@@ -209,7 +203,7 @@ namespace SocketHttpListener.Net
                 return;
             }
 
-            if(accepted == null)
+            if (accepted == null)
             {
                 return;
             }

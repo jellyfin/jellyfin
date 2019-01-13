@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Text;
 using SocketHttpListener.Primitives;
-using System.Threading;
-using MediaBrowser.Model.IO;
 
 namespace SocketHttpListener.Net
 {

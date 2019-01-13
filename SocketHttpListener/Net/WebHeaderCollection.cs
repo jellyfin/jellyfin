@@ -1,13 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Net;
 using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
 using System.Text;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Extensions;
 
 namespace SocketHttpListener.Net
 {

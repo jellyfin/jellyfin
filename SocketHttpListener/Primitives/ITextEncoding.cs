@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using MediaBrowser.Model.Text;
 
 namespace SocketHttpListener.Primitives

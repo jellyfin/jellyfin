@@ -1,12 +1,8 @@
 using System;
 using System.Net;
 using System.Security.Principal;
-using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Text;
-using SocketHttpListener.Net.WebSockets;
 using System.Threading.Tasks;
+using SocketHttpListener.Net.WebSockets;
 
 namespace SocketHttpListener.Net
 {

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SocketHttpListener.Net
 {
