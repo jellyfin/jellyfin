@@ -19,7 +19,7 @@
 
 namespace OpenSubtitlesHandler
 {
-    public class  TryUploadSubtitlesParameters
+    public class TryUploadSubtitlesParameters
     {
         private string _subhash = "";
         private string _subfilename = "";
