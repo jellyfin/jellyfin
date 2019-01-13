@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Updates;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
+using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Model.System
 {

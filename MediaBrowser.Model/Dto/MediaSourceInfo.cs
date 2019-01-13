@@ -1,9 +1,9 @@
-﻿using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.MediaInfo;
+﻿using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
-using System;
 
 namespace MediaBrowser.Model.Dto
 {

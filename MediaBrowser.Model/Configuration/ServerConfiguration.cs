@@ -1,6 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using System;
+﻿using System;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Configuration
 {

@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using System;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Users;
-using System;
 
 namespace MediaBrowser.Model.Dto
 {

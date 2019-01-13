@@ -55,7 +55,7 @@
 
         public DeviceIdentification()
         {
-            Headers = new HttpHeaderInfo[] {};
+            Headers = new HttpHeaderInfo[] { };
         }
     }
 }

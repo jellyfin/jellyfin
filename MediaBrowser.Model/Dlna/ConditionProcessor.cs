@@ -1,8 +1,7 @@
-﻿using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.MediaInfo;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Globalization;
+using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -24,7 +23,7 @@ namespace MediaBrowser.Model.Dlna
             int? numVideoStreams,
             int? numAudioStreams,
             string videoCodecTag,
-            bool? isAvc )
+            bool? isAvc)
         {
             switch (condition.Property)
             {

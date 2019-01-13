@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Configuration;
-using System;
+﻿using System;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Model.Users
 {

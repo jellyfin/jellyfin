@@ -70,7 +70,7 @@ namespace MediaBrowser.Model.Querying
 
         public LatestItemsQuery()
         {
-            EnableImageTypes = new ImageType[] {};
+            EnableImageTypes = new ImageType[] { };
         }
     }
 }

@@ -1,13 +1,13 @@
-﻿using MediaBrowser.Model.Drawing;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
 {

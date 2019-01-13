@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MediaBrowser.Model.Diagnostics
+﻿namespace MediaBrowser.Model.Diagnostics
 {
     public interface IProcessFactory
     {
