@@ -58,7 +58,7 @@ namespace OpenSubtitlesHandler.Console
     /// <summary>
     /// Console Debug Args
     /// </summary>
-    public class DebugEventArgs : System.EventArgs
+    public class DebugEventArgs : EventArgs
     {
         public DebugCode Code { get; private set; }
         public string Text { get; private set; }

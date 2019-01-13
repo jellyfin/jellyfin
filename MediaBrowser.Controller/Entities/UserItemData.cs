@@ -28,7 +28,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the users 0-10 rating
         /// </summary>
         /// <value>The rating.</value>
-        /// <exception cref="System.ArgumentOutOfRangeException">Rating;A 0 to 10 rating is required for UserItemData.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Rating;A 0 to 10 rating is required for UserItemData.</exception>
         public double? Rating
         {
             get => _rating;

@@ -84,7 +84,7 @@ namespace UniversalDetector.Core
                         }
                         else if (j != activeSM)
                         {
-                            CodingStateMachine t = codingSM[activeSM];
+                            var t = codingSM[activeSM];
                             codingSM[activeSM] = codingSM[j];
                             codingSM[j] = t;
                         }

@@ -54,7 +54,7 @@ namespace SocketHttpListener.Net
         public static Uri GetRequestUri(string rawUri, string cookedUriScheme, string cookedUriHost,
             string cookedUriPath, string cookedUriQuery)
         {
-            HttpListenerRequestUriBuilder builder = new HttpListenerRequestUriBuilder(rawUri,
+            var builder = new HttpListenerRequestUriBuilder(rawUri,
                 cookedUriScheme, cookedUriHost, cookedUriPath, cookedUriQuery);
 
             return builder.Build();
@@ -94,10 +94,10 @@ namespace SocketHttpListener.Net
 
             // Try to check the raw path using first the primary encoding (according to http.sys settings);
             // if it fails try the secondary encoding.
-            ParsingResult result = BuildRequestUriUsingRawPath(GetEncoding(EncodingType.Primary));
+            var result = BuildRequestUriUsingRawPath(GetEncoding(EncodingType.Primary));
             if (result == ParsingResult.EncodingError)
             {
-                Encoding secondaryEncoding = GetEncoding(EncodingType.Secondary);
+                var secondaryEncoding = GetEncoding(EncodingType.Secondary);
                 result = BuildRequestUriUsingRawPath(secondaryEncoding);
             }
             isValid = (result == ParsingResult.Success) ? true : false;
@@ -136,7 +136,7 @@ namespace SocketHttpListener.Net
             _requestUriString.Append(Uri.SchemeDelimiter);
             _requestUriString.Append(_cookedUriHost);
 
-            ParsingResult result = ParseRawPath(encoding);
+            var result = ParseRawPath(encoding);
             if (result == ParsingResult.Success)
             {
                 _requestUriString.Append(_cookedUriQuery);
@@ -327,7 +327,7 @@ namespace SocketHttpListener.Net
 
         private static string GetOctetsAsString(IEnumerable<byte> octets)
         {
-            StringBuilder octetString = new StringBuilder();
+            var octetString = new StringBuilder();
 
             bool first = true;
             foreach (byte octet in octets)

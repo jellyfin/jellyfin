@@ -110,7 +110,7 @@ namespace Emby.Server.Implementations.Data
 
         private List<Guid> GetAllUserIdsWithUserData(IDatabaseConnection db)
         {
-            List<Guid> list = new List<Guid>();
+            var list = new List<Guid>();
 
             using (var statement = PrepareStatement(db, "select DISTINCT UserId from UserData where UserId not null"))
             {
@@ -271,7 +271,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="internalUserId">The user id.</param>
         /// <param name="key">The key.</param>
         /// <returns>Task{UserItemData}.</returns>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// userId
         /// or
         /// key

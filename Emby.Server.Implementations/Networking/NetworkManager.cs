@@ -214,9 +214,9 @@ namespace Emby.Server.Implementations.Networking
 
                 subnets = new List<string>();
 
-                foreach (NetworkInterface adapter in NetworkInterface.GetAllNetworkInterfaces())
+                foreach (var adapter in NetworkInterface.GetAllNetworkInterfaces())
                 {
-                    foreach (UnicastIPAddressInformation unicastIPAddressInformation in adapter.GetIPProperties().UnicastAddresses)
+                    foreach (var unicastIPAddressInformation in adapter.GetIPProperties().UnicastAddresses)
                     {
                         if (unicastIPAddressInformation.Address.AddressFamily == AddressFamily.InterNetwork && endpointFirstPart == unicastIPAddressInformation.Address.ToString().Split('.')[0])
                         {
@@ -461,7 +461,7 @@ namespace Emby.Server.Implementations.Networking
 
         public int GetRandomUnusedUdpPort()
         {
-            IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            var localEndPoint = new IPEndPoint(IPAddress.Any, 0);
             using (var udpClient = new UdpClient(localEndPoint))
             {
                 var port = ((IPEndPoint)(udpClient.Client.LocalEndPoint)).Port;
@@ -522,8 +522,8 @@ namespace Emby.Server.Implementations.Networking
         /// <param name="endpointstring">The endpointstring.</param>
         /// <param name="defaultport">The defaultport.</param>
         /// <returns>IPEndPoint.</returns>
-        /// <exception cref="System.ArgumentException">Endpoint descriptor may not be empty.</exception>
-        /// <exception cref="System.FormatException"></exception>
+        /// <exception cref="ArgumentException">Endpoint descriptor may not be empty.</exception>
+        /// <exception cref="FormatException"></exception>
         private static async Task<IPEndPoint> Parse(string endpointstring, int defaultport)
         {
             if (string.IsNullOrEmpty(endpointstring)
@@ -585,7 +585,7 @@ namespace Emby.Server.Implementations.Networking
         /// </summary>
         /// <param name="p">The p.</param>
         /// <returns>System.Int32.</returns>
-        /// <exception cref="System.FormatException"></exception>
+        /// <exception cref="FormatException"></exception>
         private static int GetPort(string p)
         {
             int port;
@@ -605,7 +605,7 @@ namespace Emby.Server.Implementations.Networking
         /// </summary>
         /// <param name="p">The p.</param>
         /// <returns>IPAddress.</returns>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         private static async Task<IPAddress> GetIPfromHost(string p)
         {
             var hosts = await Dns.GetHostAddressesAsync(p).ConfigureAwait(false);

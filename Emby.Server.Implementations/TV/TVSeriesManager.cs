@@ -118,7 +118,7 @@ namespace Emby.Server.Implementations.TV
                 OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
                 SeriesPresentationUniqueKey = presentationUniqueKey,
                 Limit = limit,
-                DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions
+                DtoOptions = new DtoOptions
                 {
                     Fields = new ItemFields[]
                     {
@@ -196,7 +196,7 @@ namespace Emby.Server.Implementations.TV
                 IsPlayed = true,
                 Limit = 1,
                 ParentIndexNumberNotEquals = 0,
-                DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions
+                DtoOptions = new DtoOptions
                 {
                     Fields = new ItemFields[]
                     {

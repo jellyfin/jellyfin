@@ -751,7 +751,7 @@ namespace MediaBrowser.Api.Playback
             MediaSourceInfo mediaSource = null;
             if (string.IsNullOrWhiteSpace(request.LiveStreamId))
             {
-                TranscodingJob currentJob = !string.IsNullOrWhiteSpace(request.PlaySessionId) ?
+                var currentJob = !string.IsNullOrWhiteSpace(request.PlaySessionId) ?
                     ApiEntryPoint.Instance.GetTranscodingJob(request.PlaySessionId)
                     : null;
 

@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private static List<string> GetScheduleRequestDates(DateTime startDateUtc, DateTime endDateUtc)
         {
-            List<string> dates = new List<string>();
+            var dates = new List<string>();
 
             var start = new List<DateTime> { startDateUtc, startDateUtc.ToLocalTime() }.Min().Date;
             var end = new List<DateTime> { endDateUtc, endDateUtc.ToLocalTime() }.Max().Date;
@@ -104,7 +104,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             httpOptions.RequestHeaders["token"] = token;
 
             using (var response = await Post(httpOptions, true, info).ConfigureAwait(false))
-            using (StreamReader reader = new StreamReader(response.Content))
+            using (var reader = new StreamReader(response.Content))
             {
                 var dailySchedules = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Day>>(response.Content).ConfigureAwait(false);
                 _logger.LogDebug("Found {ScheduleCount} programs on {ChannelID} ScheduleDirect", dailySchedules.Count, channelId);
@@ -125,7 +125,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 httpOptions.RequestContent = "[\"" + string.Join("\", \"", programsID) + "\"]";
 
                 using (var innerResponse = await Post(httpOptions, true, info).ConfigureAwait(false))
-                using (StreamReader innerReader = new StreamReader(innerResponse.Content))
+                using (var innerReader = new StreamReader(innerResponse.Content))
                 {
                     var programDetails = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.ProgramDetails>>(innerResponse.Content).ConfigureAwait(false);
                     var programDict = programDetails.ToDictionary(p => p.programID, y => y);
@@ -136,8 +136,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                     var images = await GetImageForPrograms(info, programIdsWithImages, cancellationToken).ConfigureAwait(false);
 
-                    List<ProgramInfo> programsInfo = new List<ProgramInfo>();
-                    foreach (ScheduleDirect.Program schedule in dailySchedules.SelectMany(d => d.programs))
+                    var programsInfo = new List<ProgramInfo>();
+                    foreach (var schedule in dailySchedules.SelectMany(d => d.programs))
                     {
                         //_logger.LogDebug("Proccesing Schedule for statio ID " + stationID +
                         //              " which corresponds to channel " + channelNumber + " and program id " +
@@ -222,9 +222,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private ProgramInfo GetProgram(string channelId, ScheduleDirect.Program programInfo, ScheduleDirect.ProgramDetails details)
         {
-            DateTime startAt = GetDate(programInfo.airDateTime);
-            DateTime endAt = startAt.AddSeconds(programInfo.duration);
-            ProgramAudio audioType = ProgramAudio.Stereo;
+            var startAt = GetDate(programInfo.airDateTime);
+            var endAt = startAt.AddSeconds(programInfo.duration);
+            var audioType = ProgramAudio.Stereo;
 
             var programId = programInfo.programID ?? string.Empty;
 
@@ -526,15 +526,15 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             try
             {
                 using (var httpResponse = await Get(options, false, info).ConfigureAwait(false))
-                using (Stream responce = httpResponse.Content)
+                using (var responce = httpResponse.Content)
                 {
                     var root = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Headends>>(responce).ConfigureAwait(false);
 
                     if (root != null)
                     {
-                        foreach (ScheduleDirect.Headends headend in root)
+                        foreach (var headend in root)
                         {
-                            foreach (ScheduleDirect.Lineup lineup in headend.lineups)
+                            foreach (var lineup in headend.lineups)
                             {
                                 lineups.Add(new NameIdPair
                                 {
@@ -887,7 +887,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                 var allStations = root.stations ?? Enumerable.Empty<ScheduleDirect.Station>();
 
-                foreach (ScheduleDirect.Map map in root.map)
+                foreach (var map in root.map)
                 {
                     var channelNumber = GetChannelNumber(map);
 

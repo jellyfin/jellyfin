@@ -16,7 +16,7 @@ namespace MediaBrowser.Providers.Music
         protected override IList<BaseItem> GetChildrenForMetadataUpdates(MusicArtist item)
         {
             return item.IsAccessedByName ?
-                item.GetTaggedItems(new Controller.Entities.InternalItemsQuery
+                item.GetTaggedItems(new InternalItemsQuery
                 {
                     Recursive = true,
                     IsFolder = false

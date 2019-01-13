@@ -81,14 +81,14 @@ namespace Mono.Nat
 
             try
             {
-                foreach (NetworkInterface n in NetworkInterface.GetAllNetworkInterfaces())
+                foreach (var n in NetworkInterface.GetAllNetworkInterfaces())
                 {
                     if (n.OperationalStatus != OperationalStatus.Up && n.OperationalStatus != OperationalStatus.Unknown)
                         continue;
-                    IPInterfaceProperties properties = n.GetIPProperties();
-                    List<IPEndPoint> gatewayList = new List<IPEndPoint>();
+                    var properties = n.GetIPProperties();
+                    var gatewayList = new List<IPEndPoint>();
 
-                    foreach (GatewayIPAddressInformation gateway in properties.GatewayAddresses)
+                    foreach (var gateway in properties.GatewayAddresses)
                     {
                         if (gateway.Address.AddressFamily == AddressFamily.InterNetwork)
                         {
@@ -120,7 +120,7 @@ namespace Mono.Nat
 
                     if (gatewayList.Count > 0)
                     {
-                        foreach (UnicastIPAddressInformation address in properties.UnicastAddresses)
+                        foreach (var address in properties.UnicastAddresses)
                         {
                             if (address.Address.AddressFamily == AddressFamily.InterNetwork)
                             {
@@ -150,7 +150,7 @@ namespace Mono.Nat
 
         public async void Search()
         {
-            foreach (UdpClient s in sockets)
+            foreach (var s in sockets)
             {
                 try
                 {
@@ -181,7 +181,7 @@ namespace Mono.Nat
 
             // The nat-pmp search message. Must be sent to GatewayIP:53531
             byte[] buffer = new byte[] { PmpConstants.Version, PmpConstants.OperationCode };
-            foreach (IPEndPoint gatewayEndpoint in gatewayLists[client])
+            foreach (var gatewayEndpoint in gatewayLists[client])
             {
                 await client.SendAsync(buffer, buffer.Length, gatewayEndpoint).ConfigureAwait(false);
             }
@@ -189,8 +189,8 @@ namespace Mono.Nat
 
         bool IsSearchAddress(IPAddress address)
         {
-            foreach (List<IPEndPoint> gatewayList in gatewayLists.Values)
-                foreach (IPEndPoint gatewayEndpoint in gatewayList)
+            foreach (var gatewayList in gatewayLists.Values)
+                foreach (var gatewayEndpoint in gatewayList)
                     if (gatewayEndpoint.Address.Equals(address))
                         return true;
             return false;
@@ -210,7 +210,7 @@ namespace Mono.Nat
             if (errorcode != 0)
                 _logger.LogDebug("Non zero error: {0}", errorcode);
 
-            IPAddress publicIp = new IPAddress(new byte[] { response[8], response[9], response[10], response[11] });
+            var publicIp = new IPAddress(new byte[] { response[8], response[9], response[10], response[11] });
             nextSearch = DateTime.Now.AddMinutes(5);
             timeout = 250;
 

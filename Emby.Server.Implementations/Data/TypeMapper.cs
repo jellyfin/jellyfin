@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="typeName">Name of the type.</param>
         /// <returns>Type.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public Type GetType(string typeName)
         {
             if (string.IsNullOrEmpty(typeName))

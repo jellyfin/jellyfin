@@ -36,7 +36,7 @@ namespace MediaBrowser.Model.MediaInfo
 
             DirectPlayProtocols = new MediaProtocol[] { MediaProtocol.Http };
 
-            VideoOptions videoOptions = options as VideoOptions;
+            var videoOptions = options as VideoOptions;
             if (videoOptions != null)
             {
                 AudioStreamIndex = videoOptions.AudioStreamIndex;

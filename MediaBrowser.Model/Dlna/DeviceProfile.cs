@@ -21,7 +21,7 @@ namespace MediaBrowser.Model.Dlna
         /// Gets or sets the identification.
         /// </summary>
         /// <value>The identification.</value>
-        public MediaBrowser.Model.Dlna.DeviceIdentification Identification { get; set; }
+        public DeviceIdentification Identification { get; set; }
 
         public string FriendlyName { get; set; }
         public string Manufacturer { get; set; }
@@ -191,7 +191,7 @@ namespace MediaBrowser.Model.Dlna
                 var conditionProcessor = new ConditionProcessor();
 
                 var anyOff = false;
-                foreach (ProfileCondition c in i.Conditions)
+                foreach (var c in i.Conditions)
                 {
                     if (!conditionProcessor.IsAudioConditionSatisfied(GetModelProfileCondition(c), audioChannels, audioBitrate, audioSampleRate, audioBitDepth))
                     {
@@ -238,7 +238,7 @@ namespace MediaBrowser.Model.Dlna
                 var conditionProcessor = new ConditionProcessor();
 
                 var anyOff = false;
-                foreach (ProfileCondition c in i.Conditions)
+                foreach (var c in i.Conditions)
                 {
                     if (!conditionProcessor.IsImageConditionSatisfied(GetModelProfileCondition(c), width, height))
                     {
@@ -304,7 +304,7 @@ namespace MediaBrowser.Model.Dlna
                 var conditionProcessor = new ConditionProcessor();
 
                 var anyOff = false;
-                foreach (ProfileCondition c in i.Conditions)
+                foreach (var c in i.Conditions)
                 {
                     if (!conditionProcessor.IsVideoConditionSatisfied(GetModelProfileCondition(c), width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                     {

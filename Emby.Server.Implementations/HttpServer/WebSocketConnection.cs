@@ -77,7 +77,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
-        /// <exception cref="System.ArgumentNullException">socket</exception>
+        /// <exception cref="ArgumentNullException">socket</exception>
         public WebSocketConnection(IWebSocket socket, string remoteEndPoint, IJsonSerializer jsonSerializer, ILogger logger, ITextEncoding textEncoding)
         {
             if (socket == null)
@@ -215,7 +215,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">message</exception>
+        /// <exception cref="ArgumentNullException">message</exception>
         public Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
         {
             if (message == null)

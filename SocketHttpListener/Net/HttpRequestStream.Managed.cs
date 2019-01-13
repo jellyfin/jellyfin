@@ -124,7 +124,7 @@ namespace SocketHttpListener.Net
         {
             if (size == 0 || _closed)
             {
-                HttpStreamAsyncResult ares = new HttpStreamAsyncResult(this);
+                var ares = new HttpStreamAsyncResult(this);
                 ares._callback = cback;
                 ares._state = state;
                 ares.Complete();
@@ -134,7 +134,7 @@ namespace SocketHttpListener.Net
             int nread = FillFromBuffer(buffer, offset, size);
             if (nread > 0 || nread == -1)
             {
-                HttpStreamAsyncResult ares = new HttpStreamAsyncResult(this);
+                var ares = new HttpStreamAsyncResult(this);
                 ares._buffer = buffer;
                 ares._offset = offset;
                 ares._count = size;

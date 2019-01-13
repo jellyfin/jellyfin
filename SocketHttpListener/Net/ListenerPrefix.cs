@@ -40,7 +40,7 @@ namespace SocketHttpListener.Net
         // Equals and GetHashCode are required to detect duplicates in HttpListenerPrefixCollection.
         public override bool Equals(object o)
         {
-            ListenerPrefix other = o as ListenerPrefix;
+            var other = o as ListenerPrefix;
             if (other == null)
                 return false;
 

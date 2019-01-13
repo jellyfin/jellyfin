@@ -77,7 +77,7 @@ namespace MediaBrowser.Model.Notifications
 
         public NotificationOption GetOptions(string type)
         {
-            foreach (NotificationOption i in Options)
+            foreach (var i in Options)
             {
                 if (StringHelper.EqualsIgnoreCase(type, i.Type)) return i;
             }
@@ -86,14 +86,14 @@ namespace MediaBrowser.Model.Notifications
 
         public bool IsEnabled(string type)
         {
-            NotificationOption opt = GetOptions(type);
+            var opt = GetOptions(type);
 
             return opt != null && opt.Enabled;
         }
 
         public bool IsServiceEnabled(string service, string notificationType)
         {
-            NotificationOption opt = GetOptions(notificationType);
+            var opt = GetOptions(notificationType);
 
             return opt == null ||
                    !ListHelper.ContainsIgnoreCase(opt.DisabledServices, service);
@@ -101,7 +101,7 @@ namespace MediaBrowser.Model.Notifications
 
         public bool IsEnabledToMonitorUser(string type, Guid userId)
         {
-            NotificationOption opt = GetOptions(type);
+            var opt = GetOptions(type);
 
             return opt != null && opt.Enabled &&
                    !ListHelper.ContainsIgnoreCase(opt.DisabledMonitorUsers, userId.ToString(""));
@@ -109,7 +109,7 @@ namespace MediaBrowser.Model.Notifications
 
         public bool IsEnabledToSendToUser(string type, string userId, UserPolicy userPolicy)
         {
-            NotificationOption opt = GetOptions(type);
+            var opt = GetOptions(type);
 
             if (opt != null && opt.Enabled)
             {

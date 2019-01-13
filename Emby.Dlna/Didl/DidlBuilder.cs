@@ -78,7 +78,7 @@ namespace Emby.Dlna.Didl
 
             using (StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8))
             {
-                using (XmlWriter writer = XmlWriter.Create(builder, settings))
+                using (var writer = XmlWriter.Create(builder, settings))
                 {
                     //writer.WriteStartDocument();
 

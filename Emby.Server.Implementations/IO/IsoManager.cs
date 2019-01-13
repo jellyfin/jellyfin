@@ -23,8 +23,8 @@ namespace Emby.Server.Implementations.IO
         /// <param name="isoPath">The iso path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>IsoMount.</returns>
-        /// <exception cref="System.ArgumentNullException">isoPath</exception>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">isoPath</exception>
+        /// <exception cref="ArgumentException"></exception>
         public Task<IIsoMount> Mount(string isoPath, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(isoPath))

@@ -69,7 +69,7 @@ namespace MediaBrowser.Common.Plugins
         /// Returns true or false indicating success or failure
         /// </summary>
         /// <param name="configuration">The configuration.</param>
-        /// <exception cref="System.ArgumentNullException">configuration</exception>
+        /// <exception cref="ArgumentNullException">configuration</exception>
         void UpdateConfiguration(BasePluginConfiguration configuration);
 
         /// <summary>

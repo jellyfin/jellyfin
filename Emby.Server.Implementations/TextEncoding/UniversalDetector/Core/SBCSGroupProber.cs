@@ -59,7 +59,7 @@ namespace UniversalDetector.Core
             probers[7] = new SingleByteCharSetProber(new Win1253Model());
             probers[8] = new SingleByteCharSetProber(new Latin5BulgarianModel());
             probers[9] = new SingleByteCharSetProber(new Win1251BulgarianModel());
-            HebrewProber hebprober = new HebrewProber();
+            var hebprober = new HebrewProber();
             probers[10] = hebprober;
             // Logical
             probers[11] = new SingleByteCharSetProber(new Win1255Model(), false, hebprober);
@@ -75,7 +75,7 @@ namespace UniversalDetector.Core
 
         public override ProbingState HandleData(byte[] buf, int offset, int len)
         {
-            ProbingState st = ProbingState.NotMe;
+            var st = ProbingState.NotMe;
 
             //apply filter to original buffer, and we got new buffer back
             //depend on what script it is, we will feed them the new buffer

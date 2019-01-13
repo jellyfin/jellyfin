@@ -114,7 +114,7 @@ namespace BDInfo
 
                     streamOffset += 2;
 
-                    TSStreamType streamType = (TSStreamType)
+                    var streamType = (TSStreamType)
                         clipData[streamOffset + 1];
                     switch (streamType)
                     {
@@ -127,11 +127,11 @@ namespace BDInfo
                         case TSStreamType.MPEG2_VIDEO:
                         case TSStreamType.VC1_VIDEO:
                             {
-                                TSVideoFormat videoFormat = (TSVideoFormat)
+                                var videoFormat = (TSVideoFormat)
                                     (clipData[streamOffset + 2] >> 4);
-                                TSFrameRate frameRate = (TSFrameRate)
+                                var frameRate = (TSFrameRate)
                                     (clipData[streamOffset + 2] & 0xF);
-                                TSAspectRatio aspectRatio = (TSAspectRatio)
+                                var aspectRatio = (TSAspectRatio)
                                     (clipData[streamOffset + 3] >> 4);
 
                                 stream = new TSVideoStream();
@@ -168,9 +168,9 @@ namespace BDInfo
                                 string languageCode =
                                     _textEncoding.GetASCIIEncoding().GetString(languageBytes, 0, languageBytes.Length);
 
-                                TSChannelLayout channelLayout = (TSChannelLayout)
+                                var channelLayout = (TSChannelLayout)
                                     (clipData[streamOffset + 2] >> 4);
-                                TSSampleRate sampleRate = (TSSampleRate)
+                                var sampleRate = (TSSampleRate)
                                     (clipData[streamOffset + 2] & 0xF);
 
                                 stream = new TSAudioStream();

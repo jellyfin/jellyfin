@@ -17,14 +17,14 @@ namespace Rssdp.Infrastructure
         /// Adds a device (and it's children) to the list of devices being published by this server, making them discoverable to SSDP clients.
         /// </summary>
         /// <param name="device">The <see cref="SsdpRootDevice"/> instance to add.</param>
-        /// <returns>An awaitable <see cref="System.Threading.Tasks.Task"/>.</returns>
+        /// <returns>An awaitable <see cref="Task"/>.</returns>
         void AddDevice(SsdpRootDevice device);
 
         /// <summary>
         /// Removes a device (and it's children) from the list of devices being published by this server, making them undiscoverable.
         /// </summary>
         /// <param name="device">The <see cref="SsdpRootDevice"/> instance to add.</param>
-        /// <returns>An awaitable <see cref="System.Threading.Tasks.Task"/>.</returns>
+        /// <returns>An awaitable <see cref="Task"/>.</returns>
         Task RemoveDevice(SsdpRootDevice device);
 
         /// <summary>

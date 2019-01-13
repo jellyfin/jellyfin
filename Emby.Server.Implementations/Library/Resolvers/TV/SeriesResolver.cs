@@ -151,7 +151,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
                         var namingOptions = ((LibraryManager)libraryManager).GetNamingOptions();
 
-                        var episodeResolver = new Emby.Naming.TV.EpisodeResolver(namingOptions);
+                        var episodeResolver = new Naming.TV.EpisodeResolver(namingOptions);
                         bool? isNamed = null;
                         bool? isOptimistic = null;
 
@@ -179,7 +179,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [is place holder] [the specified path]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.ArgumentNullException">path</exception>
+        /// <exception cref="ArgumentNullException">path</exception>
         private static bool IsVideoPlaceHolder(string path)
         {
             if (string.IsNullOrEmpty(path))

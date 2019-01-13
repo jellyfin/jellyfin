@@ -100,7 +100,7 @@ namespace MediaBrowser.Model.Configuration
 
         public ImageOption GetImageOptions(ImageType type)
         {
-            foreach (ImageOption i in ImageOptions)
+            foreach (var i in ImageOptions)
             {
                 if (i.Type == type)
                 {
@@ -111,7 +111,7 @@ namespace MediaBrowser.Model.Configuration
             ImageOption[] options;
             if (DefaultImageOptions.TryGetValue(Type, out options))
             {
-                foreach (ImageOption i in options)
+                foreach (var i in options)
                 {
                     if (i.Type == type)
                     {

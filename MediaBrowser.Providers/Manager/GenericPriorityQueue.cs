@@ -132,7 +132,7 @@ namespace Priority_Queue
             int parent = node.QueueIndex / 2;
             while (parent >= 1)
             {
-                TItem parentNode = _nodes[parent];
+                var parentNode = _nodes[parent];
                 if (HasHigherPriority(parentNode, node))
                     break;
 
@@ -163,7 +163,7 @@ namespace Priority_Queue
                     break;
                 }
 
-                TItem childLeft = _nodes[childLeftIndex];
+                var childLeft = _nodes[childLeftIndex];
                 if (HasHigherPriority(childLeft, newParent))
                 {
                     newParent = childLeft;
@@ -173,7 +173,7 @@ namespace Priority_Queue
                 int childRightIndex = childLeftIndex + 1;
                 if (childRightIndex <= _numNodes)
                 {
-                    TItem childRight = _nodes[childRightIndex];
+                    var childRight = _nodes[childRightIndex];
                     if (HasHigherPriority(childRight, newParent))
                     {
                         newParent = childRight;
@@ -234,7 +234,7 @@ namespace Priority_Queue
             }
 #endif
 
-            TItem returnMe = _nodes[1];
+            var returnMe = _nodes[1];
             Remove(returnMe);
             item = returnMe;
             return true;
@@ -316,7 +316,7 @@ namespace Priority_Queue
         {
             //Bubble the updated node up or down as appropriate
             int parentIndex = node.QueueIndex / 2;
-            TItem parentNode = _nodes[parentIndex];
+            var parentNode = _nodes[parentIndex];
 
             if (parentIndex > 0 && HasHigherPriority(node, parentNode))
             {
@@ -356,7 +356,7 @@ namespace Priority_Queue
             }
 
             //Swap the node with the last node
-            TItem formerLastNode = _nodes[_numNodes];
+            var formerLastNode = _nodes[_numNodes];
             Swap(node, formerLastNode);
             _nodes[_numNodes] = null;
             _numNodes--;

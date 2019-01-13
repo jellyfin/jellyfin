@@ -71,7 +71,7 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="user">The user.</param>
         /// <param name="owner">The owner.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         public BaseItemDto GetBaseItemDto(BaseItem item, ItemFields[] fields, User user = null, BaseItem owner = null)
         {
             var options = new DtoOptions
@@ -463,7 +463,7 @@ namespace Emby.Server.Implementations.Dto
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         public string GetDtoId(BaseItem item)
         {
             return item.Id.ToString("N");

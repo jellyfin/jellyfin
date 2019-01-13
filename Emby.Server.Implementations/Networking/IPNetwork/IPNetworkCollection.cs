@@ -47,7 +47,7 @@ namespace System.Net
         {
             get
             {
-                BigInteger count = BigInteger.Pow(2, this._cidrSubnet - this._cidr);
+                var count = BigInteger.Pow(2, this._cidrSubnet - this._cidr);
                 return count;
             }
         }
@@ -61,11 +61,11 @@ namespace System.Net
                     throw new ArgumentOutOfRangeException(nameof(i));
                 }
 
-                BigInteger last = this._ipnetwork.AddressFamily == Sockets.AddressFamily.InterNetworkV6
+                var last = this._ipnetwork.AddressFamily == Sockets.AddressFamily.InterNetworkV6
                     ? this._lastUsable : this._broadcast;
-                BigInteger increment = (last - this._network) / this.Count;
-                BigInteger uintNetwork = this._network + ((increment + 1) * i);
-                IPNetwork ipn = new IPNetwork(uintNetwork, this._ipnetwork.AddressFamily, this._cidrSubnet);
+                var increment = (last - this._network) / this.Count;
+                var uintNetwork = this._network + ((increment + 1) * i);
+                var ipn = new IPNetwork(uintNetwork, this._ipnetwork.AddressFamily, this._cidrSubnet);
                 return ipn;
             }
         }

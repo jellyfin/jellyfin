@@ -25,7 +25,7 @@ namespace NLangDetect.Core
         {
             if (string.IsNullOrEmpty(plainText)) { throw new ArgumentException("Argument can't be null nor empty.", nameof(plainText)); }
 
-            Detector detector = DetectorFactory.Create(_DefaultAlpha);
+            var detector = DetectorFactory.Create(_DefaultAlpha);
 
             detector.Append(plainText);
 

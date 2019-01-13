@@ -75,7 +75,7 @@ namespace Jellyfin.SocketSharp
                         //
                         // We use a substream, as in 2.x we will support large uploads streamed to disk,
                         //
-                        HttpPostedFile sub = new HttpPostedFile(e.Filename, e.ContentType, input, e.Start, e.Length);
+                        var sub = new HttpPostedFile(e.Filename, e.ContentType, input, e.Start, e.Length);
                         files[e.Name] = sub;
                     }
                 }
@@ -207,17 +207,17 @@ namespace Jellyfin.SocketSharp
 
         async Task LoadWwwForm(WebROCollection form)
         {
-            using (Stream input = InputStream)
+            using (var input = InputStream)
             {
                 using (var ms = new MemoryStream())
                 {
                     await input.CopyToAsync(ms).ConfigureAwait(false);
                     ms.Position = 0;
 
-                    using (StreamReader s = new StreamReader(ms, ContentEncoding))
+                    using (var s = new StreamReader(ms, ContentEncoding))
                     {
-                        StringBuilder key = new StringBuilder();
-                        StringBuilder value = new StringBuilder();
+                        var key = new StringBuilder();
+                        var value = new StringBuilder();
                         int c;
 
                         while ((c = s.Read()) != -1)
@@ -269,7 +269,7 @@ namespace Jellyfin.SocketSharp
         {
             public override string ToString()
             {
-                StringBuilder result = new StringBuilder();
+                var result = new StringBuilder();
                 foreach (var pair in this)
                 {
                     if (result.Length > 0)
@@ -715,7 +715,7 @@ namespace Jellyfin.SocketSharp
                 if (at_eof || ReadBoundary())
                     return null;
 
-                Element elem = new Element();
+                var elem = new Element();
                 string header;
                 while ((header = ReadHeaders()) != null)
                 {

@@ -63,7 +63,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">mimeType</exception>
+        /// <exception cref="ArgumentNullException">mimeType</exception>
         public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
             return SaveImage(item, source, mimeType, type, imageIndex, null, cancellationToken);
@@ -299,7 +299,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="type">The type.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// imageIndex
         /// or
         /// imageIndex
@@ -316,7 +316,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="type">The type.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="path">The path.</param>
-        /// <exception cref="System.ArgumentNullException">imageIndex
+        /// <exception cref="ArgumentNullException">imageIndex
         /// or
         /// imageIndex</exception>
         private void SetImagePath(BaseItem item, ImageType type, int? imageIndex, string path)
@@ -333,7 +333,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="mimeType">Type of the MIME.</param>
         /// <param name="saveLocally">if set to <c>true</c> [save locally].</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// imageIndex
         /// or
         /// imageIndex
@@ -490,7 +490,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="mimeType">Type of the MIME.</param>
         /// <returns>IEnumerable{System.String}.</returns>
-        /// <exception cref="System.ArgumentNullException">imageIndex</exception>
+        /// <exception cref="ArgumentNullException">imageIndex</exception>
         private string[] GetCompatibleSavePaths(BaseItem item, ImageType type, int? imageIndex, string mimeType)
         {
             var season = item as Season;

@@ -242,7 +242,7 @@ namespace Emby.Dlna.ContentDirectory
 
             var dlnaOptions = _config.GetDlnaConfiguration();
 
-            using (XmlWriter writer = XmlWriter.Create(builder, settings))
+            using (var writer = XmlWriter.Create(builder, settings))
             {
                 //writer.WriteStartDocument();
 
@@ -358,7 +358,7 @@ namespace Emby.Dlna.ContentDirectory
             int totalCount = 0;
             int provided = 0;
 
-            using (XmlWriter writer = XmlWriter.Create(builder, settings))
+            using (var writer = XmlWriter.Create(builder, settings))
             {
                 //writer.WriteStartDocument();
 

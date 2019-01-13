@@ -19,10 +19,10 @@ namespace Emby.Server.Implementations.Net
 
         //TODO Remove and reimplement using the IsDisposed property directly.
         /// <summary>
-        /// Throws an <see cref="System.ObjectDisposedException"/> if the <see cref="IsDisposed"/> property is true.
+        /// Throws an <see cref="ObjectDisposedException"/> if the <see cref="IsDisposed"/> property is true.
         /// </summary>
         /// <seealso cref="IsDisposed"/>
-        /// <exception cref="System.ObjectDisposedException">Thrown if the <see cref="IsDisposed"/> property is true.</exception>
+        /// <exception cref="ObjectDisposedException">Thrown if the <see cref="IsDisposed"/> property is true.</exception>
         /// <seealso cref="Dispose()"/>
         protected virtual void ThrowIfDisposed()
         {

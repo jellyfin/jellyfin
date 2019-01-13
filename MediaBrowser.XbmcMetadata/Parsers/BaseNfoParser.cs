@@ -54,7 +54,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="item">The item.</param>
         /// <param name="metadataFile">The metadata file.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// </exception>
         public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
         {
@@ -225,7 +225,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         protected void ParseProviderLinks(T item, string xml)
         {
             //Look for a match for the Regex pattern "tt" followed by 7 digits
-            Match m = Regex.Match(xml, @"tt([0-9]{7})", RegexOptions.IgnoreCase);
+            var m = Regex.Match(xml, @"tt([0-9]{7})", RegexOptions.IgnoreCase);
             if (m.Success)
             {
                 item.SetProviderId(MetadataProviders.Imdb, m.Value);
@@ -379,7 +379,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 MetadataFields field;
 
-                                if (Enum.TryParse<MetadataFields>(i, true, out field))
+                                if (Enum.TryParse(i, true, out field))
                                 {
                                     return (MetadataFields?)field;
                                 }

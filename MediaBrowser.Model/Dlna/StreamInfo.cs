@@ -145,8 +145,8 @@ namespace MediaBrowser.Model.Dlna
                 throw new ArgumentNullException(nameof(baseUrl));
             }
 
-            List<string> list = new List<string>();
-            foreach (NameValuePair pair in BuildParams(this, accessToken))
+            var list = new List<string>();
+            foreach (var pair in BuildParams(this, accessToken))
             {
                 if (string.IsNullOrEmpty(pair.Value))
                 {
@@ -211,7 +211,7 @@ namespace MediaBrowser.Model.Dlna
 
         private static List<NameValuePair> BuildParams(StreamInfo item, string accessToken)
         {
-            List<NameValuePair> list = new List<NameValuePair>();
+            var list = new List<NameValuePair>();
 
             string audioCodecs = item.AudioCodecs.Length == 0 ?
                 string.Empty :
@@ -346,11 +346,11 @@ namespace MediaBrowser.Model.Dlna
 
         public List<SubtitleStreamInfo> GetExternalSubtitles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
         {
-            List<SubtitleStreamInfo> list = GetSubtitleProfiles(transcoderSupport, includeSelectedTrackOnly, enableAllProfiles, baseUrl, accessToken);
-            List<SubtitleStreamInfo> newList = new List<SubtitleStreamInfo>();
+            var list = GetSubtitleProfiles(transcoderSupport, includeSelectedTrackOnly, enableAllProfiles, baseUrl, accessToken);
+            var newList = new List<SubtitleStreamInfo>();
 
             // First add the selected track
-            foreach (SubtitleStreamInfo stream in list)
+            foreach (var stream in list)
             {
                 if (stream.DeliveryMethod == SubtitleDeliveryMethod.External)
                 {
@@ -368,7 +368,7 @@ namespace MediaBrowser.Model.Dlna
 
         public List<SubtitleStreamInfo> GetSubtitleProfiles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
         {
-            List<SubtitleStreamInfo> list = new List<SubtitleStreamInfo>();
+            var list = new List<SubtitleStreamInfo>();
 
             // HLS will preserve timestamps so we can just grab the full subtitle stream
             long startPositionTicks = StringHelper.EqualsIgnoreCase(SubProtocol, "hls")
@@ -378,7 +378,7 @@ namespace MediaBrowser.Model.Dlna
             // First add the selected track
             if (SubtitleStreamIndex.HasValue)
             {
-                foreach (MediaStream stream in MediaSource.MediaStreams)
+                foreach (var stream in MediaSource.MediaStreams)
                 {
                     if (stream.Type == MediaStreamType.Subtitle && stream.Index == SubtitleStreamIndex.Value)
                     {
@@ -389,7 +389,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (!includeSelectedTrackOnly)
             {
-                foreach (MediaStream stream in MediaSource.MediaStreams)
+                foreach (var stream in MediaSource.MediaStreams)
                 {
                     if (stream.Type == MediaStreamType.Subtitle && (!SubtitleStreamIndex.HasValue || stream.Index != SubtitleStreamIndex.Value))
                     {
@@ -405,16 +405,16 @@ namespace MediaBrowser.Model.Dlna
         {
             if (enableAllProfiles)
             {
-                foreach (SubtitleProfile profile in DeviceProfile.SubtitleProfiles)
+                foreach (var profile in DeviceProfile.SubtitleProfiles)
                 {
-                    SubtitleStreamInfo info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks, new[] { profile }, transcoderSupport);
+                    var info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks, new[] { profile }, transcoderSupport);
 
                     list.Add(info);
                 }
             }
             else
             {
-                SubtitleStreamInfo info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks, DeviceProfile.SubtitleProfiles, transcoderSupport);
+                var info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks, DeviceProfile.SubtitleProfiles, transcoderSupport);
 
                 list.Add(info);
             }
@@ -422,8 +422,8 @@ namespace MediaBrowser.Model.Dlna
 
         private SubtitleStreamInfo GetSubtitleStreamInfo(MediaStream stream, string baseUrl, string accessToken, long startPositionTicks, SubtitleProfile[] subtitleProfiles, ITranscoderSupport transcoderSupport)
         {
-            SubtitleProfile subtitleProfile = StreamBuilder.GetSubtitleProfile(MediaSource, stream, subtitleProfiles, PlayMethod, transcoderSupport, Container, SubProtocol);
-            SubtitleStreamInfo info = new SubtitleStreamInfo
+            var subtitleProfile = StreamBuilder.GetSubtitleProfile(MediaSource, stream, subtitleProfiles, PlayMethod, transcoderSupport, Container, SubProtocol);
+            var info = new SubtitleStreamInfo
             {
                 IsForced = stream.IsForced,
                 Language = stream.Language,
@@ -502,7 +502,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                MediaStream stream = TargetAudioStream;
+                var stream = TargetAudioStream;
                 return stream == null ? null : stream.SampleRate;
             }
         }
@@ -584,7 +584,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                MediaStream stream = TargetVideoStream;
+                var stream = TargetVideoStream;
                 return MaxFramerate.HasValue && !IsDirectStream
                     ? MaxFramerate
                     : stream == null ? null : stream.AverageFrameRate ?? stream.RealFrameRate;
@@ -689,7 +689,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                MediaStream stream = TargetVideoStream;
+                var stream = TargetVideoStream;
                 return !IsDirectStream
                     ? null
                     : stream == null ? null : stream.PacketLength;
@@ -727,7 +727,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                MediaStream stream = TargetVideoStream;
+                var stream = TargetVideoStream;
                 return !IsDirectStream
                     ? null
                     : stream == null ? null : stream.CodecTag;
@@ -741,7 +741,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                MediaStream stream = TargetAudioStream;
+                var stream = TargetAudioStream;
                 return AudioBitrate.HasValue && !IsDirectStream
                     ? AudioBitrate
                     : stream == null ? null : stream.BitRate;
@@ -797,7 +797,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                MediaStream stream = TargetAudioStream;
+                var stream = TargetAudioStream;
 
                 string inputCodec = stream == null ? null : stream.Codec;
 
@@ -822,7 +822,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                MediaStream stream = TargetVideoStream;
+                var stream = TargetVideoStream;
 
                 string inputCodec = stream == null ? null : stream.Codec;
 
@@ -878,7 +878,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                MediaStream stream = TargetVideoStream;
+                var stream = TargetVideoStream;
 
                 return VideoBitrate.HasValue && !IsDirectStream
                     ? VideoBitrate
@@ -890,7 +890,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                TransportStreamTimestamp defaultValue = StringHelper.EqualsIgnoreCase(Container, "m2ts")
+                var defaultValue = StringHelper.EqualsIgnoreCase(Container, "m2ts")
                     ? TransportStreamTimestamp.Valid
                     : TransportStreamTimestamp.None;
 
@@ -955,11 +955,11 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                MediaStream videoStream = TargetVideoStream;
+                var videoStream = TargetVideoStream;
 
                 if (videoStream != null && videoStream.Width.HasValue && videoStream.Height.HasValue)
                 {
-                    ImageSize size = new ImageSize
+                    var size = new ImageSize
                     {
                         Width = videoStream.Width.Value,
                         Height = videoStream.Height.Value
@@ -968,7 +968,7 @@ namespace MediaBrowser.Model.Dlna
                     double? maxWidth = MaxWidth.HasValue ? (double)MaxWidth.Value : (double?)null;
                     double? maxHeight = MaxHeight.HasValue ? (double)MaxHeight.Value : (double?)null;
 
-                    ImageSize newSize = DrawingUtils.Resize(size,
+                    var newSize = DrawingUtils.Resize(size,
                         0,
                         0,
                         maxWidth ?? 0,
@@ -985,11 +985,11 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                MediaStream videoStream = TargetVideoStream;
+                var videoStream = TargetVideoStream;
 
                 if (videoStream != null && videoStream.Width.HasValue && videoStream.Height.HasValue)
                 {
-                    ImageSize size = new ImageSize
+                    var size = new ImageSize
                     {
                         Width = videoStream.Width.Value,
                         Height = videoStream.Height.Value
@@ -998,7 +998,7 @@ namespace MediaBrowser.Model.Dlna
                     double? maxWidth = MaxWidth.HasValue ? (double)MaxWidth.Value : (double?)null;
                     double? maxHeight = MaxHeight.HasValue ? (double)MaxHeight.Value : (double?)null;
 
-                    ImageSize newSize = DrawingUtils.Resize(size,
+                    var newSize = DrawingUtils.Resize(size,
                         0,
                         0,
                         maxWidth ?? 0,
@@ -1059,9 +1059,9 @@ namespace MediaBrowser.Model.Dlna
 
         public List<MediaStream> GetSelectableStreams(MediaStreamType type)
         {
-            List<MediaStream> list = new List<MediaStream>();
+            var list = new List<MediaStream>();
 
-            foreach (MediaStream stream in MediaSource.MediaStreams)
+            foreach (var stream in MediaSource.MediaStreams)
             {
                 if (type == stream.Type)
                 {

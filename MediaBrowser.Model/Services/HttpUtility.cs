@@ -445,8 +445,8 @@ namespace MediaBrowser.Model.Services
             if (s.IndexOf('&') == -1)
                 return s;
 
-            StringBuilder entity = new StringBuilder();
-            StringBuilder output = new StringBuilder();
+            var entity = new StringBuilder();
+            var output = new StringBuilder();
             int len = s.Length;
             // 0 -> nothing,
             // 1 -> right after '&'
@@ -623,7 +623,7 @@ namespace MediaBrowser.Model.Services
             if (query[0] == '?')
                 query = query.Substring(1);
 
-            QueryParamCollection result = new QueryParamCollection();
+            var result = new QueryParamCollection();
             ParseQueryString(query, encoding, result);
             return result;
         }

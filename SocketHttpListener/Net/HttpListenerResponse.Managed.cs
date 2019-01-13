@@ -263,8 +263,8 @@ namespace SocketHttpListener.Net
                 ComputeCookies();
             }
 
-            Encoding encoding = _textEncoding.GetDefaultEncoding();
-            StreamWriter writer = new StreamWriter(ms, encoding, 256);
+            var encoding = _textEncoding.GetDefaultEncoding();
+            var writer = new StreamWriter(ms, encoding, 256);
             writer.Write("HTTP/1.1 {0} ", _statusCode); // "1.1" matches Windows implementation, which ignores the response version
             writer.Flush();
             byte[] statusDescriptionBytes = WebHeaderEncoding.GetBytes(StatusDescription);

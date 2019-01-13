@@ -13,8 +13,8 @@ namespace NLangDetect.Core
 
         public static LangProfile load(string lang, string file)
         {
-            LangProfile profile = new LangProfile(lang);
-            TagExtractor tagextractor = new TagExtractor("abstract", 100);
+            var profile = new LangProfile(lang);
+            var tagextractor = new TagExtractor("abstract", 100);
             Stream inputStream = null;
 
             try
@@ -28,7 +28,7 @@ namespace NLangDetect.Core
                     inputStream = new GZipStream(inputStream, CompressionMode.Decompress);
                 }
 
-                using (XmlReader xmlReader = XmlReader.Create(inputStream))
+                using (var xmlReader = XmlReader.Create(inputStream))
                 {
                     while (xmlReader.Read())
                     {

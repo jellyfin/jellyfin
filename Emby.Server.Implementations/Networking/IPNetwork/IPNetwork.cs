@@ -33,7 +33,7 @@ namespace System.Net
         {
             get
             {
-                BigInteger uintNetwork = this._ipaddress & this._netmask;
+                var uintNetwork = this._ipaddress & this._netmask;
                 return uintNetwork;
             }
         }
@@ -61,7 +61,7 @@ namespace System.Net
             {
 
                 int width = this._family == Sockets.AddressFamily.InterNetwork ? 4 : 16;
-                BigInteger uintBroadcast = this._network + this._netmask.PositiveReverse(width);
+                var uintBroadcast = this._network + this._netmask.PositiveReverse(width);
                 return uintBroadcast;
             }
         }
@@ -88,7 +88,7 @@ namespace System.Net
         {
             get
             {
-                BigInteger fisrt = this._family == Sockets.AddressFamily.InterNetworkV6
+                var fisrt = this._family == Sockets.AddressFamily.InterNetworkV6
                     ? this._network
                     : (this.Usable <= 0) ? this._network : this._network + 1;
                 return IPNetwork.ToIPAddress(fisrt, this._family);
@@ -102,7 +102,7 @@ namespace System.Net
         {
             get
             {
-                BigInteger last = this._family == Sockets.AddressFamily.InterNetworkV6
+                var last = this._family == Sockets.AddressFamily.InterNetworkV6
                     ? this._broadcast
                     : (this.Usable <= 0) ? this._network : this._broadcast - 1;
                 return IPNetwork.ToIPAddress(last, this._family);
@@ -122,8 +122,8 @@ namespace System.Net
                     return this.Total;
                 }
                 byte[] mask = new byte[] { 0xff, 0xff, 0xff, 0xff, 0x00 };
-                BigInteger bmask = new BigInteger(mask);
-                BigInteger usableIps = (_cidr > 30) ? 0 : ((bmask >> _cidr) - 1);
+                var bmask = new BigInteger(mask);
+                var usableIps = (_cidr > 30) ? 0 : ((bmask >> _cidr) - 1);
                 return usableIps;
             }
         }
@@ -137,7 +137,7 @@ namespace System.Net
             {
 
                 int max = this._family == Sockets.AddressFamily.InterNetwork ? 32 : 128;
-                BigInteger count = BigInteger.Pow(2, (max - _cidr));
+                var count = BigInteger.Pow(2, (max - _cidr));
                 return count;
             }
         }
@@ -523,7 +523,7 @@ namespace System.Net
                 return;
             }
 
-            BigInteger uintIpAddress = IPNetwork.ToBigInteger(ipaddress);
+            var uintIpAddress = IPNetwork.ToBigInteger(ipaddress);
             byte? cidr2 = null;
             bool parsed = IPNetwork.TryToCidr(netmask, out cidr2);
             if (parsed == false)
@@ -537,7 +537,7 @@ namespace System.Net
             }
             byte cidr = (byte)cidr2;
 
-            IPNetwork ipnet = new IPNetwork(uintIpAddress, ipaddress.AddressFamily, cidr);
+            var ipnet = new IPNetwork(uintIpAddress, ipaddress.AddressFamily, cidr);
             ipnetwork = ipnet;
 
             return;
@@ -754,7 +754,7 @@ namespace System.Net
                 return;
             }
 
-            BigInteger mask = new BigInteger(new byte[] {
+            var mask = new BigInteger(new byte[] {
                 0xff, 0xff, 0xff, 0xff,
                 0xff, 0xff, 0xff, 0xff,
                 0xff, 0xff, 0xff, 0xff,
@@ -762,7 +762,7 @@ namespace System.Net
                 0x00
             });
 
-            BigInteger masked = cidr == 0 ? 0 : mask << (128 - cidr);
+            var masked = cidr == 0 ? 0 : mask << (128 - cidr);
             byte[] m = masked.ToByteArray();
             byte[] bmask = new byte[17];
             int copy = m.Length > 16 ? 16 : m.Length;
@@ -858,7 +858,7 @@ namespace System.Net
             ///     cidr = null;
             ///     return;
             /// }
-            BigInteger uintNetmask = (BigInteger)uintNetmask2;
+            var uintNetmask = (BigInteger)uintNetmask2;
 
             byte? cidr2 = null;
             IPNetwork.InternalToCidr(tryParse, uintNetmask, netmask.AddressFamily, out cidr2);
@@ -951,8 +951,8 @@ namespace System.Net
                 return;
             }
 
-            BigInteger mask = IPNetwork.ToUint(cidr, family);
-            IPAddress netmask2 = IPNetwork.ToIPAddress(mask, family);
+            var mask = IPNetwork.ToUint(cidr, family);
+            var netmask2 = IPNetwork.ToIPAddress(mask, family);
             netmask = netmask2;
 
             return;
@@ -990,7 +990,7 @@ namespace System.Net
         /// <returns></returns>
         public static uint BitsSet(IPAddress netmask)
         {
-            BigInteger uintNetmask = IPNetwork.ToBigInteger(netmask);
+            var uintNetmask = IPNetwork.ToBigInteger(netmask);
             uint bits = IPNetwork.BitsSet(uintNetmask, netmask.AddressFamily);
             return bits;
         }
@@ -1013,7 +1013,7 @@ namespace System.Net
             {
                 throw new ArgumentNullException(nameof(netmask));
             }
-            BigInteger uintNetmask = IPNetwork.ToBigInteger(netmask);
+            var uintNetmask = IPNetwork.ToBigInteger(netmask);
             bool valid = IPNetwork.InternalValidNetmask(uintNetmask, netmask.AddressFamily);
             return valid;
         }
@@ -1042,7 +1042,7 @@ namespace System.Net
                     0x00
                 });
 
-            BigInteger neg = ((~netmask) & (mask));
+            var neg = ((~netmask) & (mask));
             bool isNetmask = ((neg + 1) & neg) == 0;
             return isNetmask;
 
@@ -1068,7 +1068,7 @@ namespace System.Net
             Array.Reverse(bytes2);
 
             byte[] sized = Resize(bytes2, family);
-            IPAddress ip = new IPAddress(sized);
+            var ip = new IPAddress(sized);
             return ip;
         }
 
@@ -1122,9 +1122,9 @@ namespace System.Net
                 return false;
             }
 
-            BigInteger uintNetwork = _network;
-            BigInteger uintBroadcast = _broadcast;
-            BigInteger uintAddress = IPNetwork.ToBigInteger(ipaddress);
+            var uintNetwork = _network;
+            var uintBroadcast = _broadcast;
+            var uintAddress = IPNetwork.ToBigInteger(ipaddress);
 
             bool contains = (uintAddress >= uintNetwork
                 && uintAddress <= uintBroadcast);
@@ -1146,11 +1146,11 @@ namespace System.Net
                 throw new ArgumentNullException(nameof(network2));
             }
 
-            BigInteger uintNetwork = _network;
-            BigInteger uintBroadcast = _broadcast;
+            var uintNetwork = _network;
+            var uintBroadcast = _broadcast;
 
-            BigInteger uintFirst = network2._network;
-            BigInteger uintLast = network2._broadcast;
+            var uintFirst = network2._network;
+            var uintLast = network2._broadcast;
 
             bool contains = (uintFirst >= uintNetwork
                 && uintLast <= uintBroadcast);
@@ -1175,11 +1175,11 @@ namespace System.Net
                 throw new ArgumentNullException(nameof(network2));
             }
 
-            BigInteger uintNetwork = _network;
-            BigInteger uintBroadcast = _broadcast;
+            var uintNetwork = _network;
+            var uintBroadcast = _broadcast;
 
-            BigInteger uintFirst = network2._network;
-            BigInteger uintLast = network2._broadcast;
+            var uintFirst = network2._network;
+            var uintLast = network2._broadcast;
 
             bool overlap =
                 (uintFirst >= uintNetwork && uintFirst <= uintBroadcast)
@@ -1428,8 +1428,8 @@ namespace System.Net
                 return;
             }
 
-            IPNetwork first = (network1._network < network2._network) ? network1 : network2;
-            IPNetwork last = (network1._network > network2._network) ? network1 : network2;
+            var first = (network1._network < network2._network) ? network1 : network2;
+            var last = (network1._network > network2._network) ? network1 : network2;
 
             /// Starting from here :
             /// network1 and network2 have the same cidr,
@@ -1449,10 +1449,10 @@ namespace System.Net
                 return;
             }
 
-            BigInteger uintSupernet = first._network;
+            var uintSupernet = first._network;
             byte cidrSupernet = (byte)(first._cidr - 1);
 
-            IPNetwork networkSupernet = new IPNetwork(uintSupernet, first._family, cidrSupernet);
+            var networkSupernet = new IPNetwork(uintSupernet, first._family, cidrSupernet);
             if (networkSupernet._network != first._network)
             {
                 if (trySupernet == false)
@@ -1535,9 +1535,9 @@ namespace System.Net
                 return true;
             }
 
-            List<IPNetwork> supernetted = new List<IPNetwork>();
-            List<IPNetwork> ipns = IPNetwork.Array2List(ipnetworks);
-            Stack<IPNetwork> current = IPNetwork.List2Stack(ipns);
+            var supernetted = new List<IPNetwork>();
+            var ipns = IPNetwork.Array2List(ipnetworks);
+            var current = IPNetwork.List2Stack(ipns);
             int previousCount = 0;
             int currentCount = current.Count;
 
@@ -1547,8 +1547,8 @@ namespace System.Net
                 supernetted.Clear();
                 while (current.Count > 1)
                 {
-                    IPNetwork ipn1 = current.Pop();
-                    IPNetwork ipn2 = current.Peek();
+                    var ipn1 = current.Pop();
+                    var ipn2 = current.Peek();
 
                     IPNetwork outNetwork = null;
                     bool success = ipn1.TrySupernet(ipn2, out outNetwork);
@@ -1578,7 +1578,7 @@ namespace System.Net
 
         private static Stack<IPNetwork> List2Stack(List<IPNetwork> list)
         {
-            Stack<IPNetwork> stack = new Stack<IPNetwork>();
+            var stack = new Stack<IPNetwork>();
             list.ForEach(new Action<IPNetwork>(
                 delegate (IPNetwork ipn)
                 {
@@ -1590,7 +1590,7 @@ namespace System.Net
 
         private static List<IPNetwork> Array2List(IPNetwork[] array)
         {
-            List<IPNetwork> ipns = new List<IPNetwork>();
+            var ipns = new List<IPNetwork>();
             ipns.AddRange(array);
             IPNetwork.RemoveNull(ipns);
             ipns.Sort(new Comparison<IPNetwork>(
@@ -1659,10 +1659,10 @@ namespace System.Net
                 throw new NotSupportedException("MixedAddressFamily");
             }
 
-            IPNetwork ipnetwork = new IPNetwork(0, startIP.AddressFamily, 0);
+            var ipnetwork = new IPNetwork(0, startIP.AddressFamily, 0);
             for (byte cidr = 32; cidr >= 0; cidr--)
             {
-                IPNetwork wideSubnet = IPNetwork.Parse(start, cidr);
+                var wideSubnet = IPNetwork.Parse(start, cidr);
                 if (wideSubnet.Contains(endIP))
                 {
                     ipnetwork = wideSubnet;
@@ -1707,7 +1707,7 @@ namespace System.Net
             }
 
 
-            IPNetwork[] nnin = Array.FindAll<IPNetwork>(ipnetworks, new Predicate<IPNetwork>(
+            IPNetwork[] nnin = Array.FindAll(ipnetworks, new Predicate<IPNetwork>(
                 delegate (IPNetwork ipnet)
                 {
                     return ipnet != null;
@@ -1726,19 +1726,19 @@ namespace System.Net
 
             if (nnin.Length == 1)
             {
-                IPNetwork ipn0 = nnin[0];
+                var ipn0 = nnin[0];
                 ipnetwork = ipn0;
                 return;
             }
 
-            Array.Sort<IPNetwork>(nnin);
-            IPNetwork nnin0 = nnin[0];
-            BigInteger uintNnin0 = nnin0._ipaddress;
+            Array.Sort(nnin);
+            var nnin0 = nnin[0];
+            var uintNnin0 = nnin0._ipaddress;
 
-            IPNetwork nninX = nnin[nnin.Length - 1];
-            IPAddress ipaddressX = nninX.Broadcast;
+            var nninX = nnin[nnin.Length - 1];
+            var ipaddressX = nninX.Broadcast;
 
-            AddressFamily family = ipnetworks[0]._family;
+            var family = ipnetworks[0]._family;
             foreach (var ipnx in ipnetworks)
             {
                 if (ipnx._family != family)
@@ -1747,10 +1747,10 @@ namespace System.Net
                 }
             }
 
-            IPNetwork ipn = new IPNetwork(0, family, 0);
+            var ipn = new IPNetwork(0, family, 0);
             for (byte cidr = nnin0._cidr; cidr >= 0; cidr--)
             {
-                IPNetwork wideSubnet = new IPNetwork(uintNnin0, family, cidr);
+                var wideSubnet = new IPNetwork(uintNnin0, family, cidr);
                 if (wideSubnet.Contains(ipaddressX))
                 {
                     ipn = wideSubnet;
@@ -1773,7 +1773,7 @@ namespace System.Net
         public string Print()
         {
 
-            StringWriter sw = new StringWriter();
+            var sw = new StringWriter();
 
             sw.WriteLine("IPNetwork   : {0}", ToString());
             sw.WriteLine("Network     : {0}", Network);
@@ -1819,7 +1819,7 @@ namespace System.Net
                 cidr = 64;
                 return true;
             }
-            BigInteger uintIPAddress = IPNetwork.ToBigInteger(ipaddress);
+            var uintIPAddress = IPNetwork.ToBigInteger(ipaddress);
             uintIPAddress = uintIPAddress >> 29;
             if (uintIPAddress <= 3)
             {

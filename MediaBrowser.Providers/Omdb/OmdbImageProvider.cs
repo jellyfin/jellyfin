@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.Omdb
 
             if (!string.IsNullOrWhiteSpace(imdbId))
             {
-                OmdbProvider.RootObject rootObject = await provider.GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
+                var rootObject = await provider.GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
 
                 if (!string.IsNullOrEmpty(rootObject.Poster))
                 {

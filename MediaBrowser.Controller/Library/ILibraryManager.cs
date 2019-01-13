@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>Task{Year}.</returns>
-        /// <exception cref="System.ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         Year GetYear(int value);
 
         /// <summary>

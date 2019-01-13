@@ -269,7 +269,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
             string path = await GetXml(info.Path, CancellationToken.None).ConfigureAwait(false);
             _logger.LogDebug("Opening XmlTvReader for {path}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
-            IEnumerable<XmlTvChannel> results = reader.GetChannels();
+            var results = reader.GetChannels();
 
             // Should this method be async?
             return results.Select(c => new NameIdPair() { Id = c.Id, Name = c.DisplayName }).ToList();
@@ -281,7 +281,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
             string path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
             _logger.LogDebug("Opening XmlTvReader for {path}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
-            IEnumerable<XmlTvChannel> results = reader.GetChannels();
+            var results = reader.GetChannels();
 
             // Should this method be async?
             return results.Select(c => new ChannelInfo

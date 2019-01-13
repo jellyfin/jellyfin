@@ -152,7 +152,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetProcessOutput(string path, string arguments)
         {
-            IProcess process = _processFactory.Create(new ProcessOptions
+            var process = _processFactory.Create(new ProcessOptions
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,

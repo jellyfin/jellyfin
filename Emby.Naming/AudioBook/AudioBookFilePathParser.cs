@@ -16,7 +16,7 @@ namespace Emby.Naming.AudioBook
 
         public AudioBookFilePathParserResult Parse(string path, bool IsDirectory)
         {
-            AudioBookFilePathParserResult result = Parse(path);
+            var result = Parse(path);
             return !result.Success ? new AudioBookFilePathParserResult() : result;
         }
 

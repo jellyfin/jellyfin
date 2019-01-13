@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
 
             // If the path is a file check for a matching extensions
-            var parser = new Emby.Naming.Video.VideoResolver(namingOptions);
+            var parser = new VideoResolver(namingOptions);
 
             if (args.IsDirectory)
             {

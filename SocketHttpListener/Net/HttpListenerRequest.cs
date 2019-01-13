@@ -23,7 +23,7 @@ namespace SocketHttpListener.Net
 
         private static CookieCollection ParseCookies(Uri uri, string setCookieHeader)
         {
-            CookieCollection cookies = new CookieCollection();
+            var cookies = new CookieCollection();
             return cookies;
         }
 
@@ -171,7 +171,7 @@ namespace SocketHttpListener.Net
         {
             get
             {
-                QueryParamCollection queryString = new QueryParamCollection();
+                var queryString = new QueryParamCollection();
                 Helpers.FillFromString(queryString, Url.Query, true, ContentEncoding);
                 return queryString;
             }
@@ -197,7 +197,7 @@ namespace SocketHttpListener.Net
                     return null;
                 }
 
-                bool success = Uri.TryCreate(referrer, UriKind.RelativeOrAbsolute, out Uri urlReferrer);
+                bool success = Uri.TryCreate(referrer, UriKind.RelativeOrAbsolute, out var urlReferrer);
                 return success ? urlReferrer : null;
             }
         }
@@ -296,7 +296,7 @@ namespace SocketHttpListener.Net
 
                 // collect comma-separated values into list
 
-                List<string> values = new List<string>();
+                var values = new List<string>();
                 int i = 0;
 
                 while (i < l)
@@ -341,7 +341,7 @@ namespace SocketHttpListener.Net
             private static string UrlDecodeStringFromStringInternal(string s, Encoding e)
             {
                 int count = s.Length;
-                UrlDecoder helper = new UrlDecoder(count, e);
+                var helper = new UrlDecoder(count, e);
 
                 // go through the string's chars collapsing %XX and %uXXXX and
                 // appending each char as char, with exception of %XX constructs

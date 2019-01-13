@@ -76,7 +76,7 @@ namespace MediaBrowser.Model.Entities
                     //    return AddLanguageIfNeeded(Title);
                     //}
 
-                    List<string> attributes = new List<string>();
+                    var attributes = new List<string>();
 
                     if (!string.IsNullOrEmpty(Language))
                     {
@@ -109,7 +109,7 @@ namespace MediaBrowser.Model.Entities
 
                 if (Type == MediaStreamType.Video)
                 {
-                    List<string> attributes = new List<string>();
+                    var attributes = new List<string>();
 
                     var resolutionText = GetResolutionText();
 
@@ -133,7 +133,7 @@ namespace MediaBrowser.Model.Entities
                     //    return AddLanguageIfNeeded(Title);
                     //}
 
-                    List<string> attributes = new List<string>();
+                    var attributes = new List<string>();
 
                     if (!string.IsNullOrEmpty(Language))
                     {

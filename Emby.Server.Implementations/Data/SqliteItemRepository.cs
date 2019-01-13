@@ -531,7 +531,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         public void SaveItem(BaseItem item, CancellationToken cancellationToken)
         {
             if (item == null)
@@ -574,7 +574,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="items">The items.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// items
         /// or
         /// cancellationToken
@@ -1198,8 +1198,8 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentException"></exception>
         public BaseItem RetrieveItem(Guid id)
         {
             if (id.Equals(Guid.Empty))
@@ -1945,7 +1945,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{ChapterInfo}.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id</exception>
         public List<ChapterInfo> GetChapters(BaseItem item)
         {
             CheckDisposed();
@@ -1977,7 +1977,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="item">The item.</param>
         /// <param name="index">The index.</param>
         /// <returns>ChapterInfo.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id</exception>
         public ChapterInfo GetChapter(BaseItem item, int index)
         {
             CheckDisposed();

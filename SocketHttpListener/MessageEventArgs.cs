@@ -9,8 +9,8 @@ namespace SocketHttpListener
     /// <remarks>
     /// A <see cref="WebSocket.OnMessage"/> event occurs when the <see cref="WebSocket"/> receives
     /// a text or binary data frame.
-    /// If you want to get the received data, you access the <see cref="MessageEventArgs.Data"/> or
-    /// <see cref="MessageEventArgs.RawData"/> property.
+    /// If you want to get the received data, you access the <see cref="Data"/> or
+    /// <see cref="RawData"/> property.
     /// </remarks>
     public class MessageEventArgs : EventArgs
     {

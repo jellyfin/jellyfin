@@ -119,7 +119,7 @@ namespace Emby.Server.Implementations.Configuration
         /// Replaces the configuration.
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
-        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <exception cref="DirectoryNotFoundException"></exception>
         public override void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
             var newConfig = (ServerConfiguration)newConfiguration;
@@ -137,7 +137,7 @@ namespace Emby.Server.Implementations.Configuration
         /// Validates the SSL certificate.
         /// </summary>
         /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <exception cref="DirectoryNotFoundException"></exception>
         private void ValidateSslCertificate(BaseApplicationConfiguration newConfig)
         {
             var serverConfig = (ServerConfiguration)newConfig;
@@ -159,7 +159,7 @@ namespace Emby.Server.Implementations.Configuration
         /// Validates the metadata path.
         /// </summary>
         /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <exception cref="DirectoryNotFoundException"></exception>
         private void ValidateMetadataPath(ServerConfiguration newConfig)
         {
             var newPath = newConfig.MetadataPath;

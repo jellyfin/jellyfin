@@ -131,7 +131,7 @@ namespace MediaBrowser.Providers.Playlists
 
         private IEnumerable<LinkedChild> GetWplItems(Stream stream)
         {
-            WplContent content = new WplContent();
+            var content = new WplContent();
             var playlist = content.GetFromStream(stream);
 
             return playlist.PlaylistEntries.Select(i => new LinkedChild

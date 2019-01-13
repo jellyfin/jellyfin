@@ -200,7 +200,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentNullException">user</exception>
         public void DeleteUser(User user)
         {
             if (user == null)

@@ -133,7 +133,7 @@ namespace Emby.Naming.TV
                         result.EpisodeNumber = num;
                     }
 
-                    Group endingNumberGroup = match.Groups["endingepnumber"];
+                    var endingNumberGroup = match.Groups["endingepnumber"];
                     if (endingNumberGroup.Success)
                     {
                         // Will only set EndingEpsiodeNumber if the captured number is not followed by additional numbers

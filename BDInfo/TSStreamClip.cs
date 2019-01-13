@@ -90,11 +90,11 @@ namespace BDInfo
 
         public bool IsCompatible(TSStreamClip clip)
         {
-            foreach (TSStream stream1 in StreamFile.Streams.Values)
+            foreach (var stream1 in StreamFile.Streams.Values)
             {
                 if (clip.StreamFile.Streams.ContainsKey(stream1.PID))
                 {
-                    TSStream stream2 = clip.StreamFile.Streams[stream1.PID];
+                    var stream2 = clip.StreamFile.Streams[stream1.PID];
                     if (stream1.StreamType != stream2.StreamType)
                     {
                         return false;

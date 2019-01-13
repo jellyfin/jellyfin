@@ -128,7 +128,7 @@ namespace Rssdp.Infrastructure
         /// <remarks>
         /// <para>Does nothing if this instance is not already listening for notifications.</para>
         /// </remarks>
-        /// <exception cref="System.ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true.</exception>
+        /// <exception cref="ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true.</exception>
         /// <seealso cref="StartListeningForNotifications"/>
         /// <seealso cref="DeviceAvailable"/>
         /// <seealso cref="DeviceUnavailable"/>

@@ -242,7 +242,7 @@ namespace Emby.Server.Implementations.LiveTv
             var channel = (LiveTvChannel)_libraryManager.GetItemById(id);
 
             bool isVideo = channel.ChannelType == ChannelType.TV;
-            ILiveTvService service = GetService(channel);
+            var service = GetService(channel);
             _logger.LogInformation("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
 
             MediaSourceInfo info;
@@ -892,7 +892,7 @@ namespace Emby.Server.Implementations.LiveTv
             var programList = _libraryManager.QueryItems(internalQuery).Items;
             var totalCount = programList.Length;
 
-            IOrderedEnumerable<LiveTvProgram> orderedPrograms = programList.Cast<LiveTvProgram>().OrderBy(i => i.StartDate.Date);
+            var orderedPrograms = programList.Cast<LiveTvProgram>().OrderBy(i => i.StartDate.Date);
 
             if (query.IsAiring ?? false)
             {
@@ -2302,7 +2302,7 @@ namespace Emby.Server.Implementations.LiveTv
             // ServerConfiguration.SaveConfiguration crashes during xml serialization for AddListingProvider
             info = _jsonSerializer.DeserializeFromString<ListingsProviderInfo>(_jsonSerializer.SerializeToString(info));
 
-            IListingsProvider provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
+            var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
             if (provider == null)
             {
@@ -2313,9 +2313,9 @@ namespace Emby.Server.Implementations.LiveTv
 
             await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);
 
-            LiveTvOptions config = GetConfiguration();
+            var config = GetConfiguration();
 
-            List<ListingsProviderInfo> list = config.ListingProviders.ToList();
+            var list = config.ListingProviders.ToList();
             int index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
 
             if (index == -1 || string.IsNullOrWhiteSpace(info.Id))

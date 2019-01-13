@@ -457,7 +457,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="inputFiles">The input files.</param>
         /// <param name="protocol">The protocol.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentException">Unrecognized InputType</exception>
+        /// <exception cref="ArgumentException">Unrecognized InputType</exception>
         public string GetInputArgument(string[] inputFiles, MediaProtocol protocol)
         {
             return EncodingUtils.GetInputArgument(inputFiles.ToList(), protocol);

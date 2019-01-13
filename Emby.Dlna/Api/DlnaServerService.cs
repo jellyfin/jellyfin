@@ -241,7 +241,7 @@ namespace Emby.Dlna.Api
             var cacheLength = TimeSpan.FromDays(365);
             var cacheKey = Request.RawUrl.GetMD5();
 
-            return _resultFactory.GetStaticResult(Request, cacheKey, null, cacheLength, contentType, () => Task.FromResult<Stream>(_dlnaManager.GetIcon(request.Filename).Stream));
+            return _resultFactory.GetStaticResult(Request, cacheKey, null, cacheLength, contentType, () => Task.FromResult(_dlnaManager.GetIcon(request.Filename).Stream));
         }
 
         public object Subscribe(ProcessContentDirectoryEventRequest request)

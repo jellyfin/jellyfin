@@ -82,7 +82,7 @@ namespace Mono.Nat
                  * prefix. */
 
                 // We have an internet gateway device now
-                UpnpNatDevice d = new UpnpNatDevice(localAddress, deviceInfo, endpoint, string.Empty, _logger, _httpClient);
+                var d = new UpnpNatDevice(localAddress, deviceInfo, endpoint, string.Empty, _logger, _httpClient);
 
                 await d.GetServicesList().ConfigureAwait(false);
 

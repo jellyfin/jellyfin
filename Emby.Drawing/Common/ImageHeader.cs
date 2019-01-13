@@ -73,7 +73,7 @@ namespace Emby.Drawing.Common
         /// </summary>
         /// <param name="binaryReader">The binary reader.</param>
         /// <returns>Size.</returns>
-        /// <exception cref="System.ArgumentException">binaryReader</exception>
+        /// <exception cref="ArgumentException">binaryReader</exception>
         /// <exception cref="ArgumentException">The image was of an unrecognized format.</exception>
         private static ImageSize GetDimensions(BinaryReader binaryReader)
         {
@@ -200,7 +200,7 @@ namespace Emby.Drawing.Common
         /// </summary>
         /// <param name="binaryReader">The binary reader.</param>
         /// <returns>Size.</returns>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         private static ImageSize DecodeJfif(BinaryReader binaryReader)
         {
             // A JPEG image consists of a sequence of segments,

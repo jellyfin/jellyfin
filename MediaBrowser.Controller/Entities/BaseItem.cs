@@ -367,7 +367,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 char thisCh = s1[thisMarker];
 
-                StringBuilder thisChunk = new StringBuilder();
+                var thisChunk = new StringBuilder();
 
                 while ((thisMarker < s1.Length) && (thisChunk.Length == 0 || SortHelper.InChunk(thisCh, thisChunk[0])))
                 {
@@ -548,9 +548,9 @@ namespace MediaBrowser.Controller.Entities
         public static IMediaSourceManager MediaSourceManager { get; set; }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="string" /> that represents this instance.
         /// </summary>
-        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
+        /// <returns>A <see cref="string" /> that represents this instance.</returns>
         public override string ToString()
         {
             return Name;
@@ -1661,7 +1661,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns><c>true</c> if [is parental allowed] [the specified user]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentNullException">user</exception>
         public bool IsParentalAllowed(User user)
         {
             if (user == null)
@@ -1811,7 +1811,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns><c>true</c> if the specified user is visible; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentNullException">user</exception>
         public virtual bool IsVisible(User user)
         {
             if (user == null)
@@ -1971,7 +1971,7 @@ namespace MediaBrowser.Controller.Entities
         /// Adds a studio to the item
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public void AddStudio(string name)
         {
             if (string.IsNullOrEmpty(name))
@@ -2004,7 +2004,7 @@ namespace MediaBrowser.Controller.Entities
         /// Adds a genre to the item
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public void AddGenre(string name)
         {
             if (string.IsNullOrEmpty(name))
@@ -2028,7 +2028,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="datePlayed">The date played.</param>
         /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public virtual void MarkPlayed(User user,
             DateTime? datePlayed,
             bool resetPosition)
@@ -2065,7 +2065,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public virtual void MarkUnplayed(User user)
         {
             if (user == null)
@@ -2104,7 +2104,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="type">The type.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns><c>true</c> if the specified type has image; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.ArgumentException">Backdrops should be accessed using Item.Backdrops</exception>
+        /// <exception cref="ArgumentException">Backdrops should be accessed using Item.Backdrops</exception>
         public bool HasImage(ImageType type, int imageIndex)
         {
             return GetImageInfo(type, imageIndex) != null;
@@ -2232,9 +2232,9 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.InvalidOperationException">
+        /// <exception cref="InvalidOperationException">
         /// </exception>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         public string GetImagePath(ImageType imageType, int imageIndex)
         {
             var info = GetImageInfo(imageType, imageIndex);
@@ -2294,7 +2294,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="imageType">Type of the image.</param>
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        /// <exception cref="System.ArgumentException">Cannot call AddImages with chapter images</exception>
+        /// <exception cref="ArgumentException">Cannot call AddImages with chapter images</exception>
         public bool AddImages(ImageType imageType, List<FileSystemMetadata> images)
         {
             if (imageType == ImageType.Chapter)

@@ -469,12 +469,12 @@ namespace Emby.Server.Implementations.Playlists
                 folderPath = folderPath + Path.DirectorySeparatorChar;
             }
 
-            Uri folderUri = new Uri(folderPath);
-            Uri fileAbsoluteUri = new Uri(fileAbsolutePath);
+            var folderUri = new Uri(folderPath);
+            var fileAbsoluteUri = new Uri(fileAbsolutePath);
 
             if (folderUri.Scheme != fileAbsoluteUri.Scheme) { return fileAbsolutePath; } // path can't be made relative.
 
-            Uri relativeUri = folderUri.MakeRelativeUri(fileAbsoluteUri);
+            var relativeUri = folderUri.MakeRelativeUri(fileAbsoluteUri);
             string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
 
             if (fileAbsoluteUri.Scheme.Equals("file", StringComparison.CurrentCultureIgnoreCase))

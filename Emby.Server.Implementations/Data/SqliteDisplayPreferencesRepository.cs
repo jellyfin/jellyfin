@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="client">The client.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         public void SaveDisplayPreferences(DisplayPreferences displayPreferences, Guid userId, string client, CancellationToken cancellationToken)
         {
             if (displayPreferences == null)
@@ -131,7 +131,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="userId">The user id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         public void SaveAllDisplayPreferences(IEnumerable<DisplayPreferences> displayPreferences, Guid userId, CancellationToken cancellationToken)
         {
             if (displayPreferences == null)
@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="userId">The user id.</param>
         /// <param name="client">The client.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         public DisplayPreferences GetDisplayPreferences(string displayPreferencesId, Guid userId, string client)
         {
             if (string.IsNullOrEmpty(displayPreferencesId))
@@ -202,7 +202,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         public IEnumerable<DisplayPreferences> GetAllDisplayPreferences(Guid userId)
         {
             var list = new List<DisplayPreferences>();
