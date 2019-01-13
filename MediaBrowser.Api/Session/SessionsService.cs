@@ -1,17 +1,16 @@
-﻿using MediaBrowser.Controller.Devices;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Session;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Model.Services;
-using MediaBrowser.Controller;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Api.Session
 {

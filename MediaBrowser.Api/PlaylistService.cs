@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -6,10 +8,7 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Playlists;
 using MediaBrowser.Model.Querying;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Extensions;
-using System;
 
 namespace MediaBrowser.Api
 {

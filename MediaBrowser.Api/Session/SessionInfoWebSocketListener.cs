@@ -1,13 +1,10 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Session;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using MediaBrowser.Model.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Session
 {

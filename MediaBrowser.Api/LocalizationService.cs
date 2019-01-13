@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using System.Collections.Generic;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api

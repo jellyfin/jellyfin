@@ -1,7 +1,6 @@
-﻿using MediaBrowser.Model.Querying;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Api
 {

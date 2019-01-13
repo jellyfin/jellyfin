@@ -1,5 +1,11 @@
-﻿using MediaBrowser.Common;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Devices;
@@ -7,13 +13,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Common.Plugins;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api

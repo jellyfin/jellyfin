@@ -128,7 +128,7 @@ namespace MediaBrowser.Api.Playback
 
             var directPlayProfiles = new List<DirectPlayProfile>();
 
-            var containers = (request.Container ?? string.Empty).Split(new [] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var containers = (request.Container ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var container in containers)
             {

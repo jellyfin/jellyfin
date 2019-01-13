@@ -1,17 +1,15 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {

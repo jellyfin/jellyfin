@@ -1,4 +1,10 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -7,14 +13,8 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Providers;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
@@ -240,7 +240,7 @@ namespace MediaBrowser.Api
             //item.ProductionYear = request.ProductionYear;
             //item.Name = request.Name;
 
-            return _providerManager.RefreshFullItem(item, new MetadataRefreshOptions(new DirectoryService(Logger,  _fileSystem))
+            return _providerManager.RefreshFullItem(item, new MetadataRefreshOptions(new DirectoryService(Logger, _fileSystem))
             {
                 MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                 ImageRefreshMode = MetadataRefreshMode.FullRefresh,
