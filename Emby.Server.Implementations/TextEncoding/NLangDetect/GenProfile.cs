@@ -1,67 +1,67 @@
 using System;
+using System.IO;
 using System.IO.Compression;
 using System.Xml;
 using NLangDetect.Core.Utils;
-using System.IO;
 
 namespace NLangDetect.Core
 {
-  // TODO IMM HI: xml reader not tested
-  public static class GenProfile
-  {
-    #region Public methods
-
-    public static LangProfile load(string lang, string file)
+    // TODO IMM HI: xml reader not tested
+    public static class GenProfile
     {
-      LangProfile profile = new LangProfile(lang);
-      TagExtractor tagextractor = new TagExtractor("abstract", 100);
-      Stream inputStream = null;
+        #region Public methods
 
-      try
-      {
-        inputStream = File.OpenRead(file);
-
-        string extension = Path.GetExtension(file) ?? "";
-
-        if (extension.ToUpper() == ".GZ")
+        public static LangProfile load(string lang, string file)
         {
-          inputStream = new GZipStream(inputStream, CompressionMode.Decompress);
-        }
+            LangProfile profile = new LangProfile(lang);
+            TagExtractor tagextractor = new TagExtractor("abstract", 100);
+            Stream inputStream = null;
 
-        using (XmlReader xmlReader = XmlReader.Create(inputStream))
-        {
-          while (xmlReader.Read())
-          {
-            switch (xmlReader.NodeType)
+            try
             {
-              case XmlNodeType.Element:
-                tagextractor.SetTag(xmlReader.Name);
-                break;
+                inputStream = File.OpenRead(file);
 
-              case XmlNodeType.Text:
-                tagextractor.Add(xmlReader.Value);
-                break;
+                string extension = Path.GetExtension(file) ?? "";
 
-              case XmlNodeType.EndElement:
-                tagextractor.CloseTag(profile);
-                break;
+                if (extension.ToUpper() == ".GZ")
+                {
+                    inputStream = new GZipStream(inputStream, CompressionMode.Decompress);
+                }
+
+                using (XmlReader xmlReader = XmlReader.Create(inputStream))
+                {
+                    while (xmlReader.Read())
+                    {
+                        switch (xmlReader.NodeType)
+                        {
+                            case XmlNodeType.Element:
+                                tagextractor.SetTag(xmlReader.Name);
+                                break;
+
+                            case XmlNodeType.Text:
+                                tagextractor.Add(xmlReader.Value);
+                                break;
+
+                            case XmlNodeType.EndElement:
+                                tagextractor.CloseTag(profile);
+                                break;
+                        }
+                    }
+                }
             }
-          }
-        }
-      }
-      finally
-      {
-        if (inputStream != null)
-        {
-          inputStream.Close();
-        }
-      }
+            finally
+            {
+                if (inputStream != null)
+                {
+                    inputStream.Close();
+                }
+            }
 
-      Console.WriteLine(lang + ": " + tagextractor.Count);
+            Console.WriteLine(lang + ": " + tagextractor.Count);
 
-      return profile;
+            return profile;
+        }
+
+        #endregion
     }
-
-    #endregion
-  }
 }

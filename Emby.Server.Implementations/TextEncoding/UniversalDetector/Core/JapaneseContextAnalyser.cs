@@ -160,7 +160,7 @@ namespace UniversalDetector.Core
         {
             // This is just one way to calculate confidence. It works well for me.
             if (totalRel > MINIMUM_DATA_THRESHOLD)
-                return ((float)(totalRel - relSample[0]))/totalRel;
+                return ((float)(totalRel - relSample[0])) / totalRel;
             else
                 return DONT_KNOW;
         }
@@ -181,22 +181,28 @@ namespace UniversalDetector.Core
             // to record those bytes as well and analyse the character once it
             // is complete, but since a character will not make much difference,
             // skipping it will simplify our logic and improve performance.
-            for (int i = needToSkipCharNum+offset; i < max; ) {
+            for (int i = needToSkipCharNum + offset; i < max;)
+            {
                 int order = GetOrder(buf, i, out charLen);
                 i += charLen;
-                if (i > max) {
+                if (i > max)
+                {
                     needToSkipCharNum = i - max;
                     lastCharOrder = -1;
-                } else {
-                    if (order != -1 && lastCharOrder != -1) {
-                        totalRel ++;
-                        if (totalRel > MAX_REL_THRESHOLD) {
+                }
+                else
+                {
+                    if (order != -1 && lastCharOrder != -1)
+                    {
+                        totalRel++;
+                        if (totalRel > MAX_REL_THRESHOLD)
+                        {
                             done = true;
                             break;
                         }
                         relSample[jp2CharContext[lastCharOrder, order]]++;
-                   }
-                   lastCharOrder = order;
+                    }
+                    lastCharOrder = order;
                 }
             }
         }
@@ -210,7 +216,8 @@ namespace UniversalDetector.Core
 
             // Only 2-bytes characters are of our interest
             int order = (charLen == 2) ? GetOrder(buf, offset) : -1;
-            if (order != -1 && lastCharOrder != -1) {
+            if (order != -1 && lastCharOrder != -1)
+            {
                 totalRel++;
                 // count this sequence to its category counter
                 relSample[jp2CharContext[lastCharOrder, order]]++;
@@ -221,7 +228,8 @@ namespace UniversalDetector.Core
         public void Reset()
         {
             totalRel = 0;
-            for (int i = 0; i < CATEGORIES_NUM; i++) {
+            for (int i = 0; i < CATEGORIES_NUM; i++)
+            {
                 relSample[i] = 0;
                 needToSkipCharNum = 0;
                 lastCharOrder = -1;
@@ -254,8 +262,9 @@ namespace UniversalDetector.Core
                 charLen = 1;
 
             // return its order if it is hiragana
-            if (buf[offset] == HIRAGANA_FIRST_BYTE) {
-                byte low = buf[offset+1];
+            if (buf[offset] == HIRAGANA_FIRST_BYTE)
+            {
+                byte low = buf[offset + 1];
                 if (low >= 0x9F && low <= 0xF1)
                     return low - 0x9F;
             }
@@ -265,8 +274,9 @@ namespace UniversalDetector.Core
         protected override int GetOrder(byte[] buf, int offset)
         {
             // We are only interested in Hiragana
-            if (buf[offset] == HIRAGANA_FIRST_BYTE) {
-                byte low = buf[offset+1];
+            if (buf[offset] == HIRAGANA_FIRST_BYTE)
+            {
+                byte low = buf[offset + 1];
                 if (low >= 0x9F && low <= 0xF1)
                     return low - 0x9F;
             }
@@ -292,8 +302,9 @@ namespace UniversalDetector.Core
                 charLen = 1;
 
             // return its order if it is hiragana
-            if (high == HIRAGANA_FIRST_BYTE) {
-                byte low = buf[offset+1];
+            if (high == HIRAGANA_FIRST_BYTE)
+            {
+                byte low = buf[offset + 1];
                 if (low >= 0xA1 && low <= 0xF3)
                     return low - 0xA1;
             }
@@ -303,8 +314,9 @@ namespace UniversalDetector.Core
         protected override int GetOrder(byte[] buf, int offset)
         {
             // We are only interested in Hiragana
-            if (buf[offset] == HIRAGANA_FIRST_BYTE) {
-                byte low = buf[offset+1];
+            if (buf[offset] == HIRAGANA_FIRST_BYTE)
+            {
+                byte low = buf[offset + 1];
                 if (low >= 0xA1 && low <= 0xF3)
                     return low - 0xA1;
             }

@@ -36,7 +36,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-using System;
 
 namespace UniversalDetector.Core
 {
@@ -88,19 +87,24 @@ namespace UniversalDetector.Core
             if (newBuf.Length == 0)
                 return state; // Nothing to see here, move on.
 
-            for (int i = 0; i < PROBERS_NUM; i++) {
+            for (int i = 0; i < PROBERS_NUM; i++)
+            {
                 if (!isActive[i])
                     continue;
                 st = probers[i].HandleData(newBuf, 0, newBuf.Length);
 
-                if (st == ProbingState.FoundIt) {
+                if (st == ProbingState.FoundIt)
+                {
                     bestGuess = i;
                     state = ProbingState.FoundIt;
                     break;
-                } else if (st == ProbingState.NotMe) {
+                }
+                else if (st == ProbingState.NotMe)
+                {
                     isActive[i] = false;
                     activeNum--;
-                    if (activeNum <= 0) {
+                    if (activeNum <= 0)
+                    {
                         state = ProbingState.NotMe;
                         break;
                     }
@@ -112,24 +116,25 @@ namespace UniversalDetector.Core
         public override float GetConfidence()
         {
             float bestConf = 0.0f, cf;
-            switch (state) {
-            case ProbingState.FoundIt:
-                return 0.99f; //sure yes
-            case ProbingState.NotMe:
-                return 0.01f;  //sure no
-            default:
-                for (int i = 0; i < PROBERS_NUM; i++)
-                {
-                    if (!isActive[i])
-                        continue;
-                    cf = probers[i].GetConfidence();
-                    if (bestConf < cf)
+            switch (state)
+            {
+                case ProbingState.FoundIt:
+                    return 0.99f; //sure yes
+                case ProbingState.NotMe:
+                    return 0.01f;  //sure no
+                default:
+                    for (int i = 0; i < PROBERS_NUM; i++)
                     {
-                        bestConf = cf;
-                        bestGuess = i;
+                        if (!isActive[i])
+                            continue;
+                        cf = probers[i].GetConfidence();
+                        if (bestConf < cf)
+                        {
+                            bestConf = cf;
+                            bestGuess = i;
+                        }
                     }
-                }
-                break;
+                    break;
             }
             return bestConf;
         }
@@ -137,8 +142,9 @@ namespace UniversalDetector.Core
         public override void DumpStatus()
         {
             float cf = GetConfidence();
-           // Console.WriteLine(" SBCS Group Prober --------begin status");
-            for (int i = 0; i < PROBERS_NUM; i++) {
+            // Console.WriteLine(" SBCS Group Prober --------begin status");
+            for (int i = 0; i < PROBERS_NUM; i++)
+            {
                 if (isActive[i])
                     probers[i].DumpStatus();
                 //else
@@ -148,15 +154,19 @@ namespace UniversalDetector.Core
             //Console.WriteLine(" SBCS Group found best match [{0}] confidence {1}.",  probers[bestGuess].GetCharsetName(), cf);
         }
 
-        public override void Reset ()
+        public override void Reset()
         {
             int activeNum = 0;
-            for (int i = 0; i < PROBERS_NUM; i++) {
-                if (probers[i] != null) {
+            for (int i = 0; i < PROBERS_NUM; i++)
+            {
+                if (probers[i] != null)
+                {
                     probers[i].Reset();
                     isActive[i] = true;
                     activeNum++;
-                } else {
+                }
+                else
+                {
                     isActive[i] = false;
                 }
             }
@@ -167,7 +177,8 @@ namespace UniversalDetector.Core
         public override string GetCharsetName()
         {
             //if we have no answer yet
-            if (bestGuess == -1) {
+            if (bestGuess == -1)
+            {
                 GetConfidence();
                 //no charset seems positive
                 if (bestGuess == -1)

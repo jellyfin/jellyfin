@@ -87,7 +87,7 @@ namespace UniversalDetector.Core
             BitPackage.Pack4bits(    4, ITSME, START, START, START, START, START, START) //28-2f
         };
 
-        private readonly static int[] HZCharLenTable = {0, 0, 0, 0, 0, 0};
+        private readonly static int[] HZCharLenTable = { 0, 0, 0, 0, 0, 0 };
 
         public HZSMModel() : base(
               new BitPackage(BitPackage.INDEX_SHIFT_4BITS,
@@ -153,7 +153,7 @@ namespace UniversalDetector.Core
                 BitPackage.Pack4bits(ERROR,ERROR,ERROR,ERROR,ERROR,ITSME,ERROR,START) //38-3f
         };
 
-        private readonly static int[] ISO2022CNCharLenTable = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+        private readonly static int[] ISO2022CNCharLenTable = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
         public ISO2022CNSMModel() : base(
               new BitPackage(BitPackage.INDEX_SHIFT_4BITS,
@@ -220,7 +220,7 @@ namespace UniversalDetector.Core
             BitPackage.Pack4bits(ERROR, ERROR, ERROR,ERROR,ITSME,ERROR,START,START) //40-47
         };
 
-        private readonly static int[] ISO2022JPCharLenTable = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        private readonly static int[] ISO2022JPCharLenTable = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
         public ISO2022JPSMModel() : base(
               new BitPackage(BitPackage.INDEX_SHIFT_4BITS,
@@ -284,7 +284,7 @@ namespace UniversalDetector.Core
             BitPackage.Pack4bits(ERROR,ERROR,ERROR,ITSME,START,START,START,START) //20-27
         };
 
-        private readonly static int[] ISO2022KRCharLenTable = {0, 0, 0, 0, 0, 0};
+        private readonly static int[] ISO2022KRCharLenTable = { 0, 0, 0, 0, 0, 0 };
 
         public ISO2022KRSMModel() : base(
               new BitPackage(BitPackage.INDEX_SHIFT_4BITS,

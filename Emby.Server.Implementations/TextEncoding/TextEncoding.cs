@@ -1,9 +1,9 @@
 using System;
 using System.Text;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Text;
+using Microsoft.Extensions.Logging;
 using NLangDetect.Core;
 using UniversalDetector;
 

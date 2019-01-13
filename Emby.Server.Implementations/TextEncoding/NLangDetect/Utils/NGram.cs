@@ -6,14 +6,14 @@ using NLangDetect.Core.Extensions;
 
 namespace NLangDetect.Core.Utils
 {
-  public class NGram
-  {
-    public const int GramsCount = 3;
+    public class NGram
+    {
+        public const int GramsCount = 3;
 
-    private static readonly string Latin1Excluded = Messages.getString("NGram.LATIN1_EXCLUDE");
+        private static readonly string Latin1Excluded = Messages.getString("NGram.LATIN1_EXCLUDE");
 
-    private static readonly string[] CjkClass =
-      {
+        private static readonly string[] CjkClass =
+          {
         #region CJK classes
 
         Messages.getString("NGram.KANJI_1_0"),
@@ -146,185 +146,185 @@ namespace NLangDetect.Core.Utils
         #endregion
       };
 
-    private static readonly Dictionary<char, char> _cjkMap;
+        private static readonly Dictionary<char, char> _cjkMap;
 
-    private StringBuilder _grams;
-    private bool _capitalword;
+        private StringBuilder _grams;
+        private bool _capitalword;
 
-    #region Constructor(s)
+        #region Constructor(s)
 
-    static NGram()
-    {
-      _cjkMap = new Dictionary<char, char>();
-
-      foreach (string cjk_list in CjkClass)
-      {
-        char representative = cjk_list[0];
-
-        for (int i = 0; i < cjk_list.Length; i++)
+        static NGram()
         {
-          _cjkMap.Add(cjk_list[i], representative);
-        }
-      }
-    }
+            _cjkMap = new Dictionary<char, char>();
 
-    public NGram()
-    {
-      _grams = new StringBuilder(" ");
-      _capitalword = false;
-    }
-
-    #endregion
-
-    #region Public methods
-
-    public static char Normalize(char ch)
-    {
-      UnicodeBlock? unicodeBlock = ch.GetUnicodeBlock();
-
-      if (!unicodeBlock.HasValue)
-      {
-        return ch;
-      }
-
-      switch (unicodeBlock.Value)
-      {
-        case UnicodeBlock.BasicLatin:
-          {
-            if (ch < 'A' || (ch < 'a' && ch > 'Z') || ch > 'z')
+            foreach (string cjk_list in CjkClass)
             {
-              return ' ';
+                char representative = cjk_list[0];
+
+                for (int i = 0; i < cjk_list.Length; i++)
+                {
+                    _cjkMap.Add(cjk_list[i], representative);
+                }
             }
-
-            break;
-          }
-
-        case UnicodeBlock.Latin1Supplement:
-          {
-            if (Latin1Excluded.IndexOf(ch) >= 0)
-            {
-              return ' ';
-            }
-
-            break;
-          }
-
-        case UnicodeBlock.GeneralPunctuation:
-          {
-            return ' ';
-          }
-
-        case UnicodeBlock.Arabic:
-          {
-            if (ch == '\u06cc')
-            {
-              return '\u064a';
-            }
-
-            break;
-          }
-
-        case UnicodeBlock.LatinExtendedAdditional:
-          {
-            if (ch >= '\u1ea0')
-            {
-              return '\u1ec3';
-            }
-
-            break;
-          }
-
-        case UnicodeBlock.Hiragana:
-          {
-            return '\u3042';
-          }
-
-        case UnicodeBlock.Katakana:
-          {
-            return '\u30a2';
-          }
-
-        case UnicodeBlock.Bopomofo:
-        case UnicodeBlock.BopomofoExtended:
-          {
-            return '\u3105';
-          }
-
-        case UnicodeBlock.CjkUnifiedIdeographs:
-          {
-            if (_cjkMap.ContainsKey(ch))
-            {
-              return _cjkMap[ch];
-            }
-
-            break;
-          }
-
-        case UnicodeBlock.HangulSyllables:
-          {
-            return '\uac00';
-          }
-      }
-
-      return ch;
-    }
-
-    public void AddChar(char ch)
-    {
-      ch = Normalize(ch);
-      char lastchar = _grams[_grams.Length - 1];
-      if (lastchar == ' ')
-      {
-        _grams = new StringBuilder(" ");
-        _capitalword = false;
-        if (ch == ' ') return;
-      }
-      else if (_grams.Length >= GramsCount)
-      {
-        _grams.Remove(0, 1);
-      }
-      _grams.Append(ch);
-
-      if (char.IsUpper(ch))
-      {
-        if (char.IsUpper(lastchar)) _capitalword = true;
-      }
-      else
-      {
-        _capitalword = false;
-      }
-    }
-
-    public string Get(int n)
-    {
-      if (_capitalword)
-      {
-        return null;
-      }
-
-      int len = _grams.Length;
-
-      if (n < 1 || n > 3 || len < n)
-      {
-        return null;
-      }
-
-      if (n == 1)
-      {
-        char ch = _grams[len - 1];
-
-        if (ch == ' ')
-        {
-          return null;
         }
 
-        return ch.ToString();
-      }
+        public NGram()
+        {
+            _grams = new StringBuilder(" ");
+            _capitalword = false;
+        }
 
-      // TODO IMM HI: is ToString() here effective?
-      return _grams.ToString().SubSequence(len - n, len);
+        #endregion
+
+        #region Public methods
+
+        public static char Normalize(char ch)
+        {
+            UnicodeBlock? unicodeBlock = ch.GetUnicodeBlock();
+
+            if (!unicodeBlock.HasValue)
+            {
+                return ch;
+            }
+
+            switch (unicodeBlock.Value)
+            {
+                case UnicodeBlock.BasicLatin:
+                    {
+                        if (ch < 'A' || (ch < 'a' && ch > 'Z') || ch > 'z')
+                        {
+                            return ' ';
+                        }
+
+                        break;
+                    }
+
+                case UnicodeBlock.Latin1Supplement:
+                    {
+                        if (Latin1Excluded.IndexOf(ch) >= 0)
+                        {
+                            return ' ';
+                        }
+
+                        break;
+                    }
+
+                case UnicodeBlock.GeneralPunctuation:
+                    {
+                        return ' ';
+                    }
+
+                case UnicodeBlock.Arabic:
+                    {
+                        if (ch == '\u06cc')
+                        {
+                            return '\u064a';
+                        }
+
+                        break;
+                    }
+
+                case UnicodeBlock.LatinExtendedAdditional:
+                    {
+                        if (ch >= '\u1ea0')
+                        {
+                            return '\u1ec3';
+                        }
+
+                        break;
+                    }
+
+                case UnicodeBlock.Hiragana:
+                    {
+                        return '\u3042';
+                    }
+
+                case UnicodeBlock.Katakana:
+                    {
+                        return '\u30a2';
+                    }
+
+                case UnicodeBlock.Bopomofo:
+                case UnicodeBlock.BopomofoExtended:
+                    {
+                        return '\u3105';
+                    }
+
+                case UnicodeBlock.CjkUnifiedIdeographs:
+                    {
+                        if (_cjkMap.ContainsKey(ch))
+                        {
+                            return _cjkMap[ch];
+                        }
+
+                        break;
+                    }
+
+                case UnicodeBlock.HangulSyllables:
+                    {
+                        return '\uac00';
+                    }
+            }
+
+            return ch;
+        }
+
+        public void AddChar(char ch)
+        {
+            ch = Normalize(ch);
+            char lastchar = _grams[_grams.Length - 1];
+            if (lastchar == ' ')
+            {
+                _grams = new StringBuilder(" ");
+                _capitalword = false;
+                if (ch == ' ') return;
+            }
+            else if (_grams.Length >= GramsCount)
+            {
+                _grams.Remove(0, 1);
+            }
+            _grams.Append(ch);
+
+            if (char.IsUpper(ch))
+            {
+                if (char.IsUpper(lastchar)) _capitalword = true;
+            }
+            else
+            {
+                _capitalword = false;
+            }
+        }
+
+        public string Get(int n)
+        {
+            if (_capitalword)
+            {
+                return null;
+            }
+
+            int len = _grams.Length;
+
+            if (n < 1 || n > 3 || len < n)
+            {
+                return null;
+            }
+
+            if (n == 1)
+            {
+                char ch = _grams[len - 1];
+
+                if (ch == ' ')
+                {
+                    return null;
+                }
+
+                return ch.ToString();
+            }
+
+            // TODO IMM HI: is ToString() here effective?
+            return _grams.ToString().SubSequence(len - n, len);
+        }
+
+        #endregion
     }
-
-    #endregion
-  }
 }

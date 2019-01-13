@@ -36,7 +36,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-using System;
 
 namespace UniversalDetector.Core
 {
@@ -54,7 +53,7 @@ namespace UniversalDetector.Core
         public int[] charLenTable;
 
         private string name;
-        
+
         public string Name => name;
 
         private int classFactor;

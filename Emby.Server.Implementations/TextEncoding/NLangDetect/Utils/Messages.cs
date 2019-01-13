@@ -1,10 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Linq;
-using System;
+using System.Text.RegularExpressions;
 
 namespace NLangDetect.Core.Utils
 {
@@ -29,7 +28,7 @@ namespace NLangDetect.Core.Utils
 
         private static Dictionary<string, string> LoadMessages()
         {
-            var manifestName = typeof(Messages).Assembly.GetManifestResourceNames().FirstOrDefault(i => i.IndexOf("messages.properties", StringComparison.Ordinal) != -1) ;
+            var manifestName = typeof(Messages).Assembly.GetManifestResourceNames().FirstOrDefault(i => i.IndexOf("messages.properties", StringComparison.Ordinal) != -1);
 
             Stream messagesStream =
               typeof(Messages).Assembly
