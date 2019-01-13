@@ -3,6 +3,8 @@
   <PropertyGroup>
     <Authors>Jellyfin Contributors</Authors>
     <PackageId>Jellyfin.Model</PackageId>
+    <PackageLicenseUrl>https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup>
