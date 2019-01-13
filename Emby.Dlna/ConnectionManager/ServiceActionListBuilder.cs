@@ -1,5 +1,5 @@
-using Emby.Dlna.Common;
 using System.Collections.Generic;
+using Emby.Dlna.Common;
 
 namespace Emby.Dlna.ConnectionManager
 {

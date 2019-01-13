@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Collections.Generic;
+using Emby.Dlna.Service;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
-using Emby.Dlna.Service;
-using System.Collections.Generic;
 using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 

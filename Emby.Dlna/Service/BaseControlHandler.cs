@@ -1,17 +1,14 @@
-﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dlna;
-using Emby.Dlna.Server;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
 using Emby.Dlna.Didl;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Xml;
-using MediaBrowser.Model.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Service
 {
@@ -205,7 +202,7 @@ namespace Emby.Dlna.Service
             return result;
         }
 
-        private void ParseFirstBodyChild(XmlReader reader, IDictionary<string,string> headers)
+        private void ParseFirstBodyChild(XmlReader reader, IDictionary<string, string> headers)
         {
             reader.MoveToContent();
             reader.Read();
@@ -229,7 +226,7 @@ namespace Emby.Dlna.Service
         {
             public string LocalName;
             public string NamespaceURI;
-            public IDictionary<string, string> Headers = new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase);
+            public IDictionary<string, string> Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         protected abstract IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, IDictionary<string, string> methodParams);

@@ -1,14 +1,13 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Dlna;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Eventing
 {

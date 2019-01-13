@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
 using Emby.Dlna.Configuration;
-using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
 
 namespace Emby.Dlna
 {

@@ -1,14 +1,14 @@
-﻿using MediaBrowser.Controller.Dlna;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
-using MediaBrowser.Model.Services;
-using MediaBrowser.Common.Extensions;
-using System.Text;
-using MediaBrowser.Controller.Net;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Emby.Dlna.Main;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Services;
 
 namespace Emby.Dlna.Api
 {
@@ -227,7 +227,7 @@ namespace Emby.Dlna.Api
             // TODO: Work out what this is doing.
             if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(first, "jellyfin", StringComparison.OrdinalIgnoreCase ))
+                string.Equals(first, "jellyfin", StringComparison.OrdinalIgnoreCase))
             {
                 index++;
             }

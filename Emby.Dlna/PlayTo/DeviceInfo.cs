@@ -1,6 +1,6 @@
-﻿using Emby.Dlna.Common;
+﻿using System.Collections.Generic;
+using Emby.Dlna.Common;
 using MediaBrowser.Model.Dlna;
-using System.Collections.Generic;
 
 namespace Emby.Dlna.PlayTo
 {

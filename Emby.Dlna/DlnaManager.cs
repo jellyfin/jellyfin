@@ -1,24 +1,22 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Plugins;
-using Emby.Dlna.Profiles;
-using Emby.Dlna.Server;
-using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Drawing;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Emby.Dlna.Profiles;
+using Emby.Dlna.Server;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Reflection;
-using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna
 {
