@@ -1,7 +1,5 @@
 ﻿using System;
 using System.IO;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.IO

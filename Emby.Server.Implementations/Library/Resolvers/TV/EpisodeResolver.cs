@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Linq;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using System.Linq;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 

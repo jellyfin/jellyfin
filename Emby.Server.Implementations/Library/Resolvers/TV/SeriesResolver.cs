@@ -1,20 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Emby.Naming.TV;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using Emby.Naming.Common;
-using Emby.Naming.TV;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.TV
 {

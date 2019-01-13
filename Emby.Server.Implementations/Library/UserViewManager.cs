@@ -1,21 +1,19 @@
-﻿using MediaBrowser.Controller.Channels;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -242,7 +240,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     return _channelManager.GetLatestChannelItemsInternal(new InternalItemsQuery(user)
                     {
-                        ChannelIds = new [] { parentId },
+                        ChannelIds = new[] { parentId },
                         IsPlayed = request.IsPlayed,
                         StartIndex = request.StartIndex,
                         Limit = request.Limit,

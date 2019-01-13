@@ -1,17 +1,15 @@
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Library;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Search;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library
 {

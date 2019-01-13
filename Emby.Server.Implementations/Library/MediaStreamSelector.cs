@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -171,7 +171,7 @@ namespace Emby.Server.Implementations.Library
 
         private static int FindIndex(string[] list, string value)
         {
-            for (var i=0; i< list.Length; i++)
+            for (var i = 0; i < list.Length; i++)
             {
                 if (string.Equals(list[i], value, StringComparison.OrdinalIgnoreCase))
                 {
