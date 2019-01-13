@@ -1,7 +1,7 @@
 using System;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net.WebSockets;
 using Emby.Server.Implementations.Net;
 using Microsoft.Extensions.Logging;
 

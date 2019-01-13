@@ -28,7 +28,7 @@ namespace Jellyfin.Server
         protected override void RestartInternal() => Program.Restart();
 
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()
-            => new [] { typeof(CoreAppHost).Assembly };
+            => new[] { typeof(CoreAppHost).Assembly };
 
         protected override void ShutdownInternal() => Program.Shutdown();
 

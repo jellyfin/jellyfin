@@ -425,7 +425,7 @@ namespace Jellyfin.SocketSharp
                     cookies = new Dictionary<string, System.Net.Cookie>();
                     foreach (var cookie in this.request.Cookies)
                     {
-                        var httpCookie = (System.Net.Cookie) cookie;
+                        var httpCookie = (System.Net.Cookie)cookie;
                         cookies[httpCookie.Name] = new System.Net.Cookie(httpCookie.Name, httpCookie.Value, httpCookie.Path, httpCookie.Domain);
                     }
                 }
