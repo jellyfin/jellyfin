@@ -156,7 +156,7 @@ namespace Emby.Server.Implementations.IO
                     continue;
                 }
 
-                Logger.LogInformation("{name} ({path}}) will be refreshed.", item.Name, item.Path);
+                Logger.LogInformation("{name} ({path}) will be refreshed.", item.Name, item.Path);
 
                 try
                 {

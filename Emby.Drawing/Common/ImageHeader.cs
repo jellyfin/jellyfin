@@ -48,12 +48,13 @@ namespace Emby.Drawing.Common
         /// <exception cref="ArgumentException">The image was of an unrecognised format.</exception>
         public static ImageSize GetDimensions(string path, ILogger logger, IFileSystem fileSystem)
         {
-            var extension = Path.GetExtension(path);
-
-            if (string.IsNullOrEmpty(extension))
+            if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentException("ImageHeader doesn't support image file");
+                throw new ArgumentNullException(nameof(path));
             }
+
+            string extension = Path.GetExtension(path).ToLower();
+
             if (!SupportedExtensions.Contains(extension))
             {
                 throw new ArgumentException("ImageHeader doesn't support " + extension);

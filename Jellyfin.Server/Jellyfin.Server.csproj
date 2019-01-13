@@ -20,19 +20,26 @@
         <EmbeddedResource Include="Resources/Configuration/*" />
     </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
-        <PackageReference Include="Serilog.AspNetCore" Version="2.1.1" />
-        <PackageReference Include="Serilog.Settings.Configuration" Version="3.0.1" />
-        <PackageReference Include="Serilog.Sinks.Async" Version="1.3.0" />
-        <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
-        <PackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
-        <PackageReference Include="SkiaSharp" Version="1.68.0" />
-        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="1.1.12" />
-        <PackageReference Include="SQLitePCLRaw.core" Version="1.1.12" />
-        <PackageReference Include="SQLitePCLRaw.provider.sqlite3.netstandard11" Version="1.1.12" />
-    </ItemGroup>
+  <!-- Code analysers-->
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.3" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
+    <PackageReference Include="SerilogAnalyzer" Version="0.15.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="2.1.1" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.0.1" />
+    <PackageReference Include="Serilog.Sinks.Async" Version="1.3.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
+    <PackageReference Include="SkiaSharp" Version="1.68.0" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="1.1.12" />
+    <PackageReference Include="SQLitePCLRaw.core" Version="1.1.12" />
+    <PackageReference Include="SQLitePCLRaw.provider.sqlite3.netstandard11" Version="1.1.12" />
+  </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
