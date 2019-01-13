@@ -19,7 +19,7 @@
 
 namespace OpenSubtitlesHandler
 {
-    public struct  SearchToMailMovieParameter
+    public struct SearchToMailMovieParameter
     {
         private string _moviehash;
         private double _moviesize;

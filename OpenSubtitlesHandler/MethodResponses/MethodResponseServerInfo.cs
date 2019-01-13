@@ -18,7 +18,6 @@
  */
 
 using System.Collections.Generic;
-using System.ComponentModel;
 namespace OpenSubtitlesHandler
 {
     [MethodResponseDescription("ServerInfo method response",

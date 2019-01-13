@@ -17,10 +17,10 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using System;
-using System.Globalization;
-using System.Text;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenSubtitlesHandler.Console;
@@ -305,7 +305,8 @@ namespace OpenSubtitlesHandler
                     new XmlRpcValueBasic(param.SubLangaugeID, XmlRpcBasicValueType.String));
                 strct.Members.Add(member);
                 // moviehash member
-                if (param.MovieHash.Length > 0 && param.MovieByteSize > 0) {
+                if (param.MovieHash.Length > 0 && param.MovieByteSize > 0)
+                {
                     member = new XmlRpcStructMember("moviehash",
                         new XmlRpcValueBasic(param.MovieHash, XmlRpcBasicValueType.String));
                     strct.Members.Add(member);
@@ -314,19 +315,21 @@ namespace OpenSubtitlesHandler
                         new XmlRpcValueBasic(param.MovieByteSize, XmlRpcBasicValueType.Int));
                     strct.Members.Add(member);
                 }
-                if (param.Query.Length > 0) {
+                if (param.Query.Length > 0)
+                {
                     member = new XmlRpcStructMember("query",
                         new XmlRpcValueBasic(param.Query, XmlRpcBasicValueType.String));
                     strct.Members.Add(member);
                 }
 
-                 if (param.Episode.Length > 0 && param.Season.Length>0) {
-                     member = new XmlRpcStructMember("season",
-                         new XmlRpcValueBasic(param.Season, XmlRpcBasicValueType.String));
-                     strct.Members.Add(member);
-                     member = new XmlRpcStructMember("episode",
-                       new XmlRpcValueBasic(param.Episode, XmlRpcBasicValueType.String));
-                     strct.Members.Add(member);
+                if (param.Episode.Length > 0 && param.Season.Length > 0)
+                {
+                    member = new XmlRpcStructMember("season",
+                        new XmlRpcValueBasic(param.Season, XmlRpcBasicValueType.String));
+                    strct.Members.Add(member);
+                    member = new XmlRpcStructMember("episode",
+                      new XmlRpcValueBasic(param.Episode, XmlRpcBasicValueType.String));
+                    strct.Members.Add(member);
                 }
 
                 // imdbid member
