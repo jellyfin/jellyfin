@@ -9,10 +9,10 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -718,7 +718,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 if (!info.TimeOfDayTicks.HasValue)
                 {
-                    throw new ArgumentException("Info did not contain a TimeOfDayTicks.",nameof(info));
+                    throw new ArgumentException("Info did not contain a TimeOfDayTicks.", nameof(info));
                 }
 
                 return new DailyTrigger

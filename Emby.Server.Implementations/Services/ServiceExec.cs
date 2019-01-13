@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Services
 {

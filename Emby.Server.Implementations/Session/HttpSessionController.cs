@@ -1,16 +1,14 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Session;
-using MediaBrowser.Model.System;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Session;
 
 namespace Emby.Server.Implementations.Session
 {
@@ -107,7 +105,7 @@ namespace Emby.Server.Implementations.Session
             return SendMessage(command.Command.ToString(), messageId, args, cancellationToken);
         }
 
-        private string[] _supportedMessages = new string[] {  };
+        private string[] _supportedMessages = new string[] { };
         public Task SendMessage<T>(string name, string messageId, T data, ISessionController[] allControllers, CancellationToken cancellationToken)
         {
             if (!IsSessionActive)

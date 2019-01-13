@@ -1,23 +1,3 @@
-using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Security;
-using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Devices;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Library;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -25,11 +5,30 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Threading;
-using MediaBrowser.Model.Extensions;
+using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
+using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Devices;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Library;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Session
 {
@@ -798,7 +797,7 @@ namespace Emby.Server.Implementations.Session
 
             if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(info),"The PlaybackStopInfo's PositionTicks was negative.");
+                throw new ArgumentOutOfRangeException(nameof(info), "The PlaybackStopInfo's PositionTicks was negative.");
             }
 
             var session = GetSession(info.SessionId);

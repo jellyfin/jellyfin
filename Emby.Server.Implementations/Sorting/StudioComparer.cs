@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System;
+using System.Linq;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
-using System;
-using System.Linq;
 
 namespace Emby.Server.Implementations.Sorting
 {

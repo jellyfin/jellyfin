@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
 using System.Threading.Tasks;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Common.Implementations.Serialization
 {
