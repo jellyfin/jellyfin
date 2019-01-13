@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Controller.Providers;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Controller.Entities
 {

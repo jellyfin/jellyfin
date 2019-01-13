@@ -1,9 +1,9 @@
-﻿using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Services;
+﻿using System;
 using System.Net.WebSockets;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
+using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
 {

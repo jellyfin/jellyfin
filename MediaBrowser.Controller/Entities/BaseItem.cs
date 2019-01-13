@@ -1,31 +1,31 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Library;
-using MediaBrowser.Model.Users;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Library;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Users;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -2101,7 +2101,7 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     var list =
-                    Studios = current.Concat(new [] { name }).ToArray();
+                    Studios = current.Concat(new[] { name }).ToArray();
                 }
             }
         }
@@ -2241,7 +2241,7 @@ namespace MediaBrowser.Controller.Entities
             else
             {
                 var currentCount = ImageInfos.Length;
-                ImageInfos = ImageInfos.Concat(new [] { image }) .ToArray();
+                ImageInfos = ImageInfos.Concat(new[] { image }).ToArray();
             }
         }
 
@@ -2256,7 +2256,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (image == null)
             {
-                ImageInfos = ImageInfos.Concat(new [] { GetImageInfo(file, type) }) .ToArray();
+                ImageInfos = ImageInfos.Concat(new[] { GetImageInfo(file, type) }).ToArray();
             }
             else
             {
@@ -2915,14 +2915,15 @@ namespace MediaBrowser.Controller.Entities
             return GetExtras();
         }
 
-        public virtual bool IsHD {
+        public virtual bool IsHD
+        {
             get
             {
                 return Height >= 720;
             }
         }
-        public bool IsShortcut{ get; set;}
-        public string ShortcutPath{ get; set;}
+        public bool IsShortcut { get; set; }
+        public string ShortcutPath { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
         public Guid[] ExtraIds { get; set; }
@@ -2931,10 +2932,11 @@ namespace MediaBrowser.Controller.Entities
             return RunTimeTicks ?? 0;
         }
         // what does this do?
-        public static ExtraType[] DisplayExtraTypes = new[] {Model.Entities.ExtraType.ThemeSong, Model.Entities.ExtraType.ThemeVideo };
+        public static ExtraType[] DisplayExtraTypes = new[] { Model.Entities.ExtraType.ThemeSong, Model.Entities.ExtraType.ThemeVideo };
         public virtual bool SupportsExternalTransfer
         {
-            get {
+            get
+            {
                 return false;
             }
         }

@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Controller.Providers;
+﻿using System;
+using System.Collections.Generic;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using System.Collections.Generic;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using System;
 
 namespace MediaBrowser.Controller.Entities
 {

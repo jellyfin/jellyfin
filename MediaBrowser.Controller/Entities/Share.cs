@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MediaBrowser.Controller.Entities
+﻿namespace MediaBrowser.Controller.Entities
 {
     public interface IHasShares
     {

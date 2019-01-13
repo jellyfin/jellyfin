@@ -1,12 +1,12 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -335,7 +335,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public long InternalId { get; set;}
+        public long InternalId { get; set; }
 
 
     }

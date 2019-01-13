@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Model.LiveTv;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv
 {

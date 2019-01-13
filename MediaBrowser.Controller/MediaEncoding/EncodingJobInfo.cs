@@ -5,11 +5,11 @@ using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -745,11 +745,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         public IProgress<double> Progress { get; set; }
-        public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float framerate, double? percentComplete, long bytesTranscoded, int? bitRate) {
+        public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float framerate, double? percentComplete, long bytesTranscoded, int? bitRate)
+        {
             Progress.Report(percentComplete.Value);
         }
 
-        public virtual void Dispose () {
+        public virtual void Dispose()
+        {
         }
     }
 

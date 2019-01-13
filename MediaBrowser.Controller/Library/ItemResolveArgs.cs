@@ -1,8 +1,8 @@
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 

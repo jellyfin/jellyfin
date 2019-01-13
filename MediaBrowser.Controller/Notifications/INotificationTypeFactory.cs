@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Notifications;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using MediaBrowser.Model.Notifications;
 
 namespace MediaBrowser.Controller.Notifications
 {

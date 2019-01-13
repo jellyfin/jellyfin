@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -51,7 +50,7 @@ namespace MediaBrowser.Controller.Library
                                };
                 }
 
-                return new DayOfWeek[]{};
+                return new DayOfWeek[] { };
             }
             return null;
         }

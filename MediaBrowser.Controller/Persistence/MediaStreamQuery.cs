@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
-using System;
+﻿using System;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Persistence
 {

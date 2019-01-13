@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Session;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net

@@ -1,9 +1,7 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Collections.Generic;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using System.Collections.Generic;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Resolvers

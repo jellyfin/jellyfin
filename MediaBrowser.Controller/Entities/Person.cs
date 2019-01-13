@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Controller.Providers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;

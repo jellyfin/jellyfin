@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
@@ -21,10 +21,10 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public Movie()
         {
-            SpecialFeatureIds = new Guid[] {};
+            SpecialFeatureIds = new Guid[] { };
             RemoteTrailers = EmptyMediaUrlArray;
-            LocalTrailerIds = new Guid[] {};
-            RemoteTrailerIds = new Guid[] {};
+            LocalTrailerIds = new Guid[] { };
+            RemoteTrailerIds = new Guid[] { };
         }
 
         public Guid[] LocalTrailerIds { get; set; }

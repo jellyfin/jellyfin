@@ -51,7 +51,7 @@ namespace MediaBrowser.Controller.Net
 
         public string[] GetRoles()
         {
-            return (Roles ?? string.Empty).Split(new []{ ',' }, StringSplitOptions.RemoveEmptyEntries);
+            return (Roles ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public bool AllowLocalOnly { get; set; }

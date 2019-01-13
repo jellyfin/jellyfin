@@ -1,9 +1,8 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Dto;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.Library
 {

@@ -1,13 +1,13 @@
-﻿using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Querying;
-using System;
+﻿using System;
 using System.Linq;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Dto
 {
     public class DtoOptions
     {
-        private static readonly ItemFields[] DefaultExcludedFields = new []
+        private static readonly ItemFields[] DefaultExcludedFields = new[]
         {
             ItemFields.SeasonUserData,
             ItemFields.RefreshState

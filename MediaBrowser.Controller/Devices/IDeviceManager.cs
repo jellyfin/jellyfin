@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Model.Devices;
-using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Session;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Devices;
+using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Controller.Devices
 {

@@ -1,14 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
+﻿using System.Linq;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -72,7 +64,7 @@ namespace MediaBrowser.Controller.Entities
         where T : BaseItem
         where TU : BaseItem
         {
-            var sourceProps = typeof (T).GetProperties().Where(x => x.CanRead).ToList();
+            var sourceProps = typeof(T).GetProperties().Where(x => x.CanRead).ToList();
             var destProps = typeof(TU).GetProperties()
                     .Where(x => x.CanWrite)
                     .ToList();
