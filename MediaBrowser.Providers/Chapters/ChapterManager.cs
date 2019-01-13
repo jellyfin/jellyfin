@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Controller.Chapters;
+﻿using System;
+using System.Collections.Generic;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Providers.Chapters
 {
