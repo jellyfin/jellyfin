@@ -78,9 +78,6 @@ fi
 docker build ../.. -t "$image_name" -f ./Dockerfile
 mkdir -p "$output_dir"
 docker run --rm -v "$package_temporary_dir:/temp" "$image_name" sh -c 'find /build/rpmbuild -maxdepth 3 -type f -name "jellyfin*.rpm" -exec mv {} /temp \;'
-chown -R "$current_user" "$package_temporary_dir"
-if [ $? -ne 0 ]; then
-	# Some platforms need this to chown the file properly. (Platforms with native docker, not just the client)
-    sudo chown -R "$current_user" "$package_temporary_dir"
-fi
+chown -R "$current_user" "$package_temporary_dir" \
+|| sudo chown -R "$current_user" "$package_temporary_dir"
 mv "$package_temporary_dir"/*.rpm "$output_dir"
