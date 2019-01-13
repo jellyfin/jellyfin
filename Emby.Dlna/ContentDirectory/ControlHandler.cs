@@ -1,37 +1,32 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using Emby.Dlna.Didl;
-using Emby.Dlna.Server;
-using Emby.Dlna.Service;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Querying;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Xml;
+using Emby.Dlna.Didl;
+using Emby.Dlna.Service;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Xml;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Controller.LiveTv;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.ContentDirectory
 {
@@ -311,7 +306,7 @@ namespace Emby.Dlna.ContentDirectory
 
             var resXML = builder.ToString();
 
-            return new []
+            return new[]
                 {
                     new KeyValuePair<string,string>("Result", resXML),
                     new KeyValuePair<string,string>("NumberReturned", provided.ToString(_usCulture)),
@@ -1144,7 +1139,7 @@ namespace Emby.Dlna.ContentDirectory
                 StartIndex = query.StartIndex,
                 UserId = query.User.Id
 
-            }, new [] { parent }, query.DtoOptions);
+            }, new[] { parent }, query.DtoOptions);
 
             return ToResult(result);
         }

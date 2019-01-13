@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Dlna;
-using System.Xml.Serialization;
 
 namespace Emby.Dlna.Profiles
 {
@@ -17,7 +16,7 @@ namespace Emby.Dlna.Profiles
             {
                 ModelName = "WD TV",
 
-                Headers = new []
+                Headers = new[]
                 {
                     new HttpHeaderInfo {Name = "User-Agent", Value = "alphanetworks", Match = HeaderMatchType.Substring},
                     new HttpHeaderInfo

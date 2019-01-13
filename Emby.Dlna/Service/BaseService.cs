@@ -1,6 +1,5 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Dlna;
-using Emby.Dlna.Eventing;
+﻿using Emby.Dlna.Eventing;
+using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Service

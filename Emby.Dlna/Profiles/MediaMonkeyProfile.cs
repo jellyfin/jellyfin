@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Dlna;
-using System.Xml.Serialization;
 
 namespace Emby.Dlna.Profiles
 {
@@ -14,9 +13,9 @@ namespace Emby.Dlna.Profiles
 
             Identification = new DeviceIdentification
             {
-               FriendlyName = @"MediaMonkey",
+                FriendlyName = @"MediaMonkey",
 
-               Headers = new[]
+                Headers = new[]
                {
                    new HttpHeaderInfo
                    {
