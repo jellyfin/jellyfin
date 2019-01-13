@@ -14,24 +14,14 @@ namespace MediaBrowser.LocalMetadata.Images
             _fileSystem = fileSystem;
         }
 
-        public string Name
-        {
-            get { return "Collection Folder Images"; }
-        }
+        public string Name => "Collection Folder Images";
 
         public bool Supports(BaseItem item)
         {
             return item is CollectionFolder && item.SupportsLocalMetadata;
         }
 
-        public int Order
-        {
-            get
-            {
-                // Run after LocalImageProvider
-                return 1;
-            }
-        }
+        public int Order => 1;
 
         public List<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
         {

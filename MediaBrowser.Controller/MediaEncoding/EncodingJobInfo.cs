@@ -61,53 +61,17 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        public bool IgnoreInputDts
-        {
-            get
-            {
-                return MediaSource.IgnoreDts;
-            }
-        }
+        public bool IgnoreInputDts => MediaSource.IgnoreDts;
 
-        public bool IgnoreInputIndex
-        {
-            get
-            {
-                return MediaSource.IgnoreIndex;
-            }
-        }
+        public bool IgnoreInputIndex => MediaSource.IgnoreIndex;
 
-        public bool GenPtsInput
-        {
-            get
-            {
-                return MediaSource.GenPtsInput;
-            }
-        }
+        public bool GenPtsInput => MediaSource.GenPtsInput;
 
-        public bool DiscardCorruptFramesInput
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool DiscardCorruptFramesInput => false;
 
-        public bool EnableFastSeekInput
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool EnableFastSeekInput => false;
 
-        public bool GenPtsOutput
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool GenPtsOutput => false;
 
         public string OutputContainer { get; set; }
 
@@ -142,15 +106,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public BaseEncodingJobOptions BaseRequest { get; set; }
 
-        public long? StartTimeTicks
-        {
-            get { return BaseRequest.StartTimeTicks; }
-        }
+        public long? StartTimeTicks => BaseRequest.StartTimeTicks;
 
-        public bool CopyTimestamps
-        {
-            get { return BaseRequest.CopyTimestamps; }
-        }
+        public bool CopyTimestamps => BaseRequest.CopyTimestamps;
 
         public int? OutputAudioBitrate;
         public int? OutputAudioChannels;
@@ -323,13 +281,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             SupportedSubtitleCodecs = Array.Empty<string>();
         }
 
-        public bool IsSegmentedLiveStream
-        {
-            get
-            {
-                return TranscodingType != TranscodingJobType.Progressive && !RunTimeTicks.HasValue;
-            }
-        }
+        public bool IsSegmentedLiveStream => TranscodingType != TranscodingJobType.Progressive && !RunTimeTicks.HasValue;
 
         public bool EnableBreakOnNonKeyFrames(string videoCodec)
         {
@@ -346,13 +298,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return false;
         }
 
-        public int? TotalOutputBitrate
-        {
-            get
-            {
-                return (OutputAudioBitrate ?? 0) + (OutputVideoBitrate ?? 0);
-            }
-        }
+        public int? TotalOutputBitrate => (OutputAudioBitrate ?? 0) + (OutputVideoBitrate ?? 0);
 
         public int? OutputWidth
         {

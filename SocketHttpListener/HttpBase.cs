@@ -49,21 +49,9 @@ namespace SocketHttpListener
             }
         }
 
-        public QueryParamCollection Headers
-        {
-            get
-            {
-                return _headers;
-            }
-        }
+        public QueryParamCollection Headers => _headers;
 
-        public Version ProtocolVersion
-        {
-            get
-            {
-                return _version;
-            }
-        }
+        public Version ProtocolVersion => _version;
 
         #endregion
 

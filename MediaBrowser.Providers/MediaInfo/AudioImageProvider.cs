@@ -119,18 +119,9 @@ namespace MediaBrowser.Providers.MediaInfo
             return Path.Combine(AudioImagesPath, prefix, filename);
         }
 
-        public string AudioImagesPath
-        {
-            get
-            {
-                return Path.Combine(_config.ApplicationPaths.CachePath, "extracted-audio-images");
-            }
-        }
+        public string AudioImagesPath => Path.Combine(_config.ApplicationPaths.CachePath, "extracted-audio-images");
 
-        public string Name
-        {
-            get { return "Image Extractor"; }
-        }
+        public string Name => "Image Extractor";
 
         public bool Supports(BaseItem item)
         {

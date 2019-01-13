@@ -95,10 +95,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             Fetch(item, metadataFile, settings, cancellationToken);
         }
 
-        protected virtual bool SupportsUrlAfterClosingXmlTag
-        {
-            get { return false; }
-        }
+        protected virtual bool SupportsUrlAfterClosingXmlTag => false;
 
         /// <summary>
         /// Fetches the specified item.
@@ -223,10 +220,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
-        protected virtual string MovieDbParserSearchString
-        {
-            get { return "themoviedb.org/movie/"; }
-        }
+        protected virtual string MovieDbParserSearchString => "themoviedb.org/movie/";
 
         protected void ParseProviderLinks(T item, string xml)
         {

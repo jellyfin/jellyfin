@@ -13,7 +13,7 @@ namespace IsoMounter
     public class LinuxIsoManager : IIsoMounter
     {
         [DllImport("libc", SetLastError = true)]
-        public static extern uint getuid();
+        static extern uint getuid();
 
         #region Private Fields
 
@@ -102,26 +102,11 @@ namespace IsoMounter
 
         #region Interface Implementation for IIsoMounter
 
-        public bool IsInstalled
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool IsInstalled => true;
 
-        public string Name
-        {
-            get { return "LinuxMount"; }
-        }
+        public string Name => "LinuxMount";
 
-        public bool RequiresInstallation
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool RequiresInstallation => false;
 
         public bool CanMount(string path)
         {

@@ -43,14 +43,7 @@ namespace MediaBrowser.Providers.Omdb
             _appHost = appHost;
         }
 
-        public int Order
-        {
-            get
-            {
-                // After primary option
-                return 2;
-            }
-        }
+        public int Order => 2;
 
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
@@ -203,10 +196,7 @@ namespace MediaBrowser.Providers.Omdb
             return GetSearchResults(searchInfo, "movie", cancellationToken);
         }
 
-        public string Name
-        {
-            get { return "The Open Movie Database"; }
-        }
+        public string Name => "The Open Movie Database";
 
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
         {

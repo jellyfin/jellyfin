@@ -45,13 +45,7 @@ namespace Emby.Server.Implementations.Data
         /// Gets the name of the repository
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get
-            {
-                return "SQLite";
-            }
-        }
+        public string Name => "SQLite";
 
         /// <summary>
         /// Gets the json serializer.
@@ -97,21 +91,9 @@ namespace Emby.Server.Implementations.Data
 
         private const string ChaptersTableName = "Chapters2";
 
-        protected override int? CacheSize
-        {
-            get
-            {
-                return 20000;
-            }
-        }
+        protected override int? CacheSize => 20000;
 
-        protected override bool EnableTempStoreMemory
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableTempStoreMemory => true;
 
         /// <summary>
         /// Opens the connection to the database

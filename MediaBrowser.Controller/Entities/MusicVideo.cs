@@ -17,13 +17,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public string[] AllArtists
-        {
-            get
-            {
-                return Artists;
-            }
-        }
+        public string[] AllArtists => Artists;
 
         public override UnratedItem GetBlockUnratedType()
         {

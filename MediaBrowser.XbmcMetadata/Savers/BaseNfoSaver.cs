@@ -130,21 +130,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
-        public string Name
-        {
-            get
-            {
-                return SaverName;
-            }
-        }
+        public string Name => SaverName;
 
-        public static string SaverName
-        {
-            get
-            {
-                return "Nfo";
-            }
-        }
+        public static string SaverName => "Nfo";
 
         public string GetSavePath(BaseItem item)
         {

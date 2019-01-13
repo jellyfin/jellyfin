@@ -180,10 +180,7 @@ namespace SocketHttpListener.Net
                 InternalWrite(buffer, ref offset, size);
         }
 
-        public bool WantMore
-        {
-            get { return (_chunkRead != _chunkSize || _chunkSize != 0 || _state != State.None); }
-        }
+        public bool WantMore => (_chunkRead != _chunkSize || _chunkSize != 0 || _state != State.None);
 
         public bool DataAvailable
         {
@@ -202,15 +199,9 @@ namespace SocketHttpListener.Net
             }
         }
 
-        public int TotalDataSize
-        {
-            get { return _totalWritten; }
-        }
+        public int TotalDataSize => _totalWritten;
 
-        public int ChunkLeft
-        {
-            get { return _chunkSize - _chunkRead; }
-        }
+        public int ChunkLeft => _chunkSize - _chunkRead;
 
         private State ReadBody(byte[] buffer, ref int offset, int size)
         {

@@ -40,14 +40,8 @@ namespace MediaBrowser.Controller.Entities
         // Strictly to remove IgnoreDataMember
         public override ItemImageInfo[] ImageInfos
         {
-            get
-            {
-                return base.ImageInfos;
-            }
-            set
-            {
-                base.ImageInfos = value;
-            }
+            get => base.ImageInfos;
+            set => base.ImageInfos = value;
         }
 
         /// <summary>
@@ -57,15 +51,8 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public override string Path
         {
-            get
-            {
-                // Return this so that metadata providers will look in here
-                return ConfigurationDirectoryPath;
-            }
-            set
-            {
-                base.Path = value;
-            }
+            get => ConfigurationDirectoryPath;
+            set => base.Path = value;
         }
 
         private string _name;
@@ -75,10 +62,7 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The name.</value>
         public override string Name
         {
-            get
-            {
-                return _name;
-            }
+            get => _name;
             set
             {
                 _name = value;
@@ -94,26 +78,14 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The containing folder path.</value>
         [IgnoreDataMember]
-        public override string ContainingFolderPath
-        {
-            get
-            {
-                return Path;
-            }
-        }
+        public override string ContainingFolderPath => Path;
 
         /// <summary>
         /// Gets the root folder.
         /// </summary>
         /// <value>The root folder.</value>
         [IgnoreDataMember]
-        public Folder RootFolder
-        {
-            get
-            {
-                return LibraryManager.GetUserRootFolder();
-            }
-        }
+        public Folder RootFolder => LibraryManager.GetUserRootFolder();
 
         /// <summary>
         /// Gets or sets the last login date.
@@ -146,7 +118,7 @@ namespace MediaBrowser.Controller.Entities
 
                 return _config;
             }
-            set { _config = value; }
+            set => _config = value;
         }
 
         private volatile UserPolicy _policy;
@@ -169,7 +141,7 @@ namespace MediaBrowser.Controller.Entities
 
                 return _policy;
             }
-            set { _policy = value; }
+            set => _policy = value;
         }
 
         /// <summary>
@@ -232,13 +204,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The configuration directory path.</value>
         [IgnoreDataMember]
-        public string ConfigurationDirectoryPath
-        {
-            get
-            {
-                return GetConfigurationDirectoryPath(Name);
-            }
-        }
+        public string ConfigurationDirectoryPath => GetConfigurationDirectoryPath(Name);
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -327,13 +293,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPeople => false;
 
         public long InternalId { get; set; }
 

@@ -37,15 +37,9 @@ namespace MediaBrowser.Providers.TV
             _json = json;
         }
 
-        public string Name
-        {
-            get { return ProviderName; }
-        }
+        public string Name => ProviderName;
 
-        public static string ProviderName
-        {
-            get { return "FanArt"; }
-        }
+        public static string ProviderName => "FanArt";
 
         public bool Supports(BaseItem item)
         {
@@ -200,10 +194,7 @@ namespace MediaBrowser.Providers.TV
             }).Where(i => i != null));
         }
 
-        public int Order
-        {
-            get { return 1; }
-        }
+        public int Order => 1;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

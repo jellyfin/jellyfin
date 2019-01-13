@@ -58,13 +58,7 @@ namespace SocketHttpListener.Net
             CreateSocket();
         }
 
-        internal HttpListener Listener
-        {
-            get
-            {
-                return _listener;
-            }
-        }
+        internal HttpListener Listener => _listener;
 
         private void CreateSocket()
         {

@@ -17,7 +17,7 @@ namespace MediaBrowser.Api.Playback
 
         public StreamRequest Request
         {
-            get { return (StreamRequest)BaseRequest; }
+            get => (StreamRequest)BaseRequest;
             set
             {
                 BaseRequest = value;
@@ -28,10 +28,7 @@ namespace MediaBrowser.Api.Playback
 
         public TranscodingThrottler TranscodingThrottler { get; set; }
 
-        public VideoStreamRequest VideoRequest
-        {
-            get { return Request as VideoStreamRequest; }
-        }
+        public VideoStreamRequest VideoRequest => Request as VideoStreamRequest;
 
         /// <summary>
         /// Gets or sets the log file stream.
@@ -42,10 +39,7 @@ namespace MediaBrowser.Api.Playback
 
         public string WaitForPath { get; set; }
 
-        public bool IsOutputVideo
-        {
-            get { return Request is VideoStreamRequest; }
-        }
+        public bool IsOutputVideo => Request is VideoStreamRequest;
 
         public int SegmentLength
         {
@@ -98,13 +92,7 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        public int HlsListSize
-        {
-            get
-            {
-                return 0;
-            }
-        }
+        public int HlsListSize => 0;
 
         public string UserAgent { get; set; }
 

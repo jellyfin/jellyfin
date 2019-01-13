@@ -24,13 +24,7 @@ namespace MediaBrowser.Providers.Music
                 item.GetRecursiveChildren(i => i is IHasArtist && !i.IsFolder);
         }
 
-        protected override bool EnableUpdatingGenresFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingGenresFromChildren => true;
 
         protected override void MergeData(MetadataResult<MusicArtist> source, MetadataResult<MusicArtist> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {

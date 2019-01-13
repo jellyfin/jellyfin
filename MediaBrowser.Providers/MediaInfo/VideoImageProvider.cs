@@ -120,10 +120,7 @@ namespace MediaBrowser.Providers.MediaInfo
             };
         }
 
-        public string Name
-        {
-            get { return "Screen Grabber"; }
-        }
+        public string Name => "Screen Grabber";
 
         public bool Supports(BaseItem item)
         {
@@ -146,13 +143,6 @@ namespace MediaBrowser.Providers.MediaInfo
             return false;
         }
 
-        public int Order
-        {
-            get
-            {
-                // Make sure this comes after internet image providers
-                return 100;
-            }
-        }
+        public int Order => 100;
     }
 }

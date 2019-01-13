@@ -17,10 +17,7 @@ namespace MediaBrowser.Api.Session
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        protected override string Name
-        {
-            get { return "Sessions"; }
-        }
+        protected override string Name => "Sessions";
 
         /// <summary>
         /// The _kernel

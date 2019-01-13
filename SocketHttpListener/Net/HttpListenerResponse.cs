@@ -15,16 +15,13 @@ namespace SocketHttpListener.Net
         private string _statusDescription;
         private WebHeaderCollection _webHeaders = new WebHeaderCollection();
 
-        public WebHeaderCollection Headers
-        {
-            get { return _webHeaders; }
-        }
+        public WebHeaderCollection Headers => _webHeaders;
 
         public Encoding ContentEncoding { get; set; }
 
         public string ContentType
         {
-            get { return Headers["Content-Type"]; }
+            get => Headers["Content-Type"];
             set
             {
                 CheckDisposed();
@@ -39,13 +36,13 @@ namespace SocketHttpListener.Net
             }
         }
 
-        private HttpListenerContext HttpListenerContext { get { return _httpContext; } }
+        private HttpListenerContext HttpListenerContext => _httpContext;
 
-        private HttpListenerRequest HttpListenerRequest { get { return HttpListenerContext.Request; } }
+        private HttpListenerRequest HttpListenerRequest => HttpListenerContext.Request;
 
         internal EntitySendFormat EntitySendFormat
         {
-            get { return (EntitySendFormat)_boundaryType; }
+            get => (EntitySendFormat)_boundaryType;
             set
             {
                 CheckDisposed();
@@ -64,8 +61,8 @@ namespace SocketHttpListener.Net
 
         public bool SendChunked
         {
-            get { return EntitySendFormat == EntitySendFormat.Chunked; }
-            set { EntitySendFormat = value ? EntitySendFormat.Chunked : EntitySendFormat.ContentLength; }
+            get => EntitySendFormat == EntitySendFormat.Chunked;
+            set => EntitySendFormat = value ? EntitySendFormat.Chunked : EntitySendFormat.ContentLength;
         }
 
         // We MUST NOT send message-body when we send responses with these Status codes
@@ -85,7 +82,7 @@ namespace SocketHttpListener.Net
 
         public long ContentLength64
         {
-            get { return _contentLength; }
+            get => _contentLength;
             set
             {
                 CheckDisposed();
@@ -104,13 +101,13 @@ namespace SocketHttpListener.Net
 
         public CookieCollection Cookies
         {
-            get { return _cookies ?? (_cookies = new CookieCollection()); }
-            set { _cookies = value; }
+            get => _cookies ?? (_cookies = new CookieCollection());
+            set => _cookies = value;
         }
 
         public bool KeepAlive
         {
-            get { return _keepAlive; }
+            get => _keepAlive;
             set
             {
                 CheckDisposed();
@@ -130,7 +127,7 @@ namespace SocketHttpListener.Net
 
         public string RedirectLocation
         {
-            get { return Headers["Location"]; }
+            get => Headers["Location"];
             set
             {
                 // note that this doesn't set the status code to a redirect one

@@ -60,13 +60,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _textEncoding = textEncoding;
         }
 
-        private string SubtitleCachePath
-        {
-            get
-            {
-                return Path.Combine(_appPaths.DataPath, "subtitles");
-            }
-        }
+        private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
 
         private Stream ConvertSubtitles(Stream stream,
             string inputFormat,

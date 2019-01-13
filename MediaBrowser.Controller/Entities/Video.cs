@@ -33,28 +33,13 @@ namespace MediaBrowser.Controller.Entities
         public LinkedChild[] LinkedAlternateVersions { get; set; }
 
         [IgnoreDataMember]
-        public override bool SupportsPlayedStatus
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool SupportsPlayedStatus => true;
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get { return true; }
-        }
+        public override bool SupportsPeople => true;
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool SupportsInheritedParentImages => true;
 
         [IgnoreDataMember]
         public override bool SupportsPositionTicksResume
@@ -106,10 +91,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsThemeMedia
-        {
-            get { return true; }
-        }
+        public override bool SupportsThemeMedia => true;
 
         /// <summary>
         /// Gets or sets the timestamp.
@@ -199,10 +181,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsAddingToPlaylist
-        {
-            get { return true; }
-        }
+        public override bool SupportsAddingToPlaylist => true;
 
         [IgnoreDataMember]
         public int MediaSourceCount
@@ -222,16 +201,10 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public bool IsStacked
-        {
-            get { return AdditionalParts.Length > 0; }
-        }
+        public bool IsStacked => AdditionalParts.Length > 0;
 
         [IgnoreDataMember]
-        public override bool HasLocalAlternateVersions
-        {
-            get { return LocalAlternateVersions.Length > 0; }
-        }
+        public override bool HasLocalAlternateVersions => LocalAlternateVersions.Length > 0;
 
         public IEnumerable<Guid> GetAdditionalPartIds()
         {
@@ -289,13 +262,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        protected virtual bool EnableDefaultVideoUserDataKeys
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected virtual bool EnableDefaultVideoUserDataKeys => true;
 
         public override List<string> GetUserDataKeys()
         {
@@ -466,23 +433,14 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if [is3 D]; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public bool Is3D
-        {
-            get { return Video3DFormat.HasValue; }
-        }
+        public bool Is3D => Video3DFormat.HasValue;
 
         /// <summary>
         /// Gets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
         [IgnoreDataMember]
-        public override string MediaType
-        {
-            get
-            {
-                return Model.Entities.MediaType.Video;
-            }
-        }
+        public override string MediaType => Model.Entities.MediaType.Video;
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {

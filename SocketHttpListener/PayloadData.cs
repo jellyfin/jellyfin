@@ -54,50 +54,21 @@ namespace SocketHttpListener
 
         #region Internal Properties
 
-        internal bool ContainsReservedCloseStatusCode
-        {
-            get
-            {
-                return _applicationData.Length > 1 &&
-                       _applicationData.SubArray(0, 2).ToUInt16(ByteOrder.Big).IsReserved();
-            }
-        }
+        internal bool ContainsReservedCloseStatusCode =>
+            _applicationData.Length > 1 &&
+            _applicationData.SubArray(0, 2).ToUInt16(ByteOrder.Big).IsReserved();
 
         #endregion
 
         #region Public Properties
 
-        public byte[] ApplicationData
-        {
-            get
-            {
-                return _applicationData;
-            }
-        }
+        public byte[] ApplicationData => _applicationData;
 
-        public byte[] ExtensionData
-        {
-            get
-            {
-                return _extensionData;
-            }
-        }
+        public byte[] ExtensionData => _extensionData;
 
-        public bool IsMasked
-        {
-            get
-            {
-                return _masked;
-            }
-        }
+        public bool IsMasked => _masked;
 
-        public ulong Length
-        {
-            get
-            {
-                return (ulong)(_extensionData.Length + _applicationData.Length);
-            }
-        }
+        public ulong Length => (ulong)(_extensionData.Length + _applicationData.Length);
 
         #endregion
 

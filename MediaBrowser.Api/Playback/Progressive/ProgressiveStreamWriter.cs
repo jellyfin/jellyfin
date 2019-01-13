@@ -50,13 +50,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             _environment = environment;
         }
 
-        public IDictionary<string, string> Headers
-        {
-            get
-            {
-                return _outputHeaders;
-            }
-        }
+        public IDictionary<string, string> Headers => _outputHeaders;
 
         private Stream GetInputStream(bool allowAsyncFileRead)
         {

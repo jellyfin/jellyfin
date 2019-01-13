@@ -241,10 +241,7 @@ namespace MediaBrowser.Providers.BoxSets
             return DownloadInfo(tmdbId, preferredMetadataLanguage, cancellationToken);
         }
 
-        public string Name
-        {
-            get { return "TheMovieDb"; }
-        }
+        public string Name => "TheMovieDb";
 
         private static string GetDataFilePath(IApplicationPaths appPaths, string tmdbId, string preferredLanguage)
         {

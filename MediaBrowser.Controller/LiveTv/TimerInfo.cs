@@ -115,27 +115,11 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The episode number.</value>
         public int? EpisodeNumber { get; set; }
         public bool IsMovie { get; set; }
-        public bool IsKids
-        {
-            get
-            {
-                return Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
-            }
-        }
-        public bool IsSports
-        {
-            get
-            {
-                return Tags.Contains("Sports", StringComparer.OrdinalIgnoreCase);
-            }
-        }
-        public bool IsNews
-        {
-            get
-            {
-                return Tags.Contains("News", StringComparer.OrdinalIgnoreCase);
-            }
-        }
+        public bool IsKids => Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
+
+        public bool IsSports => Tags.Contains("Sports", StringComparer.OrdinalIgnoreCase);
+
+        public bool IsNews => Tags.Contains("News", StringComparer.OrdinalIgnoreCase);
         public bool IsSeries { get; set; }
 
         /// <summary>
@@ -143,22 +127,10 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is live; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public bool IsLive
-        {
-            get
-            {
-                return Tags.Contains("Live", StringComparer.OrdinalIgnoreCase);
-            }
-        }
+        public bool IsLive => Tags.Contains("Live", StringComparer.OrdinalIgnoreCase);
 
         [IgnoreDataMember]
-        public bool IsPremiere
-        {
-            get
-            {
-                return Tags.Contains("Premiere", StringComparer.OrdinalIgnoreCase);
-            }
-        }
+        public bool IsPremiere => Tags.Contains("Premiere", StringComparer.OrdinalIgnoreCase);
 
         public int? ProductionYear { get; set; }
         public string EpisodeTitle { get; set; }

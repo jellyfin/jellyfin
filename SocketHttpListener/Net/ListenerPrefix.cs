@@ -26,28 +26,16 @@ namespace SocketHttpListener.Net
 
         public IPAddress[] Addresses
         {
-            get { return _addresses; }
-            set { _addresses = value; }
+            get => _addresses;
+            set => _addresses = value;
         }
-        public bool Secure
-        {
-            get { return _secure; }
-        }
+        public bool Secure => _secure;
 
-        public string Host
-        {
-            get { return _host; }
-        }
+        public string Host => _host;
 
-        public int Port
-        {
-            get { return _port; }
-        }
+        public int Port => _port;
 
-        public string Path
-        {
-            get { return _path; }
-        }
+        public string Path => _path;
 
         // Equals and GetHashCode are required to detect duplicates in HttpListenerPrefixCollection.
         public override bool Equals(object o)

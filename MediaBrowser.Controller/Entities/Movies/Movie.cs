@@ -39,8 +39,8 @@ namespace MediaBrowser.Controller.Entities.Movies
         [IgnoreDataMember]
         public string CollectionName
         {
-            get { return TmdbCollectionName; }
-            set { TmdbCollectionName = value; }
+            get => TmdbCollectionName;
+            set => TmdbCollectionName = value;
         }
 
         public override double GetDefaultPrimaryImageAspectRatio()
@@ -184,13 +184,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         }
 
         [IgnoreDataMember]
-        public override bool StopRefreshIfLocalMetadataFound
-        {
-            get
-            {
-                // Need people id's from internet metadata
-                return false;
-            }
-        }
+        public override bool StopRefreshIfLocalMetadataFound => false;
     }
 }

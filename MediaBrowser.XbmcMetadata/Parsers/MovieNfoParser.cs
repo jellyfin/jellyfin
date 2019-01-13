@@ -15,13 +15,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 {
     class MovieNfoParser : BaseNfoParser<Video>
     {
-        protected override bool SupportsUrlAfterClosingXmlTag
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool SupportsUrlAfterClosingXmlTag => true;
 
         /// <summary>
         /// Fetches the data from XML node.

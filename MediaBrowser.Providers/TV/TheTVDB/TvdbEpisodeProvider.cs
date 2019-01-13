@@ -93,10 +93,7 @@ namespace MediaBrowser.Providers.TV
             return Task.FromResult((IEnumerable<RemoteSearchResult>)list);
         }
 
-        public string Name
-        {
-            get { return "TheTVDB"; }
-        }
+        public string Name => "TheTVDB";
 
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
@@ -916,6 +913,6 @@ namespace MediaBrowser.Providers.TV
             });
         }
 
-        public int Order { get { return 0; } }
+        public int Order => 0;
     }
 }

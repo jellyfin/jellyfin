@@ -102,10 +102,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// Gets the type of the transcoding job.
         /// </summary>
         /// <value>The type of the transcoding job.</value>
-        protected override TranscodingJobType TranscodingJobType
-        {
-            get { return TranscodingJobType.Progressive; }
-        }
+        protected override TranscodingJobType TranscodingJobType => TranscodingJobType.Progressive;
 
         /// <summary>
         /// Processes the request.

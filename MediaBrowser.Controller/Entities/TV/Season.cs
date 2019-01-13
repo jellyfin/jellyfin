@@ -16,46 +16,22 @@ namespace MediaBrowser.Controller.Entities.TV
     public class Season : Folder, IHasSeries, IHasLookupInfo<SeasonInfo>
     {
         [IgnoreDataMember]
-        public override bool SupportsAddingToPlaylist
-        {
-            get { return true; }
-        }
+        public override bool SupportsAddingToPlaylist => true;
 
         [IgnoreDataMember]
-        public override bool IsPreSorted
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsPreSorted => true;
 
         [IgnoreDataMember]
-        public override bool SupportsDateLastMediaAdded
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsDateLastMediaAdded => false;
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get { return true; }
-        }
+        public override bool SupportsPeople => true;
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get { return true; }
-        }
+        public override bool SupportsInheritedParentImages => true;
 
         [IgnoreDataMember]
-        public override Guid DisplayParentId
-        {
-            get { return SeriesId; }
-        }
+        public override Guid DisplayParentId => SeriesId;
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {

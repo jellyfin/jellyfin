@@ -127,22 +127,11 @@ namespace MediaBrowser.Model.Dlna
 
         public Dictionary<string, string> StreamOptions { get; private set; }
 
-        public string MediaSourceId
-        {
-            get
-            {
-                return MediaSource == null ? null : MediaSource.Id;
-            }
-        }
+        public string MediaSourceId => MediaSource == null ? null : MediaSource.Id;
 
-        public bool IsDirectStream
-        {
-            get
-            {
-                return PlayMethod == PlayMethod.DirectStream ||
-                    PlayMethod == PlayMethod.DirectPlay;
-            }
-        }
+        public bool IsDirectStream =>
+            PlayMethod == PlayMethod.DirectStream ||
+            PlayMethod == PlayMethod.DirectPlay;
 
         public string ToUrl(string baseUrl, string accessToken)
         {
@@ -911,13 +900,7 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        public int? TargetTotalBitrate
-        {
-            get
-            {
-                return (TargetAudioBitrate ?? 0) + (TargetVideoBitrate ?? 0);
-            }
-        }
+        public int? TargetTotalBitrate => (TargetAudioBitrate ?? 0) + (TargetVideoBitrate ?? 0);
 
         public bool? IsTargetAnamorphic
         {

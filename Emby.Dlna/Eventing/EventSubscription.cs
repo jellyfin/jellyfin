@@ -23,12 +23,6 @@ namespace Emby.Dlna.Eventing
             TriggerCount++;
         }
 
-        public bool IsExpired
-        {
-            get
-            {
-                return SubscriptionTime.AddSeconds(TimeoutSeconds) >= DateTime.UtcNow;
-            }
-        }
+        public bool IsExpired => SubscriptionTime.AddSeconds(TimeoutSeconds) >= DateTime.UtcNow;
     }
 }

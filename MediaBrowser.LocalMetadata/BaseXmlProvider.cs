@@ -67,32 +67,13 @@ namespace MediaBrowser.LocalMetadata
             return file.Exists && FileSystem.GetLastWriteTimeUtc(file) > item.DateLastSaved;
         }
 
-        public string Name
-        {
-            get
-            {
-                return XmlProviderUtils.Name;
-            }
-        }
+        public string Name => XmlProviderUtils.Name;
 
-        public virtual int Order
-        {
-            get
-            {
-                // After Nfo
-                return 1;
-            }
-        }
+        public virtual int Order => 1;
     }
 
     static class XmlProviderUtils
     {
-        public static string Name
-        {
-            get
-            {
-                return "Emby Xml";
-            }
-        }
+        public static string Name => "Emby Xml";
     }
 }

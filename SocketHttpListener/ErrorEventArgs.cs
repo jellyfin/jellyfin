@@ -35,13 +35,7 @@ namespace SocketHttpListener
         /// <value>
         /// A <see cref="string"/> that represents the error message.
         /// </value>
-        public string Message
-        {
-            get
-            {
-                return _message;
-            }
-        }
+        public string Message => _message;
 
         #endregion
     }

@@ -89,13 +89,7 @@ namespace SocketHttpListener.Net
             }
         }
 
-        public Stream Stream
-        {
-            get
-            {
-                return _stream;
-            }
-        }
+        public Stream Stream => _stream;
 
         public async Task Init()
         {
@@ -131,15 +125,9 @@ namespace SocketHttpListener.Net
             _context = new HttpListenerContext(this, _textEncoding);
         }
 
-        public bool IsClosed
-        {
-            get { return (_socket == null); }
-        }
+        public bool IsClosed => (_socket == null);
 
-        public int Reuses
-        {
-            get { return _reuses; }
-        }
+        public int Reuses => _reuses;
 
         public IPEndPoint LocalEndPoint
         {
@@ -153,20 +141,14 @@ namespace SocketHttpListener.Net
             }
         }
 
-        public IPEndPoint RemoteEndPoint
-        {
-            get { return _socket.RemoteEndPoint as IPEndPoint; }
-        }
+        public IPEndPoint RemoteEndPoint => _socket.RemoteEndPoint as IPEndPoint;
 
-        public bool IsSecure
-        {
-            get { return secure; }
-        }
+        public bool IsSecure => secure;
 
         public ListenerPrefix Prefix
         {
-            get { return _prefix; }
-            set { _prefix = value; }
+            get => _prefix;
+            set => _prefix = value;
         }
 
         private void OnTimeout(object unused)

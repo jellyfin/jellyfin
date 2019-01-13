@@ -54,13 +54,7 @@ namespace MediaBrowser.Providers.TV
             return updateType;
         }
 
-        protected override bool EnableUpdatingPremiereDateFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingPremiereDateFromChildren => true;
 
         protected override IList<BaseItem> GetChildrenForMetadataUpdates(Season item)
         {

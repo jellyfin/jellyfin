@@ -69,19 +69,9 @@ namespace MediaBrowser.Providers.TV
             return result;
         }
 
-        public int Order
-        {
-            get
-            {
-                // After TheTvDb
-                return 1;
-            }
-        }
+        public int Order => 1;
 
-        public string Name
-        {
-            get { return "The Open Movie Database"; }
-        }
+        public string Name => "The Open Movie Database";
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

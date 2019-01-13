@@ -31,10 +31,7 @@ namespace MediaBrowser.Api.Playback
         /// Gets the options.
         /// </summary>
         /// <value>The options.</value>
-        public IDictionary<string, string> Headers
-        {
-            get { return _options; }
-        }
+        public IDictionary<string, string> Headers => _options;
 
         public async Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken)
         {

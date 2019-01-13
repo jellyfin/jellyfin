@@ -25,28 +25,13 @@ namespace MediaBrowser.Controller.Entities.Movies
         }
 
         [IgnoreDataMember]
-        protected override bool FilterLinkedChildrenPerUser
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool FilterLinkedChildrenPerUser => true;
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsInheritedParentImages => false;
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get { return true; }
-        }
+        public override bool SupportsPeople => true;
 
         public Guid[] LocalTrailerIds { get; set; }
         public Guid[] RemoteTrailerIds { get; set; }
@@ -110,13 +95,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         }
 
         [IgnoreDataMember]
-        public override bool IsPreSorted
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsPreSorted => true;
 
         public override bool IsAuthorizedToDelete(User user, List<Folder> allCollectionFolders)
         {

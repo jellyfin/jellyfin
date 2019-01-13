@@ -74,7 +74,7 @@ namespace Emby.Drawing
 
         public IImageEncoder ImageEncoder
         {
-            get { return _imageEncoder; }
+            get => _imageEncoder;
             set
             {
                 if (value == null)
@@ -86,67 +86,44 @@ namespace Emby.Drawing
             }
         }
 
-        public string[] SupportedInputFormats
-        {
-            get
+        public string[] SupportedInputFormats =>
+            new string[]
             {
-                return new string[]
-                {
-                    "tiff",
-                    "tif",
-                    "jpeg",
-                    "jpg",
-                    "png",
-                    "aiff",
-                    "cr2",
-                    "crw",
+                "tiff",
+                "tif",
+                "jpeg",
+                "jpg",
+                "png",
+                "aiff",
+                "cr2",
+                "crw",
 
-                    // Remove until supported
-                    //"nef",
-                    "orf",
-                    "pef",
-                    "arw",
-                    "webp",
-                    "gif",
-                    "bmp",
-                    "erf",
-                    "raf",
-                    "rw2",
-                    "nrw",
-                    "dng",
-                    "ico",
-                    "astc",
-                    "ktx",
-                    "pkm",
-                    "wbmp"
-                };
-            }
-        }
+                // Remove until supported
+                //"nef",
+                "orf",
+                "pef",
+                "arw",
+                "webp",
+                "gif",
+                "bmp",
+                "erf",
+                "raf",
+                "rw2",
+                "nrw",
+                "dng",
+                "ico",
+                "astc",
+                "ktx",
+                "pkm",
+                "wbmp"
+            };
 
 
-        public bool SupportsImageCollageCreation
-        {
-            get
-            {
-                return _imageEncoder.SupportsImageCollageCreation;
-            }
-        }
+        public bool SupportsImageCollageCreation => _imageEncoder.SupportsImageCollageCreation;
 
-        private string ResizedImageCachePath
-        {
-            get
-            {
-                return Path.Combine(_appPaths.ImageCachePath, "resized-images");
-            }
-        }
+        private string ResizedImageCachePath => Path.Combine(_appPaths.ImageCachePath, "resized-images");
 
-        private string EnhancedImageCachePath
-        {
-            get
-            {
-                return Path.Combine(_appPaths.ImageCachePath, "enhanced-images");
-            }
-        }
+        private string EnhancedImageCachePath => Path.Combine(_appPaths.ImageCachePath, "enhanced-images");
 
         public void AddParts(IEnumerable<IImageEnhancer> enhancers)
         {

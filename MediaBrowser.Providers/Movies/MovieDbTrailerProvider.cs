@@ -27,18 +27,9 @@ namespace MediaBrowser.Providers.Movies
             return MovieDbProvider.Current.GetItemMetadata<Trailer>(info, cancellationToken);
         }
 
-        public string Name
-        {
-            get { return MovieDbProvider.Current.Name; }
-        }
+        public string Name => MovieDbProvider.Current.Name;
 
-        public int Order
-        {
-            get
-            {
-                return 0;
-            }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

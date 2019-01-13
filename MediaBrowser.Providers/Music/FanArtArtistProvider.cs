@@ -46,15 +46,9 @@ namespace MediaBrowser.Providers.Music
             Current = this;
         }
 
-        public string Name
-        {
-            get { return ProviderName; }
-        }
+        public string Name => ProviderName;
 
-        public static string ProviderName
-        {
-            get { return "FanArt"; }
-        }
+        public static string ProviderName => "FanArt";
 
         public bool Supports(BaseItem item)
         {
@@ -192,10 +186,7 @@ namespace MediaBrowser.Providers.Music
             }).Where(i => i != null));
         }
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

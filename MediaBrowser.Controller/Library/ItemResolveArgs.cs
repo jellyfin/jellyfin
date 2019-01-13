@@ -67,13 +67,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets a value indicating whether this instance is directory.
         /// </summary>
         /// <value><c>true</c> if this instance is directory; otherwise, <c>false</c>.</value>
-        public bool IsDirectory
-        {
-            get
-            {
-                return FileInfo.IsDirectory;
-            }
-        }
+        public bool IsDirectory => FileInfo.IsDirectory;
 
         /// <summary>
         /// Gets a value indicating whether this instance is vf.
@@ -103,13 +97,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets a value indicating whether this instance is physical root.
         /// </summary>
         /// <value><c>true</c> if this instance is physical root; otherwise, <c>false</c>.</value>
-        public bool IsPhysicalRoot
-        {
-            get
-            {
-                return IsDirectory && BaseItem.FileSystem.AreEqual(Path, _appPaths.RootFolderPath);
-            }
-        }
+        public bool IsPhysicalRoot => IsDirectory && BaseItem.FileSystem.AreEqual(Path, _appPaths.RootFolderPath);
 
         /// <summary>
         /// Gets or sets the additional locations.

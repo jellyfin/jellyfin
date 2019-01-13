@@ -261,21 +261,9 @@ namespace Emby.Dlna
             return false;
         }
 
-        private string UserProfilesPath
-        {
-            get
-            {
-                return Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "user");
-            }
-        }
+        private string UserProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "user");
 
-        private string SystemProfilesPath
-        {
-            get
-            {
-                return Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "system");
-            }
-        }
+        private string SystemProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "system");
 
         private IEnumerable<DeviceProfile> GetProfiles(string path, DeviceProfileType type)
         {

@@ -34,22 +34,10 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPlayedStatus
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPlayedStatus => false;
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsInheritedParentImages => false;
 
         public override bool CanDelete()
         {
@@ -158,22 +146,10 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The display prefs id.</value>
         [IgnoreDataMember]
-        public override Guid DisplayPreferencesId
-        {
-            get
-            {
-                return Id;
-            }
-        }
+        public override Guid DisplayPreferencesId => Id;
 
         [IgnoreDataMember]
-        public override string[] PhysicalLocations
-        {
-            get
-            {
-                return PhysicalLocationsList;
-            }
-        }
+        public override string[] PhysicalLocations => PhysicalLocationsList;
 
         public override bool IsSaveLocalMetadataEnabled()
         {
@@ -337,10 +313,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The actual children.</value>
         [IgnoreDataMember]
-        public override IEnumerable<BaseItem> Children
-        {
-            get { return GetActualChildren(); }
-        }
+        public override IEnumerable<BaseItem> Children => GetActualChildren();
 
         public IEnumerable<BaseItem> GetActualChildren()
         {
@@ -386,12 +359,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPeople => false;
     }
 }

@@ -86,24 +86,13 @@ namespace MediaBrowser.Providers.Omdb
             });
         }
 
-        public string Name
-        {
-            get { return "The Open Movie Database"; }
-        }
+        public string Name => "The Open Movie Database";
 
         public bool Supports(BaseItem item)
         {
             return item is Movie || item is Trailer || item is Episode;
         }
 
-        public int Order
-        {
-            get
-            {
-                // After other internet providers, because they're better
-                // But before fallback providers like screengrab
-                return 90;
-            }
-        }
+        public int Order => 90;
     }
 }

@@ -74,13 +74,7 @@ namespace BDInfo
             }
         }
 
-        public ulong PacketSize
-        {
-            get
-            {
-                return PacketCount * 192;
-            }
-        }
+        public ulong PacketSize => PacketCount * 192;
 
         public ulong PacketBitRate
         {

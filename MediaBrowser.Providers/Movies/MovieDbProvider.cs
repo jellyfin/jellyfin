@@ -122,10 +122,7 @@ namespace MediaBrowser.Providers.Movies
             return movieDb.GetMetadata(id, cancellationToken);
         }
 
-        public string Name
-        {
-            get { return "TheMovieDb"; }
-        }
+        public string Name => "TheMovieDb";
 
         /// <summary>
         /// The _TMDB settings task
@@ -633,13 +630,7 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
-        public int Order
-        {
-            get
-            {
-                return 1;
-            }
-        }
+        public int Order => 1;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

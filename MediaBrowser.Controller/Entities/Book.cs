@@ -9,13 +9,7 @@ namespace MediaBrowser.Controller.Entities
     public class Book : BaseItem, IHasLookupInfo<BookInfo>, IHasSeries
     {
         [IgnoreDataMember]
-        public override string MediaType
-        {
-            get
-            {
-                return Model.Entities.MediaType.Book;
-            }
-        }
+        public override string MediaType => Model.Entities.MediaType.Book;
 
         [IgnoreDataMember]
         public string SeriesPresentationUniqueKey { get; set; }

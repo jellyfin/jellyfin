@@ -48,13 +48,7 @@ namespace SocketHttpListener
         /// <value>
         /// A <see cref="string"/> that contains the received data.
         /// </value>
-        public string Data
-        {
-            get
-            {
-                return _data;
-            }
-        }
+        public string Data => _data;
 
         /// <summary>
         /// Gets the received data as an array of <see cref="byte"/>.
@@ -62,13 +56,7 @@ namespace SocketHttpListener
         /// <value>
         /// An array of <see cref="byte"/> that contains the received data.
         /// </value>
-        public byte[] RawData
-        {
-            get
-            {
-                return _rawData;
-            }
-        }
+        public byte[] RawData => _rawData;
 
         /// <summary>
         /// Gets the type of the received data.
@@ -76,13 +64,7 @@ namespace SocketHttpListener
         /// <value>
         /// One of the <see cref="Opcode"/> values, indicates the type of the received data.
         /// </value>
-        public Opcode Type
-        {
-            get
-            {
-                return _opcode;
-            }
-        }
+        public Opcode Type => _opcode;
 
         #endregion
 

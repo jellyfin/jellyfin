@@ -28,10 +28,7 @@ namespace MediaBrowser.Providers.Studios
             _fileSystem = fileSystem;
         }
 
-        public string Name
-        {
-            get { return "Emby Designs"; }
-        }
+        public string Name => "Emby Designs";
 
         public bool Supports(BaseItem item)
         {
@@ -119,10 +116,7 @@ namespace MediaBrowser.Providers.Studios
             return EnsureList(url, file, _httpClient, _fileSystem, cancellationToken);
         }
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

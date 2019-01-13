@@ -114,10 +114,7 @@ namespace MediaBrowser.Providers.Music
             item.Overview = (overview ?? string.Empty).StripHtml();
         }
 
-        public string Name
-        {
-            get { return "TheAudioDB"; }
-        }
+        public string Name => "TheAudioDB";
 
         internal Task EnsureArtistInfo(string musicBrainzId, CancellationToken cancellationToken)
         {
@@ -246,14 +243,7 @@ namespace MediaBrowser.Providers.Music
             public List<Artist> artists { get; set; }
         }
 
-        public int Order
-        {
-            get
-            {
-                // After musicbrainz
-                return 1;
-            }
-        }
+        public int Order => 1;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

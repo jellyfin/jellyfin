@@ -133,23 +133,13 @@ namespace MediaBrowser.Providers.Music
             });
         }
 
-        public string Name
-        {
-            get { return "TheAudioDB"; }
-        }
+        public string Name => "TheAudioDB";
 
         public bool Supports(BaseItem item)
         {
             return item is MusicArtist;
         }
 
-        public int Order
-        {
-            get
-            {
-                // After fanart
-                return 1;
-            }
-        }
+        public int Order => 1;
     }
 }
