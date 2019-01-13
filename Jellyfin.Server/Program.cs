@@ -16,8 +16,8 @@ using Emby.Server.Implementations.Networking;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -52,7 +52,7 @@ namespace Jellyfin.Server
             _loggerFactory = new SerilogLoggerFactory();
             _logger = _loggerFactory.CreateLogger("Main");
 
-            AppDomain.CurrentDomain.UnhandledException += (sender, e) 
+            AppDomain.CurrentDomain.UnhandledException += (sender, e)
                 => _logger.LogCritical((Exception)e.ExceptionObject, "Unhandled Exception");
 
             _logger.LogInformation("Jellyfin version: {Version}", version);
@@ -208,9 +208,9 @@ namespace Jellyfin.Server
         }
 
         public static IImageEncoder getImageEncoder(
-            ILogger logger, 
-            IFileSystem fileSystem, 
-            StartupOptions startupOptions, 
+            ILogger logger,
+            IFileSystem fileSystem,
+            StartupOptions startupOptions,
             Func<IHttpClient> httpClient,
             IApplicationPaths appPaths,
             IEnvironmentInfo environment,
@@ -228,7 +228,8 @@ namespace Jellyfin.Server
             return new NullImageEncoder();
         }
 
-        private static MediaBrowser.Model.System.OperatingSystem getOperatingSystem() {
+        private static MediaBrowser.Model.System.OperatingSystem getOperatingSystem()
+        {
             switch (Environment.OSVersion.Platform)
             {
                 case PlatformID.MacOSX:
@@ -237,22 +238,22 @@ namespace Jellyfin.Server
                     return MediaBrowser.Model.System.OperatingSystem.Windows;
                 case PlatformID.Unix:
                 default:
-                {
-                    string osDescription = RuntimeInformation.OSDescription;
-                    if (osDescription.Contains("linux", StringComparison.OrdinalIgnoreCase))
                     {
-                        return MediaBrowser.Model.System.OperatingSystem.Linux;
+                        string osDescription = RuntimeInformation.OSDescription;
+                        if (osDescription.Contains("linux", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return MediaBrowser.Model.System.OperatingSystem.Linux;
+                        }
+                        else if (osDescription.Contains("darwin", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return MediaBrowser.Model.System.OperatingSystem.OSX;
+                        }
+                        else if (osDescription.Contains("bsd", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return MediaBrowser.Model.System.OperatingSystem.BSD;
+                        }
+                        throw new Exception($"Can't resolve OS with description: '{osDescription}'");
                     }
-                    else if (osDescription.Contains("darwin", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return MediaBrowser.Model.System.OperatingSystem.OSX;
-                    }
-                    else if (osDescription.Contains("bsd", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return MediaBrowser.Model.System.OperatingSystem.BSD;
-                    }
-                    throw new Exception($"Can't resolve OS with description: '{osDescription}'");
-                }
             }
         }
 
@@ -287,7 +288,7 @@ namespace Jellyfin.Server
             }
             else
             {
-                commandLineArgsString = string .Join(" ", 
+                commandLineArgsString = string.Join(" ",
                     Environment.GetCommandLineArgs()
                         .Skip(1)
                         .Select(NormalizeCommandLineArgument)
