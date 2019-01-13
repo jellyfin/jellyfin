@@ -1,4 +1,4 @@
-﻿namespace NLangDetect.Core.Extensions
+namespace NLangDetect.Core.Extensions
 {
     public enum UnicodeBlock
     {

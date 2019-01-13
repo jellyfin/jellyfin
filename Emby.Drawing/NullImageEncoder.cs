@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
 

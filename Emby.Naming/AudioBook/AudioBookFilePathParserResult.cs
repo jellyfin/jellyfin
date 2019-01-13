@@ -1,4 +1,4 @@
-﻿namespace Emby.Naming.AudioBook
+namespace Emby.Naming.AudioBook
 {
     public class AudioBookFilePathParserResult
     {

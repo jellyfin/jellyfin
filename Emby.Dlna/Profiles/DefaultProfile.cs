@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Profiles

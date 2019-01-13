@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using IsoMounter.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;

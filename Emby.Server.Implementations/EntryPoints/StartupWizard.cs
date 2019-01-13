@@ -1,4 +1,4 @@
-﻿using Emby.Server.Implementations.Browser;
+using Emby.Server.Implementations.Browser;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;

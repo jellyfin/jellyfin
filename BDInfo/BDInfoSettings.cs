@@ -1,4 +1,4 @@
-﻿
+
 namespace BDInfo
 {
     class BDInfoSettings

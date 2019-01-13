@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;

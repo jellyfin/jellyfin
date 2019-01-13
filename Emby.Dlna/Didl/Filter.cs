@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Model.Extensions;
 
 namespace Emby.Dlna.Didl

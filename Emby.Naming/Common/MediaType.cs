@@ -1,4 +1,4 @@
-﻿
+
 namespace Emby.Naming.Common
 {
     public enum MediaType

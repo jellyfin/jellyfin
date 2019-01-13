@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Drawing;

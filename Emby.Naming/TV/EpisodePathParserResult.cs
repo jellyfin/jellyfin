@@ -1,4 +1,4 @@
-﻿
+
 namespace Emby.Naming.TV
 {
     public class EpisodePathParserResult

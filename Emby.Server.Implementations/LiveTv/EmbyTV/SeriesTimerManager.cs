@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;

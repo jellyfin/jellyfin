@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;

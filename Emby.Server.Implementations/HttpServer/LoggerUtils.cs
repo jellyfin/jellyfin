@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;

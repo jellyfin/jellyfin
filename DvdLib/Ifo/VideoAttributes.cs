@@ -1,4 +1,4 @@
-﻿namespace DvdLib.Ifo
+namespace DvdLib.Ifo
 {
     public enum VideoCodec
     {

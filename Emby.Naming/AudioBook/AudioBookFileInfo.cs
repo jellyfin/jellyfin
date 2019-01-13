@@ -1,4 +1,4 @@
-﻿
+
 using System;
 
 namespace Emby.Naming.AudioBook
