@@ -85,7 +85,7 @@ namespace SocketHttpListener
     private static string convertToString (Opcode opcode, byte [] data)
     {
       return data.Length == 0
-             ? String.Empty
+             ? string.Empty
              : opcode == Opcode.Text
                ? Encoding.UTF8.GetString (data, 0, data.Length)
                : opcode.ToString ();

@@ -997,7 +997,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (items == null)
             {
-                throw new ArgumentNullException("items");
+                throw new ArgumentNullException(nameof(items));
             }
 
             if (CollapseBoxSetItems(query, queryParent, user, configurationManager))
@@ -1252,7 +1252,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (user == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(user));
             }
 
             //the true root should return our users root folder children
@@ -1332,7 +1332,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             var result = new Dictionary<Guid, BaseItem>();

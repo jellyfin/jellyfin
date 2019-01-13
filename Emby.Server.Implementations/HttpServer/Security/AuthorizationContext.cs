@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Connect;
+using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using System;
@@ -227,7 +227,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return result;
         }
 
-        private string NormalizeValue(string value)
+        private static string NormalizeValue(string value)
         {
             if (string.IsNullOrEmpty(value))
             {

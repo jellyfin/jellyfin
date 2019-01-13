@@ -46,7 +46,7 @@ namespace Mono.Nat.Pmp
         {
             if (localAddress == null)
             {
-                throw new ArgumentNullException("localAddress");
+                throw new ArgumentNullException(nameof(localAddress));
             }
 
             this.localAddress = localAddress;

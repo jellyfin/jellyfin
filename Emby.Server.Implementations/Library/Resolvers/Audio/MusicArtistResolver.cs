@@ -35,14 +35,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
-        public override ResolverPriority Priority
-        {
-            get
-            {
-                // Behind special folder resolver
-                return ResolverPriority.Second;
-            }
-        }
+        public override ResolverPriority Priority => ResolverPriority.Second;
 
         /// <summary>
         /// Resolves the specified args.

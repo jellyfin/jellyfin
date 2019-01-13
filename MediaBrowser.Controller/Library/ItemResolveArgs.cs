@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using System;
 using System.Collections.Generic;
@@ -155,7 +155,7 @@ namespace MediaBrowser.Controller.Library
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentException("The path was empty or null.", nameof(path));
             }
 
             if (AdditionalLocations == null)
@@ -190,7 +190,7 @@ namespace MediaBrowser.Controller.Library
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentException("The name was empty or null.", nameof(name));
             }
 
             return GetFileSystemEntryByPath(System.IO.Path.Combine(Path, name));
@@ -206,7 +206,7 @@ namespace MediaBrowser.Controller.Library
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentException("The path was empty or null.", nameof(path));
             }
 
             foreach (var file in FileSystemChildren)

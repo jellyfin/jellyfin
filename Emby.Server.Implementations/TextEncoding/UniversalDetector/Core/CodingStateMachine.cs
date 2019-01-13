@@ -77,14 +77,8 @@ namespace UniversalDetector.Core
             currentState = SMModel.START;
         }
 
-        public int CurrentCharLen
-        {
-            get { return currentCharLen; }
-        }
+        public int CurrentCharLen => currentCharLen;
 
-        public string ModelName
-        {
-            get { return model.Name; }
-        }
+        public string ModelName => model.Name;
     }
 }

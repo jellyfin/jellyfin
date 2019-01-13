@@ -75,7 +75,7 @@ namespace MediaBrowser.Providers.Manager
         {
             if (string.IsNullOrEmpty(mimeType))
             {
-                throw new ArgumentNullException("mimeType");
+                throw new ArgumentNullException(nameof(mimeType));
             }
 
             var saveLocally = item.SupportsLocalMetadata && item.IsSaveLocalMetadataEnabled() && !item.ExtraType.HasValue && !(item is Audio);
@@ -504,7 +504,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (!imageIndex.HasValue)
                 {
-                    throw new ArgumentNullException("imageIndex");
+                    throw new ArgumentNullException(nameof(imageIndex));
                 }
 
                 if (imageIndex.Value == 0)

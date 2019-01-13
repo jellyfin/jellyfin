@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Emby.Naming.Common;
 using System.Globalization;
 using System.IO;
@@ -63,7 +63,7 @@ namespace Emby.Naming.Video
                 result;
         }
 
-        private CleanDateTimeResult Clean(string name, Regex expression)
+        private static CleanDateTimeResult Clean(string name, Regex expression)
         {
             var result = new CleanDateTimeResult();
 

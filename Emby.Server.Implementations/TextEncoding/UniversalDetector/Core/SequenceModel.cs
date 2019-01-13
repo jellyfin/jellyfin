@@ -51,30 +51,24 @@ namespace UniversalDetector.Core
 
         // freqSeqs / totalSeqs
         protected float typicalPositiveRatio;
+        
+        public float TypicalPositiveRatio => typicalPositiveRatio;
 
-        public float TypicalPositiveRatio {
-            get { return typicalPositiveRatio; }
-        }
-
-        // not used
+        // not used            
         protected bool keepEnglishLetter;
+        
+        public bool KeepEnglishLetter => keepEnglishLetter;
 
-        public bool KeepEnglishLetter {
-            get { return keepEnglishLetter; }
-        }
+        protected string charsetName;
 
-        protected String charsetName;
-
-        public string CharsetName {
-            get { return charsetName; }
-        }
+        public string CharsetName => charsetName;
 
         public SequenceModel(
                 byte[] charToOrderMap,
                 byte[] precedenceMatrix,
                 float typicalPositiveRatio,
                 bool keepEnglishLetter,
-                String charsetName)
+                string charsetName)
         {
             this.charToOrderMap = charToOrderMap;
             this.precedenceMatrix = precedenceMatrix;

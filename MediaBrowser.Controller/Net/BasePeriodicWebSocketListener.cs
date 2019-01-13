@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Threading;
 using System.Collections.Generic;
 using System.Globalization;
@@ -50,7 +50,7 @@ namespace MediaBrowser.Controller.Net
         {
             if (logger == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException(nameof(logger));
             }
 
             Logger = logger;
@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller.Net
         {
             if (message == null)
             {
-                throw new ArgumentNullException("message");
+                throw new ArgumentNullException(nameof(message));
             }
 
             if (string.Equals(message.MessageType, Name + "Start", StringComparison.OrdinalIgnoreCase))
@@ -269,7 +269,7 @@ namespace MediaBrowser.Controller.Net
                 }
                 catch (ObjectDisposedException)
                 {
-
+                    //TODO Investigate and properly fix.
                 }
             }
 
@@ -280,10 +280,13 @@ namespace MediaBrowser.Controller.Net
             }
             catch (ObjectDisposedException)
             {
-
+                //TODO Investigate and properly fix.
             }
 
-            ActiveConnections.Remove(connection);
+            lock (ActiveConnections)
+            {
+                ActiveConnections.Remove(connection);
+            }
         }
 
         /// <summary>

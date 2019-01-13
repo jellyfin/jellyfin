@@ -23,7 +23,7 @@ namespace MediaBrowser.Model.Net
             return string.Equals(address.Address, Address, StringComparison.OrdinalIgnoreCase);
         }
 
-        public override String ToString()
+        public override string ToString()
         {
             return Address;
         }

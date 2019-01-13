@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics.CodeAnalysis;
@@ -86,27 +86,27 @@ namespace SocketHttpListener.Net.WebSockets
 
             if (receiveBufferSize < MinReceiveBufferSize)
             {
-                throw new ArgumentOutOfRangeException("net_WebSockets_ArgumentOutOfRange_TooSmall");
+                throw new ArgumentOutOfRangeException(nameof(receiveBufferSize), "The receiveBufferSize was too small.");
             }
 
             if (sendBufferSize < MinSendBufferSize)
             {
-                throw new ArgumentOutOfRangeException("net_WebSockets_ArgumentOutOfRange_TooSmall");
+                throw new ArgumentOutOfRangeException(nameof(sendBufferSize), "The sendBufferSize was too small.");
             }
 
             if (receiveBufferSize > MaxBufferSize)
             {
-                throw new ArgumentOutOfRangeException("net_WebSockets_ArgumentOutOfRange_TooBig");
+                throw new ArgumentOutOfRangeException(nameof(receiveBufferSize), "The receiveBufferSize was too large.");
             }
 
             if (sendBufferSize > MaxBufferSize)
             {
-                throw new ArgumentOutOfRangeException("net_WebSockets_ArgumentOutOfRange_TooBig");
+                throw new ArgumentOutOfRangeException(nameof(sendBufferSize), "The sendBufferSize was too large.");
             }
 
             if (keepAliveInterval < Timeout.InfiniteTimeSpan) // -1 millisecond
             {
-                throw new ArgumentOutOfRangeException("net_WebSockets_ArgumentOutOfRange_TooSmall");
+                throw new ArgumentOutOfRangeException(nameof(keepAliveInterval), "The keepAliveInterval was too small.");
             }
         }
 

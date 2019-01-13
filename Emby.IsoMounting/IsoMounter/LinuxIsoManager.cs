@@ -87,7 +87,7 @@ namespace IsoMounter
                 UmountCommand
             );
 
-            if (!String.IsNullOrEmpty(SudoCommand) && !String.IsNullOrEmpty(MountCommand) && !String.IsNullOrEmpty(UmountCommand)) {
+            if (!string.IsNullOrEmpty(SudoCommand) && !string.IsNullOrEmpty(MountCommand) && !string.IsNullOrEmpty(UmountCommand)) {
                 ExecutablesAvailable = true;
             } else {
                 ExecutablesAvailable = false;
@@ -152,7 +152,7 @@ namespace IsoMounter
                 return Task.FromResult<IIsoMount>(mountedISO);
             }
             else {
-                throw new IOException(String.Format(
+                throw new IOException(string.Format(
                     "An error occurred trying to mount image [$0].",
                     isoPath
                 ));
@@ -217,7 +217,7 @@ namespace IsoMounter
             {
                 string path = test.Trim();
 
-                if (!String.IsNullOrEmpty(path) && FileSystem.FileExists(path = Path.Combine(path, name))) {
+                if (!string.IsNullOrEmpty(path) && FileSystem.FileExists(path = Path.Combine(path, name))) {
                     return FileSystem.GetFullPath(path);
                 }
             }

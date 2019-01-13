@@ -16,46 +16,47 @@ namespace Rssdp
         #region Fields
 
         private readonly DiscoveredSsdpDevice _DiscoveredDevice;
-        private readonly bool _IsNewlyDiscovered;
+		private readonly bool _IsNewlyDiscovered;
 
-        #endregion
+		#endregion
 
-        #region Constructors
+		#region Constructors
 
-        /// <summary>
-        /// Full constructor.
-        /// </summary>
-        /// <param name="discoveredDevice">A <see cref="DiscoveredSsdpDevice"/> instance representing the available device.</param>
-        /// <param name="isNewlyDiscovered">A boolean value indicating whether or not this device came from the cache. See <see cref="IsNewlyDiscovered"/> for more detail.</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="discoveredDevice"/> parameter is null.</exception>
-        public DeviceAvailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool isNewlyDiscovered)
-        {
-            if (discoveredDevice == null) throw new ArgumentNullException("discoveredDevice");
+		/// <summary>
+		/// Full constructor.
+		/// </summary>
+		/// <param name="discoveredDevice">A <see cref="DiscoveredSsdpDevice"/> instance representing the available device.</param>
+		/// <param name="isNewlyDiscovered">A boolean value indicating whether or not this device came from the cache. See <see cref="IsNewlyDiscovered"/> for more detail.</param>
+		/// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="discoveredDevice"/> parameter is null.</exception>
+		public DeviceAvailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool isNewlyDiscovered)
+		{
+			if (discoveredDevice == null) throw new ArgumentNullException(nameof(discoveredDevice));
 
-            _DiscoveredDevice = discoveredDevice;
-            _IsNewlyDiscovered = isNewlyDiscovered;
-        }
+			_DiscoveredDevice = discoveredDevice;
+			_IsNewlyDiscovered = isNewlyDiscovered;
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Properties
+		#region Public Properties
 
-        /// <summary>
-        /// Returns true if the device was discovered due to an alive notification, or a search and was not already in the cache. Returns false if the item came from the cache but matched the current search request.
-        /// </summary>
-        public bool IsNewlyDiscovered
-        {
-            get { return _IsNewlyDiscovered; }
-        }
+		/// <summary>
+		/// Returns true if the device was discovered due to an alive notification, or a search and was not already in the cache. Returns false if the item came from the cache but matched the current search request.
+		/// </summary>
+		public bool IsNewlyDiscovered
+		{
+			get { return _IsNewlyDiscovered; }
+		}
 
-        /// <summary>
-        /// A reference to a <see cref="Rssdp.DiscoveredSsdpDevice"/> instance containing the discovered details and allowing access to the full device description.
-        /// </summary>
-        public DiscoveredSsdpDevice DiscoveredDevice
-        {
-            get { return _DiscoveredDevice; }
-        }
+		/// <summary>
+		/// A reference to a <see cref="Rssdp.DiscoveredSsdpDevice"/> instance containing the discovered details and allowing access to the full device description.
+		/// </summary>
+		public DiscoveredSsdpDevice DiscoveredDevice
+		{
+			get { return _DiscoveredDevice; }
+		} 
 
-        #endregion
-    }
+		#endregion
+		
+	}
 }

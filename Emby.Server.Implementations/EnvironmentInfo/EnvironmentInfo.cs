@@ -29,14 +29,8 @@ namespace Emby.Server.Implementations.EnvironmentInfo
             }
         }
 
-        public string OperatingSystemVersion
-        {
-            get
-            {
-                return Environment.OSVersion.Version.ToString() + " " + Environment.OSVersion.ServicePack.ToString();
-            }
-        }
+        public string OperatingSystemVersion => Environment.OSVersion.Version.ToString() + " " + Environment.OSVersion.ServicePack.ToString();
 
-        public Architecture SystemArchitecture { get { return RuntimeInformation.OSArchitecture; } }
+        public Architecture SystemArchitecture => RuntimeInformation.OSArchitecture;
     }
 }

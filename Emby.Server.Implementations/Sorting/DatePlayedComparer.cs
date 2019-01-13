@@ -61,9 +61,6 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return ItemSortBy.DatePlayed; }
-        }
+        public string Name => ItemSortBy.DatePlayed;
     }
 }

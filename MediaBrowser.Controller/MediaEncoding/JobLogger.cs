@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Extensions;
 using System;
 using System.Globalization;
 using System.IO;
@@ -39,6 +39,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             catch (ObjectDisposedException)
             {
+                //TODO Investigate and properly fix.
                 // Don't spam the log. This doesn't seem to throw in windows, but sometimes under linux
             }
             catch (Exception ex)

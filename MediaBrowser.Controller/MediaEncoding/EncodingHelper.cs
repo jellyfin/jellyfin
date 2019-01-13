@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -1137,7 +1137,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the number of audio channels to specify on the command line
         /// </summary>
-        /// <param name="request">The request.</param>
+        /// <param name="state">The state.</param>
         /// <param name="audioStream">The audio stream.</param>
         /// <param name="outputAudioCodec">The output audio codec.</param>
         /// <returns>System.Nullable{System.Int32}.</returns>
@@ -1908,11 +1908,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (state == null)
             {
-                throw new ArgumentNullException("state");
+                throw new ArgumentNullException(nameof(state));
             }
             if (mediaSource == null)
             {
-                throw new ArgumentNullException("mediaSource");
+                throw new ArgumentNullException(nameof(mediaSource));
             }
 
             var path = mediaSource.Path;

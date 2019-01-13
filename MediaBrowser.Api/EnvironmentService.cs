@@ -124,7 +124,7 @@ namespace MediaBrowser.Api
         {
             if (networkManager == null)
             {
-                throw new ArgumentNullException("networkManager");
+                throw new ArgumentNullException(nameof(networkManager));
             }
 
             _networkManager = networkManager;
@@ -193,7 +193,7 @@ namespace MediaBrowser.Api
 
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("Path");
+                throw new ArgumentNullException(nameof(Path));
             }
 
             var networkPrefix = UncSeparatorString + UncSeparatorString;

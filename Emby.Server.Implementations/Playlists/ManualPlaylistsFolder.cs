@@ -25,28 +25,13 @@ namespace Emby.Server.Implementations.Playlists
         }
 
         [IgnoreDataMember]
-        public override bool IsHidden
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsHidden => true;
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsInheritedParentImages => false;
 
         [IgnoreDataMember]
-        public override string CollectionType
-        {
-            get { return MediaBrowser.Model.Entities.CollectionType.Playlists; }
-        }
+        public override string CollectionType => MediaBrowser.Model.Entities.CollectionType.Playlists;
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {

@@ -12,13 +12,13 @@ namespace Emby.Server.Implementations.Localization
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             var chars = Normalize(text, NormalizationForm.FormD)
                 .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark);
 
-            return Normalize(String.Concat(chars), NormalizationForm.FormC);
+            return Normalize(string.Concat(chars), NormalizationForm.FormC);
         }
 
         private static string Normalize(string text, NormalizationForm form, bool stripStringOnFailure = true)

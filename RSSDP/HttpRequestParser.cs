@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -17,9 +17,9 @@ namespace Rssdp.Infrastructure
         #region Fields & Constants
 
         private readonly string[] ContentHeaderNames = new string[]
-        {
-            "Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
-        };
+                {
+                    "Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
+                };
 
         #endregion
 
@@ -60,11 +60,11 @@ namespace Rssdp.Infrastructure
         /// <param name="message">Either a <see cref="System.Net.Http.HttpResponseMessage"/> or <see cref="System.Net.Http.HttpRequestMessage"/> to assign the parsed values to.</param>
         protected override void ParseStatusLine(string data, HttpRequestMessage message)
         {
-            if (data == null) throw new ArgumentNullException("data");
-            if (message == null) throw new ArgumentNullException("message");
+            if (data == null) throw new ArgumentNullException(nameof(data));
+            if (message == null) throw new ArgumentNullException(nameof(message));
 
             var parts = data.Split(' ');
-            if (parts.Length < 2) throw new ArgumentException("Status line is invalid. Insufficient status parts.", "data");
+            if (parts.Length < 2) throw new ArgumentException("Status line is invalid. Insufficient status parts.", nameof(data));
 
             message.Method = new HttpMethod(parts[0].Trim());
             Uri requestUri;

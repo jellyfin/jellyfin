@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
@@ -42,28 +42,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _environment = environment;
         }
 
-        public string Name
-        {
-            get { return "HD Homerun"; }
-        }
+        public string Name => "HD Homerun";
 
-        public override string Type
-        {
-            get { return DeviceType; }
-        }
+        public override string Type => DeviceType;
 
-        public static string DeviceType
-        {
-            get { return "hdhomerun"; }
-        }
+        public static string DeviceType => "hdhomerun";
 
-        protected override string ChannelIdPrefix
-        {
-            get
-            {
-                return "hdhr_";
-            }
-        }
+        protected override string ChannelIdPrefix => "hdhr_";
 
         private string GetChannelId(TunerHostInfo info, Channels i)
         {
@@ -274,8 +259,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 for (int i = 0; i < model.TunerCount; ++i)
                 {
-                    var name = String.Format("Tuner {0}", i + 1);
-                    var currentChannel = "none"; /// @todo Get current channel and map back to Station Id
+                    var name = string.Format("Tuner {0}", i + 1);
+                    var currentChannel = "none"; /// @todo Get current channel and map back to Station Id      
                     var isAvailable = await manager.CheckTunerAvailability(ipInfo, i, cancellationToken).ConfigureAwait(false);
                     LiveTvTunerStatus status = isAvailable ? LiveTvTunerStatus.Available : LiveTvTunerStatus.LiveTv;
                     tuners.Add(new LiveTvTunerInfo
@@ -325,7 +310,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return await GetTunerInfosHttp(info, cancellationToken).ConfigureAwait(false);
         }
 
-        private string GetApiUrl(TunerHostInfo info)
+        private static string GetApiUrl(TunerHostInfo info)
         {
             var url = info.Url;
 
@@ -359,7 +344,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return Config.GetConfiguration<EncodingOptions>("encoding");
         }
 
-        private string GetHdHrIdFromChannelId(string channelId)
+        private static string GetHdHrIdFromChannelId(string channelId)
         {
             return channelId.Split('_')[1];
         }

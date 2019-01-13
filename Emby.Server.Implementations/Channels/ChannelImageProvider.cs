@@ -30,10 +30,7 @@ namespace Emby.Server.Implementations.Channels
             return channel.GetChannelImage(type, cancellationToken);
         }
 
-        public string Name
-        {
-            get { return "Channel Image Provider"; }
-        }
+        public string Name => "Channel Image Provider";
 
         public bool Supports(BaseItem item)
         {
