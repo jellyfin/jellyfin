@@ -1799,8 +1799,7 @@ namespace Emby.Server.Implementations
                     return false;
                 }
 
-                Version minRequiredVersion;
-                if (minRequiredVersions.TryGetValue(filename, out minRequiredVersion))
+                if (minRequiredVersions.TryGetValue(filename, out var minRequiredVersion))
                 {
                     try
                     {
@@ -2015,8 +2014,7 @@ namespace Emby.Server.Implementations
                 address = address.Substring(index + 1);
             }
 
-            IpAddressInfo result;
-            if (NetworkManager.TryParseIpAddress(address.Trim('/'), out result))
+            if (NetworkManager.TryParseIpAddress(address.Trim('/'), out var result))
             {
                 return result;
             }
@@ -2035,8 +2033,7 @@ namespace Emby.Server.Implementations
             var apiUrl = GetLocalApiUrl(address);
             apiUrl += "/system/ping";
 
-            bool cachedResult;
-            if (_validAddressResults.TryGetValue(apiUrl, out cachedResult))
+            if (_validAddressResults.TryGetValue(apiUrl, out var cachedResult))
             {
                 return cachedResult;
             }
