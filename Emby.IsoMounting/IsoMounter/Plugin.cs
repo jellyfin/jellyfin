@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System;
+using IsoMounter.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Serialization;
-using System;
-using IsoMounter.Configuration;
 
 namespace IsoMounter
 {
