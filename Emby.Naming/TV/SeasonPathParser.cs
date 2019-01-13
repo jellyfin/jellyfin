@@ -1,8 +1,8 @@
-﻿using Emby.Naming.Common;
-using System;
+﻿using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Emby.Naming.Common;
 
 namespace Emby.Naming.TV
 {
