@@ -1,5 +1,5 @@
-﻿using System.Text.RegularExpressions;
-using System;
+﻿using System;
+using System.Text.RegularExpressions;
 
 namespace Emby.Naming.Common
 {

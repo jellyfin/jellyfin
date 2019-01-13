@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Emby.Naming.AudioBook
+﻿namespace Emby.Naming.AudioBook
 {
     public class AudioBookFilePathParserResult
     {

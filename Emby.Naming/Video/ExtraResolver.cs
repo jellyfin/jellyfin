@@ -1,9 +1,9 @@
-﻿using Emby.Naming.Audio;
-using Emby.Naming.Common;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Emby.Naming.Audio;
+using Emby.Naming.Common;
 
 namespace Emby.Naming.Video
 {

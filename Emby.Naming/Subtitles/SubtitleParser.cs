@@ -1,7 +1,7 @@
-﻿using Emby.Naming.Common;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
+using Emby.Naming.Common;
 
 namespace Emby.Naming.Subtitles
 {
