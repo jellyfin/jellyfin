@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;

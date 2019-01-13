@@ -1,4 +1,4 @@
-﻿
+
 namespace MediaBrowser.Controller.Entities
 {
     public enum SourceType

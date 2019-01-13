@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Net;

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Api.UserLibrary;
+using MediaBrowser.Api.UserLibrary;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;

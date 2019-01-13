@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv

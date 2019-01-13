@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Search;
 
 namespace MediaBrowser.Controller.Library
