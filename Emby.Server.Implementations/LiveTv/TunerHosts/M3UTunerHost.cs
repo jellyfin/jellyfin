@@ -135,9 +135,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             var protocol = _mediaSourceManager.GetPathProtocol(path);
 
-            Uri uri;
             var isRemote = true;
-            if (Uri.TryCreate(path, UriKind.Absolute, out uri))
+            if (Uri.TryCreate(path, UriKind.Absolute, out var uri))
             {
                 isRemote = !_networkManager.IsInLocalNetwork(uri.Host);
             }

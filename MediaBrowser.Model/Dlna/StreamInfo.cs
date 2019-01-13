@@ -56,8 +56,7 @@ namespace MediaBrowser.Model.Dlna
 
         public string GetOption(string name)
         {
-            string value;
-            if (StreamOptions.TryGetValue(name, out value))
+            if (StreamOptions.TryGetValue(name, out var value))
             {
                 return value;
             }
@@ -622,8 +621,7 @@ namespace MediaBrowser.Model.Dlna
                 return null;
             }
 
-            int result;
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -639,8 +637,7 @@ namespace MediaBrowser.Model.Dlna
                 return null;
             }
 
-            int result;
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -656,8 +653,7 @@ namespace MediaBrowser.Model.Dlna
                 return null;
             }
 
-            double result;
-            if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out result))
+            if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -673,8 +669,7 @@ namespace MediaBrowser.Model.Dlna
                 return null;
             }
 
-            int result;
-            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out result))
+            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -781,8 +776,7 @@ namespace MediaBrowser.Model.Dlna
                 return defaultValue;
             }
 
-            int result;
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
             {
                 return Math.Min(result, defaultValue ?? result);
             }

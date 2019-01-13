@@ -317,9 +317,7 @@ namespace Emby.Server.Implementations.Updates
                 return true;
             }
 
-            Version requiredVersion;
-
-            return Version.TryParse(packageVersionInfo.requiredVersionStr, out requiredVersion) && currentServerVersion >= requiredVersion;
+            return Version.TryParse(packageVersionInfo.requiredVersionStr, out var requiredVersion) && currentServerVersion >= requiredVersion;
         }
 
         /// <summary>

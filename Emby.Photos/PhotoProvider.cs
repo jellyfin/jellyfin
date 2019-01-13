@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
@@ -144,8 +145,7 @@ namespace Emby.Photos
                             }
                             else
                             {
-                                MediaBrowser.Model.Drawing.ImageOrientation orientation;
-                                if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out orientation))
+                                if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out ImageOrientation orientation))
                                 {
                                     item.Orientation = orientation;
                                 }

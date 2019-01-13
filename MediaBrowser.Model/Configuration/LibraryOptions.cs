@@ -108,8 +108,7 @@ namespace MediaBrowser.Model.Configuration
                 }
             }
 
-            ImageOption[] options;
-            if (DefaultImageOptions.TryGetValue(Type, out options))
+            if (DefaultImageOptions.TryGetValue(Type, out var options))
             {
                 foreach (var i in options)
                 {

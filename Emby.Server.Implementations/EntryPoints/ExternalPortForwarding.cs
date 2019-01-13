@@ -108,11 +108,9 @@ namespace Emby.Server.Implementations.EntryPoints
 
             var info = e.Argument;
 
-            string usn;
-            if (!info.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
+            if (!info.Headers.TryGetValue("USN", out var usn)) usn = string.Empty;
 
-            string nt;
-            if (!info.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
+            if (!info.Headers.TryGetValue("NT", out var nt)) nt = string.Empty;
 
             // Filter device type
             if (usn.IndexOf("WANIPConnection:", StringComparison.OrdinalIgnoreCase) == -1 &&
@@ -141,8 +139,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             _logger.LogDebug("Found NAT device: " + identifier);
 
-            IPAddress address;
-            if (IPAddress.TryParse(info.Location.Host, out address))
+            if (IPAddress.TryParse(info.Location.Host, out var address))
             {
                 // The Handle method doesn't need the port
                 var endpoint = new IPEndPoint(address, info.Location.Port);
@@ -153,8 +150,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 {
                     var localAddressString = await _appHost.GetLocalApiUrl(CancellationToken.None).ConfigureAwait(false);
 
-                    Uri uri;
-                    if (Uri.TryCreate(localAddressString, UriKind.Absolute, out uri))
+                    if (Uri.TryCreate(localAddressString, UriKind.Absolute, out var uri))
                     {
                         localAddressString = uri.Host;
 

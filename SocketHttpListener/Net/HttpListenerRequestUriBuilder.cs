@@ -232,8 +232,7 @@ namespace SocketHttpListener.Net
         {
             // http.sys only supports %uXXXX (4 hex-digits), even though unicode code points could have up to
             // 6 hex digits. Therefore we parse always 4 characters after %u and convert them to an int.
-            int codePointValue;
-            if (!int.TryParse(codePoint, NumberStyles.HexNumber, null, out codePointValue))
+            if (!int.TryParse(codePoint, NumberStyles.HexNumber, null, out var codePointValue))
             {
                 //if (NetEventSource.IsEnabled)
                 //    NetEventSource.Error(this, SR.Format(SR.net_log_listener_cant_convert_percent_value, codePoint));
@@ -264,8 +263,7 @@ namespace SocketHttpListener.Net
 
         private bool AddPercentEncodedOctetToRawOctetsList(Encoding encoding, string escapedCharacter)
         {
-            byte encodedValue;
-            if (!byte.TryParse(escapedCharacter, NumberStyles.HexNumber, null, out encodedValue))
+            if (!byte.TryParse(escapedCharacter, NumberStyles.HexNumber, null, out var encodedValue))
             {
                 //if (NetEventSource.IsEnabled) NetEventSource.Error(this, SR.Format(SR.net_log_listener_cant_convert_percent_value, escapedCharacter));
                 return false;

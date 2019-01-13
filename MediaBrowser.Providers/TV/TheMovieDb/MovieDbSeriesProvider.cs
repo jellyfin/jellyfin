@@ -219,9 +219,8 @@ namespace MediaBrowser.Providers.TV
             //series.VoteCount = seriesInfo.vote_count;
 
             string voteAvg = seriesInfo.vote_average.ToString(CultureInfo.InvariantCulture);
-            float rating;
 
-            if (float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out rating))
+            if (float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var rating))
             {
                 series.CommunityRating = rating;
             }

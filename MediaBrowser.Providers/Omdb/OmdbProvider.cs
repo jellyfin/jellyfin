@@ -58,10 +58,8 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            int year;
-
             if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
-                && int.TryParse(result.Year.Substring(0, 4), NumberStyles.Number, _usCulture, out year)
+                && int.TryParse(result.Year.Substring(0, 4), NumberStyles.Number, _usCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
@@ -74,19 +72,15 @@ namespace MediaBrowser.Providers.Omdb
                 item.CriticRating = tomatoScore;
             }
 
-            int voteCount;
-
             if (!string.IsNullOrEmpty(result.imdbVotes)
-                && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out voteCount)
+                && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out var voteCount)
                 && voteCount >= 0)
             {
                 //item.VoteCount = voteCount;
             }
 
-            float imdbRating;
-
             if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, _usCulture, out imdbRating)
+                && float.TryParse(result.imdbRating, NumberStyles.Any, _usCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
@@ -165,10 +159,8 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            int year;
-
             if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
-                && int.TryParse(result.Year.Substring(0, 4), NumberStyles.Number, _usCulture, out year)
+                && int.TryParse(result.Year.Substring(0, 4), NumberStyles.Number, _usCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
@@ -181,19 +173,15 @@ namespace MediaBrowser.Providers.Omdb
                 item.CriticRating = tomatoScore;
             }
 
-            int voteCount;
-
             if (!string.IsNullOrEmpty(result.imdbVotes)
-                && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out voteCount)
+                && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out var voteCount)
                 && voteCount >= 0)
             {
                 //item.VoteCount = voteCount;
             }
 
-            float imdbRating;
-
             if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, _usCulture, out imdbRating)
+                && float.TryParse(result.imdbRating, NumberStyles.Any, _usCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
@@ -254,8 +242,7 @@ namespace MediaBrowser.Providers.Omdb
 
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
-            string id;
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out id) && !string.IsNullOrEmpty(id))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out var id) && !string.IsNullOrEmpty(id))
             {
                 // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
                 if (!string.IsNullOrWhiteSpace(id))
@@ -515,8 +502,7 @@ namespace MediaBrowser.Providers.Omdb
                     if (rating != null && rating.Value != null)
                     {
                         var value = rating.Value.TrimEnd('%');
-                        float score;
-                        if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out score))
+                        if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var score))
                         {
                             return score;
                         }

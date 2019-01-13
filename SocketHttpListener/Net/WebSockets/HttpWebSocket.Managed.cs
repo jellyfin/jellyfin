@@ -26,12 +26,11 @@ namespace SocketHttpListener.Net.WebSockets
             string origin = request.Headers[HttpKnownHeaderNames.Origin];
 
             string[] secWebSocketProtocols = null;
-            string outgoingSecWebSocketProtocolString;
             bool shouldSendSecWebSocketProtocolHeader =
                 ProcessWebSocketProtocolHeader(
                     request.Headers[HttpKnownHeaderNames.SecWebSocketProtocol],
                     subProtocol,
-                    out outgoingSecWebSocketProtocolString);
+                    out var outgoingSecWebSocketProtocolString);
 
             if (shouldSendSecWebSocketProtocolHeader)
             {

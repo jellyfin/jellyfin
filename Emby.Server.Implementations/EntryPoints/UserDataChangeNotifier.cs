@@ -62,9 +62,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     UpdateTimer.Change(UpdateDuration, Timeout.Infinite);
                 }
 
-                List<BaseItem> keys;
-
-                if (!_changedItems.TryGetValue(e.UserId, out keys))
+                if (!_changedItems.TryGetValue(e.UserId, out var keys))
                 {
                     keys = new List<BaseItem>();
                     _changedItems[e.UserId] = keys;

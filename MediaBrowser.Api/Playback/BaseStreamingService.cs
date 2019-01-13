@@ -531,8 +531,7 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (!string.IsNullOrWhiteSpace(val) && videoRequest != null)
                     {
-                        SubtitleDeliveryMethod method;
-                        if (Enum.TryParse(val, out method))
+                        if (Enum.TryParse(val, out SubtitleDeliveryMethod method))
                         {
                             videoRequest.SubtitleMethod = method;
                         }
@@ -636,8 +635,7 @@ namespace MediaBrowser.Api.Playback
             if (value.IndexOf(':') == -1)
             {
                 // Parses npt times in the format of '417.33'
-                double seconds;
-                if (double.TryParse(value, NumberStyles.Any, UsCulture, out seconds))
+                if (double.TryParse(value, NumberStyles.Any, UsCulture, out var seconds))
                 {
                     return TimeSpan.FromSeconds(seconds).Ticks;
                 }
@@ -652,8 +650,7 @@ namespace MediaBrowser.Api.Playback
 
             foreach (var time in tokens)
             {
-                double digit;
-                if (double.TryParse(time, NumberStyles.Any, UsCulture, out digit))
+                if (double.TryParse(time, NumberStyles.Any, UsCulture, out var digit))
                 {
                     secondsSum += digit * timeFactor;
                 }

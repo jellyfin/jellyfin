@@ -118,8 +118,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 if (!string.IsNullOrEmpty(cacheKey))
                 {
-                    DiscoverResponse response;
-                    if (_modelCache.TryGetValue(cacheKey, out response))
+                    if (_modelCache.TryGetValue(cacheKey, out var response))
                     {
                         return response;
                     }

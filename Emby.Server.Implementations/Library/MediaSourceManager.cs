@@ -777,8 +777,7 @@ namespace Emby.Server.Implementations.Library
 
             try
             {
-                ILiveStream info;
-                if (_openStreams.TryGetValue(id, out info))
+                if (_openStreams.TryGetValue(id, out var info))
                 {
                     return info;
                 }
@@ -810,9 +809,7 @@ namespace Emby.Server.Implementations.Library
 
             try
             {
-                ILiveStream liveStream;
-
-                if (_openStreams.TryGetValue(id, out liveStream))
+                if (_openStreams.TryGetValue(id, out var liveStream))
                 {
                     liveStream.ConsumerCount--;
 

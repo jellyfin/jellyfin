@@ -11,9 +11,7 @@ namespace NLangDetect.Core
         {
             get
             {
-                double value;
-
-                return _dict.TryGetValue(key, out value) ? value : 0.0;
+                return _dict.TryGetValue(key, out var value) ? value : 0.0;
             }
 
             set

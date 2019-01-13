@@ -133,8 +133,7 @@ namespace Priority_Queue
                     return false;
                 }
 
-                SimpleNode node;
-                if (_queue.TryDequeue(out node))
+                if (_queue.TryDequeue(out var node))
                 {
                     item = node.Data;
                     return true;

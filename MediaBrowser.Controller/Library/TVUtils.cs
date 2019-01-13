@@ -40,9 +40,7 @@ namespace MediaBrowser.Controller.Library
                                };
                 }
 
-                DayOfWeek value;
-
-                if (Enum.TryParse(day, true, out value))
+                if (Enum.TryParse(day, true, out DayOfWeek value))
                 {
                     return new DayOfWeek[]
                                {

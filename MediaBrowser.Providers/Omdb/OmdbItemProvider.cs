@@ -161,16 +161,14 @@ namespace MediaBrowser.Providers.Omdb
 
                         item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
 
-                        int parsedYear;
                         if (result.Year.Length > 0
-                            && int.TryParse(result.Year.Substring(0, Math.Min(result.Year.Length, 4)), NumberStyles.Integer, CultureInfo.InvariantCulture, out parsedYear))
+                            && int.TryParse(result.Year.Substring(0, Math.Min(result.Year.Length, 4)), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedYear))
                         {
                             item.ProductionYear = parsedYear;
                         }
 
-                        DateTime released;
                         if (!string.IsNullOrEmpty(result.Released)
-                            && DateTime.TryParse(result.Released, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out released))
+                            && DateTime.TryParse(result.Released, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out var released))
                         {
                             item.PremiereDate = released;
                         }

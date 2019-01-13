@@ -308,8 +308,7 @@ namespace Emby.Dlna.Main
 
         private string CreateUuid(string text)
         {
-            Guid guid;
-            if (!Guid.TryParse(text, out guid))
+            if (!Guid.TryParse(text, out var guid))
             {
                 guid = text.GetMD5();
             }

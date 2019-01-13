@@ -49,8 +49,7 @@ namespace Emby.Naming.Audio
 
                     tmp = tmp.Trim().Split(' ').FirstOrDefault() ?? string.Empty;
 
-                    int val;
-                    if (int.TryParse(tmp, NumberStyles.Integer, CultureInfo.InvariantCulture, out val))
+                    if (int.TryParse(tmp, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
                     {
                         result.IsMultiPart = true;
                         break;

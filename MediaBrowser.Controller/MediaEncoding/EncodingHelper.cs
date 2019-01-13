@@ -943,9 +943,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var level = state.GetRequestedLevel(videoStream.Codec);
             if (!string.IsNullOrEmpty(level))
             {
-                double requestLevel;
-
-                if (double.TryParse(level, NumberStyles.Any, _usCulture, out requestLevel))
+                if (double.TryParse(level, NumberStyles.Any, _usCulture, out var requestLevel))
                 {
                     if (!videoStream.Level.HasValue)
                     {

@@ -265,8 +265,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var key = GetSessionKey(session.Client, session.DeviceId);
 
-                SessionInfo removed;
-                _activeConnections.TryRemove(key, out removed);
+                _activeConnections.TryRemove(key, out var removed);
 
                 OnSessionEnded(session);
             }
@@ -281,8 +280,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var key = GetSessionKey(session.Client, session.DeviceId);
 
-                SessionInfo removed;
-                _activeConnections.TryRemove(key, out removed);
+                _activeConnections.TryRemove(key, out var removed);
 
                 OnSessionEnded(session);
             }

@@ -331,9 +331,7 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var child in nonCachedChildren)
                 {
-                    BaseItem currentChild;
-
-                    if (currentChildren.TryGetValue(child.Id, out currentChild))
+                    if (currentChildren.TryGetValue(child.Id, out var currentChild))
                     {
                         validChildren.Add(currentChild);
 

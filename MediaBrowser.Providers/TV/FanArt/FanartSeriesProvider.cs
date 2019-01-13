@@ -179,7 +179,6 @@ namespace MediaBrowser.Providers.TV
                 if (!string.IsNullOrEmpty(url) && isSeasonValid)
                 {
                     var likesString = i.likes;
-                    int likes;
 
                     var info = new RemoteImageInfo
                     {
@@ -192,7 +191,7 @@ namespace MediaBrowser.Providers.TV
                         Language = i.lang
                     };
 
-                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Integer, _usCulture, out likes))
+                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Integer, _usCulture, out var likes))
                     {
                         info.CommunityRating = likes;
                     }

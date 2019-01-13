@@ -96,8 +96,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            string expires;
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out var expires))
             {
                 responseHeaders["Expires"] = "-1";
             }
@@ -143,8 +142,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            string expires;
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out var expires))
             {
                 responseHeaders["Expires"] = "-1";
             }
@@ -188,8 +186,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            string expires;
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out var expires))
             {
                 responseHeaders["Expires"] = "-1";
             }
@@ -702,9 +699,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (!string.IsNullOrEmpty(ifModifiedSinceHeader))
             {
-                DateTime ifModifiedSince;
-
-                if (DateTime.TryParse(ifModifiedSinceHeader, out ifModifiedSince))
+                if (DateTime.TryParse(ifModifiedSinceHeader, out var ifModifiedSince))
                 {
                     if (IsNotModified(ifModifiedSince.ToUniversalTime(), cacheDuration, lastDateModified))
                     {
@@ -720,11 +715,9 @@ namespace Emby.Server.Implementations.HttpServer
             // Validate If-None-Match
             if ((hasCacheKey || !string.IsNullOrEmpty(ifNoneMatchHeader)))
             {
-                Guid ifNoneMatch;
-
                 ifNoneMatchHeader = (ifNoneMatchHeader ?? string.Empty).Trim('\"');
 
-                if (Guid.TryParse(ifNoneMatchHeader, out ifNoneMatch))
+                if (Guid.TryParse(ifNoneMatchHeader, out var ifNoneMatch))
                 {
                     if (hasCacheKey && cacheKey.Equals(ifNoneMatch))
                     {

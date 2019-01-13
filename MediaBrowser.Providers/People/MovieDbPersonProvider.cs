@@ -167,9 +167,7 @@ namespace MediaBrowser.Providers.People
                 }
                 item.Overview = info.biography;
 
-                DateTime date;
-
-                if (DateTime.TryParseExact(info.birthday, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out date))
+                if (DateTime.TryParseExact(info.birthday, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out var date))
                 {
                     item.PremiereDate = date.ToUniversalTime();
                 }

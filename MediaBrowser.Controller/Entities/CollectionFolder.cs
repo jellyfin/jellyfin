@@ -103,8 +103,7 @@ namespace MediaBrowser.Controller.Entities
         {
             lock (LibraryOptions)
             {
-                LibraryOptions options;
-                if (!LibraryOptions.TryGetValue(path, out options))
+                if (!LibraryOptions.TryGetValue(path, out var options))
                 {
                     options = LoadLibraryOptions(path);
                     LibraryOptions[path] = options;

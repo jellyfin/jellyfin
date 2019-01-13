@@ -298,9 +298,7 @@ namespace Emby.Server.Implementations.Localization
         /// <param name="countryCode">The country code.</param>
         private Dictionary<string, ParentalRating> GetRatings(string countryCode)
         {
-            Dictionary<string, ParentalRating> value;
-
-            _allParentalRatings.TryGetValue(countryCode, out value);
+            _allParentalRatings.TryGetValue(countryCode, out var value);
 
             return value;
         }
@@ -320,9 +318,7 @@ namespace Emby.Server.Implementations.Localization
 
                     if (parts.Length == 2)
                     {
-                        int value;
-
-                        if (int.TryParse(parts[1], NumberStyles.Integer, UsCulture, out value))
+                        if (int.TryParse(parts[1], NumberStyles.Integer, UsCulture, out var value))
                         {
                             return new ParentalRating { Name = parts[0], Value = value };
                         }
@@ -364,9 +360,7 @@ namespace Emby.Server.Implementations.Localization
 
             var ratingsDictionary = GetParentalRatingsDictionary();
 
-            ParentalRating value;
-
-            if (ratingsDictionary.TryGetValue(rating, out value))
+            if (ratingsDictionary.TryGetValue(rating, out var value))
             {
                 return value.Value;
             }
@@ -427,9 +421,7 @@ namespace Emby.Server.Implementations.Localization
 
             var dictionary = GetLocalizationDictionary(culture);
 
-            string value;
-
-            if (dictionary.TryGetValue(phrase, out value))
+            if (dictionary.TryGetValue(phrase, out var value))
             {
                 return value;
             }

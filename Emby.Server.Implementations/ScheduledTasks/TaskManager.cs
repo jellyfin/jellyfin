@@ -364,8 +364,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 var list = new List<Tuple<Type, TaskOptions>>();
 
-                Tuple<Type, TaskOptions> item;
-                while (_taskQueue.TryDequeue(out item))
+                while (_taskQueue.TryDequeue(out var item))
                 {
                     if (list.All(i => i.Item1 != item.Item1))
                     {

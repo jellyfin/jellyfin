@@ -251,12 +251,10 @@ namespace MediaBrowser.Providers.MediaInfo
 
             foreach (var chapter in chapters)
             {
-                TimeSpan time;
-
                 // Check if the name is empty and/or if the name is a time
                 // Some ripping programs do that.
                 if (string.IsNullOrWhiteSpace(chapter.Name) ||
-                    TimeSpan.TryParse(chapter.Name, out time))
+                    TimeSpan.TryParse(chapter.Name, out var time))
                 {
                     chapter.Name = string.Format(_localization.GetLocalizedString("ChapterNameValue"), index.ToString(CultureInfo.InvariantCulture));
                 }

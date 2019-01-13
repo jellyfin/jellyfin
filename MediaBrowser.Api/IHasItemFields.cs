@@ -37,9 +37,7 @@ namespace MediaBrowser.Api
 
             return val.Split(',').Select(v =>
             {
-                ItemFields value;
-
-                if (Enum.TryParse(v, true, out value))
+                if (Enum.TryParse(v, true, out ItemFields value))
                 {
                     return (ItemFields?)value;
                 }

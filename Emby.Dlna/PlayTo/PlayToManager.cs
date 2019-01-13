@@ -78,11 +78,9 @@ namespace Emby.Dlna.PlayTo
 
             var info = e.Argument;
 
-            string usn;
-            if (!info.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
+            if (!info.Headers.TryGetValue("USN", out var usn)) usn = string.Empty;
 
-            string nt;
-            if (!info.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
+            if (!info.Headers.TryGetValue("NT", out var nt)) nt = string.Empty;
 
             string location = info.Location.ToString();
 
@@ -155,8 +153,7 @@ namespace Emby.Dlna.PlayTo
             _logger.LogDebug("Attempting to create PlayToController from location {0}", location);
 
             _logger.LogDebug("Logging session activity from location {0}", location);
-            string uuid;
-            if (info.Headers.TryGetValue("USN", out uuid))
+            if (info.Headers.TryGetValue("USN", out var uuid))
             {
                 uuid = GetUuid(uuid);
             }

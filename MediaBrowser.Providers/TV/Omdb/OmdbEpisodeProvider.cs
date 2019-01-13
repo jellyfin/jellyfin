@@ -56,8 +56,7 @@ namespace MediaBrowser.Providers.TV
                 return result;
             }
 
-            string seriesImdbId;
-            if (info.SeriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out seriesImdbId) && !string.IsNullOrEmpty(seriesImdbId))
+            if (info.SeriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out var seriesImdbId) && !string.IsNullOrEmpty(seriesImdbId))
             {
                 if (info.IndexNumber.HasValue && info.ParentIndexNumber.HasValue)
                 {

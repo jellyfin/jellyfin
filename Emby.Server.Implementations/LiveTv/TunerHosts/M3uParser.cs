@@ -117,12 +117,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             extInf = extInf.Trim();
 
-            string remaining;
-            var attributes = ParseExtInf(extInf, out remaining);
+            var attributes = ParseExtInf(extInf, out var remaining);
             extInf = remaining;
 
-            string value;
-            if (attributes.TryGetValue("tvg-logo", out value))
+            if (attributes.TryGetValue("tvg-logo", out var value))
             {
                 channel.ImageUrl = value;
             }
@@ -130,11 +128,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             channel.Name = GetChannelName(extInf, attributes);
             channel.Number = GetChannelNumber(extInf, attributes, mediaUrl);
 
-            string tvgId;
-            attributes.TryGetValue("tvg-id", out tvgId);
+            attributes.TryGetValue("tvg-id", out var tvgId);
 
-            string channelId;
-            attributes.TryGetValue("channel-id", out channelId);
+            attributes.TryGetValue("channel-id", out var channelId);
 
             channel.TunerChannelId = string.IsNullOrWhiteSpace(tvgId) ? channelId : tvgId;
 
@@ -172,8 +168,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
 
-                    double number;
-                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out number))
+                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
                     {
                         numberString = numberPart;
                     }
@@ -187,11 +182,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             if (!IsValidChannelNumber(numberString))
             {
-                string value;
-                if (attributes.TryGetValue("tvg-id", out value))
+                if (attributes.TryGetValue("tvg-id", out var value))
                 {
-                    double doubleValue;
-                    if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out doubleValue))
+                    if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var doubleValue))
                     {
                         numberString = value;
                     }
@@ -205,8 +198,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             if (!IsValidChannelNumber(numberString))
             {
-                string value;
-                if (attributes.TryGetValue("channel-id", out value))
+                if (attributes.TryGetValue("channel-id", out var value))
                 {
                     numberString = value;
                 }
@@ -259,8 +251,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 return false;
             }
 
-            double value;
-            if (!double.TryParse(numberString, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+            if (!double.TryParse(numberString, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
             {
                 return false;
             }
@@ -283,8 +274,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
 
-                    double number;
-                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out number))
+                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
                     {
                         //channel.Number = number.ToString();
                         nameInExtInf = nameInExtInf.Substring(numberIndex + 1).Trim(new[] { ' ', '-' });
@@ -292,8 +282,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
             }
 
-            string name;
-            attributes.TryGetValue("tvg-name", out name);
+            attributes.TryGetValue("tvg-name", out var name);
 
             if (string.IsNullOrWhiteSpace(name))
             {

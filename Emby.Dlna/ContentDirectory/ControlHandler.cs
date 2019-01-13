@@ -192,9 +192,7 @@ namespace Emby.Dlna.ContentDirectory
 
         public string GetValueOrDefault(IDictionary<string, string> sparams, string key, string defaultValue)
         {
-            string val;
-
-            if (sparams.TryGetValue(key, out val))
+            if (sparams.TryGetValue(key, out var val))
             {
                 return val;
             }
@@ -216,14 +214,12 @@ namespace Emby.Dlna.ContentDirectory
             int? requestedCount = null;
             int? start = 0;
 
-            int requestedVal;
-            if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out requestedVal) && requestedVal > 0)
+            if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out var requestedVal) && requestedVal > 0)
             {
                 requestedCount = requestedVal;
             }
 
-            int startVal;
-            if (sparams.ContainsKey("StartingIndex") && int.TryParse(sparams["StartingIndex"], out startVal) && startVal > 0)
+            if (sparams.ContainsKey("StartingIndex") && int.TryParse(sparams["StartingIndex"], out var startVal) && startVal > 0)
             {
                 start = startVal;
             }
@@ -334,14 +330,12 @@ namespace Emby.Dlna.ContentDirectory
             int? requestedCount = null;
             int? start = 0;
 
-            int requestedVal;
-            if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out requestedVal) && requestedVal > 0)
+            if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out var requestedVal) && requestedVal > 0)
             {
                 requestedCount = requestedVal;
             }
 
-            int startVal;
-            if (sparams.ContainsKey("StartingIndex") && int.TryParse(sparams["StartingIndex"], out startVal) && startVal > 0)
+            if (sparams.ContainsKey("StartingIndex") && int.TryParse(sparams["StartingIndex"], out var startVal) && startVal > 0)
             {
                 start = startVal;
             }
@@ -1293,7 +1287,6 @@ namespace Emby.Dlna.ContentDirectory
 
         private ServerItem ParseItemId(string id, User user)
         {
-            Guid itemId;
             StubType? stubType = null;
 
             // After using PlayTo, MediaMonkey sends a request to the server trying to get item info
@@ -1319,7 +1312,7 @@ namespace Emby.Dlna.ContentDirectory
                 }
             }
 
-            if (Guid.TryParse(id, out itemId))
+            if (Guid.TryParse(id, out var itemId))
             {
                 var item = _libraryManager.GetItemById(itemId);
 

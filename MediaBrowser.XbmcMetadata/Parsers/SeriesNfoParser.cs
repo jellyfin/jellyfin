@@ -75,8 +75,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(status))
                         {
-                            SeriesStatus seriesStatus;
-                            if (Enum.TryParse(status, true, out seriesStatus))
+                            if (Enum.TryParse(status, true, out SeriesStatus seriesStatus))
                             {
                                 item.Status = seriesStatus;
                             }

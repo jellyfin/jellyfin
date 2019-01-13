@@ -688,8 +688,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (!string.IsNullOrEmpty(transcodingProfile.MaxAudioChannels))
             {
-                int transcodingMaxAudioChannels;
-                if (int.TryParse(transcodingProfile.MaxAudioChannels, NumberStyles.Any, CultureInfo.InvariantCulture, out transcodingMaxAudioChannels))
+                if (int.TryParse(transcodingProfile.MaxAudioChannels, NumberStyles.Any, CultureInfo.InvariantCulture, out var transcodingMaxAudioChannels))
                 {
                     playlistItem.TranscodingMaxAudioChannels = transcodingMaxAudioChannels;
                 }
@@ -1491,8 +1490,7 @@ namespace MediaBrowser.Model.Dlna
                                 continue;
                             }
 
-                            int num;
-                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var num))
                             {
                                 if (condition.Condition == ProfileConditionType.Equals)
                                 {
@@ -1526,8 +1524,7 @@ namespace MediaBrowser.Model.Dlna
                                 }
                             }
 
-                            int num;
-                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var num))
                             {
                                 if (condition.Condition == ProfileConditionType.Equals)
                                 {
@@ -1551,8 +1548,7 @@ namespace MediaBrowser.Model.Dlna
                                 continue;
                             }
 
-                            bool isAvc;
-                            if (bool.TryParse(value, out isAvc))
+                            if (bool.TryParse(value, out var isAvc))
                             {
                                 if (isAvc && condition.Condition == ProfileConditionType.Equals)
                                 {
@@ -1572,8 +1568,7 @@ namespace MediaBrowser.Model.Dlna
                                 continue;
                             }
 
-                            bool isAnamorphic;
-                            if (bool.TryParse(value, out isAnamorphic))
+                            if (bool.TryParse(value, out var isAnamorphic))
                             {
                                 if (isAnamorphic && condition.Condition == ProfileConditionType.Equals)
                                 {
@@ -1603,8 +1598,7 @@ namespace MediaBrowser.Model.Dlna
                                 }
                             }
 
-                            bool isInterlaced;
-                            if (bool.TryParse(value, out isInterlaced))
+                            if (bool.TryParse(value, out var isInterlaced))
                             {
                                 if (!isInterlaced && condition.Condition == ProfileConditionType.Equals)
                                 {
@@ -1645,8 +1639,7 @@ namespace MediaBrowser.Model.Dlna
                                 }
                             }
 
-                            int num;
-                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var num))
                             {
                                 if (condition.Condition == ProfileConditionType.Equals)
                                 {
@@ -1680,8 +1673,7 @@ namespace MediaBrowser.Model.Dlna
                                 }
                             }
 
-                            int num;
-                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var num))
                             {
                                 if (condition.Condition == ProfileConditionType.Equals)
                                 {
@@ -1727,8 +1719,7 @@ namespace MediaBrowser.Model.Dlna
                                 continue;
                             }
 
-                            int num;
-                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var num))
                             {
                                 if (condition.Condition == ProfileConditionType.Equals)
                                 {
@@ -1752,8 +1743,7 @@ namespace MediaBrowser.Model.Dlna
                                 continue;
                             }
 
-                            int num;
-                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var num))
                             {
                                 if (condition.Condition == ProfileConditionType.Equals)
                                 {
@@ -1777,8 +1767,7 @@ namespace MediaBrowser.Model.Dlna
                                 continue;
                             }
 
-                            float num;
-                            if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
+                            if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var num))
                             {
                                 if (condition.Condition == ProfileConditionType.Equals)
                                 {
@@ -1802,8 +1791,7 @@ namespace MediaBrowser.Model.Dlna
                                 continue;
                             }
 
-                            int num;
-                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var num))
                             {
                                 if (condition.Condition == ProfileConditionType.Equals)
                                 {
@@ -1827,8 +1815,7 @@ namespace MediaBrowser.Model.Dlna
                                 continue;
                             }
 
-                            int num;
-                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var num))
                             {
                                 if (condition.Condition == ProfileConditionType.Equals)
                                 {

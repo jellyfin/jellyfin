@@ -432,8 +432,7 @@ namespace Emby.Server.Implementations.Library
                 ItemRepository.DeleteItem(child.Id, CancellationToken.None);
             }
 
-            BaseItem removed;
-            _libraryItemsCache.TryRemove(item.Id, out removed);
+            _libraryItemsCache.TryRemove(item.Id, out var removed);
 
             ReportItemRemoved(item, parent);
         }
@@ -1241,9 +1240,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(id));
             }
 
-            BaseItem item;
-
-            if (LibraryItemsCache.TryGetValue(id, out item))
+            if (LibraryItemsCache.TryGetValue(id, out var item))
             {
                 return item;
             }
