@@ -6,7 +6,8 @@ namespace Emby.Naming.Common
     public class EpisodeExpression
     {
         private string _expression;
-        public string Expression { get { return _expression; } set { _expression = value; _regex = null; } }
+        public string Expression { get => _expression;
+            set { _expression = value; _regex = null; } }
 
         public bool IsByDate { get; set; }
         public bool IsOptimistic { get; set; }
@@ -16,13 +17,7 @@ namespace Emby.Naming.Common
         public string[] DateTimeFormats { get; set; }
 
         private Regex _regex;
-        public Regex Regex
-        {
-            get
-            {
-                return _regex ?? (_regex = new Regex(Expression, RegexOptions.IgnoreCase | RegexOptions.Compiled));
-            }
-        }
+        public Regex Regex => _regex ?? (_regex = new Regex(Expression, RegexOptions.IgnoreCase | RegexOptions.Compiled));
 
         public EpisodeExpression(string expression, bool byDate)
         {

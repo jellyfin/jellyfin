@@ -51,13 +51,7 @@ namespace SocketHttpListener
         /// <value>
         /// A <see cref="ushort"/> that represents the status code for the close if any.
         /// </value>
-        public ushort Code
-        {
-            get
-            {
-                return _code;
-            }
-        }
+        public ushort Code => _code;
 
         /// <summary>
         /// Gets the reason for the close.
@@ -65,13 +59,7 @@ namespace SocketHttpListener
         /// <value>
         /// A <see cref="string"/> that represents the reason for the close if any.
         /// </value>
-        public string Reason
-        {
-            get
-            {
-                return _reason;
-            }
-        }
+        public string Reason => _reason;
 
         /// <summary>
         /// Gets a value indicating whether the WebSocket connection has been closed cleanly.
@@ -81,15 +69,9 @@ namespace SocketHttpListener
         /// </value>
         public bool WasClean
         {
-            get
-            {
-                return _clean;
-            }
+            get => _clean;
 
-            internal set
-            {
-                _clean = value;
-            }
+            internal set => _clean = value;
         }
 
         #endregion

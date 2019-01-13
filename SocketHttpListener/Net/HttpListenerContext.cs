@@ -18,13 +18,7 @@ namespace SocketHttpListener.Net
         // This can be used to cache the results of HttpListener.AuthenticationSchemeSelectorDelegate.
         internal AuthenticationSchemes AuthenticationSchemes { get; set; }
 
-        public HttpListenerResponse Response
-        {
-            get
-            {
-                return _response;
-            }
-        }
+        public HttpListenerResponse Response => _response;
 
         public Task<HttpListenerWebSocketContext> AcceptWebSocketAsync(string subProtocol)
         {
@@ -62,13 +56,7 @@ namespace SocketHttpListener.Net
             }
         }
 
-        public virtual IIdentity Identity
-        {
-            get
-            {
-                return m_identity;
-            }
-        }
+        public virtual IIdentity Identity => m_identity;
 
         public virtual bool IsInRole(string role)
         {

@@ -115,29 +115,11 @@ namespace Emby.Dlna.Api
         public IRequest Request { get; set; }
         private IHttpResultFactory _resultFactory;
 
-        private IContentDirectory ContentDirectory
-        {
-            get
-            {
-                return DlnaEntryPoint.Current.ContentDirectory;
-            }
-        }
+        private IContentDirectory ContentDirectory => DlnaEntryPoint.Current.ContentDirectory;
 
-        private IConnectionManager ConnectionManager
-        {
-            get
-            {
-                return DlnaEntryPoint.Current.ConnectionManager;
-            }
-        }
+        private IConnectionManager ConnectionManager => DlnaEntryPoint.Current.ConnectionManager;
 
-        private IMediaReceiverRegistrar MediaReceiverRegistrar
-        {
-            get
-            {
-                return DlnaEntryPoint.Current.MediaReceiverRegistrar;
-            }
-        }
+        private IMediaReceiverRegistrar MediaReceiverRegistrar => DlnaEntryPoint.Current.MediaReceiverRegistrar;
 
         public DlnaServerService(IDlnaManager dlnaManager, IHttpResultFactory httpResultFactory)
         {

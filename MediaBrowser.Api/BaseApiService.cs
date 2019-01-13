@@ -22,25 +22,13 @@ namespace MediaBrowser.Api
         /// Gets or sets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        public ILogger Logger
-        {
-            get
-            {
-                return ApiEntryPoint.Instance.Logger;
-            }
-        }
+        public ILogger Logger => ApiEntryPoint.Instance.Logger;
 
         /// <summary>
         /// Gets or sets the HTTP result factory.
         /// </summary>
         /// <value>The HTTP result factory.</value>
-        public IHttpResultFactory ResultFactory
-        {
-            get
-            {
-                return ApiEntryPoint.Instance.ResultFactory;
-            }
-        }
+        public IHttpResultFactory ResultFactory => ApiEntryPoint.Instance.ResultFactory;
 
         /// <summary>
         /// Gets or sets the request context.

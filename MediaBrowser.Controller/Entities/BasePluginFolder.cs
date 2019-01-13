@@ -10,10 +10,7 @@ namespace MediaBrowser.Controller.Entities
     public abstract class BasePluginFolder : Folder, ICollectionFolder
     {
         [IgnoreDataMember]
-        public virtual string CollectionType
-        {
-            get { return null; }
-        }
+        public virtual string CollectionType => null;
 
         public override bool CanDelete()
         {
@@ -26,22 +23,10 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsInheritedParentImages => false;
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPeople => false;
 
         //public override double? GetDefaultPrimaryImageAspectRatio()
         //{

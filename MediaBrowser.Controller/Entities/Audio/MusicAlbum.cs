@@ -28,22 +28,13 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
-        public override bool SupportsAddingToPlaylist
-        {
-            get { return true; }
-        }
+        public override bool SupportsAddingToPlaylist => true;
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get { return true; }
-        }
+        public override bool SupportsInheritedParentImages => true;
 
         [IgnoreDataMember]
-        public MusicArtist MusicArtist
-        {
-            get { return GetMusicArtist(new DtoOptions(true)); }
-        }
+        public MusicArtist MusicArtist => GetMusicArtist(new DtoOptions(true));
 
         public MusicArtist GetMusicArtist(DtoOptions options)
         {
@@ -66,22 +57,10 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPlayedStatus
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPlayedStatus => false;
 
         [IgnoreDataMember]
-        public override bool SupportsCumulativeRunTimeTicks
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool SupportsCumulativeRunTimeTicks => true;
 
         [IgnoreDataMember]
         public string[] AllArtists
@@ -107,29 +86,17 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
-        public string AlbumArtist
-        {
-            get { return AlbumArtists.Length == 0 ? null : AlbumArtists[0]; }
-        }
+        public string AlbumArtist => AlbumArtists.Length == 0 ? null : AlbumArtists[0];
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get { return false; }
-        }
+        public override bool SupportsPeople => false;
 
         /// <summary>
         /// Gets the tracks.
         /// </summary>
         /// <value>The tracks.</value>
         [IgnoreDataMember]
-        public IEnumerable<BaseItem> Tracks
-        {
-            get
-            {
-                return GetRecursiveChildren(i => i is Audio);
-            }
-        }
+        public IEnumerable<BaseItem> Tracks => GetRecursiveChildren(i => i is Audio);
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {

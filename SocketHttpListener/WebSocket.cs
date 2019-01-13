@@ -78,11 +78,7 @@ namespace SocketHttpListener
             init();
         }
 
-        public static TimeSpan DefaultKeepAliveInterval
-        {
-            // In the .NET Framework, this pulls the value from a P/Invoke.  Here we just hardcode it to a reasonable default.
-            get { return TimeSpan.FromSeconds(30); }
-        }
+        public static TimeSpan DefaultKeepAliveInterval => TimeSpan.FromSeconds(30);
 
         #endregion
 
@@ -93,13 +89,7 @@ namespace SocketHttpListener
         /// One of the <see cref="WebSocketState"/> enum values, indicates the state of the WebSocket
         /// connection. The default value is <see cref="WebSocketState.Connecting"/>.
         /// </value>
-        public WebSocketState ReadyState
-        {
-            get
-            {
-                return _readyState;
-            }
-        }
+        public WebSocketState ReadyState => _readyState;
 
         #region Public Events
 

@@ -24,28 +24,13 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
-        public override bool SupportsAddingToPlaylist
-        {
-            get { return true; }
-        }
+        public override bool SupportsAddingToPlaylist => true;
 
         [IgnoreDataMember]
-        public override bool SupportsAncestors
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsAncestors => false;
 
         [IgnoreDataMember]
-        public override bool IsDisplayedAsFolder
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsDisplayedAsFolder => true;
 
         /// <summary>
         /// Returns the folder containing the item.
@@ -53,13 +38,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// </summary>
         /// <value>The containing folder path.</value>
         [IgnoreDataMember]
-        public override string ContainingFolderPath
-        {
-            get
-            {
-                return Path;
-            }
-        }
+        public override string ContainingFolderPath => Path;
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -77,13 +56,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPeople => false;
 
         public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {

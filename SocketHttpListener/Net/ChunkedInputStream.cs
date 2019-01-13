@@ -67,8 +67,8 @@ namespace SocketHttpListener.Net
 
         public ChunkStream Decoder
         {
-            get { return _decoder; }
-            set { _decoder = value; }
+            get => _decoder;
+            set => _decoder = value;
         }
 
         protected override int ReadCore(byte[] buffer, int offset, int count)

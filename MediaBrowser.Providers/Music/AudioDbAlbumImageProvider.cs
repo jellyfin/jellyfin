@@ -91,19 +91,9 @@ namespace MediaBrowser.Providers.Music
             });
         }
 
-        public string Name
-        {
-            get { return "TheAudioDB"; }
-        }
+        public string Name => "TheAudioDB";
 
-        public int Order
-        {
-            get
-            {
-                // After embedded and fanart
-                return 2;
-            }
-        }
+        public int Order => 2;
 
         public bool Supports(BaseItem item)
         {

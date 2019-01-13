@@ -37,28 +37,10 @@ namespace MediaBrowser.Providers.Playlists
         {
         }
 
-        protected override bool EnableUpdatingGenresFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingGenresFromChildren => true;
 
-        protected override bool EnableUpdatingOfficialRatingFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingOfficialRatingFromChildren => true;
 
-        protected override bool EnableUpdatingStudiosFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingStudiosFromChildren => true;
     }
 }

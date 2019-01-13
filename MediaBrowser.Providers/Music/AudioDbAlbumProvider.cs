@@ -126,10 +126,7 @@ namespace MediaBrowser.Providers.Music
             item.Overview = (overview ?? string.Empty).StripHtml();
         }
 
-        public string Name
-        {
-            get { return "TheAudioDB"; }
-        }
+        public string Name => "TheAudioDB";
 
         internal Task EnsureInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
         {
@@ -196,14 +193,7 @@ namespace MediaBrowser.Providers.Music
             return Path.Combine(dataPath, "album.json");
         }
 
-        public int Order
-        {
-            get
-            {
-                // After music brainz
-                return 1;
-            }
-        }
+        public int Order => 1;
 
         public class Album
         {

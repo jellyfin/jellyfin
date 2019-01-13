@@ -29,10 +29,7 @@ namespace MediaBrowser.Providers.Playlists
             _logger = logger;
         }
 
-        public string Name
-        {
-            get { return "Playlist Reader"; }
-        }
+        public string Name => "Playlist Reader";
 
         public Task<ItemUpdateType> FetchAsync(Playlist item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
@@ -161,13 +158,6 @@ namespace MediaBrowser.Providers.Playlists
             return false;
         }
 
-        public int Order
-        {
-            get
-            {
-                // Run last
-                return 100;
-            }
-        }
+        public int Order => 100;
     }
 }

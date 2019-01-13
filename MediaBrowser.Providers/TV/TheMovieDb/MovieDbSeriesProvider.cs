@@ -49,10 +49,7 @@ namespace MediaBrowser.Providers.TV
             Current = this;
         }
 
-        public string Name
-        {
-            get { return "TheMovieDb"; }
-        }
+        public string Name => "TheMovieDb";
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
@@ -681,14 +678,7 @@ namespace MediaBrowser.Providers.TV
             public string ResultLanguage { get; set; }
         }
 
-        public int Order
-        {
-            get
-            {
-                // After Tvdb
-                return 1;
-            }
-        }
+        public int Order => 1;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

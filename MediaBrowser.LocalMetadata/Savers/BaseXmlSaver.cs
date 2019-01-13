@@ -42,21 +42,9 @@ namespace MediaBrowser.LocalMetadata.Savers
         protected ILogger Logger { get; private set; }
         protected IXmlReaderSettingsFactory XmlReaderSettingsFactory { get; private set; }
 
-        protected ItemUpdateType MinimumUpdateType
-        {
-            get
-            {
-                return ItemUpdateType.MetadataDownload;
-            }
-        }
+        protected ItemUpdateType MinimumUpdateType => ItemUpdateType.MetadataDownload;
 
-        public string Name
-        {
-            get
-            {
-                return XmlProviderUtils.Name;
-            }
-        }
+        public string Name => XmlProviderUtils.Name;
 
         public string GetSavePath(BaseItem item)
         {

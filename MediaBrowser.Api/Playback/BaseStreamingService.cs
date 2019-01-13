@@ -141,10 +141,7 @@ namespace MediaBrowser.Api.Playback
             return Path.Combine(folder, dataHash + (outputFileExtension ?? string.Empty).ToLower());
         }
 
-        protected virtual bool EnableOutputInSubFolder
-        {
-            get { return false; }
-        }
+        protected virtual bool EnableOutputInSubFolder => false;
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 

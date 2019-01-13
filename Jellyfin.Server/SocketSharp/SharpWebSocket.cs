@@ -85,13 +85,7 @@ namespace Jellyfin.SocketSharp
         /// Gets or sets the state.
         /// </summary>
         /// <value>The state.</value>
-        public WebSocketState State
-        {
-            get
-            {
-                return WebSocket.ReadyState;
-            }
-        }
+        public WebSocketState State => WebSocket.ReadyState;
 
         /// <summary>
         /// Sends the async.

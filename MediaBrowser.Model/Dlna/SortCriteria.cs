@@ -4,10 +4,7 @@ namespace MediaBrowser.Model.Dlna
 {
     public class SortCriteria
     {
-        public SortOrder SortOrder
-        {
-            get { return SortOrder.Ascending; }
-        }
+        public SortOrder SortOrder => SortOrder.Ascending;
 
         public SortCriteria(string value)
         {

@@ -199,9 +199,6 @@ namespace Emby.Photos
             return Task.FromResult(result);
         }
 
-        public string Name
-        {
-            get { return "Embedded Information"; }
-        }
+        public string Name => "Embedded Information";
     }
 }

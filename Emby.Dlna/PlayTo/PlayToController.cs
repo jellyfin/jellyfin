@@ -44,18 +44,9 @@ namespace Emby.Dlna.PlayTo
         private readonly string _accessToken;
         private readonly DateTime _creationTime;
 
-        public bool IsSessionActive
-        {
-            get
-            {
-                return !_disposed && _device != null;
-            }
-        }
+        public bool IsSessionActive => !_disposed && _device != null;
 
-        public bool SupportsMediaControl
-        {
-            get { return IsSessionActive; }
-        }
+        public bool SupportsMediaControl => IsSessionActive;
 
         public PlayToController(SessionInfo session, ISessionManager sessionManager, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, string accessToken, IDeviceDiscovery deviceDiscovery, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IConfigurationManager config, IMediaEncoder mediaEncoder)
         {
@@ -436,13 +427,7 @@ namespace Emby.Dlna.PlayTo
 
         private int _currentPlaylistIndex;
         private readonly List<PlaylistItem> _playlist = new List<PlaylistItem>();
-        private List<PlaylistItem> Playlist
-        {
-            get
-            {
-                return _playlist;
-            }
-        }
+        private List<PlaylistItem> Playlist => _playlist;
 
         private void AddItemFromId(Guid id, List<BaseItem> list)
         {

@@ -283,10 +283,7 @@ namespace MediaBrowser.Providers.Music
             return WebUtility.UrlEncode(name);
         }
 
-        public string Name
-        {
-            get { return "MusicBrainz"; }
-        }
+        public string Name => "MusicBrainz";
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

@@ -38,15 +38,9 @@ namespace MediaBrowser.Providers.People
             _xmlSettings = xmlSettings;
         }
 
-        public string Name
-        {
-            get { return ProviderName; }
-        }
+        public string Name => ProviderName;
 
-        public static string ProviderName
-        {
-            get { return "TheTVDB"; }
-        }
+        public static string ProviderName => "TheTVDB";
 
         public bool Supports(BaseItem item)
         {
@@ -224,10 +218,7 @@ namespace MediaBrowser.Providers.People
             return null;
         }
 
-        public int Order
-        {
-            get { return 1; }
-        }
+        public int Order => 1;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

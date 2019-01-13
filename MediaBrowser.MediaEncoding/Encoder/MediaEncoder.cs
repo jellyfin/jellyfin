@@ -415,10 +415,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// Gets the encoder path.
         /// </summary>
         /// <value>The encoder path.</value>
-        public string EncoderPath
-        {
-            get { return FFMpegPath; }
-        }
+        public string EncoderPath => FFMpegPath;
 
         /// <summary>
         /// Gets the media info.

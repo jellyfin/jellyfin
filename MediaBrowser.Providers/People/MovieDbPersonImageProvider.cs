@@ -27,15 +27,9 @@ namespace MediaBrowser.Providers.People
             _httpClient = httpClient;
         }
 
-        public string Name
-        {
-            get { return ProviderName; }
-        }
+        public string Name => ProviderName;
 
-        public static string ProviderName
-        {
-            get { return "TheMovieDb"; }
-        }
+        public static string ProviderName => "TheMovieDb";
 
         public bool Supports(BaseItem item)
         {
@@ -124,10 +118,7 @@ namespace MediaBrowser.Providers.People
             return profile.iso_639_1 == null ? null : profile.iso_639_1.ToString();
         }
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

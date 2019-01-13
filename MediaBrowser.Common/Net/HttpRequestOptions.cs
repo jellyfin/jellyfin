@@ -24,11 +24,8 @@ namespace MediaBrowser.Common.Net
         /// <value>The accept header.</value>
         public string AcceptHeader
         {
-            get { return GetHeaderValue("Accept"); }
-            set
-            {
-                RequestHeaders["Accept"] = value;
-            }
+            get => GetHeaderValue("Accept");
+            set => RequestHeaders["Accept"] = value;
         }
         /// <summary>
         /// Gets or sets the cancellation token.
@@ -48,11 +45,8 @@ namespace MediaBrowser.Common.Net
         /// <value>The user agent.</value>
         public string UserAgent
         {
-            get { return GetHeaderValue("User-Agent"); }
-            set
-            {
-                RequestHeaders["User-Agent"] = value;
-            }
+            get => GetHeaderValue("User-Agent");
+            set => RequestHeaders["User-Agent"] = value;
         }
 
         /// <summary>

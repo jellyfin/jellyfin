@@ -441,34 +441,13 @@ namespace MediaBrowser.Providers.Manager
             return updateType;
         }
 
-        protected virtual bool EnableUpdatingPremiereDateFromChildren
-        {
-            get
-            {
-                return false;
-            }
-        }
-        protected virtual bool EnableUpdatingGenresFromChildren
-        {
-            get
-            {
-                return false;
-            }
-        }
-        protected virtual bool EnableUpdatingStudiosFromChildren
-        {
-            get
-            {
-                return false;
-            }
-        }
-        protected virtual bool EnableUpdatingOfficialRatingFromChildren
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected virtual bool EnableUpdatingPremiereDateFromChildren => false;
+
+        protected virtual bool EnableUpdatingGenresFromChildren => false;
+
+        protected virtual bool EnableUpdatingStudiosFromChildren => false;
+
+        protected virtual bool EnableUpdatingOfficialRatingFromChildren => false;
 
         private ItemUpdateType UpdatePremiereDate(TItemType item, IList<BaseItem> children)
         {
@@ -926,13 +905,7 @@ namespace MediaBrowser.Providers.Manager
             bool replaceData,
             bool mergeMetadataSettings);
 
-        public virtual int Order
-        {
-            get
-            {
-                return 0;
-            }
-        }
+        public virtual int Order => 0;
 
         private bool HasChanged(BaseItem item, IHasItemChangeMonitor changeMonitor, IDirectoryService directoryService)
         {

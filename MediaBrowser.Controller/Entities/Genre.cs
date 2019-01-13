@@ -35,31 +35,13 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The containing folder path.</value>
         [IgnoreDataMember]
-        public override string ContainingFolderPath
-        {
-            get
-            {
-                return Path;
-            }
-        }
+        public override string ContainingFolderPath => Path;
 
         [IgnoreDataMember]
-        public override bool IsDisplayedAsFolder
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsDisplayedAsFolder => true;
 
         [IgnoreDataMember]
-        public override bool SupportsAncestors
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsAncestors => false;
 
         public override bool IsSaveLocalMetadataEnabled()
         {
@@ -80,13 +62,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPeople => false;
 
         public static string GetPath(string name)
         {

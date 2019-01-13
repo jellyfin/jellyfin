@@ -108,19 +108,10 @@ namespace MediaBrowser.Controller.Entities
         public Guid ChannelId { get; set; }
 
         [IgnoreDataMember]
-        public virtual bool SupportsAddingToPlaylist
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public virtual bool SupportsAddingToPlaylist => false;
 
         [IgnoreDataMember]
-        public virtual bool AlwaysScanInternalMetadataPath
-        {
-            get { return false; }
-        }
+        public virtual bool AlwaysScanInternalMetadataPath => false;
 
         /// <summary>
         /// Gets a value indicating whether this instance is in mixed folder.
@@ -130,31 +121,13 @@ namespace MediaBrowser.Controller.Entities
         public bool IsInMixedFolder { get; set; }
 
         [IgnoreDataMember]
-        public virtual bool SupportsPlayedStatus
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public virtual bool SupportsPlayedStatus => false;
 
         [IgnoreDataMember]
-        public virtual bool SupportsPositionTicksResume
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public virtual bool SupportsPositionTicksResume => false;
 
         [IgnoreDataMember]
-        public virtual bool SupportsRemoteImageDownloading
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public virtual bool SupportsRemoteImageDownloading => true;
 
         private string _name;
         /// <summary>
@@ -164,10 +137,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public virtual string Name
         {
-            get
-            {
-                return _name;
-            }
+            get => _name;
             set
             {
                 _name = value;
@@ -178,10 +148,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public bool IsUnaired
-        {
-            get { return PremiereDate.HasValue && PremiereDate.Value.ToLocalTime().Date >= DateTime.Now.Date; }
-        }
+        public bool IsUnaired => PremiereDate.HasValue && PremiereDate.Value.ToLocalTime().Date >= DateTime.Now.Date;
 
         [IgnoreDataMember]
         public int? TotalBitrate { get; set; }
@@ -189,13 +156,7 @@ namespace MediaBrowser.Controller.Entities
         public ExtraType? ExtraType { get; set; }
 
         [IgnoreDataMember]
-        public bool IsThemeMedia
-        {
-            get
-            {
-                return ExtraType.HasValue && (ExtraType.Value == Model.Entities.ExtraType.ThemeSong || ExtraType.Value == Model.Entities.ExtraType.ThemeVideo);
-            }
-        }
+        public bool IsThemeMedia => ExtraType.HasValue && (ExtraType.Value == Model.Entities.ExtraType.ThemeSong || ExtraType.Value == Model.Entities.ExtraType.ThemeVideo);
 
         [IgnoreDataMember]
         public string OriginalTitle { get; set; }
@@ -295,13 +256,7 @@ namespace MediaBrowser.Controller.Entities
         public string ExternalEtag { get; set; }
 
         [IgnoreDataMember]
-        public virtual bool IsHidden
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public virtual bool IsHidden => false;
 
         public BaseItem GetOwner()
         {
@@ -362,22 +317,10 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public bool IsFileProtocol
-        {
-            get
-            {
-                return IsPathProtocol(MediaProtocol.File);
-            }
-        }
+        public bool IsFileProtocol => IsPathProtocol(MediaProtocol.File);
 
         [IgnoreDataMember]
-        public bool HasPathProtocol
-        {
-            get
-            {
-                return PathProtocol.HasValue;
-            }
-        }
+        public bool HasPathProtocol => PathProtocol.HasValue;
 
         [IgnoreDataMember]
         public virtual bool SupportsLocalMetadata
@@ -408,13 +351,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public virtual bool EnableAlphaNumericSorting
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public virtual bool EnableAlphaNumericSorting => true;
 
         private List<Tuple<StringBuilder, bool>> GetSortChunks(string s1)
         {
@@ -455,10 +392,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The primary image path.</value>
         [IgnoreDataMember]
-        public string PrimaryImagePath
-        {
-            get { return this.GetImagePath(ImageType.Primary); }
-        }
+        public string PrimaryImagePath => this.GetImagePath(ImageType.Primary);
 
         public bool IsMetadataFetcherEnabled(LibraryOptions libraryOptions, string name)
         {
@@ -637,13 +571,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The type of the media.</value>
         [IgnoreDataMember]
-        public virtual string MediaType
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public virtual string MediaType => null;
 
         [IgnoreDataMember]
         public virtual string[] PhysicalLocations
@@ -667,7 +595,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public string ForcedSortName
         {
-            get { return _forcedSortName; }
+            get => _forcedSortName;
             set { _forcedSortName = value; _sortName = null; }
         }
 
@@ -695,10 +623,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 return _sortName;
             }
-            set
-            {
-                _sortName = value;
-            }
+            set => _sortName = value;
         }
 
         public string GetInternalMetadataPath()
@@ -816,7 +741,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public Folder Parent
         {
-            get { return GetParent() as Folder; }
+            get => GetParent() as Folder;
             set
             {
 
@@ -1007,10 +932,7 @@ namespace MediaBrowser.Controller.Entities
         public int? ParentIndexNumber { get; set; }
 
         [IgnoreDataMember]
-        public virtual bool HasLocalAlternateVersions
-        {
-            get { return false; }
-        }
+        public virtual bool HasLocalAlternateVersions => false;
 
         [IgnoreDataMember]
         public string OfficialRatingForComparison
@@ -1426,22 +1348,13 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        protected virtual bool SupportsOwnedItems
-        {
-            get { return !ParentId.Equals(Guid.Empty) && IsFileProtocol; }
-        }
+        protected virtual bool SupportsOwnedItems => !ParentId.Equals(Guid.Empty) && IsFileProtocol;
 
         [IgnoreDataMember]
-        public virtual bool SupportsPeople
-        {
-            get { return false; }
-        }
+        public virtual bool SupportsPeople => false;
 
         [IgnoreDataMember]
-        public virtual bool SupportsThemeMedia
-        {
-            get { return false; }
-        }
+        public virtual bool SupportsThemeMedia => false;
 
         /// <summary>
         /// Refreshes owned items such as trailers, theme videos, special features, etc.
@@ -1602,10 +1515,7 @@ namespace MediaBrowser.Controller.Entities
         public Dictionary<string, string> ProviderIds { get; set; }
 
         [IgnoreDataMember]
-        public virtual Folder LatestItemsIndexContainer
-        {
-            get { return null; }
-        }
+        public virtual Folder LatestItemsIndexContainer => null;
 
         public virtual double GetDefaultPrimaryImageAspectRatio()
         {
@@ -1923,10 +1833,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public virtual bool SupportsInheritedParentImages
-        {
-            get { return false; }
-        }
+        public virtual bool SupportsInheritedParentImages => false;
 
         protected bool IsVisibleStandaloneInternal(User user, bool checkFolders)
         {
@@ -1969,22 +1876,10 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is folder; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public virtual bool IsFolder
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public virtual bool IsFolder => false;
 
         [IgnoreDataMember]
-        public virtual bool IsDisplayedAsFolder
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public virtual bool IsDisplayedAsFolder => false;
 
         public virtual string GetClientTypeName()
         {
@@ -2070,13 +1965,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public virtual bool EnableRememberingTrackSelections
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public virtual bool EnableRememberingTrackSelections => true;
 
         /// <summary>
         /// Adds a studio to the item
@@ -2813,22 +2702,10 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public virtual bool SupportsAncestors
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public virtual bool SupportsAncestors => true;
 
         [IgnoreDataMember]
-        public virtual bool StopRefreshIfLocalMetadataFound
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public virtual bool StopRefreshIfLocalMetadataFound => true;
 
         public virtual IEnumerable<Guid> GetIdsForAncestorQuery()
         {
@@ -2915,13 +2792,7 @@ namespace MediaBrowser.Controller.Entities
             return GetExtras();
         }
 
-        public virtual bool IsHD
-        {
-            get
-            {
-                return Height >= 720;
-            }
-        }
+        public virtual bool IsHD => Height >= 720;
         public bool IsShortcut { get; set; }
         public string ShortcutPath { get; set; }
         public int Width { get; set; }
@@ -2933,12 +2804,6 @@ namespace MediaBrowser.Controller.Entities
         }
         // what does this do?
         public static ExtraType[] DisplayExtraTypes = new[] { Model.Entities.ExtraType.ThemeSong, Model.Entities.ExtraType.ThemeVideo };
-        public virtual bool SupportsExternalTransfer
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public virtual bool SupportsExternalTransfer => false;
     }
 }

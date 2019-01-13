@@ -142,21 +142,12 @@ namespace BDInfo
         public double PacketSeconds = 0;
         public int AngleIndex = 0;
 
-        public ulong PacketSize
-        {
-            get
-            {
-                return PacketCount * 192;
-            }
-        }
+        public ulong PacketSize => PacketCount * 192;
 
         private string _LanguageCode;
         public string LanguageCode
         {
-            get
-            {
-                return _LanguageCode;
-            }
+            get => _LanguageCode;
             set
             {
                 _LanguageCode = value;
@@ -398,13 +389,7 @@ namespace BDInfo
             }
         }
 
-        public virtual string Description
-        {
-            get
-            {
-                return "";
-            }
-        }
+        public virtual string Description => "";
 
         public abstract TSStream Clone();
 
@@ -444,10 +429,7 @@ namespace BDInfo
         private TSVideoFormat _VideoFormat;
         public TSVideoFormat VideoFormat
         {
-            get
-            {
-                return _VideoFormat;
-            }
+            get => _VideoFormat;
             set
             {
                 _VideoFormat = value;
@@ -488,10 +470,7 @@ namespace BDInfo
         private TSFrameRate _FrameRate;
         public TSFrameRate FrameRate
         {
-            get
-            {
-                return _FrameRate;
-            }
+            get => _FrameRate;
             set
             {
                 _FrameRate = value;

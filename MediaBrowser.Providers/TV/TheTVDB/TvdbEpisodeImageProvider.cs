@@ -30,10 +30,7 @@ namespace MediaBrowser.Providers.TV
             _fileSystem = fileSystem;
         }
 
-        public string Name
-        {
-            get { return "TheTVDB"; }
-        }
+        public string Name => "TheTVDB";
 
         public bool Supports(BaseItem item)
         {
@@ -163,10 +160,7 @@ namespace MediaBrowser.Providers.TV
             };
         }
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

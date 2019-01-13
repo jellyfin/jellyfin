@@ -44,10 +44,7 @@ namespace MediaBrowser.Controller.Net
         /// &gt;0 Executed after global request filters
         /// </summary>
         /// <value>The priority.</value>
-        public int Priority
-        {
-            get { return 0; }
-        }
+        public int Priority => 0;
 
         public string[] GetRoles()
         {

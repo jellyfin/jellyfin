@@ -1735,10 +1735,7 @@ namespace MediaBrowser.Providers.TV
             return sbOutput.ToString();
         }
 
-        public string Name
-        {
-            get { return "TheTVDB"; }
-        }
+        public string Name => "TheTVDB";
 
         public async Task Identify(SeriesInfo info)
         {
@@ -1758,13 +1755,7 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        public int Order
-        {
-            get
-            {
-                return 0;
-            }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

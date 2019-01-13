@@ -53,10 +53,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IChannelManager _channelManager;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        public string Name
-        {
-            get { return "ffprobe"; }
-        }
+        public string Name => "ffprobe";
 
         public bool HasChanged(BaseItem item, IDirectoryService directoryService)
         {
@@ -227,13 +224,6 @@ namespace MediaBrowser.Providers.MediaInfo
             return prober.Probe(item, options, cancellationToken);
         }
 
-        public int Order
-        {
-            get
-            {
-                // Run last
-                return 100;
-            }
-        }
+        public int Order => 100;
     }
 }

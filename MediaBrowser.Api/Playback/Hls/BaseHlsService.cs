@@ -52,10 +52,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// Gets the type of the transcoding job.
         /// </summary>
         /// <value>The type of the transcoding job.</value>
-        protected override TranscodingJobType TranscodingJobType
-        {
-            get { return TranscodingJobType.Hls; }
-        }
+        protected override TranscodingJobType TranscodingJobType => TranscodingJobType.Hls;
 
         /// <summary>
         /// Processes the request.

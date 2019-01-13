@@ -6,31 +6,13 @@ namespace MediaBrowser.Controller.Entities
     public class Photo : BaseItem
     {
         [IgnoreDataMember]
-        public override bool SupportsLocalMetadata
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsLocalMetadata => false;
 
         [IgnoreDataMember]
-        public override string MediaType
-        {
-            get
-            {
-                return Model.Entities.MediaType.Photo;
-            }
-        }
+        public override string MediaType => Model.Entities.MediaType.Photo;
 
         [IgnoreDataMember]
-        public override Folder LatestItemsIndexContainer
-        {
-            get
-            {
-                return AlbumEntity;
-            }
-        }
+        public override Folder LatestItemsIndexContainer => AlbumEntity;
 
 
         [IgnoreDataMember]

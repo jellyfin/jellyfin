@@ -34,10 +34,7 @@ namespace MediaBrowser.Providers.TV
             _logger = loggerFactory.CreateLogger(GetType().Name);
         }
 
-        protected ILogger Logger
-        {
-            get { return _logger; }
-        }
+        protected ILogger Logger => _logger;
 
         protected async Task<RootObject> GetEpisodeInfo(string seriesTmdbId, int season, int episodeNumber, string preferredMetadataLanguage,
             CancellationToken cancellationToken)

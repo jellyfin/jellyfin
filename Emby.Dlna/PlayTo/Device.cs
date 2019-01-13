@@ -35,10 +35,7 @@ namespace Emby.Dlna.PlayTo
                 RefreshVolumeIfNeeded();
                 return _volume;
             }
-            set
-            {
-                _volume = value;
-            }
+            set => _volume = value;
         }
 
         public TimeSpan? Duration { get; set; }
@@ -46,41 +43,17 @@ namespace Emby.Dlna.PlayTo
         private TimeSpan _position = TimeSpan.FromSeconds(0);
         public TimeSpan Position
         {
-            get
-            {
-                return _position;
-            }
-            set
-            {
-                _position = value;
-            }
+            get => _position;
+            set => _position = value;
         }
 
         public TRANSPORTSTATE TransportState { get; private set; }
 
-        public bool IsPlaying
-        {
-            get
-            {
-                return TransportState == TRANSPORTSTATE.PLAYING;
-            }
-        }
+        public bool IsPlaying => TransportState == TRANSPORTSTATE.PLAYING;
 
-        public bool IsPaused
-        {
-            get
-            {
-                return TransportState == TRANSPORTSTATE.PAUSED || TransportState == TRANSPORTSTATE.PAUSED_PLAYBACK;
-            }
-        }
+        public bool IsPaused => TransportState == TRANSPORTSTATE.PAUSED || TransportState == TRANSPORTSTATE.PAUSED_PLAYBACK;
 
-        public bool IsStopped
-        {
-            get
-            {
-                return TransportState == TRANSPORTSTATE.STOPPED;
-            }
-        }
+        public bool IsStopped => TransportState == TRANSPORTSTATE.STOPPED;
 
         #endregion
 

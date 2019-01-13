@@ -50,29 +50,11 @@ namespace MediaBrowser.Providers.Music
             return updateType;
         }
 
-        protected override bool EnableUpdatingPremiereDateFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingPremiereDateFromChildren => true;
 
-        protected override bool EnableUpdatingGenresFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingGenresFromChildren => true;
 
-        protected override bool EnableUpdatingStudiosFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingStudiosFromChildren => true;
 
         private ItemUpdateType SetAlbumArtistFromSongs(MusicAlbum item, IEnumerable<Audio> songs)
         {

@@ -35,15 +35,9 @@ namespace MediaBrowser.Providers.Music
             _jsonSerializer = jsonSerializer;
         }
 
-        public string Name
-        {
-            get { return ProviderName; }
-        }
+        public string Name => ProviderName;
 
-        public static string ProviderName
-        {
-            get { return "FanArt"; }
-        }
+        public static string ProviderName => "FanArt";
 
         public bool Supports(BaseItem item)
         {
@@ -194,14 +188,7 @@ namespace MediaBrowser.Providers.Music
             }).Where(i => i != null));
         }
 
-        public int Order
-        {
-            get
-            {
-                // After embedded provider
-                return 1;
-            }
-        }
+        public int Order => 1;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

@@ -34,13 +34,7 @@ namespace MediaBrowser.Controller.Playlists
         }
 
         [IgnoreDataMember]
-        public bool IsFile
-        {
-            get
-            {
-                return IsPlaylistFile(Path);
-            }
-        }
+        public bool IsFile => IsPlaylistFile(Path);
 
         public static bool IsPlaylistFile(string path)
         {
@@ -64,49 +58,19 @@ namespace MediaBrowser.Controller.Playlists
         }
 
         [IgnoreDataMember]
-        protected override bool FilterLinkedChildrenPerUser
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool FilterLinkedChildrenPerUser => true;
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsInheritedParentImages => false;
 
         [IgnoreDataMember]
-        public override bool SupportsPlayedStatus
-        {
-            get
-            {
-                return string.Equals(MediaType, "Video", StringComparison.OrdinalIgnoreCase);
-            }
-        }
+        public override bool SupportsPlayedStatus => string.Equals(MediaType, "Video", StringComparison.OrdinalIgnoreCase);
 
         [IgnoreDataMember]
-        public override bool AlwaysScanInternalMetadataPath
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool AlwaysScanInternalMetadataPath => true;
 
         [IgnoreDataMember]
-        public override bool SupportsCumulativeRunTimeTicks
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool SupportsCumulativeRunTimeTicks => true;
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -229,24 +193,12 @@ namespace MediaBrowser.Controller.Playlists
         }
 
         [IgnoreDataMember]
-        public override bool IsPreSorted
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsPreSorted => true;
 
         public string PlaylistMediaType { get; set; }
 
         [IgnoreDataMember]
-        public override string MediaType
-        {
-            get
-            {
-                return PlaylistMediaType;
-            }
-        }
+        public override string MediaType => PlaylistMediaType;
 
         public void SetMediaType(string value)
         {

@@ -18,15 +18,9 @@ namespace MediaBrowser.LocalMetadata.Images
             _fileSystem = fileSystem;
         }
 
-        public string Name
-        {
-            get { return "Local Images"; }
-        }
+        public string Name => "Local Images";
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public bool Supports(BaseItem item)
         {

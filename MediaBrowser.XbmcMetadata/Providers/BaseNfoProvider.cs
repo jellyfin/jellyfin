@@ -68,12 +68,6 @@ namespace MediaBrowser.XbmcMetadata.Providers
             return file.Exists && FileSystem.GetLastWriteTimeUtc(file) > item.DateLastSaved;
         }
 
-        public string Name
-        {
-            get
-            {
-                return BaseNfoSaver.SaverName;
-            }
-        }
+        public string Name => BaseNfoSaver.SaverName;
     }
 }

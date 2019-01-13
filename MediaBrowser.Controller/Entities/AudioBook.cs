@@ -8,22 +8,10 @@ namespace MediaBrowser.Controller.Entities
     public class AudioBook : Audio.Audio, IHasSeries, IHasLookupInfo<SongInfo>
     {
         [IgnoreDataMember]
-        public override bool SupportsPositionTicksResume
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool SupportsPositionTicksResume => true;
 
         [IgnoreDataMember]
-        public override bool SupportsPlayedStatus
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool SupportsPlayedStatus => true;
 
         [IgnoreDataMember]
         public string SeriesPresentationUniqueKey { get; set; }

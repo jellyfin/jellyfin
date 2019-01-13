@@ -47,61 +47,25 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        protected override bool SupportsOwnedItems
-        {
-            get
-            {
-                return IsStacked || MediaSourceCount > 1;
-            }
-        }
+        protected override bool SupportsOwnedItems => IsStacked || MediaSourceCount > 1;
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get { return true; }
-        }
+        public override bool SupportsInheritedParentImages => true;
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get { return true; }
-        }
+        public override bool SupportsPeople => true;
 
         [IgnoreDataMember]
-        public int? AiredSeasonNumber
-        {
-            get
-            {
-                return AirsAfterSeasonNumber ?? AirsBeforeSeasonNumber ?? ParentIndexNumber;
-            }
-        }
+        public int? AiredSeasonNumber => AirsAfterSeasonNumber ?? AirsBeforeSeasonNumber ?? ParentIndexNumber;
 
         [IgnoreDataMember]
-        public override Folder LatestItemsIndexContainer
-        {
-            get
-            {
-                return Series;
-            }
-        }
+        public override Folder LatestItemsIndexContainer => Series;
 
         [IgnoreDataMember]
-        public override Guid DisplayParentId
-        {
-            get
-            {
-                return SeasonId;
-            }
-        }
+        public override Guid DisplayParentId => SeasonId;
 
         [IgnoreDataMember]
-        protected override bool EnableDefaultVideoUserDataKeys
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected override bool EnableDefaultVideoUserDataKeys => false;
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -166,13 +130,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public bool IsInSeasonFolder
-        {
-            get
-            {
-                return FindParent<Season>() != null;
-            }
-        }
+        public bool IsInSeasonFolder => FindParent<Season>() != null;
 
         [IgnoreDataMember]
         public string SeriesPresentationUniqueKey { get; set; }
@@ -278,13 +236,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public bool IsMissingEpisode
-        {
-            get
-            {
-                return LocationType == LocationType.Virtual;
-            }
-        }
+        public bool IsMissingEpisode => LocationType == LocationType.Virtual;
 
         [IgnoreDataMember]
         public Guid SeasonId { get; set; }

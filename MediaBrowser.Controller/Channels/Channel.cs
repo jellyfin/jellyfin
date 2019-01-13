@@ -31,19 +31,10 @@ namespace MediaBrowser.Controller.Channels
         }
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsInheritedParentImages => false;
 
         [IgnoreDataMember]
-        public override SourceType SourceType
-        {
-            get { return SourceType.Channel; }
-        }
+        public override SourceType SourceType => SourceType.Channel;
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {

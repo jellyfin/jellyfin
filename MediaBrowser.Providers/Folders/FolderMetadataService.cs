@@ -11,14 +11,7 @@ namespace MediaBrowser.Providers.Folders
 {
     public class FolderMetadataService : MetadataService<Folder, ItemLookupInfo>
     {
-        public override int Order
-        {
-            get
-            {
-                // Make sure the type-specific services get picked first
-                return 10;
-            }
-        }
+        public override int Order => 10;
 
         protected override void MergeData(MetadataResult<Folder> source, MetadataResult<Folder> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {

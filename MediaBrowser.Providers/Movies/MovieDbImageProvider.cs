@@ -29,15 +29,9 @@ namespace MediaBrowser.Providers.Movies
             _fileSystem = fileSystem;
         }
 
-        public string Name
-        {
-            get { return ProviderName; }
-        }
+        public string Name => ProviderName;
 
-        public static string ProviderName
-        {
-            get { return "TheMovieDb"; }
-        }
+        public static string ProviderName => "TheMovieDb";
 
         public bool Supports(BaseItem item)
         {
@@ -199,10 +193,7 @@ namespace MediaBrowser.Providers.Movies
             return null;
         }
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

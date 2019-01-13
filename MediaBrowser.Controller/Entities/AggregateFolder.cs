@@ -24,10 +24,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool IsPhysicalRoot
-        {
-            get { return true; }
-        }
+        public override bool IsPhysicalRoot => true;
 
         public override bool CanDelete()
         {
@@ -35,13 +32,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPlayedStatus
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPlayedStatus => false;
 
         /// <summary>
         /// The _virtual children
@@ -52,19 +43,10 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the virtual children.
         /// </summary>
         /// <value>The virtual children.</value>
-        public ConcurrentBag<BaseItem> VirtualChildren
-        {
-            get { return _virtualChildren; }
-        }
+        public ConcurrentBag<BaseItem> VirtualChildren => _virtualChildren;
 
         [IgnoreDataMember]
-        public override string[] PhysicalLocations
-        {
-            get
-            {
-                return PhysicalLocationsList;
-            }
-        }
+        public override string[] PhysicalLocations => PhysicalLocationsList;
 
         public string[] PhysicalLocationsList { get; set; }
 

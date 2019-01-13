@@ -22,10 +22,7 @@ namespace MediaBrowser.Providers.Music
             return Task.FromResult((IEnumerable<RemoteSearchResult>)new List<RemoteSearchResult>());
         }
 
-        public string Name
-        {
-            get { return MovieDbProvider.Current.Name; }
-        }
+        public string Name => MovieDbProvider.Current.Name;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

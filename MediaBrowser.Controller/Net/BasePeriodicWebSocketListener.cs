@@ -83,13 +83,7 @@ namespace MediaBrowser.Controller.Net
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        protected virtual bool SendOnTimer
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected virtual bool SendOnTimer => false;
 
         protected virtual void ParseMessageParams(string[] values)
         {

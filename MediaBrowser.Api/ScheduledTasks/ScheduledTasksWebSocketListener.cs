@@ -24,10 +24,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        protected override string Name
-        {
-            get { return "ScheduledTasksInfo"; }
-        }
+        protected override string Name => "ScheduledTasksInfo";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTasksWebSocketListener" /> class.

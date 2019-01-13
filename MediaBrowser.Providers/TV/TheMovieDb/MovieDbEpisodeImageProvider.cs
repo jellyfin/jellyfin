@@ -117,23 +117,13 @@ namespace MediaBrowser.Providers.TV
             return GetResponse(url, cancellationToken);
         }
 
-        public string Name
-        {
-            get { return "TheMovieDb"; }
-        }
+        public string Name => "TheMovieDb";
 
         public bool Supports(BaseItem item)
         {
             return item is Controller.Entities.TV.Episode;
         }
 
-        public int Order
-        {
-            get
-            {
-                // After tvdb
-                return 1;
-            }
-        }
+        public int Order => 1;
     }
 }

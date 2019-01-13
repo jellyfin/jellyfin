@@ -44,10 +44,7 @@ namespace MediaBrowser.Providers.People
             Current = this;
         }
 
-        public string Name
-        {
-            get { return "TheMovieDb"; }
-        }
+        public string Name => "TheMovieDb";
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(PersonLookupInfo searchInfo, CancellationToken cancellationToken)
         {

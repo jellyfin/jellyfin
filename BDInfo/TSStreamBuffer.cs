@@ -37,21 +37,9 @@ namespace BDInfo
             Stream = new MemoryStream(Buffer);
         }
 
-        public long Length
-        {
-            get
-            {
-                return (long)BufferLength;
-            }
-        }
+        public long Length => (long)BufferLength;
 
-        public long Position
-        {
-            get
-            {
-                return Stream.Position;
-            }
-        }
+        public long Position => Stream.Position;
 
         public void Add(
             byte[] buffer,

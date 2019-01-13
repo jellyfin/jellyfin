@@ -106,197 +106,53 @@ namespace SocketHttpListener
 
         #region Public Properties
 
-        public byte[] ExtendedPayloadLength
-        {
-            get
-            {
-                return _extPayloadLength;
-            }
-        }
+        public byte[] ExtendedPayloadLength => _extPayloadLength;
 
-        public Fin Fin
-        {
-            get
-            {
-                return _fin;
-            }
-        }
+        public Fin Fin => _fin;
 
-        public bool IsBinary
-        {
-            get
-            {
-                return _opcode == Opcode.Binary;
-            }
-        }
+        public bool IsBinary => _opcode == Opcode.Binary;
 
-        public bool IsClose
-        {
-            get
-            {
-                return _opcode == Opcode.Close;
-            }
-        }
+        public bool IsClose => _opcode == Opcode.Close;
 
-        public bool IsCompressed
-        {
-            get
-            {
-                return _rsv1 == Rsv.On;
-            }
-        }
+        public bool IsCompressed => _rsv1 == Rsv.On;
 
-        public bool IsContinuation
-        {
-            get
-            {
-                return _opcode == Opcode.Cont;
-            }
-        }
+        public bool IsContinuation => _opcode == Opcode.Cont;
 
-        public bool IsControl
-        {
-            get
-            {
-                return _opcode == Opcode.Close || _opcode == Opcode.Ping || _opcode == Opcode.Pong;
-            }
-        }
+        public bool IsControl => _opcode == Opcode.Close || _opcode == Opcode.Ping || _opcode == Opcode.Pong;
 
-        public bool IsData
-        {
-            get
-            {
-                return _opcode == Opcode.Binary || _opcode == Opcode.Text;
-            }
-        }
+        public bool IsData => _opcode == Opcode.Binary || _opcode == Opcode.Text;
 
-        public bool IsFinal
-        {
-            get
-            {
-                return _fin == Fin.Final;
-            }
-        }
+        public bool IsFinal => _fin == Fin.Final;
 
-        public bool IsFragmented
-        {
-            get
-            {
-                return _fin == Fin.More || _opcode == Opcode.Cont;
-            }
-        }
+        public bool IsFragmented => _fin == Fin.More || _opcode == Opcode.Cont;
 
-        public bool IsMasked
-        {
-            get
-            {
-                return _mask == Mask.Mask;
-            }
-        }
+        public bool IsMasked => _mask == Mask.Mask;
 
-        public bool IsPerMessageCompressed
-        {
-            get
-            {
-                return (_opcode == Opcode.Binary || _opcode == Opcode.Text) && _rsv1 == Rsv.On;
-            }
-        }
+        public bool IsPerMessageCompressed => (_opcode == Opcode.Binary || _opcode == Opcode.Text) && _rsv1 == Rsv.On;
 
-        public bool IsPing
-        {
-            get
-            {
-                return _opcode == Opcode.Ping;
-            }
-        }
+        public bool IsPing => _opcode == Opcode.Ping;
 
-        public bool IsPong
-        {
-            get
-            {
-                return _opcode == Opcode.Pong;
-            }
-        }
+        public bool IsPong => _opcode == Opcode.Pong;
 
-        public bool IsText
-        {
-            get
-            {
-                return _opcode == Opcode.Text;
-            }
-        }
+        public bool IsText => _opcode == Opcode.Text;
 
-        public ulong Length
-        {
-            get
-            {
-                return 2 + (ulong)(_extPayloadLength.Length + _maskingKey.Length) + _payloadData.Length;
-            }
-        }
+        public ulong Length => 2 + (ulong)(_extPayloadLength.Length + _maskingKey.Length) + _payloadData.Length;
 
-        public Mask Mask
-        {
-            get
-            {
-                return _mask;
-            }
-        }
+        public Mask Mask => _mask;
 
-        public byte[] MaskingKey
-        {
-            get
-            {
-                return _maskingKey;
-            }
-        }
+        public byte[] MaskingKey => _maskingKey;
 
-        public Opcode Opcode
-        {
-            get
-            {
-                return _opcode;
-            }
-        }
+        public Opcode Opcode => _opcode;
 
-        public PayloadData PayloadData
-        {
-            get
-            {
-                return _payloadData;
-            }
-        }
+        public PayloadData PayloadData => _payloadData;
 
-        public byte PayloadLength
-        {
-            get
-            {
-                return _payloadLength;
-            }
-        }
+        public byte PayloadLength => _payloadLength;
 
-        public Rsv Rsv1
-        {
-            get
-            {
-                return _rsv1;
-            }
-        }
+        public Rsv Rsv1 => _rsv1;
 
-        public Rsv Rsv2
-        {
-            get
-            {
-                return _rsv2;
-            }
-        }
+        public Rsv Rsv2 => _rsv2;
 
-        public Rsv Rsv3
-        {
-            get
-            {
-                return _rsv3;
-            }
-        }
+        public Rsv Rsv3 => _rsv3;
 
         #endregion
 

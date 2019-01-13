@@ -210,18 +210,8 @@ namespace MediaBrowser.Providers.TV
             return GetResponse(url, cancellationToken);
         }
 
-        public int Order
-        {
-            get
-            {
-                // After TheTvDb
-                return 1;
-            }
-        }
+        public int Order => 1;
 
-        public string Name
-        {
-            get { return "TheMovieDb"; }
-        }
+        public string Name => "TheMovieDb";
     }
 }

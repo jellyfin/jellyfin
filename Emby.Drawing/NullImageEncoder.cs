@@ -6,26 +6,15 @@ namespace Emby.Drawing
 {
     public class NullImageEncoder : IImageEncoder
     {
-        public string[] SupportedInputFormats
-        {
-            get
+        public string[] SupportedInputFormats =>
+            new[]
             {
-                return new[]
-                {
-                    "png",
-                    "jpeg",
-                    "jpg"
-                };
-            }
-        }
+                "png",
+                "jpeg",
+                "jpg"
+            };
 
-        public ImageFormat[] SupportedOutputFormats
-        {
-            get
-            {
-                return new[] { ImageFormat.Jpg, ImageFormat.Png };
-            }
-        }
+        public ImageFormat[] SupportedOutputFormats => new[] { ImageFormat.Jpg, ImageFormat.Png };
 
         public void CropWhiteSpace(string inputPath, string outputPath)
         {
@@ -42,20 +31,11 @@ namespace Emby.Drawing
             throw new NotImplementedException();
         }
 
-        public string Name
-        {
-            get { return "Null Image Encoder"; }
-        }
+        public string Name => "Null Image Encoder";
 
-        public bool SupportsImageCollageCreation
-        {
-            get { return false; }
-        }
+        public bool SupportsImageCollageCreation => false;
 
-        public bool SupportsImageEncoding
-        {
-            get { return false; }
-        }
+        public bool SupportsImageEncoding => false;
 
         public ImageSize GetImageSize(string path)
         {

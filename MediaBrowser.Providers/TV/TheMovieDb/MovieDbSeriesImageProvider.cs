@@ -29,15 +29,9 @@ namespace MediaBrowser.Providers.TV
             _fileSystem = fileSystem;
         }
 
-        public string Name
-        {
-            get { return ProviderName; }
-        }
+        public string Name => ProviderName;
 
-        public static string ProviderName
-        {
-            get { return "TheMovieDb"; }
-        }
+        public static string ProviderName => "TheMovieDb";
 
         public bool Supports(BaseItem item)
         {
@@ -177,14 +171,7 @@ namespace MediaBrowser.Providers.TV
             return null;
         }
 
-        public int Order
-        {
-            get
-            {
-                // After tvdb and fanart
-                return 2;
-            }
-        }
+        public int Order => 2;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

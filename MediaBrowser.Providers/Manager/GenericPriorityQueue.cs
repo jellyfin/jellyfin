@@ -41,25 +41,13 @@ namespace Priority_Queue
         /// Returns the number of nodes in the queue.
         /// O(1)
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                return _numNodes;
-            }
-        }
+        public int Count => _numNodes;
 
         /// <summary>
         /// Returns the maximum number of items that can be enqueued at once in this queue.  Once you hit this number (ie. once Count == MaxSize),
         /// attempting to enqueue another item will cause undefined behavior.  O(1)
         /// </summary>
-        public int MaxSize
-        {
-            get
-            {
-                return _nodes.Length - 1;
-            }
-        }
+        public int MaxSize => _nodes.Length - 1;
 
         /// <summary>
         /// Removes every node from the queue.

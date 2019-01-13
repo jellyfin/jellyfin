@@ -216,10 +216,7 @@ namespace MediaBrowser.Providers.Music
             return result;
         }
 
-        public string Name
-        {
-            get { return "MusicBrainz"; }
-        }
+        public string Name => "MusicBrainz";
 
         private Task<ReleaseResult> GetReleaseResult(string artistMusicBrainId, string artistName, string albumName, CancellationToken cancellationToken)
         {
@@ -753,10 +750,7 @@ namespace MediaBrowser.Providers.Music
             return await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
         }
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
