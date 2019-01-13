@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Globalization;
+using System.Xml;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
-using Microsoft.Extensions.Logging;
-using System.Globalization;
-using System.Xml;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
