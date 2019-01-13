@@ -14,7 +14,6 @@ using TagLib;
 using TagLib.IFD;
 using TagLib.IFD.Entries;
 using TagLib.IFD.Tags;
-using MediaBrowser.Model.MediaInfo;
 
 namespace Emby.Photos
 {
