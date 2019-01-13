@@ -260,7 +260,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 for (int i = 0; i < model.TunerCount; ++i)
                 {
                     var name = string.Format("Tuner {0}", i + 1);
-                    var currentChannel = "none"; /// @todo Get current channel and map back to Station Id      
+                    var currentChannel = "none"; /// @todo Get current channel and map back to Station Id
                     var isAvailable = await manager.CheckTunerAvailability(ipInfo, i, cancellationToken).ConfigureAwait(false);
                     LiveTvTunerStatus status = isAvailable ? LiveTvTunerStatus.Available : LiveTvTunerStatus.LiveTv;
                     tuners.Add(new LiveTvTunerInfo
