@@ -57,9 +57,13 @@ namespace Jellyfin.Server
             // Intercept Ctrl+C and Ctrl+Break
             Console.CancelKeyPress += (sender, e) =>
             {
+                if (_tokenSource.IsCancellationRequested)
+                {
+                    return; // Already shutting down
+                }
                 e.Cancel = true;
                 _logger.LogInformation("Ctrl+C, shutting down");
-                Environment.ExitCode = 2;
+                Environment.ExitCode = 128 + 2;
                 Shutdown();
             };
 
@@ -71,6 +75,7 @@ namespace Jellyfin.Server
                     return; // Already shutting down
                 }
                 _logger.LogInformation("Received a SIGTERM signal, shutting down");
+                Environment.ExitCode = 128 + 15;
                 Shutdown();
             };
 
