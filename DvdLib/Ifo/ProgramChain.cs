@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace DvdLib.Ifo
 {
@@ -106,7 +104,7 @@ namespace DvdLib.Ifo
 
             for (int i = 0; i < cellNumbers.Count; i++)
             {
-                int max = (i + 1 == cellNumbers.Count) ? _cellCount : cellNumbers[i+1];
+                int max = (i + 1 == cellNumbers.Count) ? _cellCount : cellNumbers[i + 1];
                 Programs.Add(new Program(Cells.Where((c, idx) => idx >= cellNumbers[i] && idx < max).ToList()));
             }
         }
