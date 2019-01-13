@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Controller;
-using MediaBrowser.Controller.Notifications;
-using MediaBrowser.Model.Notifications;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Notifications;
 
 namespace Emby.Notifications
 {
