@@ -1,10 +1,10 @@
 ﻿using System;
+using Emby.Server.Implementations.Udp;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
-using Emby.Server.Implementations.Udp;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {

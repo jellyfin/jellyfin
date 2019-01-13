@@ -1,11 +1,10 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
-using System;
 
 namespace Emby.Server.Implementations.HttpServer.Security
 {

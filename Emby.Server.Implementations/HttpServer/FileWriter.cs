@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Services;
-using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.HttpServer
 {

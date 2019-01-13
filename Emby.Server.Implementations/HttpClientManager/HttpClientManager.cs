@@ -13,8 +13,8 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.HttpClientManager
 {
@@ -541,7 +541,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (options.Progress == null)
             {
-                throw new ArgumentException("Options did not have a Progress value.",nameof(options));
+                throw new ArgumentException("Options did not have a Progress value.", nameof(options));
             }
 
             options.CancellationToken.ThrowIfCancellationRequested();
