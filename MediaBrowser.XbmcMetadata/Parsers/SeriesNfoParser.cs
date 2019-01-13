@@ -1,13 +1,13 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System;
+using System.Xml;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Xml;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
@@ -62,21 +62,21 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
                 case "airs_dayofweek":
-                {
-                    item.AirDays = TVUtils.GetAirDays(reader.ReadElementContentAsString());
-                    break;
-                }
+                    {
+                        item.AirDays = TVUtils.GetAirDays(reader.ReadElementContentAsString());
+                        break;
+                    }
 
                 case "airs_time":
-                {
-                    var val = reader.ReadElementContentAsString();
-
-                    if (!string.IsNullOrWhiteSpace(val))
                     {
-                        item.AirTime = val;
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            item.AirTime = val;
+                        }
+                        break;
                     }
-                    break;
-                }
 
                 case "status":
                     {

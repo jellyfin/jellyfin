@@ -1,20 +1,18 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Linq;
+using System.Threading;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.XbmcMetadata.Parsers;
-using MediaBrowser.XbmcMetadata.Savers;
-using System.Linq;
-using System.Threading;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
+using MediaBrowser.XbmcMetadata.Parsers;
+using MediaBrowser.XbmcMetadata.Savers;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Providers
 {
     public class BaseVideoNfoProvider<T> : BaseNfoProvider<T>
-        where T : Video, new ()
+        where T : Video, new()
     {
         private readonly ILogger _logger;
         private readonly IConfigurationManager _config;
