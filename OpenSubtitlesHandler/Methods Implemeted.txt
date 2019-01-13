@@ -3,7 +3,7 @@
 Legends:
 * OK: this method is fully implemented, tested and works fine.
 * TODO: this method is in the plan to be added.
-* NOT TESTED: this method added and expected to work fine but never tested. 
+* NOT TESTED: this method added and expected to work fine but never tested.
 * NOT WORK (x): this method added but not work. x= Description of the error.
 
 --------------------------------------------

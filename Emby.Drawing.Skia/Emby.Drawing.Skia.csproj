@@ -1,23 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="1.68.0" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="1.68.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="SkiaSharp" Version="1.68.0" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="1.68.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
+        <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
+        <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\SharedVersion.cs" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Include="..\SharedVersion.cs" />
+    </ItemGroup>
 
 </Project>
