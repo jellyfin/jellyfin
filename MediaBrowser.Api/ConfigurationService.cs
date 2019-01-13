@@ -1,14 +1,14 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System.IO;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Serialization;
-using System.IO;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {

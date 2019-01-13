@@ -1,15 +1,13 @@
-﻿using MediaBrowser.Controller;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Net;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Common.Net;
-using System.Threading;
 
 namespace MediaBrowser.Api
 {

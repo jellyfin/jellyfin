@@ -1,15 +1,15 @@
-﻿using MediaBrowser.Common;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Updates;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
+using MediaBrowser.Common.Updates;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Api
 {

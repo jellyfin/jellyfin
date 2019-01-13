@@ -1,4 +1,7 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -6,13 +9,9 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.TV;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api

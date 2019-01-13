@@ -1,24 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Api.Playback;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Diagnostics;
-using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Threading;
-using System.Collections.Generic;
-using System.Threading;
-using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Api.Playback;
-using System.IO;
-using MediaBrowser.Model.Session;
-using System.Linq;
-using System.Threading.Tasks;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Diagnostics;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -681,7 +681,7 @@ namespace MediaBrowser.Api
         }
     }
 
-        /// <summary>
+    /// <summary>
     /// Class TranscodingJob
     /// </summary>
     public class TranscodingJob

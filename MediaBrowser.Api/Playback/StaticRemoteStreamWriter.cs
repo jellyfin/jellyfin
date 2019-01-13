@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Common.Net;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback
