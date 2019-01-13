@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
@@ -441,7 +440,8 @@ namespace SocketHttpListener
                         continue;
                     }
                 }
-                else {
+                else
+                {
                 }
 
                 buffer.Append(c);

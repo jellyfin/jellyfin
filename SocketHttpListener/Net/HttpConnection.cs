@@ -3,19 +3,17 @@ using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
+using Microsoft.Extensions.Logging;
 using SocketHttpListener.Primitives;
-using System.Security.Authentication;
-
-using System.Threading;
 namespace SocketHttpListener.Net
 {
     sealed class HttpConnection

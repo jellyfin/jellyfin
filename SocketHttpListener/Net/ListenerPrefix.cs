@@ -1,6 +1,5 @@
 using System;
 using System.Net;
-using MediaBrowser.Model.Net;
 
 namespace SocketHttpListener.Net
 {

@@ -1,13 +1,11 @@
 using System;
-using System.Collections.Specialized;
-using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
-using HttpStatusCode = SocketHttpListener.Net.HttpStatusCode;
-using HttpVersion = SocketHttpListener.Net.HttpVersion;
-using System.Linq;
 using MediaBrowser.Model.Services;
 using SocketHttpListener.Net;
+using HttpStatusCode = SocketHttpListener.Net.HttpStatusCode;
+using HttpVersion = SocketHttpListener.Net.HttpVersion;
 
 namespace SocketHttpListener
 {
