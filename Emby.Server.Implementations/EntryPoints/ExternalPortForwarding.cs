@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -9,10 +10,9 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Threading;
+using Microsoft.Extensions.Logging;
 using Mono.Nat;
-using System.Threading;
 
 namespace Emby.Server.Implementations.EntryPoints
 {

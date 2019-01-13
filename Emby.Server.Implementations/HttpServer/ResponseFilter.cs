@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Text;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.HttpServer
 {

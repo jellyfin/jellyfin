@@ -1,15 +1,15 @@
-﻿using System.Text;
-using MediaBrowser.Controller.Net;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
-using System;
+﻿using System;
+using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Net;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Text;
-using System.Net.WebSockets;
-using Emby.Server.Implementations.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.HttpServer
 {
