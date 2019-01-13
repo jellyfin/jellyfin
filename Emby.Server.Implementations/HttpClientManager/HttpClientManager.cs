@@ -90,11 +90,9 @@ namespace Emby.Server.Implementations.HttpClientManager
                 throw new ArgumentNullException(nameof(host));
             }
 
-            HttpClientInfo client;
-
             var key = host + enableHttpCompression;
 
-            if (!_httpClients.TryGetValue(key, out client))
+            if (!_httpClients.TryGetValue(key, out var client))
             {
                 client = new HttpClientInfo();
 

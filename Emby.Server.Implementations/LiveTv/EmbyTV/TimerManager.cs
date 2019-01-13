@@ -140,8 +140,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private void StopTimer(TimerInfo item)
         {
-            ITimer timer;
-            if (_timers.TryRemove(item.Id, out timer))
+            if (_timers.TryRemove(item.Id, out var timer))
             {
                 timer.Dispose();
             }

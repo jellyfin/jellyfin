@@ -62,8 +62,7 @@ namespace Emby.Server.Implementations.Services
         {
             if (this.RestPath == null)
             {
-                string contentType;
-                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, out contentType);
+                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, out var contentType);
 
                 if (contentType != null)
                     ResponseContentType = contentType;
@@ -137,9 +136,8 @@ namespace Emby.Server.Implementations.Services
 
         public static object CreateRequest(IRequest httpReq, RestPath restPath, Dictionary<string, string> requestParams, object requestDto)
         {
-            string contentType;
             var pathInfo = !restPath.IsWildCardPath
-                ? GetSanitizedPathInfo(httpReq.PathInfo, out contentType)
+                ? GetSanitizedPathInfo(httpReq.PathInfo, out var contentType)
                 : httpReq.PathInfo;
 
             return restPath.CreateRequest(pathInfo, requestParams, requestDto);
@@ -239,8 +237,7 @@ namespace Emby.Server.Implementations.Services
 
         private static RestPath GetRoute(IRequest req)
         {
-            object route;
-            req.Items.TryGetValue("__route", out route);
+            req.Items.TryGetValue("__route", out var route);
             return route as RestPath;
         }
     }

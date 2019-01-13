@@ -413,10 +413,9 @@ namespace MediaBrowser.Api.Session
         /// <param name="request">The request.</param>
         public Task Post(SendSystemCommand request)
         {
-            GeneralCommandType commandType;
             var name = request.Command;
 
-            if (Enum.TryParse(name, true, out commandType))
+            if (Enum.TryParse(name, true, out GeneralCommandType commandType))
             {
                 name = commandType.ToString();
             }

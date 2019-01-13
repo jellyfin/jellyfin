@@ -83,8 +83,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         long GetTicks(string time)
         {
-            TimeSpan span;
-            return TimeSpan.TryParseExact(time, @"hh\:mm\:ss\.fff", _usCulture, out span)
+            return TimeSpan.TryParseExact(time, @"hh\:mm\:ss\.fff", _usCulture, out var span)
                 ? span.Ticks
                 : (TimeSpan.TryParseExact(time, @"hh\:mm\:ss\,fff", _usCulture, out span)
                 ? span.Ticks : 0);

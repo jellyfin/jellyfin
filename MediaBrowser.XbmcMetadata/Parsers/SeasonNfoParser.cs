@@ -28,9 +28,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(number))
                         {
-                            int num;
-
-                            if (int.TryParse(number, NumberStyles.Integer, CultureInfo.InvariantCulture, out num))
+                            if (int.TryParse(number, NumberStyles.Integer, CultureInfo.InvariantCulture, out var num))
                             {
                                 item.IndexNumber = num;
                             }

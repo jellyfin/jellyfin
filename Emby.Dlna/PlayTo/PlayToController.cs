@@ -98,14 +98,11 @@ namespace Emby.Dlna.PlayTo
         {
             var info = e.Argument;
 
-            string nts;
-            info.Headers.TryGetValue("NTS", out nts);
+            info.Headers.TryGetValue("NTS", out var nts);
 
-            string usn;
-            if (!info.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
+            if (!info.Headers.TryGetValue("USN", out var usn)) usn = string.Empty;
 
-            string nt;
-            if (!info.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
+            if (!info.Headers.TryGetValue("NT", out var nt)) nt = string.Empty;
 
             if (usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
                 !_disposed)
@@ -623,9 +620,7 @@ namespace Emby.Dlna.PlayTo
 
         private Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
         {
-            GeneralCommandType commandType;
-
-            if (Enum.TryParse(command.Name, true, out commandType))
+            if (Enum.TryParse(command.Name, true, out GeneralCommandType commandType))
             {
                 switch (commandType)
                 {
@@ -641,13 +636,9 @@ namespace Emby.Dlna.PlayTo
                         return _device.ToggleMute(cancellationToken);
                     case GeneralCommandType.SetAudioStreamIndex:
                         {
-                            string arg;
-
-                            if (command.Arguments.TryGetValue("Index", out arg))
+                            if (command.Arguments.TryGetValue("Index", out var arg))
                             {
-                                int val;
-
-                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out val))
+                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var val))
                                 {
                                     return SetAudioStreamIndex(val);
                                 }
@@ -659,13 +650,9 @@ namespace Emby.Dlna.PlayTo
                         }
                     case GeneralCommandType.SetSubtitleStreamIndex:
                         {
-                            string arg;
-
-                            if (command.Arguments.TryGetValue("Index", out arg))
+                            if (command.Arguments.TryGetValue("Index", out var arg))
                             {
-                                int val;
-
-                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out val))
+                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var val))
                                 {
                                     return SetSubtitleStreamIndex(val);
                                 }
@@ -677,13 +664,9 @@ namespace Emby.Dlna.PlayTo
                         }
                     case GeneralCommandType.SetVolume:
                         {
-                            string arg;
-
-                            if (command.Arguments.TryGetValue("Volume", out arg))
+                            if (command.Arguments.TryGetValue("Volume", out var arg))
                             {
-                                int volume;
-
-                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out volume))
+                                if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var volume))
                                 {
                                     return _device.SetVolume(volume, cancellationToken);
                                 }
@@ -878,8 +861,7 @@ namespace Emby.Dlna.PlayTo
         {
             var value = values.Get(name);
 
-            int result;
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -891,8 +873,7 @@ namespace Emby.Dlna.PlayTo
         {
             var value = values.Get(name);
 
-            long result;
-            if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
+            if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }

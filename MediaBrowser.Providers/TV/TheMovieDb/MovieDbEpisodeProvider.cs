@@ -71,8 +71,7 @@ namespace MediaBrowser.Providers.TV
                 return result;
             }
 
-            string seriesTmdbId;
-            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out seriesTmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out var seriesTmdbId);
 
             if (string.IsNullOrEmpty(seriesTmdbId))
             {

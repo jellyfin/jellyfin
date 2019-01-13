@@ -1164,25 +1164,21 @@ namespace Emby.Server.Implementations.Data
 
             image.Path = RestorePath(parts[0]);
 
-            long ticks;
-            if (long.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out ticks))
+            if (long.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks))
             {
                 image.DateModified = new DateTime(ticks, DateTimeKind.Utc);
             }
 
-            ImageType type;
-            if (Enum.TryParse(parts[2], true, out type))
+            if (Enum.TryParse(parts[2], true, out ImageType type))
             {
                 image.Type = type;
             }
 
             if (parts.Length >= 5)
             {
-                int width;
-                int height;
-                if (int.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out width))
+                if (int.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out var width))
                 {
-                    if (int.TryParse(parts[4], NumberStyles.Integer, CultureInfo.InvariantCulture, out height))
+                    if (int.TryParse(parts[4], NumberStyles.Integer, CultureInfo.InvariantCulture, out var height))
                     {
                         image.Width = width;
                         image.Height = height;
@@ -1589,8 +1585,7 @@ namespace Emby.Server.Implementations.Data
 
             if (!reader.IsDBNull(index))
             {
-                ProgramAudio audio;
-                if (Enum.TryParse(reader.GetString(index), true, out audio))
+                if (Enum.TryParse(reader.GetString(index), true, out ProgramAudio audio))
                 {
                     item.Audio = audio;
                 }
@@ -1634,9 +1629,7 @@ namespace Emby.Server.Implementations.Data
                     item.LockedFields = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(
                         i =>
                         {
-                            MetadataFields parsedValue;
-
-                            if (Enum.TryParse(i, true, out parsedValue))
+                            if (Enum.TryParse(i, true, out MetadataFields parsedValue))
                             {
                                 return parsedValue;
                             }
@@ -1674,9 +1667,7 @@ namespace Emby.Server.Implementations.Data
                         trailer.TrailerTypes = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(
                             i =>
                             {
-                                TrailerType parsedValue;
-
-                                if (Enum.TryParse(i, true, out parsedValue))
+                                if (Enum.TryParse(i, true, out TrailerType parsedValue))
                                 {
                                     return parsedValue;
                                 }
@@ -1857,8 +1848,7 @@ namespace Emby.Server.Implementations.Data
 
             if (!reader.IsDBNull(index))
             {
-                ExtraType extraType;
-                if (Enum.TryParse(reader.GetString(index), true, out extraType))
+                if (Enum.TryParse(reader.GetString(index), true, out ExtraType extraType))
                 {
                     item.ExtraType = extraType;
                 }
@@ -5149,8 +5139,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
         private IEnumerable<string> MapIncludeItemTypes(string value)
         {
-            string[] result;
-            if (_types.TryGetValue(value, out result))
+            if (_types.TryGetValue(value, out var result))
             {
                 return result;
             }

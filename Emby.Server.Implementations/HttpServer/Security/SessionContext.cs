@@ -31,8 +31,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         private AuthenticationInfo GetTokenInfo(IRequest request)
         {
-            object info;
-            request.Items.TryGetValue("OriginalAuthenticationInfo", out info);
+            request.Items.TryGetValue("OriginalAuthenticationInfo", out var info);
             return info as AuthenticationInfo;
         }
 

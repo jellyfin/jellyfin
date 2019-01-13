@@ -57,8 +57,7 @@ namespace SocketHttpListener.Net
                 int root = p.IndexOf('/', colon, p.Length - colon);
                 string portString = p.Substring(colon + 1, root - colon - 1);
 
-                int port;
-                if (!int.TryParse(portString, out port) || port <= 0 || port >= 65536)
+                if (!int.TryParse(portString, out var port) || port <= 0 || port >= 65536)
                 {
                     throw new HttpListenerException((int)HttpStatusCode.BadRequest, "net_invalid_port");
                 }

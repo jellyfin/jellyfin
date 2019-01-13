@@ -89,8 +89,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             var progress = e.Argument.Item2;
 
-            DateTime lastMessageSendTime;
-            if (_lastProgressMessageTimes.TryGetValue(item.Id, out lastMessageSendTime))
+            if (_lastProgressMessageTimes.TryGetValue(item.Id, out var lastMessageSendTime))
             {
                 if (progress > 0 && progress < 100 && (DateTime.UtcNow - lastMessageSendTime).TotalMilliseconds < 1000)
                 {

@@ -74,9 +74,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     (i + 1 < parts.Length))
                 {
                     var rate = parts[i + 1];
-                    float val;
 
-                    if (float.TryParse(rate, NumberStyles.Any, _usCulture, out val))
+                    if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
                     {
                         framerate = val;
                     }
@@ -85,9 +84,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     part.StartsWith("time=", StringComparison.OrdinalIgnoreCase))
                 {
                     var time = part.Split(new[] { '=' }, 2).Last();
-                    TimeSpan val;
 
-                    if (TimeSpan.TryParse(time, _usCulture, out val))
+                    if (TimeSpan.TryParse(time, _usCulture, out var val))
                     {
                         var currentMs = startMs + val.TotalMilliseconds;
 
@@ -110,9 +108,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     if (scale.HasValue)
                     {
-                        long val;
-
-                        if (long.TryParse(size, NumberStyles.Any, _usCulture, out val))
+                        if (long.TryParse(size, NumberStyles.Any, _usCulture, out var val))
                         {
                             bytesTranscoded = val * scale.Value;
                         }
@@ -131,9 +127,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     if (scale.HasValue)
                     {
-                        float val;
-
-                        if (float.TryParse(rate, NumberStyles.Any, _usCulture, out val))
+                        if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
                         {
                             bitRate = (int)Math.Ceiling(val * scale.Value);
                         }

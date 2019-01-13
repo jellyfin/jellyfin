@@ -395,8 +395,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private async Task<EpgChannelData> GetEpgChannels(IListingsProvider provider, ListingsProviderInfo info, bool enableCache, CancellationToken cancellationToken)
         {
-            EpgChannelData result;
-            if (!enableCache || !_epgChannels.TryGetValue(info.Id, out result))
+            if (!enableCache || !_epgChannels.TryGetValue(info.Id, out var result))
             {
                 var channels = await provider.GetChannels(info, cancellationToken).ConfigureAwait(false);
 
@@ -652,9 +651,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     TimerCancelled(this, new GenericEventArgs<string>(timerId));
                 }
             }
-            ActiveRecordingInfo activeRecordingInfo;
 
-            if (_activeRecordings.TryGetValue(timerId, out activeRecordingInfo))
+            if (_activeRecordings.TryGetValue(timerId, out var activeRecordingInfo))
             {
                 activeRecordingInfo.Timer = timer;
                 activeRecordingInfo.CancellationTokenSource.Cancel();
@@ -821,8 +819,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             // Only update if not currently active
-            ActiveRecordingInfo activeRecordingInfo;
-            if (!_activeRecordings.TryGetValue(updatedTimer.Id, out activeRecordingInfo))
+            if (!_activeRecordings.TryGetValue(updatedTimer.Id, out var activeRecordingInfo))
             {
                 existingTimer.PrePaddingSeconds = updatedTimer.PrePaddingSeconds;
                 existingTimer.PostPaddingSeconds = updatedTimer.PostPaddingSeconds;
@@ -864,9 +861,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public string GetActiveRecordingPath(string id)
         {
-            ActiveRecordingInfo info;
-
-            if (_activeRecordings.TryGetValue(id, out info))
+            if (_activeRecordings.TryGetValue(id, out var info))
             {
                 return info.Path;
             }
@@ -1440,8 +1435,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             TriggerRefresh(recordPath);
             _libraryMonitor.ReportFileSystemChangeComplete(recordPath, false);
 
-            ActiveRecordingInfo removed;
-            _activeRecordings.TryRemove(timer.Id, out removed);
+            _activeRecordings.TryRemove(timer.Id, out var removed);
 
             if (recordingStatus != RecordingStatus.Completed && DateTime.UtcNow < timer.EndDate && timer.RetryCount < 10)
             {
@@ -2007,8 +2001,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     writer.WriteStartDocument(true);
                     writer.WriteStartElement("tvshow");
 
-                    string id;
-                    if (timer.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out id))
+                    if (timer.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out var id))
                     {
                         writer.WriteElementString("id", id);
                     }
@@ -2417,8 +2410,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     {
                         // Only update if not currently active - test both new timer and existing in case Id's are different
                         // Id's could be different if the timer was created manually prior to series timer creation
-                        ActiveRecordingInfo activeRecordingInfo;
-                        if (!_activeRecordings.TryGetValue(timer.Id, out activeRecordingInfo) && !_activeRecordings.TryGetValue(existingTimer.Id, out activeRecordingInfo))
+                        if (!_activeRecordings.TryGetValue(timer.Id, out var activeRecordingInfo) && !_activeRecordings.TryGetValue(existingTimer.Id, out activeRecordingInfo))
                         {
                             UpdateExistingTimerWithNewMetadata(existingTimer, timer);
 
@@ -2521,9 +2513,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (string.IsNullOrWhiteSpace(channelId) && !parent.ChannelId.Equals(Guid.Empty))
             {
-                LiveTvChannel channel;
-
-                if (!tempChannelCache.TryGetValue(parent.ChannelId, out channel))
+                if (!tempChannelCache.TryGetValue(parent.ChannelId, out var channel))
                 {
                     channel = _libraryManager.GetItemList(new InternalItemsQuery
                     {
@@ -2582,9 +2572,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (!programInfo.ChannelId.Equals(Guid.Empty))
             {
-                LiveTvChannel channel;
-
-                if (!tempChannelCache.TryGetValue(programInfo.ChannelId, out channel))
+                if (!tempChannelCache.TryGetValue(programInfo.ChannelId, out var channel))
                 {
                     channel = _libraryManager.GetItemList(new InternalItemsQuery
                     {

@@ -228,8 +228,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetOption(string name)
         {
-            string value;
-            if (StreamOptions.TryGetValue(name, out value))
+            if (StreamOptions.TryGetValue(name, out var value))
             {
                 return value;
             }

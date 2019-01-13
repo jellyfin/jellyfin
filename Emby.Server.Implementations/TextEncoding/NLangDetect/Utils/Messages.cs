@@ -18,10 +18,8 @@ namespace NLangDetect.Core.Utils
 
         public static string getString(string key)
         {
-            string value;
-
             return
-              _messages.TryGetValue(key, out value)
+              _messages.TryGetValue(key, out var value)
                 ? value
                 : string.Format("!{0}!", key);
         }

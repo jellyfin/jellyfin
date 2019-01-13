@@ -239,9 +239,7 @@ namespace Emby.Dlna
                 return false;
             }
 
-            string value;
-
-            if (headers.TryGetValue(header.Name, out value))
+            if (headers.TryGetValue(header.Name, out var value))
             {
                 switch (header.Match)
                 {
@@ -288,8 +286,7 @@ namespace Emby.Dlna
         {
             lock (_profiles)
             {
-                Tuple<InternalProfileInfo, DeviceProfile> profileTuple;
-                if (_profiles.TryGetValue(path, out profileTuple))
+                if (_profiles.TryGetValue(path, out var profileTuple))
                 {
                     return profileTuple.Item2;
                 }

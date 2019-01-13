@@ -69,9 +69,7 @@ namespace MediaBrowser.Model.Drawing
 
                 if (parts.Length == 2)
                 {
-                    double val;
-
-                    if (double.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out val))
+                    if (double.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var val))
                     {
                         _width = val;
                     }

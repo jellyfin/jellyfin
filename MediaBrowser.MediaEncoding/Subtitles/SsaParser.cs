@@ -288,8 +288,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private static bool IsInteger(string s)
         {
-            int i;
-            if (int.TryParse(s, out i))
+            if (int.TryParse(s, out var i))
                 return true;
             return false;
         }

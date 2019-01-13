@@ -413,8 +413,7 @@ namespace MediaBrowser.Providers.Music
                             case "date":
                                 {
                                     var val = reader.ReadElementContentAsString();
-                                    DateTime date;
-                                    if (DateTime.TryParse(val, out date))
+                                    if (DateTime.TryParse(val, out var date))
                                     {
                                         result.Year = date.Year;
                                     }

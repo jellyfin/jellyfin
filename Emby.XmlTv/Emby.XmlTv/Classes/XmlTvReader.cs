@@ -140,8 +140,7 @@ namespace Emby.XmlTv.Classes
         private void SetChannelNumber(XmlTvChannel channel, string value)
         {
             value = value.Replace("-", ".");
-            double number;
-            if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out number))
+            if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
             {
                 channel.Number = value;
             }
@@ -426,8 +425,7 @@ namespace Emby.XmlTv.Classes
                 if (textValue.Contains("/"))
                 {
                     var components = textValue.Split('/');
-                    float value;
-                    if (float.TryParse(components[0], out value))
+                    if (float.TryParse(components[0], out var value))
                     {
                         result.StarRating = value;
                     }
@@ -1053,8 +1051,7 @@ namespace Emby.XmlTv.Classes
                 }
 
                 var standardDate = string.Format("{0} {1}", dateComponent, dateOffset);
-                DateTimeOffset parsedDateTime;
-                if (DateTimeOffset.TryParseExact(standardDate, "yyyyMMddHHmmss zzz", CultureInfo.CurrentCulture, DateTimeStyles.None, out parsedDateTime))
+                if (DateTimeOffset.TryParseExact(standardDate, "yyyyMMddHHmmss zzz", CultureInfo.CurrentCulture, DateTimeStyles.None, out var parsedDateTime))
                 {
                     return parsedDateTime.ToUniversalTime();
                 }

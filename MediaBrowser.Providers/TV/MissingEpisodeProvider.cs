@@ -76,13 +76,9 @@ namespace MediaBrowser.Providers.TV
 
                     if (parts.Length == 3)
                     {
-                        int seasonNumber;
-
-                        if (int.TryParse(parts[1], NumberStyles.Integer, _usCulture, out seasonNumber))
+                        if (int.TryParse(parts[1], NumberStyles.Integer, _usCulture, out var seasonNumber))
                         {
-                            int episodeNumber;
-
-                            if (int.TryParse(parts[2], NumberStyles.Integer, _usCulture, out episodeNumber))
+                            if (int.TryParse(parts[2], NumberStyles.Integer, _usCulture, out var episodeNumber))
                             {
                                 return new ValueTuple<int, int>(seasonNumber, episodeNumber);
                             }
@@ -506,8 +502,7 @@ namespace MediaBrowser.Providers.TV
 
                                             if (!string.IsNullOrWhiteSpace(val))
                                             {
-                                                DateTime date;
-                                                if (DateTime.TryParse(val, out date))
+                                                if (DateTime.TryParse(val, out var date))
                                                 {
                                                     airDate = date.ToUniversalTime();
                                                 }

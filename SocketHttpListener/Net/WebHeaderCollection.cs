@@ -208,8 +208,7 @@ namespace SocketHttpListener.Net
             if (!IsHeaderName(headerName))
                 throw new ArgumentException("Invalid character in header");
 
-            HeaderInfo info;
-            if (!headers.TryGetValue(headerName, out info))
+            if (!headers.TryGetValue(headerName, out var info))
                 return false;
 
             var flag = response ? HeaderInfo.Response : HeaderInfo.Request;
@@ -313,8 +312,7 @@ namespace SocketHttpListener.Net
             if (headerName == null)
                 return false;
 
-            HeaderInfo info;
-            return headers.TryGetValue(headerName, out info) && (info & HeaderInfo.MultiValue) != 0;
+            return headers.TryGetValue(headerName, out var info) && (info & HeaderInfo.MultiValue) != 0;
         }
 
         internal static bool IsHeaderValue(string value)

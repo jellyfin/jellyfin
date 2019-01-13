@@ -50,11 +50,9 @@ namespace MediaBrowser.Controller.Entities
 
         public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
-            int year;
-
             var usCulture = new CultureInfo("en-US");
 
-            if (!int.TryParse(Name, NumberStyles.Integer, usCulture, out year))
+            if (!int.TryParse(Name, NumberStyles.Integer, usCulture, out var year))
             {
                 return new List<BaseItem>();
             }
@@ -66,9 +64,7 @@ namespace MediaBrowser.Controller.Entities
 
         public int? GetYearValue()
         {
-            int i;
-
-            if (int.TryParse(Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out i))
+            if (int.TryParse(Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i))
             {
                 return i;
             }

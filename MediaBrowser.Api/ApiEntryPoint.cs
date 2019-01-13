@@ -101,8 +101,7 @@ namespace MediaBrowser.Api
         {
             lock (_transcodingLocks)
             {
-                SemaphoreSlim result;
-                if (!_transcodingLocks.TryGetValue(outputPath, out result))
+                if (!_transcodingLocks.TryGetValue(outputPath, out var result))
                 {
                     result = new SemaphoreSlim(1, 1);
                     _transcodingLocks[outputPath] = result;

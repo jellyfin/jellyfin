@@ -63,9 +63,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         var val = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            int num;
-
-                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out num))
+                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var num))
                             {
                                 item.PlayersSupported = num;
                             }

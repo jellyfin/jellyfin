@@ -31,10 +31,9 @@ namespace DvdLib.Ifo
                 foreach (var ifo in allIfos)
                 {
                     var num = ifo.Name.Split('_').ElementAtOrDefault(1);
-                    ushort ifoNumber;
                     var numbersRead = new List<ushort>();
 
-                    if (!string.IsNullOrEmpty(num) && ushort.TryParse(num, out ifoNumber) && !numbersRead.Contains(ifoNumber))
+                    if (!string.IsNullOrEmpty(num) && ushort.TryParse(num, out var ifoNumber) && !numbersRead.Contains(ifoNumber))
                     {
                         ReadVTS(ifoNumber, ifo.FullName);
                         numbersRead.Add(ifoNumber);

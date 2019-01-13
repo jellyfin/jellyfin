@@ -129,8 +129,7 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            int expected;
-            if (int.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out expected))
+            if (int.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
             {
                 switch (condition.Condition)
                 {
@@ -184,8 +183,7 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            bool expected;
-            if (bool.TryParse(condition.Value, out expected))
+            if (bool.TryParse(condition.Value, out var expected))
             {
                 switch (condition.Condition)
                 {
@@ -209,8 +207,7 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            float expected;
-            if (float.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out expected))
+            if (float.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
             {
                 switch (condition.Condition)
                 {
@@ -238,8 +235,7 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            double expected;
-            if (double.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out expected))
+            if (double.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
             {
                 switch (condition.Condition)
                 {

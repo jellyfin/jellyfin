@@ -197,9 +197,7 @@ namespace MediaBrowser.Providers.TV
                             {
                                 var val = reader.ReadElementContentAsString() ?? string.Empty;
 
-                                double rval;
-
-                                if (double.TryParse(val, NumberStyles.Any, _usCulture, out rval))
+                                if (double.TryParse(val, NumberStyles.Any, _usCulture, out var rval))
                                 {
                                     rating = rval;
                                 }
@@ -211,9 +209,7 @@ namespace MediaBrowser.Providers.TV
                             {
                                 var val = reader.ReadElementContentAsString() ?? string.Empty;
 
-                                int rval;
-
-                                if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var rval))
                                 {
                                     voteCount = rval;
                                 }
@@ -255,9 +251,7 @@ namespace MediaBrowser.Providers.TV
 
                                 if (resolutionParts.Length == 2)
                                 {
-                                    int rval;
-
-                                    if (int.TryParse(resolutionParts[0], NumberStyles.Integer, _usCulture, out rval))
+                                    if (int.TryParse(resolutionParts[0], NumberStyles.Integer, _usCulture, out var rval))
                                     {
                                         width = rval;
                                     }

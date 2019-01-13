@@ -932,9 +932,8 @@ namespace SocketHttpListener
         /// </param>
         public static Uri ToUri(this string uriString)
         {
-            Uri res;
             return Uri.TryCreate(
-                     uriString, uriString.MaybeUri() ? UriKind.Absolute : UriKind.Relative, out res)
+                     uriString, uriString.MaybeUri() ? UriKind.Absolute : UriKind.Relative, out var res)
                    ? res
                    : null;
         }

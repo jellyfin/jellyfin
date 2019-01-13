@@ -33,8 +33,7 @@ namespace Emby.Server.Implementations.Serialization
             var key = type.FullName;
             lock (_serializers)
             {
-                XmlSerializer serializer;
-                if (!_serializers.TryGetValue(key, out serializer))
+                if (!_serializers.TryGetValue(key, out var serializer))
                 {
                     serializer = new XmlSerializer(type);
                     _serializers[key] = serializer;

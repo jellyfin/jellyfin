@@ -94,10 +94,8 @@ namespace MediaBrowser.Providers.TV
 
                                     if (!string.IsNullOrWhiteSpace(val))
                                     {
-                                        int rval;
-
                                         // int.TryParse is local aware, so it can be probamatic, force us culture
-                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var rval))
                                         {
                                             width = rval;
                                         }
@@ -111,10 +109,8 @@ namespace MediaBrowser.Providers.TV
 
                                     if (!string.IsNullOrWhiteSpace(val))
                                     {
-                                        int rval;
-
                                         // int.TryParse is local aware, so it can be probamatic, force us culture
-                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var rval))
                                         {
                                             height = rval;
                                         }

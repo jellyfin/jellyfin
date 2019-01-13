@@ -659,8 +659,7 @@ namespace MediaBrowser.Api.Images
         {
             if (!string.IsNullOrWhiteSpace(request.Format))
             {
-                ImageFormat format;
-                if (Enum.TryParse(request.Format, true, out format))
+                if (Enum.TryParse(request.Format, true, out ImageFormat format))
                 {
                     return new ImageFormat[] { format };
                 }

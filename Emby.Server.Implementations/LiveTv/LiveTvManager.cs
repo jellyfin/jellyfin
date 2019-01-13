@@ -528,8 +528,7 @@ namespace Emby.Server.Implementations.LiveTv
             var isNew = false;
             var forceUpdate = false;
 
-            LiveTvProgram item;
-            if (!allExistingPrograms.TryGetValue(id, out item))
+            if (!allExistingPrograms.TryGetValue(id, out var item))
             {
                 isNew = true;
                 item = new LiveTvProgram
@@ -1940,8 +1939,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 foreach (var programDto in currentProgramDtos)
                 {
-                    BaseItemDto channelDto;
-                    if (currentChannelsDict.TryGetValue(programDto.ChannelId, out channelDto))
+                    if (currentChannelsDict.TryGetValue(programDto.ChannelId, out var channelDto))
                     {
                         channelDto.CurrentProgram = programDto;
                     }

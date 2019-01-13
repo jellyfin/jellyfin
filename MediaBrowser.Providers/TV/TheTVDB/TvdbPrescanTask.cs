@@ -161,9 +161,7 @@ namespace MediaBrowser.Providers.TV
 
                 newUpdateTime = seriesToUpdate.Item2;
 
-                long lastUpdateValue;
-
-                long.TryParse(lastUpdateTime, NumberStyles.Any, UsCulture, out lastUpdateValue);
+                long.TryParse(lastUpdateTime, NumberStyles.Any, UsCulture, out var lastUpdateValue);
 
                 var nullableUpdateValue = lastUpdateValue == 0 ? (long?)null : lastUpdateValue;
 

@@ -203,11 +203,9 @@ namespace Emby.Server.Implementations.Networking
         private Dictionary<string, List<string>> _subnetLookup = new Dictionary<string, List<string>>(StringComparer.Ordinal);
         private List<string> GetSubnets(string endpointFirstPart)
         {
-            List<string> subnets;
-
             lock (_subnetLookup)
             {
-                if (_subnetLookup.TryGetValue(endpointFirstPart, out subnets))
+                if (_subnetLookup.TryGetValue(endpointFirstPart, out var subnets))
                 {
                     return subnets;
                 }
@@ -298,8 +296,7 @@ namespace Emby.Server.Implementations.Networking
                 throw new ArgumentNullException(nameof(endpoint));
             }
 
-            IPAddress address;
-            if (IPAddress.TryParse(endpoint, out address))
+            if (IPAddress.TryParse(endpoint, out var address))
             {
                 var addressString = address.ToString();
 
@@ -348,8 +345,7 @@ namespace Emby.Server.Implementations.Networking
             }
             else if (resolveHost)
             {
-                Uri uri;
-                if (Uri.TryCreate(endpoint, UriKind.RelativeOrAbsolute, out uri))
+                if (Uri.TryCreate(endpoint, UriKind.RelativeOrAbsolute, out var uri))
                 {
                     try
                     {
@@ -588,9 +584,7 @@ namespace Emby.Server.Implementations.Networking
         /// <exception cref="FormatException"></exception>
         private static int GetPort(string p)
         {
-            int port;
-
-            if (!int.TryParse(p, out port)
+            if (!int.TryParse(p, out var port)
              || port < IPEndPoint.MinPort
              || port > IPEndPoint.MaxPort)
             {
@@ -618,8 +612,7 @@ namespace Emby.Server.Implementations.Networking
 
         public IpAddressInfo ParseIpAddress(string ipAddress)
         {
-            IpAddressInfo info;
-            if (TryParseIpAddress(ipAddress, out info))
+            if (TryParseIpAddress(ipAddress, out var info))
             {
                 return info;
             }
@@ -629,8 +622,7 @@ namespace Emby.Server.Implementations.Networking
 
         public bool TryParseIpAddress(string ipAddress, out IpAddressInfo ipAddressInfo)
         {
-            IPAddress address;
-            if (IPAddress.TryParse(ipAddress, out address))
+            if (IPAddress.TryParse(ipAddress, out var address))
             {
                 ipAddressInfo = ToIpAddressInfo(address);
                 return true;

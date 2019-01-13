@@ -968,8 +968,7 @@ namespace MediaBrowser.Providers.Manager
         {
             lock (_activeRefreshes)
             {
-                double value;
-                if (_activeRefreshes.TryGetValue(id, out value))
+                if (_activeRefreshes.TryGetValue(id, out var value))
                 {
                     return value;
                 }
@@ -1029,7 +1028,6 @@ namespace MediaBrowser.Providers.Manager
 
         private async Task StartProcessingRefreshQueue()
         {
-            Tuple<Guid, MetadataRefreshOptions> refreshItem;
             var libraryManager = _libraryManagerFactory();
 
             if (_disposed)
@@ -1039,7 +1037,7 @@ namespace MediaBrowser.Providers.Manager
 
             var cancellationToken = _disposeCancellationTokenSource.Token;
 
-            while (_refreshQueue.TryDequeue(out refreshItem))
+            while (_refreshQueue.TryDequeue(out var refreshItem))
             {
                 if (_disposed)
                 {

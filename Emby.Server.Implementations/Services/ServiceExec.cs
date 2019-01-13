@@ -73,8 +73,7 @@ namespace Emby.Server.Implementations.Services
         {
             var actionName = request.Verb ?? "POST";
 
-            ServiceMethod actionContext;
-            if (ServiceExecGeneral.execMap.TryGetValue(ServiceMethod.Key(serviceType, actionName, requestName), out actionContext))
+            if (ServiceExecGeneral.execMap.TryGetValue(ServiceMethod.Key(serviceType, actionName, requestName), out var actionContext))
             {
                 if (actionContext.RequestFilters != null)
                 {

@@ -102,9 +102,7 @@ namespace MediaBrowser.Common.Net
 
         private string GetHeaderValue(string name)
         {
-            string value;
-
-            RequestHeaders.TryGetValue(name, out value);
+            RequestHeaders.TryGetValue(name, out var value);
 
             return value;
         }

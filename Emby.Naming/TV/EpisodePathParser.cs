@@ -122,8 +122,7 @@ namespace Emby.Naming.TV
                 }
                 else if (expression.IsNamed)
                 {
-                    int num;
-                    if (int.TryParse(match.Groups["seasonnumber"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out num))
+                    if (int.TryParse(match.Groups["seasonnumber"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var num))
                     {
                         result.SeasonNumber = num;
                     }
@@ -154,8 +153,7 @@ namespace Emby.Naming.TV
                 }
                 else
                 {
-                    int num;
-                    if (int.TryParse(match.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out num))
+                    if (int.TryParse(match.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var num))
                     {
                         result.SeasonNumber = num;
                     }

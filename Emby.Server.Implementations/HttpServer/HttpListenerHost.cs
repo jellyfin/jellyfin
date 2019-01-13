@@ -124,8 +124,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public Type GetServiceTypeByRequest(Type requestType)
         {
-            Type serviceType;
-            ServiceOperationsMap.TryGetValue(requestType, out serviceType);
+            ServiceOperationsMap.TryGetValue(requestType, out var serviceType);
             return serviceType;
         }
 
@@ -215,8 +214,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             var exceptionType = ex.GetType();
 
-            int statusCode;
-            if (!_mapExceptionToStatusCode.TryGetValue(exceptionType, out statusCode))
+            if (!_mapExceptionToStatusCode.TryGetValue(exceptionType, out var statusCode))
             {
                 if (ex is DirectoryNotFoundException)
                 {
@@ -704,8 +702,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return null;
             }
 
-            string contentType;
-            var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, out contentType);
+            var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, out var contentType);
 
             if (restPath != null)
             {
@@ -731,8 +728,7 @@ namespace Emby.Server.Implementations.HttpServer
         private void RedirectToSecureUrl(IHttpRequest httpReq, IResponse httpRes, string url)
         {
             int currentPort;
-            Uri uri;
-            if (Uri.TryCreate(url, UriKind.Absolute, out uri))
+            if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
             {
                 currentPort = uri.Port;
                 var builder = new UriBuilder(uri);

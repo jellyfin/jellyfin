@@ -86,10 +86,8 @@ namespace MediaBrowser.Providers.Movies
 
                 if (!string.IsNullOrWhiteSpace(obj.release_date))
                 {
-                    DateTime r;
-
                     // These dates are always in this exact format
-                    if (DateTime.TryParse(obj.release_date, _usCulture, DateTimeStyles.None, out r))
+                    if (DateTime.TryParse(obj.release_date, _usCulture, DateTimeStyles.None, out var r))
                     {
                         remoteResult.PremiereDate = r.ToUniversalTime();
                         remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;

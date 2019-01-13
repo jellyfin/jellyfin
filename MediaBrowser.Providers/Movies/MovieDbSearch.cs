@@ -180,10 +180,8 @@ namespace MediaBrowser.Providers.Movies
 
                             if (!string.IsNullOrWhiteSpace(i.release_date))
                             {
-                                DateTime r;
-
                                 // These dates are always in this exact format
-                                if (DateTime.TryParseExact(i.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
+                                if (DateTime.TryParseExact(i.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out var r))
                                 {
                                     remoteResult.PremiereDate = r.ToUniversalTime();
                                     remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
@@ -235,10 +233,8 @@ namespace MediaBrowser.Providers.Movies
 
                             if (!string.IsNullOrWhiteSpace(i.first_air_date))
                             {
-                                DateTime r;
-
                                 // These dates are always in this exact format
-                                if (DateTime.TryParseExact(i.first_air_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
+                                if (DateTime.TryParseExact(i.first_air_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out var r))
                                 {
                                     remoteResult.PremiereDate = r.ToUniversalTime();
                                     remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;

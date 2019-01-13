@@ -82,9 +82,7 @@ namespace Emby.Dlna.Eventing
                 // Starts with SECOND-
                 header = header.Split('-').Last();
 
-                int val;
-
-                if (int.TryParse(header, NumberStyles.Integer, _usCulture, out val))
+                if (int.TryParse(header, NumberStyles.Integer, _usCulture, out var val))
                 {
                     return val;
                 }
@@ -97,8 +95,7 @@ namespace Emby.Dlna.Eventing
         {
             _logger.LogDebug("Cancelling event subscription {0}", subscriptionId);
 
-            EventSubscription sub;
-            _subscriptions.TryRemove(subscriptionId, out sub);
+            _subscriptions.TryRemove(subscriptionId, out var sub);
 
             return new EventSubscriptionResponse
             {
@@ -129,9 +126,7 @@ namespace Emby.Dlna.Eventing
 
         private EventSubscription GetSubscription(string id, bool throwOnMissing)
         {
-            EventSubscription e;
-
-            if (!_subscriptions.TryGetValue(id, out e) && throwOnMissing)
+            if (!_subscriptions.TryGetValue(id, out var e) && throwOnMissing)
             {
                 throw new ResourceNotFoundException("Event with Id " + id + " not found.");
             }

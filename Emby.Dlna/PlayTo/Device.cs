@@ -589,9 +589,7 @@ namespace Emby.Dlna.PlayTo
 
             if (transportStateValue != null)
             {
-                TRANSPORTSTATE state;
-
-                if (Enum.TryParse(transportStateValue, true, out state))
+                if (Enum.TryParse(transportStateValue, true, out TRANSPORTSTATE state))
                 {
                     return state;
                 }

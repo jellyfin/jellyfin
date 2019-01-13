@@ -56,9 +56,8 @@ namespace Emby.Server.Implementations.HttpServer
                 }
 
                 // Content length has to be explicitly set on on HttpListenerResponse or it won't be happy
-                string contentLength;
 
-                if (hasHeaders.Headers.TryGetValue("Content-Length", out contentLength) && !string.IsNullOrEmpty(contentLength))
+                if (hasHeaders.Headers.TryGetValue("Content-Length", out var contentLength) && !string.IsNullOrEmpty(contentLength))
                 {
                     var length = long.Parse(contentLength, UsCulture);
 

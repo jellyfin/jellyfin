@@ -277,8 +277,7 @@ namespace SocketHttpListener.Net
         public bool BindContext(HttpListenerContext context)
         {
             var req = context.Request;
-            ListenerPrefix prefix;
-            var listener = SearchListener(req.Url, out prefix);
+            var listener = SearchListener(req.Url, out var prefix);
             if (listener == null)
                 return false;
 

@@ -103,8 +103,7 @@ namespace Emby.Server.Implementations.IO
             // But if we make this delay too high, we risk missing legitimate changes, such as user adding a new file, or hand-editing metadata
             await Task.Delay(45000).ConfigureAwait(false);
 
-            string val;
-            _tempIgnoredPaths.TryRemove(path, out val);
+            _tempIgnoredPaths.TryRemove(path, out var val);
 
             if (refreshPath)
             {
@@ -365,9 +364,7 @@ namespace Emby.Server.Implementations.IO
         /// <param name="path">The path.</param>
         private void StopWatchingPath(string path)
         {
-            FileSystemWatcher watcher;
-
-            if (_fileSystemWatchers.TryGetValue(path, out watcher))
+            if (_fileSystemWatchers.TryGetValue(path, out var watcher))
             {
                 DisposeWatcher(watcher, true);
             }
@@ -424,9 +421,7 @@ namespace Emby.Server.Implementations.IO
         /// <param name="watcher">The watcher.</param>
         private void RemoveWatcherFromList(FileSystemWatcher watcher)
         {
-            FileSystemWatcher removed;
-
-            _fileSystemWatchers.TryRemove(watcher.Path, out removed);
+            _fileSystemWatchers.TryRemove(watcher.Path, out var removed);
         }
 
         /// <summary>

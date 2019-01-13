@@ -98,8 +98,7 @@ namespace Emby.Server.Implementations.Devices
         {
             lock (_capabilitiesSyncLock)
             {
-                ClientCapabilities result;
-                if (_capabilitiesCache.TryGetValue(id, out result))
+                if (_capabilitiesCache.TryGetValue(id, out var result))
                 {
                     return result;
                 }

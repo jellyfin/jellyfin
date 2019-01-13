@@ -68,9 +68,8 @@ namespace Emby.Server.Implementations.Security
         public void RemoveRegCheck(string featureId)
         {
             var key = GetKey(featureId);
-            FeatureRegInfo val;
 
-            _updateRecords.TryRemove(key, out val);
+            _updateRecords.TryRemove(key, out var val);
 
             Save();
         }
@@ -135,13 +134,11 @@ namespace Emby.Server.Implementations.Security
                         continue;
                     }
 
-                    Guid feat;
-                    if (Guid.TryParse(line, out feat))
+                    if (Guid.TryParse(line, out var feat))
                     {
                         var lineParts = contents[i + 1].Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
 
-                        long ticks;
-                        if (long.TryParse(lineParts[0], out ticks))
+                        if (long.TryParse(lineParts[0], out var ticks))
                         {
                             var info = new FeatureRegInfo
                             {

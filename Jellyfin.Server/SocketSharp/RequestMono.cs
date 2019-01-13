@@ -148,9 +148,7 @@ namespace Jellyfin.SocketSharp
 
         internal static bool IsInvalidString(string val)
         {
-            int validationFailureIndex;
-
-            return IsInvalidString(val, out validationFailureIndex);
+            return IsInvalidString(val, out var validationFailureIndex);
         }
 
         internal static bool IsInvalidString(string val, out int validationFailureIndex)

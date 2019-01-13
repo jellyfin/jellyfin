@@ -26,8 +26,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         public AuthorizationInfo GetAuthorizationInfo(IRequest requestContext)
         {
-            object cached;
-            if (requestContext.Items.TryGetValue("AuthorizationInfo", out cached))
+            if (requestContext.Items.TryGetValue("AuthorizationInfo", out var cached))
             {
                 return (AuthorizationInfo)cached;
             }
