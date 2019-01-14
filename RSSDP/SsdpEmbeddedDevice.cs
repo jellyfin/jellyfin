@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Rssdp
+﻿namespace Rssdp
 {
 	/// <summary>
 	/// Represents a device that is a descendant of a <see cref="SsdpRootDevice"/> instance.

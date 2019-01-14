@@ -31,7 +31,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Net;
 using Mono.Nat.Pmp;
 using System.Net.NetworkInformation;

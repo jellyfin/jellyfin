@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using MediaBrowser.Model.Events;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Tasks;
 

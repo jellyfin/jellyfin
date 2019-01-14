@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.ScheduledTasks

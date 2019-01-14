@@ -1,6 +1,4 @@
 ﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dlna;
-using Emby.Dlna.Server;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -11,7 +9,6 @@ using System.Xml;
 using Emby.Dlna.Didl;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Xml;
-using MediaBrowser.Model.Extensions;
 
 namespace Emby.Dlna.Service
 {

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
 using System.Threading;

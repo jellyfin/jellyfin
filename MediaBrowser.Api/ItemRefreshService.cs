@@ -1,10 +1,6 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
-using System.Threading;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Services;

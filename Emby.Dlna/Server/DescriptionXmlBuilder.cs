@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Security;
 using System.Text;
 
 namespace Emby.Dlna.Server

@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Linq;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Extensions;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Providers.BoxSets

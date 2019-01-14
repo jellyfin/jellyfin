@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Dto;
 using System;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Model.LiveTv
 {

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MediaBrowser.Model.Tasks
+﻿namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
     /// Class TaskInfo

@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV

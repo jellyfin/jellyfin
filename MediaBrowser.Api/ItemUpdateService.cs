@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.IO;

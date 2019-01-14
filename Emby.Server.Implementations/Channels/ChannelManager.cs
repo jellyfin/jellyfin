@@ -9,10 +9,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -20,7 +17,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Progress;
@@ -28,10 +24,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Tasks;
 
 namespace Emby.Server.Implementations.Channels
 {

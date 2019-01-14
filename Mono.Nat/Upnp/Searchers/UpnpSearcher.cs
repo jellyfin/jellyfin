@@ -29,13 +29,8 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Net;
 using Mono.Nat.Upnp;
-using System.Diagnostics;
-using System.Net.Sockets;
-using System.Net.NetworkInformation;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Dlna;

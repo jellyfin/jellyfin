@@ -18,7 +18,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Dto;

@@ -5,10 +5,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Providers.Manager;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities;
 

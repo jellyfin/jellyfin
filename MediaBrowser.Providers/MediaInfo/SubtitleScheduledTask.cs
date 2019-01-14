@@ -1,8 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
@@ -13,11 +11,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.MediaInfo
 {

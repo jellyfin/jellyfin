@@ -1,6 +1,4 @@
 ﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Connect;
-using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;

@@ -9,12 +9,9 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Common.Configuration;
 
 namespace Emby.Server.Implementations.LiveTv

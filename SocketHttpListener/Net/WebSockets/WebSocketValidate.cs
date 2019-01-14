@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
-using MediaBrowser.Model.Net;
 using System.Globalization;
 using WebSocketState = System.Net.WebSockets.WebSocketState;
 

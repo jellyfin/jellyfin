@@ -5,8 +5,6 @@ using Microsoft.Extensions.Logging;
 using MediaBrowser.XbmcMetadata.Parsers;
 using System.IO;
 using System.Threading;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
 

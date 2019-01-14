@@ -4,12 +4,10 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 using System;
-using System.IO;
 using System.Linq;
 
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Audio
 {

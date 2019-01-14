@@ -14,8 +14,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Extensions;
-using System.Collections.Generic;
 
 namespace Emby.Server.Implementations.LiveTv
 {

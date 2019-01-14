@@ -31,16 +31,12 @@ using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
 using Emby.Server.Implementations.ScheduledTasks;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Net;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
-using MediaBrowser.Common.Configuration;
-
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Tasks;

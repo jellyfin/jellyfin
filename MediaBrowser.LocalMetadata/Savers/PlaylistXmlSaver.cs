@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
-using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using MediaBrowser.Model.IO;

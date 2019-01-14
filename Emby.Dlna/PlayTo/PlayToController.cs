@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -9,7 +9,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -20,8 +19,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Extensions;
-using System.Net.Http;
 using MediaBrowser.Model.Services;
 
 namespace Emby.Dlna.PlayTo

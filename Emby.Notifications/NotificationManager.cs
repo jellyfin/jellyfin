@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Dto;
 
 namespace Emby.Notifications

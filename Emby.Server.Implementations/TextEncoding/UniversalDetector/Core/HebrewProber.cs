@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-using System;
+
 
 /**
  * General ideas of the Hebrew charset recognition

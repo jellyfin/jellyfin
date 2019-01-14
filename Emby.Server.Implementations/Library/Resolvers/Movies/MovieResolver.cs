@@ -12,9 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Movies
 {

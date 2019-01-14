@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 
 namespace MediaBrowser.Model.Dlna

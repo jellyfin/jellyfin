@@ -8,12 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api.UserLibrary
 {

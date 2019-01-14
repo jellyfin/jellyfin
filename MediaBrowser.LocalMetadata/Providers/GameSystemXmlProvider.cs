@@ -3,7 +3,6 @@ using System.Threading;
 
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.LocalMetadata.Parsers;
 using Microsoft.Extensions.Logging;

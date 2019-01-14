@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,6 @@ using System.Linq;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api.UserLibrary
 {

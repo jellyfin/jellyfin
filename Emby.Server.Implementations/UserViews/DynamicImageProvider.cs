@@ -10,11 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Emby.Server.Implementations.Images;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.UserViews

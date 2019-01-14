@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {

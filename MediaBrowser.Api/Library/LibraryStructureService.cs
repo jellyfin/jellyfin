@@ -10,9 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Services;
 

@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities.Movies;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Collections
 {

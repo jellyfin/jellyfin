@@ -3,8 +3,6 @@ using MediaBrowser.Controller.Providers;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.LocalMetadata

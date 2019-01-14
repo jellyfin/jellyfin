@@ -16,8 +16,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 

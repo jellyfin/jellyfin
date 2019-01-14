@@ -1,6 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
-using Emby.Dlna.Server;
 using Emby.Dlna.Service;
 using Microsoft.Extensions.Logging;
 using System;

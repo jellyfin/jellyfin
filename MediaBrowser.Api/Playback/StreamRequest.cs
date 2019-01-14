@@ -1,6 +1,5 @@
 ﻿using System;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback

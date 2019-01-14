@@ -14,11 +14,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Extensions;
-using PlaylistsNET;
 using PlaylistsNET.Content;
 using PlaylistsNET.Models;
-using PlaylistsNET.Utils;
 
 namespace Emby.Server.Implementations.Playlists
 {

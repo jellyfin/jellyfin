@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
@@ -7,11 +6,9 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 

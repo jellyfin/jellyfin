@@ -7,11 +7,9 @@ using MediaBrowser.Model.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Library
 {

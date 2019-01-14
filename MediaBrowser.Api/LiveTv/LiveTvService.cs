@@ -21,7 +21,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Cryptography;
 using System.Text;
 using MediaBrowser.Controller.Entities;

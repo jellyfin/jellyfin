@@ -1,14 +1,8 @@
 using System;
-using System.Collections.Specialized;
 using System.Globalization;
-using System.IO;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Text;
 using SocketHttpListener.Primitives;
 using System.Collections.Generic;
 using SocketHttpListener.Net.WebSockets;

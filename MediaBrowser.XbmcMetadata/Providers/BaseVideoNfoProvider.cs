@@ -6,8 +6,6 @@ using MediaBrowser.XbmcMetadata.Parsers;
 using MediaBrowser.XbmcMetadata.Savers;
 using System.Linq;
 using System.Threading;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
 

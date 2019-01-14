@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
 using SocketHttpListener.Primitives;

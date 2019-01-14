@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Providers;
 using System;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library

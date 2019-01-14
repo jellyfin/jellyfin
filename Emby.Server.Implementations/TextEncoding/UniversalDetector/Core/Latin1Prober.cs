@@ -36,8 +36,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-using System;
-
 namespace UniversalDetector.Core
 {
     // TODO: Using trigrams the detector should be able to discriminate between 

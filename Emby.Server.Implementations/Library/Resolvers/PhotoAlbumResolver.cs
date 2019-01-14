@@ -4,8 +4,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
-using System.IO;
-using System.Linq;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {

@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Dto;
-using System.Collections.Generic;
 using System;
 
 namespace MediaBrowser.Model.Dlna

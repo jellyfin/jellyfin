@@ -1,6 +1,5 @@
 ﻿using Emby.Dlna.Common;
 using System.Collections.Generic;
-using System.Security;
 using System.Text;
 using Emby.Dlna.Server;
 

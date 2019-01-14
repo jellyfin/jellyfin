@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -15,8 +14,6 @@ using System.Threading.Tasks;
 
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Net;
 
 namespace Emby.Server.Implementations.Images

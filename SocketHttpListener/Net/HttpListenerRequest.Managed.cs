@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Text;
-using System.Collections.Specialized;
-using System.Globalization;
 using System.IO;
-using System.Security.Authentication.ExtendedProtection;
-using System.Security.Cryptography.X509Certificates;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Text;
 
 namespace SocketHttpListener.Net
 {

@@ -1,6 +1,5 @@
-﻿using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Extensions;
 using System;
-using System.Collections.Generic;
 
 namespace Emby.Dlna.Didl
 {

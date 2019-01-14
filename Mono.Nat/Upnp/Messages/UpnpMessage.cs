@@ -24,13 +24,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System;
-using System.Diagnostics;
 using System.Xml;
-using System.Net;
-using System.IO;
 using System.Text;
-using System.Globalization;
 using MediaBrowser.Common.Net;
 
 namespace Mono.Nat.Upnp

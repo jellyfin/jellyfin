@@ -5,12 +5,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Providers.Manager;
-using System.Collections.Generic;
-using System.Linq;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.Music
 {

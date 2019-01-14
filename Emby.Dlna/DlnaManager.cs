@@ -1,9 +1,8 @@
-﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Plugins;
 using Emby.Dlna.Profiles;
 using Emby.Dlna.Server;
 using MediaBrowser.Model.Dlna;
@@ -18,7 +17,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Reflection;
-using MediaBrowser.Model.Extensions;
 
 namespace Emby.Dlna
 {

@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Querying;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace MediaBrowser.Api

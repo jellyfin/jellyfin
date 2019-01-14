@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -18,7 +18,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Controller.MediaEncoding;
 using Emby.Dlna.Configuration;

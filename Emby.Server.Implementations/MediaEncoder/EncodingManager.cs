@@ -1,7 +1,5 @@
 ﻿using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
@@ -13,8 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;

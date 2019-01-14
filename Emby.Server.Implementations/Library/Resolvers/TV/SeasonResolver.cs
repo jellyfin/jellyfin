@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
-using Emby.Naming.Common;
 using Emby.Naming.TV;
 using Microsoft.Extensions.Logging;
 

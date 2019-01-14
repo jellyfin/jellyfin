@@ -17,7 +17,6 @@ using System.Xml;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.Providers.TV

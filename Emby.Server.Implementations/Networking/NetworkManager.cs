@@ -12,7 +12,6 @@ using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
-using System.Numerics;
 
 namespace Emby.Server.Implementations.Networking
 {

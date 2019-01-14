@@ -17,11 +17,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.TV
 {

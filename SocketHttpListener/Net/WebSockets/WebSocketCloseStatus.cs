@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SocketHttpListener.Net.WebSockets
+﻿namespace SocketHttpListener.Net.WebSockets
 {
     public enum WebSocketCloseStatus
     {

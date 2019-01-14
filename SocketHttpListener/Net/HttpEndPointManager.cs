@@ -3,12 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Reflection;
-using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
-using SocketHttpListener.Primitives;
 
 namespace SocketHttpListener.Net
 {

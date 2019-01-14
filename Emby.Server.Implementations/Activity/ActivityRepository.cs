@@ -9,7 +9,6 @@ using MediaBrowser.Model.Activity;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Querying;
 using SQLitePCL.pretty;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Activity

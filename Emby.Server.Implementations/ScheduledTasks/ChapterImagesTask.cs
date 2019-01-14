@@ -11,11 +11,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Providers;
 
 namespace Emby.Server.Implementations.ScheduledTasks

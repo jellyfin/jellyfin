@@ -1,14 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.IO;
 using System.Net;
 using System.Security.Principal;
-using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
-using SocketHttpListener.Primitives;
 
 namespace SocketHttpListener.Net.WebSockets
 {

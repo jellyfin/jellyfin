@@ -11,11 +11,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Library
 {

@@ -2,10 +2,8 @@
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.LocalMetadata.Parsers;
 using Microsoft.Extensions.Logging;
-using System.IO;
 using System.Threading;
 using MediaBrowser.LocalMetadata.Savers;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
 

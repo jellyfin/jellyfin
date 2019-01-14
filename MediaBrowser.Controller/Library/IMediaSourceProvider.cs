@@ -3,7 +3,6 @@ using MediaBrowser.Model.Dto;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System;
 
 namespace MediaBrowser.Controller.Library
 {

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Emby.Naming.Video;
 
 namespace Emby.Naming.AudioBook
 {

@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
-using System.Globalization;
-using System.Runtime.InteropServices;
-using System.ComponentModel;
-using System.Diagnostics;
-using Microsoft.Win32.SafeHandles;
 
 namespace SocketHttpListener.Net
 {

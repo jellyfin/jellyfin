@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.LiveTv;
 

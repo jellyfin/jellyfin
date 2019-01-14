@@ -1,15 +1,8 @@
-﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dlna;
+﻿using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Net;

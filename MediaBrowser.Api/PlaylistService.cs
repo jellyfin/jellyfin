@@ -8,7 +8,6 @@ using MediaBrowser.Model.Playlists;
 using MediaBrowser.Model.Querying;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Extensions;
 using System;
 
 namespace MediaBrowser.Api

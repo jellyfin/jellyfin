@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
-using System.Collections.Generic;
 using System.Xml.Serialization;
 using System;
 

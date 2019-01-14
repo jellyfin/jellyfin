@@ -27,11 +27,9 @@
 //
 
 using System;
-using System.IO;
 using System.Net;
 using System.Xml;
 using System.Text;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;

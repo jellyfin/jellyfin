@@ -10,8 +10,6 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Providers.TV

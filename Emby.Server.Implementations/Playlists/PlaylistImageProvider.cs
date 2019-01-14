@@ -9,12 +9,10 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Emby.Server.Implementations.Images;
 
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Extensions;

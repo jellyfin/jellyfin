@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
 using NLangDetect.Core.Utils;
 using MediaBrowser.Model.Serialization;
 using System.Linq;

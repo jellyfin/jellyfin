@@ -9,7 +9,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.System;
 using MediaBrowser.Model.LiveTv;
 using System.Collections.Generic;
 using System.Net.Sockets;

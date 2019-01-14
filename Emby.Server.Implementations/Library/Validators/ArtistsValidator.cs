@@ -2,14 +2,10 @@
 using MediaBrowser.Controller.Library;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Persistence;
 
 namespace Emby.Server.Implementations.Library.Validators

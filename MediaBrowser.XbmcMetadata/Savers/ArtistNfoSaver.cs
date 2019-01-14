@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Xml;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
 

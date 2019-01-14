@@ -21,7 +21,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Text;
 

@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Extensions;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;

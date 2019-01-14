@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
+﻿using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
@@ -10,11 +9,7 @@ using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Collections;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.Entities
 {

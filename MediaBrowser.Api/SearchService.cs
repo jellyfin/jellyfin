@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Services;
 using System;

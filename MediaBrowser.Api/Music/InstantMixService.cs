@@ -1,16 +1,13 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Api.Music
 {

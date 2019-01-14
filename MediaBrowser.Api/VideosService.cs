@@ -8,9 +8,6 @@ using MediaBrowser.Model.Querying;
 using System;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;

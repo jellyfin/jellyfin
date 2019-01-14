@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Dlna;
 using Emby.Dlna.Eventing;
 using Microsoft.Extensions.Logging;
 

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -18,13 +17,8 @@ using System.Threading.Tasks;
 
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Controller.Channels;
 
 namespace MediaBrowser.Providers.Manager
 {

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Rssdp.Infrastructure
+﻿namespace Rssdp.Infrastructure
 {
 	/// <summary>
 	/// Provides constants for common values related to the SSDP protocols.

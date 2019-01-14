@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
 using System.Linq;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.Entities
 {

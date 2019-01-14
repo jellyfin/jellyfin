@@ -16,8 +16,6 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Providers.TV

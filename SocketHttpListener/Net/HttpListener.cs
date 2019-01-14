@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using MediaBrowser.Common.Net;
@@ -11,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
-using SocketHttpListener.Primitives;
 
 namespace SocketHttpListener.Net
 {

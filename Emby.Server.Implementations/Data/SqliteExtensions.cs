@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using SQLitePCL.pretty;
 using System.IO;

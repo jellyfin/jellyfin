@@ -10,7 +10,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.LiveTv;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Extensions;

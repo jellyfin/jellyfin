@@ -36,8 +36,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-using System;
-
 namespace UniversalDetector.Core
 {
     public class SBCSGroupProber : CharsetProber

@@ -1,10 +1,7 @@
 ﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Session;
-using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
 using System.Linq;

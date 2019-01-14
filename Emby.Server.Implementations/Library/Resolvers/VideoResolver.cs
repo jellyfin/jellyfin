@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers

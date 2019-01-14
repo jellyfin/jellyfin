@@ -1,14 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
+﻿using System.Linq;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Entities
 {

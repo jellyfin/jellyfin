@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Querying;
-using System.Threading;
 
 namespace MediaBrowser.Controller.Security
 {

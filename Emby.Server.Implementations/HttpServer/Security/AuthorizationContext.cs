@@ -1,11 +1,9 @@
-﻿using MediaBrowser.Controller.Connect;
-using MediaBrowser.Controller.Net;
+﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Services;
 using System.Linq;
-using System.Threading;
 using MediaBrowser.Controller.Library;
 
 namespace Emby.Server.Implementations.HttpServer.Security

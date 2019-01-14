@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using System;
 
 namespace MediaBrowser.Model.Configuration

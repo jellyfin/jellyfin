@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MediaBrowser.Model.MediaInfo
+﻿namespace MediaBrowser.Model.MediaInfo
 {
     public class SubtitleTrackInfo
     {

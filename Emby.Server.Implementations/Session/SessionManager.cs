@@ -28,7 +28,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Threading;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Authentication;
 
 namespace Emby.Server.Implementations.Session

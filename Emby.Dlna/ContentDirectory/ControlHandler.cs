@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -7,9 +6,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using Emby.Dlna.Didl;
-using Emby.Dlna.Server;
 using Emby.Dlna.Service;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
@@ -21,7 +18,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
@@ -30,7 +26,6 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Xml;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.LiveTv;
 
 namespace Emby.Dlna.ContentDirectory

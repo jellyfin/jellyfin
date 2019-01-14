@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Emby.Server.Implementations.Images;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Extensions;

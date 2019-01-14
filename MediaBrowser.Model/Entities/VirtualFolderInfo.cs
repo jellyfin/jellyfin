@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Model.Configuration;
 using System;
 
 namespace MediaBrowser.Model.Entities

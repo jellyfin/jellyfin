@@ -5,11 +5,8 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Xml;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
 

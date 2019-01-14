@@ -8,8 +8,6 @@ using System.Linq;
 using MediaBrowser.Controller.Providers;
 using System.Collections.Generic;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Extensions;
-using Emby.Naming.Video;
 using Emby.Naming.AudioBook;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Audio

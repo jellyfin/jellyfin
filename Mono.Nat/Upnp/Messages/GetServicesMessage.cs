@@ -24,8 +24,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System;
-using System.Diagnostics;
 using System.Net;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;

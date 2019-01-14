@@ -1,17 +1,8 @@
 ﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Threading;
 using MediaBrowser.Controller.MediaEncoding;
 using Microsoft.Extensions.Logging;
 

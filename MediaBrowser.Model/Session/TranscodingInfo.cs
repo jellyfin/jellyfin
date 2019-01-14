@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MediaBrowser.Model.Session
 {
     public class TranscodingInfo

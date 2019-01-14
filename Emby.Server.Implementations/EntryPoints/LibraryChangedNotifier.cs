@@ -11,7 +11,6 @@ using System.Linq;
 using System.Threading;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
