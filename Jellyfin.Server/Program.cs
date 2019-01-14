@@ -99,7 +99,7 @@ namespace Jellyfin.Server
                 new SystemEvents(),
                 new NetworkManager(_loggerFactory, environmentInfo)))
             {
-                appHost.Init();
+                await appHost.Init();
 
                 appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
 
@@ -108,7 +108,6 @@ namespace Jellyfin.Server
                 await appHost.RunStartupTasks();
 
                 // TODO: read input for a stop command
-
                 try
                 {
                     // Block main thread until shutdown
@@ -167,7 +166,6 @@ namespace Jellyfin.Server
             {
                 Directory.CreateDirectory(programDataPath);
             }
-
             string configDir = Environment.GetEnvironmentVariable("JELLYFIN_CONFIG_DIR");
             if (string.IsNullOrEmpty(configDir))
             {

@@ -20,7 +20,10 @@ namespace Emby.Server.Implementations.Activity
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             // Ensure the dir exists
-            if (!Directory.Exists(_dataDirPath)) Directory.CreateDirectory(_dataDirPath);
+            if (!Directory.Exists(_dataDirPath))
+            {
+                Directory.CreateDirectory(_dataDirPath);
+            }
 
             optionsBuilder.UseSqlite($"Filename={Path.Combine(_dataDirPath, "activitylog.sqlite.db")}");
         }
