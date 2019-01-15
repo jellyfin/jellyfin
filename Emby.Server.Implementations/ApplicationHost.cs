@@ -54,11 +54,6 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
-<<<<<<< HEAD
-using MediaBrowser.Common.Security;
-=======
-using MediaBrowser.Model.Extensions;
->>>>>>> dev
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
