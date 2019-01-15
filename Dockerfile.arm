@@ -3,6 +3,7 @@ ARG DOTNET_VERSION=3.0
 FROM microsoft/dotnet:${DOTNET_VERSION}-sdk as builder
 WORKDIR /repo
 COPY . .
+#TODO Remove or update the sed line when we update dotnet version.
 RUN export DOTNET_CLI_TELEMETRY_OPTOUT=1 \
  && find . -type f -exec sed -i 's/netcoreapp2.1/netcoreapp3.0/g' {} \; \
  && dotnet clean \
@@ -14,7 +15,7 @@ RUN export DOTNET_CLI_TELEMETRY_OPTOUT=1 \
 FROM microsoft/dotnet:${DOTNET_VERSION}-runtime
 COPY --from=builder /jellyfin /jellyfin
 EXPOSE 8096
-RUN apt update \
- && apt install -y ffmpeg
+RUN apt-get update \
+ && apt-get install -y ffmpeg
 VOLUME /config /media
 ENTRYPOINT dotnet /jellyfin/jellyfin.dll -programdata /config
