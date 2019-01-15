@@ -12,6 +12,7 @@
  - [sparky8251](https://github.com/sparky8251)
  - [LeoVerto](https://github.com/LeoVerto)
  - [grafixeyehero](https://github.com/grafixeyehero)
+ - [cvium](https://github.com/cvium)
  
 # Emby Contributors
 

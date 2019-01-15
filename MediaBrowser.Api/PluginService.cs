@@ -10,7 +10,6 @@ using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
@@ -79,6 +78,16 @@ namespace MediaBrowser.Api
         public Stream RequestStream { get; set; }
     }
 
+    //TODO Once we have proper apps and plugins and decide to break compatibility with paid plugins,
+    // delete all these registration endpoints. They are only kept for compatibility.
+    [Route("/Registrations/{Name}", "GET", Summary = "Gets registration status for a feature", IsHidden = true)]
+    [Authenticated]
+    public class GetRegistration : IReturn<RegistrationInfo>
+    {
+        [ApiMember(Name = "Name", Description = "Feature Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Name { get; set; }
+    }
+
     /// <summary>
     /// Class GetPluginSecurityInfo
     /// </summary>
@@ -105,14 +114,7 @@ namespace MediaBrowser.Api
         public string Name { get; set; }
     }
 
-    [Route("/Registrations/{Name}", "GET", Summary = "Gets registration status for a feature", IsHidden = true)]
-    [Authenticated]
-    public class GetRegistration : IReturn<RegistrationInfo>
-    {
-        [ApiMember(Name = "Name", Description = "Feature Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
-    }
-
+    // TODO these two classes are only kept for compability with paid plugins and should be removed
     public class RegistrationInfo
     {
         public string Name { get; set; }
@@ -121,14 +123,21 @@ namespace MediaBrowser.Api
         public bool IsRegistered { get; set; }
     }
 
-    [Route("/Appstore/Register", "POST", Summary = "Registers an appstore sale", IsHidden = true)]
-    [Authenticated]
-    public class RegisterAppstoreSale
+    public class MBRegistrationRecord
     {
-        [ApiMember(Name = "Parameters", Description = "Java representation of parameters to pass through to admin server", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Parameters { get; set; }
+        public DateTime ExpirationDate { get; set; }
+        public bool IsRegistered { get; set; }
+        public bool RegChecked { get; set; }
+        public bool RegError { get; set; }
+        public bool TrialVersion { get; set; }
+        public bool IsValid { get; set; }
     }
 
+    public class PluginSecurityInfo
+    {
+        public string SupporterKey { get; set; }
+        public bool IsMBSupporter { get; set; }
+    }
     /// <summary>
     /// Class PluginsService
     /// </summary>
@@ -143,14 +152,11 @@ namespace MediaBrowser.Api
         /// The _app host
         /// </summary>
         private readonly IApplicationHost _appHost;
-
-        private readonly ISecurityManager _securityManager;
-
         private readonly IInstallationManager _installationManager;
         private readonly INetworkManager _network;
         private readonly IDeviceManager _deviceManager;
 
-        public PluginService(IJsonSerializer jsonSerializer, IApplicationHost appHost, ISecurityManager securityManager, IInstallationManager installationManager, INetworkManager network, IDeviceManager deviceManager)
+        public PluginService(IJsonSerializer jsonSerializer, IApplicationHost appHost, IInstallationManager installationManager, INetworkManager network, IDeviceManager deviceManager)
             : base()
         {
             if (jsonSerializer == null)
@@ -159,7 +165,6 @@ namespace MediaBrowser.Api
             }
 
             _appHost = appHost;
-            _securityManager = securityManager;
             _installationManager = installationManager;
             _network = network;
             _deviceManager = deviceManager;
@@ -173,20 +178,26 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public async Task<object> Get(GetRegistrationStatus request)
         {
-            var result = await _securityManager.GetRegistrationStatus(request.Name).ConfigureAwait(false);
+            var record = new MBRegistrationRecord
+            {
+                IsRegistered = true,
+                RegChecked = true,
+                TrialVersion = false,
+                IsValid = true,
+                RegError = false
+            };
 
-            return ToOptimizedResult(result);
+            return ToOptimizedResult(record);
         }
 
+        //TODO this function is only kept for compatibility and should be removed once paid plugins break
         public async Task<object> Get(GetRegistration request)
         {
-            var result = await _securityManager.GetRegistrationStatus(request.Name).ConfigureAwait(false);
-
             var info = new RegistrationInfo
             {
-                ExpirationDate = result.ExpirationDate,
-                IsRegistered = result.IsRegistered,
-                IsTrial = result.TrialVersion,
+                ExpirationDate = DateTime.Now.AddYears(100),
+                IsRegistered = true,
+                IsTrial = false,
                 Name = request.Name
             };
 
@@ -201,45 +212,6 @@ namespace MediaBrowser.Api
         public async Task<object> Get(GetPlugins request)
         {
             var result = _appHost.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()).ToArray();
-            var requireAppStoreEnabled = request.IsAppStoreEnabled.HasValue && request.IsAppStoreEnabled.Value;
-
-            // Don't fail just on account of image url's
-            try
-            {
-                var packages = (await _installationManager.GetAvailablePackagesWithoutRegistrationInfo(CancellationToken.None));
-
-                foreach (var plugin in result)
-                {
-                    var pkg = packages.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.guid) && string.Equals(i.guid.Replace("-", string.Empty), plugin.Id.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase));
-
-                    if (pkg != null)
-                    {
-                        plugin.ImageUrl = pkg.thumbImage;
-                    }
-                }
-
-                if (requireAppStoreEnabled)
-                {
-                    result = result
-                        .Where(plugin =>
-                        {
-                            var pkg = packages.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.guid) && new Guid(plugin.Id).Equals(new Guid(i.guid)));
-                            return pkg != null && pkg.enableInAppStore;
-
-                        })
-                        .ToArray();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error getting plugin list");
-                // Play it safe here
-                if (requireAppStoreEnabled)
-                {
-                    result = new PluginInfo[] { };
-                }
-            }
-
             return ToOptimizedResult(result);
         }
 
@@ -265,21 +237,11 @@ namespace MediaBrowser.Api
         {
             var result = new PluginSecurityInfo
             {
-                IsMBSupporter = await _securityManager.IsSupporter().ConfigureAwait(false),
-                SupporterKey = _securityManager.SupporterKey
+                IsMBSupporter = true,
+                SupporterKey = "IAmTotallyLegit"
             };
 
             return ToOptimizedResult(result);
-        }
-
-        /// <summary>
-        /// Post app store sale
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public Task Post(RegisterAppstoreSale request)
-        {
-            return _securityManager.RegisterAppStoreSale(request.Parameters);
         }
 
         /// <summary>
@@ -288,7 +250,7 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public Task Post(UpdatePluginSecurityInfo request)
         {
-            return _securityManager.UpdateSupporterKey(request.SupporterKey);
+            return Task.CompletedTask;
         }
 
         /// <summary>

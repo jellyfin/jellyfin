@@ -51,7 +51,6 @@ namespace Emby.Server.Implementations.LiveTv
         private readonly ITaskManager _taskManager;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IProviderManager _providerManager;
-        private readonly ISecurityManager _security;
         private readonly Func<IChannelManager> _channelManager;
 
         private readonly IDtoService _dtoService;
@@ -78,7 +77,23 @@ namespace Emby.Server.Implementations.LiveTv
         private IServerApplicationHost _appHost;
         private IHttpClient _httpClient;
 
-        public LiveTvManager(IServerApplicationHost appHost, IHttpClient httpClient, IServerConfigurationManager config, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer, IProviderManager providerManager, IFileSystem fileSystem, ISecurityManager security, Func<IChannelManager> channelManager)
+        public LiveTvManager(
+            IServerApplicationHost appHost,
+            IHttpClient httpClient,
+            IServerConfigurationManager config,
+            ILogger logger,
+            IItemRepository itemRepo,
+            IImageProcessor imageProcessor,
+            IUserDataManager userDataManager,
+            IDtoService dtoService,
+            IUserManager userManager,
+            ILibraryManager libraryManager,
+            ITaskManager taskManager,
+            ILocalizationManager localization,
+            IJsonSerializer jsonSerializer,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            Func<IChannelManager> channelManager)
         {
             _appHost = appHost;
             _config = config;
@@ -91,7 +106,6 @@ namespace Emby.Server.Implementations.LiveTv
             _jsonSerializer = jsonSerializer;
             _providerManager = providerManager;
             _fileSystem = fileSystem;
-            _security = security;
             _dtoService = dtoService;
             _userDataManager = userDataManager;
             _channelManager = channelManager;
@@ -2085,14 +2099,6 @@ namespace Emby.Server.Implementations.LiveTv
 
         public async Task CreateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken)
         {
-            var registration = await GetRegistrationInfo("seriesrecordings").ConfigureAwait(false);
-
-            if (!registration.IsValid)
-            {
-                _logger.LogInformation("Creating series recordings requires an active Emby Premiere subscription.");
-                return;
-            }
-
             var service = GetService(timer.ServiceName);
 
             var info = await _tvDtoService.GetSeriesTimerInfo(timer, true, this, cancellationToken).ConfigureAwait(false);
@@ -2432,30 +2438,6 @@ namespace Emby.Server.Implementations.LiveTv
 
                 return provider.GetLineups(info, country, location);
             }
-        }
-
-        public Task<MBRegistrationRecord> GetRegistrationInfo(string feature)
-        {
-            if (string.Equals(feature, "seriesrecordings", StringComparison.OrdinalIgnoreCase))
-            {
-                feature = "embytvseriesrecordings";
-            }
-
-            if (string.Equals(feature, "dvr-l", StringComparison.OrdinalIgnoreCase))
-            {
-                var config = GetConfiguration();
-                if (config.TunerHosts.Length > 0 &&
-                    config.ListingProviders.Count(i => (i.EnableAllTuners || i.EnabledTuners.Length > 0) && string.Equals(i.Type, SchedulesDirect.TypeName, StringComparison.OrdinalIgnoreCase)) > 0)
-                {
-                    return Task.FromResult(new MBRegistrationRecord
-                    {
-                        IsRegistered = true,
-                        IsValid = true
-                    });
-                }
-            }
-
-            return _security.GetRegistrationStatus(feature);
         }
 
         public Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken)
