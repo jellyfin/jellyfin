@@ -69,7 +69,7 @@ namespace Emby.Server.Implementations.Activity
                 }
             }
 
-            return result;
+            return result.AsEnumerable();
         }
     }
 }
