@@ -92,7 +92,7 @@ define(["appSettings", "userSettings", "playbackManager", "connectionManager", "
         var chrome = window.chrome;
         if (chrome) {
             if (!chrome.cast || !chrome.cast.isAvailable) return void setTimeout(this.initializeCastPlayer.bind(this), 1e3);
-            var sessionRequest = new chrome.cast.SessionRequest("2D4B1DA3"),
+            var sessionRequest = new chrome.cast.SessionRequest("F007D354"),
                 apiConfig = new chrome.cast.ApiConfig(sessionRequest, this.sessionListener.bind(this), this.receiverListener.bind(this), "origin_scoped");
             console.log("chromecast.initialize"), chrome.cast.initialize(apiConfig, this.onInitSuccess.bind(this), this.errorHandler)
         }

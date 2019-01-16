@@ -20,7 +20,7 @@ namespace MediaBrowser.Providers.Movies
         private static readonly CultureInfo EnUs = new CultureInfo("en-US");
         private const string Search3 = MovieDbProvider.BaseMovieDbUrl + @"3/search/{3}?api_key={1}&query={0}&language={2}";
 
-        internal static string ApiKey = "f6bd687ffa63cd282b6ff2c6877f2669";
+        internal static string ApiKey = "4219e299c89411838049ab0dab19ebd5";
         internal static string AcceptHeader = "application/json,image/*";
 
         private readonly ILogger _logger;
