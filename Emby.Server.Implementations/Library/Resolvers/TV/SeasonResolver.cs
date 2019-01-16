@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -28,6 +28,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// Initializes a new instance of the <see cref="SeasonResolver"/> class.
         /// </summary>
         /// <param name="config">The config.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="localization">The localization</param>
+        /// <param name="logger">The logger</param>
         public SeasonResolver(IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization, ILogger logger)
         {
             _config = config;

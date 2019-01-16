@@ -81,30 +81,15 @@ namespace Emby.Server.Implementations.Diagnostics
             }
         }
 
-        public ProcessOptions StartInfo
-        {
-            get { return _options; }
-        }
+        public ProcessOptions StartInfo => _options;
 
-        public StreamWriter StandardInput
-        {
-            get { return _process.StandardInput; }
-        }
+        public StreamWriter StandardInput => _process.StandardInput;
 
-        public StreamReader StandardError
-        {
-            get { return _process.StandardError; }
-        }
+        public StreamReader StandardError => _process.StandardError;
 
-        public StreamReader StandardOutput
-        {
-            get { return _process.StandardOutput; }
-        }
+        public StreamReader StandardOutput => _process.StandardOutput;
 
-        public int ExitCode
-        {
-            get { return _process.ExitCode; }
-        }
+        public int ExitCode => _process.ExitCode;
 
         public void Start()
         {

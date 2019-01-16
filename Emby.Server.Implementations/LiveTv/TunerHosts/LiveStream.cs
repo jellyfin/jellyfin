@@ -217,13 +217,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
         }
 
-        protected virtual int EmptyReadLimit
-        {
-            get
-            {
-                return 1000;
-            }
-        }
+        protected virtual int EmptyReadLimit => 1000;
 
         private void TrySeek(FileStream stream, long offset)
         {

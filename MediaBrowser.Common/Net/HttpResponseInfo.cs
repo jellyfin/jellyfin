@@ -21,7 +21,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <value>The response URL.</value>
         public string ResponseUrl { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the content.
         /// </summary>

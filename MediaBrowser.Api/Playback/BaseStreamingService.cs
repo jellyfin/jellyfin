@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -595,8 +595,10 @@ namespace MediaBrowser.Api.Playback
         /// <param name="request">The stream request.</param>
         private void ParseStreamOptions(StreamRequest request)
         {
-            foreach (var param in Request.QueryString) {
-                if (Char.IsLower(param.Name[0])) {
+            foreach (var param in Request.QueryString)
+            {
+                if (char.IsLower(param.Name[0]))
+                {
                     // This was probably not parsed initially and should be a StreamOptions
                     // TODO: This should be incorporated either in the lower framework for parsing requests
                     // or the generated URL should correctly serialize it
@@ -882,7 +884,7 @@ namespace MediaBrowser.Api.Playback
 
             if (profile == null)
             {
-                // Don't use settings from the default profile. 
+                // Don't use settings from the default profile.
                 // Only use a specific profile if it was requested.
                 return;
             }

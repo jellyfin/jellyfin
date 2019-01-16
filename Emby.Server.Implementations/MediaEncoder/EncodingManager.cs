@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Chapters;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -46,7 +46,7 @@ namespace Emby.Server.Implementations.MediaEncoder
         /// Gets the chapter images data path.
         /// </summary>
         /// <value>The chapter images data path.</value>
-        private string GetChapterImagesPath(BaseItem item)
+        private static string GetChapterImagesPath(BaseItem item)
         {
             return Path.Combine(item.GetInternalMetadataPath(), "chapters");
         }
@@ -202,7 +202,7 @@ namespace Emby.Server.Implementations.MediaEncoder
             return Path.Combine(GetChapterImagesPath(video), filename);
         }
 
-        private List<string> GetSavedChapterImages(Video video, IDirectoryService directoryService)
+        private static List<string> GetSavedChapterImages(Video video, IDirectoryService directoryService)
         {
             var path = GetChapterImagesPath(video);
 

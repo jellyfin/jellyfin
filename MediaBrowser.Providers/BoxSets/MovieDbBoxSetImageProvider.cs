@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.BoxSets
         {
             return new List<ImageType>
             {
-                ImageType.Primary, 
+                ImageType.Primary,
                 ImageType.Backdrop
             };
         }

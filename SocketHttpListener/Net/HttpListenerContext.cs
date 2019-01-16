@@ -49,7 +49,7 @@ namespace SocketHttpListener.Net
         public GenericPrincipal(IIdentity identity, string[] roles)
         {
             if (identity == null)
-                throw new ArgumentNullException("identity");
+                throw new ArgumentNullException(nameof(identity));
 
             m_identity = identity;
             if (roles != null)
@@ -81,7 +81,7 @@ namespace SocketHttpListener.Net
 
             for (int i = 0; i < m_roles.Length; ++i)
             {
-                if (m_roles[i] != null && String.Compare(m_roles[i], role, StringComparison.OrdinalIgnoreCase) == 0)
+                if (m_roles[i] != null && string.Compare(m_roles[i], role, StringComparison.OrdinalIgnoreCase) == 0)
                     return true;
             }
             return false;

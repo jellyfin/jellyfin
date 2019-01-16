@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
@@ -171,12 +171,12 @@ namespace Emby.Server.Implementations.TV
                 .Where(i => i != null);
         }
 
-        private string GetUniqueSeriesKey(Episode episode)
+        private static string GetUniqueSeriesKey(Episode episode)
         {
             return episode.SeriesPresentationUniqueKey;
         }
 
-        private string GetUniqueSeriesKey(Series series)
+        private static string GetUniqueSeriesKey(Series series)
         {
             return series.GetPresentationUniqueKey();
         }
@@ -238,7 +238,7 @@ namespace Emby.Server.Implementations.TV
             return new Tuple<DateTime, Func<Episode>>(DateTime.MinValue, getEpisode);
         }
 
-        private QueryResult<BaseItem> GetResult(IEnumerable<BaseItem> items, NextUpQuery query)
+        private static QueryResult<BaseItem> GetResult(IEnumerable<BaseItem> items, NextUpQuery query)
         {
             int totalCount = 0;
 

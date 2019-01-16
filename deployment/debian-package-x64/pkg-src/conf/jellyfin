@@ -1,0 +1,34 @@
+# Jellyfin default configuration options
+
+# Use this file to override the default configurations; add additional
+# options with JELLYFIN_ADD_OPTS.
+
+# Under systemd, use
+#  /etc/systemd/system/jellyfin.service.d/jellyfin.service.conf
+# to override the user or this config file's location.
+
+#
+# This is a POSIX shell fragment
+#
+
+#
+# General options
+#
+
+# Program directories
+JELLYFIN_DATA_DIRECTORY="/var/lib/jellyfin"
+JELLYFIN_CONFIG_DIRECTORY="/etc/jellyfin"
+JELLYFIN_LOG_DIRECTORY="/var/log/jellyfin"
+# Restart script for in-app server control
+JELLYFIN_RESTART_SCRIPT="/usr/lib/jellyfin/restart.sh"
+# Additional options for the binary
+JELLYFIN_ADD_OPTS=""
+
+#
+# SysV init/Upstart options
+#
+
+# Application username
+JELLYFIN_USER="jellyfin"
+# Full application command
+JELLYFIN_ARGS="-programdata $JELLYFIN_DATA_DIRECTORY -configdir $JELLYFIN_CONFIG_DIRECTORY -logdir $JELLYFIN_LOG_DIRECTORY -restartpath $JELLYFIN_RESTART_SCRIPT $JELLYFIN_ADD_OPTS"

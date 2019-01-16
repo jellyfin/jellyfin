@@ -26,7 +26,7 @@ namespace OpenSubtitlesHandler.Console
         /// <summary>
         /// Write line to the console and raise the "LineWritten" event
         /// </summary>
-        /// 
+        ///
         /// <param name="text">The debug line</param>
         /// <param name="code">The status</param>
         public static void WriteLine(string text, DebugCode code = DebugCode.None)

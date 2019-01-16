@@ -6,11 +6,11 @@ using MediaBrowser.Model.Net;
 
 namespace Rssdp
 {
-	/// <summary>
-	/// Event arguments for the <see cref="Rssdp.Infrastructure.SsdpDeviceLocatorBase.DeviceAvailable"/> event.
-	/// </summary>
-	public sealed class DeviceAvailableEventArgs : EventArgs
-	{
+    /// <summary>
+    /// Event arguments for the <see cref="Rssdp.Infrastructure.SsdpDeviceLocatorBase.DeviceAvailable"/> event.
+    /// </summary>
+    public sealed class DeviceAvailableEventArgs : EventArgs
+    {
         public IpAddressInfo LocalIpAddress { get; set; }
 
         #region Fields
@@ -30,7 +30,7 @@ namespace Rssdp
 		/// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="discoveredDevice"/> parameter is null.</exception>
 		public DeviceAvailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool isNewlyDiscovered)
 		{
-			if (discoveredDevice == null) throw new ArgumentNullException("discoveredDevice");
+			if (discoveredDevice == null) throw new ArgumentNullException(nameof(discoveredDevice));
 
 			_DiscoveredDevice = discoveredDevice;
 			_IsNewlyDiscovered = isNewlyDiscovered;

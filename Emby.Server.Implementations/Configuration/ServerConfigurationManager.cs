@@ -38,28 +38,19 @@ namespace Emby.Server.Implementations.Configuration
         /// Gets the type of the configuration.
         /// </summary>
         /// <value>The type of the configuration.</value>
-        protected override Type ConfigurationType
-        {
-            get { return typeof(ServerConfiguration); }
-        }
+        protected override Type ConfigurationType => typeof(ServerConfiguration);
 
         /// <summary>
         /// Gets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        public IServerApplicationPaths ApplicationPaths
-        {
-            get { return (IServerApplicationPaths)CommonApplicationPaths; }
-        }
+        public IServerApplicationPaths ApplicationPaths => (IServerApplicationPaths)CommonApplicationPaths;
 
         /// <summary>
         /// Gets the configuration.
         /// </summary>
         /// <value>The configuration.</value>
-        public ServerConfiguration Configuration
-        {
-            get { return (ServerConfiguration)CommonConfiguration; }
-        }
+        public ServerConfiguration Configuration => (ServerConfiguration)CommonConfiguration;
 
         /// <summary>
         /// Called when [configuration updated].

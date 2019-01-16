@@ -21,7 +21,7 @@
  * Contributor(s):
  *          Shy Shalom <shooshX@gmail.com>
  *          Rudi Pettazzi <rudi.pettazzi@gmail.com> (C# port)
- * 
+ *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -37,7 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 namespace UniversalDetector.Core
-{   
+{
     public class ThaiModel : SequenceModel
     {
         /****************************************************************
@@ -46,7 +46,7 @@ namespace UniversalDetector.Core
         253: symbol (punctuation) that does not belong to word
         252: 0 - 9
         *****************************************************************/
-        // The following result for thai was collected from a limited sample (1M) 
+        // The following result for thai was collected from a limited sample (1M)
         private readonly static byte[] TIS620_CHAR_TO_ORDER_MAP = {
         255,255,255,255,255,255,255,255,255,255,254,255,255,254,255,255,  //00
         255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,  //10
@@ -66,12 +66,12 @@ namespace UniversalDetector.Core
          68, 56, 59, 65, 69, 60, 70, 80, 71, 87,248,249,250,251,252,253,
         };
 
-        //Model Table: 
+        //Model Table:
         //total sequences: 100%
         //first 512 sequences: 92.6386%
         //first 1024 sequences:7.3177%
         //rest  sequences:     1.0230%
-        //negative sequences:  0.0436% 
+        //negative sequences:  0.0436%
         private readonly static byte[] THAI_LANG_MODEL = {
         0,1,3,3,3,3,0,0,3,3,0,3,3,0,3,3,3,3,3,3,3,3,0,0,3,3,3,0,3,3,3,3,
         0,3,3,0,0,0,1,3,0,3,3,2,3,3,0,1,2,3,3,3,3,0,2,0,2,0,0,3,2,1,2,2,
@@ -203,11 +203,11 @@ namespace UniversalDetector.Core
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
         };
 
-        public ThaiModel(byte[] charToOrderMap, string name) 
-            : base(TIS620_CHAR_TO_ORDER_MAP, THAI_LANG_MODEL, 
+        public ThaiModel(byte[] charToOrderMap, string name)
+            : base(TIS620_CHAR_TO_ORDER_MAP, THAI_LANG_MODEL,
                    0.926386f, false, "TIS-620")
         {
-        }        
+        }
     }
 
 }

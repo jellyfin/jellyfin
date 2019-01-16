@@ -1,4 +1,4 @@
-﻿using Emby.Common.Implementations.Serialization;
+using Emby.Common.Implementations.Serialization;
 using Emby.Drawing;
 using Emby.Photos;
 using Emby.Dlna;
@@ -41,7 +41,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
@@ -80,7 +79,6 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.News;
 using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
@@ -133,13 +131,7 @@ namespace Emby.Server.Implementations
         /// Gets or sets a value indicating whether this instance can self update.
         /// </summary>
         /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
-        public virtual bool CanSelfUpdate
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public virtual bool CanSelfUpdate => false;
 
         public virtual bool CanLaunchWebBrowser
         {
@@ -245,10 +237,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public virtual string OperatingSystemDisplayName
-        {
-            get { return EnvironmentInfo.OperatingSystemName; }
-        }
+        public virtual string OperatingSystemDisplayName => EnvironmentInfo.OperatingSystemName;
 
         /// <summary>
         /// The container
@@ -261,10 +250,7 @@ namespace Emby.Server.Implementations
         /// Gets the server configuration manager.
         /// </summary>
         /// <value>The server configuration manager.</value>
-        public IServerConfigurationManager ServerConfigurationManager
-        {
-            get { return (IServerConfigurationManager)ConfigurationManager; }
-        }
+        public IServerConfigurationManager ServerConfigurationManager => (IServerConfigurationManager)ConfigurationManager;
 
         /// <summary>
         /// Gets the configuration manager.
@@ -352,11 +338,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value>The installation manager.</value>
         protected IInstallationManager InstallationManager { get; private set; }
-        /// <summary>
-        /// Gets the security manager.
-        /// </summary>
-        /// <value>The security manager.</value>
-        protected ISecurityManager SecurityManager { get; private set; }
 
         /// <summary>
         /// Gets or sets the zip client.
@@ -368,7 +349,6 @@ namespace Emby.Server.Implementations
 
         public StartupOptions StartupOptions { get; private set; }
 
-        internal IPowerManagement PowerManagement { get; private set; }
         internal IImageEncoder ImageEncoder { get; private set; }
 
         protected IProcessFactory ProcessFactory { get; private set; }
@@ -390,7 +370,6 @@ namespace Emby.Server.Implementations
             ILoggerFactory loggerFactory,
             StartupOptions options,
             IFileSystem fileSystem,
-            IPowerManagement powerManagement,
             IEnvironmentInfo environmentInfo,
             IImageEncoder imageEncoder,
             ISystemEvents systemEvents,
@@ -416,7 +395,6 @@ namespace Emby.Server.Implementations
             Logger = LoggerFactory.CreateLogger("App");
 
             StartupOptions = options;
-            PowerManagement = powerManagement;
 
             ImageEncoder = imageEncoder;
 
@@ -456,13 +434,7 @@ namespace Emby.Server.Implementations
         /// Gets the current application version
         /// </summary>
         /// <value>The application version.</value>
-        public Version ApplicationVersion
-        {
-            get
-            {
-                return _version ?? (_version = typeof(ApplicationHost).Assembly.GetName().Version);
-            }
-        }
+        public Version ApplicationVersion => _version ?? (_version = typeof(ApplicationHost).Assembly.GetName().Version);
 
         private DeviceId _deviceId;
         public string SystemId
@@ -482,15 +454,9 @@ namespace Emby.Server.Implementations
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get
-            {
-                return "Emby Server";
-            }
-        }
+        public string Name => "Emby Server";
 
-        private Tuple<Assembly, string> GetAssembly(Type type)
+        private static Tuple<Assembly, string> GetAssembly(Type type)
         {
             var assembly = type.GetTypeInfo().Assembly;
             string path = null;
@@ -501,14 +467,6 @@ namespace Emby.Server.Implementations
         public virtual IStreamHelper CreateStreamHelper()
         {
             return new StreamHelper();
-        }
-
-        public virtual bool SupportsAutoRunAtStartup
-        {
-            get
-            {
-                return EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows;
-            }
         }
 
         /// <summary>
@@ -524,7 +482,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Creates the instance safe.
         /// </summary>
-        /// <param name="type">The type.</param>
+        /// <param name="typeInfo">The type information.</param>
         /// <returns>System.Object.</returns>
         protected object CreateInstanceSafe(Tuple<Type, string> typeInfo)
         {
@@ -691,8 +649,6 @@ namespace Emby.Server.Implementations
         {
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
-            ConfigureAutorun();
-
             ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
 
             MediaEncoder.Init();
@@ -743,21 +699,6 @@ namespace Emby.Server.Implementations
                     Logger.LogError(ex, "Error while running entrypoint {Name}", name);
                 }
                 Logger.LogInformation("Entry point completed: {Name}. Duration: {Duration} seconds", name, (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture), "ImageInfos");
-            }
-        }
-
-        /// <summary>
-        /// Configures the autorun.
-        /// </summary>
-        private void ConfigureAutorun()
-        {
-            try
-            {
-                ConfigureAutoRunAtStartup(ConfigurationManager.CommonConfiguration.RunAtStartup);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error configuring autorun");
             }
         }
 
@@ -856,12 +797,7 @@ namespace Emby.Server.Implementations
             SocketFactory = new SocketFactory(LoggerFactory.CreateLogger("SocketFactory"));
             RegisterSingleInstance(SocketFactory);
 
-            RegisterSingleInstance(PowerManagement);
-
-            SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LoggerFactory, FileSystemManager, CryptographyProvider);
-            RegisterSingleInstance(SecurityManager);
-
-            InstallationManager = new InstallationManager(LoggerFactory.CreateLogger("InstallationManager"), this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ServerConfigurationManager, FileSystemManager, CryptographyProvider, PackageRuntime);
+            InstallationManager = new InstallationManager(LoggerFactory.CreateLogger("InstallationManager"), this, ApplicationPaths, HttpClient, JsonSerializer, ServerConfigurationManager, FileSystemManager, CryptographyProvider, PackageRuntime);
             RegisterSingleInstance(InstallationManager);
 
             ZipClient = new ZipClient(FileSystemManager);
@@ -976,7 +912,7 @@ namespace Emby.Server.Implementations
             PlaylistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LoggerFactory.CreateLogger("PlaylistManager"), UserManager, ProviderManager);
             RegisterSingleInstance<IPlaylistManager>(PlaylistManager);
 
-            LiveTvManager = new LiveTvManager(this, HttpClient, ServerConfigurationManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, ProviderManager, FileSystemManager, SecurityManager, () => ChannelManager);
+            LiveTvManager = new LiveTvManager(this, HttpClient, ServerConfigurationManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, ProviderManager, FileSystemManager, () => ChannelManager);
             RegisterSingleInstance(LiveTvManager);
 
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
@@ -1034,13 +970,7 @@ namespace Emby.Server.Implementations
             return s => JsvReader.GetParseFn(propertyType)(s);
         }
 
-        public virtual string PackageRuntime
-        {
-            get
-            {
-                return "netcore";
-            }
-        }
+        public virtual string PackageRuntime => "netcore";
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths, EnvironmentInfo.EnvironmentInfo environmentInfo)
         {
@@ -1079,7 +1009,7 @@ namespace Emby.Server.Implementations
             return name + "/" + ApplicationVersion;
         }
 
-        private string FormatAttribute(string str)
+        private static string FormatAttribute(string str)
         {
             var arr = str.ToCharArray();
 
@@ -1096,13 +1026,7 @@ namespace Emby.Server.Implementations
             return result;
         }
 
-        protected virtual bool SupportsDualModeSockets
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected virtual bool SupportsDualModeSockets => true;
 
         private X509Certificate GetCertificate(CertificateInfo info)
         {
@@ -1218,8 +1142,7 @@ namespace Emby.Server.Implementations
                 HttpClient,
                 ZipClient,
                 ProcessFactory,
-                5000,
-                EnvironmentInfo);
+                5000);
 
             MediaEncoder = mediaEncoder;
             RegisterSingleInstance(MediaEncoder);
@@ -1572,8 +1495,6 @@ namespace Emby.Server.Implementations
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void OnConfigurationUpdated(object sender, EventArgs e)
         {
-            ConfigureAutorun();
-
             var requiresRestart = false;
 
             // Don't do anything if these haven't been set yet
@@ -1679,25 +1600,25 @@ namespace Emby.Server.Implementations
             // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
             // This will prevent the .dll file from getting locked, and allow us to replace it when needed
 
-            // Include composable parts in the Api assembly 
+            // Include composable parts in the Api assembly
             list.Add(GetAssembly(typeof(ApiEntryPoint)));
 
-            // Include composable parts in the Dashboard assembly 
+            // Include composable parts in the Dashboard assembly
             list.Add(GetAssembly(typeof(DashboardService)));
 
-            // Include composable parts in the Model assembly 
+            // Include composable parts in the Model assembly
             list.Add(GetAssembly(typeof(SystemInfo)));
 
-            // Include composable parts in the Common assembly 
+            // Include composable parts in the Common assembly
             list.Add(GetAssembly(typeof(IApplicationHost)));
 
-            // Include composable parts in the Controller assembly 
+            // Include composable parts in the Controller assembly
             list.Add(GetAssembly(typeof(IServerApplicationHost)));
 
-            // Include composable parts in the Providers assembly 
+            // Include composable parts in the Providers assembly
             list.Add(GetAssembly(typeof(ProviderUtils)));
 
-            // Include composable parts in the Photos assembly 
+            // Include composable parts in the Photos assembly
             list.Add(GetAssembly(typeof(PhotoProvider)));
 
             // Emby.Server implementations
@@ -1706,16 +1627,16 @@ namespace Emby.Server.Implementations
             // MediaEncoding
             list.Add(GetAssembly(typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder)));
 
-            // Dlna 
+            // Dlna
             list.Add(GetAssembly(typeof(DlnaEntryPoint)));
 
-            // Local metadata 
+            // Local metadata
             list.Add(GetAssembly(typeof(BoxSetXmlSaver)));
 
             // Notifications
             list.Add(GetAssembly(typeof(NotificationManager)));
 
-            // Xbmc 
+            // Xbmc
             list.Add(GetAssembly(typeof(ArtistNfoProvider)));
 
             list.AddRange(GetAssembliesWithPartsInternal().Select(i => new Tuple<Assembly, string>(i, null)));
@@ -1924,7 +1845,6 @@ namespace Emby.Server.Implementations
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 WanAddress = wanAddress,
                 HasUpdateAvailable = HasUpdateAvailable,
-                SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,
@@ -1961,18 +1881,9 @@ namespace Emby.Server.Implementations
             };
         }
 
-        public bool EnableHttps
-        {
-            get
-            {
-                return SupportsHttps && ServerConfigurationManager.Configuration.EnableHttps;
-            }
-        }
+        public bool EnableHttps => SupportsHttps && ServerConfigurationManager.Configuration.EnableHttps;
 
-        public bool SupportsHttps
-        {
-            get { return Certificate != null || ServerConfigurationManager.Configuration.IsBehindProxy; }
-        }
+        public bool SupportsHttps => Certificate != null || ServerConfigurationManager.Configuration.IsBehindProxy;
 
         public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken)
         {
@@ -2166,15 +2077,10 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public string FriendlyName
-        {
-            get
-            {
-                return string.IsNullOrEmpty(ServerConfigurationManager.Configuration.ServerName)
-                    ? Environment.MachineName
-                    : ServerConfigurationManager.Configuration.ServerName;
-            }
-        }
+        public string FriendlyName =>
+            string.IsNullOrEmpty(ServerConfigurationManager.Configuration.ServerName)
+                ? Environment.MachineName
+                : ServerConfigurationManager.Configuration.ServerName;
 
         public int HttpPort { get; private set; }
 
@@ -2211,7 +2117,7 @@ namespace Emby.Server.Implementations
         private bool _hasUpdateAvailable;
         public bool HasUpdateAvailable
         {
-            get { return _hasUpdateAvailable; }
+            get => _hasUpdateAvailable;
             set
             {
                 var fireEvent = value && !_hasUpdateAvailable;
@@ -2252,24 +2158,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// Configures the automatic run at startup.
-        /// </summary>
-        /// <param name="autorun">if set to <c>true</c> [autorun].</param>
-        protected void ConfigureAutoRunAtStartup(bool autorun)
-        {
-            if (SupportsAutoRunAtStartup)
-            {
-                ConfigureAutoRunInternal(autorun);
-            }
-        }
-
-        protected virtual void ConfigureAutoRunInternal(bool autorun)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This returns localhost in the case of no external dns, and the hostname if the 
+        /// This returns localhost in the case of no external dns, and the hostname if the
         /// dns is prefixed with a valid Uri prefix.
         /// </summary>
         /// <param name="externalDns">The external dns prefix to get the hostname of.</param>

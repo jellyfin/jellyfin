@@ -54,11 +54,11 @@ namespace MediaBrowser.Controller.LiveTv
 
             if (string.Equals(serviceName, EmbyServiceName, StringComparison.OrdinalIgnoreCase) || string.Equals(serviceName, "Next Pvr", StringComparison.OrdinalIgnoreCase))
             {
-                return 2 / 3;
+                return 2.0 / 3;
             }
             else
             {
-                return 16 / 9;
+                return 16.0 / 9;
             }
         }
 

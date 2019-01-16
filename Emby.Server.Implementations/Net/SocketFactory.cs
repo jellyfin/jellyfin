@@ -10,11 +10,11 @@ namespace Emby.Server.Implementations.Net
 {
     public class SocketFactory : ISocketFactory
     {
-        // THIS IS A LINKED FILE - SHARED AMONGST MULTIPLE PLATFORMS	
+        // THIS IS A LINKED FILE - SHARED AMONGST MULTIPLE PLATFORMS
         // Be careful to check any changes compile and work for all platform projects it is shared in.
 
         // Not entirely happy with this. Would have liked to have done something more generic/reusable,
-        // but that wasn't really the point so kept to YAGNI principal for now, even if the 
+        // but that wasn't really the point so kept to YAGNI principal for now, even if the
         // interfaces are a bit ugly, specific and make assumptions.
 
         private readonly ILogger _logger;
@@ -23,7 +23,7 @@ namespace Emby.Server.Implementations.Net
         {
             if (logger == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException(nameof(logger));
             }
 
             _logger = logger;
@@ -31,7 +31,7 @@ namespace Emby.Server.Implementations.Net
 
         public ISocket CreateTcpSocket(IpAddressInfo remoteAddress, int remotePort)
         {
-            if (remotePort < 0) throw new ArgumentException("remotePort cannot be less than zero.", "remotePort");
+            if (remotePort < 0) throw new ArgumentException("remotePort cannot be less than zero.", nameof(remotePort));
 
             var addressFamily = remoteAddress.AddressFamily == IpAddressFamily.InterNetwork
                 ? AddressFamily.InterNetwork
@@ -67,7 +67,7 @@ namespace Emby.Server.Implementations.Net
         /// <param name="localPort">An integer specifying the local port to bind the acceptSocket to.</param>
         public ISocket CreateUdpSocket(int localPort)
         {
-            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");
+            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
 
             var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
             try
@@ -86,7 +86,7 @@ namespace Emby.Server.Implementations.Net
 
         public ISocket CreateUdpBroadcastSocket(int localPort)
         {
-            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");
+            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
 
             var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
             try
@@ -111,7 +111,7 @@ namespace Emby.Server.Implementations.Net
         /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
         public ISocket CreateSsdpUdpSocket(IpAddressInfo localIpAddress, int localPort)
         {
-            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");
+            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
 
             var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
             try
@@ -142,10 +142,10 @@ namespace Emby.Server.Implementations.Net
         /// <returns></returns>
         public ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort)
         {
-            if (ipAddress == null) throw new ArgumentNullException("ipAddress");
-            if (ipAddress.Length == 0) throw new ArgumentException("ipAddress cannot be an empty string.", "ipAddress");
-            if (multicastTimeToLive <= 0) throw new ArgumentException("multicastTimeToLive cannot be zero or less.", "multicastTimeToLive");
-            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");
+            if (ipAddress == null) throw new ArgumentNullException(nameof(ipAddress));
+            if (ipAddress.Length == 0) throw new ArgumentException("ipAddress cannot be an empty string.", nameof(ipAddress));
+            if (multicastTimeToLive <= 0) throw new ArgumentException("multicastTimeToLive cannot be zero or less.", nameof(multicastTimeToLive));
+            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
 
             var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
 
@@ -212,26 +212,18 @@ namespace Emby.Server.Implementations.Net
         {
         }
 
-        public override bool CanRead
-        {
-            get { return true; }
-        }
-        public override bool CanSeek
-        {
-            get { return false; }
-        }
-        public override bool CanWrite
-        {
-            get { return true; }
-        }
-        public override long Length
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public override bool CanRead => true;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => true;
+
+        public override long Length => throw new NotImplementedException();
+
         public override long Position
         {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
         }
 
         public override void Write(byte[] buffer, int offset, int count)

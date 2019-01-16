@@ -23,7 +23,7 @@ namespace NLangDetect.Core
 
         public static string DetectLanguage(string plainText)
         {
-            if (string.IsNullOrEmpty(plainText)) { throw new ArgumentException("Argument can't be null nor empty.", "plainText"); }
+            if (string.IsNullOrEmpty(plainText)) { throw new ArgumentException("Argument can't be null nor empty.", nameof(plainText)); }
 
             Detector detector = DetectorFactory.Create(_DefaultAlpha);
 

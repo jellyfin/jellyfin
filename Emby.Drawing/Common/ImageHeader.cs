@@ -50,12 +50,13 @@ namespace Emby.Drawing.Common
         /// <exception cref="ArgumentException">The image was of an unrecognised format.</exception>
         public static ImageSize GetDimensions(string path, ILogger logger, IFileSystem fileSystem)
         {
-            var extension = Path.GetExtension(path);
-
-            if (string.IsNullOrEmpty(extension))
+            if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentException("ImageHeader doesn't support image file");
+                throw new ArgumentNullException(nameof(path));
             }
+
+            string extension = Path.GetExtension(path).ToLower();
+
             if (!SupportedExtensions.Contains(extension))
             {
                 throw new ArgumentException("ImageHeader doesn't support " + extension);
@@ -94,7 +95,7 @@ namespace Emby.Drawing.Common
                 }
             }
 
-            throw new ArgumentException(ErrorMessage, "binaryReader");
+            throw new ArgumentException(ErrorMessage, nameof(binaryReader));
         }
 
         /// <summary>
@@ -121,7 +122,7 @@ namespace Emby.Drawing.Common
         /// </summary>
         /// <param name="binaryReader">The binary reader.</param>
         /// <returns>System.Int16.</returns>
-        private static short ReadLittleEndianInt16(BinaryReader binaryReader)
+        private static short ReadLittleEndianInt16(this BinaryReader binaryReader)
         {
             var bytes = new byte[sizeof(short)];
 
@@ -137,7 +138,7 @@ namespace Emby.Drawing.Common
         /// </summary>
         /// <param name="binaryReader">The binary reader.</param>
         /// <returns>System.Int32.</returns>
-        private static int ReadLittleEndianInt32(BinaryReader binaryReader)
+        private static int ReadLittleEndianInt32(this BinaryReader binaryReader)
         {
             var bytes = new byte[sizeof(int)];
             for (int i = 0; i < sizeof(int); i += 1)
@@ -205,25 +206,30 @@ namespace Emby.Drawing.Common
         /// <exception cref="System.ArgumentException"></exception>
         private static ImageSize DecodeJfif(BinaryReader binaryReader)
         {
+            // A JPEG image consists of a sequence of segments,
+            // each beginning with a marker, each of which begins with a 0xFF byte
+            // followed by a byte indicating what kind of marker it is.
+            // Source: https://en.wikipedia.org/wiki/JPEG#Syntax_and_structure
             while (binaryReader.ReadByte() == 0xff)
             {
                 byte marker = binaryReader.ReadByte();
-                short chunkLength = ReadLittleEndianInt16(binaryReader);
-                if (marker == 0xc0)
+                short chunkLength = binaryReader.ReadLittleEndianInt16();
+                // SOF0: Indicates that this is a baseline DCT-based JPEG,
+                // and specifies the width, height, number of components, and component subsampling
+                // SOF2: Indicates that this is a progressive DCT-based JPEG,
+                // and specifies the width, height, number of components, and component subsampling
+                if (marker == 0xc0 || marker == 0xc2)
                 {
-                    binaryReader.ReadByte();
-                    int height = ReadLittleEndianInt16(binaryReader);
-                    int width = ReadLittleEndianInt16(binaryReader);
-                    return new ImageSize
-                    {
-                        Width = width,
-                        Height = height
-                    };
+                    // https://help.accusoft.com/ImageGear/v18.2/Windows/ActiveX/IGAX-10-12.html
+                    binaryReader.ReadByte(); // We don't care about the first byte
+                    int height = binaryReader.ReadLittleEndianInt16();
+                    int width = binaryReader.ReadLittleEndianInt16();
+                    return new ImageSize(width, height);
                 }
 
                 if (chunkLength < 0)
                 {
-                    var uchunkLength = (ushort)chunkLength;
+                    ushort uchunkLength = (ushort)chunkLength;
                     binaryReader.ReadBytes(uchunkLength - 2);
                 }
                 else

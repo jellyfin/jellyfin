@@ -31,13 +31,7 @@ namespace Emby.Server.Implementations.Data
         /// Gets the name of the repository
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get
-            {
-                return "SQLite";
-            }
-        }
+        public string Name => "SQLite";
 
         /// <summary>
         /// Opens the connection to the database
@@ -85,7 +79,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             var serialized = _jsonSerializer.SerializeToBytes(user);
@@ -122,7 +116,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             var serialized = _jsonSerializer.SerializeToBytes(user);
@@ -207,14 +201,13 @@ namespace Emby.Server.Implementations.Data
         /// Deletes the user.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
         public void DeleteUser(User user)
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             using (WriteLock.Write())

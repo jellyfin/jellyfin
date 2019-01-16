@@ -66,7 +66,7 @@ namespace MediaBrowser.Api.UserLibrary
         private BaseItemDto GetItem(GetYear request)
         {
             var item = LibraryManager.GetYear(request.Year);
-            
+
             var dtoOptions = GetDtoOptions(AuthorizationContext, request);
 
             if (!request.UserId.Equals(Guid.Empty))

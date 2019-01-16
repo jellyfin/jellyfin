@@ -77,7 +77,7 @@ namespace BDInfo
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             _fileSystem = fileSystem;
@@ -235,7 +235,7 @@ namespace BDInfo
                             break;
                         }
                     }
-                    else throw ex;
+                    else throw;
                 }
             }
 
@@ -273,7 +273,7 @@ namespace BDInfo
                             break;
                         }
                     }
-                    else throw ex;
+                    else throw;
                 }
             }
 
@@ -310,7 +310,7 @@ namespace BDInfo
                             break;
                         }
                     }
-                    else throw ex;
+                    else throw;
                 }
             }
 
@@ -336,7 +336,7 @@ namespace BDInfo
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             FileSystemMetadata dir = _fileSystem.GetDirectoryInfo(path);

@@ -27,7 +27,7 @@ namespace Emby.XmlTv.Entities
 
             if (Episode.HasValue || EpisodeCount.HasValue)
             {
-                builder.Append(builder.Length > 0 ? ", " : String.Empty);
+                builder.Append(builder.Length > 0 ? ", " : string.Empty);
                 builder.AppendFormat("Episode {0}", Episode.HasValue ? Episode.Value.ToString() : "?");
                 if (EpisodeCount.HasValue)
                 {
@@ -37,7 +37,7 @@ namespace Emby.XmlTv.Entities
 
             if (Part.HasValue || PartCount.HasValue)
             {
-                builder.Append(builder.Length > 0 ? ", " : String.Empty);
+                builder.Append(builder.Length > 0 ? ", " : string.Empty);
                 builder.AppendFormat("Part {0}", Part.HasValue ? Part.Value.ToString() : "?");
                 if (PartCount.HasValue)
                 {
@@ -49,5 +49,5 @@ namespace Emby.XmlTv.Entities
         }
     }
 
-    
+
 }

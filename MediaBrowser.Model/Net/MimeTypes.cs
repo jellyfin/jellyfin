@@ -127,7 +127,7 @@ namespace MediaBrowser.Model.Net
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             var ext = Path.GetExtension(path) ?? string.Empty;
@@ -183,6 +183,10 @@ namespace MediaBrowser.Model.Net
             {
                 return "text/plain";
             }
+            if (StringHelper.EqualsIgnoreCase(ext, ".log"))
+            {
+                return "text/plain";
+            }
             if (StringHelper.EqualsIgnoreCase(ext, ".xml"))
             {
                 return "application/xml";
@@ -228,10 +232,10 @@ namespace MediaBrowser.Model.Net
             if (StringHelper.EqualsIgnoreCase(ext, ".oga"))
             {
                 return "audio/ogg";
-			}
-			if (StringHelper.EqualsIgnoreCase(ext, ".opus"))
-			{
-				return "audio/ogg";
+            }
+            if (StringHelper.EqualsIgnoreCase(ext, ".opus"))
+            {
+                return "audio/ogg";
             }
             if (StringHelper.EqualsIgnoreCase(ext, ".ac3"))
             {
@@ -329,7 +333,7 @@ namespace MediaBrowser.Model.Net
         {
             if (string.IsNullOrEmpty(mimeType))
             {
-                throw new ArgumentNullException("mimeType");
+                throw new ArgumentNullException(nameof(mimeType));
             }
 
             // handle text/html; charset=UTF-8

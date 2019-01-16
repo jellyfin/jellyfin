@@ -15,6 +15,6 @@ namespace MediaBrowser.Controller.Plugins
             // Find all dictionaries using GetManifestResourceNames, start start with the prefix
             // Return the one for the culture if exists, otherwise return the default
             return null;
-        } 
+        }
     }
 }

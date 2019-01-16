@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text;
 using MediaBrowser.Common.Configuration;
@@ -10,15 +10,12 @@ namespace Emby.Server.Implementations.Devices
     public class DeviceId
     {
         private readonly IApplicationPaths _appPaths;
-		private readonly ILogger _logger;
-		private readonly IFileSystem _fileSystem;
+        private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
 
         private readonly object _syncLock = new object();
 
-        private string CachePath
-        {
-            get { return Path.Combine(_appPaths.DataPath, "device.txt"); }
-        }
+        private string CachePath => Path.Combine(_appPaths.DataPath, "device.txt");
 
         private string GetCachedId()
         {
@@ -26,7 +23,7 @@ namespace Emby.Server.Implementations.Devices
             {
                 lock (_syncLock)
                 {
-					var value = File.ReadAllText(CachePath, Encoding.UTF8);
+                    var value = File.ReadAllText(CachePath, Encoding.UTF8);
 
                     Guid guid;
                     if (Guid.TryParse(value, out guid))
@@ -57,7 +54,7 @@ namespace Emby.Server.Implementations.Devices
             {
                 var path = CachePath;
 
-				_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
                 lock (_syncLock)
                 {
@@ -70,7 +67,7 @@ namespace Emby.Server.Implementations.Devices
             }
         }
 
-        private string GetNewId()
+        private static string GetNewId()
         {
             return Guid.NewGuid().ToString("N");
         }
@@ -92,18 +89,16 @@ namespace Emby.Server.Implementations.Devices
 
         public DeviceId(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
         {
-			if (fileSystem == null) {
-				throw new ArgumentNullException ("fileSystem");
-			}
+            if (fileSystem == null)
+            {
+                throw new ArgumentNullException(nameof(fileSystem));
+            }
 
             _appPaths = appPaths;
             _logger = logger;
-			_fileSystem = fileSystem;
+            _fileSystem = fileSystem;
         }
 
-        public string Value
-        {
-            get { return _id ?? (_id = GetDeviceId()); }
-        }
+        public string Value => _id ?? (_id = GetDeviceId());
     }
 }

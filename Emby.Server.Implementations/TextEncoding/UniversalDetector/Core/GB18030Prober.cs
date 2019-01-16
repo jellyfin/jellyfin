@@ -21,7 +21,7 @@
  * Contributor(s):
  *          Shy Shalom <shooshX@gmail.com>
  *          Rudi Pettazzi <rudi.pettazzi@gmail.com> (C# port)
- * 
+ *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -38,7 +38,7 @@
 
 namespace UniversalDetector.Core
 {
-    // We use gb18030 to replace gb2312, because 18030 is a superset. 
+    // We use gb18030 to replace gb2312, because 18030 is a superset.
     public class GB18030Prober : CharsetProber
     {
         private CodingStateMachine codingSM;
@@ -52,18 +52,18 @@ namespace UniversalDetector.Core
             analyser = new GB18030DistributionAnalyser();
             Reset();
         }
-        
+
         public override string GetCharsetName()
         {
-            return "gb18030";        
+            return "gb18030";
         }
-        
+
 
         public override ProbingState HandleData(byte[] buf, int offset, int len)
         {
             int codingState = SMModel.START;
             int max = offset + len;
-            
+
             for (int i = offset; i < max; i++) {
                 codingState = codingSM.NextState(buf[i]);
                 if (codingState == SMModel.ERROR) {
@@ -91,18 +91,18 @@ namespace UniversalDetector.Core
                 if (analyser.GotEnoughData() && GetConfidence() > SHORTCUT_THRESHOLD)
                     state = ProbingState.FoundIt;
             }
-            
+
             return state;
         }
-        
+
         public override float GetConfidence()
         {
             return analyser.GetConfidence();
         }
-        
+
         public override void Reset()
         {
-            codingSM.Reset(); 
+            codingSM.Reset();
             state = ProbingState.Detecting;
             analyser.Reset();
         }

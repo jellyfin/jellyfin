@@ -29,7 +29,7 @@ namespace Emby.Naming.AudioBook
         /// </summary>
         /// <value>The alternate versions.</value>
         public List<AudioBookFileInfo> AlternateVersions { get; set; }
-        
+
         public AudioBookInfo()
         {
             Files = new List<AudioBookFileInfo>();

@@ -1,4 +1,3 @@
-﻿
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,7 +12,6 @@ using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Services;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Security;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
@@ -97,7 +95,7 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <summary>
-        /// Applies the request filters. Returns whether or not the request has been handled 
+        /// Applies the request filters. Returns whether or not the request has been handled
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
@@ -181,7 +179,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private Exception GetActualException(Exception ex)
+        private static Exception GetActualException(Exception ex)
         {
             if (ex is AggregateException agg)
             {
@@ -209,7 +207,6 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 case ArgumentException _:                 return 400;
                 case SecurityException _:                 return 401;
-                case PaymentRequiredException _:          return 402;
                 case DirectoryNotFoundException _:
                 case FileNotFoundException _:
                 case ResourceNotFoundException _:         return 404;
@@ -319,7 +316,7 @@ namespace Emby.Server.Implementations.HttpServer
                 && (string.IsNullOrEmpty(localPath) || localPath.IndexOf("system/ping", StringComparison.OrdinalIgnoreCase) == -1));
         }
 
-        private string GetExtension(string url)
+        private static string GetExtension(string url)
         {
             var parts = url.Split(new[] { '?' }, 2);
 
@@ -352,18 +349,18 @@ namespace Emby.Server.Implementations.HttpServer
             string pagePathWithoutQueryString = url.Split(new[] { '?' }, StringSplitOptions.RemoveEmptyEntries)[0];
 
             return newQueryString.Count > 0
-                ? String.Format("{0}?{1}", pagePathWithoutQueryString, newQueryString)
+                ? string.Format("{0}?{1}", pagePathWithoutQueryString, newQueryString)
                 : pagePathWithoutQueryString;
         }
 
-        private string GetUrlToLog(string url)
+        private static string GetUrlToLog(string url)
         {
             url = RemoveQueryStringByKey(url, "api_key");
 
             return url;
         }
 
-        private string NormalizeConfiguredLocalAddress(string address)
+        private static string NormalizeConfiguredLocalAddress(string address)
         {
             var index = address.Trim('/').IndexOf('/');
 
@@ -698,7 +695,7 @@ namespace Emby.Server.Implementations.HttpServer
             return null;
         }
 
-        private Task Write(IResponse response, string text)
+        private static Task Write(IResponse response, string text)
         {
             var bOutput = Encoding.UTF8.GetBytes(text);
             response.SetContentLength(bOutput.Length);
@@ -817,7 +814,9 @@ namespace Emby.Server.Implementations.HttpServer
             return _jsonSerializer.DeserializeFromStreamAsync(stream, type);
         }
 
-        private string NormalizeEmbyRoutePath(string path)
+        //TODO Add Jellyfin Route Path Normalizer
+
+        private static string NormalizeEmbyRoutePath(string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {
@@ -827,7 +826,7 @@ namespace Emby.Server.Implementations.HttpServer
             return "emby/" + path;
         }
 
-        private string NormalizeMediaBrowserRoutePath(string path)
+        private static string NormalizeMediaBrowserRoutePath(string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {
@@ -837,7 +836,7 @@ namespace Emby.Server.Implementations.HttpServer
             return "mediabrowser/" + path;
         }
 
-        private string DoubleNormalizeEmbyRoutePath(string path)
+        private static string DoubleNormalizeEmbyRoutePath(string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {

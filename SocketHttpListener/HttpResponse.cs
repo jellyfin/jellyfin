@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
@@ -56,7 +56,7 @@ namespace SocketHttpListener
             }
         }
 
-        private CookieCollection GetCookies(QueryParamCollection headers, bool response)
+        private static CookieCollection GetCookies(QueryParamCollection headers, bool response)
         {
             var name = response ? "Set-Cookie" : "Cookie";
             return headers == null || !headers.Contains(name)
