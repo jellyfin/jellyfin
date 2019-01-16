@@ -21,7 +21,7 @@
  * Contributor(s):
  *          Shy Shalom <shooshX@gmail.com>
  *          Rudi Pettazzi <rudi.pettazzi@gmail.com> (C# port)
- * 
+ *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -40,7 +40,7 @@ using System;
 
 namespace UniversalDetector.Core
 {
-    // TODO: Using trigrams the detector should be able to discriminate between 
+    // TODO: Using trigrams the detector should be able to discriminate between
     // latin-1 and iso8859-2
     public class Latin1Prober : CharsetProber
     {
@@ -54,9 +54,9 @@ namespace UniversalDetector.Core
         private const int ACO = 5;       // accent capital other
         private const int ASV = 6;       // accent small vowel
         private const int ASO = 7;       // accent small other
-        
+
         private const int CLASS_NUM = 8; // total classes
-        
+
         private readonly static byte[] Latin1_CharToClass = {
           OTH, OTH, OTH, OTH, OTH, OTH, OTH, OTH,   // 00 - 07
           OTH, OTH, OTH, OTH, OTH, OTH, OTH, OTH,   // 08 - 0F
@@ -92,36 +92,36 @@ namespace UniversalDetector.Core
           ASV, ASV, ASV, ASV, ASV, ASO, ASO, ASO,   // F8 - FF
         };
 
-        /* 0 : illegal 
-           1 : very unlikely 
-           2 : normal 
+        /* 0 : illegal
+           1 : very unlikely
+           2 : normal
            3 : very likely
         */
         private readonly static byte[] Latin1ClassModel = {
             /*      UDF OTH ASC ASS ACV ACO ASV ASO  */
             /*UDF*/  0,  0,  0,  0,  0,  0,  0,  0,
             /*OTH*/  0,  3,  3,  3,  3,  3,  3,  3,
-            /*ASC*/  0,  3,  3,  3,  3,  3,  3,  3, 
+            /*ASC*/  0,  3,  3,  3,  3,  3,  3,  3,
             /*ASS*/  0,  3,  3,  3,  1,  1,  3,  3,
             /*ACV*/  0,  3,  3,  3,  1,  2,  1,  2,
-            /*ACO*/  0,  3,  3,  3,  3,  3,  3,  3, 
-            /*ASV*/  0,  3,  1,  3,  1,  1,  1,  3, 
+            /*ACO*/  0,  3,  3,  3,  3,  3,  3,  3,
+            /*ASV*/  0,  3,  1,  3,  1,  1,  1,  3,
             /*ASO*/  0,  3,  1,  3,  1,  1,  3,  3,
         };
 
         private byte lastCharClass;
         private int[] freqCounter = new int[FREQ_CAT_NUM];
-        
+
         public Latin1Prober()
         {
             Reset();
         }
 
-        public override string GetCharsetName() 
+        public override string GetCharsetName()
         {
             return "windows-1252";
         }
-        
+
         public override void Reset()
         {
             state = ProbingState.Detecting;
@@ -129,12 +129,12 @@ namespace UniversalDetector.Core
             for (int i = 0; i < FREQ_CAT_NUM; i++)
                 freqCounter[i] = 0;
         }
-        
+
         public override ProbingState HandleData(byte[] buf, int offset, int len)
         {
             byte[] newbuf = FilterWithEnglishLetters(buf, offset, len);
             byte charClass, freq;
-            
+
             for (int i = 0; i < newbuf.Length; i++) {
                 charClass = Latin1_CharToClass[newbuf[i]];
                 freq = Latin1ClassModel[lastCharClass * CLASS_NUM + charClass];
@@ -152,21 +152,21 @@ namespace UniversalDetector.Core
         {
             if (state == ProbingState.NotMe)
                 return 0.01f;
-            
+
             float confidence = 0.0f;
             int total = 0;
             for (int i = 0; i < FREQ_CAT_NUM; i++) {
                 total += freqCounter[i];
             }
-            
+
             if (total <= 0) {
                 confidence = 0.0f;
             } else {
                 confidence = freqCounter[3] * 1.0f / total;
                 confidence -= freqCounter[1] * 20.0f / total;
             }
-            
-            // lower the confidence of latin1 so that other more accurate detector 
+
+            // lower the confidence of latin1 so that other more accurate detector
             // can take priority.
             return confidence < 0.0f ? 0.0f : confidence * 0.5f;
         }

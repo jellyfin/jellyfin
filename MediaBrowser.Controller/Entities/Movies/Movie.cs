@@ -51,7 +51,7 @@ namespace MediaBrowser.Controller.Entities.Movies
                 return 0;
             }
 
-            return 2 / 3;
+            return 2.0 / 3;
         }
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)

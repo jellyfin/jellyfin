@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -61,7 +61,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// Sets the provider id from path.
         /// </summary>
         /// <param name="item">The item.</param>
-        private void SetProviderIdFromPath(BaseItem item)
+        private static void SetProviderIdFromPath(BaseItem item)
         {
             //we need to only look at the name of this actual item (not parents)
             var justName = Path.GetFileName(item.Path);

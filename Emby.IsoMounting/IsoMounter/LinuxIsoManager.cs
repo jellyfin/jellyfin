@@ -44,13 +44,13 @@ namespace IsoMounter
             _logger.LogDebug(
                 "[{0}] System PATH is currently set to [{1}].",
                 Name,
-                EnvironmentInfo.GetEnvironmentVariable("PATH") ?? ""
+                Environment.GetEnvironmentVariable("PATH") ?? ""
             );
 
             _logger.LogDebug(
                 "[{0}] System path separator is [{1}].",
                 Name,
-                EnvironmentInfo.PathSeparator
+                Path.PathSeparator
             );
 
             _logger.LogDebug(
@@ -87,7 +87,7 @@ namespace IsoMounter
                 UmountCommand
             );
 
-            if (!String.IsNullOrEmpty(SudoCommand) && !String.IsNullOrEmpty(MountCommand) && !String.IsNullOrEmpty(UmountCommand)) {
+            if (!string.IsNullOrEmpty(SudoCommand) && !string.IsNullOrEmpty(MountCommand) && !string.IsNullOrEmpty(UmountCommand)) {
                 ExecutablesAvailable = true;
             } else {
                 ExecutablesAvailable = false;
@@ -118,25 +118,27 @@ namespace IsoMounter
         public bool CanMount(string path)
         {
 
-            if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Linux) {
-                _logger.LogInformation(
-                    "[{0}] Checking we can attempt to mount [{1}], Extension = [{2}], Operating System = [{3}], Executables Available = [{4}].",
-                    Name,
-                    path,
-                    Path.GetExtension(path),
-                    EnvironmentInfo.OperatingSystem,
-                    ExecutablesAvailable.ToString()
-                );
-
-                if (ExecutablesAvailable) {
-                    return string.Equals(Path.GetExtension(path), ".iso", StringComparison.OrdinalIgnoreCase);
-                } else {
-                    return false;
-                }
-            } else {
+            if (EnvironmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Linux)
+            {
                 return false;
             }
+            _logger.LogInformation(
+                "[{0}] Checking we can attempt to mount [{1}], Extension = [{2}], Operating System = [{3}], Executables Available = [{4}].",
+                Name,
+                path,
+                Path.GetExtension(path),
+                EnvironmentInfo.OperatingSystem,
+                ExecutablesAvailable.ToString()
+            );
 
+            if (ExecutablesAvailable)
+            {
+                return string.Equals(Path.GetExtension(path), ".iso", StringComparison.OrdinalIgnoreCase);
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public Task Install(CancellationToken cancellationToken)
@@ -150,7 +152,7 @@ namespace IsoMounter
                 return Task.FromResult<IIsoMount>(mountedISO);
             }
             else {
-                throw new IOException(String.Format(
+                throw new IOException(string.Format(
                     "An error occurred trying to mount image [$0].",
                     isoPath
                 ));
@@ -211,18 +213,16 @@ namespace IsoMounter
         private string GetFullPathForExecutable(string name)
         {
 
-            foreach (string test in (EnvironmentInfo.GetEnvironmentVariable("PATH") ?? "").Split(EnvironmentInfo.PathSeparator)) {
-
+            foreach (string test in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator))
+            {
                 string path = test.Trim();
 
-                if (!String.IsNullOrEmpty(path) && FileSystem.FileExists(path = Path.Combine(path, name))) {
+                if (!string.IsNullOrEmpty(path) && FileSystem.FileExists(path = Path.Combine(path, name))) {
                     return FileSystem.GetFullPath(path);
                 }
-
             }
 
-            return String.Empty;
-
+            return string.Empty;
         }
 
         private uint GetUID()
@@ -315,9 +315,9 @@ namespace IsoMounter
                 );
 
             } else {
-                
+
                 throw new ArgumentNullException(nameof(isoPath));
-            
+
             }
 
             try
@@ -397,9 +397,9 @@ namespace IsoMounter
                 );
 
             } else {
-                
+
                 throw new ArgumentNullException(nameof(mount));
-            
+
             }
 
             if (GetUID() == 0) {
@@ -444,7 +444,7 @@ namespace IsoMounter
         }
 
         #endregion
-  
+
         #region Internal Methods
 
         internal void OnUnmount(LinuxMount mount)

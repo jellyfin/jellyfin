@@ -114,10 +114,10 @@ namespace Emby.Dlna.PlayTo
             info.Headers.TryGetValue("NTS", out nts);
 
             string usn;
-            if (!info.Headers.TryGetValue("USN", out usn)) usn = String.Empty;
+            if (!info.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
 
             string nt;
-            if (!info.Headers.TryGetValue("NT", out nt)) nt = String.Empty;
+            if (!info.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
 
             if (usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
                 !_disposed)
@@ -829,7 +829,7 @@ namespace Emby.Dlna.PlayTo
             {
                 if (string.IsNullOrEmpty(url))
                 {
-                    throw new ArgumentNullException("url");
+                    throw new ArgumentNullException(nameof(url));
                 }
 
                 var parts = url.Split('/');
@@ -855,7 +855,7 @@ namespace Emby.Dlna.PlayTo
             {
                 if (string.IsNullOrEmpty(url))
                 {
-                    throw new ArgumentNullException("url");
+                    throw new ArgumentNullException(nameof(url));
                 }
 
                 var request = new StreamParams

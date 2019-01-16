@@ -740,7 +740,7 @@ namespace SocketHttpListener
         {
             if (data == null)
             {
-                throw new ArgumentNullException("data");
+                throw new ArgumentNullException(nameof(data));
             }
 
             var msg = _readyState.CheckIfOpen();
@@ -765,7 +765,7 @@ namespace SocketHttpListener
         {
             if (data == null)
             {
-                throw new ArgumentNullException("data");
+                throw new ArgumentNullException(nameof(data));
             }
 
             var msg = _readyState.CheckIfOpen();

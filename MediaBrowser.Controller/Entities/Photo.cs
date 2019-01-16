@@ -79,8 +79,7 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
-                width /= Height.Value;
-                return width;
+                return width / height;
             }
 
             return base.GetDefaultPrimaryImageAspectRatio();

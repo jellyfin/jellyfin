@@ -41,7 +41,7 @@
         /// The custom rating
         /// </summary>
         CustomRating,
-        
+
         /// <summary>
         /// The date created of the item
         /// </summary>

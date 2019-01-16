@@ -21,7 +21,7 @@
  * Contributor(s):
  *          Shy Shalom <shooshX@gmail.com>
  *          Rudi Pettazzi <rudi.pettazzi@gmail.com> (C# port)
- * 
+ *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -40,12 +40,12 @@ namespace UniversalDetector.Core
 {
     public abstract class CyrillicModel : SequenceModel
     {
-        // Model Table: 
+        // Model Table:
         // total sequences: 100%
         // first 512 sequences: 97.6601%
         // first 1024 sequences: 2.3389%
         // rest  sequences:      0.1237%
-        // negative sequences:   0.0009% 
+        // negative sequences:   0.0009%
         protected readonly static byte[] RUSSIAN_LANG_MODEL = {
             0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,1,3,3,3,3,1,3,3,3,2,3,2,3,3,
             3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,3,2,2,2,2,2,0,0,2,
@@ -176,13 +176,13 @@ namespace UniversalDetector.Core
             0,1,1,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
             0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,
         };
-        
-        public CyrillicModel(byte[] charToOrderMap, string name) 
+
+        public CyrillicModel(byte[] charToOrderMap, string name)
             : base(charToOrderMap, RUSSIAN_LANG_MODEL, 0.976601f, false, name)
         {
         }
     }
-    
+
     public class Koi8rModel : CyrillicModel
     {
         private readonly static byte[] KOI8R_CHAR_TO_ORDER_MAP = {
@@ -203,12 +203,12 @@ namespace UniversalDetector.Core
          59, 37, 44, 58, 41, 48, 53, 46, 55, 42, 60, 36, 49, 38, 31, 34,  //e0
          35, 43, 45, 32, 40, 52, 56, 33, 61, 62, 51, 57, 47, 63, 50, 70,  //f0
         };
-        
+
         public Koi8rModel() : base(KOI8R_CHAR_TO_ORDER_MAP, "KOI8-R")
         {
         }
     }
-    
+
     public class Win1251Model : CyrillicModel
     {
         private readonly static byte[] WIN1251_CHAR_TO_ORDER_MAP = {
@@ -229,12 +229,12 @@ namespace UniversalDetector.Core
           3, 21, 10, 19, 13,  2, 24, 20,  4, 23, 11,  8, 12,  5,  1, 15,
           9,  7,  6, 14, 39, 26, 28, 22, 25, 29, 54, 18, 17, 30, 27, 16,
         };
-        
+
         public Win1251Model() : base(WIN1251_CHAR_TO_ORDER_MAP, "windows-1251")
         {
         }
     }
-    
+
     public class Latin5Model : CyrillicModel
     {
         private readonly static byte[] LATIN5_CHAR_TO_ORDER_MAP = {
@@ -254,13 +254,13 @@ namespace UniversalDetector.Core
               3, 21, 10, 19, 13,  2, 24, 20,  4, 23, 11,  8, 12,  5,  1, 15,
               9,  7,  6, 14, 39, 26, 28, 22, 25, 29, 54, 18, 17, 30, 27, 16,
             239, 68,240,241,242,243,244,245,246,247,248,249,250,251,252,255,
-            };      
-        
+            };
+
         public Latin5Model() : base(LATIN5_CHAR_TO_ORDER_MAP, "ISO-8859-5")
         {
         }
     }
-    
+
     public class MacCyrillicModel : CyrillicModel
     {
         private readonly static byte[] MACCYRILLIC_CHAR_TO_ORDER_MAP = {
@@ -281,7 +281,7 @@ namespace UniversalDetector.Core
           3, 21, 10, 19, 13,  2, 24, 20,  4, 23, 11,  8, 12,  5,  1, 15,
           9,  7,  6, 14, 39, 26, 28, 22, 25, 29, 54, 18, 17, 30, 27,255,
         };
-        
+
         public MacCyrillicModel() : base(MACCYRILLIC_CHAR_TO_ORDER_MAP,
                                         "x-mac-cyrillic")
         {
@@ -308,7 +308,7 @@ namespace UniversalDetector.Core
          43,  9, 45,  7, 32,  6, 40, 14, 52, 24, 56, 10, 33, 17, 61,249,
         250, 18, 62, 20, 51, 25, 57, 30, 47, 29, 63, 22, 50,251,252,255,
         };
-                
+
         public Ibm855Model() : base(IBM855_BYTE_TO_ORDER_MAP, "IBM855")
         {
         }
@@ -334,12 +334,12 @@ namespace UniversalDetector.Core
           9,  7,  6, 14, 39, 26, 28, 22, 25, 29, 54, 18, 17, 30, 27, 16,
         239, 68,240,241,242,243,244,245,246,247,248,249,250,251,252,255,
         };
-        
+
         public Ibm866Model() : base(IBM866_CHAR_TO_ORDER_MAP, "IBM866")
         {
         }
     }
 
-    
-    
+
+
 }

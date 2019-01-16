@@ -1030,7 +1030,7 @@ namespace MediaBrowser.Api.LiveTv
             query.IsKids = request.IsKids;
             query.IsSports = request.IsSports;
             query.SeriesTimerId = request.SeriesTimerId;
-            query.Genres = (request.Genres ?? String.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            query.Genres = (request.Genres ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             query.GenreIds = GetGuids(request.GenreIds);
 
             if (!request.LibrarySeriesId.Equals(Guid.Empty))

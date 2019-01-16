@@ -8,10 +8,6 @@ namespace MediaBrowser.Model.System
         string OperatingSystemName { get; }
         string OperatingSystemVersion { get; }
         Architecture SystemArchitecture { get; }
-        string GetEnvironmentVariable(string name);
-        void SetProcessEnvironmentVariable(string name, string value);
-        string StackTrace { get; }
-        char PathSeparator { get; }
     }
 
     public enum OperatingSystem

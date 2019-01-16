@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Session;
 using System;
@@ -49,7 +49,7 @@ namespace Emby.Dlna.PlayTo
             return playlistItem;
         }
 
-        private bool IsSupported(DirectPlayProfile profile, Photo item)
+        private static bool IsSupported(DirectPlayProfile profile, Photo item)
         {
             var mediaPath = item.Path;
 

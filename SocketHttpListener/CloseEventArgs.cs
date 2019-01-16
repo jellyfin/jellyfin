@@ -33,10 +33,10 @@ namespace SocketHttpListener
 
       _reason = len > 2
                 ? GetUtf8String(data.SubArray (2, len - 2))
-                : String.Empty;
+                : string.Empty;
     }
 
-      private string GetUtf8String(byte[] bytes)
+      private static string GetUtf8String(byte[] bytes)
       {
           return Encoding.UTF8.GetString(bytes, 0, bytes.Length);
       }

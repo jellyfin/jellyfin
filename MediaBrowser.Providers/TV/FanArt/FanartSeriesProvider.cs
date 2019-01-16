@@ -36,7 +36,6 @@ namespace MediaBrowser.Providers.TV
         private readonly IJsonSerializer _json;
 
         private const string FanArtBaseUrl = "https://webservice.fanart.tv/v3/tv/{1}?api_key={0}";
-        // &client_key=52c813aa7b8c8b3bb87f4797532a2f8c
 
         internal static FanartSeriesProvider Current { get; private set; }
 
@@ -69,7 +68,7 @@ namespace MediaBrowser.Providers.TV
         {
             return new List<ImageType>
             {
-                ImageType.Primary, 
+                ImageType.Primary,
                 ImageType.Thumb,
                 ImageType.Art,
                 ImageType.Logo,
@@ -312,7 +311,7 @@ namespace MediaBrowser.Providers.TV
 
             var path = GetFanartJsonPath(tvdbId);
 
-			_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
 
             try
             {

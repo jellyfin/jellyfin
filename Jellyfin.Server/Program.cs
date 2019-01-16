@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Security;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Emby.Drawing;
 using Emby.Drawing.Skia;
@@ -13,7 +14,6 @@ using Emby.Server.Implementations;
 using Emby.Server.Implementations.EnvironmentInfo;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
-using Jellyfin.Server.Native;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
@@ -30,12 +30,12 @@ namespace Jellyfin.Server
 {
     public static class Program
     {
-        private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
-        private static ILoggerFactory _loggerFactory;
+        private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
+        private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
         private static ILogger _logger;
         private static bool _restartOnShutdown;
 
-        public static async Task<int> Main(string[] args)
+        public static async Task Main(string[] args)
         {
             StartupOptions options = new StartupOptions(args);
             Version version = Assembly.GetEntryAssembly().GetName().Version;
@@ -43,16 +43,41 @@ namespace Jellyfin.Server
             if (options.ContainsOption("-v") || options.ContainsOption("--version"))
             {
                 Console.WriteLine(version.ToString());
-                return 0;
             }
 
             ServerApplicationPaths appPaths = createApplicationPaths(options);
+            // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
+            Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
             await createLogger(appPaths);
-            _loggerFactory = new SerilogLoggerFactory();
             _logger = _loggerFactory.CreateLogger("Main");
 
-            AppDomain.CurrentDomain.UnhandledException += (sender, e) 
+            AppDomain.CurrentDomain.UnhandledException += (sender, e)
                 => _logger.LogCritical((Exception)e.ExceptionObject, "Unhandled Exception");
+
+            // Intercept Ctrl+C and Ctrl+Break
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                if (_tokenSource.IsCancellationRequested)
+                {
+                    return; // Already shutting down
+                }
+                e.Cancel = true;
+                _logger.LogInformation("Ctrl+C, shutting down");
+                Environment.ExitCode = 128 + 2;
+                Shutdown();
+            };
+
+            // Register a SIGTERM handler
+            AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+            {
+                if (_tokenSource.IsCancellationRequested)
+                {
+                    return; // Already shutting down
+                }
+                _logger.LogInformation("Received a SIGTERM signal, shutting down");
+                Environment.ExitCode = 128 + 15;
+                Shutdown();
+            };
 
             _logger.LogInformation("Jellyfin version: {Version}", version);
 
@@ -71,7 +96,6 @@ namespace Jellyfin.Server
                 _loggerFactory,
                 options,
                 fileSystem,
-                new PowerManagement(),
                 environmentInfo,
                 new NullImageEncoder(),
                 new SystemEvents(_loggerFactory.CreateLogger("SystemEvents")),
@@ -86,8 +110,16 @@ namespace Jellyfin.Server
                 await appHost.RunStartupTasks();
 
                 // TODO: read input for a stop command
-                // Block main thread until shutdown
-                await ApplicationTaskCompletionSource.Task;
+
+                try
+                {
+                    // Block main thread until shutdown
+                    await Task.Delay(-1, _tokenSource.Token);
+                }
+                catch (TaskCanceledException)
+                {
+                    // Don't throw on cancellation
+                }
 
                 _logger.LogInformation("Disposing app host");
             }
@@ -96,8 +128,6 @@ namespace Jellyfin.Server
             {
                 StartNewInstance(options);
             }
-
-            return 0;
         }
 
         private static ServerApplicationPaths createApplicationPaths(StartupOptions options)
@@ -140,23 +170,8 @@ namespace Jellyfin.Server
                 }
                 else
                 {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        configDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    }
-                    else
-                    {
-                        // $XDG_CONFIG_HOME defines the base directory relative to which user specific configuration files should be stored.
-                        configDir = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
-                        // If $XDG_CONFIG_HOME is either not set or empty, $HOME/.config should be used.
-                        if (string.IsNullOrEmpty(configDir))
-                        {
-                            configDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
-                        }
-                    }
-                    configDir = Path.Combine(configDir, "jellyfin");
-                    // Ensure the dir exists
-                    Directory.CreateDirectory(configDir);
+                    // Let BaseApplicationPaths set up the default value
+                    configDir = null;
                 }
             }
 
@@ -169,12 +184,9 @@ namespace Jellyfin.Server
                 }
                 else
                 {
-                    logDir = Path.Combine(programDataPath, "logs");
-                    // Ensure the dir exists
-                    Directory.CreateDirectory(logDir);
+                    // Let BaseApplicationPaths set up the default value
+                    logDir = null;
                 }
-                // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
-                Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", logDir);
             }
 
             string appPath = AppContext.BaseDirectory;
@@ -226,9 +238,9 @@ namespace Jellyfin.Server
         }
 
         public static IImageEncoder getImageEncoder(
-            ILogger logger, 
-            IFileSystem fileSystem, 
-            StartupOptions startupOptions, 
+            ILogger logger,
+            IFileSystem fileSystem,
+            StartupOptions startupOptions,
             Func<IHttpClient> httpClient,
             IApplicationPaths appPaths,
             IEnvironmentInfo environment,
@@ -274,9 +286,12 @@ namespace Jellyfin.Server
             }
         }
 
-        public static  void Shutdown()
+        public static void Shutdown()
         {
-            ApplicationTaskCompletionSource.SetResult(true);
+            if (!_tokenSource.IsCancellationRequested)
+            {
+                _tokenSource.Cancel();
+            }
         }
 
         public static void Restart()
@@ -305,7 +320,7 @@ namespace Jellyfin.Server
             }
             else
             {
-                commandLineArgsString = string .Join(" ", 
+                commandLineArgsString = string .Join(" ",
                     Environment.GetCommandLineArgs()
                         .Skip(1)
                         .Select(NormalizeCommandLineArgument)

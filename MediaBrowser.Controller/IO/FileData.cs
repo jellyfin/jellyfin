@@ -46,11 +46,11 @@ namespace MediaBrowser.Controller.IO
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
             if (args == null)
             {
-                throw new ArgumentNullException("args");
+                throw new ArgumentNullException(nameof(args));
             }
 
             var entries = directoryService.GetFileSystemEntries(path);

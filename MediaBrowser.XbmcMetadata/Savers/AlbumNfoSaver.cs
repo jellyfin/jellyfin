@@ -41,7 +41,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
             var album = (MusicAlbum)item;
-            
+
             foreach (var artist in album.Artists)
             {
                 writer.WriteElementString("artist", artist);
@@ -53,8 +53,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
 
             AddTracks(album.Tracks, writer);
-        }        
-        
+        }
+
         private readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         private void AddTracks(IEnumerable<BaseItem> tracks, XmlWriter writer)

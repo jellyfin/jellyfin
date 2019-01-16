@@ -1,4 +1,4 @@
-﻿using SkiaSharp;
+using SkiaSharp;
 using MediaBrowser.Common.Configuration;
 using System;
 using System.IO;
@@ -20,6 +20,11 @@ namespace Emby.Drawing.Skia
 
         public static SKEncodedImageFormat GetEncodedFormat(string outputPath)
         {
+            if (outputPath == null)
+            {
+                throw new ArgumentNullException(nameof(outputPath));
+            }
+
             var ext = Path.GetExtension(outputPath).ToLower();
 
             if (ext == ".jpg" || ext == ".jpeg")

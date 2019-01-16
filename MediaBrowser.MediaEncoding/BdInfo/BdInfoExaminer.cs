@@ -1,4 +1,4 @@
-﻿using BDInfo;
+using BDInfo;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using System;
@@ -32,7 +32,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
         {
             if (string.IsNullOrWhiteSpace(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             var bdrom = new BDROM(path, _fileSystem, _textEncoding);

@@ -1,4 +1,4 @@
-﻿using Emby.Naming.Common;
+using Emby.Naming.Common;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -74,7 +74,7 @@ namespace Emby.Naming.TV
             return result ?? new EpisodePathParserResult();
         }
 
-        private EpisodePathParserResult Parse(string name, EpisodeExpression expression)
+        private static EpisodePathParserResult Parse(string name, EpisodeExpression expression)
         {
             var result = new EpisodePathParserResult();
 

@@ -29,8 +29,8 @@ namespace Emby.Server.Implementations.Services
 
         public HttpStatusCode StatusCode
         {
-            get { return (HttpStatusCode)Status; }
-            set { Status = (int)value; }
+            get => (HttpStatusCode)Status;
+            set => Status = (int)value;
         }
 
         public IRequest RequestContext { get; set; }

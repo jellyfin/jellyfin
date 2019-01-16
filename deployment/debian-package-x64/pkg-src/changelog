@@ -1,0 +1,67 @@
+jellyfin (10.0.2-1) unstable; urgency=medium
+
+  * Hotfix release
+  * jellyfin/jellyfin-web#23: Update Chromecast app ID [via direct commit]
+  * #540: Update Emby API keys to our own
+  * #541: Change ItemId to Guid in ProviderManager
+  * #566: Avoid printing stacktrace when bind to port 1900 fails
+
+jellyfin (10.0.1-1) unstable; urgency=medium
+
+  * Hotfix release, corrects several small bugs from 10.0.0
+  * #512: Fix CONTRIBUTORS.md formatting
+  * #501: Fix regression in integer divisions in latest movies category
+  * #498: Change contributing link in settings to readthedocs.io
+  * #493: Remove unused values.txt resource
+  * #491: Fix userprofile.js crash
+  * #519: Fix the DecodeJfif function to get proper image sizes
+  * #486: Add NuGet package info to plugin projects
+
+ -- Joshua Boniface <joshua@boniface.me>  Tue, 08 Jan 2019 20:06:01 -0500
+
+jellyfin (10.0.0-1) unstable; urgency=medium
+
+  * The first Jellyfin release under our new versioning scheme
+  * Numerous bugfixes and code readability improvements
+  * Updated logging configuration, including flag for it and configdir
+  * Updated theming including logo
+  * Dozens of other improvements as documented in GitHub pull request #419
+
+ -- Joshua Boniface <joshua@boniface.me>  Sat, 05 Jan 2019 15:39:25 -0500
+
+jellyfin (3.5.2-5) unstable; urgency=medium
+
+  * Fully GPL'd release - remove tainted code from MediaBrowser.Common
+  * Several code cleanups and tweaks
+
+ -- Joshua Boniface <joshua@boniface.me>  Fri, 28 Dec 2018 10:26:30 -0500
+
+jellyfin (3.5.2-4) unstable; urgency=medium
+
+  * Correct manifest.json bug and vdpau
+
+ -- Joshua Boniface <joshua@boniface.me>  Thu, 20 Dec 2018 18:31:43 -0500
+
+jellyfin (3.5.2-3) unstable; urgency=medium
+
+  * Correct several bugs in 3.5.2-2 packaging
+
+ -- Joshua Boniface <joshua@boniface.me>  Sat, 15 Dec 2018 18:17:32 -0500
+
+jellyfin (3.5.2-2) unstable; urgency=medium
+
+  * Major code updates related to rebranding and cleanup
+
+ -- Joshua Boniface <joshua@boniface.me>  Fri, 14 Dec 2018 00:07:46 -0500
+
+jellyfin (3.5.2-1) unstable; urgency=medium
+
+  * Add ffmpeg dependency and cleanup work
+
+ -- Joshua Boniface <joshua@boniface.me>  Tue, 11 Dec 2018 20:55:32 -0500
+
+jellyfin (3.5.2) unstable; urgency=medium
+
+  * Rename from emby-server on version 3.5.2
+
+ -- Joshua Boniface <joshua@boniface.me>  Sun, 9 Dec 2018 15:20:58 -0400

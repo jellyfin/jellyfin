@@ -311,7 +311,7 @@ namespace Emby.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, avCommands.BuildPost(command, service.ServiceType, String.Format("{0:hh}:{0:mm}:{0:ss}", value), "REL_TIME"))
+            await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, avCommands.BuildPost(command, service.ServiceType, string.Format("{0:hh}:{0:mm}:{0:ss}", value), "REL_TIME"))
                 .ConfigureAwait(false);
 
             RestartTimer(true);
@@ -364,7 +364,7 @@ namespace Emby.Dlna.PlayTo
         private string CreateDidlMeta(string value)
         {
             if (string.IsNullOrEmpty(value))
-                return String.Empty;
+                return string.Empty;
 
             return DescriptionXmlBuilder.Escape(value);
         }
@@ -739,7 +739,7 @@ namespace Emby.Dlna.PlayTo
 
             if (track == null)
             {
-                //If track is null, some vendors do this, use GetMediaInfo instead                    
+                //If track is null, some vendors do this, use GetMediaInfo instead
                 return new Tuple<bool, uBaseObject>(true, null);
             }
 
@@ -783,7 +783,7 @@ namespace Emby.Dlna.PlayTo
         {
             if (container == null)
             {
-                throw new ArgumentNullException("container");
+                throw new ArgumentNullException(nameof(container));
             }
 
             var url = container.GetValue(uPnpNamespaces.Res);
@@ -810,7 +810,7 @@ namespace Emby.Dlna.PlayTo
         {
             if (container == null)
             {
-                throw new ArgumentNullException("container");
+                throw new ArgumentNullException(nameof(container));
             }
 
             var resElement = container.Element(uPnpNamespaces.Res);
@@ -979,7 +979,7 @@ namespace Emby.Dlna.PlayTo
             if (modelDescription != null)
                 deviceProperties.ModelDescription = modelDescription.Value;
 
-            deviceProperties.BaseUrl = String.Format("http://{0}:{1}", url.Host, url.Port);
+            deviceProperties.BaseUrl = string.Format("http://{0}:{1}", url.Host, url.Port);
 
             var icon = document.Descendants(uPnpNamespaces.ud.GetName("icon")).FirstOrDefault();
 
@@ -1021,7 +1021,7 @@ namespace Emby.Dlna.PlayTo
         {
             if (element == null)
             {
-                throw new ArgumentNullException("element");
+                throw new ArgumentNullException(nameof(element));
             }
 
             var mimeType = element.GetDescendantValue(uPnpNamespaces.ud.GetName("mimetype"));
@@ -1173,7 +1173,7 @@ namespace Emby.Dlna.PlayTo
 
         public override string ToString()
         {
-            return String.Format("{0} - {1}", Properties.Name, Properties.BaseUrl);
+            return string.Format("{0} - {1}", Properties.Name, Properties.BaseUrl);
         }
     }
 }

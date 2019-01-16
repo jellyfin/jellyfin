@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using Microsoft.Extensions.Logging;
@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
-        private void AddIfMissing(List<string> list, string value)
+        private static void AddIfMissing(List<string> list, string value)
         {
             if (!list.Contains(value, StringComparer.OrdinalIgnoreCase))
             {
@@ -85,7 +85,7 @@ namespace Emby.Server.Implementations.Library
 
             if (string.IsNullOrEmpty(searchTerm))
             {
-                throw new ArgumentNullException("searchTerm");
+                throw new ArgumentNullException(nameof(searchTerm));
             }
 
             searchTerm = searchTerm.Trim().RemoveDiacritics();

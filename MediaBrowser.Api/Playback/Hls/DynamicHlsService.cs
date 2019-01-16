@@ -934,7 +934,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var outputTsArg = Path.Combine(FileSystem.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request);
 
-            var timeDeltaParam = String.Empty;
+            var timeDeltaParam = string.Empty;
 
             if (isEncoding && startNumber > 0)
             {

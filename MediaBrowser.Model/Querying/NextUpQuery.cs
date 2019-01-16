@@ -16,13 +16,13 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The parent identifier.</value>
         public string ParentId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the series id.
         /// </summary>
         /// <value>The series id.</value>
         public string SeriesId { get; set; }
-        
+
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
         /// </summary>

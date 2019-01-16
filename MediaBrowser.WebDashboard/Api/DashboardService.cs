@@ -138,9 +138,9 @@ namespace MediaBrowser.WebDashboard.Api
         }
 
         /// <summary>
-        /// Gets the dashboard UI path.
+        /// Gets the path for the web interface.
         /// </summary>
-        /// <value>The dashboard UI path.</value>
+        /// <value>The path for the web interface.</value>
         public string DashboardUIPath
         {
             get
@@ -150,7 +150,7 @@ namespace MediaBrowser.WebDashboard.Api
                     return _serverConfigurationManager.Configuration.DashboardSourcePath;
                 }
 
-                return Path.Combine(_serverConfigurationManager.ApplicationPaths.ApplicationResourcesPath, "dashboard-ui");
+                return Path.Combine(_serverConfigurationManager.ApplicationPaths.ApplicationResourcesPath, "jellyfin-web", "src");
             }
         }
 
@@ -311,7 +311,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             // Bounce them to the startup wizard if it hasn't been completed yet
             if (!_serverConfigurationManager.Configuration.IsStartupWizardCompleted &&
-                Request.RawUrl.IndexOf("wizard", StringComparison.OrdinalIgnoreCase) == -1 && 
+                Request.RawUrl.IndexOf("wizard", StringComparison.OrdinalIgnoreCase) == -1 &&
                 GetPackageCreator(basePath).IsCoreHtml(path))
             {
                 // But don't redirect if an html import is being requested.

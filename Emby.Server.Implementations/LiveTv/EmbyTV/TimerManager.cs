@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq;
@@ -9,7 +9,6 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Threading;
-using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -20,14 +19,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public event EventHandler<GenericEventArgs<TimerInfo>> TimerFired;
         private readonly ITimerFactory _timerFactory;
-        private readonly IPowerManagement _powerManagement;
 
-        public TimerManager(IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, string dataPath, ILogger logger1, ITimerFactory timerFactory, IPowerManagement powerManagement)
+        public TimerManager(IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, string dataPath, ILogger logger1, ITimerFactory timerFactory)
             : base(fileSystem, jsonSerializer, logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
             _logger = logger1;
             _timerFactory = timerFactory;
-            _powerManagement = powerManagement;
         }
 
         public void RestartTimers()
@@ -36,7 +33,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             foreach (var item in GetAll().ToList())
             {
-                AddOrUpdateSystemTimer(item, false);
+                AddOrUpdateSystemTimer(item);
             }
         }
 
@@ -59,7 +56,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         public override void Update(TimerInfo item)
         {
             base.Update(item);
-            AddOrUpdateSystemTimer(item, false);
+            AddOrUpdateSystemTimer(item);
         }
 
         public void AddOrUpdate(TimerInfo item, bool resetTimer)
@@ -90,10 +87,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             base.Add(item);
-            AddOrUpdateSystemTimer(item, true);
+            AddOrUpdateSystemTimer(item);
         }
 
-        private bool ShouldStartTimer(TimerInfo item)
+        private static bool ShouldStartTimer(TimerInfo item)
         {
             if (item.Status == RecordingStatus.Completed ||
                 item.Status == RecordingStatus.Cancelled)
@@ -104,7 +101,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return true;
         }
 
-        private void AddOrUpdateSystemTimer(TimerInfo item, bool scheduleSystemWakeTimer)
+        private void AddOrUpdateSystemTimer(TimerInfo item)
         {
             StopTimer(item);
 
@@ -124,23 +121,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var dueTime = startDate - now;
             StartTimer(item, dueTime);
-
-            if (scheduleSystemWakeTimer && dueTime >= TimeSpan.FromMinutes(15))
-            {
-                ScheduleSystemWakeTimer(startDate, item.Name);
-            }
-        }
-
-        private void ScheduleSystemWakeTimer(DateTime startDate, string displayName)
-        {
-            try
-            {
-                _powerManagement.ScheduleWake(startDate.AddMinutes(-5), displayName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error scheduling wake timer");
-            }
         }
 
         private void StartTimer(TimerInfo item, TimeSpan dueTime)

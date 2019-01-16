@@ -19,13 +19,7 @@ namespace System.Net
 
         #region Count, Array, Enumerator
 
-        public BigInteger Count
-        {
-            get
-            {
-                return this._ipnetwork.Total;
-            }
-        }
+        public BigInteger Count => this._ipnetwork.Total;
 
         public IPAddress this[BigInteger i]
         {
@@ -33,7 +27,7 @@ namespace System.Net
             {
                 if (i >= this.Count)
                 {
-                    throw new ArgumentOutOfRangeException("i");
+                    throw new ArgumentOutOfRangeException(nameof(i));
                 }
                 byte width = this._ipnetwork.AddressFamily == Sockets.AddressFamily.InterNetwork ? (byte)32 : (byte)128;
                 IPNetworkCollection ipn = this._ipnetwork.Subnet(width);
@@ -57,10 +51,7 @@ namespace System.Net
 
         #region IEnumerator<IPNetwork> Members
 
-        public IPAddress Current
-        {
-            get { return this[this._enumerator]; }
-        }
+        public IPAddress Current => this[this._enumerator];
 
         #endregion
 
@@ -76,10 +67,7 @@ namespace System.Net
 
         #region IEnumerator Members
 
-        object IEnumerator.Current
-        {
-            get { return this.Current; }
-        }
+        object IEnumerator.Current => this.Current;
 
         public bool MoveNext()
         {

@@ -28,7 +28,7 @@ namespace MediaBrowser.Providers.Music
 {
     public class FanartArtistProvider : IRemoteImageProvider, IHasOrder
     {
-        internal const string ApiKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
+        internal const string ApiKey = "184e1a2b1fe3b94935365411f919f638";
         private const string FanArtBaseUrl = "https://webservice.fanart.tv/v3.1/music/{1}?api_key={0}";
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.Music
         {
             return new List<ImageType>
             {
-                ImageType.Primary, 
+                ImageType.Primary,
                 ImageType.Logo,
                 ImageType.Art,
                 ImageType.Banner,
@@ -84,7 +84,7 @@ namespace MediaBrowser.Providers.Music
 
             var artistMusicBrainzId = artist.GetProviderId(MetadataProviders.MusicBrainzArtist);
 
-            if (!String.IsNullOrEmpty(artistMusicBrainzId))
+            if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
                 await EnsureArtistJson(artistMusicBrainzId, cancellationToken).ConfigureAwait(false);
 
@@ -106,24 +106,24 @@ namespace MediaBrowser.Providers.Music
 
             var language = item.GetPreferredMetadataLanguage();
 
-            var isLanguageEn = String.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
+            var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 
             // Sort first by width to prioritize HD versions
             return list.OrderByDescending(i => i.Width ?? 0)
                 .ThenByDescending(i =>
                 {
-                    if (String.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
                     {
                         return 3;
                     }
                     if (!isLanguageEn)
                     {
-                        if (String.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
                         {
                             return 2;
                         }
                     }
-                    if (String.IsNullOrEmpty(i.Language))
+                    if (string.IsNullOrEmpty(i.Language))
                     {
                         return isLanguageEn ? 3 : 2;
                     }

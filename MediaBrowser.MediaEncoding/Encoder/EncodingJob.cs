@@ -46,7 +46,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly ILogger _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        public EncodingJob(ILogger logger, IMediaSourceManager mediaSourceManager) : 
+        public EncodingJob(ILogger logger, IMediaSourceManager mediaSourceManager) :
             base(logger, mediaSourceManager, TranscodingJobType.Progressive)
         {
             _logger = logger;

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -67,13 +67,7 @@ namespace Emby.Server.Implementations.Channels
             _providerManager = providerManager;
         }
 
-        private TimeSpan CacheLength
-        {
-            get
-            {
-                return TimeSpan.FromHours(3);
-            }
-        }
+        private static TimeSpan CacheLength => TimeSpan.FromHours(3);
 
         public void AddParts(IEnumerable<IChannel> channels)
         {
@@ -269,6 +263,7 @@ namespace Emby.Server.Implementations.Channels
             {
             };
 
+            //TODO Fix The co-variant conversion (internalResult.Items) between Folder[] and BaseItem[], this can generate runtime issues.
             var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user);
 
             var result = new QueryResult<BaseItemDto>
@@ -419,7 +414,7 @@ namespace Emby.Server.Implementations.Channels
             return list;
         }
 
-        private MediaSourceInfo NormalizeMediaSource(BaseItem item, MediaSourceInfo info)
+        private static MediaSourceInfo NormalizeMediaSource(BaseItem item, MediaSourceInfo info)
         {
             info.RunTimeTicks = info.RunTimeTicks ?? item.RunTimeTicks;
 
@@ -492,7 +487,7 @@ namespace Emby.Server.Implementations.Channels
             return item;
         }
 
-        private string GetOfficialRating(ChannelParentalRating rating)
+        private static string GetOfficialRating(ChannelParentalRating rating)
         {
             switch (rating)
             {
@@ -533,7 +528,7 @@ namespace Emby.Server.Implementations.Channels
         {
             if (string.IsNullOrEmpty(id))
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             var channel = GetChannel(id);
@@ -577,7 +572,7 @@ namespace Emby.Server.Implementations.Channels
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
             return _libraryManager.GetNewItemId("Channel " + name, typeof(Channel));
         }
@@ -891,7 +886,7 @@ namespace Emby.Server.Implementations.Channels
                 filename + ".json");
         }
 
-        private string GetIdToHash(string externalId, string channelName)
+        private static string GetIdToHash(string externalId, string channelName)
         {
             // Increment this as needed to force new downloads
             // Incorporate Name because it's being used to convert channel entity to provider
@@ -902,7 +897,7 @@ namespace Emby.Server.Implementations.Channels
             where T : BaseItem, new()
         {
             var id = _libraryManager.GetNewItemId(GetIdToHash(idString, channelName), typeof(T));
- 
+
             T item = null;
 
             try
@@ -1187,7 +1182,7 @@ namespace Emby.Server.Implementations.Channels
         {
             if (channel == null)
             {
-                throw new ArgumentNullException("channel");
+                throw new ArgumentNullException(nameof(channel));
             }
 
             var result = GetAllChannels()

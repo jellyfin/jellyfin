@@ -60,7 +60,7 @@ namespace MediaBrowser.Providers.TV
         {
             return new List<ImageType>
             {
-                ImageType.Backdrop, 
+                ImageType.Backdrop,
                 ImageType.Thumb,
                 ImageType.Banner,
                 ImageType.Primary
