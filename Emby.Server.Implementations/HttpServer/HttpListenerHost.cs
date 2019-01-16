@@ -81,13 +81,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public string GlobalResponse { get; set; }
 
-        protected ILogger Logger
-        {
-            get
-            {
-                return _logger;
-            }
-        }
+        protected ILogger Logger => _logger;
 
         public object CreateInstance(Type type)
         {
