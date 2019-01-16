@@ -130,7 +130,7 @@ namespace SocketHttpListener.Net
             {
                 try
                 {
-                    epl = new HttpEndPointListener(listener, addr, port, secure, listener.Certificate, logger, listener.CryptoProvider, listener.SocketFactory, listener.StreamHelper, listener.TextEncoding, listener.FileSystem, listener.EnvironmentInfo);
+                    epl = new HttpEndPointListener(listener, addr, port, secure, listener.Certificate, logger, listener.CryptoProvider, listener.SocketFactory, listener.StreamHelper, listener.FileSystem, listener.EnvironmentInfo);
                 }
                 catch (SocketException ex)
                 {

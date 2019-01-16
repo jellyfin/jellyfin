@@ -32,7 +32,6 @@ namespace Jellyfin.Server
                 Logger,
                 Certificate,
                 StreamHelper,
-                TextEncoding,
                 NetworkManager,
                 SocketFactory,
                 CryptographyProvider,

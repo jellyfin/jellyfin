@@ -17,4 +17,14 @@
     <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="UTF.Unknown" Version="1.0.0-beta1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Text.Encoding.CodePages, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>..\..\..\.nuget\packages\system.text.encoding.codepages\4.5.0\ref\netstandard2.0\System.Text.Encoding.CodePages.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

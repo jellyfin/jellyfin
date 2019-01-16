@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -6,8 +6,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Text;
-using SocketHttpListener.Primitives;
 
 namespace SocketHttpListener.Net
 {
@@ -18,12 +16,10 @@ namespace SocketHttpListener.Net
         private int _statusCode = 200;
         internal object _headersLock = new object();
         private bool _forceCloseChunked;
-        private ITextEncoding _textEncoding;
 
-        internal HttpListenerResponse(HttpListenerContext context, ITextEncoding textEncoding)
+        internal HttpListenerResponse(HttpListenerContext context)
         {
             _httpContext = context;
-            _textEncoding = textEncoding;
         }
 
         internal bool ForceCloseChunked => _forceCloseChunked;
@@ -263,7 +259,7 @@ namespace SocketHttpListener.Net
                 ComputeCookies();
             }
 
-            var encoding = _textEncoding.GetDefaultEncoding();
+            var encoding = Encoding.UTF8;
             var writer = new StreamWriter(ms, encoding, 256);
             writer.Write("HTTP/1.1 {0} ", _statusCode); // "1.1" matches Windows implementation, which ignores the response version
             writer.Flush();
