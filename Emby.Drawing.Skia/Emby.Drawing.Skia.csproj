@@ -9,7 +9,6 @@
     <PackageReference Include="SkiaSharp" Version="1.68.0" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="1.68.0" />
     <PackageReference Include="Jellyfin.SkiaSharp.NativeAssets.LinuxArm" Version="1.68.0" />
-    <PackageReference Include="Jellyfin.SkiaSharp.NativeAssets.LinuxMusl" Version="1.68.0" />
   </ItemGroup>
 
   <ItemGroup>
