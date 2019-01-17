@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.Sorting
         /// </summary>
         /// <param name="x">The x.</param>
         /// <returns>DateTime.</returns>
-        private DateTime GetDate(BaseItem x)
+        private static DateTime GetDate(BaseItem x)
         {
             var hasStartDate = x as LiveTvProgram;
 
@@ -39,9 +39,6 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return ItemSortBy.StartDate; }
-        }
+        public string Name => ItemSortBy.StartDate;
     }
 }

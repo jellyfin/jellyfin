@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
+using System;
 using System.Linq;
 
 namespace Emby.Server.Implementations.Sorting
@@ -15,6 +16,11 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem x, BaseItem y)
         {
+            if (x == null)
+                throw new ArgumentNullException(nameof(x));
+
+            if (y == null)
+                throw new ArgumentNullException(nameof(y));
             return AlphanumComparator.CompareValues(x.Studios.FirstOrDefault() ?? string.Empty, y.Studios.FirstOrDefault() ?? string.Empty);
         }
 
@@ -22,9 +28,6 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return ItemSortBy.Studio; }
-        }
+        public string Name => ItemSortBy.Studio;
     }
 }

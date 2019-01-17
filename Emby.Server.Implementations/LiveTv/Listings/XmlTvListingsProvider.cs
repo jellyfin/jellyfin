@@ -36,15 +36,9 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
             _zipClient = zipClient;
         }
 
-        public string Name
-        {
-            get { return "XmlTV"; }
-        }
+        public string Name => "XmlTV";
 
-        public string Type
-        {
-            get { return "xmltv"; }
-        }
+        public string Type => "xmltv";
 
         private string GetLanguage(ListingsProviderInfo info)
         {
@@ -78,7 +72,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
             {
                 CancellationToken = cancellationToken,
                 Url = path,
-                Progress = new SimpleProgress<Double>(),
+                Progress = new SimpleProgress<double>(),
                 DecompressionMethod = CompressionMethod.Gzip,
 
                 // It's going to come back gzipped regardless of this value
@@ -164,7 +158,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
         {
             if (string.IsNullOrWhiteSpace(channelId))
             {
-                throw new ArgumentNullException("channelId");
+                throw new ArgumentNullException(nameof(channelId));
             }
 
             /*
@@ -187,7 +181,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
                         .Select(p => GetProgramInfo(p, info));
         }
 
-        private ProgramInfo GetProgramInfo(XmlTvProgram program, ListingsProviderInfo info)
+        private static ProgramInfo GetProgramInfo(XmlTvProgram program, ListingsProviderInfo info)
         {
             string episodeTitle = program.Episode?.Title;
 
@@ -210,9 +204,9 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
                 IsMovie = program.Categories.Any(c => info.MovieCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
                 IsNews = program.Categories.Any(c => info.NewsCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
                 IsSports = program.Categories.Any(c => info.SportsCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
-                ImageUrl = program.Icon != null && !String.IsNullOrEmpty(program.Icon.Source) ? program.Icon.Source : null,
-                HasImage = program.Icon != null && !String.IsNullOrEmpty(program.Icon.Source),
-                OfficialRating = program.Rating != null && !String.IsNullOrEmpty(program.Rating.Value) ? program.Rating.Value : null,
+                ImageUrl = program.Icon != null && !string.IsNullOrEmpty(program.Icon.Source) ? program.Icon.Source : null,
+                HasImage = program.Icon != null && !string.IsNullOrEmpty(program.Icon.Source),
+                OfficialRating = program.Rating != null && !string.IsNullOrEmpty(program.Rating.Value) ? program.Rating.Value : null,
                 CommunityRating = program.StarRating,
                 SeriesId = program.Episode == null ? null : program.Title.GetMD5().ToString("N")
             };
@@ -246,7 +240,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
             }
 
             // Construct an id from the channel and start date
-            programInfo.Id = String.Format("{0}_{1:O}", program.ChannelId, program.StartDate);
+            programInfo.Id = string.Format("{0}_{1:O}", program.ChannelId, program.StartDate);
 
             if (programInfo.IsMovie)
             {
@@ -294,7 +288,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
             {
                 Id = c.Id,
                 Name = c.DisplayName,
-                ImageUrl = c.Icon != null && !String.IsNullOrEmpty(c.Icon.Source) ? c.Icon.Source : null,
+                ImageUrl = c.Icon != null && !string.IsNullOrEmpty(c.Icon.Source) ? c.Icon.Source : null,
                 Number = string.IsNullOrWhiteSpace(c.Number) ? c.Id : c.Number
 
             }).ToList();

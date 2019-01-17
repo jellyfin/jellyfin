@@ -128,7 +128,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     foreach (var video in response.videos.results)
                     {
-                        if (video.type.Equals("trailer", System.StringComparison.OrdinalIgnoreCase) 
+                        if (video.type.Equals("trailer", System.StringComparison.OrdinalIgnoreCase)
                             || video.type.Equals("clip", System.StringComparison.OrdinalIgnoreCase))
                         {
                             if (video.site.Equals("youtube", System.StringComparison.OrdinalIgnoreCase))

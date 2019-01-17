@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
@@ -78,7 +78,7 @@ namespace MediaBrowser.Controller.Entities
             return new QueryResult<BaseItem>
             {
                 TotalRecordCount = totalCount,
-                Items = itemsArray
+                Items = itemsArray //TODO Fix The co-variant conversion between Folder[] and BaseItem[], this can generate runtime issues.
             };
         }
 

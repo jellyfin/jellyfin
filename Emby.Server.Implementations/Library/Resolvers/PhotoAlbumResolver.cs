@@ -79,13 +79,6 @@ namespace Emby.Server.Implementations.Library.Resolvers
             return false;
         }
 
-        public override ResolverPriority Priority
-        {
-            get
-            {
-                // Behind special folder resolver
-                return ResolverPriority.Second;
-            }
-        }
+        public override ResolverPriority Priority => ResolverPriority.Second;
     }
 }

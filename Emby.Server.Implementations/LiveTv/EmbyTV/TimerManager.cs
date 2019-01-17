@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq;
@@ -90,7 +90,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             AddOrUpdateSystemTimer(item);
         }
 
-        private bool ShouldStartTimer(TimerInfo item)
+        private static bool ShouldStartTimer(TimerInfo item)
         {
             if (item.Status == RecordingStatus.Completed ||
                 item.Status == RecordingStatus.Cancelled)

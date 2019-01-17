@@ -375,7 +375,7 @@ namespace Emby.Dlna.Didl
                ? GetMimeType(filename)
                : mediaProfile.MimeType;
 
-            writer.WriteAttributeString("protocolInfo", String.Format(
+            writer.WriteAttributeString("protocolInfo", string.Format(
                 "http-get:*:{0}:{1}",
                 mimeType,
                 contentFeatures
@@ -573,7 +573,7 @@ namespace Emby.Dlna.Didl
                 streamInfo.RunTimeTicks ?? 0,
                 streamInfo.TranscodeSeekInfo);
 
-            writer.WriteAttributeString("protocolInfo", String.Format(
+            writer.WriteAttributeString("protocolInfo", string.Format(
                 "http-get:*:{0}:{1}",
                 mimeType,
                 contentFeatures
@@ -1017,7 +1017,7 @@ namespace Emby.Dlna.Didl
             var contentFeatures = new ContentFeatureBuilder(_profile)
                 .BuildImageHeader(format, width, height, imageInfo.IsDirectStream, org_Pn);
 
-            writer.WriteAttributeString("protocolInfo", String.Format(
+            writer.WriteAttributeString("protocolInfo", string.Format(
                 "http-get:*:{0}:{1}",
                 GetMimeType("file." + format),
                 contentFeatures

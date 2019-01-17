@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Activity
         {
             if (entry == null)
             {
-                throw new ArgumentNullException("entry");
+                throw new ArgumentNullException(nameof(entry));
             }
 
             using (WriteLock.Write())
@@ -122,7 +122,7 @@ namespace Emby.Server.Implementations.Activity
         {
             if (entry == null)
             {
-                throw new ArgumentNullException("entry");
+                throw new ArgumentNullException(nameof(entry));
             }
 
             using (WriteLock.Write())
@@ -251,7 +251,7 @@ namespace Emby.Server.Implementations.Activity
             }
         }
 
-        private ActivityLogEntry GetEntry(IReadOnlyList<IResultSetValue> reader)
+        private static ActivityLogEntry GetEntry(IReadOnlyList<IResultSetValue> reader)
         {
             var index = 0;
 

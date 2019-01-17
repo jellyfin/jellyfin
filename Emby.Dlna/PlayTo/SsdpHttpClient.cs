@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Emby.Dlna.Common;
 using System;
@@ -25,10 +25,10 @@ namespace Emby.Dlna.PlayTo
             _config = config;
         }
 
-        public async Task<XDocument> SendCommandAsync(string baseUrl, 
-            DeviceService service, 
-            string command, 
-            string postData, 
+        public async Task<XDocument> SendCommandAsync(string baseUrl,
+            DeviceService service,
+            string command,
+            string postData,
             bool logRequest = true,
             string header = null)
         {
@@ -47,7 +47,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private string NormalizeServiceUrl(string baseUrl, string serviceUrl)
+        private static string NormalizeServiceUrl(string baseUrl, string serviceUrl)
         {
             // If it's already a complete url, don't stick anything onto the front of it
             if (serviceUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
@@ -62,12 +62,12 @@ namespace Emby.Dlna.PlayTo
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        
-        public async Task SubscribeAsync(string url, 
-            string ip, 
-            int port, 
-            string localIp, 
-            int eventport, 
+
+        public async Task SubscribeAsync(string url,
+            string ip,
+            int port,
+            string localIp,
+            int eventport,
             int timeOut = 3600)
         {
             var options = new HttpRequestOptions
@@ -121,9 +121,9 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private Task<HttpResponseInfo> PostSoapDataAsync(string url, 
-            string soapAction, 
-            string postData, 
+        private Task<HttpResponseInfo> PostSoapDataAsync(string url,
+            string soapAction,
+            string postData,
             string header,
             bool logRequest,
             CancellationToken cancellationToken)

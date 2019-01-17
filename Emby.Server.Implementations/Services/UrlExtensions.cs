@@ -5,7 +5,7 @@ namespace Emby.Server.Implementations.Services
     /// <summary>
     /// Donated by Ivan Korneliuk from his post:
     /// http://korneliuk.blogspot.com/2012/08/servicestack-reusing-dtos.html
-    /// 
+    ///
     /// Modified to only allow using routes matching the supplied HTTP Verb
     /// </summary>
     public static class UrlExtensions

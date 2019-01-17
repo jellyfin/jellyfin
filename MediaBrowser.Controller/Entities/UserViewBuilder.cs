@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -412,7 +412,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return new QueryResult<BaseItem>
             {
-                Items = result.Items,
+                Items = result.Items, //TODO Fix The co-variant conversion between T[] and BaseItem[], this can generate runtime issues if T is not BaseItem.
                 TotalRecordCount = result.TotalRecordCount
             };
         }

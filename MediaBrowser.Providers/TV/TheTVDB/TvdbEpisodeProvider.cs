@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -143,7 +143,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seriesDataPath">The series data path.</param>
         /// <param name="searchInfo">The search information.</param>
         /// <returns>List{FileInfo}.</returns>
-		internal List<XmlReader> GetEpisodeXmlNodes(string seriesDataPath, EpisodeInfo searchInfo)
+        internal List<XmlReader> GetEpisodeXmlNodes(string seriesDataPath, EpisodeInfo searchInfo)
         {
             var seriesXmlPath = TvdbSeriesProvider.Current.GetSeriesXmlPath(searchInfo.SeriesProviderIds, searchInfo.MetadataLanguage);
 
@@ -165,7 +165,6 @@ namespace MediaBrowser.Providers.TV
         /// Fetches the episode data.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <param name="searchNumbers">The search numbers.</param>
         /// <param name="seriesDataPath">The series data path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
@@ -306,7 +305,7 @@ namespace MediaBrowser.Providers.TV
             return GetXmlReader(_fileSystem.ReadAllText(xmlFile.FullName, Encoding.UTF8));
         }
 
-        private XmlReader GetXmlReader(String xml)
+        private XmlReader GetXmlReader(string xml)
         {
             var streamReader = new StringReader(xml);
 

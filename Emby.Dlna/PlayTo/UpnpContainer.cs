@@ -10,7 +10,7 @@ namespace Emby.Dlna.PlayTo
         {
             if (container == null)
             {
-                throw new ArgumentNullException("container");
+                throw new ArgumentNullException(nameof(container));
             }
 
             return new uBaseObject

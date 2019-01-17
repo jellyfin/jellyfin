@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
@@ -38,12 +38,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             _appHost = appHost;
         }
 
-        private string UserAgent
-        {
-            get { return "Emby/" + _appHost.ApplicationVersion; }
-        }
+        private string UserAgent => "Emby/" + _appHost.ApplicationVersion;
 
-        private List<string> GetScheduleRequestDates(DateTime startDateUtc, DateTime endDateUtc)
+        private static List<string> GetScheduleRequestDates(DateTime startDateUtc, DateTime endDateUtc)
         {
             List<string> dates = new List<string>();
 
@@ -63,7 +60,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             if (string.IsNullOrEmpty(channelId))
             {
-                throw new ArgumentNullException("channelId");
+                throw new ArgumentNullException(nameof(channelId));
             }
 
             // Normalize incoming input
@@ -189,7 +186,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
         }
 
-        private int GetSizeOrder(ScheduleDirect.ImageData image)
+        private static int GetSizeOrder(ScheduleDirect.ImageData image)
         {
             if (!string.IsNullOrWhiteSpace(image.height))
             {
@@ -202,7 +199,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return 0;
         }
 
-        private string GetChannelNumber(ScheduleDirect.Map map)
+        private static string GetChannelNumber(ScheduleDirect.Map map)
         {
             var channelNumber = map.logicalChannelNumber;
 
@@ -218,7 +215,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return channelNumber.TrimStart('0');
         }
 
-        private bool IsMovie(ScheduleDirect.ProgramDetails programInfo)
+        private static bool IsMovie(ScheduleDirect.ProgramDetails programInfo)
         {
             return string.Equals(programInfo.entityType, "movie", StringComparison.OrdinalIgnoreCase);
         }
@@ -390,7 +387,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return info;
         }
 
-        private DateTime GetDate(string value)
+        private static DateTime GetDate(string value)
         {
             var date = DateTime.ParseExact(value, "yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'", CultureInfo.InvariantCulture);
 
@@ -429,7 +426,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
         }
 
-        private double GetAspectRatio(ScheduleDirect.ImageData i)
+        private static double GetAspectRatio(ScheduleDirect.ImageData i)
         {
             int width = 0;
             int height = 0;
@@ -664,7 +661,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 }
             }
 
-            options.RequestHeaders["token"] = await GetToken(providerInfo, options.CancellationToken).ConfigureAwait(false);;
+            options.RequestHeaders["token"] = await GetToken(providerInfo, options.CancellationToken).ConfigureAwait(false);
             return await Post(options, false, providerInfo).ConfigureAwait(false);
         }
 
@@ -765,16 +762,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
         }
 
-        public string Name
-        {
-            get { return "Schedules Direct"; }
-        }
+        public string Name => "Schedules Direct";
 
         public static string TypeName = "SchedulesDirect";
-        public string Type
-        {
-            get { return TypeName; }
-        }
+        public string Type => TypeName;
 
         private async Task<bool> HasLineup(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
@@ -951,7 +942,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return null;
         }
 
-        private string NormalizeName(string value)
+        private static string NormalizeName(string value)
         {
             return value.Replace(" ", string.Empty).Replace("-", string.Empty);
         }

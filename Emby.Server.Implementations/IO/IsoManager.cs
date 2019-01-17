@@ -29,7 +29,7 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(isoPath))
             {
-                throw new ArgumentNullException("isoPath");
+                throw new ArgumentNullException(nameof(isoPath));
             }
 
             var mounter = _mounters.FirstOrDefault(i => i.CanMount(isoPath));

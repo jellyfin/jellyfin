@@ -44,13 +44,13 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The type of the connect link.</value>
         public UserLinkType? ConnectLinkType { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
         public Guid Id { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the primary image tag.
         /// </summary>

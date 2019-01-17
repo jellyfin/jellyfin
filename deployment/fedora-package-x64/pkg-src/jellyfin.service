@@ -1,0 +1,15 @@
+[Unit]
+After=network.target
+Description=Jellyfin is a free software media system that puts you in control of managing and streaming your media.
+
+[Service]
+EnvironmentFile=/etc/sysconfig/jellyfin
+WorkingDirectory=/var/lib/jellyfin
+ExecStart=/usr/bin/jellyfin -programdata ${JELLYFIN_DATA_DIRECTORY} -configdir ${JELLYFIN_CONFIG_DIRECTORY} -logdir ${JELLYFIN_LOG_DIRECTORY} ${JELLYFIN_RESTART_OPT} ${JELLYFIN_ADD_OPTS} ${JELLYFIN_FFMPEG}
+TimeoutSec=15
+Restart=on-failure
+User=jellyfin
+Group=jellyfin
+
+[Install]
+WantedBy=multi-user.target

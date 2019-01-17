@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -321,6 +321,7 @@ namespace Emby.Server.Implementations.LiveTv
                     }
                     catch (Exception ex)
                     {
+                        _logger.LogDebug(ex, "GetImageCacheTag raised an exception in LiveTvDtoService.FillImages.");
                     }
                 }
 
@@ -331,10 +332,10 @@ namespace Emby.Server.Implementations.LiveTv
                     {
                         try
                         {
-                            dto.ParentBackdropImageTags = new string[]
-                        {
-                                _imageProcessor.GetImageCacheTag(program, image)
-                        };
+                            dto.ParentBackdropImageTags = new[]
+                            {
+                                    _imageProcessor.GetImageCacheTag(program, image)
+                            };
                             dto.ParentBackdropItemId = program.Id.ToString("N");
                         }
                         catch (Exception ex)

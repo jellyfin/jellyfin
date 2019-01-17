@@ -49,7 +49,7 @@ namespace SocketHttpListener
 
                 return data != null && data.Length > 0
                        ? getEncoding(_headers["Content-Type"]).GetString(data, 0, data.Length)
-                       : String.Empty;
+                       : string.Empty;
             }
         }
 

@@ -62,19 +62,19 @@ namespace MediaBrowser.Api.UserLibrary
         {
             if (userManager == null)
             {
-                throw new ArgumentNullException("userManager");
+                throw new ArgumentNullException(nameof(userManager));
             }
             if (libraryManager == null)
             {
-                throw new ArgumentNullException("libraryManager");
+                throw new ArgumentNullException(nameof(libraryManager));
             }
             if (localization == null)
             {
-                throw new ArgumentNullException("localization");
+                throw new ArgumentNullException(nameof(localization));
             }
             if (dtoService == null)
             {
-                throw new ArgumentNullException("dtoService");
+                throw new ArgumentNullException(nameof(dtoService));
             }
 
             _userManager = userManager;
@@ -143,7 +143,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             if (request == null)
             {
-                throw new ArgumentNullException("request");
+                throw new ArgumentNullException(nameof(request));
             }
 
             var result = GetItems(request);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.Security
         {
             if (info == null)
             {
-                throw new ArgumentNullException("info");
+                throw new ArgumentNullException(nameof(info));
             }
 
             using (WriteLock.Write())
@@ -126,7 +126,7 @@ namespace Emby.Server.Implementations.Security
         {
             if (info == null)
             {
-                throw new ArgumentNullException("entry");
+                throw new ArgumentNullException(nameof(info));
             }
 
             using (WriteLock.Write())
@@ -161,7 +161,7 @@ namespace Emby.Server.Implementations.Security
         {
             if (info == null)
             {
-                throw new ArgumentNullException("entry");
+                throw new ArgumentNullException(nameof(info));
             }
 
             using (WriteLock.Write())
@@ -183,7 +183,7 @@ namespace Emby.Server.Implementations.Security
 
         private const string BaseSelectText = "select Tokens.Id, AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, UserName, DateCreated, DateLastActivity, Devices.CustomName from Tokens left join Devices on Tokens.DeviceId=Devices.Id";
 
-        private void BindAuthenticationQueryParams(AuthenticationInfoQuery query, IStatement statement)
+        private static void BindAuthenticationQueryParams(AuthenticationInfoQuery query, IStatement statement)
         {
             if (!string.IsNullOrEmpty(query.AccessToken))
             {
@@ -205,7 +205,7 @@ namespace Emby.Server.Implementations.Security
         {
             if (query == null)
             {
-                throw new ArgumentNullException("query");
+                throw new ArgumentNullException(nameof(query));
             }
 
             var commandText = BaseSelectText;
@@ -306,7 +306,7 @@ namespace Emby.Server.Implementations.Security
             }
         }
 
-        private AuthenticationInfo Get(IReadOnlyList<IResultSetValue> reader)
+        private static AuthenticationInfo Get(IReadOnlyList<IResultSetValue> reader)
         {
             var info = new AuthenticationInfo
             {
@@ -397,7 +397,7 @@ namespace Emby.Server.Implementations.Security
         {
             if (options == null)
             {
-                throw new ArgumentNullException("options");
+                throw new ArgumentNullException(nameof(options));
             }
 
             using (WriteLock.Write())

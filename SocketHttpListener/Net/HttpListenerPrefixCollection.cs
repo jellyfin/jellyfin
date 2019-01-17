@@ -85,7 +85,7 @@ namespace SocketHttpListener.Net
         {
             listener.CheckDisposed();
             if (uriPrefix == null)
-                throw new ArgumentNullException("uriPrefix");
+                throw new ArgumentNullException(nameof(uriPrefix));
 
             bool result = prefixes.Remove(uriPrefix);
             if (result && listener.IsListening)

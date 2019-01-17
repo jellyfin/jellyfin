@@ -49,9 +49,7 @@ namespace MediaBrowser.Common.Updates
         /// <param name="applicationVersion">The application version.</param>
         /// <returns>Task{List{PackageInfo}}.</returns>
         Task<List<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken,
-            bool withRegistration = true,
-                                                                                  string packageType = null,
-                                                                                  Version applicationVersion = null);
+            bool withRegistration = true, string packageType = null, Version applicationVersion = null);
 
         /// <summary>
         /// Gets all available packages from a static resource.

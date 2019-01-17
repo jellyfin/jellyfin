@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -55,14 +55,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _assemblyInfo = assemblyInfo;
         }
 
-        private bool CopySubtitles
-        {
-            get
-            {
-                return false;
-                //return string.Equals(OutputFormat, "mkv", StringComparison.OrdinalIgnoreCase);
-            }
-        }
+        private static bool CopySubtitles => false;
 
         public string GetOutputPath(MediaSourceInfo mediaSource, string targetFile)
         {
@@ -214,19 +207,19 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var outputParam = string.Empty;
 
-            var commandLineArgs = string.Format("-i \"{0}\"{5} {2} -map_metadata -1 -threads 0 {3}{4}{6} -y \"{1}\"", 
-                inputTempFile, 
-                targetFile, 
-                videoArgs, 
-                GetAudioArgs(mediaSource), 
-                subtitleArgs, 
-                durationParam, 
+            var commandLineArgs = string.Format("-i \"{0}\"{5} {2} -map_metadata -1 -threads 0 {3}{4}{6} -y \"{1}\"",
+                inputTempFile,
+                targetFile,
+                videoArgs,
+                GetAudioArgs(mediaSource),
+                subtitleArgs,
+                durationParam,
                 outputParam);
 
             return inputModifier + " " + commandLineArgs;
         }
 
-        private string GetAudioArgs(MediaSourceInfo mediaSource)
+        private static string GetAudioArgs(MediaSourceInfo mediaSource)
         {
             var mediaStreams = mediaSource.MediaStreams ?? new List<MediaStream>();
             var inputAudioCodec = mediaStreams.Where(i => i.Type == MediaStreamType.Audio).Select(i => i.Codec).FirstOrDefault() ?? string.Empty;
@@ -242,7 +235,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             //return "-codec:a:0 aac -strict experimental -ab 320000";
         }
 
-        private bool EncodeVideo(MediaSourceInfo mediaSource)
+        private static bool EncodeVideo(MediaSourceInfo mediaSource)
         {
             return false;
         }
@@ -383,6 +376,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
             catch (ObjectDisposedException)
             {
+                // TODO Investigate and properly fix.
                 // Don't spam the log. This doesn't seem to throw in windows, but sometimes under linux
             }
             catch (Exception ex)
