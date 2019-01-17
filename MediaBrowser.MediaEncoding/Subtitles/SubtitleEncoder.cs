@@ -35,8 +35,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IProcessFactory _processFactory;
 
-        public SubtitleEncoder(ILibraryManager libraryManager,
-            ILogger logger,
+        public SubtitleEncoder(
+            ILibraryManager libraryManager,
+            ILoggerFactory loggerFactory,
             IApplicationPaths appPaths,
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
@@ -46,7 +47,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             IProcessFactory processFactory)
         {
             _libraryManager = libraryManager;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(SubtitleEncoder));
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;

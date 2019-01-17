@@ -16,10 +16,14 @@ namespace MediaBrowser.Providers.Chapters
         private readonly IServerConfigurationManager _config;
         private readonly IItemRepository _itemRepo;
 
-        public ChapterManager(ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, IItemRepository itemRepo)
+        public ChapterManager(
+            ILibraryManager libraryManager,
+            ILoggerFactory loggerFactory,
+            IServerConfigurationManager config,
+            IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(ChapterManager));
             _config = config;
             _itemRepo = itemRepo;
         }

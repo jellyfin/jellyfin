@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.Updates
         private readonly string _packageRuntime;
 
         public InstallationManager(
-            ILogger logger,
+            ILoggerFactory loggerFactory,
             IApplicationHost appHost,
             IApplicationPaths appPaths,
             IHttpClient httpClient,
@@ -131,9 +131,9 @@ namespace Emby.Server.Implementations.Updates
             ICryptoProvider cryptographyProvider,
             string packageRuntime)
         {
-            if (logger == null)
+            if (loggerFactory == null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             CurrentInstallations = new List<Tuple<InstallationInfo, CancellationTokenSource>>();
@@ -147,7 +147,7 @@ namespace Emby.Server.Implementations.Updates
             _fileSystem = fileSystem;
             _cryptographyProvider = cryptographyProvider;
             _packageRuntime = packageRuntime;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(InstallationManager));
         }
 
         private static Version GetPackageVersion(PackageVersionInfo version)

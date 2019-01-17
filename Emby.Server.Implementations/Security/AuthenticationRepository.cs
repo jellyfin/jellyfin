@@ -18,8 +18,8 @@ namespace Emby.Server.Implementations.Security
         private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public AuthenticationRepository(ILogger logger, IServerConfigurationManager config)
-            : base(logger)
+        public AuthenticationRepository(ILoggerFactory loggerFactory, IServerConfigurationManager config)
+            : base(loggerFactory.CreateLogger(nameof(AuthenticationRepository)))
         {
             _config = config;
             DbFilePath = Path.Combine(config.ApplicationPaths.DataPath, "authentication.db");

@@ -23,9 +23,14 @@ namespace Emby.Drawing
         private readonly IFileSystem _fileSystem;
         private static ILocalizationManager _localizationManager;
 
-        public SkiaEncoder(ILogger logger, IApplicationPaths appPaths, Func<IHttpClient> httpClientFactory, IFileSystem fileSystem, ILocalizationManager localizationManager)
+        public SkiaEncoder(
+            ILoggerFactory loggerFactory,
+            IApplicationPaths appPaths,
+            Func<IHttpClient> httpClientFactory,
+            IFileSystem fileSystem,
+            ILocalizationManager localizationManager)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger("ImageEncoder");
             _appPaths = appPaths;
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;

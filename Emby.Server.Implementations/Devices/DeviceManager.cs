@@ -47,14 +47,24 @@ namespace Emby.Server.Implementations.Devices
         private readonly object _cameraUploadSyncLock = new object();
         private readonly object _capabilitiesSyncLock = new object();
 
-        public DeviceManager(IAuthenticationRepository authRepo, IJsonSerializer json, ILibraryManager libraryManager, ILocalizationManager localizationManager, IUserManager userManager, IFileSystem fileSystem, ILibraryMonitor libraryMonitor, IServerConfigurationManager config, ILogger logger, INetworkManager network)
+        public DeviceManager(
+            IAuthenticationRepository authRepo,
+            IJsonSerializer json,
+            ILibraryManager libraryManager,
+            ILocalizationManager localizationManager,
+            IUserManager userManager,
+            IFileSystem fileSystem,
+            ILibraryMonitor libraryMonitor,
+            IServerConfigurationManager config,
+            ILoggerFactory loggerFactory,
+            INetworkManager network)
         {
             _json = json;
             _userManager = userManager;
             _fileSystem = fileSystem;
             _libraryMonitor = libraryMonitor;
             _config = config;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(DeviceManager));
             _network = network;
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;

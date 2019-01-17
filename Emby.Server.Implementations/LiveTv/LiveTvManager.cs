@@ -72,14 +72,10 @@ namespace Emby.Server.Implementations.LiveTv
             return EmbyTV.EmbyTV.Current.GetActiveRecordingPath(id);
         }
 
-        private IServerApplicationHost _appHost;
-        private IHttpClient _httpClient;
-
         public LiveTvManager(
             IServerApplicationHost appHost,
-            IHttpClient httpClient,
             IServerConfigurationManager config,
-            ILogger logger,
+            ILoggerFactory loggerFactory,
             IItemRepository itemRepo,
             IImageProcessor imageProcessor,
             IUserDataManager userDataManager,
@@ -93,9 +89,8 @@ namespace Emby.Server.Implementations.LiveTv
             IFileSystem fileSystem,
             Func<IChannelManager> channelManager)
         {
-            _appHost = appHost;
             _config = config;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(LiveTvManager));
             _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -107,9 +102,8 @@ namespace Emby.Server.Implementations.LiveTv
             _dtoService = dtoService;
             _userDataManager = userDataManager;
             _channelManager = channelManager;
-            _httpClient = httpClient;
 
-            _tvDtoService = new LiveTvDtoService(dtoService, imageProcessor, logger, appHost, _libraryManager);
+            _tvDtoService = new LiveTvDtoService(dtoService, imageProcessor, loggerFactory, appHost, _libraryManager);
         }
 
         /// <summary>
