@@ -387,7 +387,7 @@ namespace Emby.Server.Implementations.Channels
 
         private async Task<IEnumerable<MediaSourceInfo>> GetChannelItemMediaSourcesInternal(IRequiresMediaInfoCallback channel, string id, CancellationToken cancellationToken)
         {
-            if (_channelItemMediaInfo.TryGetValue(id, out var cachedInfo))
+            if (_channelItemMediaInfo.TryGetValue(id, out Tuple<DateTime, List<MediaSourceInfo>> cachedInfo))
             {
                 if ((DateTime.UtcNow - cachedInfo.Item1).TotalMinutes < 5)
                 {

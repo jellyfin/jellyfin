@@ -360,7 +360,7 @@ namespace Emby.Server.Implementations.Localization
 
             var ratingsDictionary = GetParentalRatingsDictionary();
 
-            if (ratingsDictionary.TryGetValue(rating, out var value))
+            if (ratingsDictionary.TryGetValue(rating, out ParentalRating value))
             {
                 return value.Value;
             }

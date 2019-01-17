@@ -96,7 +96,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out var expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string expires))
             {
                 responseHeaders["Expires"] = "-1";
             }
@@ -142,7 +142,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out var expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string expires))
             {
                 responseHeaders["Expires"] = "-1";
             }
@@ -186,7 +186,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out var expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string expires))
             {
                 responseHeaders["Expires"] = "-1";
             }

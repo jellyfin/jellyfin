@@ -1790,7 +1790,7 @@ namespace Emby.Server.Implementations
                     return false;
                 }
 
-                if (minRequiredVersions.TryGetValue(filename, out var minRequiredVersion))
+                if (minRequiredVersions.TryGetValue(filename, out Version minRequiredVersion))
                 {
                     try
                     {
@@ -2005,7 +2005,7 @@ namespace Emby.Server.Implementations
                 address = address.Substring(index + 1);
             }
 
-            if (NetworkManager.TryParseIpAddress(address.Trim('/'), out var result))
+            if (NetworkManager.TryParseIpAddress(address.Trim('/'), out IpAddressInfo result))
             {
                 return result;
             }

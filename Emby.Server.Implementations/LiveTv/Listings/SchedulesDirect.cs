@@ -137,7 +137,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     var images = await GetImageForPrograms(info, programIdsWithImages, cancellationToken).ConfigureAwait(false);
 
                     var programsInfo = new List<ProgramInfo>();
-                    foreach (var schedule in dailySchedules.SelectMany(d => d.programs))
+                    foreach (ScheduleDirect.Program schedule in dailySchedules.SelectMany(d => d.programs))
                     {
                         //_logger.LogDebug("Proccesing Schedule for statio ID " + stationID +
                         //              " which corresponds to channel " + channelNumber + " and program id " +
@@ -526,15 +526,15 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             try
             {
                 using (var httpResponse = await Get(options, false, info).ConfigureAwait(false))
-                using (var responce = httpResponse.Content)
+                using (Stream responce = httpResponse.Content)
                 {
                     var root = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Headends>>(responce).ConfigureAwait(false);
 
                     if (root != null)
                     {
-                        foreach (var headend in root)
+                        foreach (ScheduleDirect.Headends headend in root)
                         {
-                            foreach (var lineup in headend.lineups)
+                            foreach (ScheduleDirect.Lineup lineup in headend.lineups)
                             {
                                 lineups.Add(new NameIdPair
                                 {
@@ -887,7 +887,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                 var allStations = root.stations ?? Enumerable.Empty<ScheduleDirect.Station>();
 
-                foreach (var map in root.map)
+                foreach (ScheduleDirect.Map map in root.map)
                 {
                     var channelNumber = GetChannelNumber(map);
 

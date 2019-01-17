@@ -95,7 +95,7 @@ namespace Emby.Dlna.Eventing
         {
             _logger.LogDebug("Cancelling event subscription {0}", subscriptionId);
 
-            _subscriptions.TryRemove(subscriptionId, out var sub);
+            _subscriptions.TryRemove(subscriptionId, out EventSubscription sub);
 
             return new EventSubscriptionResponse
             {
@@ -126,7 +126,7 @@ namespace Emby.Dlna.Eventing
 
         private EventSubscription GetSubscription(string id, bool throwOnMissing)
         {
-            if (!_subscriptions.TryGetValue(id, out var e) && throwOnMissing)
+            if (!_subscriptions.TryGetValue(id, out EventSubscription e) && throwOnMissing)
             {
                 throw new ResourceNotFoundException("Event with Id " + id + " not found.");
             }

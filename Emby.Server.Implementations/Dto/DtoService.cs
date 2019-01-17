@@ -637,7 +637,7 @@ namespace Emby.Server.Implementations.Dto
                     Type = person.Type
                 };
 
-                if (dictionary.TryGetValue(person.Name, out var entity))
+                if (dictionary.TryGetValue(person.Name, out Person entity))
                 {
                     baseItemPerson.PrimaryImageTag = GetImageCacheTag(entity, ImageType.Primary);
                     baseItemPerson.Id = entity.Id.ToString("N");

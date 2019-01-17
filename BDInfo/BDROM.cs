@@ -339,7 +339,7 @@ namespace BDInfo
                 throw new ArgumentNullException(nameof(path));
             }
 
-            var dir = _fileSystem.GetDirectoryInfo(path);
+            FileSystemMetadata dir = _fileSystem.GetDirectoryInfo(path);
 
             while (dir != null)
             {

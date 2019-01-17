@@ -141,7 +141,7 @@ namespace IsoMounter
 
         public Task<IIsoMount> Mount(string isoPath, CancellationToken cancellationToken)
         {
-            if (MountISO(isoPath, out var mountedISO))
+            if (MountISO(isoPath, out LinuxMount mountedISO))
             {
                 return Task.FromResult<IIsoMount>(mountedISO);
             }

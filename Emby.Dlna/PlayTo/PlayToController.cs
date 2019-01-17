@@ -98,11 +98,11 @@ namespace Emby.Dlna.PlayTo
         {
             var info = e.Argument;
 
-            info.Headers.TryGetValue("NTS", out var nts);
+            info.Headers.TryGetValue("NTS", out string nts);
 
-            if (!info.Headers.TryGetValue("USN", out var usn)) usn = string.Empty;
+            if (!info.Headers.TryGetValue("USN", out string usn)) usn = string.Empty;
 
-            if (!info.Headers.TryGetValue("NT", out var nt)) nt = string.Empty;
+            if (!info.Headers.TryGetValue("NT", out string nt)) nt = string.Empty;
 
             if (usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
                 !_disposed)
@@ -636,7 +636,7 @@ namespace Emby.Dlna.PlayTo
                         return _device.ToggleMute(cancellationToken);
                     case GeneralCommandType.SetAudioStreamIndex:
                         {
-                            if (command.Arguments.TryGetValue("Index", out var arg))
+                            if (command.Arguments.TryGetValue("Index", out string arg))
                             {
                                 if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var val))
                                 {
@@ -650,7 +650,7 @@ namespace Emby.Dlna.PlayTo
                         }
                     case GeneralCommandType.SetSubtitleStreamIndex:
                         {
-                            if (command.Arguments.TryGetValue("Index", out var arg))
+                            if (command.Arguments.TryGetValue("Index", out string arg))
                             {
                                 if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var val))
                                 {
@@ -664,7 +664,7 @@ namespace Emby.Dlna.PlayTo
                         }
                     case GeneralCommandType.SetVolume:
                         {
-                            if (command.Arguments.TryGetValue("Volume", out var arg))
+                            if (command.Arguments.TryGetValue("Volume", out string arg))
                             {
                                 if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var volume))
                                 {
@@ -837,7 +837,7 @@ namespace Emby.Dlna.PlayTo
                 if (index == -1) return request;
 
                 var query = url.Substring(index + 1);
-                var values = MyHttpUtility.ParseQueryString(query);
+                QueryParamCollection values = MyHttpUtility.ParseQueryString(query);
 
                 request.DeviceProfileId = values.Get("DeviceProfileId");
                 request.DeviceId = values.Get("DeviceId");

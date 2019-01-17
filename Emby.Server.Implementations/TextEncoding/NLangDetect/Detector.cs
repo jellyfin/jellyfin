@@ -164,7 +164,7 @@ namespace NLangDetect.Core
 
         public string Detect()
         {
-            var probabilities = GetProbabilities();
+            List<Language> probabilities = GetProbabilities();
 
             return
               probabilities.Count > 0
@@ -241,7 +241,7 @@ namespace NLangDetect.Core
         {
             CleanText();
 
-            var ngrams = ExtractNGrams();
+            List<string> ngrams = ExtractNGrams();
 
             if (ngrams.Count == 0)
             {
@@ -332,7 +332,7 @@ namespace NLangDetect.Core
                 return;
             }
 
-            var langProbMap = _wordLangProbMap[word];
+            ProbVector langProbMap = _wordLangProbMap[word];
             double weight = alpha / _BaseFreq;
 
             for (int i = 0; i < prob.Length; i++)

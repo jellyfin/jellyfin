@@ -192,7 +192,7 @@ namespace Emby.Dlna.ContentDirectory
 
         public string GetValueOrDefault(IDictionary<string, string> sparams, string key, string defaultValue)
         {
-            if (sparams.TryGetValue(key, out var val))
+            if (sparams.TryGetValue(key, out string val))
             {
                 return val;
             }

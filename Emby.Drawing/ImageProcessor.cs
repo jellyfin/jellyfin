@@ -846,7 +846,7 @@ namespace Emby.Drawing
         {
             lock (_locks)
             {
-                if (_locks.TryGetValue(key, out var info))
+                if (_locks.TryGetValue(key, out LockInfo info))
                 {
                     info.Count++;
                 }

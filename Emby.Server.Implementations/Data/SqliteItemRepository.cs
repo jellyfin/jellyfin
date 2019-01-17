@@ -5139,7 +5139,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
         private IEnumerable<string> MapIncludeItemTypes(string value)
         {
-            if (_types.TryGetValue(value, out var result))
+            if (_types.TryGetValue(value, out string[] result))
             {
                 return result;
             }

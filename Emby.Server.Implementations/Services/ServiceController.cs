@@ -89,7 +89,7 @@ namespace Emby.Server.Implementations.Services
             if (restPath.Path.IndexOfAny(InvalidRouteChars) != -1)
                 throw new ArgumentException(string.Format("Route '{0}' on '{1}' contains invalid chars. ", restPath.Path, restPath.RequestType.GetMethodName()));
 
-            if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out var pathsAtFirstMatch))
+            if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out List<RestPath> pathsAtFirstMatch))
             {
                 pathsAtFirstMatch = new List<RestPath>();
                 RestPathMap[restPath.FirstMatchHashKey] = pathsAtFirstMatch;

@@ -132,7 +132,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var receiveBuffer = new byte[8192];
             var response = await socket.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
 
-            ParseReturnMessage(response.Buffer, response.ReceivedBytes, out var returnVal);
+            ParseReturnMessage(response.Buffer, response.ReceivedBytes, out string returnVal);
 
             return string.Equals(returnVal, "none", StringComparison.OrdinalIgnoreCase);
         }
@@ -171,7 +171,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     continue;
 
                 var commandList = commands.GetCommands();
-                foreach (var command in commandList)
+                foreach (Tuple<string, string> command in commandList)
                 {
                     var channelMsg = CreateSetMessage(i, command.Item1, command.Item2, lockKeyValue);
                     await tcpClient.SendToAsync(channelMsg, 0, channelMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
@@ -214,13 +214,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 var commandList = commands.GetCommands();
                 var receiveBuffer = new byte[8192];
 
-                foreach (var command in commandList)
+                foreach (Tuple<string, string> command in commandList)
                 {
                     var channelMsg = CreateSetMessage(_activeTuner, command.Item1, command.Item2, _lockkey);
                     await tcpClient.SendToAsync(channelMsg, 0, channelMsg.Length, new IpEndPointInfo(_remoteIp, HdHomeRunPort), cancellationToken).ConfigureAwait(false);
                     var response = await tcpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
                     // parse response to make sure it worked
-                    if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out var returnVal))
+                    if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out string returnVal))
                     {
                         return;
                     }

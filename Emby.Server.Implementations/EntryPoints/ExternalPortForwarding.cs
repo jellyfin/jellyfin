@@ -108,9 +108,9 @@ namespace Emby.Server.Implementations.EntryPoints
 
             var info = e.Argument;
 
-            if (!info.Headers.TryGetValue("USN", out var usn)) usn = string.Empty;
+            if (!info.Headers.TryGetValue("USN", out string usn)) usn = string.Empty;
 
-            if (!info.Headers.TryGetValue("NT", out var nt)) nt = string.Empty;
+            if (!info.Headers.TryGetValue("NT", out string nt)) nt = string.Empty;
 
             // Filter device type
             if (usn.IndexOf("WANIPConnection:", StringComparison.OrdinalIgnoreCase) == -1 &&

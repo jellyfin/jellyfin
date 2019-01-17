@@ -117,10 +117,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             extInf = extInf.Trim();
 
-            var attributes = ParseExtInf(extInf, out var remaining);
+            var attributes = ParseExtInf(extInf, out string remaining);
             extInf = remaining;
 
-            if (attributes.TryGetValue("tvg-logo", out var value))
+            if (attributes.TryGetValue("tvg-logo", out string value))
             {
                 channel.ImageUrl = value;
             }
@@ -128,9 +128,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             channel.Name = GetChannelName(extInf, attributes);
             channel.Number = GetChannelNumber(extInf, attributes, mediaUrl);
 
-            attributes.TryGetValue("tvg-id", out var tvgId);
+            attributes.TryGetValue("tvg-id", out string tvgId);
 
-            attributes.TryGetValue("channel-id", out var channelId);
+            attributes.TryGetValue("channel-id", out string channelId);
 
             channel.TunerChannelId = string.IsNullOrWhiteSpace(tvgId) ? channelId : tvgId;
 
@@ -182,7 +182,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             if (!IsValidChannelNumber(numberString))
             {
-                if (attributes.TryGetValue("tvg-id", out var value))
+                if (attributes.TryGetValue("tvg-id", out string value))
                 {
                     if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var doubleValue))
                     {
@@ -198,7 +198,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             if (!IsValidChannelNumber(numberString))
             {
-                if (attributes.TryGetValue("channel-id", out var value))
+                if (attributes.TryGetValue("channel-id", out string value))
                 {
                     numberString = value;
                 }
@@ -282,7 +282,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
             }
 
-            attributes.TryGetValue("tvg-name", out var name);
+            attributes.TryGetValue("tvg-name", out string name);
 
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -291,7 +291,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                attributes.TryGetValue("tvg-id", out name);
+                attributes.TryGetValue("tvg-id", string name);
             }
 
             if (string.IsNullOrWhiteSpace(name))
