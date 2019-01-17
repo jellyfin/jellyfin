@@ -47,7 +47,7 @@ namespace MediaBrowser.Providers.Music
 
         public static string GetMusicBrainzArtistId(this AlbumInfo info)
         {
-            info.ProviderIds.TryGetValue(MetadataProviders.MusicBrainzAlbumArtist.ToString(), out var id);
+            info.ProviderIds.TryGetValue(MetadataProviders.MusicBrainzAlbumArtist.ToString(), out string id);
 
             if (string.IsNullOrEmpty(id))
             {

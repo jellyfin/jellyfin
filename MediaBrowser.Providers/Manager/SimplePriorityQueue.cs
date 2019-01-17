@@ -80,7 +80,7 @@ namespace Priority_Queue
                         throw new InvalidOperationException("Cannot call .First on an empty queue");
                     }
 
-                    var first = _queue.First;
+                    SimpleNode first = _queue.First;
                     return (first != null ? first.Data : default(TItem));
                 }
             }
@@ -133,7 +133,7 @@ namespace Priority_Queue
                     return false;
                 }
 
-                if (_queue.TryDequeue(out var node))
+                if (_queue.TryDequeue(out SimpleNode node))
                 {
                     item = node.Data;
                     return true;
@@ -198,7 +198,7 @@ namespace Priority_Queue
             {
                 try
                 {
-                    var updateMe = GetExistingNode(item);
+                    SimpleNode updateMe = GetExistingNode(item);
                     _queue.UpdatePriority(updateMe, priority);
                 }
                 catch (InvalidOperationException ex)

@@ -1,4 +1,3 @@
-
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>

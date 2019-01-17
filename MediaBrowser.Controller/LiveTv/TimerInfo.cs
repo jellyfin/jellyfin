@@ -114,12 +114,15 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The episode number.</value>
         public int? EpisodeNumber { get; set; }
+
         public bool IsMovie { get; set; }
+
         public bool IsKids => Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
 
         public bool IsSports => Tags.Contains("Sports", StringComparer.OrdinalIgnoreCase);
 
         public bool IsNews => Tags.Contains("News", StringComparer.OrdinalIgnoreCase);
+
         public bool IsSeries { get; set; }
 
         /// <summary>
@@ -133,10 +136,15 @@ namespace MediaBrowser.Controller.LiveTv
         public bool IsPremiere => Tags.Contains("Premiere", StringComparer.OrdinalIgnoreCase);
 
         public int? ProductionYear { get; set; }
+
         public string EpisodeTitle { get; set; }
+
         public DateTime? OriginalAirDate { get; set; }
+
         public bool IsProgramSeries { get; set; }
+
         public bool IsRepeat { get; set; }
+
         public string HomePageUrl { get; set; }
         public float? CommunityRating { get; set; }
         public string OfficialRating { get; set; }

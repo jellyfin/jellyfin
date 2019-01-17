@@ -1,4 +1,3 @@
-
 namespace MediaBrowser.Model.Net
 {
     public class NetworkShare

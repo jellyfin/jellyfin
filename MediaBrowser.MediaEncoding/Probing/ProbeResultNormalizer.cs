@@ -1193,7 +1193,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (chapter.tags != null)
             {
-                if (chapter.tags.TryGetValue("title", out var name))
+                if (chapter.tags.TryGetValue("title", out string name))
                 {
                     info.Name = name;
                 }

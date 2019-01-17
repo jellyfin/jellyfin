@@ -191,7 +191,7 @@ namespace MediaBrowser.Model.Dlna
                 var conditionProcessor = new ConditionProcessor();
 
                 var anyOff = false;
-                foreach (var c in i.Conditions)
+                foreach (ProfileCondition c in i.Conditions)
                 {
                     if (!conditionProcessor.IsAudioConditionSatisfied(GetModelProfileCondition(c), audioChannels, audioBitrate, audioSampleRate, audioBitDepth))
                     {
@@ -304,7 +304,7 @@ namespace MediaBrowser.Model.Dlna
                 var conditionProcessor = new ConditionProcessor();
 
                 var anyOff = false;
-                foreach (var c in i.Conditions)
+                foreach (ProfileCondition c in i.Conditions)
                 {
                     if (!conditionProcessor.IsVideoConditionSatisfied(GetModelProfileCondition(c), width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                     {

@@ -1,4 +1,3 @@
-
 namespace MediaBrowser.Model.Dlna
 {
     public enum PlaybackErrorCode

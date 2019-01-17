@@ -64,9 +64,9 @@ namespace MediaBrowser.Controller.Entities
 
         public int? GetYearValue()
         {
-            if (int.TryParse(Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i))
+            if (int.TryParse(Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
             {
-                return i;
+                return year;
             }
 
             return null;

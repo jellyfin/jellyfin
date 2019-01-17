@@ -242,7 +242,7 @@ namespace MediaBrowser.Providers.Omdb
 
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out var id) && !string.IsNullOrEmpty(id))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out string id) && !string.IsNullOrEmpty(id))
             {
                 // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
                 if (!string.IsNullOrWhiteSpace(id))

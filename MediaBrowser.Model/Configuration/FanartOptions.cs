@@ -1,4 +1,3 @@
-
 namespace MediaBrowser.Model.Configuration
 {
     public class FanartOptions

@@ -21,6 +21,7 @@ namespace MediaBrowser.LocalMetadata.Images
             return item is CollectionFolder && item.SupportsLocalMetadata;
         }
 
+        // Run after LocalImageProvider
         public int Order => 1;
 
         public List<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
