@@ -80,9 +80,20 @@ namespace Emby.Server.Implementations.Library
         private IAuthenticationProvider[] _authenticationProviders;
         private DefaultAuthenticationProvider _defaultAuthenticationProvider;
 
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ICryptoProvider cryptographyProvider)
+        public UserManager(
+            ILoggerFactory loggerFactory,
+            IServerConfigurationManager configurationManager,
+            IUserRepository userRepository,
+            IXmlSerializer xmlSerializer,
+            INetworkManager networkManager,
+            Func<IImageProcessor> imageProcessorFactory,
+            Func<IDtoService> dtoServiceFactory,
+            IServerApplicationHost appHost,
+            IJsonSerializer jsonSerializer,
+            IFileSystem fileSystem,
+            ICryptoProvider cryptographyProvider)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(UserManager));
             UserRepository = userRepository;
             _xmlSerializer = xmlSerializer;
             _networkManager = networkManager;

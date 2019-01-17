@@ -26,13 +26,14 @@ namespace Emby.Server.Implementations.MediaEncoder
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
 
-        public EncodingManager(IFileSystem fileSystem,
-            ILogger logger,
+        public EncodingManager(
+            IFileSystem fileSystem,
+            ILoggerFactory loggerFactory,
             IMediaEncoder encoder,
             IChapterManager chapterManager, ILibraryManager libraryManager)
         {
             _fileSystem = fileSystem;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(EncodingManager));
             _encoder = encoder;
             _chapterManager = chapterManager;
             _libraryManager = libraryManager;

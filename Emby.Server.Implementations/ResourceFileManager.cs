@@ -15,10 +15,13 @@ namespace Emby.Server.Implementations
         private readonly ILogger _logger;
         private readonly IHttpResultFactory _resultFactory;
 
-        public ResourceFileManager(IHttpResultFactory resultFactory, ILogger logger, IFileSystem fileSystem)
+        public ResourceFileManager(
+            IHttpResultFactory resultFactory,
+            ILoggerFactory loggerFactory,
+            IFileSystem fileSystem)
         {
             _resultFactory = resultFactory;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger("ResourceManager");
             _fileSystem = fileSystem;
         }
 

@@ -15,12 +15,11 @@ namespace Emby.Server.Implementations.Data
 {
     public class SqliteUserDataRepository : BaseSqliteRepository, IUserDataRepository
     {
-        private readonly IFileSystem _fileSystem;
-
-        public SqliteUserDataRepository(ILogger logger, IApplicationPaths appPaths, IFileSystem fileSystem)
-            : base(logger)
+        public SqliteUserDataRepository(
+            ILoggerFactory loggerFactory,
+            IApplicationPaths appPaths)
+            : base(loggerFactory.CreateLogger(nameof(SqliteUserDataRepository)))
         {
-            _fileSystem = fileSystem;
             DbFilePath = Path.Combine(appPaths.DataPath, "library.db");
         }
 
