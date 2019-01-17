@@ -186,7 +186,7 @@ namespace MediaBrowser.Providers.Music
                 return null;
             }).Where(i => i != null));
         }
-
+        // After embedded provider
         public int Order => 1;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)

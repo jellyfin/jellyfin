@@ -92,7 +92,7 @@ namespace MediaBrowser.Providers.Music
         }
 
         public string Name => "TheAudioDB";
-
+        // After embedded and fanart
         public int Order => 2;
 
         public bool Supports(BaseItem item)

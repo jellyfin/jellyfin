@@ -11,6 +11,7 @@ namespace MediaBrowser.Providers.Videos
 {
     public class VideoMetadataService : MetadataService<Video, ItemLookupInfo>
     {
+        // Make sure the type-specific services get picked first
         public override int Order => 10;
 
         protected override void MergeData(MetadataResult<Video> source, MetadataResult<Video> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)

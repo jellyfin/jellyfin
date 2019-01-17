@@ -139,7 +139,7 @@ namespace MediaBrowser.Providers.Music
         {
             return item is MusicArtist;
         }
-
+        // After fanart
         public int Order => 1;
     }
 }

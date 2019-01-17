@@ -137,7 +137,7 @@ namespace MediaBrowser.Providers.TV
         {
             var series = result.Item;
 
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out var id) && !string.IsNullOrEmpty(id))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out string id) && !string.IsNullOrEmpty(id))
             {
                 series.SetProviderId(MetadataProviders.Tvdb, id);
             }
@@ -388,7 +388,7 @@ namespace MediaBrowser.Providers.TV
 
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out var id))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out string id))
             {
                 // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
                 if (!string.IsNullOrWhiteSpace(id))
@@ -424,7 +424,7 @@ namespace MediaBrowser.Providers.TV
 
             try
             {
-                if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out var seriesId) && !string.IsNullOrWhiteSpace(seriesId))
+                if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out string seriesId) && !string.IsNullOrWhiteSpace(seriesId))
                 {
                     var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
 
@@ -1109,7 +1109,7 @@ namespace MediaBrowser.Providers.TV
 
         private void FetchDataFromSeriesNode(MetadataResult<Series> result, XmlReader reader, CancellationToken cancellationToken)
         {
-            var item = result.Item;
+            Series item = result.Item;
 
             reader.MoveToContent();
             reader.Read();
@@ -1592,7 +1592,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>System.String.</returns>
         internal static string GetSeriesDataPath(IApplicationPaths appPaths, Dictionary<string, string> seriesProviderIds)
         {
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out var seriesId) && !string.IsNullOrEmpty(seriesId))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out string seriesId) && !string.IsNullOrEmpty(seriesId))
             {
                 var seriesDataPath = Path.Combine(GetSeriesDataPath(appPaths), seriesId);
 

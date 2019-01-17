@@ -44,7 +44,7 @@ namespace MediaBrowser.Providers.TV
         {
             var result = new MetadataResult<Season>();
 
-            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out var seriesTmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out string seriesTmdbId);
 
             var seasonNumber = info.IndexNumber;
 

@@ -1,4 +1,3 @@
-
 namespace MediaBrowser.Model.Devices
 {
     public class LocalFileInfo

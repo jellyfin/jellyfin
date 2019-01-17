@@ -968,7 +968,7 @@ namespace MediaBrowser.Providers.Manager
         {
             lock (_activeRefreshes)
             {
-                if (_activeRefreshes.TryGetValue(id, out var value))
+                if (_activeRefreshes.TryGetValue(id, out double value))
                 {
                     return value;
                 }
@@ -1037,7 +1037,7 @@ namespace MediaBrowser.Providers.Manager
 
             var cancellationToken = _disposeCancellationTokenSource.Token;
 
-            while (_refreshQueue.TryDequeue(out var refreshItem))
+            while (_refreshQueue.TryDequeue(out Tuple<Guid, MetadataRefreshOptions> refreshItem))
             {
                 if (_disposed)
                 {

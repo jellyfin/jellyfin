@@ -1,4 +1,3 @@
-
 namespace MediaBrowser.Model.IO
 {
     public interface IShortcutHandler

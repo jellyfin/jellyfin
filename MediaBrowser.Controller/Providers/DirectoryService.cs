@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            if (!_cache.TryGetValue(path, out var entries))
+            if (!_cache.TryGetValue(path, out FileSystemMetadata[] entries))
             {
                 //_logger.LogDebug("Getting files for " + path);
 
@@ -54,7 +54,7 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata GetFile(string path)
         {
-            if (!_fileCache.TryGetValue(path, out var file))
+            if (!_fileCache.TryGetValue(path, out FileSystemMetadata file))
             {
                 file = _fileSystem.GetFileInfo(path);
 
@@ -80,7 +80,7 @@ namespace MediaBrowser.Controller.Providers
 
         public List<string> GetFilePaths(string path, bool clearCache)
         {
-            if (clearCache || !_filePathCache.TryGetValue(path, out var result))
+            if (clearCache || !_filePathCache.TryGetValue(path, out List<string> result))
             {
                 result = _fileSystem.GetFilePaths(path).ToList();
 

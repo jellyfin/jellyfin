@@ -132,7 +132,7 @@ namespace MediaBrowser.Model.Net
 
             var ext = Path.GetExtension(path) ?? string.Empty;
 
-            if (MimeTypeLookup.TryGetValue(ext, out var result))
+            if (MimeTypeLookup.TryGetValue(ext, out string result))
             {
                 return result;
             }
@@ -338,7 +338,7 @@ namespace MediaBrowser.Model.Net
             // handle text/html; charset=UTF-8
             mimeType = mimeType.Split(';')[0];
 
-            if (ExtensionLookup.TryGetValue(mimeType, out var result))
+            if (ExtensionLookup.TryGetValue(mimeType, out string result))
             {
                 return result;
             }

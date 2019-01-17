@@ -31,7 +31,7 @@ namespace MediaBrowser.Model.Dlna
             string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
              DlnaMaps.FlagsToString(flagValue));
 
-            var mediaProfile = _profile.GetImageMediaProfile(container,
+            ResponseProfile mediaProfile = _profile.GetImageMediaProfile(container,
                 width,
                 height);
 
@@ -83,7 +83,7 @@ namespace MediaBrowser.Model.Dlna
             string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
              DlnaMaps.FlagsToString(flagValue));
 
-            var mediaProfile = _profile.GetAudioMediaProfile(container,
+            ResponseProfile mediaProfile = _profile.GetAudioMediaProfile(container,
                 audioCodec,
                 audioChannels,
                 audioBitrate,
@@ -148,7 +148,7 @@ namespace MediaBrowser.Model.Dlna
             string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
              DlnaMaps.FlagsToString(flagValue));
 
-            var mediaProfile = _profile.GetVideoMediaProfile(container,
+            ResponseProfile mediaProfile = _profile.GetVideoMediaProfile(container,
                 audioCodec,
                 videoCodec,
                 width,

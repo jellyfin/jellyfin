@@ -142,7 +142,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             return false;
         }
-
+        // Make sure this comes after internet image providers
         public int Order => 100;
     }
 }

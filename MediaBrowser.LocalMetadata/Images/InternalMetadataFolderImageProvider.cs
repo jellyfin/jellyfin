@@ -46,7 +46,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             return true;
         }
-
+        // Make sure this is last so that all other locations are scanned first
         public int Order => 1000;
 
         public List<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)

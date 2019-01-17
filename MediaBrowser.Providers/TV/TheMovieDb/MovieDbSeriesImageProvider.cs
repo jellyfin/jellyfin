@@ -170,7 +170,7 @@ namespace MediaBrowser.Providers.TV
 
             return null;
         }
-
+        // After tvdb and fanart
         public int Order => 2;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)

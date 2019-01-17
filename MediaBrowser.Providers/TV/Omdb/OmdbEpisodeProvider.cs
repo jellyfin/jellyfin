@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.TV
                 return result;
             }
 
-            if (info.SeriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out var seriesImdbId) && !string.IsNullOrEmpty(seriesImdbId))
+            if (info.SeriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out string seriesImdbId) && !string.IsNullOrEmpty(seriesImdbId))
             {
                 if (info.IndexNumber.HasValue && info.ParentIndexNumber.HasValue)
                 {
@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.TV
 
             return result;
         }
-
+        // After TheTvDb
         public int Order => 1;
 
         public string Name => "The Open Movie Database";

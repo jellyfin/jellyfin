@@ -1,4 +1,3 @@
-
 namespace MediaBrowser.Model.MediaInfo
 {
     public class Container

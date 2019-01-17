@@ -145,7 +145,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             var list = new List<string>();
-            foreach (var pair in BuildParams(this, accessToken))
+            foreach (NameValuePair pair in BuildParams(this, accessToken))
             {
                 if (string.IsNullOrEmpty(pair.Value))
                 {
@@ -349,7 +349,7 @@ namespace MediaBrowser.Model.Dlna
             var newList = new List<SubtitleStreamInfo>();
 
             // First add the selected track
-            foreach (var stream in list)
+            foreach (SubtitleStreamInfo stream in list)
             {
                 if (stream.DeliveryMethod == SubtitleDeliveryMethod.External)
                 {

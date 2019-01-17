@@ -242,7 +242,7 @@ namespace MediaBrowser.Providers.Music
         {
             public List<Artist> artists { get; set; }
         }
-
+        // After musicbrainz
         public int Order => 1;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)

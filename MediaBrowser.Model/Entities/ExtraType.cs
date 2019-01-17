@@ -1,4 +1,3 @@
-
 namespace MediaBrowser.Model.Entities
 {
     public enum ExtraType

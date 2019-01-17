@@ -71,7 +71,7 @@ namespace MediaBrowser.Providers.TV
                 return result;
             }
 
-            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out var seriesTmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out string seriesTmdbId);
 
             if (string.IsNullOrEmpty(seriesTmdbId))
             {
@@ -208,7 +208,7 @@ namespace MediaBrowser.Providers.TV
         {
             return GetResponse(url, cancellationToken);
         }
-
+        // After TheTvDb
         public int Order => 1;
 
         public string Name => "TheMovieDb";

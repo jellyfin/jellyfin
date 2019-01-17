@@ -902,7 +902,7 @@ namespace MediaBrowser.Api.Library
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var parent = item.GetParent();
+            BaseItem parent = item.GetParent();
 
             while (parent != null)
             {
