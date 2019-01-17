@@ -540,7 +540,7 @@ namespace Emby.Server.Implementations.LiveTv
             var isNew = false;
             var forceUpdate = false;
 
-            if (!allExistingPrograms.TryGetValue(id, out var item))
+            if (!allExistingPrograms.TryGetValue(id, out LiveTvProgram item))
             {
                 isNew = true;
                 item = new LiveTvProgram
@@ -1951,7 +1951,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 foreach (var programDto in currentProgramDtos)
                 {
-                    if (currentChannelsDict.TryGetValue(programDto.ChannelId, out var channelDto))
+                    if (currentChannelsDict.TryGetValue(programDto.ChannelId, out BaseItemDto channelDto))
                     {
                         channelDto.CurrentProgram = programDto;
                     }
@@ -2315,7 +2315,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);
 
-            var config = GetConfiguration();
+            LiveTvOptions config = GetConfiguration();
 
             var list = config.ListingProviders.ToList();
             int index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));

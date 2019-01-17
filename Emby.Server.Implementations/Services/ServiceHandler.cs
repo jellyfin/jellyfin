@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.Services
         {
             if (this.RestPath == null)
             {
-                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, out var contentType);
+                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, out string contentType);
 
                 if (contentType != null)
                     ResponseContentType = contentType;
@@ -137,7 +137,7 @@ namespace Emby.Server.Implementations.Services
         public static object CreateRequest(IRequest httpReq, RestPath restPath, Dictionary<string, string> requestParams, object requestDto)
         {
             var pathInfo = !restPath.IsWildCardPath
-                ? GetSanitizedPathInfo(httpReq.PathInfo, out var contentType)
+                ? GetSanitizedPathInfo(httpReq.PathInfo, out string contentType)
                 : httpReq.PathInfo;
 
             return restPath.CreateRequest(pathInfo, requestParams, requestDto);

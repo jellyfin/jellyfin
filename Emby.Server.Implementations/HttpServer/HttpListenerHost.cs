@@ -700,7 +700,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return null;
             }
 
-            var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, out var contentType);
+            var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, out string contentType);
 
             if (restPath != null)
             {

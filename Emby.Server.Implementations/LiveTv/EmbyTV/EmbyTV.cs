@@ -473,7 +473,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private static string GetMappedChannel(string channelId, NameValuePair[] mappings)
         {
-            foreach (var mapping in mappings)
+            foreach (NameValuePair mapping in mappings)
             {
                 if (StringHelper.EqualsIgnoreCase(mapping.Name, channelId))
                 {
@@ -1988,8 +1988,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     writer.WriteStartDocument(true);
                     writer.WriteStartElement("tvshow");
-
-                    if (timer.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out var id))
+                    string id;
+                    if (timer.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out id))
                     {
                         writer.WriteElementString("id", id);
                     }
@@ -2520,7 +2520,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (string.IsNullOrWhiteSpace(channelId) && !parent.ChannelId.Equals(Guid.Empty))
             {
-                if (!tempChannelCache.TryGetValue(parent.ChannelId, out var channel))
+                if (!tempChannelCache.TryGetValue(parent.ChannelId, out LiveTvChannel channel))
                 {
                     channel = _libraryManager.GetItemList(new InternalItemsQuery
                     {
@@ -2579,7 +2579,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (!programInfo.ChannelId.Equals(Guid.Empty))
             {
-                if (!tempChannelCache.TryGetValue(programInfo.ChannelId, out var channel))
+                if (!tempChannelCache.TryGetValue(programInfo.ChannelId, out LiveTvChannel channel))
                 {
                     channel = _libraryManager.GetItemList(new InternalItemsQuery
                     {

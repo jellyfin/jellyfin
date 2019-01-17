@@ -1,4 +1,3 @@
-
 namespace Emby.Naming.Subtitles
 {
     public class SubtitleInfo

@@ -199,7 +199,7 @@ namespace Emby.Server.Implementations.Data
 
         public static void TryBind(this IStatement statement, string name, double value)
         {
-            if (statement.BindParameters.TryGetValue(name, out var bindParam))
+            if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
                 bindParam.Bind(value);
             }
@@ -211,7 +211,7 @@ namespace Emby.Server.Implementations.Data
 
         public static void TryBind(this IStatement statement, string name, string value)
         {
-            if (statement.BindParameters.TryGetValue(name, out var bindParam))
+            if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
                 if (value == null)
                 {
@@ -230,7 +230,7 @@ namespace Emby.Server.Implementations.Data
 
         public static void TryBind(this IStatement statement, string name, bool value)
         {
-            if (statement.BindParameters.TryGetValue(name, out var bindParam))
+            if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
                 bindParam.Bind(value);
             }
@@ -242,7 +242,7 @@ namespace Emby.Server.Implementations.Data
 
         public static void TryBind(this IStatement statement, string name, float value)
         {
-            if (statement.BindParameters.TryGetValue(name, out var bindParam))
+            if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
                 bindParam.Bind(value);
             }
@@ -254,7 +254,7 @@ namespace Emby.Server.Implementations.Data
 
         public static void TryBind(this IStatement statement, string name, int value)
         {
-            if (statement.BindParameters.TryGetValue(name, out var bindParam))
+            if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
                 bindParam.Bind(value);
             }
@@ -266,7 +266,7 @@ namespace Emby.Server.Implementations.Data
 
         public static void TryBind(this IStatement statement, string name, Guid value)
         {
-            if (statement.BindParameters.TryGetValue(name, out var bindParam))
+            if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
                 bindParam.Bind(value.ToGuidBlob());
             }
@@ -278,7 +278,7 @@ namespace Emby.Server.Implementations.Data
 
         public static void TryBind(this IStatement statement, string name, DateTime value)
         {
-            if (statement.BindParameters.TryGetValue(name, out var bindParam))
+            if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
                 bindParam.Bind(value.ToDateTimeParamValue());
             }
@@ -290,7 +290,7 @@ namespace Emby.Server.Implementations.Data
 
         public static void TryBind(this IStatement statement, string name, long value)
         {
-            if (statement.BindParameters.TryGetValue(name, out var bindParam))
+            if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
                 bindParam.Bind(value);
             }
@@ -302,7 +302,7 @@ namespace Emby.Server.Implementations.Data
 
         public static void TryBind(this IStatement statement, string name, byte[] value)
         {
-            if (statement.BindParameters.TryGetValue(name, out var bindParam))
+            if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
                 bindParam.Bind(value);
             }
@@ -314,7 +314,7 @@ namespace Emby.Server.Implementations.Data
 
         public static void TryBindNull(this IStatement statement, string name)
         {
-            if (statement.BindParameters.TryGetValue(name, out var bindParam))
+            if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
                 bindParam.BindNull();
             }
