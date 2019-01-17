@@ -82,7 +82,7 @@ namespace Jellyfin.SocketSharp
         {
             get
             {
-                return String.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"];
+                return string.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"];
             }
         }
 
@@ -106,7 +106,7 @@ namespace Jellyfin.SocketSharp
         {
             get
             {
-                return String.IsNullOrEmpty(request.Headers["X-Real-IP"]) ? null : request.Headers["X-Real-IP"];
+                return string.IsNullOrEmpty(request.Headers["X-Real-IP"]) ? null : request.Headers["X-Real-IP"];
             }
         }
 

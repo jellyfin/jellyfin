@@ -117,7 +117,7 @@ namespace MediaBrowser.Api.Playback
 
         public string UserAgent { get; set; }
 
-        public StreamState(IMediaSourceManager mediaSourceManager, ILogger logger, TranscodingJobType transcodingType) 
+        public StreamState(IMediaSourceManager mediaSourceManager, ILogger logger, TranscodingJobType transcodingType)
             : base(logger, mediaSourceManager, transcodingType)
         {
             _mediaSourceManager = mediaSourceManager;

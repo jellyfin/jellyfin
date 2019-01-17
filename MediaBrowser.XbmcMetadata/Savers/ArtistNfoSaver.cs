@@ -47,7 +47,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 writer.WriteElementString("disbanded", artist.EndDate.Value.ToLocalTime().ToString(formatString));
             }
-            
+
             var albums = artist
                 .GetRecursiveChildren(i => i is MusicAlbum);
 
@@ -55,7 +55,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         }
 
         private readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         private void AddAlbums(IList<BaseItem> albums, XmlWriter writer)
         {
             foreach (var album in albums)

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.ApiClient;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
@@ -169,6 +169,7 @@ namespace Emby.Server.Implementations.Udp
             }
             catch (ObjectDisposedException)
             {
+                //TODO Investigate and properly fix.
             }
             catch (Exception ex)
             {
@@ -182,7 +183,7 @@ namespace Emby.Server.Implementations.Udp
             {
                 return;
             }
-            
+
             try
             {
                 var socketResult = _udpClient.EndReceive(result);
@@ -191,6 +192,7 @@ namespace Emby.Server.Implementations.Udp
             }
             catch (ObjectDisposedException)
             {
+                //TODO Investigate and properly fix.
             }
             catch (Exception ex)
             {
@@ -263,12 +265,12 @@ namespace Emby.Server.Implementations.Udp
 
             if (bytes == null)
             {
-                throw new ArgumentNullException("bytes");
+                throw new ArgumentNullException(nameof(bytes));
             }
 
             if (remoteEndPoint == null)
             {
-                throw new ArgumentNullException("remoteEndPoint");
+                throw new ArgumentNullException(nameof(remoteEndPoint));
             }
 
             try

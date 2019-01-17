@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
@@ -455,10 +455,17 @@ namespace Emby.Server.Implementations.Playlists
             return MakeRelativePath(_fileSystem.GetDirectoryName(playlistPath), itemPath);
         }
 
-        private static String MakeRelativePath(string folderPath, string fileAbsolutePath)
+        private static string MakeRelativePath(string folderPath, string fileAbsolutePath)
         {
-            if (String.IsNullOrEmpty(folderPath)) throw new ArgumentNullException("folderPath");
-            if (String.IsNullOrEmpty(fileAbsolutePath)) throw new ArgumentNullException("filePath");
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                throw new ArgumentException("Folder path was null or empty.", nameof(folderPath));
+            }
+
+            if (string.IsNullOrEmpty(fileAbsolutePath))
+            {
+                throw new ArgumentException("File absolute path was null or empty.", nameof(fileAbsolutePath));
+            }
 
             if (!folderPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
@@ -471,7 +478,7 @@ namespace Emby.Server.Implementations.Playlists
             if (folderUri.Scheme != fileAbsoluteUri.Scheme) { return fileAbsolutePath; } // path can't be made relative.
 
             Uri relativeUri = folderUri.MakeRelativeUri(fileAbsoluteUri);
-            String relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+            string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
 
             if (fileAbsoluteUri.Scheme.Equals("file", StringComparison.CurrentCultureIgnoreCase))
             {

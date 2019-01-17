@@ -68,7 +68,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             if (newList == null)
             {
-                throw new ArgumentNullException("newList");
+                throw new ArgumentNullException(nameof(newList));
             }
 
             var file = _dataPath + ".json";
@@ -85,7 +85,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
 
             var list = GetAll().ToList();
@@ -106,7 +106,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
 
             var list = GetAll().ToList();

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
@@ -142,7 +142,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _providerManager_RefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 100)));
         }
 
-        private bool EnableRefreshMessage(BaseItem item)
+        private static bool EnableRefreshMessage(BaseItem item)
         {
             var folder = item as Folder;
 
@@ -387,7 +387,7 @@ namespace Emby.Server.Implementations.EntryPoints
             };
         }
 
-        private bool FilterItem(BaseItem item)
+        private static bool FilterItem(BaseItem item)
         {
             if (!item.IsFolder && !item.HasPathProtocol)
             {
@@ -471,7 +471,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer.Dispose();
                     LibraryUpdateTimer = null;
                 }
-                
+
                 _libraryManager.ItemAdded -= libraryManager_ItemAdded;
                 _libraryManager.ItemUpdated -= libraryManager_ItemUpdated;
                 _libraryManager.ItemRemoved -= libraryManager_ItemRemoved;

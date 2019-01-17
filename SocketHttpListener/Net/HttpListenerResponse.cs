@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -71,7 +71,7 @@ namespace SocketHttpListener.Net
 
         public bool SendChunked
         {
-            get { return EntitySendFormat == EntitySendFormat.Chunked; ; }
+            get { return EntitySendFormat == EntitySendFormat.Chunked; }
             set { EntitySendFormat = value ? EntitySendFormat.Chunked : EntitySendFormat.ContentLength; }
         }
 
@@ -104,7 +104,7 @@ namespace SocketHttpListener.Net
                 }
                 else
                 {
-                    throw new ArgumentOutOfRangeException("net_clsmall");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
             }
         }

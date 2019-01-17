@@ -30,26 +30,26 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="profile">The profile.</param>
         void CreateProfile(DeviceProfile profile);
-        
+
         /// <summary>
         /// Updates the profile.
         /// </summary>
         /// <param name="profile">The profile.</param>
         void UpdateProfile(DeviceProfile profile);
-        
+
         /// <summary>
         /// Deletes the profile.
         /// </summary>
         /// <param name="id">The identifier.</param>
         void DeleteProfile(string id);
-        
+
         /// <summary>
         /// Gets the profile.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>DeviceProfile.</returns>
         DeviceProfile GetProfile(string id);
-        
+
         /// <summary>
         /// Gets the profile.
         /// </summary>

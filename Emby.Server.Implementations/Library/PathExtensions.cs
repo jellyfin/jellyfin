@@ -16,12 +16,12 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrEmpty(str))
             {
-                throw new ArgumentNullException("str");
+                throw new ArgumentNullException(nameof(str));
             }
 
             if (string.IsNullOrEmpty(attrib))
             {
-                throw new ArgumentNullException("attrib");
+                throw new ArgumentNullException(nameof(attrib));
             }
 
             string srch = "[" + attrib + "=";

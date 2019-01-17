@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.Dlna
 
         public SortCriteria(string value)
         {
-            
+
         }
     }
 }

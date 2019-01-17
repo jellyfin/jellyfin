@@ -211,7 +211,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (string.IsNullOrWhiteSpace(path))
                 {
-                    throw new ArgumentNullException("path");
+                    throw new ArgumentNullException(nameof(path));
                 }
 
                 if (!FileSystem.FileExists(path) && !FileSystem.DirectoryExists(path))
@@ -607,7 +607,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             if (string.IsNullOrEmpty(inputPath))
             {
-                throw new ArgumentNullException("inputPath");
+                throw new ArgumentNullException(nameof(inputPath));
             }
 
             var tempExtractPath = Path.Combine(ConfigurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".jpg");

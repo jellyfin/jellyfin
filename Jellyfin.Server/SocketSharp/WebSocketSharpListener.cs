@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -202,6 +202,7 @@ namespace Jellyfin.SocketSharp
             }
             catch (ObjectDisposedException)
             {
+                //TODO Investigate and properly fix.
             }
             catch (Exception ex)
             {

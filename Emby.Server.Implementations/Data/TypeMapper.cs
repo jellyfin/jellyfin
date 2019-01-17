@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (string.IsNullOrEmpty(typeName))
             {
-                throw new ArgumentNullException("typeName");
+                throw new ArgumentNullException(nameof(typeName));
             }
 
             return _typeMap.GetOrAdd(typeName, LookupType);

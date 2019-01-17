@@ -101,7 +101,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         {
             if (taskManager == null)
             {
-                throw new ArgumentNullException("taskManager");
+                throw new ArgumentNullException(nameof(taskManager));
             }
 
             TaskManager = taskManager;
@@ -155,7 +155,7 @@ namespace MediaBrowser.Api.ScheduledTasks
                     return isEnabled == val;
                 });
             }
-            
+
             var infos = result
                 .Select(ScheduledTaskHelpers.GetTaskInfo)
                 .ToArray();

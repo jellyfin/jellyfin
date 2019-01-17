@@ -153,7 +153,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (string.IsNullOrEmpty(baseUrl))
             {
-                throw new ArgumentNullException(baseUrl);
+                throw new ArgumentNullException(nameof(baseUrl));
             }
 
             List<string> list = new List<string>();
@@ -195,7 +195,7 @@ namespace MediaBrowser.Model.Dlna
         {
             if (string.IsNullOrEmpty(baseUrl))
             {
-                throw new ArgumentNullException(baseUrl);
+                throw new ArgumentNullException(nameof(baseUrl));
             }
 
             string extension = string.IsNullOrEmpty(Container) ? string.Empty : "." + Container;

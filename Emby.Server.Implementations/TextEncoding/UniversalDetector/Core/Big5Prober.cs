@@ -44,12 +44,12 @@ namespace UniversalDetector.Core
         private CodingStateMachine codingSM;
         private BIG5DistributionAnalyser distributionAnalyser;
         private byte[] lastChar = new byte[2];
-        
+
         public Big5Prober()
         {
             this.codingSM = new CodingStateMachine(new BIG5SMModel());
             this.distributionAnalyser = new BIG5DistributionAnalyser();
-            this.Reset();        
+            this.Reset();
         }
 
         public override ProbingState HandleData(byte[] buf, int offset, int len)
@@ -73,7 +73,7 @@ namespace UniversalDetector.Core
                         lastChar[1] = buf[offset];
                         distributionAnalyser.HandleOneChar(lastChar, 0, charLen);
                     } else {
-                        distributionAnalyser.HandleOneChar(buf, i-1, charLen);        
+                        distributionAnalyser.HandleOneChar(buf, i-1, charLen);
                     }
                 }
             }
@@ -84,23 +84,23 @@ namespace UniversalDetector.Core
                     state = ProbingState.FoundIt;
             return state;
         }
-        
+
         public override void Reset()
         {
-            codingSM.Reset(); 
+            codingSM.Reset();
             state = ProbingState.Detecting;
             distributionAnalyser.Reset();
         }
-            
+
         public override string GetCharsetName()
         {
-            return "Big-5";        
+            return "Big-5";
         }
-        
+
         public override float GetConfidence()
         {
             return distributionAnalyser.GetConfidence();
         }
-        
+
     }
 }

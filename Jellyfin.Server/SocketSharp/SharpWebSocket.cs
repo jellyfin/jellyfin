@@ -29,12 +29,12 @@ namespace Jellyfin.SocketSharp
         {
             if (socket == null)
             {
-                throw new ArgumentNullException("socket");
+                throw new ArgumentNullException(nameof(socket));
             }
 
             if (logger == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException(nameof(logger));
             }
 
             _logger = logger;

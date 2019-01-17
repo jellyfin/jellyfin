@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -241,7 +241,7 @@ namespace MediaBrowser.Common.Plugins
         {
             if (configuration == null)
             {
-                throw new ArgumentNullException("configuration");
+                throw new ArgumentNullException(nameof(configuration));
             }
 
             Configuration = (TConfigurationType)configuration;

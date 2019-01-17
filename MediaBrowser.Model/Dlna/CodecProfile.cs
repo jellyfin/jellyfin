@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Dlna
     {
         [XmlAttribute("type")]
         public CodecType Type { get; set; }
-       
+
         public ProfileCondition[] Conditions { get; set; }
 
         public ProfileCondition[] ApplyConditions { get; set; }

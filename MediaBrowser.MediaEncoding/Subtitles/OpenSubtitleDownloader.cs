@@ -46,7 +46,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _config.NamedConfigurationUpdating += _config_NamedConfigurationUpdating;
 
             Utilities.HttpClient = httpClient;
-            OpenSubtitles.SetUserAgent("mediabrowser.tv");
+            OpenSubtitles.SetUserAgent("jellyfin");
         }
 
         private const string PasswordHashPrefix = "h:";
@@ -121,7 +121,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (string.IsNullOrWhiteSpace(id))
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             var idParts = id.Split(new[] { '-' }, 3);

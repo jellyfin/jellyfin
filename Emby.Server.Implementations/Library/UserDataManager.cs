@@ -53,11 +53,11 @@ namespace Emby.Server.Implementations.Library
         {
             if (userData == null)
             {
-                throw new ArgumentNullException("userData");
+                throw new ArgumentNullException(nameof(userData));
             }
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -150,7 +150,7 @@ namespace Emby.Server.Implementations.Library
         /// Gets the internal key.
         /// </summary>
         /// <returns>System.String.</returns>
-        private string GetCacheKey(long internalUserId, Guid itemId)
+        private static string GetCacheKey(long internalUserId, Guid itemId)
         {
             return internalUserId.ToString(CultureInfo.InvariantCulture) + "-" + itemId.ToString("N");
         }
@@ -198,7 +198,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (data == null)
             {
-                throw new ArgumentNullException("data");
+                throw new ArgumentNullException(nameof(data));
             }
 
             return new UserItemDataDto
@@ -226,7 +226,7 @@ namespace Emby.Server.Implementations.Library
             // If a position has been reported, and if we know the duration
             if (positionTicks > 0 && hasRuntime)
             {
-                var pctIn = Decimal.Divide(positionTicks, runtimeTicks) * 100;
+                var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
 
                 // Don't track in very beginning
                 if (pctIn < _config.Configuration.MinResumePct)

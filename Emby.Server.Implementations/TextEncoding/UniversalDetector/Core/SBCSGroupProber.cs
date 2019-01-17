@@ -21,7 +21,7 @@
  * Contributor(s):
  *          Shy Shalom <shooshX@gmail.com>
  *          Rudi Pettazzi <rudi.pettazzi@gmail.com> (C# port)
- * 
+ *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -43,11 +43,11 @@ namespace UniversalDetector.Core
     public class SBCSGroupProber : CharsetProber
     {
         private const int PROBERS_NUM = 13;
-        private CharsetProber[] probers = new CharsetProber[PROBERS_NUM];        
+        private CharsetProber[] probers = new CharsetProber[PROBERS_NUM];
         private bool[] isActive = new bool[PROBERS_NUM];
         private int bestGuess;
         private int activeNum;
-        
+
         public SBCSGroupProber()
         {
             probers[0] = new SingleByteCharSetProber(new Win1251Model());
@@ -62,24 +62,24 @@ namespace UniversalDetector.Core
             probers[9] = new SingleByteCharSetProber(new Win1251BulgarianModel());
             HebrewProber hebprober = new HebrewProber();
             probers[10] = hebprober;
-            // Logical  
-            probers[11] = new SingleByteCharSetProber(new Win1255Model(), false, hebprober); 
+            // Logical
+            probers[11] = new SingleByteCharSetProber(new Win1255Model(), false, hebprober);
             // Visual
-            probers[12] = new SingleByteCharSetProber(new Win1255Model(), true, hebprober); 
+            probers[12] = new SingleByteCharSetProber(new Win1255Model(), true, hebprober);
             hebprober.SetModelProbers(probers[11], probers[12]);
-            // disable latin2 before latin1 is available, otherwise all latin1 
+            // disable latin2 before latin1 is available, otherwise all latin1
             // will be detected as latin2 because of their similarity.
             //probers[13] = new SingleByteCharSetProber(new Latin2HungarianModel());
-            //probers[14] = new SingleByteCharSetProber(new Win1250HungarianModel());            
+            //probers[14] = new SingleByteCharSetProber(new Win1250HungarianModel());
             Reset();
         }
-  
-        public override ProbingState HandleData(byte[] buf, int offset, int len) 
+
+        public override ProbingState HandleData(byte[] buf, int offset, int len)
         {
             ProbingState st = ProbingState.NotMe;
-            
+
             //apply filter to original buffer, and we got new buffer back
-            //depend on what script it is, we will feed them the new buffer 
+            //depend on what script it is, we will feed them the new buffer
             //we got after applying proper filter
             //this is done without any consideration to KeepEnglishLetters
             //of each prober since as of now, there are no probers here which
@@ -87,12 +87,12 @@ namespace UniversalDetector.Core
             byte[] newBuf = FilterWithoutEnglishLetters(buf, offset, len);
             if (newBuf.Length == 0)
                 return state; // Nothing to see here, move on.
-            
+
             for (int i = 0; i < PROBERS_NUM; i++) {
                 if (!isActive[i])
                     continue;
                 st = probers[i].HandleData(newBuf, 0, newBuf.Length);
-                
+
                 if (st == ProbingState.FoundIt) {
                     bestGuess = i;
                     state = ProbingState.FoundIt;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.Dto;
@@ -20,12 +20,12 @@ namespace MediaBrowser.Model.Services
             }
         }
 
-        private StringComparison GetStringComparison()
+        private static StringComparison GetStringComparison()
         {
             return StringComparison.OrdinalIgnoreCase;
         }
 
-        private StringComparer GetStringComparer()
+        private static StringComparer GetStringComparer()
         {
             return StringComparer.OrdinalIgnoreCase;
         }
@@ -218,7 +218,7 @@ namespace MediaBrowser.Model.Services
             return pair.Name + "=" + pair.Value;
         }
 
-        public override String ToString()
+        public override string ToString()
         {
             var vals = this.Select(GetQueryStringValue).ToArray();
 

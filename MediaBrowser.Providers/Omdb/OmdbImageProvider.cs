@@ -69,7 +69,7 @@ namespace MediaBrowser.Providers.Omdb
                         list.Add(new RemoteImageInfo
                         {
                             ProviderName = Name,
-                            Url = string.Format("https://img.omdbapi.com/?i={0}&apikey=fe53f97e", imdbId)
+                            Url = string.Format("https://img.omdbapi.com/?i={0}&apikey=2c9d9507", imdbId)
                         });
                     }
                 }

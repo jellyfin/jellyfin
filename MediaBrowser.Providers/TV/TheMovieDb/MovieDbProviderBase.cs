@@ -56,11 +56,11 @@ namespace MediaBrowser.Providers.TV
         {
             if (string.IsNullOrEmpty(tmdbId))
             {
-                throw new ArgumentNullException("tmdbId");
+                throw new ArgumentNullException(nameof(tmdbId));
             }
             if (string.IsNullOrEmpty(language))
             {
-                throw new ArgumentNullException("language");
+                throw new ArgumentNullException(nameof(language));
             }
 
             var path = GetDataFilePath(tmdbId, seasonNumber, episodeNumber, language);
@@ -83,11 +83,11 @@ namespace MediaBrowser.Providers.TV
         {
             if (string.IsNullOrEmpty(tmdbId))
             {
-                throw new ArgumentNullException("tmdbId");
+                throw new ArgumentNullException(nameof(tmdbId));
             }
             if (string.IsNullOrEmpty(preferredLanguage))
             {
-                throw new ArgumentNullException("preferredLanguage");
+                throw new ArgumentNullException(nameof(preferredLanguage));
             }
 
             var path = MovieDbSeriesProvider.GetSeriesDataPath(_configurationManager.ApplicationPaths, tmdbId);
@@ -106,7 +106,7 @@ namespace MediaBrowser.Providers.TV
 
             var dataFilePath = GetDataFilePath(id, seasonNumber, episodeNumber, preferredMetadataLanguage);
 
-			_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(dataFilePath));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(dataFilePath));
             _jsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
 

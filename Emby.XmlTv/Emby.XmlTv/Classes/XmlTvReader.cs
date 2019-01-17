@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -32,7 +32,7 @@ namespace Emby.XmlTv.Classes
             _language = language;
         }
 
-        private XmlReader CreateXmlTextReader(string path)
+        private static XmlReader CreateXmlTextReader(string path)
         {
             XmlReaderSettings settings = new XmlReaderSettings();
 
@@ -315,7 +315,7 @@ namespace Emby.XmlTv.Classes
                     if (reader.NodeType == XmlNodeType.Element)
                     {
                         var language = reader.GetAttribute("lang");
-                        if (!String.IsNullOrEmpty(language))
+                        if (!string.IsNullOrEmpty(language))
                         {
                             if (!results.ContainsKey(language))
                             {
@@ -580,7 +580,7 @@ namespace Emby.XmlTv.Classes
 
         public void ParseEpisodeDataForOnScreen(XmlReader reader, XmlTvProgram result)
         {
-            //// example: 'Episode #FFEE' 
+            //// example: 'Episode #FFEE'
             //serEpNum = ConvertHTMLToAnsi(nodeEpisodeNum);
             //int num1 = serEpNum.IndexOf("#", 0);
             //if (num1 < 0) num1 = 0;
@@ -780,7 +780,7 @@ namespace Emby.XmlTv.Classes
             var isPopulated = false;
 
             var source = reader.GetAttribute("src");
-            if (!String.IsNullOrEmpty(source))
+            if (!string.IsNullOrEmpty(source))
             {
                 result.Source = source;
                 isPopulated = true;
@@ -788,7 +788,7 @@ namespace Emby.XmlTv.Classes
 
             var widthString = reader.GetAttribute("width");
             var width = 0;
-            if (!String.IsNullOrEmpty(widthString) && Int32.TryParse(widthString, out width))
+            if (!string.IsNullOrEmpty(widthString) && int.TryParse(widthString, out width))
             {
                 result.Width = width;
                 isPopulated = true;
@@ -796,7 +796,7 @@ namespace Emby.XmlTv.Classes
 
             var heightString = reader.GetAttribute("height");
             var height = 0;
-            if (!String.IsNullOrEmpty(heightString) && Int32.TryParse(heightString, out height))
+            if (!string.IsNullOrEmpty(heightString) && int.TryParse(heightString, out height))
             {
                 result.Height = height;
                 isPopulated = true;
@@ -832,23 +832,22 @@ namespace Emby.XmlTv.Classes
 
         public void ProcessNode(XmlReader reader, Action<string> setter, string languageRequired = null, Action<string> allOccurrencesSetter = null)
         {
-            /*
-            <title lang="es">Homes Under the Hammer - Spanish</title>
-		    <title lang="es">Homes Under the Hammer - Spanish 2</title>
-		    <title lang="en">Homes Under the Hammer - English</title>
-		    <title lang="en">Homes Under the Hammer - English 2</title>
-		    <title lang="">Homes Under the Hammer - Empty Language</title>
-		    <title lang="">Homes Under the Hammer - Empty Language 2</title>
-		    <title>Homes Under the Hammer - No Language</title>
-		    <title>Homes Under the Hammer - No Language 2</title>
-            */
+            /* <title lang="es">Homes Under the Hammer - Spanish</title>
+             * <title lang="es">Homes Under the Hammer - Spanish 2</title>
+             * <title lang="en">Homes Under the Hammer - English</title>
+             * <title lang="en">Homes Under the Hammer - English 2</title>
+             * <title lang="">Homes Under the Hammer - Empty Language</title>
+             * <title lang="">Homes Under the Hammer - Empty Language 2</title>
+             * <title>Homes Under the Hammer - No Language</title>
+             * <title>Homes Under the Hammer - No Language 2</title>
+             */
 
-            /*  Expected Behaviour:
-                - Language = Null   Homes Under the Hammer - No Language
-                - Language = ""   Homes Under the Hammer - No Language
-                - Language = es     Homes Under the Hammer - Spanish
-                - Language = en     Homes Under the Hammer - English
-            */
+            /* Expected Behaviour:
+             *  - Language = Null   Homes Under the Hammer - No Language
+             *  - Language = ""     Homes Under the Hammer - No Language
+             *  - Language = es     Homes Under the Hammer - Spanish
+             *  - Language = en     Homes Under the Hammer - English
+             */
 
             var results = new List<Tuple<string, string>>();
 
@@ -921,23 +920,22 @@ namespace Emby.XmlTv.Classes
 
         public void ProcessMultipleNodes(XmlReader reader, Action<string> setter, string languageRequired = null)
         {
-            /*
-            <category lang="en">Property - English</category>
-		    <category lang="en">Property - English 2</category>
-		    <category lang="es">Property - Spanish</category>
-		    <category lang="es">Property - Spanish 2</category>
-		    <category lang="">Property - Empty Language</category>
-		    <category lang="">Property - Empty Language 2</category>
-		    <category>Property - No Language</category>
-		    <category>Property - No Language 2</category>
-            */
+            /* <category lang="en">Property - English</category>
+             * <category lang="en">Property - English 2</category>
+             * <category lang="es">Property - Spanish</category>
+             * <category lang="es">Property - Spanish 2</category>
+             * <category lang="">Property - Empty Language</category>
+             * <category lang="">Property - Empty Language 2</category>
+             * <category>Property - No Language</category>
+             * <category>Property - No Language 2</category>
+             */
 
-            /*  Expected Behaviour:
-                - Language = Null   Property - No Language / Property - No Language 2
-                - Language = ""     Property - Empty Language / Property - Empty Language 2
-                - Language = es     Property - Spanish / Property - Spanish 2
-                - Language = en     Property - English / Property - English 2
-            */
+            /* Expected Behaviour:
+             *  - Language = Null   Property - No Language / Property - No Language 2
+             *  - Language = ""     Property - Empty Language / Property - Empty Language 2
+             *  - Language = es     Property - Spanish / Property - Spanish 2
+             *  - Language = en     Property - English / Property - English 2
+             */
 
             var currentElementName = reader.Name;
             var values = new[] { new { Language = reader.GetAttribute("lang"), Value = reader.ReadElementContentAsString() } }.ToList();
@@ -973,7 +971,7 @@ namespace Emby.XmlTv.Classes
             while (reader.Name == currentElementName)
             {
                 var language = reader.GetAttribute("lang");
-                if (String.IsNullOrEmpty(_language) || String.IsNullOrEmpty(language) || language == _language)
+                if (string.IsNullOrEmpty(_language) || string.IsNullOrEmpty(language) || language == _language)
                 {
                     setter(reader.ReadElementContentAsString());
                 }
@@ -1034,7 +1032,7 @@ namespace Emby.XmlTv.Classes
                 if (match.Success)
                 {
                     dateComponent = match.Groups["dateDigits"].Value;
-                    if (!String.IsNullOrEmpty(match.Groups["dateOffset"].Value))
+                    if (!string.IsNullOrEmpty(match.Groups["dateOffset"].Value))
                     {
                         dateOffset = match.Groups["dateOffset"].Value; // Add in the colon to ease parsing later
                         if (dateOffset.Length == 5)
@@ -1054,7 +1052,7 @@ namespace Emby.XmlTv.Classes
                     dateComponent = dateComponent + completeDate.Substring(dateComponent.Length, completeDate.Length - dateComponent.Length);
                 }
 
-                var standardDate = String.Format("{0} {1}", dateComponent, dateOffset);
+                var standardDate = string.Format("{0} {1}", dateComponent, dateOffset);
                 DateTimeOffset parsedDateTime;
                 if (DateTimeOffset.TryParseExact(standardDate, "yyyyMMddHHmmss zzz", CultureInfo.CurrentCulture, DateTimeStyles.None, out parsedDateTime))
                 {
@@ -1088,7 +1086,7 @@ namespace Emby.XmlTv.Classes
                 dateComponent = dateComponent + completeDate.Substring(dateComponent.Length, completeDate.Length - dateComponent.Length);
             }
 
-            return String.Format("{0} {1}", dateComponent, dateOffset);
+            return string.Format("{0} {1}", dateComponent, dateOffset);
         }
     }
 }

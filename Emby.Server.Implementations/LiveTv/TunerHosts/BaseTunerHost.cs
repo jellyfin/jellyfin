@@ -40,13 +40,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             FileSystem = fileSystem;
         }
 
-        public virtual bool IsSupported
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public virtual bool IsSupported => true;
 
         protected abstract Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken);
         public abstract string Type { get; }
@@ -140,7 +134,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             if (string.IsNullOrEmpty(channelId))
             {
-                throw new ArgumentNullException("channelId");
+                throw new ArgumentNullException(nameof(channelId));
             }
 
             if (IsValidChannelId(channelId))
@@ -175,7 +169,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             if (string.IsNullOrEmpty(channelId))
             {
-                throw new ArgumentNullException("channelId");
+                throw new ArgumentNullException(nameof(channelId));
             }
 
             if (!IsValidChannelId(channelId))
@@ -228,18 +222,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             throw new LiveTvConflictException();
         }
 
-        protected virtual string ChannelIdPrefix
-        {
-            get
-            {
-                return Type + "_";
-            }
-        }
+        protected virtual string ChannelIdPrefix => Type + "_";
+
         protected virtual bool IsValidChannelId(string channelId)
         {
             if (string.IsNullOrEmpty(channelId))
             {
-                throw new ArgumentNullException("channelId");
+                throw new ArgumentNullException(nameof(channelId));
             }
 
             return channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase);

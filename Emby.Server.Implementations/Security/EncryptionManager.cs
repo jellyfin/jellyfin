@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Security;
 using System;
 using System.Text;
 
@@ -14,7 +14,10 @@ namespace Emby.Server.Implementations.Security
         /// <exception cref="System.ArgumentNullException">value</exception>
         public string EncryptString(string value)
         {
-            if (value == null) throw new ArgumentNullException("value");
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
 
             return EncryptStringUniversal(value);
         }
@@ -27,12 +30,15 @@ namespace Emby.Server.Implementations.Security
         /// <exception cref="System.ArgumentNullException">value</exception>
         public string DecryptString(string value)
         {
-            if (value == null) throw new ArgumentNullException("value");
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
 
             return DecryptStringUniversal(value);
         }
 
-        private string EncryptStringUniversal(string value)
+        private static string EncryptStringUniversal(string value)
         {
             // Yes, this isn't good, but ProtectedData in mono is throwing exceptions, so use this for now
 
@@ -40,7 +46,7 @@ namespace Emby.Server.Implementations.Security
             return Convert.ToBase64String(bytes);
         }
 
-        private string DecryptStringUniversal(string value)
+        private static string DecryptStringUniversal(string value)
         {
             // Yes, this isn't good, but ProtectedData in mono is throwing exceptions, so use this for now
 

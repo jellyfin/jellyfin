@@ -23,69 +23,69 @@ namespace SocketHttpListener.Net
         }
 
         static readonly bool[] allowed_chars = {
-			false, false, false, false, false, false, false, false, false, false, false, false, false, false,
-			false, false, false, false, false, false, false, false, false, false, false, false, false, false,
-			false, false, false, false, false, true, false, true, true, true, true, false, false, false, true,
-			true, false, true, true, false, true, true, true, true, true, true, true, true, true, true, false,
-			false, false, false, false, false, false, true, true, true, true, true, true, true, true, true,
-			true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-			false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true,
-			true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-			false, true, false
-		};
+            false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+            false, false, false, false, false, true, false, true, true, true, true, false, false, false, true,
+            true, false, true, true, false, true, true, true, true, true, true, true, true, true, true, false,
+            false, false, false, false, false, false, true, true, true, true, true, true, true, true, true,
+            true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
+            false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true,
+            true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
+            false, true, false
+        };
 
         static readonly Dictionary<string, HeaderInfo> headers;
 
         static WebHeaderCollection()
         {
             headers = new Dictionary<string, HeaderInfo>(StringComparer.OrdinalIgnoreCase) {
-				{ "Allow", HeaderInfo.MultiValue },
-				{ "Accept", HeaderInfo.Request | HeaderInfo.MultiValue },
-				{ "Accept-Charset", HeaderInfo.MultiValue },
-				{ "Accept-Encoding", HeaderInfo.MultiValue },
-				{ "Accept-Language", HeaderInfo.MultiValue },
-				{ "Accept-Ranges", HeaderInfo.MultiValue },
-				{ "Age", HeaderInfo.Response },
-				{ "Authorization", HeaderInfo.MultiValue },
-				{ "Cache-Control", HeaderInfo.MultiValue },
-				{ "Cookie", HeaderInfo.MultiValue },
-				{ "Connection", HeaderInfo.Request | HeaderInfo.MultiValue },
-				{ "Content-Encoding", HeaderInfo.MultiValue },
-				{ "Content-Length", HeaderInfo.Request | HeaderInfo.Response },
-				{ "Content-Type", HeaderInfo.Request },
-				{ "Content-Language", HeaderInfo.MultiValue },
-				{ "Date", HeaderInfo.Request },
-				{ "Expect", HeaderInfo.Request | HeaderInfo.MultiValue},
-				{ "Host", HeaderInfo.Request },
-				{ "If-Match", HeaderInfo.MultiValue },
-				{ "If-Modified-Since", HeaderInfo.Request },
-				{ "If-None-Match", HeaderInfo.MultiValue },
-				{ "Keep-Alive", HeaderInfo.Response },
-				{ "Pragma", HeaderInfo.MultiValue },
-				{ "Proxy-Authenticate", HeaderInfo.MultiValue },
-				{ "Proxy-Authorization", HeaderInfo.MultiValue },
-				{ "Proxy-Connection", HeaderInfo.Request | HeaderInfo.MultiValue },
-				{ "Range", HeaderInfo.Request | HeaderInfo.MultiValue },
-				{ "Referer", HeaderInfo.Request },
-				{ "Set-Cookie", HeaderInfo.MultiValue },
-				{ "Set-Cookie2", HeaderInfo.MultiValue },
-				{ "Server", HeaderInfo.Response },
-				{ "TE", HeaderInfo.MultiValue },
-				{ "Trailer", HeaderInfo.MultiValue },
-				{ "Transfer-Encoding", HeaderInfo.Request | HeaderInfo.Response | HeaderInfo.MultiValue },
-				{ "Translate", HeaderInfo.Request | HeaderInfo.Response },
-				{ "Upgrade", HeaderInfo.MultiValue },
-				{ "User-Agent", HeaderInfo.Request },
-				{ "Vary", HeaderInfo.MultiValue },
-				{ "Via", HeaderInfo.MultiValue },
-				{ "Warning", HeaderInfo.MultiValue },
-				{ "WWW-Authenticate", HeaderInfo.Response | HeaderInfo. MultiValue },
-				{ "SecWebSocketAccept",  HeaderInfo.Response },
-				{ "SecWebSocketExtensions", HeaderInfo.Request | HeaderInfo.Response | HeaderInfo. MultiValue },
-				{ "SecWebSocketKey", HeaderInfo.Request },
-				{ "Sec-WebSocket-Protocol", HeaderInfo.Request | HeaderInfo.Response | HeaderInfo. MultiValue },
-				{ "SecWebSocketVersion", HeaderInfo.Response | HeaderInfo. MultiValue }
-			};
+                { "Allow", HeaderInfo.MultiValue },
+                { "Accept", HeaderInfo.Request | HeaderInfo.MultiValue },
+                { "Accept-Charset", HeaderInfo.MultiValue },
+                { "Accept-Encoding", HeaderInfo.MultiValue },
+                { "Accept-Language", HeaderInfo.MultiValue },
+                { "Accept-Ranges", HeaderInfo.MultiValue },
+                { "Age", HeaderInfo.Response },
+                { "Authorization", HeaderInfo.MultiValue },
+                { "Cache-Control", HeaderInfo.MultiValue },
+                { "Cookie", HeaderInfo.MultiValue },
+                { "Connection", HeaderInfo.Request | HeaderInfo.MultiValue },
+                { "Content-Encoding", HeaderInfo.MultiValue },
+                { "Content-Length", HeaderInfo.Request | HeaderInfo.Response },
+                { "Content-Type", HeaderInfo.Request },
+                { "Content-Language", HeaderInfo.MultiValue },
+                { "Date", HeaderInfo.Request },
+                { "Expect", HeaderInfo.Request | HeaderInfo.MultiValue},
+                { "Host", HeaderInfo.Request },
+                { "If-Match", HeaderInfo.MultiValue },
+                { "If-Modified-Since", HeaderInfo.Request },
+                { "If-None-Match", HeaderInfo.MultiValue },
+                { "Keep-Alive", HeaderInfo.Response },
+                { "Pragma", HeaderInfo.MultiValue },
+                { "Proxy-Authenticate", HeaderInfo.MultiValue },
+                { "Proxy-Authorization", HeaderInfo.MultiValue },
+                { "Proxy-Connection", HeaderInfo.Request | HeaderInfo.MultiValue },
+                { "Range", HeaderInfo.Request | HeaderInfo.MultiValue },
+                { "Referer", HeaderInfo.Request },
+                { "Set-Cookie", HeaderInfo.MultiValue },
+                { "Set-Cookie2", HeaderInfo.MultiValue },
+                { "Server", HeaderInfo.Response },
+                { "TE", HeaderInfo.MultiValue },
+                { "Trailer", HeaderInfo.MultiValue },
+                { "Transfer-Encoding", HeaderInfo.Request | HeaderInfo.Response | HeaderInfo.MultiValue },
+                { "Translate", HeaderInfo.Request | HeaderInfo.Response },
+                { "Upgrade", HeaderInfo.MultiValue },
+                { "User-Agent", HeaderInfo.Request },
+                { "Vary", HeaderInfo.MultiValue },
+                { "Via", HeaderInfo.MultiValue },
+                { "Warning", HeaderInfo.MultiValue },
+                { "WWW-Authenticate", HeaderInfo.Response | HeaderInfo. MultiValue },
+                { "SecWebSocketAccept",  HeaderInfo.Response },
+                { "SecWebSocketExtensions", HeaderInfo.Request | HeaderInfo.Response | HeaderInfo. MultiValue },
+                { "SecWebSocketKey", HeaderInfo.Request },
+                { "Sec-WebSocket-Protocol", HeaderInfo.Request | HeaderInfo.Response | HeaderInfo. MultiValue },
+                { "SecWebSocketVersion", HeaderInfo.Response | HeaderInfo. MultiValue }
+            };
         }
 
         // Methods
@@ -93,10 +93,10 @@ namespace SocketHttpListener.Net
         public void Add(string header)
         {
             if (header == null)
-                throw new ArgumentNullException("header");
+                throw new ArgumentNullException(nameof(header));
             int pos = header.IndexOf(':');
             if (pos == -1)
-                throw new ArgumentException("no colon found", "header");
+                throw new ArgumentException("no colon found", nameof(header));
 
             this.Add(header.Substring(0, pos), header.Substring(pos + 1));
         }
@@ -104,7 +104,7 @@ namespace SocketHttpListener.Net
         public override void Add(string name, string value)
         {
             if (name == null)
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
 
             this.AddWithoutValidate(name, value);
         }
@@ -112,13 +112,13 @@ namespace SocketHttpListener.Net
         protected void AddWithoutValidate(string headerName, string headerValue)
         {
             if (!IsHeaderName(headerName))
-                throw new ArgumentException("invalid header name: " + headerName, "headerName");
+                throw new ArgumentException("invalid header name: " + headerName, nameof(headerName));
             if (headerValue == null)
-                headerValue = String.Empty;
+                headerValue = string.Empty;
             else
                 headerValue = headerValue.Trim();
             if (!IsHeaderValue(headerValue))
-                throw new ArgumentException("invalid header value: " + headerValue, "headerValue");
+                throw new ArgumentException("invalid header value: " + headerValue, nameof(headerValue));
 
             AddValue(headerName, headerValue);
         }
@@ -131,7 +131,7 @@ namespace SocketHttpListener.Net
         internal List<string> GetValues_internal(string header, bool split)
         {
             if (header == null)
-                throw new ArgumentNullException("header");
+                throw new ArgumentNullException(nameof(header));
 
             var values = base.GetValues(header);
             if (values == null || values.Count == 0)
@@ -205,10 +205,10 @@ namespace SocketHttpListener.Net
         public static bool IsRestricted(string headerName, bool response)
         {
             if (headerName == null)
-                throw new ArgumentNullException("headerName");
+                throw new ArgumentNullException(nameof(headerName));
 
             if (headerName.Length == 0)
-                throw new ArgumentException("empty string", "headerName");
+                throw new ArgumentException("empty string", nameof(headerName));
 
             if (!IsHeaderName(headerName))
                 throw new ArgumentException("Invalid character in header");
@@ -224,11 +224,11 @@ namespace SocketHttpListener.Net
         public override void Set(string name, string value)
         {
             if (name == null)
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             if (!IsHeaderName(name))
                 throw new ArgumentException("invalid header name");
             if (value == null)
-                value = String.Empty;
+                value = string.Empty;
             else
                 value = value.Trim();
             if (!IsHeaderValue(value))
@@ -288,7 +288,7 @@ namespace SocketHttpListener.Net
         {
             int pos = header.IndexOf(':');
             if (pos == -1)
-                throw new ArgumentException("no colon found", "header");
+                throw new ArgumentException("no colon found", nameof(header));
 
             SetInternal(header.Substring(0, pos), header.Substring(pos + 1));
         }
@@ -296,7 +296,7 @@ namespace SocketHttpListener.Net
         internal void SetInternal(string name, string value)
         {
             if (value == null)
-                value = String.Empty;
+                value = string.Empty;
             else
                 value = value.Trim();
             if (!IsHeaderValue(value))

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -48,11 +48,11 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             if (appPaths == null)
             {
-                throw new ArgumentNullException("appPaths");
+                throw new ArgumentNullException(nameof(appPaths));
             }
             if (logger == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException(nameof(logger));
             }
 
             _logger = logger;
@@ -87,7 +87,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             if (string.IsNullOrEmpty(host))
             {
-                throw new ArgumentNullException("host");
+                throw new ArgumentNullException(nameof(host));
             }
 
             HttpClientInfo client;
@@ -104,7 +104,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             return client;
         }
 
-        private WebRequest CreateWebRequest(string url)
+        private static WebRequest CreateWebRequest(string url)
         {
             try
             {
@@ -185,7 +185,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             return request;
         }
 
-        private CredentialCache GetCredential(string url, string username, string password)
+        private static CredentialCache GetCredential(string url, string username, string password)
         {
             //ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3;
             CredentialCache credentialCache = new CredentialCache();
@@ -220,7 +220,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             }
         }
 
-        private void SetUserAgent(HttpWebRequest request, string userAgent)
+        private static void SetUserAgent(HttpWebRequest request, string userAgent)
         {
             request.UserAgent = userAgent;
         }
@@ -389,7 +389,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             {
                 options.ResourcePool?.Release();
 
-                throw new HttpException(string.Format("Connection to {0} timed out", options.Url)) { IsTimedOut = true };
+                throw new HttpException($"Connection to {options.Url} timed out") { IsTimedOut = true };
             }
 
             if (options.LogRequest)
@@ -491,7 +491,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             return responseInfo;
         }
 
-        private void SetHeaders(WebHeaderCollection headers, HttpResponseInfo responseInfo)
+        private static void SetHeaders(WebHeaderCollection headers, HttpResponseInfo responseInfo)
         {
             foreach (var key in headers.AllKeys)
             {
@@ -541,7 +541,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (options.Progress == null)
             {
-                throw new ArgumentNullException("progress");
+                throw new ArgumentException("Options did not have a Progress value.",nameof(options));
             }
 
             options.CancellationToken.ThrowIfCancellationRequested();
@@ -616,7 +616,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             }
         }
 
-        private long? GetContentLength(HttpWebResponse response)
+        private static long? GetContentLength(HttpWebResponse response)
         {
             var length = response.ContentLength;
 
@@ -704,7 +704,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             if (string.IsNullOrEmpty(options.Url))
             {
-                throw new ArgumentNullException("options");
+                throw new ArgumentNullException(nameof(options));
             }
         }
 
@@ -713,7 +713,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <returns>System.String.</returns>
-        private string GetHostFromUrl(string url)
+        private static string GetHostFromUrl(string url)
         {
             var index = url.IndexOf("://", StringComparison.OrdinalIgnoreCase);
 
@@ -803,7 +803,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             };
         }
 
-        private Task<WebResponse> GetResponseAsync(WebRequest request, TimeSpan timeout)
+        private static Task<WebResponse> GetResponseAsync(WebRequest request, TimeSpan timeout)
         {
             var taskCompletion = new TaskCompletionSource<WebResponse>();
 

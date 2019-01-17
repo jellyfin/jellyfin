@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.FFMpeg
         {
             var encoderFilename = Path.GetFileName(info.EncoderPath);
             var probeFilename = Path.GetFileName(info.ProbePath);
-            
+
             foreach (var directory in _fileSystem.GetDirectoryPaths(rootEncoderPath)
                 .ToList())
             {
