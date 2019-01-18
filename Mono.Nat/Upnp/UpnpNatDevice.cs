@@ -146,7 +146,7 @@ namespace Mono.Nat.Upnp
 
                 var ns = new XmlNamespaceManager(xmldoc.NameTable);
                 ns.AddNamespace("ns", "urn:schemas-upnp-org:device-1-0");
-                var nodes = xmldoc.SelectNodes("//*/ns:serviceList", ns);
+                XmlNodeList nodes = xmldoc.SelectNodes("//*/ns:serviceList", ns);
 
                 foreach (XmlNode node in nodes)
                 {

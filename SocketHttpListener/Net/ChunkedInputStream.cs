@@ -73,7 +73,7 @@ namespace SocketHttpListener.Net
 
         protected override int ReadCore(byte[] buffer, int offset, int count)
         {
-            var ares = BeginReadCore(buffer, offset, count, null, null);
+            IAsyncResult ares = BeginReadCore(buffer, offset, count, null, null);
             return EndRead(ares);
         }
 
@@ -115,7 +115,7 @@ namespace SocketHttpListener.Net
 
         private void OnRead(IAsyncResult base_ares)
         {
-            var rb = (ReadBufferState)base_ares.AsyncState;
+            ReadBufferState rb = (ReadBufferState)base_ares.AsyncState;
             var ares = rb.Ares;
             try
             {

@@ -70,7 +70,7 @@ namespace SocketHttpListener.Net
         private void DisposeCore()
         {
             byte[] bytes = null;
-            var ms = GetHeaders(true);
+            MemoryStream ms = GetHeaders(true);
             bool chunked = _response.SendChunked;
             if (_stream.CanWrite)
             {
@@ -110,7 +110,7 @@ namespace SocketHttpListener.Net
 
             if (_stream.CanWrite)
             {
-                var ms = GetHeaders(closing: false, isWebSocketHandshake: true);
+                MemoryStream ms = GetHeaders(closing: false, isWebSocketHandshake: true);
                 bool chunked = _response.SendChunked;
 
                 long start = ms.Position;
@@ -146,7 +146,7 @@ namespace SocketHttpListener.Net
                     return null;
                 }
 
-                var ms = new MemoryStream();
+                MemoryStream ms = new MemoryStream();
                 _response.SendHeaders(closing, ms, isWebSocketHandshake);
                 return ms;
             }
@@ -190,7 +190,7 @@ namespace SocketHttpListener.Net
                 return;
 
             byte[] bytes = null;
-            var ms = GetHeaders(false);
+            MemoryStream ms = GetHeaders(false);
             bool chunked = _response.SendChunked;
             if (ms != null)
             {
@@ -234,7 +234,7 @@ namespace SocketHttpListener.Net
             }
 
             byte[] bytes = null;
-            var ms = GetHeaders(false);
+            MemoryStream ms = GetHeaders(false);
             bool chunked = _response.SendChunked;
             if (ms != null)
             {

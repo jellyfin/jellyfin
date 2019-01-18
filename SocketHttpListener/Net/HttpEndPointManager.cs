@@ -74,7 +74,7 @@ namespace SocketHttpListener.Net
                 throw new HttpListenerException((int)HttpStatusCode.BadRequest, "net_invalid_path");
 
             // listens on all the interfaces if host name cannot be parsed by IPAddress.
-            var epl = GetEPListener(logger, lp.Host, lp.Port, listener, lp.Secure);
+            HttpEndPointListener epl = GetEPListener(logger, lp.Host, lp.Port, listener, lp.Secure);
             epl.AddPrefix(lp, listener);
         }
 
@@ -185,7 +185,7 @@ namespace SocketHttpListener.Net
             if (lp.Path.IndexOf("//", StringComparison.Ordinal) != -1)
                 return;
 
-            var epl = GetEPListener(logger, lp.Host, lp.Port, listener, lp.Secure);
+            HttpEndPointListener epl = GetEPListener(logger, lp.Host, lp.Port, listener, lp.Secure);
             epl.RemovePrefix(lp, listener);
         }
     }

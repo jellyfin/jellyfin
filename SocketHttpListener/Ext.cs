@@ -161,7 +161,7 @@ namespace SocketHttpListener
 
         internal static bool Contains<T>(this IEnumerable<T> source, Func<T, bool> condition)
         {
-            foreach (var elm in source)
+            foreach (T elm in source)
                 if (condition(elm))
                     return true;
 

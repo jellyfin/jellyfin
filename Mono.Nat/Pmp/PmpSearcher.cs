@@ -85,10 +85,10 @@ namespace Mono.Nat
                 {
                     if (n.OperationalStatus != OperationalStatus.Up && n.OperationalStatus != OperationalStatus.Unknown)
                         continue;
-                    var properties = n.GetIPProperties();
+                    IPInterfaceProperties properties = n.GetIPProperties();
                     var gatewayList = new List<IPEndPoint>();
 
-                    foreach (var gateway in properties.GatewayAddresses)
+                    foreach (GatewayIPAddressInformation gateway in properties.GatewayAddresses)
                     {
                         if (gateway.Address.AddressFamily == AddressFamily.InterNetwork)
                         {
@@ -105,7 +105,7 @@ namespace Mono.Nat
                                 gatewayList.Add(new IPEndPoint(gw2, PmpConstants.ServerPort));
                             }
                         }
-                        foreach (var unicast in properties.UnicastAddresses)
+                        foreach (UnicastIPAddressInformation unicast in properties.UnicastAddresses)
                         {
                             if (/*unicast.DuplicateAddressDetectionState == DuplicateAddressDetectionState.Preferred
                                 && unicast.AddressPreferredLifetime != UInt32.MaxValue
@@ -150,7 +150,7 @@ namespace Mono.Nat
 
         public async void Search()
         {
-            foreach (var s in sockets)
+            foreach (UdpClient s in sockets)
             {
                 try
                 {
@@ -181,7 +181,7 @@ namespace Mono.Nat
 
             // The nat-pmp search message. Must be sent to GatewayIP:53531
             byte[] buffer = new byte[] { PmpConstants.Version, PmpConstants.OperationCode };
-            foreach (var gatewayEndpoint in gatewayLists[client])
+            foreach (IPEndPoint gatewayEndpoint in gatewayLists[client])
             {
                 await client.SendAsync(buffer, buffer.Length, gatewayEndpoint).ConfigureAwait(false);
             }

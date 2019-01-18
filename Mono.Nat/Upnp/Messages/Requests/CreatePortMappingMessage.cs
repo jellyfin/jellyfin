@@ -57,7 +57,7 @@ namespace Mono.Nat.Upnp
             var culture = CultureInfo.InvariantCulture;
 
             var builder = new StringBuilder(256);
-            var writer = CreateWriter(builder);
+            XmlWriter writer = CreateWriter(builder);
 
             WriteFullElement(writer, "NewRemoteHost", string.Empty);
             WriteFullElement(writer, "NewExternalPort", this.mapping.PublicPort.ToString(culture));

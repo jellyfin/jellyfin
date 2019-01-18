@@ -702,7 +702,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 default:
                     string readerName = reader.Name;
-                    if (_validProviderIds.TryGetValue(readerName, out var providerIdValue))
+                    if (_validProviderIds.TryGetValue(readerName, out string providerIdValue))
                     {
                         var id = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(id))

@@ -94,10 +94,10 @@ namespace SocketHttpListener.Net
 
             // Try to check the raw path using first the primary encoding (according to http.sys settings);
             // if it fails try the secondary encoding.
-            var result = BuildRequestUriUsingRawPath(GetEncoding(EncodingType.Primary));
+            ParsingResult result = BuildRequestUriUsingRawPath(GetEncoding(EncodingType.Primary));
             if (result == ParsingResult.EncodingError)
             {
-                var secondaryEncoding = GetEncoding(EncodingType.Secondary);
+                Encoding secondaryEncoding = GetEncoding(EncodingType.Secondary);
                 result = BuildRequestUriUsingRawPath(secondaryEncoding);
             }
             isValid = (result == ParsingResult.Success) ? true : false;
@@ -136,7 +136,7 @@ namespace SocketHttpListener.Net
             _requestUriString.Append(Uri.SchemeDelimiter);
             _requestUriString.Append(_cookedUriHost);
 
-            var result = ParseRawPath(encoding);
+            ParsingResult result = ParseRawPath(encoding);
             if (result == ParsingResult.Success)
             {
                 _requestUriString.Append(_cookedUriQuery);
@@ -263,7 +263,7 @@ namespace SocketHttpListener.Net
 
         private bool AddPercentEncodedOctetToRawOctetsList(Encoding encoding, string escapedCharacter)
         {
-            if (!byte.TryParse(escapedCharacter, NumberStyles.HexNumber, null, out var encodedValue))
+            if (!byte.TryParse(escapedCharacter, NumberStyles.HexNumber, null, out byte encodedValue))
             {
                 //if (NetEventSource.IsEnabled) NetEventSource.Error(this, SR.Format(SR.net_log_listener_cant_convert_percent_value, escapedCharacter));
                 return false;
