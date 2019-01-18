@@ -185,7 +185,7 @@ namespace Jellyfin.Server
                 }
             }
 
-            if (string.IsNullOrEmpty(configDir))
+            if (!string.IsNullOrEmpty(configDir))
             {
                 Directory.CreateDirectory(configDir);
             }
@@ -204,7 +204,7 @@ namespace Jellyfin.Server
                 }
             }
 
-            if (string.IsNullOrEmpty(logDir))
+            if (!string.IsNullOrEmpty(logDir))
             {
                 Directory.CreateDirectory(logDir);
             }
