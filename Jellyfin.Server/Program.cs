@@ -45,7 +45,8 @@ namespace Jellyfin.Server
                 Console.WriteLine(version.ToString());
             }
 
-            ServerApplicationPaths appPaths = createApplicationPaths(options);
+            ServerApplicationPaths appPaths = CreateApplicationPaths(options);
+
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
             await createLogger(appPaths);
@@ -130,7 +131,7 @@ namespace Jellyfin.Server
             }
         }
 
-        private static ServerApplicationPaths createApplicationPaths(StartupOptions options)
+        private static ServerApplicationPaths CreateApplicationPaths(StartupOptions options)
         {
             string programDataPath = Environment.GetEnvironmentVariable("JELLYFIN_DATA_PATH");
             if (string.IsNullOrEmpty(programDataPath))
@@ -155,10 +156,19 @@ namespace Jellyfin.Server
                             programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
                         }
                     }
+
                     programDataPath = Path.Combine(programDataPath, "jellyfin");
-                    // Ensure the dir exists
-                    Directory.CreateDirectory(programDataPath);
                 }
+            }
+
+            if (string.IsNullOrEmpty(programDataPath))
+            {
+                Console.WriteLine("Cannot continue without path to program data folder (try -programdata)");
+                Environment.Exit(1);
+            }
+            else
+            {
+                Directory.CreateDirectory(programDataPath);
             }
 
             string configDir = Environment.GetEnvironmentVariable("JELLYFIN_CONFIG_DIR");
@@ -175,6 +185,11 @@ namespace Jellyfin.Server
                 }
             }
 
+            if (string.IsNullOrEmpty(configDir))
+            {
+                Directory.CreateDirectory(configDir);
+            }
+
             string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
             if (string.IsNullOrEmpty(logDir))
             {
@@ -187,6 +202,11 @@ namespace Jellyfin.Server
                     // Let BaseApplicationPaths set up the default value
                     logDir = null;
                 }
+            }
+
+            if (string.IsNullOrEmpty(logDir))
+            {
+                Directory.CreateDirectory(logDir);
             }
 
             string appPath = AppContext.BaseDirectory;
