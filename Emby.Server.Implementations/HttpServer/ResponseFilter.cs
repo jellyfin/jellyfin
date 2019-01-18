@@ -25,14 +25,11 @@ namespace Emby.Server.Implementations.HttpServer
         public void FilterResponse(IRequest req, IResponse res, object dto)
         {
             // Try to prevent compatibility view
-            //res.AddHeader("X-UA-Compatible", "IE=Edge");
             res.AddHeader("Access-Control-Allow-Headers", "Accept, Accept-Language, Authorization, Cache-Control, Content-Disposition, Content-Encoding, Content-Language, Content-Length, Content-MD5, Content-Range, Content-Type, Date, Host, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Origin, OriginToken, Pragma, Range, Slug, Transfer-Encoding, Want-Digest, X-MediaBrowser-Token, X-Emby-Authorization");
             res.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
             res.AddHeader("Access-Control-Allow-Origin", "*");
 
-            var exception = dto as Exception;
-
-            if (exception != null)
+            if (dto is Exception exception)
             {
                 _logger.LogError(exception, "Error processing request for {RawUrl}", req.RawUrl);
 
@@ -45,42 +42,26 @@ namespace Emby.Server.Implementations.HttpServer
                 }
             }
 
-            var hasHeaders = dto as IHasHeaders;
-
-            if (hasHeaders != null)
+            if (dto is IHasHeaders hasHeaders)
             {
                 if (!hasHeaders.Headers.ContainsKey("Server"))
                 {
                     hasHeaders.Headers["Server"] = "Microsoft-NetCore/2.0, UPnP/1.0 DLNADOC/1.50";
-                    //hasHeaders.Headers["Server"] = "Mono-HTTPAPI/1.1";
                 }
 
                 // Content length has to be explicitly set on on HttpListenerResponse or it won't be happy
-
-                if (hasHeaders.Headers.TryGetValue("Content-Length", out string contentLength) && !string.IsNullOrEmpty(contentLength))
+                if (hasHeaders.Headers.TryGetValue("Content-Length", out string contentLength)
+                    && !string.IsNullOrEmpty(contentLength))
                 {
                     var length = long.Parse(contentLength, UsCulture);
 
                     if (length > 0)
                     {
                         res.SetContentLength(length);
-
-                        //var listenerResponse = res.OriginalResponse as HttpListenerResponse;
-
-                        //if (listenerResponse != null)
-                        //{
-                        //    // Disable chunked encoding. Technically this is only needed when using Content-Range, but
-                        //    // anytime we know the content length there's no need for it
-                        //    listenerResponse.SendChunked = false;
-                        //    return;
-                        //}
-
                         res.SendChunked = false;
                     }
                 }
             }
-
-            //res.KeepAlive = false;
         }
 
         /// <summary>

@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Security;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Emby.Drawing;
 using Emby.Drawing.Skia;
@@ -29,35 +30,58 @@ namespace Jellyfin.Server
 {
     public static class Program
     {
-        private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
-        private static ILoggerFactory _loggerFactory;
+        private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
+        private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
         private static ILogger _logger;
         private static bool _restartOnShutdown;
 
-        public static async Task<int> Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            var options = new StartupOptions(args);
-            var version = Assembly.GetEntryAssembly().GetName().Version;
+            StartupOptions options = new StartupOptions(args);
+            Version version = Assembly.GetEntryAssembly().GetName().Version;
 
             if (options.ContainsOption("-v") || options.ContainsOption("--version"))
             {
                 Console.WriteLine(version.ToString());
-                return 0;
             }
 
-            var appPaths = createApplicationPaths(options);
+            ServerApplicationPaths appPaths = createApplicationPaths(options);
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
             await createLogger(appPaths);
-            _loggerFactory = new SerilogLoggerFactory();
             _logger = _loggerFactory.CreateLogger("Main");
 
             AppDomain.CurrentDomain.UnhandledException += (sender, e)
                 => _logger.LogCritical((Exception)e.ExceptionObject, "Unhandled Exception");
 
+            // Intercept Ctrl+C and Ctrl+Break
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                if (_tokenSource.IsCancellationRequested)
+                {
+                    return; // Already shutting down
+                }
+                e.Cancel = true;
+                _logger.LogInformation("Ctrl+C, shutting down");
+                Environment.ExitCode = 128 + 2;
+                Shutdown();
+            };
+
+            // Register a SIGTERM handler
+            AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+            {
+                if (_tokenSource.IsCancellationRequested)
+                {
+                    return; // Already shutting down
+                }
+                _logger.LogInformation("Received a SIGTERM signal, shutting down");
+                Environment.ExitCode = 128 + 15;
+                Shutdown();
+            };
+
             _logger.LogInformation("Jellyfin version: {Version}", version);
 
-            var environmentInfo = new EnvironmentInfo(getOperatingSystem());
+            EnvironmentInfo environmentInfo = new EnvironmentInfo(getOperatingSystem());
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths, environmentInfo);
 
             SQLitePCL.Batteries_V2.Init();
@@ -86,8 +110,16 @@ namespace Jellyfin.Server
                 await appHost.RunStartupTasks();
 
                 // TODO: read input for a stop command
-                // Block main thread until shutdown
-                await ApplicationTaskCompletionSource.Task;
+
+                try
+                {
+                    // Block main thread until shutdown
+                    await Task.Delay(-1, _tokenSource.Token);
+                }
+                catch (TaskCanceledException)
+                {
+                    // Don't throw on cancellation
+                }
 
                 _logger.LogInformation("Disposing app host");
             }
@@ -96,8 +128,6 @@ namespace Jellyfin.Server
             {
                 StartNewInstance(options);
             }
-
-            return 0;
         }
 
         private static ServerApplicationPaths createApplicationPaths(StartupOptions options)
@@ -173,7 +203,7 @@ namespace Jellyfin.Server
                 if (!File.Exists(configPath))
                 {
                     // For some reason the csproj name is used instead of the assembly name
-                    using (var rscstr = typeof(Program).Assembly
+                    using (Stream rscstr = typeof(Program).Assembly
                         .GetManifestResourceStream("Jellyfin.Server.Resources.Configuration.logging.json"))
                     using (Stream fstr = File.Open(configPath, FileMode.CreateNew))
                     {
@@ -259,7 +289,10 @@ namespace Jellyfin.Server
 
         public static void Shutdown()
         {
-            ApplicationTaskCompletionSource.SetResult(true);
+            if (!_tokenSource.IsCancellationRequested)
+            {
+                _tokenSource.Cancel();
+            }
         }
 
         public static void Restart()

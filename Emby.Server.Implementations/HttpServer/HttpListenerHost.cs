@@ -54,38 +54,32 @@ namespace Emby.Server.Implementations.HttpServer
         private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
         private readonly List<IWebSocketConnection> _webSocketConnections = new List<IWebSocketConnection>();
 
-        public HttpListenerHost(IServerApplicationHost applicationHost,
+        public HttpListenerHost(
+            IServerApplicationHost applicationHost,
             ILogger logger,
             IServerConfigurationManager config,
-            string defaultRedirectPath, INetworkManager networkManager, ITextEncoding textEncoding, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer, Func<Type, Func<string, object>> funcParseFn)
+            string defaultRedirectPath,
+            INetworkManager networkManager,
+            ITextEncoding textEncoding,
+            IJsonSerializer jsonSerializer,
+            IXmlSerializer xmlSerializer,
+            Func<Type, Func<string, object>> funcParseFn)
         {
-            Instance = this;
-
             _appHost = applicationHost;
+            _logger = logger;
+            _config = config;
             DefaultRedirectPath = defaultRedirectPath;
             _networkManager = networkManager;
             _textEncoding = textEncoding;
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
-            _config = config;
-
-            _logger = logger;
             _funcParseFn = funcParseFn;
 
-            ResponseFilters = new Action<IRequest, IResponse, object>[] { };
+            Instance = this;
+            ResponseFilters = Array.Empty<Action<IRequest, IResponse, object>>();
         }
 
         public string GlobalResponse { get; set; }
-
-        readonly Dictionary<Type, int> _mapExceptionToStatusCode = new Dictionary<Type, int>
-            {
-                {typeof (ResourceNotFoundException), 404},
-                {typeof (RemoteServiceUnavailableException), 502},
-                {typeof (FileNotFoundException), 404},
-                //{typeof (DirectoryNotFoundException), 404},
-                {typeof (SecurityException), 401},
-                {typeof (ArgumentException), 400}
-            };
 
         protected ILogger Logger => _logger;
 
@@ -103,9 +97,9 @@ namespace Emby.Server.Implementations.HttpServer
         {
             //Exec all RequestFilter attributes with Priority < 0
             var attributes = GetRequestFilterAttributes(requestDto.GetType());
-            var i = 0;
-            var count = attributes.Count;
 
+            int count = attributes.Count;
+            int i = 0;
             for (; i < count && attributes[i].Priority < 0; i++)
             {
                 var attribute = attributes[i];
@@ -167,10 +161,7 @@ namespace Emby.Server.Implementations.HttpServer
                 _webSocketConnections.Add(connection);
             }
 
-            if (WebSocketConnected != null)
-            {
-                WebSocketConnected?.Invoke(this, new GenericEventArgs<IWebSocketConnection>(connection));
-            }
+            WebSocketConnected?.Invoke(this, new GenericEventArgs<IWebSocketConnection>(connection));
         }
 
         private void Connection_Closed(object sender, EventArgs e)
@@ -205,26 +196,16 @@ namespace Emby.Server.Implementations.HttpServer
 
         private int GetStatusCode(Exception ex)
         {
-            if (ex is ArgumentException)
+            switch (ex)
             {
-                return 400;
+                case ArgumentException _: return 400;
+                case SecurityException _: return 401;
+                case DirectoryNotFoundException _:
+                case FileNotFoundException _:
+                case ResourceNotFoundException _: return 404;
+                case RemoteServiceUnavailableException _: return 502;
+                default: return 500;
             }
-
-            var exceptionType = ex.GetType();
-
-            if (!_mapExceptionToStatusCode.TryGetValue(exceptionType, out var statusCode))
-            {
-                if (ex is DirectoryNotFoundException)
-                {
-                    statusCode = 404;
-                }
-                else
-                {
-                    statusCode = 500;
-                }
-            }
-
-            return statusCode;
         }
 
         private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace, bool logExceptionMessage)
@@ -310,29 +291,22 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private readonly Dictionary<string, int> _skipLogExtensions = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        private static readonly string[] _skipLogExtensions =
         {
-            {".js", 0},
-            {".css", 0},
-            {".woff", 0},
-            {".woff2", 0},
-            {".ttf", 0},
-            {".html", 0}
+            ".js",
+            ".css",
+            ".woff",
+            ".woff2",
+            ".ttf",
+            ".html"
         };
 
         private bool EnableLogging(string url, string localPath)
         {
             var extension = GetExtension(url);
 
-            if (string.IsNullOrEmpty(extension) || !_skipLogExtensions.ContainsKey(extension))
-            {
-                if (string.IsNullOrEmpty(localPath) || localPath.IndexOf("system/ping", StringComparison.OrdinalIgnoreCase) == -1)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return ((string.IsNullOrEmpty(extension) || !_skipLogExtensions.Contains(extension))
+                && (string.IsNullOrEmpty(localPath) || localPath.IndexOf("system/ping", StringComparison.OrdinalIgnoreCase) == -1));
         }
 
         private static string GetExtension(string url)
@@ -555,9 +529,7 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase) ||
-                    localPath.IndexOf("mediabrowser/web", StringComparison.OrdinalIgnoreCase) != -1)
+                if (localPath.IndexOf("mediabrowser/web", StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     httpRes.StatusCode = 200;
                     httpRes.ContentType = "text/html";
@@ -711,7 +683,7 @@ namespace Emby.Server.Implementations.HttpServer
                 };
             }
 
-            _logger.LogError("Could not find handler for {pathInfo}", pathInfo);
+            _logger.LogError("Could not find handler for {PathInfo}", pathInfo);
             return null;
         }
 
@@ -725,13 +697,13 @@ namespace Emby.Server.Implementations.HttpServer
 
         private void RedirectToSecureUrl(IHttpRequest httpReq, IResponse httpRes, string url)
         {
-            int currentPort;
-            if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
             {
-                currentPort = uri.Port;
-                var builder = new UriBuilder(uri);
-                builder.Port = _config.Configuration.PublicHttpsPort;
-                builder.Scheme = "https";
+                var builder = new UriBuilder(uri)
+                {
+                    Port = _config.Configuration.PublicHttpsPort,
+                    Scheme = "https"
+                };
                 url = builder.Uri.ToString();
 
                 RedirectToUrl(httpRes, url);
@@ -831,12 +803,6 @@ namespace Emby.Server.Implementations.HttpServer
 
         public Task<object> DeserializeJson(Type type, Stream stream)
         {
-            //using (var reader = new StreamReader(stream))
-            //{
-            //    var json = reader.ReadToEnd();
-            //    logger.LogInformation(json);
-            //    return _jsonSerializer.DeserializeFromString(json, type);
-            //}
             return _jsonSerializer.DeserializeFromStreamAsync(stream, type);
         }
 

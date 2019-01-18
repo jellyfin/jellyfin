@@ -1,3 +1,11 @@
+jellyfin (10.0.2-1) unstable; urgency=medium
+
+  * Hotfix release
+  * jellyfin/jellyfin-web#23: Update Chromecast app ID [via direct commit]
+  * #540: Update Emby API keys to our own
+  * #541: Change ItemId to Guid in ProviderManager
+  * #566: Avoid printing stacktrace when bind to port 1900 fails
+
 jellyfin (10.0.1-1) unstable; urgency=medium
 
   * Hotfix release, corrects several small bugs from 10.0.0
