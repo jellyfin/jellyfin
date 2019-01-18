@@ -143,19 +143,18 @@ namespace Emby.Server.Implementations.Services
                 swagger = "2.0",
                 info = new SwaggerInfo
                 {
-                    title = "Emby Server API",
+                    title = "Jellyfin Server API",
                     version = "1.0.0",
-                    description = "Explore the Emby Server API",
+                    description = "Explore the Jellyfin Server API",
                     contact = new SwaggerConcactInfo
                     {
-                        name = "Emby Developer Community",
-                        url = "https://emby.media/community/index.php?/forum/47-developer-api"
-                    },
-                    termsOfService = "https://emby.media/terms"
+                        name = "Jellyfin Community",
+                        url = "https://jellyfin.readthedocs.io/en/latest/user-docs/getting-help/"
+                    }
                 },
                 paths = GetPaths(),
                 definitions = GetDefinitions(),
-                basePath = "/emby",
+                basePath = "/jellyfin",
                 host = host,
 
                 components = new SwaggerComponents
@@ -197,7 +196,7 @@ namespace Emby.Server.Implementations.Services
                     {
                         continue;
                     }
-                    if (info.Path.StartsWith("/emby", StringComparison.OrdinalIgnoreCase))
+                    if (info.Path.StartsWith("/jellyfin", StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
