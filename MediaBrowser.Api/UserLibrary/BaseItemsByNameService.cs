@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -126,7 +126,8 @@ namespace MediaBrowser.Api.UserLibrary
                 MinCommunityRating = request.MinCommunityRating,
                 DtoOptions = dtoOptions,
                 SearchTerm = request.SearchTerm,
-                EnableTotalRecordCount = request.EnableTotalRecordCount
+                EnableTotalRecordCount = request.EnableTotalRecordCount,
+                AudioLanguages = request.GetAudioLanguages()
             };
 
             if (!string.IsNullOrWhiteSpace(request.ParentId))

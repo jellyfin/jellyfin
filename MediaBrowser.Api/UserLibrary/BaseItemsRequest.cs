@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
@@ -356,6 +356,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "NameLessThan", Description = "Optional filter by items whose name is equally or lesser than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string NameLessThan { get; set; }
 
+        [ApiMember(Name = "AudioLanguages", Description = "Optional. If specified, results will be filtered based on available audio language streams. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string AudioLanguages { get; set; }
+
         public string[] GetGenres()
         {
             return (Genres ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
@@ -399,6 +402,11 @@ namespace MediaBrowser.Api.UserLibrary
         public string[] GetPersonTypes()
         {
             return (PersonTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string[] GetAudioLanguages()
+        {
+            return (AudioLanguages ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public VideoType[] GetVideoTypes()

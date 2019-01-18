@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -315,7 +315,8 @@ namespace MediaBrowser.Api.UserLibrary
                 EnableTotalRecordCount = request.EnableTotalRecordCount,
                 ExcludeItemIds = GetGuids(request.ExcludeItemIds),
                 DtoOptions = dtoOptions,
-                SearchTerm = request.SearchTerm
+                SearchTerm = request.SearchTerm,
+                AudioLanguages = request.GetAudioLanguages()
             };
 
             if (!string.IsNullOrWhiteSpace(request.Ids) || !string.IsNullOrWhiteSpace(request.SearchTerm))

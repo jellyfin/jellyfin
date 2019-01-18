@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Configuration;
@@ -167,6 +167,7 @@ namespace MediaBrowser.Controller.Entities
         public DtoOptions DtoOptions { get; set; }
         public int MinSimilarityScore { get; set; }
         public string HasNoAudioTrackWithLanguage { get; set; }
+        public string[] AudioLanguages { get; set; }
         public string HasNoInternalSubtitleTrackWithLanguage { get; set; }
         public string HasNoExternalSubtitleTrackWithLanguage { get; set; }
         public string HasNoSubtitleTrackWithLanguage { get; set; }
@@ -214,6 +215,7 @@ namespace MediaBrowser.Controller.Entities
             TrailerTypes = Array.Empty<TrailerType>();
             VideoTypes = Array.Empty<VideoType>();
             Years = Array.Empty<int>();
+            AudioLanguages= Array.Empty<string>();
         }
 
         public InternalItemsQuery(User user)

@@ -4518,6 +4518,17 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
+            if (query.AudioLanguages.Any())
+            {
+                var index = 0;
+                foreach (string audioLanguage in query.AudioLanguages)
+                {
+                    whereClauses.Add($"(@audioLanguage{index} IN (SELECT Language FROM MediaStreams WHERE MediaStreams.ItemId = Guid AND MediaStreams.StreamType = 'Audio'))");
+                    statement?.TryBind($"@audioLanguage{index}", audioLanguage);
+                    index++;
+                }
+            }
+
             if (!string.IsNullOrWhiteSpace(query.HasNoAudioTrackWithLanguage))
             {
                 whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Audio' and MediaStreams.Language=@HasNoAudioTrackWithLanguage limit 1) is null)");
@@ -5672,7 +5683,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 NameContains = query.NameContains,
                 SearchTerm = query.SearchTerm,
                 SimilarTo = query.SimilarTo,
-                ExcludeItemIds = query.ExcludeItemIds
+                ExcludeItemIds = query.ExcludeItemIds,
+                AudioLanguages = query.AudioLanguages
             };
 
             var outerWhereClauses = GetWhereClauses(outerQuery, null);
