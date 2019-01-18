@@ -264,7 +264,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             var responseCachePath = Path.Combine(_appPaths.CachePath, "httpclient", urlHash);
 
-            var response = await GetCachedResponse(responseCachePath, options.CacheLength, url).ConfigureAwait(false);
+            var response = GetCachedResponse(responseCachePath, options.CacheLength, url);
             if (response != null)
             {
                 return response;
@@ -280,30 +280,24 @@ namespace Emby.Server.Implementations.HttpClientManager
             return response;
         }
 
-        private async Task<HttpResponseInfo> GetCachedResponse(string responseCachePath, TimeSpan cacheLength, string url)
+        private HttpResponseInfo GetCachedResponse(string responseCachePath, TimeSpan cacheLength, string url)
         {
             try
             {
                 if (_fileSystem.GetLastWriteTimeUtc(responseCachePath).Add(cacheLength) > DateTime.UtcNow)
                 {
-                    using (var stream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true))
+                    var stream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true);
+
+                    return new HttpResponseInfo
                     {
-                        var memoryStream = new MemoryStream();
-
-                        await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-                        memoryStream.Position = 0;
-
-                        return new HttpResponseInfo
-                        {
-                            ResponseUrl = url,
-                            Content = memoryStream,
-                            StatusCode = HttpStatusCode.OK,
-                            ContentLength = memoryStream.Length
-                        };
-                    }
+                        ResponseUrl = url,
+                        Content = stream,
+                        StatusCode = HttpStatusCode.OK,
+                        ContentLength = stream.Length
+                    };
                 }
             }
-            catch (FileNotFoundException)
+            catch (FileNotFoundException) // REVIEW: @bond Is this really faster?
             {
 
             }
@@ -319,19 +313,11 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(responseCachePath));
 
-            using (var responseStream = response.Content)
+            using (var fileStream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.None, true))
             {
-                var memoryStream = new MemoryStream();
-                await responseStream.CopyToAsync(memoryStream).ConfigureAwait(false);
-                memoryStream.Position = 0;
+                await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
 
-                using (var fileStream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.None, true))
-                {
-                    await memoryStream.CopyToAsync(fileStream).ConfigureAwait(false);
-
-                    memoryStream.Position = 0;
-                    response.Content = memoryStream;
-                }
+                response.Content.Position = 0;
             }
         }
 
