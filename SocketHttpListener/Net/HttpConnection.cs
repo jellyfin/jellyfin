@@ -269,7 +269,7 @@ namespace SocketHttpListener.Net
                     Close(true);
                     return;
                 }
-                var listener = _epl.Listener;
+                HttpListener listener = _epl.Listener;
                 if (_lastListener != listener)
                 {
                     RemoveConnection();
@@ -417,7 +417,7 @@ namespace SocketHttpListener.Net
         {
             try
             {
-                var response = _context.Response;
+                HttpListenerResponse response = _context.Response;
                 response.StatusCode = status;
                 response.ContentType = "text/html";
                 string description = HttpStatusDescription.Get(status);
@@ -509,7 +509,7 @@ namespace SocketHttpListener.Net
                     return;
                 }
 
-                var s = _socket;
+                Socket s = _socket;
                 _socket = null;
                 try
                 {

@@ -20,7 +20,7 @@ namespace SocketHttpListener.Net.WebSockets
 
             if (validStates != null && validStates.Length > 0)
             {
-                foreach (var validState in validStates)
+                foreach (WebSocketState validState in validStates)
                 {
                     if (currentState == validState)
                     {

@@ -78,6 +78,7 @@ namespace SocketHttpListener
             init();
         }
 
+        // In the .NET Framework, this pulls the value from a P/Invoke.  Here we just hardcode it to a reasonable default.
         public static TimeSpan DefaultKeepAliveInterval => TimeSpan.FromSeconds(30);
 
         #endregion

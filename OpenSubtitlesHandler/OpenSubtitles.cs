@@ -79,7 +79,7 @@ namespace OpenSubtitlesHandler
                     {
                         var mainStruct = (XmlRpcValueStruct)calls[0].Parameters[0];
                         var re = new MethodResponseLogIn("Success", "Log in successful.");
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -128,7 +128,7 @@ namespace OpenSubtitlesHandler
                     {
                         var mainStruct = (XmlRpcValueStruct)calls[0].Parameters[0];
                         var re = new MethodResponseLogIn("Success", "Log in successful.");
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -233,7 +233,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseNoOperation();
                         var mainStruct = (XmlRpcValueStruct)calls[0].Parameters[0];
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -241,7 +241,7 @@ namespace OpenSubtitlesHandler
                                 case "seconds": R.Seconds = (double)MEMBER.Data.Data; OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data); break;
                                 case "download_limits":
                                     var dlStruct = (XmlRpcValueStruct)MEMBER.Data;
-                                    foreach (var dlmember in dlStruct.Members)
+                                    foreach (XmlRpcStructMember dlmember in dlStruct.Members)
                                     {
                                         OSHConsole.WriteLine(" >" + dlmember.Name + "= " + dlmember.Data.Data.ToString());
                                         switch (dlmember.Name)
@@ -297,7 +297,7 @@ namespace OpenSubtitlesHandler
             parms.Add(new XmlRpcValueBasic(TOKEN, XmlRpcBasicValueType.String));
             // Add subtitle search parameters. Each one will be like 'array' of structs.
             var array = new XmlRpcValueArray();
-            foreach (var param in parameters)
+            foreach (SubtitleSearchParameters param in parameters)
             {
                 var strct = new XmlRpcValueStruct(new List<XmlRpcStructMember>());
                 // sublanguageid member
@@ -366,7 +366,7 @@ namespace OpenSubtitlesHandler
                         // Create the response, we'll need it later
                         var R = new MethodResponseSubtitleSearch();
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             if (MEMBER.Name == "status")
                             {
@@ -385,13 +385,13 @@ namespace OpenSubtitlesHandler
                                     OSHConsole.WriteLine("Search results: ");
 
                                     var rarray = (XmlRpcValueArray)MEMBER.Data;
-                                    foreach (var subStruct in rarray.Values)
+                                    foreach (IXmlRpcValue subStruct in rarray.Values)
                                     {
                                         if (subStruct == null) continue;
                                         if (!(subStruct is XmlRpcValueStruct)) continue;
 
                                         var result = new SubtitleSearchResult();
-                                        foreach (var submember in ((XmlRpcValueStruct)subStruct).Members)
+                                        foreach (XmlRpcStructMember submember in ((XmlRpcValueStruct)subStruct).Members)
                                         {
                                             // To avoid errors of arranged info or missing ones, let's do it with switch..
                                             switch (submember.Name)
@@ -477,7 +477,7 @@ namespace OpenSubtitlesHandler
             parms.Add(new XmlRpcValueBasic(TOKEN, XmlRpcBasicValueType.String));
             // Add subtitle search parameters. Each one will be like 'array' of structs.
             var array = new XmlRpcValueArray();
-            foreach (var param in parameters)
+            foreach (SubtitleSearchParameters param in parameters)
             {
                 var strct = new XmlRpcValueStruct(new List<XmlRpcStructMember>());
                 // sublanguageid member
@@ -546,7 +546,7 @@ namespace OpenSubtitlesHandler
                         // Create the response, we'll need it later
                         var R = new MethodResponseSubtitleSearch();
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             if (MEMBER.Name == "status")
                             {
@@ -565,13 +565,13 @@ namespace OpenSubtitlesHandler
                                     OSHConsole.WriteLine("Search results: ");
 
                                     var rarray = (XmlRpcValueArray)MEMBER.Data;
-                                    foreach (var subStruct in rarray.Values)
+                                    foreach (IXmlRpcValue subStruct in rarray.Values)
                                     {
                                         if (subStruct == null) continue;
                                         if (!(subStruct is XmlRpcValueStruct)) continue;
 
                                         var result = new SubtitleSearchResult();
-                                        foreach (var submember in ((XmlRpcValueStruct)subStruct).Members)
+                                        foreach (XmlRpcStructMember submember in ((XmlRpcValueStruct)subStruct).Members)
                                         {
                                             // To avoid errors of arranged info or missing ones, let's do it with switch..
                                             switch (submember.Name)
@@ -690,7 +690,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseSubtitleDownload();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             if (MEMBER.Name == "status")
                             {
@@ -708,13 +708,13 @@ namespace OpenSubtitlesHandler
                                 {
                                     OSHConsole.WriteLine("Download results:");
                                     var rarray = (XmlRpcValueArray)MEMBER.Data;
-                                    foreach (var subStruct in rarray.Values)
+                                    foreach (IXmlRpcValue subStruct in rarray.Values)
                                     {
                                         if (subStruct == null) continue;
                                         if (!(subStruct is XmlRpcValueStruct)) continue;
 
                                         var result = new SubtitleDownloadResult();
-                                        foreach (var submember in ((XmlRpcValueStruct)subStruct).Members)
+                                        foreach (XmlRpcStructMember submember in ((XmlRpcValueStruct)subStruct).Members)
                                         {
                                             // To avoid errors of arranged info or missing ones, let's do it with switch..
                                             switch (submember.Name)
@@ -800,7 +800,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseSubtitleDownload();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             if (MEMBER.Name == "status")
                             {
@@ -818,13 +818,13 @@ namespace OpenSubtitlesHandler
                                 {
                                     OSHConsole.WriteLine("Download results:");
                                     var rarray = (XmlRpcValueArray)MEMBER.Data;
-                                    foreach (var subStruct in rarray.Values)
+                                    foreach (IXmlRpcValue subStruct in rarray.Values)
                                     {
                                         if (subStruct == null) continue;
                                         if (!(subStruct is XmlRpcValueStruct)) continue;
 
                                         var result = new SubtitleDownloadResult();
-                                        foreach (var submember in ((XmlRpcValueStruct)subStruct).Members)
+                                        foreach (XmlRpcStructMember submember in ((XmlRpcValueStruct)subStruct).Members)
                                         {
                                             // To avoid errors of arranged info or missing ones, let's do it with switch..
                                             switch (submember.Name)
@@ -904,7 +904,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseGetComments();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             if (MEMBER.Name == "status")
                             {
@@ -922,13 +922,13 @@ namespace OpenSubtitlesHandler
                                 {
                                     OSHConsole.WriteLine("Comments results:");
                                     var rarray = (XmlRpcValueArray)MEMBER.Data;
-                                    foreach (var commentStruct in rarray.Values)
+                                    foreach (IXmlRpcValue commentStruct in rarray.Values)
                                     {
                                         if (commentStruct == null) continue;
                                         if (!(commentStruct is XmlRpcValueStruct)) continue;
 
                                         var result = new GetCommentsResult();
-                                        foreach (var commentmember in ((XmlRpcValueStruct)commentStruct).Members)
+                                        foreach (XmlRpcStructMember commentmember in ((XmlRpcValueStruct)commentStruct).Members)
                                         {
                                             // To avoid errors of arranged info or missing ones, let's do it with switch..
                                             switch (commentmember.Name)
@@ -984,7 +984,7 @@ namespace OpenSubtitlesHandler
             parms.Add(a);
             // Array of video parameters
             a = new XmlRpcValueArray();
-            foreach (var p in movies)
+            foreach (SearchToMailMovieParameter p in movies)
             {
                 var str = new XmlRpcValueStruct(new List<XmlRpcStructMember>());
                 str.Members.Add(new XmlRpcStructMember("moviehash", new XmlRpcValueBasic(p.moviehash)));
@@ -1010,7 +1010,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseSearchToMail();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -1067,7 +1067,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseMovieSearch();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             if (MEMBER.Name == "status")
                             {
@@ -1085,13 +1085,13 @@ namespace OpenSubtitlesHandler
                                 {
                                     OSHConsole.WriteLine("Search results:");
                                     var rarray = (XmlRpcValueArray)MEMBER.Data;
-                                    foreach (var subStruct in rarray.Values)
+                                    foreach (IXmlRpcValue subStruct in rarray.Values)
                                     {
                                         if (subStruct == null) continue;
                                         if (!(subStruct is XmlRpcValueStruct)) continue;
 
                                         var result = new MovieSearchResult();
-                                        foreach (var submember in ((XmlRpcValueStruct)subStruct).Members)
+                                        foreach (XmlRpcStructMember submember in ((XmlRpcValueStruct)subStruct).Members)
                                         {
                                             // To avoid errors of arranged info or missing ones, let's do it with switch..
                                             switch (submember.Name)
@@ -1158,7 +1158,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseMovieDetails();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             if (MEMBER.Name == "status")
                             {
@@ -1177,7 +1177,7 @@ namespace OpenSubtitlesHandler
                                 {
                                     OSHConsole.WriteLine("Details result:");
                                     var detailsStruct = (XmlRpcValueStruct)MEMBER.Data;
-                                    foreach (var dmem in detailsStruct.Members)
+                                    foreach (XmlRpcStructMember dmem in detailsStruct.Members)
                                     {
                                         switch (dmem.Name)
                                         {
@@ -1194,7 +1194,7 @@ namespace OpenSubtitlesHandler
                                                 // this is another struct with cast members...
                                                 OSHConsole.WriteLine(">" + dmem.Name + "= ");
                                                 var castStruct = (XmlRpcValueStruct)dmem.Data;
-                                                foreach (var castMemeber in castStruct.Members)
+                                                foreach (XmlRpcStructMember castMemeber in castStruct.Members)
                                                 {
                                                     R.Cast.Add(castMemeber.Data.Data.ToString());
                                                     OSHConsole.WriteLine("  >" + castMemeber.Data.Data.ToString());
@@ -1204,7 +1204,7 @@ namespace OpenSubtitlesHandler
                                                 OSHConsole.WriteLine(">" + dmem.Name + "= ");
                                                 // this is another struct with directors members...
                                                 var directorsStruct = (XmlRpcValueStruct)dmem.Data;
-                                                foreach (var directorsMember in directorsStruct.Members)
+                                                foreach (XmlRpcStructMember directorsMember in directorsStruct.Members)
                                                 {
                                                     R.Directors.Add(directorsMember.Data.Data.ToString());
                                                     OSHConsole.WriteLine("  >" + directorsMember.Data.Data.ToString());
@@ -1214,7 +1214,7 @@ namespace OpenSubtitlesHandler
                                                 OSHConsole.WriteLine(">" + dmem.Name + "= ");
                                                 // this is another struct with writers members...
                                                 var writersStruct = (XmlRpcValueStruct)dmem.Data;
-                                                foreach (var writersMember in writersStruct.Members)
+                                                foreach (XmlRpcStructMember writersMember in writersStruct.Members)
                                                 {
                                                     R.Writers.Add(writersMember.Data.Data.ToString());
                                                     OSHConsole.WriteLine("+->" + writersMember.Data.Data.ToString());
@@ -1330,7 +1330,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseInsertMovie();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             if (MEMBER.Name == "status")
                             {
@@ -1375,7 +1375,7 @@ namespace OpenSubtitlesHandler
             // Method call ..
             var parms = new List<IXmlRpcValue>();
             parms.Add(new XmlRpcValueBasic(TOKEN, XmlRpcBasicValueType.String));
-            foreach (var p in parameters)
+            foreach (InsertMovieHashParameters p in parameters)
             {
                 var pstruct = new XmlRpcValueStruct(new List<XmlRpcStructMember>());
                 pstruct.Members.Add(new XmlRpcStructMember("moviehash", new XmlRpcValueBasic(p.moviehash)));
@@ -1404,7 +1404,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseInsertMovieHash();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -1418,13 +1418,13 @@ namespace OpenSubtitlesHandler
                                     break;
                                 case "data":
                                     var dataStruct = (XmlRpcValueStruct)MEMBER.Data;
-                                    foreach (var dataMember in dataStruct.Members)
+                                    foreach (XmlRpcStructMember dataMember in dataStruct.Members)
                                     {
                                         switch (dataMember.Name)
                                         {
                                             case "accepted_moviehashes":
                                                 var mh = (XmlRpcValueArray)dataMember.Data;
-                                                foreach (var val in mh.Values)
+                                                foreach (IXmlRpcValue val in mh.Values)
                                                 {
                                                     if (val is XmlRpcValueBasic)
                                                     {
@@ -1434,7 +1434,7 @@ namespace OpenSubtitlesHandler
                                                 break;
                                             case "new_imdbs":
                                                 var mi = (XmlRpcValueArray)dataMember.Data;
-                                                foreach (var val in mi.Values)
+                                                foreach (IXmlRpcValue val in mi.Values)
                                                 {
                                                     if (val is XmlRpcValueBasic)
                                                     {
@@ -1493,7 +1493,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseServerInfo();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -1569,7 +1569,7 @@ namespace OpenSubtitlesHandler
                                     //R.total_subtitles_languages = (string)MEMBER.Data.Data;
                                     OSHConsole.WriteLine(">" + MEMBER.Name + ":");
                                     var luStruct = (XmlRpcValueStruct)MEMBER.Data;
-                                    foreach (var luMemeber in luStruct.Members)
+                                    foreach (XmlRpcStructMember luMemeber in luStruct.Members)
                                     {
                                         R.last_update_strings.Add(luMemeber.Name + " [" + luMemeber.Data.Data.ToString() + "]");
                                         OSHConsole.WriteLine("  >" + luMemeber.Name + "= " + luMemeber.Data.Data.ToString());
@@ -1623,7 +1623,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseReportWrongMovieHash();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -1691,7 +1691,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseAddComment();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -1749,7 +1749,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseSubtitlesVote();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -1757,7 +1757,7 @@ namespace OpenSubtitlesHandler
                                 case "seconds": R.Seconds = (double)MEMBER.Data.Data; OSHConsole.WriteLine(">" + MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); break;
                                 case "data":
                                     var dataStruct = (XmlRpcValueStruct)MEMBER.Data;
-                                    foreach (var dataMemeber in dataStruct.Members)
+                                    foreach (XmlRpcStructMember dataMemeber in dataStruct.Members)
                                     {
                                         OSHConsole.WriteLine("  >" + dataMemeber.Name + "= " + dataMemeber.Data.Data.ToString());
                                         switch (dataMemeber.Name)
@@ -1882,7 +1882,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseAddRequest();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -1890,7 +1890,7 @@ namespace OpenSubtitlesHandler
                                 case "seconds": R.Seconds = (double)MEMBER.Data.Data; OSHConsole.WriteLine(">" + MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); break;
                                 case "data":
                                     var dataStruct = (XmlRpcValueStruct)MEMBER.Data;
-                                    foreach (var dataMemeber in dataStruct.Members)
+                                    foreach (XmlRpcStructMember dataMemeber in dataStruct.Members)
                                     {
                                         switch (dataMemeber.Name)
                                         {
@@ -1947,7 +1947,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseGetSubLanguages();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -1955,14 +1955,14 @@ namespace OpenSubtitlesHandler
                                 case "seconds": R.Seconds = (double)MEMBER.Data.Data; OSHConsole.WriteLine(">" + MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); break;
                                 case "data":// array of structs
                                     var array = (XmlRpcValueArray)MEMBER.Data;
-                                    foreach (var value in array.Values)
+                                    foreach (IXmlRpcValue value in array.Values)
                                     {
                                         if (value is XmlRpcValueStruct)
                                         {
                                             var valueStruct = (XmlRpcValueStruct)value;
                                             var lang = new SubtitleLanguage();
                                             OSHConsole.WriteLine(">SubLanguage:");
-                                            foreach (var langMemeber in valueStruct.Members)
+                                            foreach (XmlRpcStructMember langMemeber in valueStruct.Members)
                                             {
                                                 OSHConsole.WriteLine("  >" + langMemeber.Name + "= " + langMemeber.Data.Data.ToString());
                                                 switch (langMemeber.Name)
@@ -2043,7 +2043,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseDetectLanguage();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -2054,7 +2054,7 @@ namespace OpenSubtitlesHandler
                                     {
                                         OSHConsole.WriteLine(">Languages:");
                                         var dataStruct = (XmlRpcValueStruct)MEMBER.Data;
-                                        foreach (var dataMember in dataStruct.Members)
+                                        foreach (XmlRpcStructMember dataMember in dataStruct.Members)
                                         {
                                             var lang = new DetectLanguageResult();
                                             lang.InputSample = dataMember.Name;
@@ -2116,7 +2116,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseGetAvailableTranslations();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -2125,7 +2125,7 @@ namespace OpenSubtitlesHandler
                                 case "data":
                                     var dataStruct = (XmlRpcValueStruct)MEMBER.Data;
                                     OSHConsole.WriteLine(">data:");
-                                    foreach (var dataMember in dataStruct.Members)
+                                    foreach (XmlRpcStructMember dataMember in dataStruct.Members)
                                     {
                                         if (dataMember.Data is XmlRpcValueStruct)
                                         {
@@ -2133,7 +2133,7 @@ namespace OpenSubtitlesHandler
                                             var res = new GetAvailableTranslationsResult();
                                             res.LanguageID = dataMember.Name;
                                             OSHConsole.WriteLine("  >LanguageID: " + dataMember.Name);
-                                            foreach (var resMember in resStruct.Members)
+                                            foreach (XmlRpcStructMember resMember in resStruct.Members)
                                             {
                                                 switch (resMember.Name)
                                                 {
@@ -2202,7 +2202,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseGetTranslation();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -2258,7 +2258,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseAutoUpdate();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -2317,7 +2317,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseCheckMovieHash();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -2326,13 +2326,13 @@ namespace OpenSubtitlesHandler
                                 case "data":
                                     var dataStruct = (XmlRpcValueStruct)MEMBER.Data;
                                     OSHConsole.WriteLine(">Data:");
-                                    foreach (var dataMember in dataStruct.Members)
+                                    foreach (XmlRpcStructMember dataMember in dataStruct.Members)
                                     {
                                         var res = new CheckMovieHashResult();
                                         res.Name = dataMember.Name;
                                         OSHConsole.WriteLine("  >" + res.Name + ":");
                                         var movieStruct = (XmlRpcValueStruct)dataMember.Data;
-                                        foreach (var movieMember in movieStruct.Members)
+                                        foreach (XmlRpcStructMember movieMember in movieStruct.Members)
                                         {
                                             switch (movieMember.Name)
                                             {
@@ -2394,7 +2394,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseCheckMovieHash2();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -2403,7 +2403,7 @@ namespace OpenSubtitlesHandler
                                 case "data":
                                     var dataStruct = (XmlRpcValueStruct)MEMBER.Data;
                                     OSHConsole.WriteLine(">Data:");
-                                    foreach (var dataMember in dataStruct.Members)
+                                    foreach (XmlRpcStructMember dataMember in dataStruct.Members)
                                     {
                                         var res = new CheckMovieHash2Result();
                                         res.Name = dataMember.Name;
@@ -2413,7 +2413,7 @@ namespace OpenSubtitlesHandler
                                         foreach (XmlRpcValueStruct movieStruct in dataArray.Values)
                                         {
                                             var d = new CheckMovieHash2Data();
-                                            foreach (var movieMember in movieStruct.Members)
+                                            foreach (XmlRpcStructMember movieMember in movieStruct.Members)
                                             {
                                                 switch (movieMember.Name)
                                                 {
@@ -2480,7 +2480,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseCheckSubHash();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -2489,7 +2489,7 @@ namespace OpenSubtitlesHandler
                                 case "data":
                                     OSHConsole.WriteLine(">Data:");
                                     var dataStruct = (XmlRpcValueStruct)MEMBER.Data;
-                                    foreach (var dataMember in dataStruct.Members)
+                                    foreach (XmlRpcStructMember dataMember in dataStruct.Members)
                                     {
                                         OSHConsole.WriteLine("  >" + dataMember.Name + "= " + dataMember.Data.Data.ToString());
                                         var r = new CheckSubHashResult();
@@ -2565,7 +2565,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseTryUploadSubtitles();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {
@@ -2578,13 +2578,13 @@ namespace OpenSubtitlesHandler
                                         OSHConsole.WriteLine("Results: ");
 
                                         var rarray = (XmlRpcValueArray)MEMBER.Data;
-                                        foreach (var subStruct in rarray.Values)
+                                        foreach (IXmlRpcValue subStruct in rarray.Values)
                                         {
                                             if (subStruct == null) continue;
                                             if (!(subStruct is XmlRpcValueStruct)) continue;
 
                                             var result = new SubtitleSearchResult();
-                                            foreach (var submember in ((XmlRpcValueStruct)subStruct).Members)
+                                            foreach (XmlRpcStructMember submember in ((XmlRpcValueStruct)subStruct).Members)
                                             {
                                                 // To avoid errors of arranged info or missing ones, let's do it with switch..
                                                 switch (submember.Name)
@@ -2679,7 +2679,7 @@ namespace OpenSubtitlesHandler
 
             // CDS members
             int i = 1;
-            foreach (var cd in info.CDS)
+            foreach (UploadSubtitleParameters cd in info.CDS)
             {
                 var member2 = new XmlRpcStructMember("cd" + i, null);
                 var memberStruct2 = new XmlRpcValueStruct(new List<XmlRpcStructMember>());
@@ -2718,7 +2718,7 @@ namespace OpenSubtitlesHandler
                         var R = new MethodResponseUploadSubtitles();
 
                         // To make sure response is not currepted by server, do it in loop
-                        foreach (var MEMBER in mainStruct.Members)
+                        foreach (XmlRpcStructMember MEMBER in mainStruct.Members)
                         {
                             switch (MEMBER.Name)
                             {

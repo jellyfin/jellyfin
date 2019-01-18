@@ -16,8 +16,8 @@ namespace SocketHttpListener.Net.WebSockets
             ValidateOptions(subProtocol, receiveBufferSize, MinSendBufferSize, keepAliveInterval);
 
             // get property will create a new response if one doesn't exist.
-            var response = context.Response;
-            var request = context.Request;
+            HttpListenerResponse response = context.Response;
+            HttpListenerRequest request = context.Request;
             ValidateWebSocketHeaders(context);
 
             string secWebSocketVersion = request.Headers[HttpKnownHeaderNames.SecWebSocketVersion];

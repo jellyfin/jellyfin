@@ -60,7 +60,7 @@ namespace XmlRpcHandler
                 using (var XMLwrt = XmlWriter.Create(ms, sett))
                 {
                     // Let's write the methods
-                    foreach (var method in methods)
+                    foreach (XmlRpcMethodCall method in methods)
                     {
                         XMLwrt.WriteStartElement("methodCall");//methodCall
                         XMLwrt.WriteStartElement("methodName");//methodName
@@ -68,7 +68,7 @@ namespace XmlRpcHandler
                         XMLwrt.WriteEndElement();//methodName
                         XMLwrt.WriteStartElement("params");//params
                                                            // Write values
-                        foreach (var p in method.Parameters)
+                        foreach (IXmlRpcValue p in method.Parameters)
                         {
                             XMLwrt.WriteStartElement("param");//param
                             if (p is XmlRpcValueBasic)
@@ -124,7 +124,7 @@ namespace XmlRpcHandler
                     {
                         if (XMLread.Name == "param" && XMLread.IsStartElement())
                         {
-                            var val = ReadValue(XMLread);
+                            IXmlRpcValue val = ReadValue(XMLread);
                             if (val != null)
                                 call.Parameters.Add(val);
                         }
@@ -190,7 +190,7 @@ namespace XmlRpcHandler
         {
             XMLwrt.WriteStartElement("value");//value
             XMLwrt.WriteStartElement("struct");//struct
-            foreach (var member in val.Members)
+            foreach (XmlRpcStructMember member in val.Members)
             {
                 XMLwrt.WriteStartElement("member");//member
 
@@ -221,7 +221,7 @@ namespace XmlRpcHandler
             XMLwrt.WriteStartElement("value");//value
             XMLwrt.WriteStartElement("array");//array
             XMLwrt.WriteStartElement("data");//data
-            foreach (var o in val.Values)
+            foreach (IXmlRpcValue o in val.Values)
             {
                 if (o is XmlRpcValueBasic)
                 {
@@ -303,7 +303,7 @@ namespace XmlRpcHandler
                                 xmlReader.Read();// read name
                                 member.Name = ReadString(xmlReader);
 
-                                var val = ReadValue(xmlReader, true);
+                                IXmlRpcValue val = ReadValue(xmlReader, true);
                                 if (val != null)
                                 {
                                     member.Data = val;
@@ -329,7 +329,7 @@ namespace XmlRpcHandler
                             }
                             else
                             {
-                                var val = ReadValue(xmlReader);
+                                IXmlRpcValue val = ReadValue(xmlReader);
                                 if (val != null)
                                     array.Values.Add(val);
                             }

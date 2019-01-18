@@ -180,7 +180,7 @@ namespace SocketHttpListener.Net
 
             if (string.Compare(Headers[HttpKnownHeaderNames.Expect], "100-continue", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                var output = _context.Connection.GetResponseStream();
+                HttpResponseStream output = _context.Connection.GetResponseStream();
                 output.InternalWrite(s_100continue, 0, s_100continue.Length);
             }
         }
@@ -256,7 +256,7 @@ namespace SocketHttpListener.Net
             {
                 try
                 {
-                    var ares = InputStream.BeginRead(bytes, 0, length, null, null);
+                    IAsyncResult ares = InputStream.BeginRead(bytes, 0, length, null, null);
                     if (!ares.IsCompleted && !ares.AsyncWaitHandle.WaitOne(1000))
                         return false;
                     if (InputStream.EndRead(ares) <= 0)

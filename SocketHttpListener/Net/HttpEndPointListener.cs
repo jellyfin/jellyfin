@@ -277,7 +277,7 @@ namespace SocketHttpListener.Net
         public bool BindContext(HttpListenerContext context)
         {
             var req = context.Request;
-            var listener = SearchListener(req.Url, out var prefix);
+            HttpListener listener = SearchListener(req.Url, out var prefix);
             if (listener == null)
                 return false;
 
@@ -309,7 +309,7 @@ namespace SocketHttpListener.Net
 
             if (host != null && host != "")
             {
-                var localPrefixes = _prefixes;
+                Dictionary<ListenerPrefix, HttpListener> localPrefixes = _prefixes;
                 foreach (var p in localPrefixes.Keys)
                 {
                     string ppath = p.Path;
@@ -330,7 +330,7 @@ namespace SocketHttpListener.Net
                     return bestMatch;
             }
 
-            var list = _unhandledPrefixes;
+            List<ListenerPrefix> list = _unhandledPrefixes;
             bestMatch = MatchFromList(host, path, list, out prefix);
 
             if (path != pathSlash && bestMatch == null)
@@ -360,7 +360,7 @@ namespace SocketHttpListener.Net
             HttpListener bestMatch = null;
             int bestLength = -1;
 
-            foreach (var p in list)
+            foreach (ListenerPrefix p in list)
             {
                 string ppath = p.Path;
                 if (ppath.Length < bestLength)
@@ -382,7 +382,7 @@ namespace SocketHttpListener.Net
             if (list == null)
                 return;
 
-            foreach (var p in list)
+            foreach (ListenerPrefix p in list)
             {
                 if (p.Path == prefix.Path)
                     throw new Exception("net_listener_already");
@@ -398,7 +398,7 @@ namespace SocketHttpListener.Net
             int c = list.Count;
             for (int i = 0; i < c; i++)
             {
-                var p = list[i];
+                ListenerPrefix p = list[i];
                 if (p.Path == prefix.Path)
                 {
                     list.RemoveAt(i);
@@ -413,7 +413,7 @@ namespace SocketHttpListener.Net
             if (_prefixes.Count > 0)
                 return;
 
-            var list = _unhandledPrefixes;
+            List<ListenerPrefix> list = _unhandledPrefixes;
             if (list != null && list.Count > 0)
                 return;
 
@@ -433,7 +433,7 @@ namespace SocketHttpListener.Net
                 // Clone the list because RemoveConnection can be called from Close
                 var connections = new List<HttpConnection>(_unregisteredConnections.Keys);
 
-                foreach (var c in connections)
+                foreach (HttpConnection c in connections)
                     c.Close(true);
                 _unregisteredConnections.Clear();
             }
