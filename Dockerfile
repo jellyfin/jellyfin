@@ -27,5 +27,9 @@ COPY --from=ffmpeg /ffmpeg-bin/* /usr/bin/
 EXPOSE 8096
 VOLUME /config /media
 RUN apt-get update \
- && apt-get install -y libfontconfig1 --no-install-recommends  # needed for Skia
+ && apt-get install --no-install-recommends --no-install-suggests -y \
+   libfontconfig1 # Required for Skia \
+ && apt-get clean autoclean \
+ && apt-get autoremove \
+ && rm -rf /var/lib/{apt,dpkg,cache,log}
 ENTRYPOINT dotnet /jellyfin/jellyfin.dll -programdata /config
