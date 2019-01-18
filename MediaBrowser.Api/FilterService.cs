@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Querying;
@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
@@ -218,6 +219,16 @@ namespace MediaBrowser.Api
                 .Where(i => !string.IsNullOrWhiteSpace(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(i => i)
+                .ToArray();
+
+            result.AudioLanguages = items
+                .Select(item => item.GetMediaStreams()
+                    .Where(stream => stream.Type == MediaStreamType.Audio)
+                    .Select(stream => stream.Language))
+                .SelectMany(names => names)
+                .Where(name => !string.IsNullOrEmpty(name))
+                .DistinctNames()
+                .OrderBy(name => name)
                 .ToArray();
 
             return result;

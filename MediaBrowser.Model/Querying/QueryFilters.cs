@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Dto;
 using System;
 
 namespace MediaBrowser.Model.Querying
@@ -9,6 +9,7 @@ namespace MediaBrowser.Model.Querying
         public string[] Tags { get; set; }
         public string[] OfficialRatings { get; set; }
         public int[] Years { get; set; }
+        public string[] AudioLanguages { get; set; }
 
         public QueryFiltersLegacy()
         {
@@ -16,6 +17,7 @@ namespace MediaBrowser.Model.Querying
             Tags = Array.Empty<string>();
             OfficialRatings = Array.Empty<string>();
             Years = Array.Empty<int>();
+            AudioLanguages = Array.Empty<string>();
         }
     }
     public class QueryFilters
