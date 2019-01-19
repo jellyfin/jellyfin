@@ -29,9 +29,15 @@ These builds are not necessarily run from the `build` script, but are present fo
 
 ## Package Specification
 
+### Dependencies
+
+* If a platform requires additional build dependencies, the required binary names, i.e. to validate `which <binary>`, should be specified in a `dependencies.txt` file inside the platform directory.
+
+* Each dependency should be present on its own line.
+
 ### Action Scripts
 
-* Actions are defined in BASH scripts with the name `<action>.sh` within the framework directory.
+* Actions are defined in BASH scripts with the name `<action>.sh` within the platform directory.
 
 * The list of valid actions are:
 
