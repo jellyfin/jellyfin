@@ -6,6 +6,8 @@ jellyfin (10.0.2-1) unstable; urgency=medium
   * #541: Change ItemId to Guid in ProviderManager
   * #566: Avoid printing stacktrace when bind to port 1900 fails
 
+ -- Joshua Boniface <joshua@boniface.me>  Sat, 19 Jan 2019 01:19:59 -0500
+
 jellyfin (10.0.1-1) unstable; urgency=medium
 
   * Hotfix release, corrects several small bugs from 10.0.0
