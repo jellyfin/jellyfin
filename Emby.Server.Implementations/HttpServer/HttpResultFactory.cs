@@ -714,7 +714,7 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 ifNoneMatchHeader = (ifNoneMatchHeader ?? string.Empty).Trim('\"');
 
-                if (Guid.TryParse(ifNoneMatchHeader, out Guid ifNoneMatch)
+                if (Guid.TryParse(ifNoneMatchHeader, out var ifNoneMatch)
                     && cacheKey.Equals(ifNoneMatch))
                 {
                     return true;
