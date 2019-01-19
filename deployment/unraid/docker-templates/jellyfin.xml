@@ -23,7 +23,7 @@
   <Project>https://jellyfin.media/</Project>
   <BindTime>true</BindTime>
   <Privileged>false</Privileged>
-    <Networking>
+  <Networking>
     <Mode>host</Mode>
     <Publish>
       <Port>
@@ -32,7 +32,7 @@
         <Protocol>tcp</Protocol>
       </Port>
     </Publish>
-    </Networking>
+  </Networking>
   <Data>
     <Volume>
       <HostDir>/mnt/cache/appdata/config</HostDir>

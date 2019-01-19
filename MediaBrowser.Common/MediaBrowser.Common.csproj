@@ -1,23 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <Authors>Jellyfin Contributors</Authors>
-        <PackageId>Jellyfin.Common</PackageId>
-        <PackageLicenseUrl>https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt</PackageLicenseUrl>
-        <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
-    </PropertyGroup>
+  <PropertyGroup>
+    <Authors>Jellyfin Contributors</Authors>
+    <PackageId>Jellyfin.Common</PackageId>
+    <PackageLicenseUrl>https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <Compile Include="..\SharedVersion.cs" />
-    </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SharedVersion.cs" />
+  </ItemGroup>
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
 
 </Project>
