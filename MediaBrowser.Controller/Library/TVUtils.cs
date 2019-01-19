@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -41,9 +40,7 @@ namespace MediaBrowser.Controller.Library
                                };
                 }
 
-                DayOfWeek value;
-
-                if (Enum.TryParse(day, true, out value))
+                if (Enum.TryParse(day, true, out DayOfWeek value))
                 {
                     return new DayOfWeek[]
                                {
@@ -51,7 +48,7 @@ namespace MediaBrowser.Controller.Library
                                };
                 }
 
-                return new DayOfWeek[]{};
+                return new DayOfWeek[] { };
             }
             return null;
         }

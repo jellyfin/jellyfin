@@ -1,10 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Linq;
-using System;
+using System.Text.RegularExpressions;
 
 namespace NLangDetect.Core.Utils
 {
@@ -19,19 +18,17 @@ namespace NLangDetect.Core.Utils
 
         public static string getString(string key)
         {
-            string value;
-
             return
-              _messages.TryGetValue(key, out value)
+              _messages.TryGetValue(key, out var value)
                 ? value
                 : string.Format("!{0}!", key);
         }
 
         private static Dictionary<string, string> LoadMessages()
         {
-            var manifestName = typeof(Messages).Assembly.GetManifestResourceNames().FirstOrDefault(i => i.IndexOf("messages.properties", StringComparison.Ordinal) != -1) ;
+            var manifestName = typeof(Messages).Assembly.GetManifestResourceNames().FirstOrDefault(i => i.IndexOf("messages.properties", StringComparison.Ordinal) != -1);
 
-            Stream messagesStream =
+            var messagesStream =
               typeof(Messages).Assembly
                 .GetManifestResourceStream(manifestName);
 

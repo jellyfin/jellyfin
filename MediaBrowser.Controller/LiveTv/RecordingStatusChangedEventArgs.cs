@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.LiveTv;
 using System;
+using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv
 {

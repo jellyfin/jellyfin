@@ -1,18 +1,9 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Net;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Threading;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
@@ -26,7 +17,7 @@ namespace MediaBrowser.Api.Playback
 
         public StreamRequest Request
         {
-            get { return (StreamRequest)BaseRequest; }
+            get => (StreamRequest)BaseRequest;
             set
             {
                 BaseRequest = value;
@@ -37,10 +28,7 @@ namespace MediaBrowser.Api.Playback
 
         public TranscodingThrottler TranscodingThrottler { get; set; }
 
-        public VideoStreamRequest VideoRequest
-        {
-            get { return Request as VideoStreamRequest; }
-        }
+        public VideoStreamRequest VideoRequest => Request as VideoStreamRequest;
 
         /// <summary>
         /// Gets or sets the log file stream.
@@ -51,10 +39,7 @@ namespace MediaBrowser.Api.Playback
 
         public string WaitForPath { get; set; }
 
-        public bool IsOutputVideo
-        {
-            get { return Request is VideoStreamRequest; }
-        }
+        public bool IsOutputVideo => Request is VideoStreamRequest;
 
         public int SegmentLength
         {
@@ -107,13 +92,7 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        public int HlsListSize
-        {
-            get
-            {
-                return 0;
-            }
-        }
+        public int HlsListSize => 0;
 
         public string UserAgent { get; set; }
 

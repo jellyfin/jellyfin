@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 
 namespace NLangDetect.Core.Extensions
 {
-  public static class CharExtensions
-  {
-    private const int MIN_CODE_POINT = 0x000000;
-    private const int MAX_CODE_POINT = 0x10ffff;
+    public static class CharExtensions
+    {
+        private const int MIN_CODE_POINT = 0x000000;
+        private const int MAX_CODE_POINT = 0x10ffff;
 
-    private static readonly int[] _unicodeBlockStarts =
-      {
+        private static readonly int[] _unicodeBlockStarts =
+          {
         #region Unicode block starts
 
         0x0000, // Basic Latin
@@ -165,8 +165,8 @@ namespace NLangDetect.Core.Extensions
         #endregion
       };
 
-    private static readonly UnicodeBlock?[] _unicodeBlocks =
-      {
+        private static readonly UnicodeBlock?[] _unicodeBlocks =
+          {
         #region Unicode blocks
         UnicodeBlock.BasicLatin,
         UnicodeBlock.Latin1Supplement,
@@ -322,53 +322,53 @@ namespace NLangDetect.Core.Extensions
         #endregion
       };
 
-    #region Public methods
+        #region Public methods
 
-    /// <remarks>
-    /// Taken from JDK source: http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/6-b14/java/lang/Character.java#Character.UnicodeBlock.0LATIN_EXTENDED_ADDITIONAL
-    /// </remarks>
-    public static UnicodeBlock? GetUnicodeBlock(this char ch)
-    {
-      int codePoint = ch;
-
-      if (!IsValidCodePoint(codePoint))
-      {
-        throw new ArgumentException("Argument is not a valid code point.", nameof(ch));
-      }
-
-      int top, bottom, current;
-
-      bottom = 0;
-      top = _unicodeBlockStarts.Length;
-      current = top / 2;
-
-      // invariant: top > current >= bottom && codePoint >= unicodeBlockStarts[bottom]
-      while (top - bottom > 1)
-      {
-        if (codePoint >= _unicodeBlockStarts[current])
+        /// <remarks>
+        /// Taken from JDK source: http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/6-b14/java/lang/Character.java#Character.UnicodeBlock.0LATIN_EXTENDED_ADDITIONAL
+        /// </remarks>
+        public static UnicodeBlock? GetUnicodeBlock(this char ch)
         {
-          bottom = current;
+            int codePoint = ch;
+
+            if (!IsValidCodePoint(codePoint))
+            {
+                throw new ArgumentException("Argument is not a valid code point.", nameof(ch));
+            }
+
+            int top, bottom, current;
+
+            bottom = 0;
+            top = _unicodeBlockStarts.Length;
+            current = top / 2;
+
+            // invariant: top > current >= bottom && codePoint >= unicodeBlockStarts[bottom]
+            while (top - bottom > 1)
+            {
+                if (codePoint >= _unicodeBlockStarts[current])
+                {
+                    bottom = current;
+                }
+                else
+                {
+                    top = current;
+                }
+
+                current = (top + bottom) / 2;
+            }
+
+            return _unicodeBlocks[current];
         }
-        else
+
+        #endregion
+
+        #region Private helper methods
+
+        private static bool IsValidCodePoint(int codePoint)
         {
-          top = current;
+            return codePoint >= MIN_CODE_POINT && codePoint <= MAX_CODE_POINT;
         }
 
-        current = (top + bottom) / 2;
-      }
-
-      return _unicodeBlocks[current];
+        #endregion
     }
-
-    #endregion
-
-    #region Private helper methods
-
-    private static bool IsValidCodePoint(int codePoint)
-    {
-      return codePoint >= MIN_CODE_POINT && codePoint <= MAX_CODE_POINT;
-    }
-
-    #endregion
-  }
 }

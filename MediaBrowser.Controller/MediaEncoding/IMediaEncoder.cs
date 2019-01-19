@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {

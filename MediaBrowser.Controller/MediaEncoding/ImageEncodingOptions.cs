@@ -1,4 +1,3 @@
-﻿
 namespace MediaBrowser.Controller.MediaEncoding
 {
     public class ImageEncodingOptions

@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
 using System;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -76,10 +76,10 @@ namespace MediaBrowser.Model.LiveTv
 
         public ListingsProviderInfo()
         {
-            NewsCategories = new [] { "news", "journalism", "documentary", "current affairs" };
-            SportsCategories = new [] { "sports", "basketball", "baseball", "football" };
-            KidsCategories = new [] { "kids", "family", "children", "childrens", "disney" };
-            MovieCategories = new [] { "movie" };
+            NewsCategories = new[] { "news", "journalism", "documentary", "current affairs" };
+            SportsCategories = new[] { "sports", "basketball", "baseball", "football" };
+            KidsCategories = new[] { "kids", "family", "children", "childrens", "disney" };
+            MovieCategories = new[] { "movie" };
             EnabledTuners = Array.Empty<string>();
             EnableAllTuners = true;
             ChannelMappings = Array.Empty<NameValuePair>();

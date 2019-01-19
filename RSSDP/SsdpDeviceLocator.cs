@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -185,7 +185,7 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="StopListeningForNotifications"/>
         /// <seealso cref="DeviceAvailable"/>
         /// <seealso cref="DeviceUnavailable"/>
-        /// <exception cref="System.ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/>  ty is true.</exception>
+        /// <exception cref="ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/>  ty is true.</exception>
         public void StartListeningForNotifications()
         {
             ThrowIfDisposed();
@@ -204,7 +204,7 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="StartListeningForNotifications"/>
         /// <seealso cref="DeviceAvailable"/>
         /// <seealso cref="DeviceUnavailable"/>
-        /// <exception cref="System.ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true.</exception>
+        /// <exception cref="ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true.</exception>
         public void StopListeningForNotifications()
         {
             ThrowIfDisposed();

@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Controller.Entities;
+using System;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
-using System;
 
 namespace Emby.Server.Implementations.Sorting
 {

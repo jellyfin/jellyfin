@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using MediaBrowser.Common.Configuration;
 
 namespace Emby.Server.Implementations.AppBase

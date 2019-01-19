@@ -1,4 +1,4 @@
-﻿//============================================================================
+//============================================================================
 // BDInfo - Blu-ray Video and Audio Analysis Tool
 // Copyright © 2010 Cinema Squid
 //
@@ -211,7 +211,7 @@ namespace BDInfo
             // TODO
             if (stream.CoreStream != null)
             {
-                TSAudioStream coreStream = (TSAudioStream)stream.CoreStream;
+                var coreStream = (TSAudioStream)stream.CoreStream;
                 if (coreStream.AudioMode == TSAudioMode.Extended &&
                     stream.ChannelCount == 5)
                 {

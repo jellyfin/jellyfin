@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
@@ -20,8 +20,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public EncodingJobOptions Options
         {
-            get { return (EncodingJobOptions) BaseRequest; }
-            set { BaseRequest = value; }
+            get => (EncodingJobOptions)BaseRequest;
+            set => BaseRequest = value;
         }
 
         public string Id { get; set; }

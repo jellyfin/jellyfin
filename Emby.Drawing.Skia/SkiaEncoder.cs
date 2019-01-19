@@ -1,18 +1,17 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
-using SkiaSharp;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Extensions;
-using System.Globalization;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
+using SkiaSharp;
 
 namespace Emby.Drawing.Skia
 {
@@ -35,46 +34,34 @@ namespace Emby.Drawing.Skia
             LogVersion();
         }
 
-        public string[] SupportedInputFormats
-        {
-            get
+        public string[] SupportedInputFormats =>
+            new[]
             {
-                // Some common file name extensions for RAW picture files include: .cr2, .crw, .dng, .nef, .orf, .rw2, .pef, .arw, .sr2, .srf, and .tif.
-                return new[]
-                {
-                    "jpeg",
-                    "jpg",
-                    "png",
+                "jpeg",
+                "jpg",
+                "png",
 
-                    "dng",
+                "dng",
 
-                    "webp",
-                    "gif",
-                    "bmp",
-                    "ico",
-                    "astc",
-                    "ktx",
-                    "pkm",
-                    "wbmp",
+                "webp",
+                "gif",
+                "bmp",
+                "ico",
+                "astc",
+                "ktx",
+                "pkm",
+                "wbmp",
 
-                    // TODO
-                    // Are all of these supported? https://github.com/google/skia/blob/master/infra/bots/recipes/test.py#L454
+                // TODO
+                // Are all of these supported? https://github.com/google/skia/blob/master/infra/bots/recipes/test.py#L454
 
-                    // working on windows at least
-                    "cr2",
-                    "nef",
-                    "arw"
-                };
-            }
-        }
+                // working on windows at least
+                "cr2",
+                "nef",
+                "arw"
+            };
 
-        public ImageFormat[] SupportedOutputFormats
-        {
-            get
-            {
-                return new[] { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png };
-            }
-        }
+        public ImageFormat[] SupportedOutputFormats => new[] { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png };
 
         private void LogVersion()
         {
@@ -667,19 +654,10 @@ namespace Emby.Drawing.Skia
             }
         }
 
-        public string Name
-        {
-            get { return "Skia"; }
-        }
+        public string Name => "Skia";
 
-        public bool SupportsImageCollageCreation
-        {
-            get { return true; }
-        }
+        public bool SupportsImageCollageCreation => true;
 
-        public bool SupportsImageEncoding
-        {
-            get { return true; }
-        }
+        public bool SupportsImageEncoding => true;
     }
 }

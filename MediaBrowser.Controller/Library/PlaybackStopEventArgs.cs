@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Controller.Library
+namespace MediaBrowser.Controller.Library
 {
     public class PlaybackStopEventArgs : PlaybackProgressEventArgs
     {

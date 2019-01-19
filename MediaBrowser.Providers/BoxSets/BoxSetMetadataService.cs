@@ -1,15 +1,14 @@
-﻿using MediaBrowser.Controller.Configuration;
+using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Providers.Manager;
-using System.Linq;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Extensions;
-using System.Collections.Generic;
+using MediaBrowser.Providers.Manager;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.BoxSets
 {
@@ -53,36 +52,12 @@ namespace MediaBrowser.Providers.BoxSets
         {
         }
 
-        protected override bool EnableUpdatingGenresFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingGenresFromChildren => true;
 
-        protected override bool EnableUpdatingOfficialRatingFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingOfficialRatingFromChildren => true;
 
-        protected override bool EnableUpdatingStudiosFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingStudiosFromChildren => true;
 
-        protected override bool EnableUpdatingPremiereDateFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingPremiereDateFromChildren => true;
     }
 }

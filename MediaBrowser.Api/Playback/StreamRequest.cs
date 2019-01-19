@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback
@@ -51,13 +50,7 @@ namespace MediaBrowser.Api.Playback
         /// Gets a value indicating whether this instance has fixed resolution.
         /// </summary>
         /// <value><c>true</c> if this instance has fixed resolution; otherwise, <c>false</c>.</value>
-        public bool HasFixedResolution
-        {
-            get
-            {
-                return Width.HasValue || Height.HasValue;
-            }
-        }
+        public bool HasFixedResolution => Width.HasValue || Height.HasValue;
 
         public bool EnableSubtitlesInManifest { get; set; }
     }

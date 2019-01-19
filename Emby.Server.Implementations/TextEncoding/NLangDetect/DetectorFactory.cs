@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
-using NLangDetect.Core.Utils;
-using MediaBrowser.Model.Serialization;
 using System.Linq;
+using MediaBrowser.Model.Serialization;
+using NLangDetect.Core.Utils;
 
 namespace NLangDetect.Core
 {
@@ -56,7 +54,7 @@ namespace NLangDetect.Core
 
         public static Detector Create(double alpha)
         {
-            Detector detector = CreateDetector();
+            var detector = CreateDetector();
 
             detector.SetAlpha(alpha);
 

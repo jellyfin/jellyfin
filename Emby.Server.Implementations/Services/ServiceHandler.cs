@@ -4,8 +4,8 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Services
 {
@@ -62,8 +62,7 @@ namespace Emby.Server.Implementations.Services
         {
             if (this.RestPath == null)
             {
-                string contentType;
-                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, out contentType);
+                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, out string contentType);
 
                 if (contentType != null)
                     ResponseContentType = contentType;
@@ -137,9 +136,8 @@ namespace Emby.Server.Implementations.Services
 
         public static object CreateRequest(IRequest httpReq, RestPath restPath, Dictionary<string, string> requestParams, object requestDto)
         {
-            string contentType;
             var pathInfo = !restPath.IsWildCardPath
-                ? GetSanitizedPathInfo(httpReq.PathInfo, out contentType)
+                ? GetSanitizedPathInfo(httpReq.PathInfo, out string contentType)
                 : httpReq.PathInfo;
 
             return restPath.CreateRequest(pathInfo, requestParams, requestDto);
@@ -239,8 +237,7 @@ namespace Emby.Server.Implementations.Services
 
         private static RestPath GetRoute(IRequest req)
         {
-            object route;
-            req.Items.TryGetValue("__route", out route);
+            req.Items.TryGetValue("__route", out var route);
             return route as RestPath;
         }
     }

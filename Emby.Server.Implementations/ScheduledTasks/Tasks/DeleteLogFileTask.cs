@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
             foreach (var file in filesToDelete)
             {
-                double percent = index / (double) filesToDelete.Count;
+                double percent = index / (double)filesToDelete.Count;
 
                 progress.Report(100 * percent);
 

@@ -1,15 +1,14 @@
-﻿using System;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Querying;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Events;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Events;
+using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.LiveTv
 {

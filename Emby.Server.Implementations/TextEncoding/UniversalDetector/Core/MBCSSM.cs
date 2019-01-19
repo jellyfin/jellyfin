@@ -174,7 +174,7 @@ namespace UniversalDetector.Core
         // it is used for frequency analysis only, and we are validating
         // each code range there as well. So it is safe to set it to be
         // 2 here.
-        private readonly static int[] GB18030CharLenTable = {0, 1, 1, 1, 1, 1, 2};
+        private readonly static int[] GB18030CharLenTable = { 0, 1, 1, 1, 1, 1, 2 };
 
         public GB18030SMModel() : base(
               new BitPackage(BitPackage.INDEX_SHIFT_4BITS,
@@ -235,7 +235,7 @@ namespace UniversalDetector.Core
             BitPackage.Pack4bits(ERROR,START,START,START,START,START,START,START) //10-17
         };
 
-        private readonly static int[] BIG5CharLenTable = {0, 1, 1, 2, 0};
+        private readonly static int[] BIG5CharLenTable = { 0, 1, 1, 2, 0 };
 
         public BIG5SMModel() : base(
               new BitPackage(BitPackage.INDEX_SHIFT_4BITS,

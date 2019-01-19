@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -9,10 +9,10 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
 {
@@ -103,8 +103,7 @@ namespace Emby.Server.Implementations.IO
             // But if we make this delay too high, we risk missing legitimate changes, such as user adding a new file, or hand-editing metadata
             await Task.Delay(45000).ConfigureAwait(false);
 
-            string val;
-            _tempIgnoredPaths.TryRemove(path, out val);
+            _tempIgnoredPaths.TryRemove(path, out var val);
 
             if (refreshPath)
             {
@@ -263,7 +262,7 @@ namespace Emby.Server.Implementations.IO
         /// <param name="lst">The LST.</param>
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [contains parent folder] [the specified LST]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.ArgumentNullException">path</exception>
+        /// <exception cref="ArgumentNullException">path</exception>
         private static bool ContainsParentFolder(IEnumerable<string> lst, string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -365,9 +364,7 @@ namespace Emby.Server.Implementations.IO
         /// <param name="path">The path.</param>
         private void StopWatchingPath(string path)
         {
-            FileSystemWatcher watcher;
-
-            if (_fileSystemWatchers.TryGetValue(path, out watcher))
+            if (_fileSystemWatchers.TryGetValue(path, out var watcher))
             {
                 DisposeWatcher(watcher, true);
             }
@@ -424,9 +421,7 @@ namespace Emby.Server.Implementations.IO
         /// <param name="watcher">The watcher.</param>
         private void RemoveWatcherFromList(FileSystemWatcher watcher)
         {
-            FileSystemWatcher removed;
-
-            _fileSystemWatchers.TryRemove(watcher.Path, out removed);
+            _fileSystemWatchers.TryRemove(watcher.Path, out var removed);
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Emby.Server.Implementations.AppBase;
 using MediaBrowser.Controller;

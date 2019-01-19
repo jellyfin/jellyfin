@@ -1,8 +1,8 @@
-﻿using Emby.Naming.Common;
-using Emby.Naming.Video;
 using System;
 using System.IO;
 using System.Linq;
+using Emby.Naming.Common;
+using Emby.Naming.Video;
 
 namespace Emby.Naming.TV
 {

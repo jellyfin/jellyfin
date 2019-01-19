@@ -109,8 +109,8 @@ namespace Mono.Nat.Upnp
             int abortCount = 0;
             int bytesRead = 0;
             byte[] buffer = new byte[10240];
-            StringBuilder servicesXml = new StringBuilder();
-            XmlDocument xmldoc = new XmlDocument();
+            var servicesXml = new StringBuilder();
+            var xmldoc = new XmlDocument();
 
             using (var s = response.Content)
             {
@@ -144,7 +144,7 @@ namespace Mono.Nat.Upnp
                     }
                 }
 
-                XmlNamespaceManager ns = new XmlNamespaceManager(xmldoc.NameTable);
+                var ns = new XmlNamespaceManager(xmldoc.NameTable);
                 ns.AddNamespace("ns", "urn:schemas-upnp-org:device-1-0");
                 XmlNodeList nodes = xmldoc.SelectNodes("//*/ns:serviceList", ns);
 
@@ -169,7 +169,7 @@ namespace Mono.Nat.Upnp
                             {
                                 if (u.IsAbsoluteUri)
                                 {
-                                    EndPoint old = hostEndPoint;
+                                    var old = hostEndPoint;
                                     IPAddress parsedHostIpAddress;
                                     if (IPAddress.TryParse(u.Host, out parsedHostIpAddress))
                                     {
@@ -228,7 +228,7 @@ namespace Mono.Nat.Upnp
 
         public override async Task CreatePortMap(Mapping mapping)
         {
-            CreatePortMappingMessage message = new CreatePortMappingMessage(mapping, localAddress, this);
+            var message = new CreatePortMappingMessage(mapping, localAddress, this);
             using (await _httpClient.SendAsync(message.Encode(), message.Method).ConfigureAwait(false))
             {
 
@@ -237,7 +237,7 @@ namespace Mono.Nat.Upnp
 
         public override bool Equals(object obj)
         {
-            UpnpNatDevice device = obj as UpnpNatDevice;
+            var device = obj as UpnpNatDevice;
             return (device == null) ? false : this.Equals((device));
         }
 

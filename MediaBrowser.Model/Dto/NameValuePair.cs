@@ -1,4 +1,3 @@
-﻿
 namespace MediaBrowser.Model.Dto
 {
     public class NameValuePair

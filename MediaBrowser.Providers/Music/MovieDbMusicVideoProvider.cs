@@ -1,12 +1,12 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Providers;
-using MediaBrowser.Providers.Movies;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Movies;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -22,10 +22,7 @@ namespace MediaBrowser.Providers.Music
             return Task.FromResult((IEnumerable<RemoteSearchResult>)new List<RemoteSearchResult>());
         }
 
-        public string Name
-        {
-            get { return MovieDbProvider.Current.Name; }
-        }
+        public string Name => MovieDbProvider.Current.Name;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

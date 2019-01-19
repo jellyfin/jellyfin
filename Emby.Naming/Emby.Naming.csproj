@@ -5,13 +5,6 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <Authors>Jellyfin Contributors</Authors>
-    <PackageId>Jellyfin.Naming</PackageId>
-    <PackageLicenseUrl>https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt</PackageLicenseUrl>
-    <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
-  </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs" Link="SharedVersion.cs" />
   </ItemGroup>
@@ -19,5 +12,12 @@
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <Authors>Jellyfin Contributors</Authors>
+    <PackageId>Jellyfin.Naming</PackageId>
+    <PackageLicenseUrl>https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
+  </PropertyGroup>
 
 </Project>

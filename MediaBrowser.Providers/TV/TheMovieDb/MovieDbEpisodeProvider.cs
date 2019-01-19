@@ -1,24 +1,22 @@
-﻿using System;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -73,8 +71,7 @@ namespace MediaBrowser.Providers.TV
                 return result;
             }
 
-            string seriesTmdbId;
-            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out seriesTmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out string seriesTmdbId);
 
             if (string.IsNullOrEmpty(seriesTmdbId))
             {
@@ -211,19 +208,9 @@ namespace MediaBrowser.Providers.TV
         {
             return GetResponse(url, cancellationToken);
         }
+        // After TheTvDb
+        public int Order => 1;
 
-        public int Order
-        {
-            get
-            {
-                // After TheTvDb
-                return 1;
-            }
-        }
-
-        public string Name
-        {
-            get { return "TheMovieDb"; }
-        }
+        public string Name => "TheMovieDb";
     }
 }

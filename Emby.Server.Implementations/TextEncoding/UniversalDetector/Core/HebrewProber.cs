@@ -36,7 +36,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-using System;
 
 /**
  * General ideas of the Hebrew charset recognition
@@ -144,11 +143,11 @@ namespace UniversalDetector.Core
     public class HebrewProber : CharsetProber
     {
         // windows-1255 / ISO-8859-8 code points of interest
-        private const byte FINAL_KAF  = 0xEA;
+        private const byte FINAL_KAF = 0xEA;
         private const byte NORMAL_KAF = 0xEB;
-        private const byte FINAL_MEM  = 0xED;
+        private const byte FINAL_MEM = 0xED;
         private const byte NORMAL_MEM = 0xEE;
-        private const byte FINAL_NUN  = 0xEF;
+        private const byte FINAL_NUN = 0xEF;
         private const byte NORMAL_NUN = 0xF0;
         private const byte FINAL_PE = 0xF3;
         private const byte NORMAL_PE = 0xF4;
@@ -217,14 +216,17 @@ namespace UniversalDetector.Core
 
             int max = offset + len;
 
-            for (int i = offset; i < max; i++) {
+            for (int i = offset; i < max; i++)
+            {
 
                 byte b = buf[i];
 
                 // a word just ended
-                if (b == 0x20) {
+                if (b == 0x20)
+                {
                     // *(curPtr-2) was not a space so prev is not a 1 letter word
-                    if (beforePrev != 0x20) {
+                    if (beforePrev != 0x20)
+                    {
                         // case (1) [-2:not space][-1:final letter][cur:space]
                         if (IsFinal(prev))
                             finalCharLogicalScore++;
@@ -233,7 +235,9 @@ namespace UniversalDetector.Core
                             finalCharVisualScore++;
                     }
 
-                } else {
+                }
+                else
+                {
                     // case (3) [-2:space][-1:final letter][cur:not space]
                     if ((beforePrev == 0x20) && (IsFinal(prev)) && (b != ' '))
                         ++finalCharVisualScore;

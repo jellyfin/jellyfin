@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Model.MediaInfo;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {

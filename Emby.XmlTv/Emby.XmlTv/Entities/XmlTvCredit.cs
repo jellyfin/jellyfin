@@ -1,5 +1,3 @@
-﻿using System;
-
 namespace Emby.XmlTv.Entities
 {
     public class XmlTvCredit

@@ -1,10 +1,3 @@
-﻿using MediaBrowser.Common;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,8 +8,15 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -216,10 +216,7 @@ namespace MediaBrowser.Providers.Music
             return result;
         }
 
-        public string Name
-        {
-            get { return "MusicBrainz"; }
-        }
+        public string Name => "MusicBrainz";
 
         private Task<ReleaseResult> GetReleaseResult(string artistMusicBrainId, string artistName, string albumName, CancellationToken cancellationToken)
         {
@@ -416,8 +413,7 @@ namespace MediaBrowser.Providers.Music
                             case "date":
                                 {
                                     var val = reader.ReadElementContentAsString();
-                                    DateTime date;
-                                    if (DateTime.TryParse(val, out date))
+                                    if (DateTime.TryParse(val, out var date))
                                     {
                                         result.Year = date.Year;
                                     }
@@ -753,10 +749,7 @@ namespace MediaBrowser.Providers.Music
             return await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
         }
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

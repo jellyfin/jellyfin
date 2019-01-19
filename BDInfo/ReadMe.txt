@@ -1,4 +1,4 @@
-﻿The source is taken from the BDRom folder of this project:
+The source is taken from the BDRom folder of this project:
 
 http://www.cinemasquid.com/blu-ray/tools/bdinfo
 

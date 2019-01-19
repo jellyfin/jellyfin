@@ -1,6 +1,4 @@
-﻿
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Resolvers

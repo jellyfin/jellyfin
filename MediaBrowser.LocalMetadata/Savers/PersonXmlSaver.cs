@@ -1,13 +1,3 @@
-﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using System.Collections.Generic;
-using System.IO;
-using System.Xml;
-using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Xml;
-
 namespace MediaBrowser.LocalMetadata.Savers
 {
     ///// <summary>

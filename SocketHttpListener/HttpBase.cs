@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.IO;
+using System;
 using System.Text;
-using System.Threading;
 using MediaBrowser.Model.Services;
 
 namespace SocketHttpListener
@@ -53,21 +49,9 @@ namespace SocketHttpListener
             }
         }
 
-        public QueryParamCollection Headers
-        {
-            get
-            {
-                return _headers;
-            }
-        }
+        public QueryParamCollection Headers => _headers;
 
-        public Version ProtocolVersion
-        {
-            get
-            {
-                return _version;
-            }
-        }
+        public Version ProtocolVersion => _version;
 
         #endregion
 

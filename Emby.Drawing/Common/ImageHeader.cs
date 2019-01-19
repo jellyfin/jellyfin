@@ -1,12 +1,10 @@
-﻿using MediaBrowser.Model.Drawing;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Drawing.Common
 {
@@ -76,7 +74,7 @@ namespace Emby.Drawing.Common
         /// </summary>
         /// <param name="binaryReader">The binary reader.</param>
         /// <returns>Size.</returns>
-        /// <exception cref="System.ArgumentException">binaryReader</exception>
+        /// <exception cref="ArgumentException">binaryReader</exception>
         /// <exception cref="ArgumentException">The image was of an unrecognized format.</exception>
         private static ImageSize GetDimensions(BinaryReader binaryReader)
         {
@@ -203,7 +201,7 @@ namespace Emby.Drawing.Common
         /// </summary>
         /// <param name="binaryReader">The binary reader.</param>
         /// <returns>Size.</returns>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         private static ImageSize DecodeJfif(BinaryReader binaryReader)
         {
             // A JPEG image consists of a sequence of segments,

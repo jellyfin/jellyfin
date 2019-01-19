@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Providers;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -27,18 +27,9 @@ namespace MediaBrowser.Providers.Movies
             return MovieDbProvider.Current.GetItemMetadata<Trailer>(info, cancellationToken);
         }
 
-        public string Name
-        {
-            get { return MovieDbProvider.Current.Name; }
-        }
+        public string Name => MovieDbProvider.Current.Name;
 
-        public int Order
-        {
-            get
-            {
-                return 0;
-            }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

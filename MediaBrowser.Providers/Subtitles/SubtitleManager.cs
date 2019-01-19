@@ -1,14 +1,3 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Subtitles;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,10 +5,21 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Globalization;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Providers;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Subtitles
 {
@@ -245,7 +245,7 @@ namespace MediaBrowser.Providers.Subtitles
         {
             if (video.VideoType != VideoType.VideoFile)
             {
-                return Task.FromResult<RemoteSubtitleInfo[]>(new RemoteSubtitleInfo[] { });
+                return Task.FromResult(new RemoteSubtitleInfo[] { });
             }
 
             VideoContentType mediaType;
@@ -261,7 +261,7 @@ namespace MediaBrowser.Providers.Subtitles
             else
             {
                 // These are the only supported types
-                return Task.FromResult<RemoteSubtitleInfo[]>(new RemoteSubtitleInfo[] { });
+                return Task.FromResult(new RemoteSubtitleInfo[] { });
             }
 
             var request = new SubtitleSearchRequest

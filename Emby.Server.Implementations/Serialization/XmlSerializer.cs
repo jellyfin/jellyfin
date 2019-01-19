@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Serialization
 {
@@ -33,8 +33,7 @@ namespace Emby.Server.Implementations.Serialization
             var key = type.FullName;
             lock (_serializers)
             {
-                XmlSerializer serializer;
-                if (!_serializers.TryGetValue(key, out serializer))
+                if (!_serializers.TryGetValue(key, out var serializer))
                 {
                     serializer = new XmlSerializer(type);
                     _serializers[key] = serializer;

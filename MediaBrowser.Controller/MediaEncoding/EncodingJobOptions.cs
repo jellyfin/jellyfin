@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -20,13 +20,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Gets a value indicating whether this instance has fixed resolution.
         /// </summary>
         /// <value><c>true</c> if this instance has fixed resolution; otherwise, <c>false</c>.</value>
-        public bool HasFixedResolution
-        {
-            get
-            {
-                return Width.HasValue || Height.HasValue;
-            }
-        }
+        public bool HasFixedResolution => Width.HasValue || Height.HasValue;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         public EncodingJobOptions(StreamInfo info, DeviceProfile deviceProfile)
@@ -234,8 +228,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetOption(string name)
         {
-            string value;
-            if (StreamOptions.TryGetValue(name, out value))
+            if (StreamOptions.TryGetValue(name, out var value))
             {
                 return value;
             }

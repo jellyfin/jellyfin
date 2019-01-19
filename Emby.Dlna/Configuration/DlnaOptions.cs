@@ -1,4 +1,4 @@
-﻿
+
 namespace Emby.Dlna.Configuration
 {
     public class DlnaOptions

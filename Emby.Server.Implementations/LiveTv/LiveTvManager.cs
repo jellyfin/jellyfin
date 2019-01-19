@@ -1,10 +1,21 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Emby.Server.Implementations.Library;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -12,27 +23,15 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.LiveTv;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
-using Emby.Server.Implementations.LiveTv.Listings;
-using MediaBrowser.Controller.Channels;
-using Emby.Server.Implementations.Library;
-using MediaBrowser.Controller;
-using MediaBrowser.Common.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv
 {
@@ -255,7 +254,7 @@ namespace Emby.Server.Implementations.LiveTv
             var channel = (LiveTvChannel)_libraryManager.GetItemById(id);
 
             bool isVideo = channel.ChannelType == ChannelType.TV;
-            ILiveTvService service = GetService(channel);
+            var service = GetService(channel);
             _logger.LogInformation("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
 
             MediaSourceInfo info;
@@ -541,8 +540,7 @@ namespace Emby.Server.Implementations.LiveTv
             var isNew = false;
             var forceUpdate = false;
 
-            LiveTvProgram item;
-            if (!allExistingPrograms.TryGetValue(id, out item))
+            if (!allExistingPrograms.TryGetValue(id, out LiveTvProgram item))
             {
                 isNew = true;
                 item = new LiveTvProgram
@@ -905,7 +903,7 @@ namespace Emby.Server.Implementations.LiveTv
             var programList = _libraryManager.QueryItems(internalQuery).Items;
             var totalCount = programList.Length;
 
-            IOrderedEnumerable<LiveTvProgram> orderedPrograms = programList.Cast<LiveTvProgram>().OrderBy(i => i.StartDate.Date);
+            var orderedPrograms = programList.Cast<LiveTvProgram>().OrderBy(i => i.StartDate.Date);
 
             if (query.IsAiring ?? false)
             {
@@ -921,10 +919,10 @@ namespace Emby.Server.Implementations.LiveTv
             }
 
             return new QueryResult<BaseItem>
-                {
-                    Items = programs.ToArray(),
-                    TotalRecordCount = totalCount
-                };
+            {
+                Items = programs.ToArray(),
+                TotalRecordCount = totalCount
+            };
         }
 
         public QueryResult<BaseItemDto> GetRecommendedPrograms(InternalItemsQuery query, DtoOptions options, CancellationToken cancellationToken)
@@ -939,10 +937,10 @@ namespace Emby.Server.Implementations.LiveTv
             var internalResult = GetRecommendedProgramsInternal(query, options, cancellationToken);
 
             return new QueryResult<BaseItemDto>
-                {
-                    Items = _dtoService.GetBaseItemDtos(internalResult.Items, options, query.User),
-                    TotalRecordCount = internalResult.TotalRecordCount
-                };
+            {
+                Items = _dtoService.GetBaseItemDtos(internalResult.Items, options, query.User),
+                TotalRecordCount = internalResult.TotalRecordCount
+            };
         }
 
         private int GetRecommendationScore(LiveTvProgram program, User user, bool factorChannelWatchCount)
@@ -1266,7 +1264,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
 
                 numComplete++;
-                double percent = numComplete / (double) allChannelsList.Count;
+                double percent = numComplete / (double)allChannelsList.Count;
 
                 progress.Report(85 * percent + 15);
             }
@@ -1311,7 +1309,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
 
                 numComplete++;
-                double percent = numComplete / (double) list.Count;
+                double percent = numComplete / (double)list.Count;
 
                 progress.Report(100 * percent);
             }
@@ -1953,8 +1951,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 foreach (var programDto in currentProgramDtos)
                 {
-                    BaseItemDto channelDto;
-                    if (currentChannelsDict.TryGetValue(programDto.ChannelId, out channelDto))
+                    if (currentChannelsDict.TryGetValue(programDto.ChannelId, out BaseItemDto channelDto))
                     {
                         channelDto.CurrentProgram = programDto;
                     }
@@ -1967,7 +1964,7 @@ namespace Emby.Server.Implementations.LiveTv
             ILiveTvService service = null;
             ProgramInfo programInfo = null;
 
-            if(program != null)
+            if (program != null)
             {
                 service = GetService(program);
 
@@ -2307,7 +2304,7 @@ namespace Emby.Server.Implementations.LiveTv
             // ServerConfiguration.SaveConfiguration crashes during xml serialization for AddListingProvider
             info = _jsonSerializer.DeserializeFromString<ListingsProviderInfo>(_jsonSerializer.SerializeToString(info));
 
-            IListingsProvider provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
+            var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
             if (provider == null)
             {
@@ -2320,7 +2317,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             LiveTvOptions config = GetConfiguration();
 
-            List<ListingsProviderInfo> list = config.ListingProviders.ToList();
+            var list = config.ListingProviders.ToList();
             int index = list.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
 
             if (index == -1 || string.IsNullOrWhiteSpace(info.Id))

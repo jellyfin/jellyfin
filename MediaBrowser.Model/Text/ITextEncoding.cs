@@ -1,4 +1,3 @@
-﻿using System.IO;
 using System.Text;
 
 namespace MediaBrowser.Model.Text

@@ -9,10 +9,10 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="taskManager">The task manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// scheduledTask
         /// or
         /// applicationPaths
@@ -256,7 +256,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Gets the triggers that define when the task will run
         /// </summary>
         /// <value>The triggers.</value>
-        /// <exception cref="System.ArgumentNullException">value</exception>
+        /// <exception cref="ArgumentNullException">value</exception>
         public TaskTriggerInfo[] Triggers
         {
             get
@@ -365,7 +365,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="options">Task options.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.InvalidOperationException">Cannot execute a Task that is already running</exception>
+        /// <exception cref="InvalidOperationException">Cannot execute a Task that is already running</exception>
         public async Task Execute(TaskOptions options)
         {
             var task = Task.Run(async () => await ExecuteInternal(options).ConfigureAwait(false));
@@ -461,7 +461,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Stops the task if it is currently executing
         /// </summary>
-        /// <exception cref="System.InvalidOperationException">Cannot cancel a Task unless it is in the Running state.</exception>
+        /// <exception cref="InvalidOperationException">Cannot cancel a Task unless it is in the Running state.</exception>
         public void Cancel()
         {
             if (State != TaskState.Running)
@@ -705,8 +705,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>BaseTaskTrigger.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        /// <exception cref="System.ArgumentException">Invalid trigger type:  + info.Type</exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException">Invalid trigger type:  + info.Type</exception>
         private ITaskTrigger GetTrigger(TaskTriggerInfo info)
         {
             var options = new TaskOptions
@@ -718,7 +718,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 if (!info.TimeOfDayTicks.HasValue)
                 {
-                    throw new ArgumentException("Info did not contain a TimeOfDayTicks.",nameof(info));
+                    throw new ArgumentException("Info did not contain a TimeOfDayTicks.", nameof(info));
                 }
 
                 return new DailyTrigger

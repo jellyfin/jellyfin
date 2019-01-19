@@ -1,4 +1,4 @@
-﻿/* This file is part of OpenSubtitles Handler
+/* This file is part of OpenSubtitles Handler
    A library that handle OpenSubtitles.org XML-RPC methods.
 
    Copyright © Ala Ibrahim Hadid 2013
@@ -42,19 +42,22 @@ namespace OpenSubtitlesHandler
         private string _query;
         private string _episode;
 
-        public string Episode {
+        public string Episode
+        {
             get { return _episode; }
             set { _episode = value; }
         }
 
-        public string Season {
+        public string Season
+        {
             get { return _season; }
             set { _season = value; }
         }
 
         private string _season;
 
-        public string Query {
+        public string Query
+        {
             get { return _query; }
             set { _query = value; }
         }
@@ -74,6 +77,6 @@ namespace OpenSubtitlesHandler
         /// <summary>
         /// ​IMDb ID of movie this video is part of, belongs to.
         /// </summary>
-        public string IMDbID  { get { return imdbid; } set { imdbid = value; } }
+        public string IMDbID { get { return imdbid; } set { imdbid = value; } }
     }
 }

@@ -1,28 +1,27 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Threading;
-using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Globalization;
-using System.IO;
-using System.Globalization;
-using MediaBrowser.Common.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -128,7 +127,7 @@ namespace Emby.Server.Implementations.Library
 
             if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder && !mediaSources[0].MediaStreams.Any(i => i.Type == MediaStreamType.Audio || i.Type == MediaStreamType.Video))
             {
-                await item.RefreshMetadata(new MediaBrowser.Controller.Providers.MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
+                await item.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
                 {
                     EnableRemoteContentProbe = true,
                     MetadataRefreshMode = MediaBrowser.Controller.Providers.MetadataRefreshMode.FullRefresh
@@ -778,8 +777,7 @@ namespace Emby.Server.Implementations.Library
 
             try
             {
-                ILiveStream info;
-                if (_openStreams.TryGetValue(id, out info))
+                if (_openStreams.TryGetValue(id, out ILiveStream info))
                 {
                     return info;
                 }
@@ -811,9 +809,7 @@ namespace Emby.Server.Implementations.Library
 
             try
             {
-                ILiveStream liveStream;
-
-                if (_openStreams.TryGetValue(id, out liveStream))
+                if (_openStreams.TryGetValue(id, out ILiveStream liveStream))
                 {
                     liveStream.ConsumerCount--;
 

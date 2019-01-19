@@ -1,4 +1,3 @@
-﻿
 namespace Emby.Naming.Audio
 {
     public class MultiPartResult

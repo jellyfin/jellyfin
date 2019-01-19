@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
 using System.Threading;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Library
 {

@@ -1,22 +1,19 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -164,10 +161,9 @@ namespace MediaBrowser.Providers.Movies
                 }
             }
 
-            float rating;
             string voteAvg = movieData.vote_average.ToString(CultureInfo.InvariantCulture);
 
-            if (float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out rating))
+            if (float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var rating))
             {
                 movie.CommunityRating = rating;
             }
@@ -198,10 +194,8 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrWhiteSpace(movieData.release_date))
             {
-                DateTime r;
-
                 // These dates are always in this exact format
-                if (DateTime.TryParse(movieData.release_date, _usCulture, DateTimeStyles.None, out r))
+                if (DateTime.TryParse(movieData.release_date, _usCulture, DateTimeStyles.None, out var r))
                 {
                     movie.PremiereDate = r.ToUniversalTime();
                     movie.ProductionYear = movie.PremiereDate.Value.Year;

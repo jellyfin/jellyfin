@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Subtitles
 {

@@ -1,13 +1,13 @@
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using Emby.Dlna.Common;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using System.Threading;
+using Emby.Dlna.Common;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 
 namespace Emby.Dlna.PlayTo
 {
