@@ -1,30 +1,29 @@
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Devices;
-using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Extensions;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Session;
-using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Controller.Security;
-using MediaBrowser.Model.Serialization;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Security;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Devices;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Users;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Devices
 {
@@ -99,8 +98,7 @@ namespace Emby.Server.Implementations.Devices
         {
             lock (_capabilitiesSyncLock)
             {
-                ClientCapabilities result;
-                if (_capabilitiesCache.TryGetValue(id, out result))
+                if (_capabilitiesCache.TryGetValue(id, out var result))
                 {
                     return result;
                 }

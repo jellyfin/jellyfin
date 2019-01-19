@@ -102,7 +102,7 @@ namespace Mono.Nat
 
         public override bool Equals(object obj)
         {
-            Mapping other = obj as Mapping;
+            var other = obj as Mapping;
             return other == null ? false : this.protocol == other.protocol &&
             this.privatePort == other.privatePort && this.publicPort == other.publicPort;
         }

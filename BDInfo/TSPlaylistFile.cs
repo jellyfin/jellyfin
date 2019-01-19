@@ -1,4 +1,4 @@
-﻿//============================================================================
+//============================================================================
 // BDInfo - Blu-ray Video and Audio Analysis Tool
 // Copyright © 2010 Cinema Squid
 //
@@ -21,7 +21,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Text;
 
@@ -86,9 +85,9 @@ namespace BDInfo
             _fileSystem = fileSystem;
             _textEncoding = textEncoding;
             IsCustom = true;
-            foreach (TSStreamClip clip in clips)
+            foreach (var clip in clips)
             {
-                TSStreamClip newClip = new TSStreamClip(
+                var newClip = new TSStreamClip(
                     clip.StreamFile, clip.StreamClipFile);
 
                 newClip.Name = clip.Name;
@@ -124,7 +123,7 @@ namespace BDInfo
             get
             {
                 ulong size = 0;
-                foreach (TSStreamClip clip in StreamClips)
+                foreach (var clip in StreamClips)
                 {
                     size += clip.InterleavedFileSize;
                 }
@@ -136,7 +135,7 @@ namespace BDInfo
             get
             {
                 ulong size = 0;
-                foreach (TSStreamClip clip in StreamClips)
+                foreach (var clip in StreamClips)
                 {
                     size += clip.FileSize;
                 }
@@ -148,7 +147,7 @@ namespace BDInfo
             get
             {
                 double length = 0;
-                foreach (TSStreamClip clip in StreamClips)
+                foreach (var clip in StreamClips)
                 {
                     if (clip.AngleIndex == 0)
                     {
@@ -164,7 +163,7 @@ namespace BDInfo
             get
             {
                 double length = 0;
-                foreach (TSStreamClip clip in StreamClips)
+                foreach (var clip in StreamClips)
                 {
                     length += clip.Length;
                 }
@@ -177,7 +176,7 @@ namespace BDInfo
             get
             {
                 ulong size = 0;
-                foreach (TSStreamClip clip in StreamClips)
+                foreach (var clip in StreamClips)
                 {
                     if (clip.AngleIndex == 0)
                     {
@@ -193,7 +192,7 @@ namespace BDInfo
             get
             {
                 ulong size = 0;
-                foreach (TSStreamClip clip in StreamClips)
+                foreach (var clip in StreamClips)
                 {
                     size += clip.PacketSize;
                 }
@@ -264,7 +263,7 @@ namespace BDInfo
                 int itemCount = ReadInt16(data, ref pos);
                 int subitemCount = ReadInt16(data, ref pos);
 
-                List<TSStreamClip> chapterClips = new List<TSStreamClip>();
+                var chapterClips = new List<TSStreamClip>();
                 for (int itemIndex = 0; itemIndex < itemCount; itemIndex++)
                 {
                     int itemStart = pos;
@@ -311,7 +310,7 @@ namespace BDInfo
                     if (outTime < 0) outTime &= 0x7FFFFFFF;
                     double timeOut = (double)outTime / 45000;
 
-                    TSStreamClip streamClip = new TSStreamClip(
+                    var streamClip = new TSStreamClip(
                         streamFile, streamClipFile);
 
                     streamClip.Name = streamFileName; //TODO
@@ -362,7 +361,7 @@ namespace BDInfo
                                     FileInfo.Name, angleClipFileName));
                             }
 
-                            TSStreamClip angleClip =
+                            var angleClip =
                                 new TSStreamClip(angleFile, angleClipFile);
                             angleClip.AngleIndex = angle + 1;
                             angleClip.TimeIn = streamClip.TimeIn;
@@ -395,33 +394,33 @@ namespace BDInfo
 
                     for (int i = 0; i < streamCountVideo; i++)
                     {
-                        TSStream stream = CreatePlaylistStream(data, ref pos);
+                        var stream = CreatePlaylistStream(data, ref pos);
                         if (stream != null) PlaylistStreams[stream.PID] = stream;
                     }
                     for (int i = 0; i < streamCountAudio; i++)
                     {
-                        TSStream stream = CreatePlaylistStream(data, ref pos);
+                        var stream = CreatePlaylistStream(data, ref pos);
                         if (stream != null) PlaylistStreams[stream.PID] = stream;
                     }
                     for (int i = 0; i < streamCountPG; i++)
                     {
-                        TSStream stream = CreatePlaylistStream(data, ref pos);
+                        var stream = CreatePlaylistStream(data, ref pos);
                         if (stream != null) PlaylistStreams[stream.PID] = stream;
                     }
                     for (int i = 0; i < streamCountIG; i++)
                     {
-                        TSStream stream = CreatePlaylistStream(data, ref pos);
+                        var stream = CreatePlaylistStream(data, ref pos);
                         if (stream != null) PlaylistStreams[stream.PID] = stream;
                     }
                     for (int i = 0; i < streamCountSecondaryAudio; i++)
                     {
-                        TSStream stream = CreatePlaylistStream(data, ref pos);
+                        var stream = CreatePlaylistStream(data, ref pos);
                         if (stream != null) PlaylistStreams[stream.PID] = stream;
                         pos += 2;
                     }
                     for (int i = 0; i < streamCountSecondaryVideo; i++)
                     {
-                        TSStream stream = CreatePlaylistStream(data, ref pos);
+                        var stream = CreatePlaylistStream(data, ref pos);
                         if (stream != null) PlaylistStreams[stream.PID] = stream;
                         pos += 6;
                     }
@@ -446,7 +445,7 @@ namespace BDInfo
                     chapterIndex < chapterCount;
                     chapterIndex++)
                 {
-                    int chapterType = data[pos+1];
+                    int chapterType = data[pos + 1];
 
                     if (chapterType == 1)
                     {
@@ -459,7 +458,7 @@ namespace BDInfo
                             ((long)data[pos + 6] << 8) +
                             ((long)data[pos + 7]);
 
-                        TSStreamClip streamClip = chapterClips[streamFileIndex];
+                        var streamClip = chapterClips[streamFileIndex];
 
                         double chapterSeconds = (double)chapterTime / 45000;
 
@@ -499,8 +498,8 @@ namespace BDInfo
         {
             LoadStreamClips();
 
-            Dictionary<string, List<double>> clipTimes = new Dictionary<string, List<double>>();
-            foreach (TSStreamClip clip in StreamClips)
+            var clipTimes = new Dictionary<string, List<double>>();
+            foreach (var clip in StreamClips)
             {
                 if (clip.AngleIndex == 0)
                 {
@@ -568,7 +567,7 @@ namespace BDInfo
             int streamLength = data[pos++];
             int streamPos = pos;
 
-            TSStreamType streamType = (TSStreamType)data[pos++];
+            var streamType = (TSStreamType)data[pos++];
             switch (streamType)
             {
                 case TSStreamType.MVC_VIDEO:
@@ -580,11 +579,11 @@ namespace BDInfo
                 case TSStreamType.MPEG2_VIDEO:
                 case TSStreamType.VC1_VIDEO:
 
-                    TSVideoFormat videoFormat = (TSVideoFormat)
+                    var videoFormat = (TSVideoFormat)
                         (data[pos] >> 4);
-                    TSFrameRate frameRate = (TSFrameRate)
+                    var frameRate = (TSFrameRate)
                         (data[pos] & 0xF);
-                    TSAspectRatio aspectRatio = (TSAspectRatio)
+                    var aspectRatio = (TSAspectRatio)
                         (data[pos + 1] >> 4);
 
                     stream = new TSVideoStream();
@@ -618,9 +617,9 @@ namespace BDInfo
 
                     int audioFormat = ReadByte(data, ref pos);
 
-                    TSChannelLayout channelLayout = (TSChannelLayout)
+                    var channelLayout = (TSChannelLayout)
                         (audioFormat >> 4);
-                    TSSampleRate sampleRate = (TSSampleRate)
+                    var sampleRate = (TSSampleRate)
                         (audioFormat & 0xF);
 
                     string audioLanguage = ReadString(data, 3, ref pos);
@@ -713,7 +712,7 @@ namespace BDInfo
             {
                 referenceClip = StreamClips[0];
             }
-            foreach (TSStreamClip clip in StreamClips)
+            foreach (var clip in StreamClips)
             {
                 if (clip.StreamClipFile.Streams.Count > referenceClip.StreamClipFile.Streams.Count)
                 {
@@ -739,12 +738,12 @@ namespace BDInfo
                 }
             }
 
-            foreach (TSStream clipStream
+            foreach (var clipStream
                 in referenceClip.StreamClipFile.Streams.Values)
             {
                 if (!Streams.ContainsKey(clipStream.PID))
                 {
-                    TSStream stream = clipStream.Clone();
+                    var stream = clipStream.Clone();
                     Streams[clipStream.PID] = stream;
 
                     if (!IsCustom && !PlaylistStreams.ContainsKey(stream.PID))
@@ -780,7 +779,7 @@ namespace BDInfo
                     referenceClip.StreamFile.Streams.ContainsKey(4114) &&
                     !Streams.ContainsKey(4114))
                 {
-                    TSStream stream = referenceClip.StreamFile.Streams[4114].Clone();
+                    var stream = referenceClip.StreamFile.Streams[4114].Clone();
                     Streams[4114] = stream;
                     if (stream.IsVideoStream)
                     {
@@ -788,12 +787,12 @@ namespace BDInfo
                     }
                 }
 
-                foreach (TSStream clipStream
+                foreach (var clipStream
                     in referenceClip.StreamFile.Streams.Values)
                 {
                     if (Streams.ContainsKey(clipStream.PID))
                     {
-                        TSStream stream = Streams[clipStream.PID];
+                        var stream = Streams[clipStream.PID];
 
                         if (stream.StreamType != clipStream.StreamType) continue;
 
@@ -812,8 +811,8 @@ namespace BDInfo
                         else if (stream.IsAudioStream &&
                             clipStream.IsAudioStream)
                         {
-                            TSAudioStream audioStream = (TSAudioStream)stream;
-                            TSAudioStream clipAudioStream = (TSAudioStream)clipStream;
+                            var audioStream = (TSAudioStream)stream;
+                            var clipAudioStream = (TSAudioStream)clipStream;
 
                             if (clipAudioStream.ChannelCount > audioStream.ChannelCount)
                             {
@@ -864,7 +863,7 @@ namespace BDInfo
                 SortedStreams.Add(stream);
                 for (int i = 0; i < AngleCount; i++)
                 {
-                    TSStream angleStream = stream.Clone();
+                    var angleStream = stream.Clone();
                     angleStream.AngleIndex = i + 1;
                     AngleStreams[i][angleStream.PID] = angleStream;
                     SortedStreams.Add(angleStream);
@@ -901,7 +900,7 @@ namespace BDInfo
 
         public void ClearBitrates()
         {
-            foreach (TSStreamClip clip in StreamClips)
+            foreach (var clip in StreamClips)
             {
                 clip.PayloadBytes = 0;
                 clip.PacketCount = 0;
@@ -909,7 +908,7 @@ namespace BDInfo
 
                 if (clip.StreamFile != null)
                 {
-                    foreach (TSStream stream in clip.StreamFile.Streams.Values)
+                    foreach (var stream in clip.StreamFile.Streams.Values)
                     {
                         stream.PayloadBytes = 0;
                         stream.PacketCount = 0;
@@ -924,7 +923,7 @@ namespace BDInfo
                 }
             }
 
-            foreach (TSStream stream in SortedStreams)
+            foreach (var stream in SortedStreams)
             {
                 stream.PayloadBytes = 0;
                 stream.PacketCount = 0;

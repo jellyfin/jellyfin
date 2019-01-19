@@ -59,8 +59,8 @@ namespace NLangDetect.Core.Utils
             ICollection<string> keys = freq.Keys;
             int roman = 0;
             // TODO IMM HI: move up?
-            Regex regex1 = new Regex("^[A-Za-z]$", RegexOptions.Compiled);
-            List<string> keysToRemove = new List<string>();
+            var regex1 = new Regex("^[A-Za-z]$", RegexOptions.Compiled);
+            var keysToRemove = new List<string>();
 
             foreach (string key in keys)
             {
@@ -93,7 +93,7 @@ namespace NLangDetect.Core.Utils
                 ICollection<string> keys2 = freq.Keys;
 
                 // TODO IMM HI: move up?
-                Regex regex2 = new Regex(".*[A-Za-z].*", RegexOptions.Compiled);
+                var regex2 = new Regex(".*[A-Za-z].*", RegexOptions.Compiled);
 
                 foreach (string key in keys2)
                 {

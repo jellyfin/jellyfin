@@ -1,4 +1,3 @@
-﻿
 namespace MediaBrowser.Model.Connect
 {
     public class ConnectUserQuery

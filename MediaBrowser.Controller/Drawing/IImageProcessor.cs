@@ -1,11 +1,11 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Drawing
 {

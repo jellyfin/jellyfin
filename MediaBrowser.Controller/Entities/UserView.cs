@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Controller.Playlists;
-using MediaBrowser.Controller.TV;
-using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Model.Serialization;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Controller.TV;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -20,13 +20,7 @@ namespace MediaBrowser.Controller.Entities
         public static IPlaylistManager PlaylistManager;
 
         [IgnoreDataMember]
-        public string CollectionType
-        {
-            get
-            {
-                return ViewType;
-            }
-        }
+        public string CollectionType => ViewType;
 
         public override IEnumerable<Guid> GetIdsForAncestorQuery()
         {
@@ -48,22 +42,10 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsInheritedParentImages => false;
 
         [IgnoreDataMember]
-        public override bool SupportsPlayedStatus
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPlayedStatus => false;
 
         public override int GetChildCount(User user)
         {
@@ -188,12 +170,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPeople => false;
     }
 }

@@ -1,4 +1,4 @@
-﻿/* This file is part of OpenSubtitles Handler
+/* This file is part of OpenSubtitles Handler
    A library that handle OpenSubtitles.org XML-RPC methods.
 
    Copyright © Ala Ibrahim Hadid 2013
@@ -18,7 +18,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,9 +56,9 @@ namespace OpenSubtitlesHandler
         /// <returns>Bytes array of decompressed data</returns>
         public static byte[] Decompress(Stream dataToDecompress)
         {
-            using (MemoryStream target = new MemoryStream())
+            using (var target = new MemoryStream())
             {
-                using (System.IO.Compression.GZipStream decompressionStream = new System.IO.Compression.GZipStream(dataToDecompress, System.IO.Compression.CompressionMode.Decompress))
+                using (var decompressionStream = new System.IO.Compression.GZipStream(dataToDecompress, System.IO.Compression.CompressionMode.Decompress))
                 {
                     decompressionStream.CopyTo(target);
                 }
@@ -117,7 +116,7 @@ namespace OpenSubtitlesHandler
             using (responseStream)
             {
                 // Handle response, should be XML text.
-                List<byte> data = new List<byte>();
+                var data = new List<byte>();
                 while (true)
                 {
                     int r = responseStream.ReadByte();

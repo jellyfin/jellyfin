@@ -1,6 +1,6 @@
-﻿using System;
-using MediaBrowser.Model.System;
+using System;
 using System.Runtime.InteropServices;
+using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.EnvironmentInfo
 {

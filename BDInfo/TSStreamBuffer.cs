@@ -1,4 +1,4 @@
-﻿//============================================================================
+//============================================================================
 // BDInfo - Blu-ray Video and Audio Analysis Tool
 // Copyright © 2010 Cinema Squid
 //
@@ -37,21 +37,9 @@ namespace BDInfo
             Stream = new MemoryStream(Buffer);
         }
 
-        public long Length
-        {
-            get
-            {
-                return (long)BufferLength;
-            }
-        }
+        public long Length => (long)BufferLength;
 
-        public long Position
-        {
-            get
-            {
-                return Stream.Position;
-            }
-        }
+        public long Position => Stream.Position;
 
         public void Add(
             byte[] buffer,
@@ -123,7 +111,7 @@ namespace BDInfo
                 data += (Stream.ReadByte() << shift);
                 shift -= 8;
             }
-            BitVector32 vector = new BitVector32(data);
+            var vector = new BitVector32(data);
 
             int value = 0;
             for (int i = SkipBits; i < SkipBits + bits; i++)

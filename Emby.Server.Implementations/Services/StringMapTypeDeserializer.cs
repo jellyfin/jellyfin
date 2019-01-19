@@ -11,14 +11,14 @@ namespace Emby.Server.Implementations.Services
     {
         internal class PropertySerializerEntry
         {
-            public PropertySerializerEntry(Action<object,object> propertySetFn, Func<string, object> propertyParseStringFn)
+            public PropertySerializerEntry(Action<object, object> propertySetFn, Func<string, object> propertyParseStringFn)
             {
                 PropertySetFn = propertySetFn;
                 PropertyParseStringFn = propertyParseStringFn;
             }
 
             public Action<object, object> PropertySetFn;
-            public Func<string,object> PropertyParseStringFn;
+            public Func<string, object> PropertyParseStringFn;
             public Type PropertyType;
         }
 

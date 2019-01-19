@@ -1,6 +1,6 @@
-﻿using System.IO;
-using System.Threading;
 using System;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 

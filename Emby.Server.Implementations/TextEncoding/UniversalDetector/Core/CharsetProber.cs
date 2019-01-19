@@ -40,7 +40,8 @@ using System.IO;
 
 namespace UniversalDetector.Core
 {
-    public enum ProbingState {
+    public enum ProbingState
+    {
         Detecting = 0, // no sure answer yet, but caller can ask for confidence
         FoundIt = 1,   // positive answer
         NotMe = 2      // negative answer
@@ -107,21 +108,27 @@ namespace UniversalDetector.Core
         {
             byte[] result = null;
 
-            using (MemoryStream ms = new MemoryStream(buf.Length)) {
+            using (var ms = new MemoryStream(buf.Length))
+            {
 
                 bool meetMSB = false;
                 int max = offset + len;
                 int prev = offset;
                 int cur = offset;
 
-                while (cur < max) {
+                while (cur < max)
+                {
                     byte b = buf[cur];
 
-                    if ((b & 0x80) != 0) {
+                    if ((b & 0x80) != 0)
+                    {
                         meetMSB = true;
-                    } else if (b < CAPITAL_A || (b > CAPITAL_Z && b < SMALL_A)
-                               || b > SMALL_Z) {
-                        if (meetMSB && cur > prev) {
+                    }
+                    else if (b < CAPITAL_A || (b > CAPITAL_Z && b < SMALL_A)
+                             || b > SMALL_Z)
+                    {
+                        if (meetMSB && cur > prev)
+                        {
                             ms.Write(buf, prev, cur - prev);
                             ms.WriteByte(SPACE);
                             meetMSB = false;
@@ -149,14 +156,16 @@ namespace UniversalDetector.Core
         {
             byte[] result = null;
 
-            using (MemoryStream ms = new MemoryStream(buf.Length)) {
+            using (var ms = new MemoryStream(buf.Length))
+            {
 
                 bool inTag = false;
                 int max = offset + len;
                 int prev = offset;
                 int cur = offset;
 
-                while (cur < max) {
+                while (cur < max)
+                {
 
                     byte b = buf[cur];
 
@@ -167,8 +176,10 @@ namespace UniversalDetector.Core
 
                     // it's ascii, but it's not a letter
                     if ((b & 0x80) == 0 && (b < CAPITAL_A || b > SMALL_Z
-                           || (b > CAPITAL_Z && b < SMALL_A))) {
-                        if (cur > prev && !inTag) {
+                           || (b > CAPITAL_Z && b < SMALL_A)))
+                    {
+                        if (cur > prev && !inTag)
+                        {
                             ms.Write(buf, prev, cur - prev);
                             ms.WriteByte(SPACE);
                         }

@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Text;
 using SocketHttpListener.Primitives;
-using System.Threading;
-using MediaBrowser.Model.IO;
 
 namespace SocketHttpListener.Net
 {
@@ -39,7 +38,7 @@ namespace SocketHttpListener.Net
 
         public Version ProtocolVersion
         {
-            get { return _version; }
+            get => _version;
             set
             {
                 CheckDisposed();
@@ -58,7 +57,7 @@ namespace SocketHttpListener.Net
 
         public int StatusCode
         {
-            get { return _statusCode; }
+            get => _statusCode;
             set
             {
                 CheckDisposed();
@@ -264,8 +263,8 @@ namespace SocketHttpListener.Net
                 ComputeCookies();
             }
 
-            Encoding encoding = _textEncoding.GetDefaultEncoding();
-            StreamWriter writer = new StreamWriter(ms, encoding, 256);
+            var encoding = _textEncoding.GetDefaultEncoding();
+            var writer = new StreamWriter(ms, encoding, 256);
             writer.Write("HTTP/1.1 {0} ", _statusCode); // "1.1" matches Windows implementation, which ignores the response version
             writer.Flush();
             byte[] statusDescriptionBytes = WebHeaderEncoding.GetBytes(StatusDescription);

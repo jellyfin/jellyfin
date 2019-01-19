@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
@@ -441,7 +440,8 @@ namespace SocketHttpListener
                         continue;
                     }
                 }
-                else {
+                else
+                {
                 }
 
                 buffer.Append(c);
@@ -932,9 +932,8 @@ namespace SocketHttpListener
         /// </param>
         public static Uri ToUri(this string uriString)
         {
-            Uri res;
             return Uri.TryCreate(
-                     uriString, uriString.MaybeUri() ? UriKind.Absolute : UriKind.Relative, out res)
+                     uriString, uriString.MaybeUri() ? UriKind.Absolute : UriKind.Relative, out var res)
                    ? res
                    : null;
         }

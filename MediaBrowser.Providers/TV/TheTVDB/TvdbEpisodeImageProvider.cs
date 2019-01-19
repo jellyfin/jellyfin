@@ -1,18 +1,18 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -30,10 +30,7 @@ namespace MediaBrowser.Providers.TV
             _fileSystem = fileSystem;
         }
 
-        public string Name
-        {
-            get { return "TheTVDB"; }
-        }
+        public string Name => "TheTVDB";
 
         public bool Supports(BaseItem item)
         {
@@ -97,10 +94,8 @@ namespace MediaBrowser.Providers.TV
 
                                     if (!string.IsNullOrWhiteSpace(val))
                                     {
-                                        int rval;
-
                                         // int.TryParse is local aware, so it can be probamatic, force us culture
-                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var rval))
                                         {
                                             width = rval;
                                         }
@@ -114,10 +109,8 @@ namespace MediaBrowser.Providers.TV
 
                                     if (!string.IsNullOrWhiteSpace(val))
                                     {
-                                        int rval;
-
                                         // int.TryParse is local aware, so it can be probamatic, force us culture
-                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var rval))
                                         {
                                             height = rval;
                                         }
@@ -163,10 +156,7 @@ namespace MediaBrowser.Providers.TV
             };
         }
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

@@ -1,20 +1,15 @@
-using MediaBrowser.Controller.Entities.Audio;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Querying;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Collections;
-using MediaBrowser.Model.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
 {

@@ -51,7 +51,8 @@ namespace UniversalDetector.Core
             Reset();
         }
 
-        public override string GetCharsetName() {
+        public override string GetCharsetName()
+        {
             return "UTF-8";
         }
 
@@ -67,21 +68,25 @@ namespace UniversalDetector.Core
             int codingState = SMModel.START;
             int max = offset + len;
 
-            for (int i = offset; i < max; i++) {
+            for (int i = offset; i < max; i++)
+            {
 
                 codingState = codingSM.NextState(buf[i]);
 
-                if (codingState == SMModel.ERROR) {
+                if (codingState == SMModel.ERROR)
+                {
                     state = ProbingState.NotMe;
                     break;
                 }
 
-                if (codingState == SMModel.ITSME) {
+                if (codingState == SMModel.ITSME)
+                {
                     state = ProbingState.FoundIt;
                     break;
                 }
 
-                if (codingState == SMModel.START) {
+                if (codingState == SMModel.START)
+                {
                     if (codingSM.CurrentCharLen >= 2)
                         numOfMBChar++;
                 }
@@ -98,11 +103,14 @@ namespace UniversalDetector.Core
             float unlike = 0.99f;
             float confidence = 0.0f;
 
-            if (numOfMBChar < 6) {
+            if (numOfMBChar < 6)
+            {
                 for (int i = 0; i < numOfMBChar; i++)
                     unlike *= ONE_CHAR_PROB;
                 confidence = 1.0f - unlike;
-            } else {
+            }
+            else
+            {
                 confidence = 0.99f;
             }
             return confidence;

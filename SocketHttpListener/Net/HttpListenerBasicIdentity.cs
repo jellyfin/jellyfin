@@ -1,4 +1,4 @@
-﻿using System.Security.Principal;
+using System.Security.Principal;
 
 namespace SocketHttpListener.Net
 {
@@ -12,10 +12,7 @@ namespace SocketHttpListener.Net
             this.password = password;
         }
 
-        public virtual string Password
-        {
-            get { return password; }
-        }
+        public virtual string Password => password;
     }
 
     public class GenericIdentity : IIdentity
@@ -43,28 +40,10 @@ namespace SocketHttpListener.Net
             m_type = type;
         }
 
-        public virtual string Name
-        {
-            get
-            {
-                return m_name;
-            }
-        }
+        public virtual string Name => m_name;
 
-        public virtual string AuthenticationType
-        {
-            get
-            {
-                return m_type;
-            }
-        }
+        public virtual string AuthenticationType => m_type;
 
-        public virtual bool IsAuthenticated
-        {
-            get
-            {
-                return !m_name.Equals("");
-            }
-        }
+        public virtual bool IsAuthenticated => !m_name.Equals("");
     }
 }

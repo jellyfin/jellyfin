@@ -16,14 +16,8 @@ namespace MediaBrowser.Model.Drawing
         /// <value>The height.</value>
         public double Height
         {
-            get
-            {
-                return _height;
-            }
-            set
-            {
-                _height = value;
-            }
+            get => _height;
+            set => _height = value;
         }
 
         /// <summary>
@@ -32,8 +26,8 @@ namespace MediaBrowser.Model.Drawing
         /// <value>The width.</value>
         public double Width
         {
-            get { return _width; }
-            set { _width = value; }
+            get => _width;
+            set => _width = value;
         }
 
         public bool Equals(ImageSize size)
@@ -75,9 +69,7 @@ namespace MediaBrowser.Model.Drawing
 
                 if (parts.Length == 2)
                 {
-                    double val;
-
-                    if (double.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out val))
+                    if (double.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var val))
                     {
                         _width = val;
                     }

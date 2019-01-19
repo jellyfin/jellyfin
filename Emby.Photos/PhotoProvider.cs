@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,6 @@ using TagLib;
 using TagLib.IFD;
 using TagLib.IFD.Entries;
 using TagLib.IFD.Tags;
-using MediaBrowser.Model.MediaInfo;
 
 namespace Emby.Photos
 {
@@ -145,8 +145,7 @@ namespace Emby.Photos
                             }
                             else
                             {
-                                MediaBrowser.Model.Drawing.ImageOrientation orientation;
-                                if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out orientation))
+                                if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out ImageOrientation orientation))
                                 {
                                     item.Orientation = orientation;
                                 }
@@ -200,9 +199,6 @@ namespace Emby.Photos
             return Task.FromResult(result);
         }
 
-        public string Name
-        {
-            get { return "Embedded Information"; }
-        }
+        public string Name => "Embedded Information";
     }
 }

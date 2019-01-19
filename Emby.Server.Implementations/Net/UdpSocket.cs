@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -133,8 +133,8 @@ namespace Emby.Server.Implementations.Net
         {
             ThrowIfDisposed();
 
-            IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-            EndPoint remoteEndPoint = (EndPoint)sender;
+            var sender = new IPEndPoint(IPAddress.Any, 0);
+            var remoteEndPoint = (EndPoint)sender;
 
             var receivedBytes = _Socket.EndReceiveFrom(result, ref remoteEndPoint);
 

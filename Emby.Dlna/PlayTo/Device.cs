@@ -1,21 +1,17 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using Emby.Dlna.Common;
-using Emby.Dlna.Ssdp;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
-using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Emby.Dlna.Common;
 using Emby.Dlna.Server;
+using Emby.Dlna.Ssdp;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Threading;
-using MediaBrowser.Model.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -39,10 +35,7 @@ namespace Emby.Dlna.PlayTo
                 RefreshVolumeIfNeeded();
                 return _volume;
             }
-            set
-            {
-                _volume = value;
-            }
+            set => _volume = value;
         }
 
         public TimeSpan? Duration { get; set; }
@@ -50,41 +43,17 @@ namespace Emby.Dlna.PlayTo
         private TimeSpan _position = TimeSpan.FromSeconds(0);
         public TimeSpan Position
         {
-            get
-            {
-                return _position;
-            }
-            set
-            {
-                _position = value;
-            }
+            get => _position;
+            set => _position = value;
         }
 
         public TRANSPORTSTATE TransportState { get; private set; }
 
-        public bool IsPlaying
-        {
-            get
-            {
-                return TransportState == TRANSPORTSTATE.PLAYING;
-            }
-        }
+        public bool IsPlaying => TransportState == TRANSPORTSTATE.PLAYING;
 
-        public bool IsPaused
-        {
-            get
-            {
-                return TransportState == TRANSPORTSTATE.PAUSED || TransportState == TRANSPORTSTATE.PAUSED_PLAYBACK;
-            }
-        }
+        public bool IsPaused => TransportState == TRANSPORTSTATE.PAUSED || TransportState == TRANSPORTSTATE.PAUSED_PLAYBACK;
 
-        public bool IsStopped
-        {
-            get
-            {
-                return TransportState == TRANSPORTSTATE.STOPPED;
-            }
-        }
+        public bool IsStopped => TransportState == TRANSPORTSTATE.STOPPED;
 
         #endregion
 
@@ -620,9 +589,7 @@ namespace Emby.Dlna.PlayTo
 
             if (transportStateValue != null)
             {
-                TRANSPORTSTATE state;
-
-                if (Enum.TryParse(transportStateValue, true, out state))
+                if (Enum.TryParse(transportStateValue, true, out TRANSPORTSTATE state))
                 {
                     return state;
                 }

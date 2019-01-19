@@ -8,7 +8,7 @@
     <ProjectReference Include="..\..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
   </ItemGroup>
-  
+
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>

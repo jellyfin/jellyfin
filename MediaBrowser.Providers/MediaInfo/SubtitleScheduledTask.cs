@@ -1,23 +1,19 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Subtitles;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -40,20 +36,11 @@ namespace MediaBrowser.Providers.MediaInfo
             _json = json;
         }
 
-        public string Name
-        {
-            get { return "Download missing subtitles"; }
-        }
+        public string Name => "Download missing subtitles";
 
-        public string Description
-        {
-            get { return "Searches the internet for missing subtitles based on metadata configuration."; }
-        }
+        public string Description => "Searches the internet for missing subtitles based on metadata configuration.";
 
-        public string Category
-        {
-            get { return "Library"; }
-        }
+        public string Category => "Library";
 
         private SubtitleOptions GetOptions()
         {
@@ -217,9 +204,6 @@ namespace MediaBrowser.Providers.MediaInfo
             };
         }
 
-        public string Key
-        {
-            get { return "DownloadSubtitles"; }
-        }
+        public string Key => "DownloadSubtitles";
     }
 }

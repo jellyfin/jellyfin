@@ -1,6 +1,6 @@
-﻿using Emby.Dlna.Common;
-using MediaBrowser.Model.Dlna;
 using System.Collections.Generic;
+using Emby.Dlna.Common;
+using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -34,26 +34,14 @@ namespace Emby.Dlna.PlayTo
         private string _baseUrl = string.Empty;
         public string BaseUrl
         {
-            get
-            {
-                return _baseUrl;
-            }
-            set
-            {
-                _baseUrl = value;
-            }
+            get => _baseUrl;
+            set => _baseUrl = value;
         }
 
         public DeviceIcon Icon { get; set; }
 
         private readonly List<DeviceService> _services = new List<DeviceService>();
-        public List<DeviceService> Services
-        {
-            get
-            {
-                return _services;
-            }
-        }
+        public List<DeviceService> Services => _services;
 
         public DeviceIdentification ToDeviceIdentification()
         {

@@ -1,4 +1,3 @@
-﻿
 namespace MediaBrowser.Model.ApiClient
 {
     public class ServerDiscoveryInfo

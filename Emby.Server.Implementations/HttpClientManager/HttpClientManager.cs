@@ -13,8 +13,8 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.HttpClientManager
 {
@@ -82,7 +82,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// <param name="host">The host.</param>
         /// <param name="enableHttpCompression">if set to <c>true</c> [enable HTTP compression].</param>
         /// <returns>HttpClient.</returns>
-        /// <exception cref="System.ArgumentNullException">host</exception>
+        /// <exception cref="ArgumentNullException">host</exception>
         private HttpClientInfo GetHttpClient(string host, bool enableHttpCompression)
         {
             if (string.IsNullOrEmpty(host))
@@ -90,11 +90,9 @@ namespace Emby.Server.Implementations.HttpClientManager
                 throw new ArgumentNullException(nameof(host));
             }
 
-            HttpClientInfo client;
-
             var key = host + enableHttpCompression;
 
-            if (!_httpClients.TryGetValue(key, out client))
+            if (!_httpClients.TryGetValue(key, out var client))
             {
                 client = new HttpClientInfo();
 
@@ -125,7 +123,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             string url = options.Url;
 
-            Uri uriAddress = new Uri(url);
+            var uriAddress = new Uri(url);
             string userInfo = uriAddress.UserInfo;
             if (!string.IsNullOrWhiteSpace(userInfo))
             {
@@ -133,7 +131,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                 url = url.Replace(userInfo + "@", string.Empty);
             }
 
-            WebRequest request = CreateWebRequest(url);
+            var request = CreateWebRequest(url);
 
             if (request is HttpWebRequest httpWebRequest)
             {
@@ -188,7 +186,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         private static CredentialCache GetCredential(string url, string username, string password)
         {
             //ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3;
-            CredentialCache credentialCache = new CredentialCache();
+            var credentialCache = new CredentialCache();
             credentialCache.Add(new Uri(url), "Basic", new NetworkCredential(username, password));
             return credentialCache;
         }
@@ -541,7 +539,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (options.Progress == null)
             {
-                throw new ArgumentException("Options did not have a Progress value.",nameof(options));
+                throw new ArgumentException("Options did not have a Progress value.", nameof(options));
             }
 
             options.CancellationToken.ThrowIfCancellationRequested();
@@ -807,7 +805,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             var taskCompletion = new TaskCompletionSource<WebResponse>();
 
-            Task<WebResponse> asyncTask = Task.Factory.FromAsync<WebResponse>(request.BeginGetResponse, request.EndGetResponse, null);
+            var asyncTask = Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null);
 
             ThreadPool.RegisterWaitForSingleObject((asyncTask as IAsyncResult).AsyncWaitHandle, TimeoutCallback, request, timeout, true);
             var callback = new TaskCallback { taskCompletion = taskCompletion };
@@ -823,7 +821,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             if (timedOut && state != null)
             {
-                WebRequest request = (WebRequest)state;
+                var request = (WebRequest)state;
                 request.Abort();
             }
         }

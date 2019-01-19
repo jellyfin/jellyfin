@@ -1,15 +1,14 @@
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.LocalMetadata.Images
 {
@@ -22,15 +21,9 @@ namespace MediaBrowser.LocalMetadata.Images
             _fileSystem = fileSystem;
         }
 
-        public string Name
-        {
-            get { return "Local Images"; }
-        }
+        public string Name => "Local Images";
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public bool Supports(BaseItem item)
         {

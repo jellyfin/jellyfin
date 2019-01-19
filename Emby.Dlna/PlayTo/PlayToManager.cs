@@ -1,26 +1,23 @@
-﻿using MediaBrowser.Common.Net;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Session;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Session;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Threading;
-using System.Threading;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Devices;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -81,11 +78,9 @@ namespace Emby.Dlna.PlayTo
 
             var info = e.Argument;
 
-            string usn;
-            if (!info.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
+            if (!info.Headers.TryGetValue("USN", out string usn)) usn = string.Empty;
 
-            string nt;
-            if (!info.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
+            if (!info.Headers.TryGetValue("NT", out string nt)) nt = string.Empty;
 
             string location = info.Location.ToString();
 
@@ -158,8 +153,7 @@ namespace Emby.Dlna.PlayTo
             _logger.LogDebug("Attempting to create PlayToController from location {0}", location);
 
             _logger.LogDebug("Logging session activity from location {0}", location);
-            string uuid;
-            if (info.Headers.TryGetValue("USN", out uuid))
+            if (info.Headers.TryGetValue("USN", out string uuid))
             {
                 uuid = GetUuid(uuid);
             }

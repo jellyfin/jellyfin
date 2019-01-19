@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Model.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Net
 {
@@ -48,7 +48,7 @@ namespace MediaBrowser.Model.Net
 
         private static Dictionary<string, string> GetVideoFileExtensionsDictionary()
         {
-            Dictionary<string, string> dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (string ext in VideoFileExtensions)
             {
@@ -65,7 +65,7 @@ namespace MediaBrowser.Model.Net
 
         private static Dictionary<string, string> GetMimeTypeLookup()
         {
-            Dictionary<string, string> dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             dict.Add(".jpg", "image/jpeg");
             dict.Add(".jpeg", "image/jpeg");
@@ -132,8 +132,7 @@ namespace MediaBrowser.Model.Net
 
             var ext = Path.GetExtension(path) ?? string.Empty;
 
-            string result;
-            if (MimeTypeLookup.TryGetValue(ext, out result))
+            if (MimeTypeLookup.TryGetValue(ext, out string result))
             {
                 return result;
             }
@@ -339,8 +338,7 @@ namespace MediaBrowser.Model.Net
             // handle text/html; charset=UTF-8
             mimeType = mimeType.Split(';')[0];
 
-            string result;
-            if (ExtensionLookup.TryGetValue(mimeType, out result))
+            if (ExtensionLookup.TryGetValue(mimeType, out string result))
             {
                 return result;
             }

@@ -39,7 +39,7 @@
 namespace UniversalDetector.Core
 {
 
-    enum InputState { PureASCII=0, EscASCII=1, Highbyte=2 };
+    enum InputState { PureASCII = 0, EscASCII = 1, Highbyte = 2 };
 
     public abstract class UniversalDetector
     {
@@ -70,7 +70,8 @@ namespace UniversalDetector.Core
         protected CharsetProber escCharsetProber;
         protected string detectedCharset;
 
-        public UniversalDetector(int languageFilter) {
+        public UniversalDetector(int languageFilter)
+        {
             this.start = true;
             this.inputState = InputState.PureASCII;
             this.lastChar = 0x00;
@@ -80,7 +81,8 @@ namespace UniversalDetector.Core
 
         public virtual void Feed(byte[] buf, int offset, int len)
         {
-            if (done) {
+            if (done)
+            {
                 return;
             }
 
@@ -88,52 +90,60 @@ namespace UniversalDetector.Core
                 gotData = true;
 
             // If the data starts with BOM, we know it is UTF
-            if (start) {
+            if (start)
+            {
                 start = false;
-                if (len > 3) {
-                    switch (buf[0]) {
-                    case 0xEF:
-                        if (0xBB == buf[1] && 0xBF == buf[2])
-                            detectedCharset = "UTF-8";
-                        break;
-                    case 0xFE:
-                        if (0xFF == buf[1] && 0x00 == buf[2] && 0x00 == buf[3])
-                            // FE FF 00 00  UCS-4, unusual octet order BOM (3412)
-                            detectedCharset = "X-ISO-10646-UCS-4-3412";
-                        else if (0xFF == buf[1])
-                            detectedCharset = "UTF-16BE";
-                        break;
-                    case 0x00:
-                        if (0x00 == buf[1] && 0xFE == buf[2] && 0xFF == buf[3])
-                            detectedCharset = "UTF-32BE";
-                        else if (0x00 == buf[1] && 0xFF == buf[2] && 0xFE == buf[3])
-                            // 00 00 FF FE  UCS-4, unusual octet order BOM (2143)
-                            detectedCharset = "X-ISO-10646-UCS-4-2143";
-                        break;
-                    case 0xFF:
-                        if (0xFE == buf[1] && 0x00 == buf[2] && 0x00 == buf[3])
-                            detectedCharset = "UTF-32LE";
-                        else if (0xFE == buf[1])
-                            detectedCharset = "UTF-16LE";
-                        break;
+                if (len > 3)
+                {
+                    switch (buf[0])
+                    {
+                        case 0xEF:
+                            if (0xBB == buf[1] && 0xBF == buf[2])
+                                detectedCharset = "UTF-8";
+                            break;
+                        case 0xFE:
+                            if (0xFF == buf[1] && 0x00 == buf[2] && 0x00 == buf[3])
+                                // FE FF 00 00  UCS-4, unusual octet order BOM (3412)
+                                detectedCharset = "X-ISO-10646-UCS-4-3412";
+                            else if (0xFF == buf[1])
+                                detectedCharset = "UTF-16BE";
+                            break;
+                        case 0x00:
+                            if (0x00 == buf[1] && 0xFE == buf[2] && 0xFF == buf[3])
+                                detectedCharset = "UTF-32BE";
+                            else if (0x00 == buf[1] && 0xFF == buf[2] && 0xFE == buf[3])
+                                // 00 00 FF FE  UCS-4, unusual octet order BOM (2143)
+                                detectedCharset = "X-ISO-10646-UCS-4-2143";
+                            break;
+                        case 0xFF:
+                            if (0xFE == buf[1] && 0x00 == buf[2] && 0x00 == buf[3])
+                                detectedCharset = "UTF-32LE";
+                            else if (0xFE == buf[1])
+                                detectedCharset = "UTF-16LE";
+                            break;
                     }  // switch
                 }
-                if (detectedCharset != null) {
+                if (detectedCharset != null)
+                {
                     done = true;
                     return;
                 }
             }
 
-            for (int i = 0; i < len; i++) {
+            for (int i = 0; i < len; i++)
+            {
 
                 // other than 0xa0, if every other character is ascii, the page is ascii
-                if ((buf[i] & 0x80) != 0 && buf[i] != 0xA0)  {
+                if ((buf[i] & 0x80) != 0 && buf[i] != 0xA0)
+                {
                     // we got a non-ascii byte (high-byte)
-                    if (inputState != InputState.Highbyte) {
+                    if (inputState != InputState.Highbyte)
+                    {
                         inputState = InputState.Highbyte;
 
                         // kill EscCharsetProber if it is active
-                        if (escCharsetProber != null) {
+                        if (escCharsetProber != null)
+                        {
                             escCharsetProber = null;
                         }
 
@@ -145,9 +155,12 @@ namespace UniversalDetector.Core
                         if (charsetProbers[2] == null)
                             charsetProbers[2] = new Latin1Prober();
                     }
-                } else {
+                }
+                else
+                {
                     if (inputState == InputState.PureASCII &&
-                        (buf[i] == 0x33 || (buf[i] == 0x7B && lastChar == 0x7E))) {
+                        (buf[i] == 0x33 || (buf[i] == 0x7B && lastChar == 0x7E)))
+                    {
                         // found escape character or HZ "~{"
                         inputState = InputState.EscASCII;
                     }
@@ -155,27 +168,33 @@ namespace UniversalDetector.Core
                 }
             }
 
-            ProbingState st = ProbingState.NotMe;
+            var st = ProbingState.NotMe;
 
-            switch (inputState) {
+            switch (inputState)
+            {
                 case InputState.EscASCII:
-                    if (escCharsetProber == null) {
+                    if (escCharsetProber == null)
+                    {
                         escCharsetProber = new EscCharsetProber();
                     }
                     st = escCharsetProber.HandleData(buf, offset, len);
-                    if (st == ProbingState.FoundIt) {
+                    if (st == ProbingState.FoundIt)
+                    {
                         done = true;
                         detectedCharset = escCharsetProber.GetCharsetName();
                     }
                     break;
                 case InputState.Highbyte:
-                    for (int i = 0; i < PROBERS_NUM; i++) {
-                        if (charsetProbers[i] != null) {
+                    for (int i = 0; i < PROBERS_NUM; i++)
+                    {
+                        if (charsetProbers[i] != null)
+                        {
                             st = charsetProbers[i].HandleData(buf, offset, len);
-                            #if DEBUG
+#if DEBUG
                             charsetProbers[i].DumpStatus();
-                            #endif
-                            if (st == ProbingState.FoundIt) {
+#endif
+                            if (st == ProbingState.FoundIt)
+                            {
                                 done = true;
                                 detectedCharset = charsetProbers[i].GetCharsetName();
                                 return;
@@ -195,38 +214,47 @@ namespace UniversalDetector.Core
         /// </summary>
         public virtual void DataEnd()
         {
-            if (!gotData) {
+            if (!gotData)
+            {
                 // we haven't got any data yet, return immediately
                 // caller program sometimes call DataEnd before anything has
                 // been sent to detector
                 return;
             }
 
-            if (detectedCharset != null) {
+            if (detectedCharset != null)
+            {
                 done = true;
                 Report(detectedCharset, 1.0f);
                 return;
             }
 
-            if (inputState == InputState.Highbyte) {
+            if (inputState == InputState.Highbyte)
+            {
                 float proberConfidence = 0.0f;
                 float maxProberConfidence = 0.0f;
                 int maxProber = 0;
-                for (int i = 0; i < PROBERS_NUM; i++) {
-                    if (charsetProbers[i] != null) {
+                for (int i = 0; i < PROBERS_NUM; i++)
+                {
+                    if (charsetProbers[i] != null)
+                    {
                         proberConfidence = charsetProbers[i].GetConfidence();
-                        if (proberConfidence > maxProberConfidence) {
+                        if (proberConfidence > maxProberConfidence)
+                        {
                             maxProberConfidence = proberConfidence;
                             maxProber = i;
                         }
                     }
                 }
 
-                if (maxProberConfidence > MINIMUM_THRESHOLD) {
+                if (maxProberConfidence > MINIMUM_THRESHOLD)
+                {
                     Report(charsetProbers[maxProber].GetCharsetName(), maxProberConfidence);
                 }
 
-            } else if (inputState == InputState.PureASCII) {
+            }
+            else if (inputState == InputState.PureASCII)
+            {
                 Report("ASCII", 1.0f);
             }
         }

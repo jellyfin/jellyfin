@@ -1,6 +1,5 @@
-using MediaBrowser.Controller.Entities;
 using System.Collections.Generic;
-using System.Threading;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Persistence
 {

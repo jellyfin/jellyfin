@@ -1,7 +1,7 @@
-﻿using Emby.Naming.Common;
 using System;
 using System.IO;
 using System.Linq;
+using Emby.Naming.Common;
 
 namespace Emby.Naming.Video
 {
@@ -40,7 +40,7 @@ namespace Emby.Naming.Video
         /// <param name="path">The path.</param>
         /// <param name="IsDirectory">if set to <c>true</c> [is folder].</param>
         /// <returns>VideoFileInfo.</returns>
-        /// <exception cref="System.ArgumentNullException">path</exception>
+        /// <exception cref="ArgumentNullException">path</exception>
         public VideoFileInfo Resolve(string path, bool IsDirectory, bool parseName = true)
         {
             if (string.IsNullOrEmpty(path))

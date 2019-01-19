@@ -1,5 +1,5 @@
-using Emby.Dlna.Common;
 using System.Collections.Generic;
+using Emby.Dlna.Common;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
 {
@@ -7,7 +7,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
     {
         public IEnumerable<ServiceAction> GetActions()
         {
-            return new []
+            return new[]
             {
                 GetIsValidated(),
                 GetIsAuthorized(),

@@ -1,19 +1,3 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using Emby.Dlna.Didl;
-using Emby.Dlna.Server;
-using Emby.Dlna.Service;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -21,17 +5,28 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Xml;
+using Emby.Dlna.Didl;
+using Emby.Dlna.Service;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Xml;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Controller.LiveTv;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.ContentDirectory
 {
@@ -197,9 +192,7 @@ namespace Emby.Dlna.ContentDirectory
 
         public string GetValueOrDefault(IDictionary<string, string> sparams, string key, string defaultValue)
         {
-            string val;
-
-            if (sparams.TryGetValue(key, out val))
+            if (sparams.TryGetValue(key, out string val))
             {
                 return val;
             }
@@ -221,14 +214,12 @@ namespace Emby.Dlna.ContentDirectory
             int? requestedCount = null;
             int? start = 0;
 
-            int requestedVal;
-            if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out requestedVal) && requestedVal > 0)
+            if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out var requestedVal) && requestedVal > 0)
             {
                 requestedCount = requestedVal;
             }
 
-            int startVal;
-            if (sparams.ContainsKey("StartingIndex") && int.TryParse(sparams["StartingIndex"], out startVal) && startVal > 0)
+            if (sparams.ContainsKey("StartingIndex") && int.TryParse(sparams["StartingIndex"], out var startVal) && startVal > 0)
             {
                 start = startVal;
             }
@@ -247,7 +238,7 @@ namespace Emby.Dlna.ContentDirectory
 
             var dlnaOptions = _config.GetDlnaConfiguration();
 
-            using (XmlWriter writer = XmlWriter.Create(builder, settings))
+            using (var writer = XmlWriter.Create(builder, settings))
             {
                 //writer.WriteStartDocument();
 
@@ -311,7 +302,7 @@ namespace Emby.Dlna.ContentDirectory
 
             var resXML = builder.ToString();
 
-            return new []
+            return new[]
                 {
                     new KeyValuePair<string,string>("Result", resXML),
                     new KeyValuePair<string,string>("NumberReturned", provided.ToString(_usCulture)),
@@ -339,14 +330,12 @@ namespace Emby.Dlna.ContentDirectory
             int? requestedCount = null;
             int? start = 0;
 
-            int requestedVal;
-            if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out requestedVal) && requestedVal > 0)
+            if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out var requestedVal) && requestedVal > 0)
             {
                 requestedCount = requestedVal;
             }
 
-            int startVal;
-            if (sparams.ContainsKey("StartingIndex") && int.TryParse(sparams["StartingIndex"], out startVal) && startVal > 0)
+            if (sparams.ContainsKey("StartingIndex") && int.TryParse(sparams["StartingIndex"], out var startVal) && startVal > 0)
             {
                 start = startVal;
             }
@@ -363,7 +352,7 @@ namespace Emby.Dlna.ContentDirectory
             int totalCount = 0;
             int provided = 0;
 
-            using (XmlWriter writer = XmlWriter.Create(builder, settings))
+            using (var writer = XmlWriter.Create(builder, settings))
             {
                 //writer.WriteStartDocument();
 
@@ -1144,7 +1133,7 @@ namespace Emby.Dlna.ContentDirectory
                 StartIndex = query.StartIndex,
                 UserId = query.User.Id
 
-            }, new [] { parent }, query.DtoOptions);
+            }, new[] { parent }, query.DtoOptions);
 
             return ToResult(result);
         }
@@ -1298,7 +1287,6 @@ namespace Emby.Dlna.ContentDirectory
 
         private ServerItem ParseItemId(string id, User user)
         {
-            Guid itemId;
             StubType? stubType = null;
 
             // After using PlayTo, MediaMonkey sends a request to the server trying to get item info
@@ -1324,7 +1312,7 @@ namespace Emby.Dlna.ContentDirectory
                 }
             }
 
-            if (Guid.TryParse(id, out itemId))
+            if (Guid.TryParse(id, out var itemId))
             {
                 var item = _libraryManager.GetItemById(itemId);
 

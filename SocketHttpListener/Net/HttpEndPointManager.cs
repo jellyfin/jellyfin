@@ -3,12 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Reflection;
-using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
-using SocketHttpListener.Primitives;
 
 namespace SocketHttpListener.Net
 {
@@ -22,7 +17,7 @@ namespace SocketHttpListener.Net
 
         public static void AddListener(ILogger logger, HttpListener listener)
         {
-            List<string> added = new List<string>();
+            var added = new List<string>();
             try
             {
                 lock ((s_ipEndPoints as ICollection).SyncRoot)
@@ -62,14 +57,13 @@ namespace SocketHttpListener.Net
                 int root = p.IndexOf('/', colon, p.Length - colon);
                 string portString = p.Substring(colon + 1, root - colon - 1);
 
-                int port;
-                if (!int.TryParse(portString, out port) || port <= 0 || port >= 65536)
+                if (!int.TryParse(portString, out var port) || port <= 0 || port >= 65536)
                 {
                     throw new HttpListenerException((int)HttpStatusCode.BadRequest, "net_invalid_port");
                 }
             }
 
-            ListenerPrefix lp = new ListenerPrefix(p);
+            var lp = new ListenerPrefix(p);
             if (lp.Host != "*" && lp.Host != "+" && Uri.CheckHostName(lp.Host) == UriHostNameType.Unknown)
                 throw new HttpListenerException((int)HttpStatusCode.BadRequest, "net_listener_host");
 
@@ -184,7 +178,7 @@ namespace SocketHttpListener.Net
 
         private static void RemovePrefixInternal(ILogger logger, string prefix, HttpListener listener)
         {
-            ListenerPrefix lp = new ListenerPrefix(prefix);
+            var lp = new ListenerPrefix(prefix);
             if (lp.Path.IndexOf('%') != -1)
                 return;
 

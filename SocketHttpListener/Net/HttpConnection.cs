@@ -3,19 +3,17 @@ using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
+using Microsoft.Extensions.Logging;
 using SocketHttpListener.Primitives;
-using System.Security.Authentication;
-
-using System.Threading;
 namespace SocketHttpListener.Net
 {
     sealed class HttpConnection
@@ -91,13 +89,7 @@ namespace SocketHttpListener.Net
             }
         }
 
-        public Stream Stream
-        {
-            get
-            {
-                return _stream;
-            }
-        }
+        public Stream Stream => _stream;
 
         public async Task Init()
         {
@@ -133,15 +125,9 @@ namespace SocketHttpListener.Net
             _context = new HttpListenerContext(this, _textEncoding);
         }
 
-        public bool IsClosed
-        {
-            get { return (_socket == null); }
-        }
+        public bool IsClosed => (_socket == null);
 
-        public int Reuses
-        {
-            get { return _reuses; }
-        }
+        public int Reuses => _reuses;
 
         public IPEndPoint LocalEndPoint
         {
@@ -155,20 +141,14 @@ namespace SocketHttpListener.Net
             }
         }
 
-        public IPEndPoint RemoteEndPoint
-        {
-            get { return _socket.RemoteEndPoint as IPEndPoint; }
-        }
+        public IPEndPoint RemoteEndPoint => _socket.RemoteEndPoint as IPEndPoint;
 
-        public bool IsSecure
-        {
-            get { return secure; }
-        }
+        public bool IsSecure => secure;
 
         public ListenerPrefix Prefix
         {
-            get { return _prefix; }
-            set { _prefix = value; }
+            get => _prefix;
+            set => _prefix = value;
         }
 
         private void OnTimeout(object unused)
@@ -232,7 +212,7 @@ namespace SocketHttpListener.Net
 
         private static void OnRead(IAsyncResult ares)
         {
-            HttpConnection cnc = (HttpConnection)ares.AsyncState;
+            var cnc = (HttpConnection)ares.AsyncState;
             cnc.OnReadInternal(ares);
         }
 

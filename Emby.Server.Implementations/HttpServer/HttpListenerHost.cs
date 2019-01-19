@@ -116,8 +116,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public Type GetServiceTypeByRequest(Type requestType)
         {
-            Type serviceType;
-            ServiceOperationsMap.TryGetValue(requestType, out serviceType);
+            ServiceOperationsMap.TryGetValue(requestType, out var serviceType);
             return serviceType;
         }
 
@@ -199,13 +198,13 @@ namespace Emby.Server.Implementations.HttpServer
         {
             switch (ex)
             {
-                case ArgumentException _:                 return 400;
-                case SecurityException _:                 return 401;
+                case ArgumentException _: return 400;
+                case SecurityException _: return 401;
                 case DirectoryNotFoundException _:
                 case FileNotFoundException _:
-                case ResourceNotFoundException _:         return 404;
+                case ResourceNotFoundException _: return 404;
                 case RemoteServiceUnavailableException _: return 502;
-                default:                                  return 500;
+                default: return 500;
             }
         }
 
@@ -673,8 +672,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return null;
             }
 
-            string contentType;
-            var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, out contentType);
+            var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, out string contentType);
 
             if (restPath != null)
             {

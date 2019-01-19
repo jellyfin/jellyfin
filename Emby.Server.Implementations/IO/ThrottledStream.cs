@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -264,7 +264,7 @@ namespace Emby.Server.Implementations.IO
         {
             if (!ThrottleCheck(bufferSizeInBytes))
             {
-                return ;
+                return;
             }
 
             _byteCount += bufferSizeInBytes;

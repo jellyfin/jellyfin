@@ -1,8 +1,7 @@
-﻿using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.MediaInfo;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
+using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -24,7 +23,7 @@ namespace MediaBrowser.Model.Dlna
             int? numVideoStreams,
             int? numAudioStreams,
             string videoCodecTag,
-            bool? isAvc )
+            bool? isAvc)
         {
             switch (condition.Property)
             {
@@ -130,8 +129,7 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            int expected;
-            if (int.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out expected))
+            if (int.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
             {
                 switch (condition.Condition)
                 {
@@ -185,8 +183,7 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            bool expected;
-            if (bool.TryParse(condition.Value, out expected))
+            if (bool.TryParse(condition.Value, out var expected))
             {
                 switch (condition.Condition)
                 {
@@ -210,8 +207,7 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            float expected;
-            if (float.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out expected))
+            if (float.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
             {
                 switch (condition.Condition)
                 {
@@ -239,8 +235,7 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            double expected;
-            if (double.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out expected))
+            if (double.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
             {
                 switch (condition.Condition)
                 {
@@ -268,7 +263,7 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            TransportStreamTimestamp expected = (TransportStreamTimestamp)Enum.Parse(typeof(TransportStreamTimestamp), condition.Value, true);
+            var expected = (TransportStreamTimestamp)Enum.Parse(typeof(TransportStreamTimestamp), condition.Value, true);
 
             switch (condition.Condition)
             {

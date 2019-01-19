@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -968,8 +968,7 @@ namespace MediaBrowser.Providers.Manager
         {
             lock (_activeRefreshes)
             {
-                double value;
-                if (_activeRefreshes.TryGetValue(id, out value))
+                if (_activeRefreshes.TryGetValue(id, out double value))
                 {
                     return value;
                 }
@@ -1029,7 +1028,6 @@ namespace MediaBrowser.Providers.Manager
 
         private async Task StartProcessingRefreshQueue()
         {
-            Tuple<Guid, MetadataRefreshOptions> refreshItem;
             var libraryManager = _libraryManagerFactory();
 
             if (_disposed)
@@ -1039,7 +1037,7 @@ namespace MediaBrowser.Providers.Manager
 
             var cancellationToken = _disposeCancellationTokenSource.Token;
 
-            while (_refreshQueue.TryDequeue(out refreshItem))
+            while (_refreshQueue.TryDequeue(out Tuple<Guid, MetadataRefreshOptions> refreshItem))
             {
                 if (_disposed)
                 {

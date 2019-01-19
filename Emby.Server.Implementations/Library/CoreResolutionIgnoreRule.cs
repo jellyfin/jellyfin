@@ -1,13 +1,10 @@
-﻿using MediaBrowser.Model.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 

@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Notifications;
 using System;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Notifications;
 
 namespace MediaBrowser.Controller.Notifications
 {

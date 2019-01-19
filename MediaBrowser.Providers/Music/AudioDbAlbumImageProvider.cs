@@ -1,4 +1,7 @@
-﻿using MediaBrowser.Common.Net;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -6,9 +9,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -91,19 +91,9 @@ namespace MediaBrowser.Providers.Music
             });
         }
 
-        public string Name
-        {
-            get { return "TheAudioDB"; }
-        }
-
-        public int Order
-        {
-            get
-            {
-                // After embedded and fanart
-                return 2;
-            }
-        }
+        public string Name => "TheAudioDB";
+        // After embedded and fanart
+        public int Order => 2;
 
         public bool Supports(BaseItem item)
         {

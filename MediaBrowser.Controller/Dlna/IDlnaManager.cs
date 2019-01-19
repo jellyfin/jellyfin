@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.Dlna;
 using System.Collections.Generic;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Controller.Dlna
 {
@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="headers">The headers.</param>
         /// <returns>DeviceProfile.</returns>
-        DeviceProfile GetProfile(IDictionary<string,string> headers);
+        DeviceProfile GetProfile(IDictionary<string, string> headers);
 
         /// <summary>
         /// Gets the default profile.

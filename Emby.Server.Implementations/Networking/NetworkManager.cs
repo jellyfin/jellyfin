@@ -9,10 +9,9 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
-using System.Numerics;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Networking
 {
@@ -204,20 +203,18 @@ namespace Emby.Server.Implementations.Networking
         private Dictionary<string, List<string>> _subnetLookup = new Dictionary<string, List<string>>(StringComparer.Ordinal);
         private List<string> GetSubnets(string endpointFirstPart)
         {
-            List<string> subnets;
-
             lock (_subnetLookup)
             {
-                if (_subnetLookup.TryGetValue(endpointFirstPart, out subnets))
+                if (_subnetLookup.TryGetValue(endpointFirstPart, out var subnets))
                 {
                     return subnets;
                 }
 
                 subnets = new List<string>();
 
-                foreach (NetworkInterface adapter in NetworkInterface.GetAllNetworkInterfaces())
+                foreach (var adapter in NetworkInterface.GetAllNetworkInterfaces())
                 {
-                    foreach (UnicastIPAddressInformation unicastIPAddressInformation in adapter.GetIPProperties().UnicastAddresses)
+                    foreach (var unicastIPAddressInformation in adapter.GetIPProperties().UnicastAddresses)
                     {
                         if (unicastIPAddressInformation.Address.AddressFamily == AddressFamily.InterNetwork && endpointFirstPart == unicastIPAddressInformation.Address.ToString().Split('.')[0])
                         {
@@ -299,8 +296,7 @@ namespace Emby.Server.Implementations.Networking
                 throw new ArgumentNullException(nameof(endpoint));
             }
 
-            IPAddress address;
-            if (IPAddress.TryParse(endpoint, out address))
+            if (IPAddress.TryParse(endpoint, out var address))
             {
                 var addressString = address.ToString();
 
@@ -349,8 +345,7 @@ namespace Emby.Server.Implementations.Networking
             }
             else if (resolveHost)
             {
-                Uri uri;
-                if (Uri.TryCreate(endpoint, UriKind.RelativeOrAbsolute, out uri))
+                if (Uri.TryCreate(endpoint, UriKind.RelativeOrAbsolute, out var uri))
                 {
                     try
                     {
@@ -462,7 +457,7 @@ namespace Emby.Server.Implementations.Networking
 
         public int GetRandomUnusedUdpPort()
         {
-            IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            var localEndPoint = new IPEndPoint(IPAddress.Any, 0);
             using (var udpClient = new UdpClient(localEndPoint))
             {
                 var port = ((IPEndPoint)(udpClient.Client.LocalEndPoint)).Port;
@@ -523,8 +518,8 @@ namespace Emby.Server.Implementations.Networking
         /// <param name="endpointstring">The endpointstring.</param>
         /// <param name="defaultport">The defaultport.</param>
         /// <returns>IPEndPoint.</returns>
-        /// <exception cref="System.ArgumentException">Endpoint descriptor may not be empty.</exception>
-        /// <exception cref="System.FormatException"></exception>
+        /// <exception cref="ArgumentException">Endpoint descriptor may not be empty.</exception>
+        /// <exception cref="FormatException"></exception>
         private static async Task<IPEndPoint> Parse(string endpointstring, int defaultport)
         {
             if (string.IsNullOrEmpty(endpointstring)
@@ -586,12 +581,10 @@ namespace Emby.Server.Implementations.Networking
         /// </summary>
         /// <param name="p">The p.</param>
         /// <returns>System.Int32.</returns>
-        /// <exception cref="System.FormatException"></exception>
+        /// <exception cref="FormatException"></exception>
         private static int GetPort(string p)
         {
-            int port;
-
-            if (!int.TryParse(p, out port)
+            if (!int.TryParse(p, out var port)
              || port < IPEndPoint.MinPort
              || port > IPEndPoint.MaxPort)
             {
@@ -606,7 +599,7 @@ namespace Emby.Server.Implementations.Networking
         /// </summary>
         /// <param name="p">The p.</param>
         /// <returns>IPAddress.</returns>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         private static async Task<IPAddress> GetIPfromHost(string p)
         {
             var hosts = await Dns.GetHostAddressesAsync(p).ConfigureAwait(false);
@@ -619,8 +612,7 @@ namespace Emby.Server.Implementations.Networking
 
         public IpAddressInfo ParseIpAddress(string ipAddress)
         {
-            IpAddressInfo info;
-            if (TryParseIpAddress(ipAddress, out info))
+            if (TryParseIpAddress(ipAddress, out var info))
             {
                 return info;
             }
@@ -630,8 +622,7 @@ namespace Emby.Server.Implementations.Networking
 
         public bool TryParseIpAddress(string ipAddress, out IpAddressInfo ipAddressInfo)
         {
-            IPAddress address;
-            if (IPAddress.TryParse(ipAddress, out address))
+            if (IPAddress.TryParse(ipAddress, out var address))
             {
                 ipAddressInfo = ToIpAddressInfo(address);
                 return true;

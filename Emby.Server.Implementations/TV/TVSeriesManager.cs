@@ -1,14 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dto;
 
 namespace Emby.Server.Implementations.TV
 {
@@ -118,7 +118,7 @@ namespace Emby.Server.Implementations.TV
                 OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
                 SeriesPresentationUniqueKey = presentationUniqueKey,
                 Limit = limit,
-                DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions
+                DtoOptions = new DtoOptions
                 {
                     Fields = new ItemFields[]
                     {
@@ -196,7 +196,7 @@ namespace Emby.Server.Implementations.TV
                 IsPlayed = true,
                 Limit = 1,
                 ParentIndexNumberNotEquals = 0,
-                DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions
+                DtoOptions = new DtoOptions
                 {
                     Fields = new ItemFields[]
                     {

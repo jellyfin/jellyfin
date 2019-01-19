@@ -1,17 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
-using SocketHttpListener.Primitives;
+using Microsoft.Extensions.Logging;
 
 namespace SocketHttpListener.Net
 {
@@ -72,7 +70,7 @@ namespace SocketHttpListener.Net
         // TODO: Digest, NTLM and Negotiate require ControlPrincipal
         public AuthenticationSchemes AuthenticationSchemes
         {
-            get { return auth_schemes; }
+            get => auth_schemes;
             set
             {
                 CheckDisposed();
@@ -82,7 +80,7 @@ namespace SocketHttpListener.Net
 
         public AuthenticationSchemeSelector AuthenticationSchemeSelectorDelegate
         {
-            get { return auth_selector; }
+            get => auth_selector;
             set
             {
                 CheckDisposed();
@@ -90,15 +88,9 @@ namespace SocketHttpListener.Net
             }
         }
 
-        public bool IsListening
-        {
-            get { return listening; }
-        }
+        public bool IsListening => listening;
 
-        public static bool IsSupported
-        {
-            get { return true; }
-        }
+        public static bool IsSupported => true;
 
         public HttpListenerPrefixCollection Prefixes
         {
@@ -112,7 +104,7 @@ namespace SocketHttpListener.Net
         // TODO: use this
         public string Realm
         {
-            get { return realm; }
+            get => realm;
             set
             {
                 CheckDisposed();
@@ -122,7 +114,7 @@ namespace SocketHttpListener.Net
 
         public bool UnsafeConnectionNtlmAuthentication
         {
-            get { return unsafe_ntlm_auth; }
+            get => unsafe_ntlm_auth;
             set
             {
                 CheckDisposed();
@@ -144,10 +136,7 @@ namespace SocketHttpListener.Net
         //    }
         //}
 
-        internal X509Certificate Certificate
-        {
-            get { return _certificate; }
-        }
+        internal X509Certificate Certificate => _certificate;
 
         public void Abort()
         {

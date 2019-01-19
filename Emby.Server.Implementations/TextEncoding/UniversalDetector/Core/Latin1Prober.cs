@@ -36,7 +36,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-using System;
 
 namespace UniversalDetector.Core
 {
@@ -135,12 +134,14 @@ namespace UniversalDetector.Core
             byte[] newbuf = FilterWithEnglishLetters(buf, offset, len);
             byte charClass, freq;
 
-            for (int i = 0; i < newbuf.Length; i++) {
+            for (int i = 0; i < newbuf.Length; i++)
+            {
                 charClass = Latin1_CharToClass[newbuf[i]];
                 freq = Latin1ClassModel[lastCharClass * CLASS_NUM + charClass];
-                if (freq == 0) {
-                  state = ProbingState.NotMe;
-                  break;
+                if (freq == 0)
+                {
+                    state = ProbingState.NotMe;
+                    break;
                 }
                 freqCounter[freq]++;
                 lastCharClass = charClass;
@@ -155,13 +156,17 @@ namespace UniversalDetector.Core
 
             float confidence = 0.0f;
             int total = 0;
-            for (int i = 0; i < FREQ_CAT_NUM; i++) {
+            for (int i = 0; i < FREQ_CAT_NUM; i++)
+            {
                 total += freqCounter[i];
             }
 
-            if (total <= 0) {
+            if (total <= 0)
+            {
                 confidence = 0.0f;
-            } else {
+            }
+            else
+            {
                 confidence = freqCounter[3] * 1.0f / total;
                 confidence -= freqCounter[1] * 20.0f / total;
             }

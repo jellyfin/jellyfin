@@ -1,27 +1,26 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
 using Emby.Drawing.Common;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Threading;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Drawing
 {
@@ -75,7 +74,7 @@ namespace Emby.Drawing
 
         public IImageEncoder ImageEncoder
         {
-            get { return _imageEncoder; }
+            get => _imageEncoder;
             set
             {
                 if (value == null)
@@ -87,67 +86,44 @@ namespace Emby.Drawing
             }
         }
 
-        public string[] SupportedInputFormats
-        {
-            get
+        public string[] SupportedInputFormats =>
+            new string[]
             {
-                return new string[]
-                {
-                    "tiff",
-                    "tif",
-                    "jpeg",
-                    "jpg",
-                    "png",
-                    "aiff",
-                    "cr2",
-                    "crw",
+                "tiff",
+                "tif",
+                "jpeg",
+                "jpg",
+                "png",
+                "aiff",
+                "cr2",
+                "crw",
 
-                    // Remove until supported
-                    //"nef",
-                    "orf",
-                    "pef",
-                    "arw",
-                    "webp",
-                    "gif",
-                    "bmp",
-                    "erf",
-                    "raf",
-                    "rw2",
-                    "nrw",
-                    "dng",
-                    "ico",
-                    "astc",
-                    "ktx",
-                    "pkm",
-                    "wbmp"
-                };
-            }
-        }
+                // Remove until supported
+                //"nef",
+                "orf",
+                "pef",
+                "arw",
+                "webp",
+                "gif",
+                "bmp",
+                "erf",
+                "raf",
+                "rw2",
+                "nrw",
+                "dng",
+                "ico",
+                "astc",
+                "ktx",
+                "pkm",
+                "wbmp"
+            };
 
 
-        public bool SupportsImageCollageCreation
-        {
-            get
-            {
-                return _imageEncoder.SupportsImageCollageCreation;
-            }
-        }
+        public bool SupportsImageCollageCreation => _imageEncoder.SupportsImageCollageCreation;
 
-        private string ResizedImageCachePath
-        {
-            get
-            {
-                return Path.Combine(_appPaths.ImageCachePath, "resized-images");
-            }
-        }
+        private string ResizedImageCachePath => Path.Combine(_appPaths.ImageCachePath, "resized-images");
 
-        private string EnhancedImageCachePath
-        {
-            get
-            {
-                return Path.Combine(_appPaths.ImageCachePath, "enhanced-images");
-            }
-        }
+        private string EnhancedImageCachePath => Path.Combine(_appPaths.ImageCachePath, "enhanced-images");
 
         public void AddParts(IEnumerable<IImageEnhancer> enhancers)
         {
@@ -515,7 +491,7 @@ namespace Emby.Drawing
         /// <param name="item">The item.</param>
         /// <param name="image">The image.</param>
         /// <returns>Guid.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         public string GetImageCacheTag(BaseItem item, ItemImageInfo image)
         {
             var supportedEnhancers = GetSupportedEnhancers(item, image.Type);
@@ -547,7 +523,7 @@ namespace Emby.Drawing
         /// <param name="image">The image.</param>
         /// <param name="imageEnhancers">The image enhancers.</param>
         /// <returns>Guid.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         public string GetImageCacheTag(BaseItem item, ItemImageInfo image, IImageEnhancer[] imageEnhancers)
         {
             var originalImagePath = image.Path;
@@ -768,7 +744,7 @@ namespace Emby.Drawing
         /// <param name="uniqueName">Name of the unique.</param>
         /// <param name="fileExtension">The file extension.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// path
         /// or
         /// uniqueName
@@ -802,7 +778,7 @@ namespace Emby.Drawing
         /// <param name="path">The path.</param>
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// path
         /// or
         /// filename
@@ -870,8 +846,7 @@ namespace Emby.Drawing
         {
             lock (_locks)
             {
-                LockInfo info;
-                if (_locks.TryGetValue(key, out info))
+                if (_locks.TryGetValue(key, out LockInfo info))
                 {
                     info.Count++;
                 }

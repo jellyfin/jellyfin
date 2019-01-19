@@ -1,8 +1,8 @@
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 
@@ -67,13 +67,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets a value indicating whether this instance is directory.
         /// </summary>
         /// <value><c>true</c> if this instance is directory; otherwise, <c>false</c>.</value>
-        public bool IsDirectory
-        {
-            get
-            {
-                return FileInfo.IsDirectory;
-            }
-        }
+        public bool IsDirectory => FileInfo.IsDirectory;
 
         /// <summary>
         /// Gets a value indicating whether this instance is vf.
@@ -103,13 +97,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets a value indicating whether this instance is physical root.
         /// </summary>
         /// <value><c>true</c> if this instance is physical root; otherwise, <c>false</c>.</value>
-        public bool IsPhysicalRoot
-        {
-            get
-            {
-                return IsDirectory && BaseItem.FileSystem.AreEqual(Path, _appPaths.RootFolderPath);
-            }
-        }
+        public bool IsPhysicalRoot => IsDirectory && BaseItem.FileSystem.AreEqual(Path, _appPaths.RootFolderPath);
 
         /// <summary>
         /// Gets or sets the additional locations.
@@ -150,7 +138,7 @@ namespace MediaBrowser.Controller.Library
         /// Adds the additional location.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public void AddAdditionalLocation(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -185,7 +173,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>FileSystemInfo.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public FileSystemMetadata GetFileSystemEntryByName(string name)
         {
             if (string.IsNullOrEmpty(name))
@@ -201,7 +189,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>FileSystemInfo.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public FileSystemMetadata GetFileSystemEntryByPath(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -240,10 +228,10 @@ namespace MediaBrowser.Controller.Library
         #region Equality Overrides
 
         /// <summary>
-        /// Determines whether the specified <see cref="System.Object" /> is equal to this instance.
+        /// Determines whether the specified <see cref="object" /> is equal to this instance.
         /// </summary>
         /// <param name="obj">The object to compare with the current object.</param>
-        /// <returns><c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
+        /// <returns><c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
         public override bool Equals(object obj)
         {
             return Equals(obj as ItemResolveArgs);

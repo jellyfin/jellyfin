@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Net;
 using System.Security.Principal;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
 
 namespace SocketHttpListener.Net.WebSockets

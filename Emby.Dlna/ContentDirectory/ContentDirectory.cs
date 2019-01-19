@@ -1,18 +1,18 @@
-﻿using MediaBrowser.Common.Net;
+using System;
+using System.Collections.Generic;
+using Emby.Dlna.Service;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using Emby.Dlna.Service;
-using MediaBrowser.Model.Dlna;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.TV;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.ContentDirectory
 {

@@ -1,13 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
@@ -202,7 +200,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentNullException">user</exception>
         public void DeleteUser(User user)
         {
             if (user == null)

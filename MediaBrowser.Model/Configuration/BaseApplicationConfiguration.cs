@@ -1,5 +1,3 @@
-﻿using MediaBrowser.Model.Updates;
-
 namespace MediaBrowser.Model.Configuration
 {
     /// <summary>

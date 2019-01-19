@@ -9,8 +9,8 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.AppBase
 {
@@ -151,7 +151,7 @@ namespace Emby.Server.Implementations.AppBase
         /// Replaces the configuration.
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
-        /// <exception cref="System.ArgumentNullException">newConfiguration</exception>
+        /// <exception cref="ArgumentNullException">newConfiguration</exception>
         public virtual void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
             if (newConfiguration == null)
@@ -188,7 +188,7 @@ namespace Emby.Server.Implementations.AppBase
         /// Replaces the cache path.
         /// </summary>
         /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <exception cref="DirectoryNotFoundException"></exception>
         private void ValidateCachePath(BaseApplicationConfiguration newConfig)
         {
             var newPath = newConfig.CachePath;
@@ -284,7 +284,7 @@ namespace Emby.Server.Implementations.AppBase
                 validatingStore.Validate(currentConfiguration, configuration);
             }
 
-            NamedConfigurationUpdating?.Invoke( this, new ConfigurationUpdateEventArgs
+            NamedConfigurationUpdating?.Invoke(this, new ConfigurationUpdateEventArgs
             {
                 Key = key,
                 NewConfiguration = configuration

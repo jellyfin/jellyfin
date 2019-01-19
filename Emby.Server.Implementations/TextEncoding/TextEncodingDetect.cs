@@ -1,4 +1,4 @@
-﻿namespace Emby.Server.Implementations.TextEncoding
+namespace Emby.Server.Implementations.TextEncoding
 {
     // Copyright 2015-2016 Jonathan Bennett <jon@autoitscript.com>
     //
