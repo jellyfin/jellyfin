@@ -1,24 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <AssemblyName>jellyfin</AssemblyName>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>netcoreapp2.1</TargetFramework>
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyName>jellyfin</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <!-- We need C# 7.1 for async main-->
-        <LangVersion>latest</LangVersion>
-    </PropertyGroup>
+  <PropertyGroup>
+    <!-- We need C# 7.1 for async main-->
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <Compile Include="..\SharedVersion.cs" />
-    </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SharedVersion.cs" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <EmbeddedResource Include="Resources/Configuration/*" />
-    </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources/Configuration/*" />
+  </ItemGroup>
 
   <!-- Code analysers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -41,11 +41,11 @@
     <PackageReference Include="SQLitePCLRaw.provider.sqlite3.netstandard11" Version="1.1.12" />
   </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
-        <ProjectReference Include="..\Emby.Drawing.Skia\Emby.Drawing.Skia.csproj" />
-        <ProjectReference Include="..\Emby.IsoMounting\IsoMounter\IsoMounter.csproj" />
-        <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
+    <ProjectReference Include="..\Emby.Drawing.Skia\Emby.Drawing.Skia.csproj" />
+    <ProjectReference Include="..\Emby.IsoMounting\IsoMounter\IsoMounter.csproj" />
+    <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
+  </ItemGroup>
 
 </Project>
