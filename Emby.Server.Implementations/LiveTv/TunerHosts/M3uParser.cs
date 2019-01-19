@@ -291,7 +291,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                attributes.TryGetValue("tvg-id", string name);
+                attributes.TryGetValue("tvg-id", out name);
             }
 
             if (string.IsNullOrWhiteSpace(name))
