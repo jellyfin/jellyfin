@@ -22,7 +22,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Text;
 
 namespace BDInfo
 {
@@ -72,8 +71,7 @@ namespace BDInfo
 
         public event OnPlaylistFileScanError PlaylistFileScanError;
 
-        public BDROM(
-            string path, IFileSystem fileSystem, ITextEncoding textEncoding)
+        public BDROM(string path, IFileSystem fileSystem)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -167,7 +165,7 @@ namespace BDInfo
                 foreach (var file in files)
                 {
                     PlaylistFiles.Add(
-                        file.Name.ToUpper(), new TSPlaylistFile(this, file, _fileSystem, textEncoding));
+                        file.Name.ToUpper(), new TSPlaylistFile(this, file, _fileSystem));
                 }
             }
 
@@ -187,7 +185,7 @@ namespace BDInfo
                 foreach (var file in files)
                 {
                     StreamClipFiles.Add(
-                        file.Name.ToUpper(), new TSStreamClipFile(file, _fileSystem, textEncoding));
+                        file.Name.ToUpper(), new TSStreamClipFile(file, _fileSystem));
                 }
             }
 

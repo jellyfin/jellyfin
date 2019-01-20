@@ -18,8 +18,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Text;
 using Microsoft.Extensions.Logging;
+using UtfUnknown;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
@@ -34,10 +34,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IHttpClient _httpClient;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IProcessFactory _processFactory;
-        private readonly ITextEncoding _textEncoding;
 
-        public SubtitleEncoder(
-            ILibraryManager libraryManager,
+        public SubtitleEncoder(ILibraryManager libraryManager,
             ILogger logger,
             IApplicationPaths appPaths,
             IFileSystem fileSystem,
@@ -45,8 +43,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             IJsonSerializer json,
             IHttpClient httpClient,
             IMediaSourceManager mediaSourceManager,
-            IProcessFactory processFactory,
-            ITextEncoding textEncoding)
+            IProcessFactory processFactory)
         {
             _libraryManager = libraryManager;
             _logger = logger;
@@ -57,7 +54,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _httpClient = httpClient;
             _mediaSourceManager = mediaSourceManager;
             _processFactory = processFactory;
-            _textEncoding = textEncoding;
         }
 
         private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
@@ -196,13 +192,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 var bytes = await GetBytes(path, protocol, cancellationToken).ConfigureAwait(false);
 
-                var charset = _textEncoding.GetDetectedEncodingName(bytes, bytes.Length, language, true);
-                _logger.LogDebug("charset {0} detected for {1}", charset ?? "null", path);
+                var charset = CharsetDetector.DetectFromBytes(bytes).Detected?.EncodingName;
+                _logger.LogDebug("charset {CharSet} detected for {Path}", charset ?? "null", path);
 
                 if (!string.IsNullOrEmpty(charset))
                 {
+                    // Make sure we have all the code pages we can get
+                    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                     using (var inputStream = new MemoryStream(bytes))
-                    using (var reader = new StreamReader(inputStream, _textEncoding.GetEncodingFromCharset(charset)))
+                    using (var reader = new StreamReader(inputStream, Encoding.GetEncoding(charset)))
                     {
                         var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
@@ -723,7 +721,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             var bytes = await GetBytes(path, protocol, cancellationToken).ConfigureAwait(false);
 
-            var charset = _textEncoding.GetDetectedEncodingName(bytes, bytes.Length, language, true);
+            var charset = CharsetDetector.DetectFromBytes(bytes).Detected?.EncodingName;
 
             _logger.LogDebug("charset {0} detected for {Path}", charset ?? "null", path);
 

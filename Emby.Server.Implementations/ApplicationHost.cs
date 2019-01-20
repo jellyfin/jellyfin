@@ -99,7 +99,6 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Text;
 using MediaBrowser.Model.Threading;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Model.Xml;
@@ -113,6 +112,7 @@ using ServiceStack;
 using ServiceStack.Text.Jsv;
 using StringExtensions = MediaBrowser.Controller.Extensions.StringExtensions;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
+using UtfUnknown;
 
 namespace Emby.Server.Implementations
 {
@@ -309,7 +309,6 @@ namespace Emby.Server.Implementations
 
         private IEncodingManager EncodingManager { get; set; }
         private IChannelManager ChannelManager { get; set; }
-        protected ITextEncoding TextEncoding { get; private set; }
 
         /// <summary>
         /// Gets or sets the user data repository.
@@ -826,9 +825,7 @@ namespace Emby.Server.Implementations
             StringExtensions.LocalizationManager = LocalizationManager;
             RegisterSingleInstance(LocalizationManager);
 
-            TextEncoding = new TextEncoding.TextEncoding(FileSystemManager, LoggerFactory.CreateLogger("TextEncoding"), JsonSerializer);
-            RegisterSingleInstance(TextEncoding);
-            BlurayExaminer = new BdInfoExaminer(FileSystemManager, TextEncoding);
+            BlurayExaminer = new BdInfoExaminer(FileSystemManager);
             RegisterSingleInstance(BlurayExaminer);
 
             RegisterSingleInstance<IXmlReaderSettingsFactory>(new XmlReaderSettingsFactory());
@@ -873,7 +870,6 @@ namespace Emby.Server.Implementations
                 ServerConfigurationManager,
                 "web/index.html",
                 NetworkManager,
-                TextEncoding,
                 JsonSerializer,
                 XmlSerializer,
                 GetParseFn);
@@ -950,7 +946,7 @@ namespace Emby.Server.Implementations
             AuthService = new AuthService(UserManager, authContext, ServerConfigurationManager, SessionManager, NetworkManager);
             RegisterSingleInstance(AuthService);
 
-            SubtitleEncoder = new MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder(LibraryManager, LoggerFactory.CreateLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, ProcessFactory, TextEncoding);
+            SubtitleEncoder = new MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder(LibraryManager, LoggerFactory.CreateLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, ProcessFactory);
             RegisterSingleInstance(SubtitleEncoder);
 
             RegisterSingleInstance(CreateResourceFileManager());
