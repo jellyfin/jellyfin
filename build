@@ -26,7 +26,7 @@ usage() {
     echo -e " $ build --list-actions <platform>"
     echo -e " $ build [-b/--web-branch <web_branch>] <platform> <action>"
     echo -e ""
-    echo -e "The web_branch defaults to 'master'."
+    echo -e "The web_branch defaults to the same branch name as the current main branch."
     echo -e "To build all platforms, use 'all'."
     echo -e "To perform all build actions, use 'all'."
     echo -e "Build output files are collected at '../jellyfin-build/<platform>'."
@@ -67,7 +67,7 @@ if [[ $1 == '-b' || $1 == '--web-branch' ]]; then
 	web_branch="$2"
 	shift 2
 else
-    web_branch="master"
+    web_branch="$( git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/' )"
 fi
 
 # Parse platform option
