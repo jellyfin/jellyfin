@@ -167,7 +167,7 @@ fi
 
 git fetch --all
 git checkout origin/${web_branch} || {
-    echo "Error: 'jellyfin-web' branch ${web_branch} is invalid."
+    echo "ERROR: 'jellyfin-web' branch ${web_branch} is invalid."
     exit 1
 }
 popd
