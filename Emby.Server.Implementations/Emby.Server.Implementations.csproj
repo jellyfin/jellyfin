@@ -3,7 +3,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Emby.Naming\Emby.Naming.csproj" />
     <ProjectReference Include="..\Emby.Notifications\Emby.Notifications.csproj" />
-    <ProjectReference Include="..\Jellyfin.Versioning\Jellyfin.Versioning.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
@@ -31,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Jellyfin.Versioning\SharedVersion.cs" />
+    <Compile Include="..\SharedVersion.cs" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <Compile Include="..\Jellyfin.Versioning\SharedVersion.cs" />
+    <Compile Include="..\SharedVersion.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -38,7 +38,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             _appHost = appHost;
         }
 
-        private string UserAgent => "Emby/" + _appHost.ApplicationVersion;
+        private string UserAgent => _appHost.ApplicationUserAgent;
 
         private static List<string> GetScheduleRequestDates(DateTime startDateUtc, DateTime endDateUtc)
         {
