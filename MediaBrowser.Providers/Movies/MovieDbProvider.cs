@@ -424,7 +424,7 @@ namespace MediaBrowser.Providers.Movies
             _lastRequestTicks = DateTime.UtcNow.Ticks;
 
             options.BufferContent = true;
-            options.UserAgent = "Emby/" + _appHost.ApplicationVersion;
+            options.UserAgent = _appHost.ApplicationUserAgent;
 
             return await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
         }
