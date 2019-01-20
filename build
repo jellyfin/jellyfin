@@ -15,8 +15,7 @@ declare -a platforms=( $(
 
 # The list of standard dependencies required by all build scripts; individual
 # action scripts may specify their own dependencies
-declare -a dependencies
-dependencies=( 'tar' 'zip' 'dotnet' )
+declare -a dependencies=( 'tar' 'zip' )
 
 usage() {
     echo -e "build - build Jellyfin binaries or packages"
