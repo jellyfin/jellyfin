@@ -43,7 +43,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
-    <ProjectReference Include="..\Emby.Drawing.Skia\Emby.Drawing.Skia.csproj" />
     <ProjectReference Include="..\Emby.IsoMounting\IsoMounter\IsoMounter.csproj" />
     <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
   </ItemGroup>
