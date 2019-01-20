@@ -167,7 +167,7 @@ sed -i '/^%changelog/d' xx01
 # Create new temp file with our changelog
 echo -e "### YUM SPEC CHANGELOG: Verify this file looks correct or edit accordingly, then delete this line, write, and exit.
 %changelog
-* $( date '+%a %b %d %Y' ) Jellyfin Packaging Team <packaging@jellyfin.org>${changelog_string_yum}" >> ${fedora_changelog_temp}
+* $( LANG=C date '+%a %b %d %Y' ) Jellyfin Packaging Team <packaging@jellyfin.org>${changelog_string_yum}" >> ${fedora_changelog_temp}
 cat xx01 >> ${fedora_changelog_temp}
 # Edit the file to verify
 $EDITOR ${fedora_changelog_temp}
