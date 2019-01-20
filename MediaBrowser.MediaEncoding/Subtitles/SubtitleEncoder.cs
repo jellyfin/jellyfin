@@ -103,10 +103,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (endTimeTicks > 0)
             {
-                long endTime = endTimeTicks;
-
                 track.TrackEvents = track.TrackEvents
-                    .TakeWhile(i => i.StartPositionTicks <= endTime)
+                    .TakeWhile(i => i.StartPositionTicks <= endTimeTicks)
                     .ToArray();
             }
 
