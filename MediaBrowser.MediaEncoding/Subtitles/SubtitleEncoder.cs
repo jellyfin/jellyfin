@@ -62,7 +62,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string inputFormat,
             string outputFormat,
             long startTimeTicks,
-            long? endTimeTicks,
+            long endTimeTicks,
             bool preserveOriginalTimestamps,
             CancellationToken cancellationToken)
         {
@@ -90,19 +90,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return ms;
         }
 
-        private void FilterEvents(SubtitleTrackInfo track, long startPositionTicks, long? endTimeTicks, bool preserveTimestamps)
+        private void FilterEvents(SubtitleTrackInfo track, long startPositionTicks, long endTimeTicks, bool preserveTimestamps)
         {
             // Drop subs that are earlier than what we're looking for
             track.TrackEvents = track.TrackEvents
                 .SkipWhile(i => (i.StartPositionTicks - startPositionTicks) < 0 || (i.EndPositionTicks - startPositionTicks) < 0)
                 .ToArray();
 
-            if (endTimeTicks.HasValue)
+            if (endTimeTicks > 0)
             {
-                long endTime = endTimeTicks.Value;
-
                 track.TrackEvents = track.TrackEvents
-                    .TakeWhile(i => i.StartPositionTicks <= endTime)
+                    .TakeWhile(i => i.StartPositionTicks <= endTimeTicks)
                     .ToArray();
             }
 
