@@ -47,7 +47,6 @@ using Emby.Server.Implementations.Threading;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Emby.Server.Implementations.Xml;
-using Jellyfin.Versioning;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -430,28 +429,20 @@ namespace Emby.Server.Implementations
             _validAddressResults.Clear();
         }
 
-        private Version _version;
-        /// <summary>
-        /// Gets the current application version
-        /// </summary>
-        /// <value>The application version.</value>
-        public Version ApplicationVersion => _version ?? (_version = ApplicationExtendedVersion.ApiVersion);
-
-        private Version _serverVersion;
+        private Version _applicationVersion;
         /// <summary>
         /// Gets the current application server version
         /// </summary>
         /// <value>The application server version.</value>
-        public Version ApplicationServerVersion => _serverVersion ?? (_serverVersion = typeof(ApplicationHost).Assembly.GetName().Version);
+        public Version ApplicationVersion => _applicationVersion ?? (_applicationVersion = typeof(ApplicationHost).Assembly.GetName().Version);
 
-        private ExtendedVersion _extendedVersion;
+        public string ApplicationSemanticVersion => ApplicationVersion.ToString(3);
+
         /// <summary>
         /// Gets the current application server version
         /// </summary>
         /// <value>The application server version.</value>
-        public ExtendedVersion ApplicationExtendedVersion => _extendedVersion ??
-            (_extendedVersion = typeof(ApplicationHost).Assembly.GetCustomAttributes(typeof(AssemblyExtendedVersion), false)
-            .Cast<AssemblyExtendedVersion>().FirstOrDefault().ExtendedVersion);
+        public string ApplicationUserAgent => Name + "/" + ApplicationSemanticVersion;
 
         private string _productName;
         /// <summary>
@@ -478,7 +469,7 @@ namespace Emby.Server.Implementations
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name => "Emby Server";
+        public string Name => "Jellyfin";
 
         private static Tuple<Assembly, string> GetAssembly(Type type)
         {
@@ -1028,9 +1019,7 @@ namespace Emby.Server.Implementations
 
         protected string GetDefaultUserAgent()
         {
-            var name = FormatAttribute(Name);
-
-            return name + "/" + ApplicationVersion;
+            return ApplicationUserAgent;
         }
 
         private static string FormatAttribute(string str)
@@ -1044,7 +1033,7 @@ namespace Emby.Server.Implementations
 
             if (string.IsNullOrWhiteSpace(result))
             {
-                result = "Emby";
+                result = "Jellyfin";
             }
 
             return result;
@@ -1849,9 +1838,7 @@ namespace Emby.Server.Implementations
             {
                 HasPendingRestart = HasPendingRestart,
                 IsShuttingDown = IsShuttingDown,
-                Version = ApplicationVersion.ToString(),
-                ServerVersion = ApplicationServerVersion.ToString(),
-                ExtendedVersion = ApplicationExtendedVersion,
+                Version = ApplicationSemanticVersion,
                 ProductName = ApplicationProductName,
                 WebSocketPortNumber = HttpPort,
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
@@ -1898,9 +1885,7 @@ namespace Emby.Server.Implementations
             var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
             return new PublicSystemInfo
             {
-                Version = ApplicationVersion.ToString(),
-                ServerVersion = ApplicationServerVersion.ToString(),
-                ExtendedVersion = ApplicationExtendedVersion,
+                Version = ApplicationSemanticVersion,
                 Id = SystemId,
                 OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
                 WanAddress = wanAddress,

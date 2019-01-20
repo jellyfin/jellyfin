@@ -1,5 +1,3 @@
-using Jellyfin.Versioning;
-
 namespace MediaBrowser.Model.System
 {
     public class PublicSystemInfo
@@ -23,22 +21,10 @@ namespace MediaBrowser.Model.System
         public string ServerName { get; set; }
 
         /// <summary>
-        /// Gets or sets the API version.
-        /// </summary>
-        /// <value>The version.</value>
-        public string Version { get; set; }
-
-        /// <summary>
         /// Gets or sets the server version.
         /// </summary>
-        /// <value>The server version.</value>
-        public string ServerVersion { get; set; }
-
-        /// <summary>
-        /// Gets or sets the build version.
-        /// </summary>
-        /// <value>The build version.</value>
-        public ExtendedVersion ExtendedVersion { get; set; }
+        /// <value>The version.</value>
+        public string Version { get; set; }        
 
         /// <summary>
         /// Gets or sets the operating sytem.

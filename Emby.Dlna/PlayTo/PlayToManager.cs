@@ -164,7 +164,7 @@ namespace Emby.Dlna.PlayTo
 
             string deviceName = null;
 
-            var sessionInfo = _sessionManager.LogSessionActivity("DLNA", _appHost.ApplicationVersion.ToString(), uuid, deviceName, uri.OriginalString, null);
+            var sessionInfo = _sessionManager.LogSessionActivity("DLNA", _appHost.ApplicationSemanticVersion, uuid, deviceName, uri.OriginalString, null);
 
             var controller = sessionInfo.SessionControllers.OfType<PlayToController>().FirstOrDefault();
 
