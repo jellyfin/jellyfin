@@ -103,7 +103,7 @@ namespace Jellyfin.Server
             {
                 appHost.Init();
 
-                appHost.ImageProcessor.ImageEncoder = getImageEncoder(_loggerFactory, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo, appHost.LocalizationManager);
+                appHost.ImageProcessor.ImageEncoder = getImageEncoder(fileSystem, () => appHost.HttpClient, appPaths, appHost.LocalizationManager);
 
                 _logger.LogInformation("Running startup tasks");
 
@@ -257,17 +257,14 @@ namespace Jellyfin.Server
         }
 
         public static IImageEncoder getImageEncoder(
-            ILoggerFactory loggerFactory,
             IFileSystem fileSystem,
-            StartupOptions startupOptions,
             Func<IHttpClient> httpClient,
             IApplicationPaths appPaths,
-            IEnvironmentInfo environment,
             ILocalizationManager localizationManager)
         {
             try
             {
-                return new SkiaEncoder(loggerFactory, appPaths, httpClient, fileSystem, localizationManager);
+                return new SkiaEncoder(_loggerFactory, appPaths, httpClient, fileSystem, localizationManager);
             }
             catch (Exception ex)
             {
