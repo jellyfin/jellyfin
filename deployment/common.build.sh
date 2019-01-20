@@ -16,6 +16,16 @@ DEFAULT_OUTPUT_DIR="dist/jellyfin-git"
 DEFAULT_PKG_DIR="pkg-dist"
 DEFAULT_DOCKERFILE="Dockerfile"
 DEFAULT_IMAGE_TAG="jellyfin:"`git rev-parse --abbrev-ref HEAD`
+DEFAULT_ARCHIVE_CMD="tar -xvzf"
+
+# Parse the version from the AssemblyVersion
+get_version()
+(
+    local ROOT=${1-$DEFAULT_ROOT}
+    grep "AssemblyVersion" ${ROOT}/SharedVersion.cs \
+        | sed -E 's/\[assembly: ?AssemblyVersion\("([0-9\.]+)"\)\]/\1/' \
+        | sed -E 's/.0$//'
+)
 
 # Run a build
 build_jellyfin()
@@ -77,19 +87,13 @@ clean_jellyfin()
     fi
 )
 
-# Parse the version from the AssemblyVersion
-get_version()
-(
-    local ROOT=${1-$DEFAULT_ROOT}
-    grep "AssemblyVersion" ${ROOT}/SharedVersion.cs | sed -E 's/\[assembly: ?AssemblyVersion\("([0-9\.]+)"\)\]/\1/'  | sed -E 's/.0$//'
-)
-
 # Packages the output folder into an archive.
 package_portable()
 (
     local ROOT=${1-$DEFAULT_ROOT}
     local OUTPUT_DIR=${2-$DEFAULT_OUTPUT_DIR}
     local PKG_DIR=${3-$DEFAULT_PKG_DIR}
+    local ARCHIVE_CMD=${4-$DEFAULT_ARCHIVE_CMD}
     # Package portable build result
     if [ -d ${OUTPUT_DIR} ]; then        
         echo -e "${CYAN}Packaging build in '${OUTPUT_DIR}' for `basename "${OUTPUT_DIR}"` to '${PKG_DIR}' with root '${ROOT}'.${NC}"
