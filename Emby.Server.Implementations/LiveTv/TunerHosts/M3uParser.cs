@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     Url = url,
                     CancellationToken = cancellationToken,
                     // Some data providers will require a user agent
-                    UserAgent = _appHost.ApplicationVersion
+                    UserAgent = _appHost.ApplicationUserAgent
                 });
             }
             return Task.FromResult(_fileSystem.OpenRead(url));
