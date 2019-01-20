@@ -429,14 +429,7 @@ namespace Emby.Server.Implementations
             _validAddressResults.Clear();
         }
 
-        private Version _applicationVersion;
-        /// <summary>
-        /// Gets the current application server version
-        /// </summary>
-        /// <value>The application server version.</value>
-        public Version ApplicationVersion => _applicationVersion ?? (_applicationVersion = typeof(ApplicationHost).Assembly.GetName().Version);
-
-        public string ApplicationSemanticVersion => ApplicationVersion.ToString(3);
+        public string ApplicationSemanticVersion => typeof(ApplicationHost).Assembly.GetName().Version.ToString(3);
 
         /// <summary>
         /// Gets the current application server version

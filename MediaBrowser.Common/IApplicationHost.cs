@@ -66,12 +66,6 @@ namespace MediaBrowser.Common
         void Restart();
 
         /// <summary>
-        /// Gets the application version.
-        /// </summary>
-        /// <value>The application version.</value>
-        Version ApplicationVersion { get; }
-
-        /// <summary>
         /// Gets the application semantic version.
         /// </summary>
         /// <value>The application semantic version.</value>
