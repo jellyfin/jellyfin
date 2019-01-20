@@ -432,9 +432,9 @@ namespace Emby.Server.Implementations
         public string ApplicationVersion => typeof(ApplicationHost).Assembly.GetName().Version.ToString(3);
 
         /// <summary>
-        /// Gets the current application server version
+        /// Gets the current application user agent
         /// </summary>
-        /// <value>The application server version.</value>
+        /// <value>The application user agent.</value>
         public string ApplicationUserAgent => Name.Replace(' ','-') + "/" + ApplicationVersion;
 
         private string _productName;
