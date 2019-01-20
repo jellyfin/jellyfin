@@ -1018,7 +1018,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public bool CanExtractSubtitles(string codec)
         {
-            return false;
+            // TODO is there ever a case when a subtitle can't be extracted??
+            return true;
         }
 
         private class ProcessWrapper : IDisposable
