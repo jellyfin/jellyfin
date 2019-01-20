@@ -429,12 +429,27 @@ namespace Emby.Server.Implementations
             _validAddressResults.Clear();
         }
 
-        private Version _version;
+        private Version _applicationVersion;
         /// <summary>
-        /// Gets the current application version
+        /// Gets the current application server version
         /// </summary>
-        /// <value>The application version.</value>
-        public Version ApplicationVersion => _version ?? (_version = typeof(ApplicationHost).Assembly.GetName().Version);
+        /// <value>The application server version.</value>
+        public Version ApplicationVersion => _applicationVersion ?? (_applicationVersion = typeof(ApplicationHost).Assembly.GetName().Version);
+
+        public string ApplicationSemanticVersion => ApplicationVersion.ToString(3);
+
+        /// <summary>
+        /// Gets the current application server version
+        /// </summary>
+        /// <value>The application server version.</value>
+        public string ApplicationUserAgent => Name.Replace(' ','-') + "/" + ApplicationSemanticVersion;
+
+        private string _productName;
+        /// <summary>
+        /// Gets the current application name
+        /// </summary>
+        /// <value>The application name.</value>
+        public string ApplicationProductName => _productName ?? (_productName = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductName);
 
         private DeviceId _deviceId;
         public string SystemId
@@ -454,7 +469,7 @@ namespace Emby.Server.Implementations
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name => "Emby Server";
+        public string Name => "Jellyfin Server";
 
         private static Tuple<Assembly, string> GetAssembly(Type type)
         {
@@ -1004,26 +1019,7 @@ namespace Emby.Server.Implementations
 
         protected string GetDefaultUserAgent()
         {
-            var name = FormatAttribute(Name);
-
-            return name + "/" + ApplicationVersion;
-        }
-
-        private static string FormatAttribute(string str)
-        {
-            var arr = str.ToCharArray();
-
-            arr = Array.FindAll(arr, (c => (char.IsLetterOrDigit(c)
-                                                  || char.IsWhiteSpace(c))));
-
-            var result = new string(arr);
-
-            if (string.IsNullOrWhiteSpace(result))
-            {
-                result = "Emby";
-            }
-
-            return result;
+            return ApplicationUserAgent;
         }
 
         protected virtual bool SupportsDualModeSockets => true;
@@ -1825,7 +1821,8 @@ namespace Emby.Server.Implementations
             {
                 HasPendingRestart = HasPendingRestart,
                 IsShuttingDown = IsShuttingDown,
-                Version = ApplicationVersion.ToString(),
+                Version = ApplicationSemanticVersion,
+                ProductName = ApplicationProductName,
                 WebSocketPortNumber = HttpPort,
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
                 Id = SystemId,
@@ -1871,7 +1868,7 @@ namespace Emby.Server.Implementations
             var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
             return new PublicSystemInfo
             {
-                Version = ApplicationVersion.ToString(),
+                Version = ApplicationSemanticVersion,
                 Id = SystemId,
                 OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
                 WanAddress = wanAddress,

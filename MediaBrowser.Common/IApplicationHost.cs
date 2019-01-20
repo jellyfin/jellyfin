@@ -72,6 +72,18 @@ namespace MediaBrowser.Common
         Version ApplicationVersion { get; }
 
         /// <summary>
+        /// Gets the application semantic version.
+        /// </summary>
+        /// <value>The application semantic version.</value>
+        string ApplicationSemanticVersion { get; }
+
+        /// <summary>
+        /// Gets the application user agent.
+        /// </summary>
+        /// <value>The application user agent.</value>
+        string ApplicationUserAgent { get; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance can self update.
         /// </summary>
         /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>

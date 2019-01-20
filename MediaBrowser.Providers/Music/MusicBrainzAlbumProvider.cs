@@ -742,7 +742,7 @@ namespace MediaBrowser.Providers.Music
             {
                 Url = url,
                 CancellationToken = cancellationToken,
-                UserAgent = _appHost.Name + "/" + _appHost.ApplicationVersion,
+                UserAgent = _appHost.ApplicationUserAgent,
                 BufferContent = throttleMs > 0
             };
 
