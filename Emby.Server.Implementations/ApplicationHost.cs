@@ -442,7 +442,7 @@ namespace Emby.Server.Implementations
         /// Gets the current application server version
         /// </summary>
         /// <value>The application server version.</value>
-        public string ApplicationUserAgent => Name + "/" + ApplicationSemanticVersion;
+        public string ApplicationUserAgent => Name.Replace(' ','-') + "/" + ApplicationSemanticVersion;
 
         private string _productName;
         /// <summary>
@@ -469,7 +469,7 @@ namespace Emby.Server.Implementations
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name => "Jellyfin";
+        public string Name => "Jellyfin Server";
 
         private static Tuple<Assembly, string> GetAssembly(Type type)
         {
@@ -1020,23 +1020,6 @@ namespace Emby.Server.Implementations
         protected string GetDefaultUserAgent()
         {
             return ApplicationUserAgent;
-        }
-
-        private static string FormatAttribute(string str)
-        {
-            var arr = str.ToCharArray();
-
-            arr = Array.FindAll(arr, (c => (char.IsLetterOrDigit(c)
-                                                  || char.IsWhiteSpace(c))));
-
-            var result = new string(arr);
-
-            if (string.IsNullOrWhiteSpace(result))
-            {
-                result = "Jellyfin";
-            }
-
-            return result;
         }
 
         protected virtual bool SupportsDualModeSockets => true;
