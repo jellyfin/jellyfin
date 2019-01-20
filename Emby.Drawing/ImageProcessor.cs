@@ -1,3 +1,4 @@
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -5,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Drawing.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
@@ -472,7 +472,16 @@ namespace Emby.Drawing
 
             try
             {
-                return ImageHeader.GetDimensions(path, _logger, _fileSystem);
+                using (var s = new SKFileStream(path))
+                    using (var codec = SKCodec.Create(s))
+                    {
+                        var info = codec.Info;
+                        return new ImageSize
+                        {
+                            Height = info.Height,
+                            Width = info.Width
+                        };
+                    }
             }
             catch
             {
