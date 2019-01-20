@@ -2,7 +2,7 @@ using System;
 using MediaBrowser.Model.Drawing;
 using SkiaSharp;
 
-namespace Emby.Drawing.Skia
+namespace Emby.Drawing
 {
     public class PercentPlayedDrawer
     {

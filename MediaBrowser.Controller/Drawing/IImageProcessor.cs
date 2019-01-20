@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <returns>ImageSize.</returns>
         ImageSize GetImageSize(BaseItem item, ItemImageInfo info);
 
-        ImageSize GetImageSize(BaseItem item, ItemImageInfo info, bool allowSlowMethods, bool updateItem);
+        ImageSize GetImageSize(BaseItem item, ItemImageInfo info, bool updateItem);
 
         /// <summary>
         /// Adds the parts.
