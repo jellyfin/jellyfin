@@ -462,7 +462,7 @@ namespace Emby.Server.Implementations
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name => "Jellyfin Server";
+        public string Name => ApplicationProductName;
 
         private static Tuple<Assembly, string> GetAssembly(Type type)
         {
