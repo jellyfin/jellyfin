@@ -4,11 +4,11 @@ using SkiaSharp;
 
 namespace Emby.Drawing
 {
-    public class PercentPlayedDrawer
+    public static class PercentPlayedDrawer
     {
         private const int IndicatorHeight = 8;
 
-        public void Process(SKCanvas canvas, ImageSize imageSize, double percent)
+        public static void Process(SKCanvas canvas, ImageSize imageSize, double percent)
         {
             using (var paint = new SKPaint())
             {
