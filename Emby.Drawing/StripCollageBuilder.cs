@@ -5,7 +5,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
 using SkiaSharp;
 
-namespace Emby.Drawing.Skia
+namespace Emby.Drawing
 {
     public class StripCollageBuilder
     {
