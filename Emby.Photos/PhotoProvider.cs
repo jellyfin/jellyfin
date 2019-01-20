@@ -181,7 +181,7 @@ namespace Emby.Photos
 
                 try
                 {
-                    var size = _imageProcessor.GetImageSize(item, img, false, false);
+                    var size = _imageProcessor.GetImageSize(item, img, false);
 
                     if (size.Width > 0 && size.Height > 0)
                     {

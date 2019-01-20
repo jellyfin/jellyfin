@@ -422,10 +422,10 @@ namespace Emby.Drawing
 
         public ImageSize GetImageSize(BaseItem item, ItemImageInfo info)
         {
-            return GetImageSize(item, info, false, true);
+            return GetImageSize(item, info, true);
         }
 
-        public ImageSize GetImageSize(BaseItem item, ItemImageInfo info, bool allowSlowMethods, bool updateItem)
+        public ImageSize GetImageSize(BaseItem item, ItemImageInfo info, bool updateItem)
         {
             var width = info.Width;
             var height = info.Height;
@@ -442,7 +442,7 @@ namespace Emby.Drawing
             var path = info.Path;
             _logger.LogInformation("Getting image size for item {0} {1}", item.GetType().Name, path);
 
-            var size = GetImageSize(path, allowSlowMethods);
+            var size = GetImageSize(path);
 
             info.Height = Convert.ToInt32(size.Height);
             info.Width = Convert.ToInt32(size.Width);
@@ -455,43 +455,26 @@ namespace Emby.Drawing
             return size;
         }
 
-        public ImageSize GetImageSize(string path)
-        {
-            return GetImageSize(path, true);
-        }
-
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
-        private ImageSize GetImageSize(string path, bool allowSlowMethod)
+        public ImageSize GetImageSize(string path)
         {
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException(nameof(path));
             }
 
-            try
-            {
-                using (var s = new SKFileStream(path))
-                    using (var codec = SKCodec.Create(s))
-                    {
-                        var info = codec.Info;
-                        return new ImageSize
-                        {
-                            Height = info.Height,
-                            Width = info.Width
-                        };
-                    }
-            }
-            catch
-            {
-                if (!allowSlowMethod)
+            using (var s = new SKFileStream(path))
+                using (var codec = SKCodec.Create(s))
                 {
-                    throw;
+                    var info = codec.Info;
+                    return new ImageSize
+                    {
+                        Height = info.Height,
+                        Width = info.Width
+                    };
                 }
-            }
-
-            return _imageEncoder.GetImageSize(path);
         }
 
         /// <summary>
