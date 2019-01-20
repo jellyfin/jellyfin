@@ -429,13 +429,13 @@ namespace Emby.Server.Implementations
             _validAddressResults.Clear();
         }
 
-        public string ApplicationSemanticVersion => typeof(ApplicationHost).Assembly.GetName().Version.ToString(3);
+        public string ApplicationVersion => typeof(ApplicationHost).Assembly.GetName().Version.ToString(3);
 
         /// <summary>
         /// Gets the current application server version
         /// </summary>
         /// <value>The application server version.</value>
-        public string ApplicationUserAgent => Name.Replace(' ','-') + "/" + ApplicationSemanticVersion;
+        public string ApplicationUserAgent => Name.Replace(' ','-') + "/" + ApplicationVersion;
 
         private string _productName;
         /// <summary>
@@ -1814,7 +1814,7 @@ namespace Emby.Server.Implementations
             {
                 HasPendingRestart = HasPendingRestart,
                 IsShuttingDown = IsShuttingDown,
-                Version = ApplicationSemanticVersion,
+                Version = ApplicationVersion,
                 ProductName = ApplicationProductName,
                 WebSocketPortNumber = HttpPort,
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
@@ -1861,7 +1861,7 @@ namespace Emby.Server.Implementations
             var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
             return new PublicSystemInfo
             {
-                Version = ApplicationSemanticVersion,
+                Version = ApplicationVersion,
                 Id = SystemId,
                 OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
                 WanAddress = wanAddress,
