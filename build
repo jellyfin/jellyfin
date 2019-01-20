@@ -50,7 +50,7 @@ fi
 if [[ $1 == '--list-actions' ]]; then
     platform="$2"
     if [[ ! " ${platforms[@]} " =~ " ${platform} " ]]; then
-        echo "ERROR: Platform $platform does not exist."
+        echo "ERROR: Platform ${platform} does not exist."
         exit 1
     fi
     echo -e "Available actions for platform ${platform}:"
@@ -78,11 +78,11 @@ else
     echo "ERROR: A platform must be specified. Use 'all' to specify all platforms."
     exit 1
 fi
-if [[ $cli_platform == 'all' ]]; then
+if [[ ${cli_platform} == 'all' ]]; then
     declare -a platform=( ${platforms[@]} )
 else
     if [[ ! " ${platforms[@]} " =~ " ${cli_platform} " ]]; then
-        echo "ERROR: Platform $cli_platform is invalid. Use the '--list-platforms' option to list available platforms."
+        echo "ERROR: Platform ${cli_platform} is invalid. Use the '--list-platforms' option to list available platforms."
         exit 1
     else
         declare -a platform=( "${cli_platform}" )
@@ -97,11 +97,11 @@ else
     echo "ERROR: An action must be specified. Use 'all' to specify all actions."
     exit 1
 fi
-if [[ $cli_action == 'all' ]]; then
+if [[ ${cli_action} == 'all' ]]; then
     declare -a action=( ${actions[@]} )
 else
     if [[ ! " ${actions[@]} " =~ " ${cli_action} " ]]; then
-        echo "ERROR: Action $cli_action is invalid. Use the '--list-actions <platform>' option to list available actions."
+        echo "ERROR: Action ${cli_action} is invalid. Use the '--list-actions <platform>' option to list available actions."
         exit 1
     else
         declare -a action=( "${cli_action}" )
