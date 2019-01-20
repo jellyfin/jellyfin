@@ -1,9 +1,8 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Text;
 using SocketHttpListener.Net.WebSockets;
 
 namespace SocketHttpListener.Net
@@ -12,10 +11,10 @@ namespace SocketHttpListener.Net
     {
         private HttpConnection _connection;
 
-        internal HttpListenerContext(HttpConnection connection, ITextEncoding textEncoding)
+        internal HttpListenerContext(HttpConnection connection)
         {
             _connection = connection;
-            _response = new HttpListenerResponse(this, textEncoding);
+            _response = new HttpListenerResponse(this);
             Request = new HttpListenerRequest(this);
             ErrorStatus = 400;
         }

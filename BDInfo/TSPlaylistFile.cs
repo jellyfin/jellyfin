@@ -1,4 +1,4 @@
-//============================================================================
+﻿//============================================================================
 // BDInfo - Blu-ray Video and Audio Analysis Tool
 // Copyright © 2010 Cinema Squid
 //
@@ -21,15 +21,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Text;
 
 namespace BDInfo
 {
     public class TSPlaylistFile
     {
         private readonly IFileSystem _fileSystem;
-        private readonly ITextEncoding _textEncoding;
         private FileSystemMetadata FileInfo = null;
         public string FileType = null;
         public bool IsInitialized = false;
@@ -64,26 +63,22 @@ namespace BDInfo
         public List<TSGraphicsStream> GraphicsStreams =
             new List<TSGraphicsStream>();
 
-        public TSPlaylistFile(
-            BDROM bdrom,
-            FileSystemMetadata fileInfo, IFileSystem fileSystem, ITextEncoding textEncoding)
+        public TSPlaylistFile(BDROM bdrom,
+            FileSystemMetadata fileInfo, IFileSystem fileSystem)
         {
             BDROM = bdrom;
             FileInfo = fileInfo;
             _fileSystem = fileSystem;
-            _textEncoding = textEncoding;
             Name = fileInfo.Name.ToUpper();
         }
 
-        public TSPlaylistFile(
-            BDROM bdrom,
+        public TSPlaylistFile(BDROM bdrom,
             string name,
-            List<TSStreamClip> clips, IFileSystem fileSystem, ITextEncoding textEncoding)
+            List<TSStreamClip> clips, IFileSystem fileSystem)
         {
             BDROM = bdrom;
             Name = name;
             _fileSystem = fileSystem;
-            _textEncoding = textEncoding;
             IsCustom = true;
             foreach (var clip in clips)
             {
@@ -1245,8 +1240,7 @@ namespace BDInfo
             int count,
             ref int pos)
         {
-            string val =
-                _textEncoding.GetASCIIEncoding().GetString(data, pos, count);
+            string val = Encoding.ASCII.GetString(data, pos, count);
 
             pos += count;
 
