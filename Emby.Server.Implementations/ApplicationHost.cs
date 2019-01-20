@@ -752,7 +752,7 @@ namespace Emby.Server.Implementations
 
         protected virtual IHttpClient CreateHttpClient()
         {
-            return new HttpClientManager.HttpClientManager(ApplicationPaths, LoggerFactory.CreateLogger("HttpClient"), FileSystemManager, GetDefaultUserAgent);
+            return new HttpClientManager.HttpClientManager(ApplicationPaths, LoggerFactory.CreateLogger("HttpClient"), FileSystemManager, () => ApplicationUserAgent);
         }
 
         public static IStreamHelper StreamHelper { get; set; }
@@ -1008,11 +1008,6 @@ namespace Emby.Server.Implementations
             {
                 Logger.LogError(ex, "Error setting http limit");
             }
-        }
-
-        protected string GetDefaultUserAgent()
-        {
-            return ApplicationUserAgent;
         }
 
         protected virtual bool SupportsDualModeSockets => true;
