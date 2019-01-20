@@ -429,20 +429,13 @@ namespace Emby.Server.Implementations
             _validAddressResults.Clear();
         }
 
-        private Version _applicationVersion;
-        /// <summary>
-        /// Gets the current application server version
-        /// </summary>
-        /// <value>The application server version.</value>
-        public Version ApplicationVersion => _applicationVersion ?? (_applicationVersion = typeof(ApplicationHost).Assembly.GetName().Version);
-
-        public string ApplicationSemanticVersion => ApplicationVersion.ToString(3);
+        public string ApplicationVersion => typeof(ApplicationHost).Assembly.GetName().Version.ToString(3);
 
         /// <summary>
-        /// Gets the current application server version
+        /// Gets the current application user agent
         /// </summary>
-        /// <value>The application server version.</value>
-        public string ApplicationUserAgent => Name.Replace(' ','-') + "/" + ApplicationSemanticVersion;
+        /// <value>The application user agent.</value>
+        public string ApplicationUserAgent => Name.Replace(' ','-') + "/" + ApplicationVersion;
 
         private string _productName;
         /// <summary>
@@ -759,7 +752,7 @@ namespace Emby.Server.Implementations
 
         protected virtual IHttpClient CreateHttpClient()
         {
-            return new HttpClientManager.HttpClientManager(ApplicationPaths, LoggerFactory.CreateLogger("HttpClient"), FileSystemManager, GetDefaultUserAgent);
+            return new HttpClientManager.HttpClientManager(ApplicationPaths, LoggerFactory.CreateLogger("HttpClient"), FileSystemManager, () => ApplicationUserAgent);
         }
 
         public static IStreamHelper StreamHelper { get; set; }
@@ -1015,11 +1008,6 @@ namespace Emby.Server.Implementations
             {
                 Logger.LogError(ex, "Error setting http limit");
             }
-        }
-
-        protected string GetDefaultUserAgent()
-        {
-            return ApplicationUserAgent;
         }
 
         protected virtual bool SupportsDualModeSockets => true;
@@ -1821,7 +1809,7 @@ namespace Emby.Server.Implementations
             {
                 HasPendingRestart = HasPendingRestart,
                 IsShuttingDown = IsShuttingDown,
-                Version = ApplicationSemanticVersion,
+                Version = ApplicationVersion,
                 ProductName = ApplicationProductName,
                 WebSocketPortNumber = HttpPort,
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
@@ -1868,7 +1856,7 @@ namespace Emby.Server.Implementations
             var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
             return new PublicSystemInfo
             {
-                Version = ApplicationSemanticVersion,
+                Version = ApplicationVersion,
                 Id = SystemId,
                 OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
                 WanAddress = wanAddress,
