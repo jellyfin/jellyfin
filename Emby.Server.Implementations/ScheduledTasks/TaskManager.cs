@@ -60,13 +60,18 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="logger">The logger.</param>
-        /// <exception cref="ArgumentException">kernel</exception>
-        public TaskManager(IApplicationPaths applicationPaths, IJsonSerializer jsonSerializer, ILogger logger, IFileSystem fileSystem, ISystemEvents systemEvents)
+        /// <param name="loggerFactory">The logger factory.</param>
+        /// <exception cref="System.ArgumentException">kernel</exception>
+        public TaskManager(
+            IApplicationPaths applicationPaths,
+            IJsonSerializer jsonSerializer,
+            ILoggerFactory loggerFactory,
+            IFileSystem fileSystem,
+            ISystemEvents systemEvents)
         {
             ApplicationPaths = applicationPaths;
             JsonSerializer = jsonSerializer;
-            Logger = logger;
+            Logger = loggerFactory.CreateLogger(nameof(TaskManager));
             _fileSystem = fileSystem;
             _systemEvents = systemEvents;
 

@@ -44,18 +44,22 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
         /// </summary>
-        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem, Func<string> defaultUserAgentFn)
+        public HttpClientManager(
+            IApplicationPaths appPaths,
+            ILoggerFactory loggerFactory,
+            IFileSystem fileSystem,
+            Func<string> defaultUserAgentFn)
         {
             if (appPaths == null)
             {
                 throw new ArgumentNullException(nameof(appPaths));
             }
-            if (logger == null)
+            if (loggerFactory == null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger("HttpClient");
             _fileSystem = fileSystem;
             _appPaths = appPaths;
             _defaultUserAgentFn = defaultUserAgentFn;
