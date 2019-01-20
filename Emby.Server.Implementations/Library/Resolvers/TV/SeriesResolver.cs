@@ -107,7 +107,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             return null;
         }
 
-        public static bool IsSeriesFolder(string path,
+        public static bool IsSeriesFolder(
+            string path,
             IEnumerable<FileSystemMetadata> fileSystemChildren,
             IDirectoryService directoryService,
             IFileSystem fileSystem,
@@ -135,7 +136,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 {
                     if (IsSeasonFolder(child.FullName, isTvContentType, libraryManager))
                     {
-                        //logger.LogDebug("{0} is a series because of season folder {1}.", path, child.FullName);
+                        logger.LogDebug("{Path} is a series because of season folder {Dir}.", path, child.FullName);
                         return true;
                     }
                 }
@@ -161,7 +162,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                             isOptimistic = false;
                         }
 
-                        var episodeInfo = episodeResolver.Resolve(fullName, false, isNamed, isOptimistic, null, false);
+                        var episodeInfo = episodeResolver.Resolve(fullName, false, isNamed, isOptimistic, fillExtendedInfo: false);
                         if (episodeInfo != null && episodeInfo.EpisodeNumber.HasValue)
                         {
                             return true;
@@ -170,7 +171,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 }
             }
 
-            //logger.LogDebug("{0} is not a series folder.", path);
+            logger.LogDebug("{Path} is not a series folder.", path);
             return false;
         }
 

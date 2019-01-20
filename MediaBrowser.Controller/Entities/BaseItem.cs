@@ -1403,9 +1403,9 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<bool> RefreshLocalTrailers(IHasTrailers item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newItems = LibraryManager.FindTrailers(this, fileSystemChildren, options.DirectoryService).ToList();
+            var newItems = LibraryManager.FindTrailers(this, fileSystemChildren, options.DirectoryService);
 
-            var newItemIds = newItems.Select(i => i.Id).ToArray();
+            var newItemIds = newItems.Select(i => i.Id);
 
             var itemsChanged = !item.LocalTrailerIds.SequenceEqual(newItemIds);
             var ownerId = item.Id;
@@ -1414,8 +1414,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var subOptions = new MetadataRefreshOptions(options);
 
-                if (!i.ExtraType.HasValue ||
-                    i.ExtraType.Value != Model.Entities.ExtraType.Trailer ||
+                if (i.ExtraType != Model.Entities.ExtraType.Trailer ||
                     i.OwnerId != ownerId ||
                     !i.ParentId.Equals(Guid.Empty))
                 {
@@ -1430,7 +1429,7 @@ namespace MediaBrowser.Controller.Entities
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            item.LocalTrailerIds = newItemIds;
+            item.LocalTrailerIds = newItemIds.ToArray();
 
             return itemsChanged;
         }
