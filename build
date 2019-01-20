@@ -32,7 +32,13 @@ usage() {
     echo -e "Build output files are collected at '../jellyfin-build/<platform>'."
 }
 
+# Show usage on stderr with exit 1 on argless
 if [[ -z $1 ]]; then
+    usage >&2
+    exit 1
+fi
+# Show usage if -h or --help are specified in the args
+if [[ $@ =~ '-h' || $@ =~ '--help' ]]; then
     usage
     exit 0
 fi
