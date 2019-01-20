@@ -1,11 +1,11 @@
-using SkiaSharp;
-using MediaBrowser.Common.Configuration;
 using System;
-using System.IO;
-using MediaBrowser.Model.IO;
 using System.Collections.Generic;
+using System.IO;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.IO;
+using SkiaSharp;
 
-namespace Emby.Drawing.Skia
+namespace Emby.Drawing
 {
     public class StripCollageBuilder
     {
@@ -164,7 +164,7 @@ namespace Emby.Drawing.Skia
 
         private SKBitmap GetNextValidImage(string[] paths, int currentIndex, out int newIndex)
         {
-            Dictionary<int, int> imagesTested = new Dictionary<int, int>();
+            var imagesTested = new Dictionary<int, int>();
             SKBitmap bitmap = null;
 
             while (imagesTested.Count < paths.Length)
@@ -174,7 +174,7 @@ namespace Emby.Drawing.Skia
                     currentIndex = 0;
                 }
 
-                bitmap = SkiaEncoder.Decode(paths[currentIndex], false, _fileSystem, null, out SKEncodedOrigin origin);
+                bitmap = SkiaEncoder.Decode(paths[currentIndex], false, _fileSystem, null, out var origin);
 
                 imagesTested[currentIndex] = 0;
 

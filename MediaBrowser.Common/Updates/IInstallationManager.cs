@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Common.Plugins;
-using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Updates;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Plugins;
+using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Common.Updates
 {
@@ -106,14 +106,14 @@ namespace MediaBrowser.Common.Updates
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">package</exception>
+        /// <exception cref="ArgumentNullException">package</exception>
         Task InstallPackage(PackageVersionInfo package, bool isPlugin, IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Uninstalls a plugin
         /// </summary>
         /// <param name="plugin">The plugin.</param>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         void UninstallPlugin(IPlugin plugin);
     }
 }

@@ -1,9 +1,3 @@
-﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,12 +7,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Xml;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -78,13 +76,9 @@ namespace MediaBrowser.Providers.TV
 
                     if (parts.Length == 3)
                     {
-                        int seasonNumber;
-
-                        if (int.TryParse(parts[1], NumberStyles.Integer, _usCulture, out seasonNumber))
+                        if (int.TryParse(parts[1], NumberStyles.Integer, _usCulture, out var seasonNumber))
                         {
-                            int episodeNumber;
-
-                            if (int.TryParse(parts[2], NumberStyles.Integer, _usCulture, out episodeNumber))
+                            if (int.TryParse(parts[2], NumberStyles.Integer, _usCulture, out var episodeNumber))
                             {
                                 return new ValueTuple<int, int>(seasonNumber, episodeNumber);
                             }
@@ -121,7 +115,7 @@ namespace MediaBrowser.Providers.TV
 
             var hasNewEpisodes = false;
 
-            if (addNewItems && series.IsMetadataFetcherEnabled(_libraryManager.GetLibraryOptions(series) ,TvdbSeriesProvider.Current.Name))
+            if (addNewItems && series.IsMetadataFetcherEnabled(_libraryManager.GetLibraryOptions(series), TvdbSeriesProvider.Current.Name))
             {
                 hasNewEpisodes = await AddMissingEpisodes(series, allRecursiveChildren, addMissingEpisodes, seriesDataPath, episodeLookup, cancellationToken)
                     .ConfigureAwait(false);
@@ -508,8 +502,7 @@ namespace MediaBrowser.Providers.TV
 
                                             if (!string.IsNullOrWhiteSpace(val))
                                             {
-                                                DateTime date;
-                                                if (DateTime.TryParse(val, out date))
+                                                if (DateTime.TryParse(val, out var date))
                                                 {
                                                     airDate = date.ToUniversalTime();
                                                 }

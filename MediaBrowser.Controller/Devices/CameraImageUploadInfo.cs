@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Devices;
+using MediaBrowser.Model.Devices;
 
 namespace MediaBrowser.Controller.Devices
 {

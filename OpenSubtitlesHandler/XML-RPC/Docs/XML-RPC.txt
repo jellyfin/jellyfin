@@ -1,4 +1,4 @@
-﻿XML-RPC Specification
+XML-RPC Specification
 
 Tue, Jun 15, 1999; by Dave Winer.
 
@@ -32,16 +32,16 @@ Host: betty.userland.com
 Content-Type: text/xml
 Content-length: 181
 
-<?xml version="1.0"?> 
- <methodCall> 
-  <methodName>examples.getStateName</methodName> 
-    <params> 
-	  <param> 
+<?xml version="1.0"?>
+ <methodCall>
+  <methodName>examples.getStateName</methodName>
+    <params>
+	  <param>
 	    <value>
 		  <i4>41</i4>
-		</value> 
-	  </param> 
-	</params> 
+		</value>
+	  </param>
+	</params>
  </methodCall>
 
 Header requirements
@@ -202,11 +202,11 @@ The following questions came up on the UserLand discussion group as XML-RPC was 
 
     What timezone should be assumed for the dateTime.iso8601 type? UTC? localtime?
 
-    Don't assume a timezone. It should be specified by the server in its documentation what assumptions it makes about timezones. 
+    Don't assume a timezone. It should be specified by the server in its documentation what assumptions it makes about timezones.
 
 Additions
 
-    <base64> type. 1/21/99 DW. 
+    <base64> type. 1/21/99 DW.
 
 Updated 6/30/03 DW
 

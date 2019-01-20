@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
@@ -276,8 +276,8 @@ namespace Rssdp
         /// <para>If the device is already a member of the <see cref="Devices"/> collection, this method does nothing.</para>
         /// <para>Also sets the <see cref="SsdpEmbeddedDevice.RootDevice"/> property of the added device and all descendant devices to the relevant <see cref="SsdpRootDevice"/> instance.</para>
         /// </remarks>
-        /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
-        /// <exception cref="System.InvalidOperationException">Thrown if the <paramref name="device"/> is already associated with a different <see cref="SsdpRootDevice"/> instance than used in this tree. Can occur if you try to add the same device instance to more than one tree. Also thrown if you try to add a device to itself.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the <paramref name="device"/> is already associated with a different <see cref="SsdpRootDevice"/> instance than used in this tree. Can occur if you try to add the same device instance to more than one tree. Also thrown if you try to add a device to itself.</exception>
         /// <seealso cref="DeviceAdded"/>
         public void AddDevice(SsdpEmbeddedDevice device)
         {
@@ -305,7 +305,7 @@ namespace Rssdp
         /// <para>If the device is not a member of the <see cref="Devices"/> collection, this method does nothing.</para>
         /// <para>Also sets the <see cref="SsdpEmbeddedDevice.RootDevice"/> property to null for the removed device and all descendant devices.</para>
         /// </remarks>
-        /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
         /// <seealso cref="DeviceRemoved"/>
         public void RemoveDevice(SsdpEmbeddedDevice device)
         {

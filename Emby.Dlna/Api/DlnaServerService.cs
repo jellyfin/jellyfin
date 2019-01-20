@@ -1,14 +1,14 @@
-﻿using MediaBrowser.Controller.Dlna;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
-using MediaBrowser.Model.Services;
-using MediaBrowser.Common.Extensions;
-using System.Text;
-using MediaBrowser.Controller.Net;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Emby.Dlna.Main;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Services;
 
 namespace Emby.Dlna.Api
 {
@@ -115,29 +115,11 @@ namespace Emby.Dlna.Api
         public IRequest Request { get; set; }
         private IHttpResultFactory _resultFactory;
 
-        private IContentDirectory ContentDirectory
-        {
-            get
-            {
-                return DlnaEntryPoint.Current.ContentDirectory;
-            }
-        }
+        private IContentDirectory ContentDirectory => DlnaEntryPoint.Current.ContentDirectory;
 
-        private IConnectionManager ConnectionManager
-        {
-            get
-            {
-                return DlnaEntryPoint.Current.ConnectionManager;
-            }
-        }
+        private IConnectionManager ConnectionManager => DlnaEntryPoint.Current.ConnectionManager;
 
-        private IMediaReceiverRegistrar MediaReceiverRegistrar
-        {
-            get
-            {
-                return DlnaEntryPoint.Current.MediaReceiverRegistrar;
-            }
-        }
+        private IMediaReceiverRegistrar MediaReceiverRegistrar => DlnaEntryPoint.Current.MediaReceiverRegistrar;
 
         public DlnaServerService(IDlnaManager dlnaManager, IHttpResultFactory httpResultFactory)
         {
@@ -227,7 +209,7 @@ namespace Emby.Dlna.Api
             // TODO: Work out what this is doing.
             if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(first, "jellyfin", StringComparison.OrdinalIgnoreCase ))
+                string.Equals(first, "jellyfin", StringComparison.OrdinalIgnoreCase))
             {
                 index++;
             }
@@ -259,7 +241,7 @@ namespace Emby.Dlna.Api
             var cacheLength = TimeSpan.FromDays(365);
             var cacheKey = Request.RawUrl.GetMD5();
 
-            return _resultFactory.GetStaticResult(Request, cacheKey, null, cacheLength, contentType, () => Task.FromResult<Stream>(_dlnaManager.GetIcon(request.Filename).Stream));
+            return _resultFactory.GetStaticResult(Request, cacheKey, null, cacheLength, contentType, () => Task.FromResult(_dlnaManager.GetIcon(request.Filename).Stream));
         }
 
         public object Subscribe(ProcessContentDirectoryEventRequest request)

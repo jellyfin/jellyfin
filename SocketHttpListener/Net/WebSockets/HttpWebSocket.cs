@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 
 namespace SocketHttpListener.Net.WebSockets
@@ -20,7 +19,7 @@ namespace SocketHttpListener.Net.WebSockets
             string retVal;
 
             // SHA1 used only for hashing purposes, not for crypto. Check here for FIPS compat.
-            using (SHA1 sha1 = SHA1.Create())
+            using (var sha1 = SHA1.Create())
             {
                 string acceptString = string.Concat(secWebSocketKey, HttpWebSocket.SecWebSocketKeyGuid);
                 byte[] toHash = Encoding.UTF8.GetBytes(acceptString);

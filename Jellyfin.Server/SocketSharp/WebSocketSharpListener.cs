@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.HttpServer;
+using Emby.Server.Implementations.Net;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Cryptography;
@@ -12,7 +12,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
-using MediaBrowser.Model.Text;
 using Microsoft.Extensions.Logging;
 using SocketHttpListener.Net;
 
@@ -25,7 +24,6 @@ namespace Jellyfin.SocketSharp
         private readonly ILogger _logger;
         private readonly X509Certificate _certificate;
         private readonly IStreamHelper _streamHelper;
-        private readonly ITextEncoding _textEncoding;
         private readonly INetworkManager _networkManager;
         private readonly ISocketFactory _socketFactory;
         private readonly ICryptoProvider _cryptoProvider;
@@ -36,12 +34,13 @@ namespace Jellyfin.SocketSharp
         private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
         private CancellationToken _disposeCancellationToken;
 
-        public WebSocketSharpListener(ILogger logger, X509Certificate certificate, IStreamHelper streamHelper, ITextEncoding textEncoding, INetworkManager networkManager, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, bool enableDualMode, IFileSystem fileSystem, IEnvironmentInfo environment)
+        public WebSocketSharpListener(ILogger logger, X509Certificate certificate, IStreamHelper streamHelper,
+            INetworkManager networkManager, ISocketFactory socketFactory, ICryptoProvider cryptoProvider,
+            bool enableDualMode, IFileSystem fileSystem, IEnvironmentInfo environment)
         {
             _logger = logger;
             _certificate = certificate;
             _streamHelper = streamHelper;
-            _textEncoding = textEncoding;
             _networkManager = networkManager;
             _socketFactory = socketFactory;
             _cryptoProvider = cryptoProvider;
@@ -62,7 +61,7 @@ namespace Jellyfin.SocketSharp
         public void Start(IEnumerable<string> urlPrefixes)
         {
             if (_listener == null)
-                _listener = new HttpListener(_logger, _cryptoProvider, _socketFactory, _networkManager, _textEncoding, _streamHelper, _fileSystem, _environment);
+                _listener = new HttpListener(_logger, _cryptoProvider, _socketFactory, _networkManager, _streamHelper, _fileSystem, _environment);
 
             _listener.EnableDualMode = _enableDualMode;
 

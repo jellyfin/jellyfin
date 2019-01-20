@@ -1,8 +1,7 @@
+using System;
+using System.Linq;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.UserLibrary
@@ -468,7 +467,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (string.IsNullOrEmpty(val))
             {
-                return Array.Empty<ValueTuple<string, Model.Entities.SortOrder>>();
+                return Array.Empty<ValueTuple<string, SortOrder>>();
             }
 
             var vals = val.Split(',');
@@ -479,7 +478,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var sortOrders = requestedSortOrder.Split(',');
 
-            var result = new ValueTuple<string, Model.Entities.SortOrder>[vals.Length];
+            var result = new ValueTuple<string, SortOrder>[vals.Length];
 
             for (var i = 0; i < vals.Length; i++)
             {
@@ -488,7 +487,7 @@ namespace MediaBrowser.Api.UserLibrary
                 var sortOrderValue = sortOrders.Length > sortOrderIndex ? sortOrders[sortOrderIndex] : null;
                 var sortOrder = string.Equals(sortOrderValue, "Descending", StringComparison.OrdinalIgnoreCase) ? MediaBrowser.Model.Entities.SortOrder.Descending : MediaBrowser.Model.Entities.SortOrder.Ascending;
 
-                result[i] = new ValueTuple<string, Model.Entities.SortOrder>(vals[i], sortOrder);
+                result[i] = new ValueTuple<string, SortOrder>(vals[i], sortOrder);
             }
 
             return result;

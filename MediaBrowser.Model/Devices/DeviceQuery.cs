@@ -1,4 +1,3 @@
-﻿
 using System;
 
 namespace MediaBrowser.Model.Devices

@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Users;
 using System;
+using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Model.Notifications
 {

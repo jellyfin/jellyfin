@@ -1,9 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using Emby.Naming.Common;
-using Emby.Naming.TV;
-using Emby.Naming.Video;
 
 namespace Emby.Naming.AudioBook
 {

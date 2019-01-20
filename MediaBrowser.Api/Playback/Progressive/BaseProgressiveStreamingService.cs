@@ -1,4 +1,9 @@
-﻿using MediaBrowser.Common.Net;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -9,16 +14,8 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Api.LiveTv;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -105,10 +102,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// Gets the type of the transcoding job.
         /// </summary>
         /// <value>The type of the transcoding job.</value>
-        protected override TranscodingJobType TranscodingJobType
-        {
-            get { return TranscodingJobType.Progressive; }
-        }
+        protected override TranscodingJobType TranscodingJobType => TranscodingJobType.Progressive;
 
         /// <summary>
         /// Processes the request.

@@ -1,12 +1,10 @@
+using System;
+using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Dto;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Services;
 

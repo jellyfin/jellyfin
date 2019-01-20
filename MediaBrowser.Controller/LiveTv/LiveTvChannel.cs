@@ -1,14 +1,14 @@
-﻿using MediaBrowser.Controller.Entities;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
-using System.Collections.Generic;
-using System.Globalization;
 using MediaBrowser.Model.Serialization;
-using System;
-using System.Linq;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -32,28 +32,13 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPositionTicksResume
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPositionTicksResume => false;
 
         [IgnoreDataMember]
-        public override SourceType SourceType
-        {
-            get { return SourceType.LiveTV; }
-        }
+        public override SourceType SourceType => SourceType.LiveTV;
 
         [IgnoreDataMember]
-        public override bool EnableRememberingTrackSelections
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool EnableRememberingTrackSelections => false;
 
         /// <summary>
         /// Gets or sets the number.
@@ -68,14 +53,7 @@ namespace MediaBrowser.Controller.LiveTv
         public ChannelType ChannelType { get; set; }
 
         [IgnoreDataMember]
-        public override LocationType LocationType
-        {
-            get
-            {
-                // TODO: This should be removed
-                return LocationType.Remote;
-            }
-        }
+        public override LocationType LocationType => LocationType.Remote;
 
         protected override string CreateSortName()
         {
@@ -93,13 +71,7 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         [IgnoreDataMember]
-        public override string MediaType
-        {
-            get
-            {
-                return ChannelType == ChannelType.Radio ? Model.Entities.MediaType.Audio : Model.Entities.MediaType.Video;
-            }
-        }
+        public override string MediaType => ChannelType == ChannelType.Radio ? Model.Entities.MediaType.Audio : Model.Entities.MediaType.Video;
 
         public override string GetClientTypeName()
         {
@@ -176,13 +148,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is kids; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public bool IsKids
-        {
-            get
-            {
-                return Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
-            }
-        }
+        public bool IsKids => Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
 
         [IgnoreDataMember]
         public bool IsRepeat { get; set; }

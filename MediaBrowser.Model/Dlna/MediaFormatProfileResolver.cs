@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -91,7 +91,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (StringHelper.EqualsIgnoreCase(videoCodec, "mpeg2video"))
             {
-                List<MediaFormatProfile> list = new List<MediaFormatProfile>();
+                var list = new List<MediaFormatProfile>();
 
                 list.Add(ValueOf("MPEG_TS_SD_NA" + suffix));
                 list.Add(ValueOf("MPEG_TS_SD_EU" + suffix));
@@ -167,7 +167,7 @@ namespace MediaBrowser.Model.Dlna
                     return new MediaFormatProfile[] { ValueOf(string.Format("MPEG4_P2_TS_ASP_AC3{0}", suffix)) };
             }
 
-            return new MediaFormatProfile[]{};
+            return new MediaFormatProfile[] { };
         }
 
         private MediaFormatProfile ValueOf(string value)

@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Configuration;
 using System;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;

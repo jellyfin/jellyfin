@@ -1,4 +1,4 @@
-﻿using System.Xml;
+using System.Xml;
 
 namespace MediaBrowser.Model.Xml
 {

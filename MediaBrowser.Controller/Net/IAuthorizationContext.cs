@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
 {

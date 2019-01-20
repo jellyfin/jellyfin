@@ -1,10 +1,9 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Drawing;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Drawing;
 
 namespace MediaBrowser.Controller.Drawing
 {

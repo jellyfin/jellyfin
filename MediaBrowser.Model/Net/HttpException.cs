@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 
 namespace MediaBrowser.Model.Net

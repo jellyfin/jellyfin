@@ -1,15 +1,11 @@
+using System;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Events;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Session;
-using System;
-using System.Collections.Specialized;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Session
 {

@@ -1,13 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Net;
 using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
 using System.Text;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Extensions;
 
 namespace SocketHttpListener.Net
 {
@@ -213,8 +208,7 @@ namespace SocketHttpListener.Net
             if (!IsHeaderName(headerName))
                 throw new ArgumentException("Invalid character in header");
 
-            HeaderInfo info;
-            if (!headers.TryGetValue(headerName, out info))
+            if (!headers.TryGetValue(headerName, out HeaderInfo info))
                 return false;
 
             var flag = response ? HeaderInfo.Response : HeaderInfo.Request;
@@ -239,7 +233,7 @@ namespace SocketHttpListener.Net
 
         internal string ToStringMultiValue()
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             int count = base.Count;
             for (int i = 0; i < count; i++)
@@ -268,7 +262,7 @@ namespace SocketHttpListener.Net
 
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             int count = base.Count;
             for (int i = 0; i < count; i++)
@@ -318,8 +312,7 @@ namespace SocketHttpListener.Net
             if (headerName == null)
                 return false;
 
-            HeaderInfo info;
-            return headers.TryGetValue(headerName, out info) && (info & HeaderInfo.MultiValue) != 0;
+            return headers.TryGetValue(headerName, out HeaderInfo info) && (info & HeaderInfo.MultiValue) != 0;
         }
 
         internal static bool IsHeaderValue(string value)

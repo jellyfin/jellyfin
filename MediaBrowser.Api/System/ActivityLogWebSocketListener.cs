@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Model.Activity;
-using MediaBrowser.Model.Events;
-using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
-using System.Threading;
+using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Events;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.System
 {
@@ -17,10 +17,7 @@ namespace MediaBrowser.Api.System
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        protected override string Name
-        {
-            get { return "ActivityLogEntry"; }
-        }
+        protected override string Name => "ActivityLogEntry";
 
         /// <summary>
         /// The _kernel

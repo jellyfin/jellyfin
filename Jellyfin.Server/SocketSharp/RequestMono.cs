@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -75,7 +75,7 @@ namespace Jellyfin.SocketSharp
                         //
                         // We use a substream, as in 2.x we will support large uploads streamed to disk,
                         //
-                        HttpPostedFile sub = new HttpPostedFile(e.Filename, e.ContentType, input, e.Start, e.Length);
+                        var sub = new HttpPostedFile(e.Filename, e.ContentType, input, e.Start, e.Length);
                         files[e.Name] = sub;
                     }
                 }
@@ -113,21 +113,9 @@ namespace Jellyfin.SocketSharp
             return form;
         }
 
-        public string Accept
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers["Accept"]) ? null : request.Headers["Accept"];
-            }
-        }
+        public string Accept => string.IsNullOrEmpty(request.Headers["Accept"]) ? null : request.Headers["Accept"];
 
-        public string Authorization
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers["Authorization"]) ? null : request.Headers["Authorization"];
-            }
-        }
+        public string Authorization => string.IsNullOrEmpty(request.Headers["Authorization"]) ? null : request.Headers["Authorization"];
 
         protected bool validate_cookies, validate_query_string, validate_form;
         protected bool checked_cookies, checked_query_string, checked_form;
@@ -160,9 +148,7 @@ namespace Jellyfin.SocketSharp
 
         internal static bool IsInvalidString(string val)
         {
-            int validationFailureIndex;
-
-            return IsInvalidString(val, out validationFailureIndex);
+            return IsInvalidString(val, out var validationFailureIndex);
         }
 
         internal static bool IsInvalidString(string val, out int validationFailureIndex)
@@ -219,17 +205,17 @@ namespace Jellyfin.SocketSharp
 
         async Task LoadWwwForm(WebROCollection form)
         {
-            using (Stream input = InputStream)
+            using (var input = InputStream)
             {
                 using (var ms = new MemoryStream())
                 {
                     await input.CopyToAsync(ms).ConfigureAwait(false);
                     ms.Position = 0;
 
-                    using (StreamReader s = new StreamReader(ms, ContentEncoding))
+                    using (var s = new StreamReader(ms, ContentEncoding))
                     {
-                        StringBuilder key = new StringBuilder();
-                        StringBuilder value = new StringBuilder();
+                        var key = new StringBuilder();
+                        var value = new StringBuilder();
                         int c;
 
                         while ((c = s.Read()) != -1)
@@ -281,7 +267,7 @@ namespace Jellyfin.SocketSharp
         {
             public override string ToString()
             {
-                StringBuilder result = new StringBuilder();
+                var result = new StringBuilder();
                 foreach (var pair in this)
                 {
                     if (result.Length > 0)
@@ -410,30 +396,17 @@ namespace Jellyfin.SocketSharp
                     throw new NotSupportedException();
                 }
 
-                public override bool CanRead
-                {
-                    get { return true; }
-                }
-                public override bool CanSeek
-                {
-                    get { return true; }
-                }
-                public override bool CanWrite
-                {
-                    get { return false; }
-                }
+                public override bool CanRead => true;
 
-                public override long Length
-                {
-                    get { return end - offset; }
-                }
+                public override bool CanSeek => true;
+
+                public override bool CanWrite => false;
+
+                public override long Length => end - offset;
 
                 public override long Position
                 {
-                    get
-                    {
-                        return position - offset;
-                    }
+                    get => position - offset;
                     set
                     {
                         if (value > Length)
@@ -451,37 +424,13 @@ namespace Jellyfin.SocketSharp
                 this.stream = new ReadSubStream(base_stream, offset, length);
             }
 
-            public string ContentType
-            {
-                get
-                {
-                    return content_type;
-                }
-            }
+            public string ContentType => content_type;
 
-            public int ContentLength
-            {
-                get
-                {
-                    return (int)stream.Length;
-                }
-            }
+            public int ContentLength => (int)stream.Length;
 
-            public string FileName
-            {
-                get
-                {
-                    return name;
-                }
-            }
+            public string FileName => name;
 
-            public Stream InputStream
-            {
-                get
-                {
-                    return stream;
-                }
-            }
+            public Stream InputStream => stream;
         }
 
         class Helpers
@@ -764,7 +713,7 @@ namespace Jellyfin.SocketSharp
                 if (at_eof || ReadBoundary())
                     return null;
 
-                Element elem = new Element();
+                var elem = new Element();
                 string header;
                 while ((header = ReadHeaders()) != null)
                 {

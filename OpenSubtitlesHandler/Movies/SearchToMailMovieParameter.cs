@@ -1,4 +1,4 @@
-﻿/* This file is part of OpenSubtitles Handler
+/* This file is part of OpenSubtitles Handler
    A library that handle OpenSubtitles.org XML-RPC methods.
 
    Copyright © Ala Ibrahim Hadid 2013
@@ -19,7 +19,7 @@
 
 namespace OpenSubtitlesHandler
 {
-    public struct  SearchToMailMovieParameter
+    public struct SearchToMailMovieParameter
     {
         private string _moviehash;
         private double _moviesize;

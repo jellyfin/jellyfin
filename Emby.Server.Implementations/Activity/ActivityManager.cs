@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Activity;
-using MediaBrowser.Model.Events;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Querying;
 using System;
 using System.Linq;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Activity
 {

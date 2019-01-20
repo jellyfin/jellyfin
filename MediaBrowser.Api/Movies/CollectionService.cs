@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Controller.Collections;
+using System;
+using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Collections;
-using System;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Movies
@@ -69,7 +69,7 @@ namespace MediaBrowser.Api.Movies
                 Name = request.Name,
                 ParentId = parentId,
                 ItemIdList = SplitValue(request.Ids, ','),
-                UserIds = new [] { userId }
+                UserIds = new[] { userId }
 
             });
 

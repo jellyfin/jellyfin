@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Model.Playlists
 {

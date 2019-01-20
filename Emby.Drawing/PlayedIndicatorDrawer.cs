@@ -1,10 +1,10 @@
-﻿using SkiaSharp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.IO;
+using SkiaSharp;
 
-namespace Emby.Drawing.Skia
+namespace Emby.Drawing
 {
     public class PlayedIndicatorDrawer
     {
@@ -51,7 +51,7 @@ namespace Emby.Drawing.Skia
 
                 paint.Typeface = emojiTypeface;
 
-                canvas.DrawText(text, (float)x-20, OffsetFromTopRightCorner + 12, paint);
+                canvas.DrawText(text, (float)x - 20, OffsetFromTopRightCorner + 12, paint);
             }
         }
     }

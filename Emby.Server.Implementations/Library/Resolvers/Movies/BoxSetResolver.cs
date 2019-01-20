@@ -1,9 +1,9 @@
+using System;
+using System.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
-using System;
-using System.IO;
 using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Movies

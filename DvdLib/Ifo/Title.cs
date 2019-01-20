@@ -1,7 +1,4 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 
 namespace DvdLib.Ifo
@@ -53,7 +50,7 @@ namespace DvdLib.Ifo
             long curPos = br.BaseStream.Position;
             br.BaseStream.Seek(startByte, SeekOrigin.Begin);
 
-            ProgramChain pgc = new ProgramChain(pgcNum);
+            var pgc = new ProgramChain(pgcNum);
             pgc.ParseHeader(br);
             ProgramChains.Add(pgc);
             if (entryPgc) EntryProgramChain = pgc;

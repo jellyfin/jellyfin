@@ -1,4 +1,3 @@
-﻿
 namespace MediaBrowser.Model.Branding
 {
     public class BrandingOptions

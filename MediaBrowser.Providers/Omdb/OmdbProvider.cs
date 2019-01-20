@@ -1,20 +1,19 @@
-using MediaBrowser.Model.IO;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Omdb
 {
@@ -44,7 +43,7 @@ namespace MediaBrowser.Providers.Omdb
                 throw new ArgumentNullException(nameof(imdbId));
             }
 
-            T item = itemResult.Item;
+            var item = itemResult.Item;
 
             var result = await GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
 
@@ -59,10 +58,8 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            int year;
-
             if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
-                && int.TryParse(result.Year.Substring(0, 4), NumberStyles.Number, _usCulture, out year)
+                && int.TryParse(result.Year.Substring(0, 4), NumberStyles.Number, _usCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
@@ -75,19 +72,15 @@ namespace MediaBrowser.Providers.Omdb
                 item.CriticRating = tomatoScore;
             }
 
-            int voteCount;
-
             if (!string.IsNullOrEmpty(result.imdbVotes)
-                && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out voteCount)
+                && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out var voteCount)
                 && voteCount >= 0)
             {
                 //item.VoteCount = voteCount;
             }
 
-            float imdbRating;
-
             if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, _usCulture, out imdbRating)
+                && float.TryParse(result.imdbRating, NumberStyles.Any, _usCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
@@ -114,7 +107,7 @@ namespace MediaBrowser.Providers.Omdb
                 throw new ArgumentNullException(nameof(seriesImdbId));
             }
 
-            T item = itemResult.Item;
+            var item = itemResult.Item;
 
             var seasonResult = await GetSeasonRootObject(seriesImdbId, seasonNumber, cancellationToken).ConfigureAwait(false);
 
@@ -166,10 +159,8 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            int year;
-
             if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
-                && int.TryParse(result.Year.Substring(0, 4), NumberStyles.Number, _usCulture, out year)
+                && int.TryParse(result.Year.Substring(0, 4), NumberStyles.Number, _usCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
@@ -182,19 +173,15 @@ namespace MediaBrowser.Providers.Omdb
                 item.CriticRating = tomatoScore;
             }
 
-            int voteCount;
-
             if (!string.IsNullOrEmpty(result.imdbVotes)
-                && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out voteCount)
+                && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out var voteCount)
                 && voteCount >= 0)
             {
                 //item.VoteCount = voteCount;
             }
 
-            float imdbRating;
-
             if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, _usCulture, out imdbRating)
+                && float.TryParse(result.imdbRating, NumberStyles.Any, _usCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
@@ -221,7 +208,7 @@ namespace MediaBrowser.Providers.Omdb
 
             string resultString;
 
-            using (Stream stream = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+            using (var stream = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
             {
                 using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
                 {
@@ -240,7 +227,7 @@ namespace MediaBrowser.Providers.Omdb
 
             string resultString;
 
-            using (Stream stream = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+            using (var stream = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
             {
                 using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
                 {
@@ -255,8 +242,7 @@ namespace MediaBrowser.Providers.Omdb
 
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
-            string id;
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out id) && !string.IsNullOrEmpty(id))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out string id) && !string.IsNullOrEmpty(id))
             {
                 // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
                 if (!string.IsNullOrWhiteSpace(id))
@@ -395,7 +381,7 @@ namespace MediaBrowser.Providers.Omdb
         private void ParseAdditionalMetadata<T>(MetadataResult<T> itemResult, RootObject result)
             where T : BaseItem
         {
-            T item = itemResult.Item;
+            var item = itemResult.Item;
 
             var isConfiguredForEnglish = IsConfiguredForEnglish(item) || _configurationManager.Configuration.EnableNewOmdbSupport;
 
@@ -516,8 +502,7 @@ namespace MediaBrowser.Providers.Omdb
                     if (rating != null && rating.Value != null)
                     {
                         var value = rating.Value.TrimEnd('%');
-                        float score;
-                        if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out score))
+                        if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var score))
                         {
                             return score;
                         }

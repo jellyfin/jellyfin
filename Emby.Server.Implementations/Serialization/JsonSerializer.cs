@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
 using System.Threading.Tasks;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Common.Implementations.Serialization
 {
@@ -27,7 +27,7 @@ namespace Emby.Common.Implementations.Serialization
         /// </summary>
         /// <param name="obj">The obj.</param>
         /// <param name="stream">The stream.</param>
-        /// <exception cref="System.ArgumentNullException">obj</exception>
+        /// <exception cref="ArgumentNullException">obj</exception>
         public void SerializeToStream(object obj, Stream stream)
         {
             if (obj == null)
@@ -48,7 +48,7 @@ namespace Emby.Common.Implementations.Serialization
         /// </summary>
         /// <param name="obj">The obj.</param>
         /// <param name="file">The file.</param>
-        /// <exception cref="System.ArgumentNullException">obj</exception>
+        /// <exception cref="ArgumentNullException">obj</exception>
         public void SerializeToFile(object obj, string file)
         {
             if (obj == null)
@@ -61,7 +61,7 @@ namespace Emby.Common.Implementations.Serialization
                 throw new ArgumentNullException(nameof(file));
             }
 
-            using (Stream stream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+            using (var stream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
             {
                 SerializeToStream(obj, stream);
             }
@@ -79,7 +79,7 @@ namespace Emby.Common.Implementations.Serialization
         /// <param name="type">The type.</param>
         /// <param name="file">The file.</param>
         /// <returns>System.Object.</returns>
-        /// <exception cref="System.ArgumentNullException">type</exception>
+        /// <exception cref="ArgumentNullException">type</exception>
         public object DeserializeFromFile(Type type, string file)
         {
             if (type == null)
@@ -92,7 +92,7 @@ namespace Emby.Common.Implementations.Serialization
                 throw new ArgumentNullException(nameof(file));
             }
 
-            using (Stream stream = OpenFile(file))
+            using (var stream = OpenFile(file))
             {
                 return DeserializeFromStream(stream, type);
             }
@@ -104,7 +104,7 @@ namespace Emby.Common.Implementations.Serialization
         /// <typeparam name="T"></typeparam>
         /// <param name="file">The file.</param>
         /// <returns>``0.</returns>
-        /// <exception cref="System.ArgumentNullException">file</exception>
+        /// <exception cref="ArgumentNullException">file</exception>
         public T DeserializeFromFile<T>(string file)
             where T : class
         {
@@ -113,7 +113,7 @@ namespace Emby.Common.Implementations.Serialization
                 throw new ArgumentNullException(nameof(file));
             }
 
-            using (Stream stream = OpenFile(file))
+            using (var stream = OpenFile(file))
             {
                 return DeserializeFromStream<T>(stream);
             }
@@ -125,7 +125,7 @@ namespace Emby.Common.Implementations.Serialization
         /// <typeparam name="T"></typeparam>
         /// <param name="stream">The stream.</param>
         /// <returns>``0.</returns>
-        /// <exception cref="System.ArgumentNullException">stream</exception>
+        /// <exception cref="ArgumentNullException">stream</exception>
         public T DeserializeFromStream<T>(Stream stream)
         {
             if (stream == null)
@@ -153,7 +153,7 @@ namespace Emby.Common.Implementations.Serialization
         /// <typeparam name="T"></typeparam>
         /// <param name="text">The text.</param>
         /// <returns>``0.</returns>
-        /// <exception cref="System.ArgumentNullException">text</exception>
+        /// <exception cref="ArgumentNullException">text</exception>
         public T DeserializeFromString<T>(string text)
         {
             if (string.IsNullOrEmpty(text))
@@ -170,7 +170,7 @@ namespace Emby.Common.Implementations.Serialization
         /// <param name="stream">The stream.</param>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
-        /// <exception cref="System.ArgumentNullException">stream</exception>
+        /// <exception cref="ArgumentNullException">stream</exception>
         public object DeserializeFromStream(Stream stream, Type type)
         {
             if (stream == null)
@@ -236,7 +236,7 @@ namespace Emby.Common.Implementations.Serialization
         /// <param name="json">The json.</param>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
-        /// <exception cref="System.ArgumentNullException">json</exception>
+        /// <exception cref="ArgumentNullException">json</exception>
         public object DeserializeFromString(string json, Type type)
         {
             if (string.IsNullOrEmpty(json))
@@ -257,7 +257,7 @@ namespace Emby.Common.Implementations.Serialization
         /// </summary>
         /// <param name="obj">The obj.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">obj</exception>
+        /// <exception cref="ArgumentNullException">obj</exception>
         public string SerializeToString(object obj)
         {
             if (obj == null)

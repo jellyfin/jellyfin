@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Model.LiveTv
+namespace MediaBrowser.Model.LiveTv
 {
     public enum DayPattern
     {

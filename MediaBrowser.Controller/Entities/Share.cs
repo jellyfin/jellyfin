@@ -1,5 +1,3 @@
-﻿using System.Collections.Generic;
-
 namespace MediaBrowser.Controller.Entities
 {
     public interface IHasShares

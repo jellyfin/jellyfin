@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Controller.Library;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using Microsoft.Extensions.Logging;
 

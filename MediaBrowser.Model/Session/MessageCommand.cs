@@ -1,4 +1,3 @@
-﻿
 namespace MediaBrowser.Model.Session
 {
     public class MessageCommand

@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Services
 {
@@ -308,8 +306,7 @@ namespace Emby.Server.Implementations.Services
 
         public int MatchScore(string httpMethod, string[] withPathInfoParts)
         {
-            int wildcardMatchCount;
-            var isMatch = IsMatch(httpMethod, withPathInfoParts, out wildcardMatchCount);
+            var isMatch = IsMatch(httpMethod, withPathInfoParts, out var wildcardMatchCount);
             if (!isMatch)
             {
                 return -1;
@@ -486,8 +483,7 @@ namespace Emby.Server.Implementations.Services
                     continue;
                 }
 
-                string propertyNameOnRequest;
-                if (!this.propertyNamesMap.TryGetValue(variableName.ToLower(), out propertyNameOnRequest))
+                if (!this.propertyNamesMap.TryGetValue(variableName.ToLower(), out var propertyNameOnRequest))
                 {
                     if (string.Equals("ignore", variableName, StringComparison.OrdinalIgnoreCase))
                     {

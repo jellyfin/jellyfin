@@ -8,9 +8,9 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -943,9 +943,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var level = state.GetRequestedLevel(videoStream.Codec);
             if (!string.IsNullOrEmpty(level))
             {
-                double requestLevel;
-
-                if (double.TryParse(level, NumberStyles.Any, _usCulture, out requestLevel))
+                if (double.TryParse(level, NumberStyles.Any, _usCulture, out var requestLevel))
                 {
                     if (!videoStream.Level.HasValue)
                     {

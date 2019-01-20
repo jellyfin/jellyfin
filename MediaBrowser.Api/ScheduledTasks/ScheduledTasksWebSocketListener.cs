@@ -1,12 +1,11 @@
-﻿using MediaBrowser.Model.Events;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.ScheduledTasks
 {
@@ -25,10 +24,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        protected override string Name
-        {
-            get { return "ScheduledTasksInfo"; }
-        }
+        protected override string Name => "ScheduledTasksInfo";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTasksWebSocketListener" /> class.

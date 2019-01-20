@@ -9,7 +9,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Drawing;
-using Emby.Drawing.Skia;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.EnvironmentInfo;
 using Emby.Server.Implementations.IO;
@@ -17,8 +16,8 @@ using Emby.Server.Implementations.Networking;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -45,7 +44,8 @@ namespace Jellyfin.Server
                 Console.WriteLine(version.ToString());
             }
 
-            ServerApplicationPaths appPaths = createApplicationPaths(options);
+            ServerApplicationPaths appPaths = CreateApplicationPaths(options);
+
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
             await createLogger(appPaths);
@@ -130,7 +130,7 @@ namespace Jellyfin.Server
             }
         }
 
-        private static ServerApplicationPaths createApplicationPaths(StartupOptions options)
+        private static ServerApplicationPaths CreateApplicationPaths(StartupOptions options)
         {
             string programDataPath = Environment.GetEnvironmentVariable("JELLYFIN_DATA_PATH");
             if (string.IsNullOrEmpty(programDataPath))
@@ -155,10 +155,19 @@ namespace Jellyfin.Server
                             programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
                         }
                     }
+
                     programDataPath = Path.Combine(programDataPath, "jellyfin");
-                    // Ensure the dir exists
-                    Directory.CreateDirectory(programDataPath);
                 }
+            }
+
+            if (string.IsNullOrEmpty(programDataPath))
+            {
+                Console.WriteLine("Cannot continue without path to program data folder (try -programdata)");
+                Environment.Exit(1);
+            }
+            else
+            {
+                Directory.CreateDirectory(programDataPath);
             }
 
             string configDir = Environment.GetEnvironmentVariable("JELLYFIN_CONFIG_DIR");
@@ -175,6 +184,11 @@ namespace Jellyfin.Server
                 }
             }
 
+            if (configDir != null)
+            {
+                Directory.CreateDirectory(configDir);
+            }
+
             string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
             if (string.IsNullOrEmpty(logDir))
             {
@@ -187,6 +201,11 @@ namespace Jellyfin.Server
                     // Let BaseApplicationPaths set up the default value
                     logDir = null;
                 }
+            }
+
+            if (logDir != null)
+            {
+                Directory.CreateDirectory(logDir);
             }
 
             string appPath = AppContext.BaseDirectory;
@@ -258,7 +277,8 @@ namespace Jellyfin.Server
             return new NullImageEncoder();
         }
 
-        private static MediaBrowser.Model.System.OperatingSystem getOperatingSystem() {
+        private static MediaBrowser.Model.System.OperatingSystem getOperatingSystem()
+        {
             switch (Environment.OSVersion.Platform)
             {
                 case PlatformID.MacOSX:
@@ -267,22 +287,22 @@ namespace Jellyfin.Server
                     return MediaBrowser.Model.System.OperatingSystem.Windows;
                 case PlatformID.Unix:
                 default:
-                {
-                    string osDescription = RuntimeInformation.OSDescription;
-                    if (osDescription.Contains("linux", StringComparison.OrdinalIgnoreCase))
                     {
-                        return MediaBrowser.Model.System.OperatingSystem.Linux;
+                        string osDescription = RuntimeInformation.OSDescription;
+                        if (osDescription.Contains("linux", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return MediaBrowser.Model.System.OperatingSystem.Linux;
+                        }
+                        else if (osDescription.Contains("darwin", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return MediaBrowser.Model.System.OperatingSystem.OSX;
+                        }
+                        else if (osDescription.Contains("bsd", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return MediaBrowser.Model.System.OperatingSystem.BSD;
+                        }
+                        throw new Exception($"Can't resolve OS with description: '{osDescription}'");
                     }
-                    else if (osDescription.Contains("darwin", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return MediaBrowser.Model.System.OperatingSystem.OSX;
-                    }
-                    else if (osDescription.Contains("bsd", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return MediaBrowser.Model.System.OperatingSystem.BSD;
-                    }
-                    throw new Exception($"Can't resolve OS with description: '{osDescription}'");
-                }
             }
         }
 
@@ -320,7 +340,7 @@ namespace Jellyfin.Server
             }
             else
             {
-                commandLineArgsString = string .Join(" ",
+                commandLineArgsString = string.Join(" ",
                     Environment.GetCommandLineArgs()
                         .Skip(1)
                         .Select(NormalizeCommandLineArgument)

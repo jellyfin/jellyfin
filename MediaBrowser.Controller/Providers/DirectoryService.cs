@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -25,9 +25,7 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            FileSystemMetadata[] entries;
-
-            if (!_cache.TryGetValue(path, out entries))
+            if (!_cache.TryGetValue(path, out FileSystemMetadata[] entries))
             {
                 //_logger.LogDebug("Getting files for " + path);
 
@@ -56,8 +54,7 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata GetFile(string path)
         {
-            FileSystemMetadata file;
-            if (!_fileCache.TryGetValue(path, out file))
+            if (!_fileCache.TryGetValue(path, out FileSystemMetadata file))
             {
                 file = _fileSystem.GetFileInfo(path);
 
@@ -83,8 +80,7 @@ namespace MediaBrowser.Controller.Providers
 
         public List<string> GetFilePaths(string path, bool clearCache)
         {
-            List<string> result;
-            if (clearCache || !_filePathCache.TryGetValue(path, out result))
+            if (clearCache || !_filePathCache.TryGetValue(path, out List<string> result))
             {
                 result = _fileSystem.GetFilePaths(path).ToList();
 

@@ -1,4 +1,3 @@
-﻿
 namespace Emby.Naming.TV
 {
     public class EpisodeInfo

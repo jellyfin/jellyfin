@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -39,88 +39,38 @@ namespace Jellyfin.SocketSharp
             return string.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
         }
 
-        public HttpListenerRequest HttpRequest
-        {
-            get { return request; }
-        }
+        public HttpListenerRequest HttpRequest => request;
 
-        public object OriginalRequest
-        {
-            get { return request; }
-        }
+        public object OriginalRequest => request;
 
-        public IResponse Response
-        {
-            get { return response; }
-        }
+        public IResponse Response => response;
 
-        public IHttpResponse HttpResponse
-        {
-            get { return response; }
-        }
+        public IHttpResponse HttpResponse => response;
 
         public string OperationName { get; set; }
 
         public object Dto { get; set; }
 
-        public string RawUrl
-        {
-            get { return request.RawUrl; }
-        }
+        public string RawUrl => request.RawUrl;
 
-        public string AbsoluteUri
-        {
-            get { return request.Url.AbsoluteUri.TrimEnd('/'); }
-        }
+        public string AbsoluteUri => request.Url.AbsoluteUri.TrimEnd('/');
 
-        public string UserHostAddress
-        {
-            get { return request.UserHostAddress; }
-        }
+        public string UserHostAddress => request.UserHostAddress;
 
-        public string XForwardedFor
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"];
-            }
-        }
+        public string XForwardedFor => string.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"];
 
-        public int? XForwardedPort
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers["X-Forwarded-Port"]) ? (int?)null : int.Parse(request.Headers["X-Forwarded-Port"]);
-            }
-        }
+        public int? XForwardedPort => string.IsNullOrEmpty(request.Headers["X-Forwarded-Port"]) ? (int?)null : int.Parse(request.Headers["X-Forwarded-Port"]);
 
-        public string XForwardedProtocol
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers["X-Forwarded-Proto"]) ? null : request.Headers["X-Forwarded-Proto"];
-            }
-        }
+        public string XForwardedProtocol => string.IsNullOrEmpty(request.Headers["X-Forwarded-Proto"]) ? null : request.Headers["X-Forwarded-Proto"];
 
-        public string XRealIp
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers["X-Real-IP"]) ? null : request.Headers["X-Real-IP"];
-            }
-        }
+        public string XRealIp => string.IsNullOrEmpty(request.Headers["X-Real-IP"]) ? null : request.Headers["X-Real-IP"];
 
         private string remoteIp;
-        public string RemoteIp
-        {
-            get
-            {
-                return remoteIp ??
-                    (remoteIp = (CheckBadChars(XForwardedFor)) ??
-                                (NormalizeIp(CheckBadChars(XRealIp)) ??
-                                (request.RemoteEndPoint != null ? NormalizeIp(request.RemoteEndPoint.Address.ToString()) : null)));
-            }
-        }
+        public string RemoteIp =>
+            remoteIp ??
+            (remoteIp = (CheckBadChars(XForwardedFor)) ??
+                        (NormalizeIp(CheckBadChars(XRealIp)) ??
+                         (request.RemoteEndPoint != null ? NormalizeIp(request.RemoteEndPoint.Address.ToString()) : null)));
 
         private static readonly char[] HttpTrimCharacters = new char[] { (char)0x09, (char)0xA, (char)0xB, (char)0xC, (char)0xD, (char)0x20 };
 
@@ -215,34 +165,20 @@ namespace Jellyfin.SocketSharp
             return ip;
         }
 
-        public bool IsSecureConnection
-        {
-            get { return request.IsSecureConnection || XForwardedProtocol == "https"; }
-        }
+        public bool IsSecureConnection => request.IsSecureConnection || XForwardedProtocol == "https";
 
-        public string[] AcceptTypes
-        {
-            get { return request.AcceptTypes; }
-        }
+        public string[] AcceptTypes => request.AcceptTypes;
 
         private Dictionary<string, object> items;
-        public Dictionary<string, object> Items
-        {
-            get { return items ?? (items = new Dictionary<string, object>()); }
-        }
+        public Dictionary<string, object> Items => items ?? (items = new Dictionary<string, object>());
 
         private string responseContentType;
         public string ResponseContentType
         {
-            get
-            {
-                return responseContentType
-                    ?? (responseContentType = GetResponseContentType(this));
-            }
-            set
-            {
-                this.responseContentType = value;
-            }
+            get =>
+                responseContentType
+                ?? (responseContentType = GetResponseContentType(this));
+            set => this.responseContentType = value;
         }
 
         public const string FormUrlEncoded = "application/x-www-form-urlencoded";
@@ -425,7 +361,7 @@ namespace Jellyfin.SocketSharp
                     cookies = new Dictionary<string, System.Net.Cookie>();
                     foreach (var cookie in this.request.Cookies)
                     {
-                        var httpCookie = (System.Net.Cookie) cookie;
+                        var httpCookie = (System.Net.Cookie)cookie;
                         cookies[httpCookie.Name] = new System.Net.Cookie(httpCookie.Name, httpCookie.Value, httpCookie.Path, httpCookie.Domain);
                     }
                 }
@@ -434,58 +370,32 @@ namespace Jellyfin.SocketSharp
             }
         }
 
-        public string UserAgent
-        {
-            get { return request.UserAgent; }
-        }
+        public string UserAgent => request.UserAgent;
 
-        public QueryParamCollection Headers
-        {
-            get { return request.Headers; }
-        }
+        public QueryParamCollection Headers => request.Headers;
 
         private QueryParamCollection queryString;
-        public QueryParamCollection QueryString
-        {
-            get { return queryString ?? (queryString = MyHttpUtility.ParseQueryString(request.Url.Query)); }
-        }
+        public QueryParamCollection QueryString => queryString ?? (queryString = MyHttpUtility.ParseQueryString(request.Url.Query));
 
-        public bool IsLocal
-        {
-            get { return request.IsLocal; }
-        }
+        public bool IsLocal => request.IsLocal;
 
         private string httpMethod;
-        public string HttpMethod
-        {
-            get
-            {
-                return httpMethod
-                    ?? (httpMethod = request.HttpMethod);
-            }
-        }
+        public string HttpMethod =>
+            httpMethod
+            ?? (httpMethod = request.HttpMethod);
 
-        public string Verb
-        {
-            get { return HttpMethod; }
-        }
+        public string Verb => HttpMethod;
 
-        public string ContentType
-        {
-            get { return request.ContentType; }
-        }
+        public string ContentType => request.ContentType;
 
         public Encoding contentEncoding;
         public Encoding ContentEncoding
         {
-            get { return contentEncoding ?? request.ContentEncoding; }
-            set { contentEncoding = value; }
+            get => contentEncoding ?? request.ContentEncoding;
+            set => contentEncoding = value;
         }
 
-        public Uri UrlReferrer
-        {
-            get { return request.UrlReferrer; }
-        }
+        public Uri UrlReferrer => request.UrlReferrer;
 
         public static Encoding GetEncoding(string contentTypeHeader)
         {
@@ -501,15 +411,9 @@ namespace Jellyfin.SocketSharp
             }
         }
 
-        public Stream InputStream
-        {
-            get { return request.InputStream; }
-        }
+        public Stream InputStream => request.InputStream;
 
-        public long ContentLength
-        {
-            get { return request.ContentLength64; }
-        }
+        public long ContentLength => request.ContentLength64;
 
         private IHttpFile[] httpFiles;
         public IHttpFile[] Files

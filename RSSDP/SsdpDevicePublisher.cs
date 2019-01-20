@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -76,8 +76,8 @@ namespace Rssdp.Infrastructure
         /// <para>This method ignores duplicate device adds (if the same device instance is added multiple times, the second and subsequent add calls do nothing).</para>
         /// </remarks>
         /// <param name="device">The <see cref="SsdpDevice"/> instance to add.</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
-        /// <exception cref="System.InvalidOperationException">Thrown if the <paramref name="device"/> contains property values that are not acceptable to the UPnP 1.0 specification.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the <paramref name="device"/> contains property values that are not acceptable to the UPnP 1.0 specification.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "t", Justification = "Capture task to local variable supresses compiler warning, but task is not really needed.")]
         public void AddDevice(SsdpRootDevice device)
         {
@@ -85,7 +85,7 @@ namespace Rssdp.Infrastructure
 
             ThrowIfDisposed();
 
-            TimeSpan minCacheTime = TimeSpan.Zero;
+            var minCacheTime = TimeSpan.Zero;
             bool wasAdded = false;
             lock (_Devices)
             {
@@ -113,13 +113,13 @@ namespace Rssdp.Infrastructure
         /// <para>This method does nothing if the device was not found in the collection.</para>
         /// </remarks>
         /// <param name="device">The <see cref="SsdpDevice"/> instance to add.</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
         public async Task RemoveDevice(SsdpRootDevice device)
         {
             if (device == null) throw new ArgumentNullException(nameof(device));
 
             bool wasRemoved = false;
-            TimeSpan minCacheTime = TimeSpan.Zero;
+            var minCacheTime = TimeSpan.Zero;
             lock (_Devices)
             {
                 if (_Devices.Contains(device))

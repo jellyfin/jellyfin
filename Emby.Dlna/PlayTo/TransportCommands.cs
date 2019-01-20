@@ -1,8 +1,8 @@
-﻿using System;
-using Emby.Dlna.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using Emby.Dlna.Common;
 using Emby.Dlna.Ssdp;
 
 namespace Emby.Dlna.PlayTo
@@ -12,27 +12,15 @@ namespace Emby.Dlna.PlayTo
         private List<StateVariable> _stateVariables = new List<StateVariable>();
         public List<StateVariable> StateVariables
         {
-            get
-            {
-                return _stateVariables;
-            }
-            set
-            {
-                _stateVariables = value;
-            }
+            get => _stateVariables;
+            set => _stateVariables = value;
         }
 
         private List<ServiceAction> _serviceActions = new List<ServiceAction>();
         public List<ServiceAction> ServiceActions
         {
-            get
-            {
-                return _serviceActions;
-            }
-            set
-            {
-                _serviceActions = value;
-            }
+            get => _serviceActions;
+            set => _serviceActions = value;
         }
 
         public static TransportCommands Create(XDocument document)
