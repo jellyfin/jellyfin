@@ -230,14 +230,6 @@ namespace Emby.Drawing
                 return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
-            //ImageSize? originalImageSize = GetSavedImageSize(originalImagePath, dateModified);
-            //if (originalImageSize.HasValue && options.HasDefaultOptions(originalImagePath, originalImageSize.Value) && !autoOrient)
-            //{
-            //    // Just spit out the original file if all the options are default
-            //    _logger.LogInformation("Returning original image {0}", originalImagePath);
-            //    return new ValueTuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
-            //}
-
             ImageSize newSize = ImageHelper.GetNewImageSize(options, null);
             int quality = options.Quality;
 
@@ -674,7 +666,7 @@ namespace Emby.Drawing
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>Task{EnhancedImage}.</returns>
-        private async Task ExecuteImageEnhancers(IEnumerable<IImageEnhancer> imageEnhancers, string inputPath, string outputPath, BaseItem item, ImageType imageType, int imageIndex)
+        private static async Task ExecuteImageEnhancers(IEnumerable<IImageEnhancer> imageEnhancers, string inputPath, string outputPath, BaseItem item, ImageType imageType, int imageIndex)
         {
             // Run the enhancers sequentially in order of priority
             foreach (var enhancer in imageEnhancers)
