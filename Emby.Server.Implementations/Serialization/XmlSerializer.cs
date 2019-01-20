@@ -17,10 +17,12 @@ namespace Emby.Server.Implementations.Serialization
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
 
-        public MyXmlSerializer(IFileSystem fileSystem, ILogger logger)
+        public MyXmlSerializer(
+            IFileSystem fileSystem,
+            ILoggerFactory loggerFactory)
         {
             _fileSystem = fileSystem;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger("XmlSerializer");
         }
 
         // Need to cache these

@@ -90,10 +90,24 @@ namespace Emby.Server.Implementations.Session
         public event EventHandler<SessionEventArgs> SessionEnded;
         public event EventHandler<SessionEventArgs> SessionActivity;
 
-        public SessionManager(IUserDataManager userDataManager, ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IHttpClient httpClient, IAuthenticationRepository authRepo, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, ITimerFactory timerFactory)
+        public SessionManager(
+            IUserDataManager userDataManager,
+            ILoggerFactory loggerFactory,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IMusicManager musicManager,
+            IDtoService dtoService,
+            IImageProcessor imageProcessor,
+            IJsonSerializer jsonSerializer,
+            IServerApplicationHost appHost,
+            IHttpClient httpClient,
+            IAuthenticationRepository authRepo,
+            IDeviceManager deviceManager,
+            IMediaSourceManager mediaSourceManager,
+            ITimerFactory timerFactory)
         {
             _userDataManager = userDataManager;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(SessionManager));
             _libraryManager = libraryManager;
             _userManager = userManager;
             _musicManager = musicManager;

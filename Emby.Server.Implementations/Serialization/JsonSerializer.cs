@@ -13,12 +13,11 @@ namespace Emby.Common.Implementations.Serialization
     public class JsonSerializer : IJsonSerializer
     {
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
 
-        public JsonSerializer(IFileSystem fileSystem, ILogger logger)
+        public JsonSerializer(
+            IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
-            _logger = logger;
             Configure();
         }
 
@@ -69,7 +68,6 @@ namespace Emby.Common.Implementations.Serialization
 
         private static Stream OpenFile(string path)
         {
-            //_logger.LogDebug("Deserializing file {0}", path);
             return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131072);
         }
 

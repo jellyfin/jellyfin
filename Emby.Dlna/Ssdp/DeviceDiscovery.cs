@@ -52,9 +52,13 @@ namespace Emby.Dlna.Ssdp
         private readonly ISocketFactory _socketFactory;
         private ISsdpCommunicationsServer _commsServer;
 
-        public DeviceDiscovery(ILogger logger, IServerConfigurationManager config, ISocketFactory socketFactory, ITimerFactory timerFactory)
+        public DeviceDiscovery(
+            ILoggerFactory loggerFactory,
+            IServerConfigurationManager config,
+            ISocketFactory socketFactory,
+            ITimerFactory timerFactory)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(DeviceDiscovery));
             _config = config;
             _socketFactory = socketFactory;
             _timerFactory = timerFactory;

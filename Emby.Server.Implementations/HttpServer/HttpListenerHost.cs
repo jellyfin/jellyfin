@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public HttpListenerHost(
             IServerApplicationHost applicationHost,
-            ILogger logger,
+            ILoggerFactory loggerFactory,
             IServerConfigurationManager config,
             string defaultRedirectPath,
             INetworkManager networkManager,
@@ -60,7 +60,7 @@ namespace Emby.Server.Implementations.HttpServer
             Func<Type, Func<string, object>> funcParseFn)
         {
             _appHost = applicationHost;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger("HttpServer");
             _config = config;
             DefaultRedirectPath = defaultRedirectPath;
             _networkManager = networkManager;

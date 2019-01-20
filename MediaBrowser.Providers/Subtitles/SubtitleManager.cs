@@ -37,9 +37,15 @@ namespace MediaBrowser.Providers.Subtitles
 
         private ILocalizationManager _localization;
 
-        public SubtitleManager(ILogger logger, IFileSystem fileSystem, ILibraryMonitor monitor, IMediaSourceManager mediaSourceManager, IServerConfigurationManager config, ILocalizationManager localizationManager)
+        public SubtitleManager(
+            ILoggerFactory loggerFactory,
+            IFileSystem fileSystem,
+            ILibraryMonitor monitor,
+            IMediaSourceManager mediaSourceManager,
+            IServerConfigurationManager config,
+            ILocalizationManager localizationManager)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(SubtitleManager));
             _fileSystem = fileSystem;
             _monitor = monitor;
             _mediaSourceManager = mediaSourceManager;

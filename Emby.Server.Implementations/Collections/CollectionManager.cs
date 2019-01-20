@@ -34,12 +34,19 @@ namespace Emby.Server.Implementations.Collections
         public event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
         public event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
 
-        public CollectionManager(ILibraryManager libraryManager, IApplicationPaths appPaths, ILocalizationManager localizationManager, IFileSystem fileSystem, ILibraryMonitor iLibraryMonitor, ILogger logger, IProviderManager providerManager)
+        public CollectionManager(
+            ILibraryManager libraryManager,
+            IApplicationPaths appPaths,
+            ILocalizationManager localizationManager,
+            IFileSystem fileSystem,
+            ILibraryMonitor iLibraryMonitor,
+            ILoggerFactory loggerFactory,
+            IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(CollectionManager));
             _providerManager = providerManager;
             _localizationManager = localizationManager;
             _appPaths = appPaths;

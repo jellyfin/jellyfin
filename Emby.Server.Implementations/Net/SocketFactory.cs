@@ -17,18 +17,6 @@ namespace Emby.Server.Implementations.Net
         // but that wasn't really the point so kept to YAGNI principal for now, even if the
         // interfaces are a bit ugly, specific and make assumptions.
 
-        private readonly ILogger _logger;
-
-        public SocketFactory(ILogger logger)
-        {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            _logger = logger;
-        }
-
         public ISocket CreateTcpSocket(IpAddressInfo remoteAddress, int remotePort)
         {
             if (remotePort < 0) throw new ArgumentException("remotePort cannot be less than zero.", nameof(remotePort));

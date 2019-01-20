@@ -28,12 +28,18 @@ namespace Emby.Server.Implementations.Playlists
         private readonly IUserManager _userManager;
         private readonly IProviderManager _providerManager;
 
-        public PlaylistManager(ILibraryManager libraryManager, IFileSystem fileSystem, ILibraryMonitor iLibraryMonitor, ILogger logger, IUserManager userManager, IProviderManager providerManager)
+        public PlaylistManager(
+            ILibraryManager libraryManager,
+            IFileSystem fileSystem,
+            ILibraryMonitor iLibraryMonitor,
+            ILoggerFactory loggerFactory,
+            IUserManager userManager,
+            IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(PlaylistManager));
             _userManager = userManager;
             _providerManager = providerManager;
         }

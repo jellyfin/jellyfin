@@ -67,8 +67,16 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
-        public SqliteItemRepository(IServerConfigurationManager config, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, ILogger logger, IAssemblyInfo assemblyInfo, IFileSystem fileSystem, IEnvironmentInfo environmentInfo, ITimerFactory timerFactory)
-            : base(logger)
+        public SqliteItemRepository(
+            IServerConfigurationManager config,
+            IServerApplicationHost appHost,
+            IJsonSerializer jsonSerializer,
+            ILoggerFactory loggerFactory,
+            IAssemblyInfo assemblyInfo,
+            IFileSystem fileSystem,
+            IEnvironmentInfo environmentInfo,
+            ITimerFactory timerFactory)
+            : base(loggerFactory.CreateLogger(nameof(SqliteItemRepository)))
         {
             if (config == null)
             {

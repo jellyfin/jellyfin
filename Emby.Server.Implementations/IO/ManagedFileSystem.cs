@@ -29,9 +29,14 @@ namespace Emby.Server.Implementations.IO
 
         private string _defaultDirectory;
 
-        public ManagedFileSystem(ILogger logger, IEnvironmentInfo environmentInfo, string defaultDirectory, string tempPath, bool enableSeparateFileAndDirectoryQueries)
+        public ManagedFileSystem(
+            ILoggerFactory loggerFactory,
+            IEnvironmentInfo environmentInfo,
+            string defaultDirectory,
+            string tempPath,
+            bool enableSeparateFileAndDirectoryQueries)
         {
-            Logger = logger;
+            Logger = loggerFactory.CreateLogger("FileSystem");
             _supportsAsyncFileStreams = true;
             _tempPath = tempPath;
             _environmentInfo = environmentInfo;
