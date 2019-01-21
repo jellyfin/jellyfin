@@ -1,13 +1,13 @@
 %global         debug_package %{nil}
 # jellyfin tag to package
-%global         gittag v10.0.2
+%global         gittag v10.1.0
 # Taglib-sharp commit of the submodule since github archive doesn't include submodules
 %global         taglib_commit ee5ab21742b71fd1b87ee24895582327e9e04776
 %global         taglib_shortcommit %(c=%{taglib_commit}; echo ${c:0:7})
 
 AutoReq:        no
 Name:           jellyfin
-Version:        10.0.2
+Version:        10.1.0
 Release:        1%{?dist}
 Summary:        The Free Software Media Browser
 License:        GPLv2
@@ -134,6 +134,80 @@ fi
 %postun
 %systemd_postun_with_restart jellyfin.service
 
+### YUM SPEC CHANGELOG: Verify this file looks correct or edit accordingly, then delete this line, write, and exit.
 %changelog
+* Sun Jan 20 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
+- jellyfin:
+- PR335 Build scripts and build system consolidation.
+- PR424 add jellyfin-web as submodule
+- PR455 Cleanup some small things
+- PR458 Clean up several minor issues and add TODOs
+- PR506 Removing tabs and trailing whitespace
+- PR508 Update internal versioning and user agents.
+- PR516 Remove useless properties from IEnvironmentInfo
+- PR520 Fix potential bug where aspect ratio would be incorrectly calculated
+- PR534 Add linux-arm and linux-arm64 native NuGet dependency.
+- PR540 Update Emby API keys to our own
+- PR541 Change ItemId to Guid in ProviderManager
+- PR556 Fix "Password Reset by PIN" page
+- PR562 Fix error with uppercase photo extension and fix typo in a log line
+- PR563 Update dev from master
+- PR566 Avoid printing stacktrace when bind to port 1900 fails
+- PR567 Shutdown gracefully when recieving a termination signal
+- PR571 Add more NuGet metadata properties
+- PR575 Reformat all C# server code to conform with code standards
+- PR576 Add code analysers for debug builds
+- PR580 Fix Docker build
+- PR582 Replace custom image parser with Skia
+- PR587 Add nuget info to Emby.Naming
+- PR589 Ensure config and log folders exist
+- PR596 Fix indentation for xml files
+- PR598 Remove MediaBrowser.Text for license violations and hackiness
+- PR606 Slim down docker image
+- PR613 Update MediaEncoding
+- PR616 Add Swagger documentation
+- PR619 Really slim down Docker container
+- PR621 Minor improvements to library scan code
+- PR622 Add unified build script and bump_version script
+- PR623 Replaced injections of ILogger with ILoggerFactory
+- PR625 Update taglib-sharp
+- PR626 Fix extra type name in parameter, add out keyword
+- PR627 Use string for ApplicationVersion
+- PR628 Update Product Name (User-Agent)
+- PR629 Fix subtitle converter misinterpreting 0 valued endTimeTicks
+- PR631 Cleanup ImageProcessor and SkiaEncoder
+- PR634 Replace our TVDB key with @drakus72's which is V1
+- PR636 Allow subtitle extraction and conversion in direct streaming
+- PR637 Remove unused font
+- PR638 Removed XmlTv testfiles and nuget install
+- PR639 Fix segment_time_delta for ffmpeg 4.1
+- jellyfin-web:
+- PR1: Change webcomponents to non-minified version
+- PR4: Fix user profile regression
+- PR6: Make icon into proper ico and large PNG
+- PR7: Fix firefox failing to set password for users with no password set
+- PR8: Remove premiere stuff and fix crashes caused by earlier removals
+- PR12: Fix return from PIN reset to index.html
+- PR13: Send android clients to select server before login
+- PR14: Reimplement page to add server
+- PR16: Fix spinning circle at the end of config wizard
+- PR17: Fix directorybrower not resetting scroll
+- PR19: Set union merge for CONTRIBUTORS.md
+- PR20: Show album thumbnail and artist image in page itemdetail
+- PR26: Make the card titles clickable
+- PR27: Stop pagination and adding a library from being able to trigger multiple times
+- PR28: Add transparent nav bar to BlueRadiance theme CSS
+- PR29: Clean up imageuploader
+- PR30: Remove iap and simplify registrationservices
+- PR36: Open videos in fullscreen on android devices
+- PR37: Remove broken features from web interface
+- PR38: Fix inconsistent UI coloring around settings drawer
+- PR39: Remove back button from dashboard and metadata manager
+- PR42: Fix Home backdrop not loading
+- PR43: Filter videos by audio stream language
+- PR44: Remove filter from library collection type options
+- PR45: Fix data-backbutton logic
+- PR46: Minor changes to navbar elements
+- PR48: Remove Sync code
 * Fri Jan 11 2019 Thomas Büttner <thomas@vergesslicher.tech> - 10.0.2-1
 - TODO Changelog for 10.0.2
