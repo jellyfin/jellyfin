@@ -59,11 +59,12 @@ namespace Emby.Drawing
             Func<IMediaEncoder> mediaEncoder)
         {
             _logger = loggerFactory.CreateLogger(nameof(ImageProcessor));
-            _appPaths = appPaths;
             _fileSystem = fileSystem;
             _imageEncoder = imageEncoder;
             _libraryManager = libraryManager;
             _mediaEncoder = mediaEncoder;
+            _appPaths = appPaths;
+
 
             ImageEnhancers = Array.Empty<IImageEnhancer>();
             ImageHelper.ImageProcessor = this;
