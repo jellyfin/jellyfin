@@ -149,13 +149,9 @@ namespace MediaBrowser.Model.Dlna
         {
             switch (condition.Property)
             {
-                case ProfileConditionValue.AudioBitrate when condition.Condition == ProfileConditionType.LessThanEqual:
-                        return TranscodeReason.AudioBitrateNotSupported;
                 case ProfileConditionValue.AudioBitrate:
                     return TranscodeReason.AudioBitrateNotSupported;
 
-                case ProfileConditionValue.AudioChannels when condition.Condition == ProfileConditionType.LessThanEqual:
-                    return TranscodeReason.AudioChannelsNotSupported;
                 case ProfileConditionValue.AudioChannels:
                     return TranscodeReason.AudioChannelsNotSupported;
 
@@ -898,7 +894,7 @@ namespace MediaBrowser.Model.Dlna
                 if (targetAudioChannels.HasValue && audioStream.Channels.HasValue && targetAudioChannels.Value < audioStream.Channels.Value)
                 {
                     // Reduce the bitrate if we're downmixing
-                    defaultBitrate = targetAudioChannels.Value <= 2 ? 128000 : 192000;
+                    defaultBitrate = targetAudioChannels.Value < 2 ? 128000 : 192000;
                 }
                 else
                 {
@@ -1252,27 +1248,20 @@ namespace MediaBrowser.Model.Dlna
         {
             if (!string.IsNullOrEmpty(transcodingContainer))
             {
-                var normalizedContainers = ContainerProfile.SplitValue(transcodingContainer);
+                string[] normalizedContainers = ContainerProfile.SplitValue(transcodingContainer);
 
-                if (ContainerProfile.ContainsContainer(normalizedContainers, "ts"))
+                if (ContainerProfile.ContainsContainer(normalizedContainers, "ts")
+                    || ContainerProfile.ContainsContainer(normalizedContainers, "mpegts")
+                    || ContainerProfile.ContainsContainer(normalizedContainers, "mp4"))
                 {
                     return false;
                 }
-                else if (ContainerProfile.ContainsContainer(normalizedContainers, "mpegts"))
-                {
-                    return false;
-                }
-                else if (ContainerProfile.ContainsContainer(normalizedContainers, "mp4"))
-                {
-                    return false;
-                }
-                else if (ContainerProfile.ContainsContainer(normalizedContainers, "mkv") ||
-                    ContainerProfile.ContainsContainer(normalizedContainers, "matroska"))
+                else if (ContainerProfile.ContainsContainer(normalizedContainers, "mkv")
+                    || ContainerProfile.ContainsContainer(normalizedContainers, "matroska"))
                 {
                     return true;
                 }
             }
-
             return false;
         }
 
