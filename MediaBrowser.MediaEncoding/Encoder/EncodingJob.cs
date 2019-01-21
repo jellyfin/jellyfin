@@ -15,6 +15,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public bool IsCancelled { get; internal set; }
 
         public Stream LogFileStream { get; set; }
+        public IProgress<double> Progress { get; set; }
         public TaskCompletionSource<bool> TaskCompletionSource;
 
         public EncodingJobOptions Options
@@ -23,22 +24,34 @@ namespace MediaBrowser.MediaEncoding.Encoder
             set => BaseRequest = value;
         }
 
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
+        public string MimeType { get; set; }
         public bool EstimateContentLength { get; set; }
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
+        public long? EncodingDurationTicks { get; set; }
 
         public string ItemType { get; set; }
+
+        public string GetMimeType(string outputPath)
+        {
+            if (!string.IsNullOrEmpty(MimeType))
+            {
+                return MimeType;
+            }
+
+            return MimeTypes.GetMimeType(outputPath);
+        }
 
         private readonly ILogger _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
 
         public EncodingJob(ILogger logger, IMediaSourceManager mediaSourceManager) :
-            base(TranscodingJobType.Progressive)
+            base(logger, mediaSourceManager, TranscodingJobType.Progressive)
         {
             _logger = logger;
             _mediaSourceManager = mediaSourceManager;
-            Id = Guid.NewGuid();
+            Id = Guid.NewGuid().ToString("N");
 
             _logger = logger;
             TaskCompletionSource = new TaskCompletionSource<bool>();
@@ -48,7 +61,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             DisposeLiveStream();
             DisposeLogStream();
-            DisposeIsoMount();
         }
 
         private void DisposeLogStream()
@@ -83,21 +95,49 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        public string OutputFilePath { get; set; }
 
-        private void DisposeIsoMount()
+        public string ActualOutputVideoCodec
         {
-            if (IsoMount != null)
+            get
             {
-                try
+                var codec = OutputVideoCodec;
+
+                if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
-                    IsoMount.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error disposing iso mount", ex);
+                    var stream = VideoStream;
+
+                    if (stream != null)
+                    {
+                        return stream.Codec;
+                    }
+
+                    return null;
                 }
 
-                IsoMount = null;
+                return codec;
+            }
+        }
+
+        public string ActualOutputAudioCodec
+        {
+            get
+            {
+                var codec = OutputAudioCodec;
+
+                if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+                {
+                    var stream = AudioStream;
+
+                    if (stream != null)
+                    {
+                        return stream.Codec;
+                    }
+
+                    return null;
+                }
+
+                return codec;
             }
         }
 

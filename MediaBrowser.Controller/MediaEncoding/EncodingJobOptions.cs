@@ -11,8 +11,9 @@ namespace MediaBrowser.Controller.MediaEncoding
     {
         public string OutputDirectory { get; set; }
         public string ItemId { get; set; }
+        public string MediaSourceId { get; set; }
+        public string AudioCodec { get; set; }
 
-        public string TempDirectory { get; set; }
         public bool ReadInputAtNativeFramerate { get; set; }
 
         /// <summary>
@@ -21,16 +22,15 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <value><c>true</c> if this instance has fixed resolution; otherwise, <c>false</c>.</value>
         public bool HasFixedResolution => Width.HasValue || Height.HasValue;
 
-        public DeviceProfile DeviceProfile { get; set; }
-
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         public EncodingJobOptions(StreamInfo info, DeviceProfile deviceProfile)
         {
-            Container = info.Container;
+            OutputContainer = info.Container;
             StartTimeTicks = info.StartPositionTicks;
             MaxWidth = info.MaxWidth;
             MaxHeight = info.MaxHeight;
             MaxFramerate = info.MaxFramerate;
-            Id = info.ItemId;
+            ItemId = info.ItemId.ToString("");
             MediaSourceId = info.MediaSourceId;
             AudioCodec = info.TargetAudioCodec.FirstOrDefault();
             MaxAudioChannels = info.GlobalMaxAudioChannels;
@@ -55,29 +55,6 @@ namespace MediaBrowser.Controller.MediaEncoding
     // For now until api and media encoding layers are unified
     public class BaseEncodingJobOptions
     {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid Id { get; set; }
-
-        [ApiMember(Name = "MediaSourceId", Description = "The media version id, if playing an alternate version", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string MediaSourceId { get; set; }
-
-        [ApiMember(Name = "DeviceId", Description = "The device id of the client requesting. Used to stop encoding processes when needed.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string DeviceId { get; set; }
-
-        [ApiMember(Name = "Container", Description = "Container", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string Container { get; set; }
-
-        /// <summary>
-        /// Gets or sets the audio codec.
-        /// </summary>
-        /// <value>The audio codec.</value>
-        [ApiMember(Name = "AudioCodec", Description = "Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string AudioCodec { get; set; }
-
         [ApiMember(Name = "EnableAutoStreamCopy", Description = "Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool EnableAutoStreamCopy { get; set; }
 
@@ -203,7 +180,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public bool RequireNonAnamorphic { get; set; }
         public int? TranscodingMaxAudioChannels { get; set; }
         public int? CpuCoreLimit { get; set; }
-
+        public string OutputContainer { get; set; }
         public string LiveStreamId { get; set; }
 
         public bool EnableMpegtsM2TsMode { get; set; }
@@ -267,5 +244,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             Context = EncodingContext.Streaming;
             StreamOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
+
+        public string TempDirectory { get; set; }
+        public string DeviceId { get; set; }
+        public Guid Id { get; set; }
+        public string Container { get; set; }
+        public DeviceProfile DeviceProfile { get; set; }
     }
 }
