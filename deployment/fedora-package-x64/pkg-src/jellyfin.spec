@@ -211,5 +211,6 @@ fi
 - PR46: Minor changes to navbar elements
 - PR48: Remove Sync code
 - PR52: Fix progress color
+- PR53: Fix user tabs color
 * Fri Jan 11 2019 Thomas Büttner <thomas@vergesslicher.tech> - 10.0.2-1
 - TODO Changelog for 10.0.2

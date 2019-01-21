@@ -75,6 +75,7 @@ jellyfin (10.1.0-1) unstable; urgency=medium
   * PR46: Minor changes to navbar elements
   * PR48: Remove Sync code
   * PR52: Fix progress color
+  * PR53: Fix user tabs color
 
  -- Jellyfin Packaging Team <packaging@jellyfin.org>  Sun, 20 Jan 2019 23:19:46 -0500
 
