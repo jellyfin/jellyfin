@@ -65,8 +65,8 @@ namespace Emby.Drawing
             _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
 
-
             ImageEnhancers = Array.Empty<IImageEnhancer>();
+            
             ImageHelper.ImageProcessor = this;
         }
 
