@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
@@ -156,14 +156,19 @@ namespace MediaBrowser.Api.Subtitles
                 throw new ArgumentException("HLS Subtitles are not supported for this media.");
             }
 
+            var segmentLengthTicks = TimeSpan.FromSeconds(request.SegmentLength).Ticks;
+            if (segmentLengthTicks <= 0)
+            {
+                throw new ArgumentException("segmentLength was not given, or it was given incorrectly. (It should be bigger than 0)");
+            }
+
             builder.AppendLine("#EXTM3U");
             builder.AppendLine("#EXT-X-TARGETDURATION:" + request.SegmentLength.ToString(CultureInfo.InvariantCulture));
             builder.AppendLine("#EXT-X-VERSION:3");
             builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
             builder.AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
 
-            long positionTicks = 0;
-            var segmentLengthTicks = TimeSpan.FromSeconds(request.SegmentLength).Ticks;
+            long positionTicks = 0; 
 
             var accessToken = _authContext.GetAuthorizationInfo(Request).Token;
 
