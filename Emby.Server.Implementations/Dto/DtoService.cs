@@ -46,9 +46,22 @@ namespace Emby.Server.Implementations.Dto
         private readonly Func<IMediaSourceManager> _mediaSourceManager;
         private readonly Func<ILiveTvManager> _livetvManager;
 
-        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory, IApplicationHost appHost, Func<IDeviceManager> deviceManager, Func<IMediaSourceManager> mediaSourceManager, Func<ILiveTvManager> livetvManager)
+        public DtoService(
+            ILoggerFactory loggerFactory,
+            ILibraryManager libraryManager,
+            IUserDataManager userDataRepository,
+            IItemRepository itemRepo,
+            IImageProcessor imageProcessor,
+            IServerConfigurationManager config,
+            IFileSystem fileSystem,
+            IProviderManager providerManager,
+            Func<IChannelManager> channelManagerFactory,
+            IApplicationHost appHost,
+            Func<IDeviceManager> deviceManager,
+            Func<IMediaSourceManager> mediaSourceManager,
+            Func<ILiveTvManager> livetvManager)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(DtoService));
             _libraryManager = libraryManager;
             _userDataRepository = userDataRepository;
             _itemRepo = itemRepo;

@@ -41,12 +41,23 @@ namespace Emby.Server.Implementations.Library
         private ILocalizationManager _localizationManager;
         private IApplicationPaths _appPaths;
 
-        public MediaSourceManager(IItemRepository itemRepo, IApplicationPaths applicationPaths, ILocalizationManager localizationManager, IUserManager userManager, ILibraryManager libraryManager, ILogger logger, IJsonSerializer jsonSerializer, IFileSystem fileSystem, IUserDataManager userDataManager, ITimerFactory timerFactory, Func<IMediaEncoder> mediaEncoder)
+        public MediaSourceManager(
+            IItemRepository itemRepo,
+            IApplicationPaths applicationPaths,
+            ILocalizationManager localizationManager,
+            IUserManager userManager,
+            ILibraryManager libraryManager,
+            ILoggerFactory loggerFactory,
+            IJsonSerializer jsonSerializer,
+            IFileSystem fileSystem,
+            IUserDataManager userDataManager,
+            ITimerFactory timerFactory,
+            Func<IMediaEncoder> mediaEncoder)
         {
             _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(MediaSourceManager));
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
             _userDataManager = userDataManager;

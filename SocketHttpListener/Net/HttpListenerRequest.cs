@@ -5,7 +5,6 @@ using System.Net;
 using System.Text;
 using MediaBrowser.Model.Services;
 using SocketHttpListener.Net.WebSockets;
-using SocketHttpListener.Primitives;
 
 namespace SocketHttpListener.Net
 {
@@ -82,7 +81,7 @@ namespace SocketHttpListener.Net
                         }
                     }
                 }
-                return TextEncodingExtensions.GetDefaultEncoding();
+                return Encoding.UTF8;
             }
         }
 

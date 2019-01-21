@@ -87,7 +87,7 @@ namespace Jellyfin.Server
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
-            var fileSystem = new ManagedFileSystem(_loggerFactory.CreateLogger("FileSystem"), environmentInfo, null, appPaths.TempDirectory, true);
+            var fileSystem = new ManagedFileSystem(_loggerFactory, environmentInfo, null, appPaths.TempDirectory, true);
 
             using (var appHost = new CoreAppHost(
                 appPaths,
@@ -96,12 +96,12 @@ namespace Jellyfin.Server
                 fileSystem,
                 environmentInfo,
                 new NullImageEncoder(),
-                new SystemEvents(_loggerFactory.CreateLogger("SystemEvents")),
-                new NetworkManager(_loggerFactory.CreateLogger("NetworkManager"), environmentInfo)))
+                new SystemEvents(),
+                new NetworkManager(_loggerFactory, environmentInfo)))
             {
                 appHost.Init();
 
-                appHost.ImageProcessor.ImageEncoder = GetImageEncoder(_logger, fileSystem, options, appPaths, appHost.LocalizationManager);
+                appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
 
                 _logger.LogInformation("Running startup tasks");
 
@@ -254,20 +254,18 @@ namespace Jellyfin.Server
             }
         }
 
-        public static IImageEncoder GetImageEncoder(
-            ILogger logger,
+        public static IImageEncoder getImageEncoder(
             IFileSystem fileSystem,
-            StartupOptions startupOptions,
             IApplicationPaths appPaths,
             ILocalizationManager localizationManager)
         {
             try
             {
-                return new SkiaEncoder(logger, appPaths, fileSystem, localizationManager);
+                return new SkiaEncoder(_loggerFactory, appPaths, fileSystem, localizationManager);
             }
             catch (Exception ex)
             {
-                logger.LogInformation(ex, "Skia not available. Will fallback to NullIMageEncoder. {0}");
+                _logger.LogInformation(ex, "Skia not available. Will fallback to NullIMageEncoder. {0}");
             }
 
             return new NullImageEncoder();

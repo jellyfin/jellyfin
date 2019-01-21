@@ -45,12 +45,23 @@ namespace Emby.Server.Implementations.Channels
 
         private readonly ILocalizationManager _localization;
 
-        public ChannelManager(IUserManager userManager, IDtoService dtoService, ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IUserDataManager userDataManager, IJsonSerializer jsonSerializer, ILocalizationManager localization, IHttpClient httpClient, IProviderManager providerManager)
+        public ChannelManager(
+            IUserManager userManager,
+            IDtoService dtoService,
+            ILibraryManager libraryManager,
+            ILoggerFactory loggerFactory,
+            IServerConfigurationManager config,
+            IFileSystem fileSystem,
+            IUserDataManager userDataManager,
+            IJsonSerializer jsonSerializer,
+            ILocalizationManager localization,
+            IHttpClient httpClient,
+            IProviderManager providerManager)
         {
             _userManager = userManager;
             _dtoService = dtoService;
             _libraryManager = libraryManager;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(ChannelManager));
             _config = config;
             _fileSystem = fileSystem;
             _userDataManager = userDataManager;

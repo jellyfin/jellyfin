@@ -29,9 +29,14 @@ namespace Emby.Server.Implementations.IO
 
         private string _defaultDirectory;
 
-        public ManagedFileSystem(ILogger logger, IEnvironmentInfo environmentInfo, string defaultDirectory, string tempPath, bool enableSeparateFileAndDirectoryQueries)
+        public ManagedFileSystem(
+            ILoggerFactory loggerFactory,
+            IEnvironmentInfo environmentInfo,
+            string defaultDirectory,
+            string tempPath,
+            bool enableSeparateFileAndDirectoryQueries)
         {
-            Logger = logger;
+            Logger = loggerFactory.CreateLogger("FileSystem");
             _supportsAsyncFileStreams = true;
             _tempPath = tempPath;
             _environmentInfo = environmentInfo;
@@ -445,10 +450,7 @@ namespace Emby.Server.Implementations.IO
         }
 
         public Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, FileOpenOptions fileOpenOptions)
-        {
-            var defaultBufferSize = 4096;
-            return new FileStream(path, GetFileMode(mode), GetFileAccess(access), GetFileShare(share), defaultBufferSize, GetFileOptions(fileOpenOptions));
-        }
+            => new FileStream(path, GetFileMode(mode), GetFileAccess(access), GetFileShare(share), 4096, GetFileOptions(fileOpenOptions));
 
         private static FileOptions GetFileOptions(FileOpenOptions mode)
         {
@@ -759,16 +761,11 @@ namespace Emby.Server.Implementations.IO
             // Only include drives in the ready state or this method could end up being very slow, waiting for drives to timeout
             return DriveInfo.GetDrives().Where(d => d.IsReady).Select(d => new FileSystemMetadata
             {
-                Name = GetName(d),
+                Name = d.Name,
                 FullName = d.RootDirectory.FullName,
                 IsDirectory = true
 
             }).ToList();
-        }
-
-        private static string GetName(DriveInfo drive)
-        {
-            return drive.Name;
         }
 
         public IEnumerable<FileSystemMetadata> GetDirectories(string path, bool recursive = false)
@@ -844,17 +841,6 @@ namespace Emby.Server.Implementations.IO
         public Stream OpenRead(string path)
         {
             return File.OpenRead(path);
-        }
-
-        private void CopyFileUsingStreams(string source, string target, bool overwrite)
-        {
-            using (var sourceStream = OpenRead(source))
-            {
-                using (var targetStream = GetFileStream(target, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
-                {
-                    sourceStream.CopyTo(targetStream);
-                }
-            }
         }
 
         public void CopyFile(string source, string target, bool overwrite)

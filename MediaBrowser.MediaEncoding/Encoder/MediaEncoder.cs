@@ -70,7 +70,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly string _originalFFProbePath;
         private readonly int DefaultImageExtractionTimeoutMs;
 
-        public MediaEncoder(ILogger logger,
+        public MediaEncoder(
+            ILoggerFactory loggerFactory,
             IJsonSerializer jsonSerializer,
             string ffMpegPath,
             string ffProbePath,
@@ -89,7 +90,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IProcessFactory processFactory,
             int defaultImageExtractionTimeoutMs)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(MediaEncoder));
             _jsonSerializer = jsonSerializer;
             ConfigurationManager = configurationManager;
             FileSystem = fileSystem;
@@ -1018,7 +1019,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public bool CanExtractSubtitles(string codec)
         {
-            return false;
+            // TODO is there ever a case when a subtitle can't be extracted??
+            return true;
         }
 
         private class ProcessWrapper : IDisposable

@@ -19,7 +19,6 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Text;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.HttpServer
@@ -37,11 +36,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
-
         private readonly IServerApplicationHost _appHost;
-
-        private readonly ITextEncoding _textEncoding;
-
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly Func<Type, Func<string, object>> _funcParseFn;
@@ -56,21 +51,19 @@ namespace Emby.Server.Implementations.HttpServer
 
         public HttpListenerHost(
             IServerApplicationHost applicationHost,
-            ILogger logger,
+            ILoggerFactory loggerFactory,
             IServerConfigurationManager config,
             string defaultRedirectPath,
             INetworkManager networkManager,
-            ITextEncoding textEncoding,
             IJsonSerializer jsonSerializer,
             IXmlSerializer xmlSerializer,
             Func<Type, Func<string, object>> funcParseFn)
         {
             _appHost = applicationHost;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger("HttpServer");
             _config = config;
             DefaultRedirectPath = defaultRedirectPath;
             _networkManager = networkManager;
-            _textEncoding = textEncoding;
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
             _funcParseFn = funcParseFn;
@@ -147,7 +140,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return;
             }
 
-            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger, _textEncoding)
+            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger)
             {
                 OnReceive = ProcessWebSocketMessageReceived,
                 Url = e.Url,

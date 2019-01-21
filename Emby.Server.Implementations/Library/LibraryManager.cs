@@ -155,9 +155,19 @@ namespace Emby.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public LibraryManager(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataManager userDataRepository, Func<ILibraryMonitor> libraryMonitorFactory, IFileSystem fileSystem, Func<IProviderManager> providerManagerFactory, Func<IUserViewManager> userviewManager)
+        public LibraryManager(
+            IServerApplicationHost appHost,
+            ILoggerFactory loggerFactory,
+            ITaskManager taskManager,
+            IUserManager userManager,
+            IServerConfigurationManager configurationManager,
+            IUserDataManager userDataRepository,
+            Func<ILibraryMonitor> libraryMonitorFactory,
+            IFileSystem fileSystem,
+            Func<IProviderManager> providerManagerFactory,
+            Func<IUserViewManager> userviewManager)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(LibraryManager));
             _taskManager = taskManager;
             _userManager = userManager;
             ConfigurationManager = configurationManager;

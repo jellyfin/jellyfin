@@ -1,11 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using BDInfo;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Text;
 
 namespace MediaBrowser.MediaEncoding.BdInfo
 {
@@ -15,12 +14,10 @@ namespace MediaBrowser.MediaEncoding.BdInfo
     public class BdInfoExaminer : IBlurayExaminer
     {
         private readonly IFileSystem _fileSystem;
-        private readonly ITextEncoding _textEncoding;
 
-        public BdInfoExaminer(IFileSystem fileSystem, ITextEncoding textEncoding)
+        public BdInfoExaminer(IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
-            _textEncoding = textEncoding;
         }
 
         /// <summary>
@@ -35,7 +32,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
                 throw new ArgumentNullException(nameof(path));
             }
 
-            var bdrom = new BDROM(path, _fileSystem, _textEncoding);
+            var bdrom = new BDROM(path, _fileSystem);
 
             bdrom.Scan();
 
