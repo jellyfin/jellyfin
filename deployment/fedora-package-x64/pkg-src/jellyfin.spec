@@ -181,6 +181,7 @@ fi
 - PR638 Removed XmlTv testfiles and nuget install
 - PR639 Fix segment_time_delta for ffmpeg 4.1
 - PR646: Fix infinite loop bug on subtitle.m3u8 request
+- PR655: Support trying local branches in submodule
 - jellyfin-web:
 - PR1: Change webcomponents to non-minified version
 - PR4: Fix user profile regression
