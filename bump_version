@@ -94,7 +94,7 @@ for repo in ./ MediaBrowser.WebDashboard/jellyfin-web/; do
     pushd ${repo}
 
     # Find the last release commit, so we know what's happened since
-    last_master_branch="master-${old_version}" # TODO: Set to `release-` for next release, so we can properly parse both repos with the new branch standard
+    last_master_branch="release-${old_version}"
     last_master_merge_commit="$(
         git log --merges --pretty=oneline \
             | grep -F "${last_master_branch}" \
