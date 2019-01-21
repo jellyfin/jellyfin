@@ -1,4 +1,3 @@
-### DEBIAN PACKAGE CHANGELOG: Verify this file looks correct or edit accordingly, then delete this line, write, and exit.
 jellyfin (10.1.0-1) unstable; urgency=medium
 
   * jellyfin:
@@ -45,6 +44,7 @@ jellyfin (10.1.0-1) unstable; urgency=medium
   * PR637 Remove unused font
   * PR638 Removed XmlTv testfiles and nuget install
   * PR639 Fix segment_time_delta for ffmpeg 4.1
+  * PR646: Fix infinite loop bug on subtitle.m3u8 request
   * jellyfin-web:
   * PR1: Change webcomponents to non-minified version
   * PR4: Fix user profile regression
@@ -74,7 +74,7 @@ jellyfin (10.1.0-1) unstable; urgency=medium
   * PR46: Minor changes to navbar elements
   * PR48: Remove Sync code
 
--- Jellyfin Packaging Team <packaging@jellyfin.org>  Sun, 20 Jan 2019 23:19:46 -0500
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  Sun, 20 Jan 2019 23:19:46 -0500
 
 jellyfin (10.0.2-1) unstable; urgency=medium
 
