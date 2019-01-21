@@ -681,22 +681,17 @@ namespace Emby.Server.Implementations.Channels
             // Find the corresponding channel provider plugin
             var channelProvider = GetChannelProvider(channel);
 
-            var user = query.User;
-
-            ChannelItemSortField? sortField = null;
-            var sortDescending = false;
-
-            var parentItem = !query.ParentId.Equals(Guid.Empty) ? _libraryManager.GetItemById(query.ParentId) : channel;
+            var parentItem = query.ParentId == Guid.Empty ? channel : _libraryManager.GetItemById(query.ParentId);
 
             var itemsResult = await GetChannelItems(channelProvider,
-                user,
+                query.User,
                 parentItem is Channel ? null : parentItem.ExternalId,
-                sortField,
-                sortDescending,
+                null,
+                false,
                 cancellationToken)
                 .ConfigureAwait(false);
 
-            if (query.ParentId.Equals(Guid.Empty))
+            if (query.ParentId == Guid.Empty)
             {
                 query.Parent = channel;
             }

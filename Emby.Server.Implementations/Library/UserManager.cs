@@ -322,17 +322,14 @@ namespace Emby.Server.Implementations.Library
                 throw new SecurityException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
             }
 
-            if (user != null)
+            if (!user.Policy.EnableRemoteAccess && !_networkManager.IsInLocalNetwork(remoteEndPoint))
             {
-                if (!user.Policy.EnableRemoteAccess && !_networkManager.IsInLocalNetwork(remoteEndPoint))
-                {
-                    throw new SecurityException("Forbidden.");
-                }
+                throw new SecurityException("Forbidden.");
+            }
 
-                if (!user.IsParentalScheduleAllowed())
-                {
-                    throw new SecurityException("User is not allowed access at this time.");
-                }
+            if (!user.IsParentalScheduleAllowed())
+            {
+                throw new SecurityException("User is not allowed access at this time.");
             }
 
             // Update LastActivityDate and LastLoginDate, then save
@@ -463,26 +460,26 @@ namespace Emby.Server.Implementations.Library
             {
                 user.Policy.InvalidLoginAttemptCount = newValue;
 
-                var maxCount = user.Policy.IsAdministrator ?
-                    3 :
-                    5;
+                var maxCount = user.Policy.IsAdministrator ? 3 : 5;
 
+                // TODO: Fix
+                /*
                 var fireLockout = false;
 
                 if (newValue >= maxCount)
                 {
-                    //_logger.LogDebug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue.ToString(CultureInfo.InvariantCulture));
-                    //user.Policy.IsDisabled = true;
+                    _logger.LogDebug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue.ToString(CultureInfo.InvariantCulture));
+                    user.Policy.IsDisabled = true;
 
-                    //fireLockout = true;
-                }
+                    fireLockout = true;
+                }*/
 
                 UpdateUserPolicy(user, user.Policy, false);
 
-                if (fireLockout)
+                /* if (fireLockout)
                 {
                     UserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
-                }
+                }*/
             }
         }
 
