@@ -1,27 +1,13 @@
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.IO;
 using SkiaSharp;
 
 namespace Emby.Drawing
 {
-    public class PlayedIndicatorDrawer
+    public static class PlayedIndicatorDrawer
     {
         private const int OffsetFromTopRightCorner = 38;
 
-        private readonly IApplicationPaths _appPaths;
-        private readonly IHttpClient _iHttpClient;
-        private readonly IFileSystem _fileSystem;
-
-        public PlayedIndicatorDrawer(IApplicationPaths appPaths, IHttpClient iHttpClient, IFileSystem fileSystem)
-        {
-            _appPaths = appPaths;
-            _iHttpClient = iHttpClient;
-            _fileSystem = fileSystem;
-        }
-
-        public void DrawPlayedIndicator(SKCanvas canvas, ImageSize imageSize)
+        public static void DrawPlayedIndicator(SKCanvas canvas, ImageSize imageSize)
         {
             var x = imageSize.Width - OffsetFromTopRightCorner;
 

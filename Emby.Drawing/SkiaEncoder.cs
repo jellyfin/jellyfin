@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Drawing;
@@ -19,20 +18,17 @@ namespace Emby.Drawing
     {
         private readonly ILogger _logger;
         private static IApplicationPaths _appPaths;
-        private readonly Func<IHttpClient> _httpClientFactory;
         private readonly IFileSystem _fileSystem;
         private static ILocalizationManager _localizationManager;
 
         public SkiaEncoder(
             ILoggerFactory loggerFactory,
             IApplicationPaths appPaths,
-            Func<IHttpClient> httpClientFactory,
             IFileSystem fileSystem,
             ILocalizationManager localizationManager)
         {
             _logger = loggerFactory.CreateLogger("ImageEncoder");
             _appPaths = appPaths;
-            _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
             _localizationManager = localizationManager;
 
@@ -641,16 +637,16 @@ namespace Emby.Drawing
 
                 if (options.AddPlayedIndicator)
                 {
-                    new PlayedIndicatorDrawer(_appPaths, _httpClientFactory(), _fileSystem).DrawPlayedIndicator(canvas, currentImageSize);
+                    PlayedIndicatorDrawer.DrawPlayedIndicator(canvas, currentImageSize);
                 }
                 else if (options.UnplayedCount.HasValue)
                 {
-                    new UnplayedCountIndicator(_appPaths, _httpClientFactory(), _fileSystem).DrawUnplayedCountIndicator(canvas, currentImageSize, options.UnplayedCount.Value);
+                    UnplayedCountIndicator.DrawUnplayedCountIndicator(canvas, currentImageSize, options.UnplayedCount.Value);
                 }
 
                 if (options.PercentPlayed > 0)
                 {
-                    new PercentPlayedDrawer().Process(canvas, currentImageSize, options.PercentPlayed);
+                    PercentPlayedDrawer.Process(canvas, currentImageSize, options.PercentPlayed);
                 }
             }
             catch (Exception ex)
