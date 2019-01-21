@@ -254,7 +254,7 @@ namespace Jellyfin.Server
             }
         }
 
-        public static IImageEncoder getImageEncoder(
+        public static IImageEncoder GetImageEncoder(
             IFileSystem fileSystem,
             IApplicationPaths appPaths,
             ILocalizationManager localizationManager)
