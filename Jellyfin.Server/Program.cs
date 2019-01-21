@@ -14,11 +14,9 @@ using Emby.Server.Implementations.EnvironmentInfo;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -103,7 +101,7 @@ namespace Jellyfin.Server
             {
                 appHost.Init();
 
-                appHost.ImageProcessor.ImageEncoder = getImageEncoder(fileSystem, () => appHost.HttpClient, appPaths, appHost.LocalizationManager);
+                appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
 
                 _logger.LogInformation("Running startup tasks");
 
@@ -256,15 +254,14 @@ namespace Jellyfin.Server
             }
         }
 
-        public static IImageEncoder getImageEncoder(
+        public static IImageEncoder GetImageEncoder(
             IFileSystem fileSystem,
-            Func<IHttpClient> httpClient,
             IApplicationPaths appPaths,
             ILocalizationManager localizationManager)
         {
             try
             {
-                return new SkiaEncoder(_loggerFactory, appPaths, httpClient, fileSystem, localizationManager);
+                return new SkiaEncoder(_loggerFactory, appPaths, fileSystem, localizationManager);
             }
             catch (Exception ex)
             {

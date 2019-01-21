@@ -1,28 +1,14 @@
 using System.Globalization;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.IO;
 using SkiaSharp;
 
 namespace Emby.Drawing
 {
-    public class UnplayedCountIndicator
+    public static class UnplayedCountIndicator
     {
         private const int OffsetFromTopRightCorner = 38;
 
-        private readonly IApplicationPaths _appPaths;
-        private readonly IHttpClient _iHttpClient;
-        private readonly IFileSystem _fileSystem;
-
-        public UnplayedCountIndicator(IApplicationPaths appPaths, IHttpClient iHttpClient, IFileSystem fileSystem)
-        {
-            _appPaths = appPaths;
-            _iHttpClient = iHttpClient;
-            _fileSystem = fileSystem;
-        }
-
-        public void DrawUnplayedCountIndicator(SKCanvas canvas, ImageSize imageSize, int count)
+        public static void DrawUnplayedCountIndicator(SKCanvas canvas, ImageSize imageSize, int count)
         {
             var x = imageSize.Width - OffsetFromTopRightCorner;
             var text = count.ToString(CultureInfo.InvariantCulture);

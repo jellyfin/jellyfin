@@ -1042,7 +1042,7 @@ namespace Emby.Server.Implementations
 
         private IImageProcessor GetImageProcessor()
         {
-            return new ImageProcessor(LoggerFactory, ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, ImageEncoder, () => LibraryManager, TimerFactory, () => MediaEncoder);
+            return new ImageProcessor(LoggerFactory, ServerConfigurationManager.ApplicationPaths, FileSystemManager, ImageEncoder, () => LibraryManager, () => MediaEncoder);
         }
 
         protected virtual FFMpegInstallInfo GetFfmpegInstallInfo()
