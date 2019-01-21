@@ -134,7 +134,6 @@ fi
 %postun
 %systemd_postun_with_restart jellyfin.service
 
-### YUM SPEC CHANGELOG: Verify this file looks correct or edit accordingly, then delete this line, write, and exit.
 %changelog
 * Sun Jan 20 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
 - jellyfin:
@@ -181,6 +180,7 @@ fi
 - PR637 Remove unused font
 - PR638 Removed XmlTv testfiles and nuget install
 - PR639 Fix segment_time_delta for ffmpeg 4.1
+- PR646: Fix infinite loop bug on subtitle.m3u8 request
 - jellyfin-web:
 - PR1: Change webcomponents to non-minified version
 - PR4: Fix user profile regression
