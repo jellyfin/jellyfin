@@ -150,7 +150,7 @@ echo -e "### DEBIAN PACKAGE CHANGELOG: Verify this file looks correct or edit ac
 jellyfin (${new_version}-1) unstable; urgency=medium
 ${changelog_string_deb}
 
--- Jellyfin Packaging Team <packaging@jellyfin.org>  $( date --rfc-2822 )
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  $( date --rfc-2822 )
 " >> ${debian_changelog_temp}
 cat ${debian_changelog_file} >> ${debian_changelog_temp}
 # Edit the file to verify
