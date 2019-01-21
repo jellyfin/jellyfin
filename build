@@ -10,7 +10,7 @@ declare -a actions=( 'build' 'package' 'sign' 'publish' )
 
 # The list of possible platforms, based on directories under 'deployment/'
 declare -a platforms=( $(
-    find deployment/ -maxdepth 1 -mindepth 1 -type d | sed 's/deployment\///' | sort
+    find deployment/ -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | sort
 ) )
 
 # The list of standard dependencies required by all build scripts; individual
