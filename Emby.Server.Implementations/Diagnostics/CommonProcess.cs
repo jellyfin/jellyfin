@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
@@ -121,17 +121,16 @@ namespace Emby.Server.Implementations.Diagnostics
             return _process.WaitForExit(timeMs);
         }
 
+        private bool WaitForExitAsyncCompletion(CancellationToken cancellationToken)
+        {
+            while (!HasExited && !cancellationToken.IsCancellationRequested) { }//wait for exit
+            //task is done
+            return HasExited;
+        }
+
         public Task<bool> WaitForExitAsync(int timeMs)
         {
-            //if (_process.WaitForExit(100))
-            //{
-            //    return Task.FromResult(true);
-            //}
-
-            //timeMs -= 100;
             timeMs = Math.Max(0, timeMs);
-
-            var tcs = new TaskCompletionSource<bool>();
 
             var cancellationToken = new CancellationTokenSource(timeMs).Token;
 
@@ -140,11 +139,11 @@ namespace Emby.Server.Implementations.Diagnostics
                 return Task.FromResult(true);
             }
 
-            _process.Exited += (sender, args) => tcs.TrySetResult(true);
+            Task<bool> waitForCompletionTask = new Task<bool>(() => WaitForExitAsyncCompletion(cancellationToken));
 
-            cancellationToken.Register(() => tcs.TrySetResult(HasExited));
+            waitForCompletionTask.Start();
 
-            return tcs.Task;
+            return waitForCompletionTask;
         }
 
         public void Dispose()
