@@ -58,8 +58,8 @@ namespace Emby.Drawing
             Func<ILibraryManager> libraryManager,
             Func<IMediaEncoder> mediaEncoder)
         {
-            _appPaths = appPaths;
             _logger = loggerFactory.CreateLogger(nameof(ImageProcessor));
+            _appPaths = appPaths;
             _fileSystem = fileSystem;
             _imageEncoder = imageEncoder;
             _libraryManager = libraryManager;
