@@ -298,6 +298,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool EnableBreakOnNonKeyFrames(string videoCodec)
         {
+            // REVIEW: @bond is this needed?
+            /*
             if (TranscodingType != TranscodingJobType.Progressive)
             {
                 if (IsSegmentedLiveStream)
@@ -306,7 +308,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 return BaseRequest.BreakOnNonKeyFrames && string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase);
-            }
+            }*/
 
             return false;
         }
