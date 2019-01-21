@@ -410,7 +410,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             }
 
             // TODO: Allow GetMultiDiscMovie in here
-            var supportsMultiVersion = true;
+            const bool supportsMultiVersion = true;
 
             var result = ResolveVideos<T>(parent, fileSystemEntries, directoryService, supportsMultiVersion, collectionType, parseName) ??
                 new MultiItemResolverResult();
