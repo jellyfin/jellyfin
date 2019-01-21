@@ -45,12 +45,18 @@ namespace Emby.Server.Implementations.Localization
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        public LocalizationManager(IServerConfigurationManager configurationManager, IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, IAssemblyInfo assemblyInfo, ITextLocalizer textLocalizer)
+        public LocalizationManager(
+            IServerConfigurationManager configurationManager,
+            IFileSystem fileSystem,
+            IJsonSerializer jsonSerializer,
+            ILoggerFactory loggerFactory,
+            IAssemblyInfo assemblyInfo,
+            ITextLocalizer textLocalizer)
         {
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(LocalizationManager));
             _assemblyInfo = assemblyInfo;
             _textLocalizer = textLocalizer;
 

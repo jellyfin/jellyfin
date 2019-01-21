@@ -22,9 +22,11 @@ namespace Emby.Server.Implementations.Networking
         public event EventHandler NetworkChanged;
         public Func<string[]> LocalSubnetsFn { get; set; }
 
-        public NetworkManager(ILogger logger, IEnvironmentInfo environment)
+        public NetworkManager(
+            ILoggerFactory loggerFactory,
+            IEnvironmentInfo environment)
         {
-            Logger = logger;
+            Logger = loggerFactory.CreateLogger(nameof(NetworkManager));
 
             // In FreeBSD these events cause a crash
             if (environment.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.BSD)

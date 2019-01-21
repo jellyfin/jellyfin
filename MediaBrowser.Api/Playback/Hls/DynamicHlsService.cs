@@ -936,10 +936,10 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var timeDeltaParam = string.Empty;
 
-            if (isEncoding && startNumber > 0)
+            if (isEncoding && state.TargetFramerate > 0)
             {
-                var startTime = state.SegmentLength * startNumber;
-                timeDeltaParam = string.Format("-segment_time_delta -{0}", startTime);
+                float startTime = 1 / (state.TargetFramerate.Value * 2);
+                timeDeltaParam = string.Format("-segment_time_delta {0}", Math.Round(startTime, 3));
             }
 
             var segmentFormat = GetSegmentFileExtension(state.Request).TrimStart('.');

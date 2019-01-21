@@ -8,7 +8,6 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
-using MediaBrowser.Model.Text;
 using Microsoft.Extensions.Logging;
 
 namespace SocketHttpListener.Net
@@ -30,19 +29,19 @@ namespace SocketHttpListener.Net
         private bool _enableDualMode;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly ISocketFactory _socketFactory;
-        private readonly ITextEncoding _textEncoding;
         private readonly IStreamHelper _streamHelper;
         private readonly IFileSystem _fileSystem;
         private readonly IEnvironmentInfo _environment;
 
-        public HttpEndPointListener(HttpListener listener, IPAddress addr, int port, bool secure, X509Certificate cert, ILogger logger, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, IStreamHelper streamHelper, ITextEncoding textEncoding, IFileSystem fileSystem, IEnvironmentInfo environment)
+        public HttpEndPointListener(HttpListener listener, IPAddress addr, int port, bool secure, X509Certificate cert,
+            ILogger logger, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, IStreamHelper streamHelper,
+            IFileSystem fileSystem, IEnvironmentInfo environment)
         {
             this._listener = listener;
             _logger = logger;
             _cryptoProvider = cryptoProvider;
             _socketFactory = socketFactory;
             _streamHelper = streamHelper;
-            _textEncoding = textEncoding;
             _fileSystem = fileSystem;
             _environment = environment;
 
@@ -214,7 +213,7 @@ namespace SocketHttpListener.Net
                 var localEndPointString = accepted.LocalEndPoint == null ? string.Empty : accepted.LocalEndPoint.ToString();
                 //_logger.LogInformation("HttpEndPointListener Accepting connection from {0} to {1} secure connection requested: {2}", remoteEndPointString, localEndPointString, _secure);
 
-                var conn = new HttpConnection(epl._logger, accepted, epl, epl._secure, epl._cert, epl._cryptoProvider, epl._streamHelper, epl._textEncoding, epl._fileSystem, epl._environment);
+                var conn = new HttpConnection(epl._logger, accepted, epl, epl._secure, epl._cert, epl._cryptoProvider, epl._streamHelper, epl._fileSystem, epl._environment);
 
                 await conn.Init().ConfigureAwait(false);
 

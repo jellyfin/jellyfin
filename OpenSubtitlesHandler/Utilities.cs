@@ -1,4 +1,4 @@
-/* This file is part of OpenSubtitles Handler
+﻿/* This file is part of OpenSubtitles Handler
    A library that handle OpenSubtitles.org XML-RPC methods.
 
    Copyright © Ala Ibrahim Hadid 2013
@@ -19,11 +19,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.Text;
 
 namespace OpenSubtitlesHandler
 {
@@ -34,8 +34,6 @@ namespace OpenSubtitlesHandler
     {
         public static ICryptoProvider CryptographyProvider { get; set; }
         public static IHttpClient HttpClient { get; set; }
-        public static ITextEncoding EncodingHelper { get; set; }
-
         private static string XML_RPC_SERVER = "https://api.opensubtitles.org/xml-rpc";
         //private static string XML_RPC_SERVER = "https://92.240.234.122/xml-rpc";
         private static string HostHeader = "api.opensubtitles.org:443";
@@ -125,13 +123,13 @@ namespace OpenSubtitlesHandler
                     data.Add((byte)r);
                 }
                 var bytes = data.ToArray();
-                return EncodingHelper.GetASCIIEncoding().GetString(bytes, 0, bytes.Length);
+                return Encoding.ASCII.GetString(bytes, 0, bytes.Length);
             }
         }
 
         public static byte[] GetASCIIBytes(string text)
         {
-            return EncodingHelper.GetASCIIEncoding().GetBytes(text);
+            return Encoding.ASCII.GetBytes(text);
         }
 
         /// <summary>

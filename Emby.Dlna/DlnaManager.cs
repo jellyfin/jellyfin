@@ -32,16 +32,17 @@ namespace Emby.Dlna
 
         private readonly Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>> _profiles = new Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>>(StringComparer.Ordinal);
 
-        public DlnaManager(IXmlSerializer xmlSerializer,
+        public DlnaManager(
+            IXmlSerializer xmlSerializer,
             IFileSystem fileSystem,
             IApplicationPaths appPaths,
-            ILogger logger,
+            ILoggerFactory loggerFactory,
             IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IAssemblyInfo assemblyInfo)
         {
             _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger("Dlna");
             _jsonSerializer = jsonSerializer;
             _appHost = appHost;
             _assemblyInfo = assemblyInfo;

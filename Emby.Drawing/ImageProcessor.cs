@@ -51,15 +51,15 @@ namespace Emby.Drawing
         private readonly Func<IMediaEncoder> _mediaEncoder;
 
         public ImageProcessor(
-            ILogger logger,
+            ILoggerFactory loggerFactory,
             IServerApplicationPaths appPaths,
             IFileSystem fileSystem,
             IImageEncoder imageEncoder,
             Func<ILibraryManager> libraryManager,
             Func<IMediaEncoder> mediaEncoder)
         {
-            _logger = logger;
             _appPaths = appPaths;
+            _logger = loggerFactory.CreateLogger(nameof(ImageProcessor));
             _fileSystem = fileSystem;
             _imageEncoder = imageEncoder;
             _libraryManager = libraryManager;

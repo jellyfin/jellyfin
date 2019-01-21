@@ -48,17 +48,17 @@ namespace Emby.Naming.Video
                 throw new ArgumentNullException(nameof(path));
             }
 
-            var isStub = false;
+            bool isStub = false;
             string container = null;
             string stubType = null;
 
             if (!IsDirectory)
             {
-                var extension = Path.GetExtension(path) ?? string.Empty;
+                var extension = Path.GetExtension(path);
                 // Check supported extensions
                 if (!_options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
-                    var stubResult = new StubResolver(_options).ResolveFile(path);
+                    var stubResult = StubResolver.ResolveFile(path, _options);
 
                     isStub = stubResult.IsStub;
 
@@ -79,9 +79,9 @@ namespace Emby.Naming.Video
 
             var extraResult = new ExtraResolver(_options).GetExtraInfo(path);
 
-            var name = !IsDirectory
-                ? Path.GetFileNameWithoutExtension(path)
-                : Path.GetFileName(path);
+            var name = IsDirectory
+                ? Path.GetFileName(path)
+                : Path.GetFileNameWithoutExtension(path);
 
             int? year = null;
 
@@ -91,8 +91,7 @@ namespace Emby.Naming.Video
 
                 if (string.IsNullOrEmpty(extraResult.ExtraType))
                 {
-                    name = cleanDateTimeResult.Name;
-                    name = CleanString(name).Name;
+                    name = CleanString(cleanDateTimeResult.Name).Name;
                 }
 
                 year = cleanDateTimeResult.Year;
