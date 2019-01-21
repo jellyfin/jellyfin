@@ -191,6 +191,7 @@ popd
 pushd deployment/
 for target_platform in ${platform[@]}; do
     echo -e "> Processing platform ${target_platform}"
+    date_start=$( date +%s )
     pushd ${target_platform}
     for target_action in ${action[@]}; do
         echo -e ">> Processing action ${target_action}"
@@ -209,6 +210,8 @@ for target_platform in ${platform[@]}; do
             ./clean.sh 
         fi
     fi
+    date_end=$( date +%s )
+    echo -e "> Completed platform ${target_platform} in $( expr ${date_end} - ${date_start} ) seconds."
     popd
 done
 popd
