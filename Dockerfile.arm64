@@ -1,3 +1,5 @@
+# Requires binfm_misc registration for aarch64
+# https://github.com/multiarch/qemu-user-static#binfmt_misc-register
 ARG DOTNET_VERSION=3.0
 
 
