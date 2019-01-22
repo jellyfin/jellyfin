@@ -105,7 +105,6 @@ namespace Emby.Server.Implementations.Diagnostics
         {
             return _process.WaitForExit(timeMs);
         }
-
         
         public Task<bool> WaitForExitAsync(int timeMs)
         {
