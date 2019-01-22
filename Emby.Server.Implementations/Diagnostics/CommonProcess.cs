@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Diagnostics;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace Emby.Server.Implementations.Diagnostics
 {
@@ -42,14 +43,16 @@ namespace Emby.Server.Implementations.Diagnostics
                 StartInfo = startInfo
             };
 
-            if (options.EnableRaisingEvents)
-            {
-                _process.EnableRaisingEvents = true;
-                _process.Exited += _process_Exited;
-            }
+
+            _process.EnableRaisingEvents = true;
+            _process.Exited += _process_Exited;
+
         }
 
+
+
         private bool _hasExited;
+
         private bool HasExited
         {
             get
@@ -121,29 +124,26 @@ namespace Emby.Server.Implementations.Diagnostics
             return _process.WaitForExit(timeMs);
         }
 
-        private bool WaitForExitAsyncCompletion(CancellationToken cancellationToken)
-        {
-            while (!HasExited && !cancellationToken.IsCancellationRequested) { }//wait for exit
-            //task is done
-            return HasExited;
-        }
-
         public Task<bool> WaitForExitAsync(int timeMs)
         {
-            timeMs = Math.Max(0, timeMs);
-
-            var cancellationToken = new CancellationTokenSource(timeMs).Token;
 
             if (HasExited)
             {
                 return Task.FromResult(true);
             }
 
-            Task<bool> waitForCompletionTask = new Task<bool>(() => WaitForExitAsyncCompletion(cancellationToken));
+            timeMs = Math.Max(0, timeMs);
 
-            waitForCompletionTask.Start();
+            var taskSource = new TaskCompletionSource<bool>();
 
-            return waitForCompletionTask;
+            var cancellationToken = new CancellationTokenSource(timeMs).Token;
+
+            _process.Exited += (sender, args) => taskSource.TrySetResult(true);
+
+            cancellationToken.Register(()=>taskSource.TrySetResult(HasExited));
+
+
+            return taskSource.Task;
         }
 
         public void Dispose()
