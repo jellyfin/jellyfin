@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
 
@@ -22,7 +22,7 @@ namespace Emby.Server.Implementations.Sorting
         /// </summary>
         /// <param name="x">The x.</param>
         /// <returns>System.String.</returns>
-        private int GetValue(BaseItem x)
+        private static int GetValue(BaseItem x)
         {
             return x.IsFolder ? 0 : 1;
         }
@@ -31,9 +31,6 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return ItemSortBy.IsFolder; }
-        }
+        public string Name => ItemSortBy.IsFolder;
     }
 }

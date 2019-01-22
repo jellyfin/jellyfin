@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Common.Net;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback
@@ -31,10 +31,7 @@ namespace MediaBrowser.Api.Playback
         /// Gets the options.
         /// </summary>
         /// <value>The options.</value>
-        public IDictionary<string, string> Headers
-        {
-            get { return _options; }
-        }
+        public IDictionary<string, string> Headers => _options;
 
         public async Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken)
         {

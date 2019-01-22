@@ -1,12 +1,12 @@
-﻿using MediaBrowser.Model.Serialization;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Library;
-using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Library;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -34,22 +34,10 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsInheritedParentImages => false;
 
         [IgnoreDataMember]
-        public override bool SupportsPlayedStatus
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPlayedStatus => false;
 
         private void ClearCache()
         {
@@ -78,7 +66,7 @@ namespace MediaBrowser.Controller.Entities
             return new QueryResult<BaseItem>
             {
                 TotalRecordCount = totalCount,
-                Items = itemsArray
+                Items = itemsArray //TODO Fix The co-variant conversion between Folder[] and BaseItem[], this can generate runtime issues.
             };
         }
 
@@ -88,22 +76,10 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        protected override bool SupportsShortcutChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool SupportsShortcutChildren => true;
 
         [IgnoreDataMember]
-        public override bool IsPreSorted
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsPreSorted => true;
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {

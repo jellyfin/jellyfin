@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Events;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -90,7 +90,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             AddOrUpdateSystemTimer(item);
         }
 
-        private bool ShouldStartTimer(TimerInfo item)
+        private static bool ShouldStartTimer(TimerInfo item)
         {
             if (item.Status == RecordingStatus.Completed ||
                 item.Status == RecordingStatus.Cancelled)
@@ -140,8 +140,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private void StopTimer(TimerInfo item)
         {
-            ITimer timer;
-            if (_timers.TryRemove(item.Id, out timer))
+            if (_timers.TryRemove(item.Id, out var timer))
             {
                 timer.Dispose();
             }

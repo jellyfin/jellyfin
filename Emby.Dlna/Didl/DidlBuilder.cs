@@ -1,4 +1,11 @@
-﻿using MediaBrowser.Model.Extensions;
+using System;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Xml;
+using Emby.Dlna.Configuration;
+using Emby.Dlna.ContentDirectory;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -6,23 +13,15 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Playlists;
-using Emby.Dlna.ContentDirectory;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
-using System;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using MediaBrowser.Controller.MediaEncoding;
-using Emby.Dlna.Configuration;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Didl
 {
@@ -79,7 +78,7 @@ namespace Emby.Dlna.Didl
 
             using (StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8))
             {
-                using (XmlWriter writer = XmlWriter.Create(builder, settings))
+                using (var writer = XmlWriter.Create(builder, settings))
                 {
                     //writer.WriteStartDocument();
 
@@ -375,7 +374,7 @@ namespace Emby.Dlna.Didl
                ? GetMimeType(filename)
                : mediaProfile.MimeType;
 
-            writer.WriteAttributeString("protocolInfo", String.Format(
+            writer.WriteAttributeString("protocolInfo", string.Format(
                 "http-get:*:{0}:{1}",
                 mimeType,
                 contentFeatures
@@ -573,7 +572,7 @@ namespace Emby.Dlna.Didl
                 streamInfo.RunTimeTicks ?? 0,
                 streamInfo.TranscodeSeekInfo);
 
-            writer.WriteAttributeString("protocolInfo", String.Format(
+            writer.WriteAttributeString("protocolInfo", string.Format(
                 "http-get:*:{0}:{1}",
                 mimeType,
                 contentFeatures
@@ -1017,7 +1016,7 @@ namespace Emby.Dlna.Didl
             var contentFeatures = new ContentFeatureBuilder(_profile)
                 .BuildImageHeader(format, width, height, imageInfo.IsDirectStream, org_Pn);
 
-            writer.WriteAttributeString("protocolInfo", String.Format(
+            writer.WriteAttributeString("protocolInfo", string.Format(
                 "http-get:*:{0}:{1}",
                 GetMimeType("file." + format),
                 contentFeatures

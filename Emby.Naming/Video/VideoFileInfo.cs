@@ -1,4 +1,4 @@
-﻿
+
 namespace Emby.Naming.Video
 {
     /// <summary>
@@ -55,7 +55,7 @@ namespace Emby.Naming.Video
         /// Gets or sets the type of the stub.
         /// </summary>
         /// <value>The type of the stub.</value>
-        public string StubType { get; set; }        
+        public string StubType { get; set; }
         /// <summary>
         /// Gets or sets the type.
         /// </summary>
@@ -65,10 +65,7 @@ namespace Emby.Naming.Video
         /// Gets the file name without extension.
         /// </summary>
         /// <value>The file name without extension.</value>
-        public string FileNameWithoutExtension
-        {
-            get { return !IsDirectory ? System.IO.Path.GetFileNameWithoutExtension(Path) : System.IO.Path.GetFileName(Path); }
-        }
+        public string FileNameWithoutExtension => !IsDirectory ? System.IO.Path.GetFileNameWithoutExtension(Path) : System.IO.Path.GetFileName(Path);
 
         public override string ToString()
         {

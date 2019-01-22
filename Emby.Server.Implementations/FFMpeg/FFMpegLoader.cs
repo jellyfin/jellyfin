@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.FFMpeg
 {
@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.FFMpeg
         {
             var encoderFilename = Path.GetFileName(info.EncoderPath);
             var probeFilename = Path.GetFileName(info.ProbePath);
-            
+
             foreach (var directory in _fileSystem.GetDirectoryPaths(rootEncoderPath)
                 .ToList())
             {

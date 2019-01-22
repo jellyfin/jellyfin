@@ -1,5 +1,3 @@
-﻿using System;
-
 namespace MediaBrowser.Model.Notifications
 {
     public class NotificationTypeInfo

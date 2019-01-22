@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Extensions;
-using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
 {
@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             if (!_affectedPaths.Contains(path, StringComparer.Ordinal))
@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             lock (_timerLock)
@@ -156,7 +156,7 @@ namespace Emby.Server.Implementations.IO
                     continue;
                 }
 
-                Logger.LogInformation("{name} ({path}}) will be refreshed.", item.Name, item.Path);
+                Logger.LogInformation("{name} ({path}) will be refreshed.", item.Name, item.Path);
 
                 try
                 {
@@ -164,7 +164,7 @@ namespace Emby.Server.Implementations.IO
                 }
                 catch (IOException ex)
                 {
-                    // For now swallow and log. 
+                    // For now swallow and log.
                     // Research item: If an IOException occurs, the item may be in a disconnected state (media unavailable)
                     // Should we remove it from it's parent?
                     Logger.LogError(ex, "Error refreshing {name}", item.Name);

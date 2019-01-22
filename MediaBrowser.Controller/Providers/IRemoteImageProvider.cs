@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -19,7 +19,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{ImageType}.</returns>
         IEnumerable<ImageType> GetSupportedImages(BaseItem item);
-        
+
         /// <summary>
         /// Gets the images.
         /// </summary>

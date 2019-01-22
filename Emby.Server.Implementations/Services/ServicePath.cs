@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Services
 {
@@ -39,7 +37,7 @@ namespace Emby.Server.Implementations.Services
         public int PathComponentsCount { get; set; }
 
         /// <summary>
-        /// The total number of segments after subparts have been exploded ('.') 
+        /// The total number of segments after subparts have been exploded ('.')
         /// e.g. /path/to/here.ext == 4
         /// </summary>
         public int TotalComponentsCount { get; set; }
@@ -50,7 +48,7 @@ namespace Emby.Server.Implementations.Services
 
         public Type ServiceType { get; private set; }
 
-        public string Path { get { return this.restPath; } }
+        public string Path => this.restPath;
 
         public string Summary { get; private set; }
         public string Description { get; private set; }
@@ -58,10 +56,7 @@ namespace Emby.Server.Implementations.Services
 
         public int Priority { get; set; } //passed back to RouteAttribute
 
-        public IEnumerable<string> PathVariables
-        {
-            get { return this.variablesNames.Where(e => !string.IsNullOrWhiteSpace(e)); }
-        }
+        public IEnumerable<string> PathVariables => this.variablesNames.Where(e => !string.IsNullOrWhiteSpace(e));
 
         public static string[] GetPathPartsForMatching(string pathInfo)
         {
@@ -117,7 +112,7 @@ namespace Emby.Server.Implementations.Services
             var hasSeparators = new List<bool>();
             foreach (var component in this.restPath.Split(PathSeperatorChar))
             {
-                if (String.IsNullOrEmpty(component)) continue;
+                if (string.IsNullOrEmpty(component)) continue;
 
                 if (StringContains(component, VariablePrefix)
                     && component.IndexOf(ComponentSeperator) != -1)
@@ -311,8 +306,7 @@ namespace Emby.Server.Implementations.Services
 
         public int MatchScore(string httpMethod, string[] withPathInfoParts)
         {
-            int wildcardMatchCount;
-            var isMatch = IsMatch(httpMethod, withPathInfoParts, out wildcardMatchCount);
+            var isMatch = IsMatch(httpMethod, withPathInfoParts, out var wildcardMatchCount);
             if (!isMatch)
             {
                 return -1;
@@ -354,7 +348,7 @@ namespace Emby.Server.Implementations.Services
 
             if (withPathInfoParts.Length != this.PathComponentsCount && !this.IsWildCardPath)
             {
-               return false;
+                return false;
             }
 
             if (!Verbs.Contains(httpMethod, StringComparer.OrdinalIgnoreCase))
@@ -420,10 +414,10 @@ namespace Emby.Server.Implementations.Services
             return pathIx == withPathInfoParts.Length;
         }
 
-        private bool LiteralsEqual(string str1, string str2)
+        private static bool LiteralsEqual(string str1, string str2)
         {
             // Most cases
-            if (String.Equals(str1, str2, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(str1, str2, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -433,7 +427,7 @@ namespace Emby.Server.Implementations.Services
             str2 = str2.ToUpperInvariant();
 
             // Invariant IgnoreCase would probably be better but it's not available in PCL
-            return String.Equals(str1, str2, StringComparison.CurrentCultureIgnoreCase);
+            return string.Equals(str1, str2, StringComparison.CurrentCultureIgnoreCase);
         }
 
         private bool ExplodeComponents(ref string[] withPathInfoParts)
@@ -442,7 +436,7 @@ namespace Emby.Server.Implementations.Services
             for (var i = 0; i < withPathInfoParts.Length; i++)
             {
                 var component = withPathInfoParts[i];
-                if (String.IsNullOrEmpty(component)) continue;
+                if (string.IsNullOrEmpty(component)) continue;
 
                 if (this.PathComponentsCount != this.TotalComponentsCount
                     && this.componentsWithSeparators[i])
@@ -473,7 +467,7 @@ namespace Emby.Server.Implementations.Services
                     && requestComponents.Length >= this.TotalComponentsCount - this.wildcardCount;
 
                 if (!isValidWildCardPath)
-                    throw new ArgumentException(String.Format(
+                    throw new ArgumentException(string.Format(
                         "Path Mismatch: Request Path '{0}' has invalid number of components compared to: '{1}'",
                         pathInfo, this.restPath));
             }
@@ -489,10 +483,9 @@ namespace Emby.Server.Implementations.Services
                     continue;
                 }
 
-                string propertyNameOnRequest;
-                if (!this.propertyNamesMap.TryGetValue(variableName.ToLower(), out propertyNameOnRequest))
+                if (!this.propertyNamesMap.TryGetValue(variableName.ToLower(), out var propertyNameOnRequest))
                 {
-                    if (String.Equals("ignore", variableName, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals("ignore", variableName, StringComparison.OrdinalIgnoreCase))
                     {
                         pathIx++;
                         continue;
@@ -522,12 +515,12 @@ namespace Emby.Server.Implementations.Services
                         // hits a match for the next element in the definition (which must be a literal)
                         // It may consume 0 or more path parts
                         var stopLiteral = i == this.TotalComponentsCount - 1 ? null : this.literalsToMatch[i + 1];
-                        if (!String.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
+                        if (!string.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
                         {
                             var sb = new StringBuilder();
                             sb.Append(value);
                             pathIx++;
-                            while (!String.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
+                            while (!string.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
                             {
                                 sb.Append(PathSeperatorChar + requestComponents[pathIx++]);
                             }

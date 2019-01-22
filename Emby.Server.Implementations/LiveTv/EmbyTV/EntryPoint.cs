@@ -1,4 +1,3 @@
-﻿using System;
 using MediaBrowser.Controller.Plugins;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV

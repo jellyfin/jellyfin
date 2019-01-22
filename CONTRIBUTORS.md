@@ -11,6 +11,9 @@
  - [AnthonyLavado](https://github.com/anthonylavado)
  - [sparky8251](https://github.com/sparky8251)
  - [LeoVerto](https://github.com/LeoVerto)
+ - [grafixeyehero](https://github.com/grafixeyehero)
+ - [cvium](https://github.com/cvium)
+ - [wtayl0r](https://github.com/wtayl0r)
  - [TtheCreator](https://github.com/Tthecreator)
 
 # Emby Contributors

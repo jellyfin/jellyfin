@@ -1,16 +1,14 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Entities;
 using System;
-using MediaBrowser.Controller.Entities;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Controller.Providers;
-using System.Collections.Generic;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Extensions;
-using Emby.Naming.Video;
 using Emby.Naming.AudioBook;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Audio
 {
@@ -30,10 +28,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
-        public override ResolverPriority Priority
-        {
-            get { return ResolverPriority.Fourth; }
-        }
+        public override ResolverPriority Priority => ResolverPriority.Fourth;
 
         public MultiItemResolverResult ResolveMultiple(Folder parent,
             List<FileSystemMetadata> files,
@@ -231,7 +226,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 }
 
                 var firstMedia = resolvedItem.Files.First();
-                
+
                 var libraryItem = new T
                 {
                     Path = firstMedia.Path,
@@ -264,12 +259,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 result.Extras.Any(i => ContainsFile(i, file));
         }
 
-        private bool ContainsFile(AudioBookFileInfo result, FileSystemMetadata file)
+        private static bool ContainsFile(AudioBookFileInfo result, FileSystemMetadata file)
         {
             return string.Equals(result.Path, file.FullName, StringComparison.OrdinalIgnoreCase);
         }
 
-        private bool IsIgnored(string filename)
+        private static bool IsIgnored(string filename)
         {
             return false;
         }

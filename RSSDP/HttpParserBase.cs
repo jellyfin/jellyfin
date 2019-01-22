@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -26,25 +26,25 @@ namespace Rssdp.Infrastructure
         private static byte[] EmptyByteArray = new byte[]{};
 
         /// <summary>
-        /// Parses the <paramref name="data"/> provided into either a <see cref="System.Net.Http.HttpRequestMessage"/> or <see cref="System.Net.Http.HttpResponseMessage"/> object.
+        /// Parses the <paramref name="data"/> provided into either a <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/> object.
         /// </summary>
         /// <param name="data">A string containing the HTTP message to parse.</param>
-        /// <returns>Either a <see cref="System.Net.Http.HttpRequestMessage"/> or <see cref="System.Net.Http.HttpResponseMessage"/> object containing the parsed data.</returns>
+        /// <returns>Either a <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/> object containing the parsed data.</returns>
         public abstract T Parse(string data);
 
         /// <summary>
-        /// Parses a string containing either an HTTP request or response into a <see cref="System.Net.Http.HttpRequestMessage"/> or <see cref="System.Net.Http.HttpResponseMessage"/> object.
+        /// Parses a string containing either an HTTP request or response into a <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/> object.
         /// </summary>
-        /// <param name="message">A <see cref="System.Net.Http.HttpRequestMessage"/> or <see cref="System.Net.Http.HttpResponseMessage"/> object representing the parsed message.</param>
+        /// <param name="message">A <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/> object representing the parsed message.</param>
         /// <param name="headers">A reference to the <see cref="System.Net.Http.Headers.HttpHeaders"/> collection for the <paramref name="message"/> object.</param>
         /// <param name="data">A string containing the data to be parsed.</param>
-        /// <returns>An <see cref="System.Net.Http.HttpContent"/> object containing the content of the parsed message.</returns>
+        /// <returns>An <see cref="HttpContent"/> object containing the content of the parsed message.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Honestly, it's fine. MemoryStream doesn't mind.")]
         protected virtual void Parse(T message, System.Net.Http.Headers.HttpHeaders headers, string data)
         {
-            if (data == null) throw new ArgumentNullException("data");
-            if (data.Length == 0) throw new ArgumentException("data cannot be an empty string.", "data");
-            if (!LineTerminators.Any(data.Contains)) throw new ArgumentException("data is not a valid request, it does not contain any CRLF/LF terminators.", "data");
+            if (data == null) throw new ArgumentNullException(nameof(data));
+            if (data.Length == 0) throw new ArgumentException("data cannot be an empty string.", nameof(data));
+            if (!LineTerminators.Any(data.Contains)) throw new ArgumentException("data is not a valid request, it does not contain any CRLF/LF terminators.", nameof(data));
 
             using (var retVal = new ByteArrayContent(EmptyByteArray))
             {
@@ -61,7 +61,7 @@ namespace Rssdp.Infrastructure
         /// Used to parse the first line of an HTTP request or response and assign the values to the appropriate properties on the <paramref name="message"/>.
         /// </summary>
         /// <param name="data">The first line of the HTTP message to be parsed.</param>
-        /// <param name="message">Either a <see cref="System.Net.Http.HttpResponseMessage"/> or <see cref="System.Net.Http.HttpRequestMessage"/> to assign the parsed values to.</param>
+        /// <param name="message">Either a <see cref="HttpResponseMessage"/> or <see cref="HttpRequestMessage"/> to assign the parsed values to.</param>
         protected abstract void ParseStatusLine(string data, T message);
 
         /// <summary>
@@ -77,10 +77,10 @@ namespace Rssdp.Infrastructure
         /// <returns>A <see cref="Version"/> object containing the parsed version data.</returns>
         protected Version ParseHttpVersion(string versionData)
         {
-            if (versionData == null) throw new ArgumentNullException("versionData");
+            if (versionData == null) throw new ArgumentNullException(nameof(versionData));
 
             var versionSeparatorIndex = versionData.IndexOf('/');
-            if (versionSeparatorIndex <= 0 || versionSeparatorIndex == versionData.Length) throw new ArgumentException("request header line is invalid. Http Version not supplied or incorrect format.", "versionData");
+            if (versionSeparatorIndex <= 0 || versionSeparatorIndex == versionData.Length) throw new ArgumentException("request header line is invalid. Http Version not supplied or incorrect format.", nameof(versionData));
 
             return Version.Parse(versionData.Substring(versionSeparatorIndex + 1));
         }

@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Model.Dto;
-using System.Collections.Generic;
-using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {

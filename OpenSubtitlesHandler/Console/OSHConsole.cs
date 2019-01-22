@@ -1,4 +1,4 @@
-﻿/* This file is part of OpenSubtitles Handler
+/* This file is part of OpenSubtitles Handler
    A library that handle OpenSubtitles.org XML-RPC methods.
 
    Copyright © Ala Ibrahim Hadid 2013
@@ -26,7 +26,7 @@ namespace OpenSubtitlesHandler.Console
         /// <summary>
         /// Write line to the console and raise the "LineWritten" event
         /// </summary>
-        /// 
+        ///
         /// <param name="text">The debug line</param>
         /// <param name="code">The status</param>
         public static void WriteLine(string text, DebugCode code = DebugCode.None)
@@ -58,7 +58,7 @@ namespace OpenSubtitlesHandler.Console
     /// <summary>
     /// Console Debug Args
     /// </summary>
-    public class DebugEventArgs : System.EventArgs
+    public class DebugEventArgs : EventArgs
     {
         public DebugCode Code { get; private set; }
         public string Text { get; private set; }

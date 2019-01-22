@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Emby.Dlna.Didl
 {
@@ -53,9 +51,6 @@ namespace Emby.Dlna.Didl
             _encoding = encoding;
         }
 
-        public override Encoding Encoding
-        {
-            get { return (null == _encoding) ? base.Encoding : _encoding; }
-        }
+        public override Encoding Encoding => (null == _encoding) ? base.Encoding : _encoding;
     }
 }

@@ -1,4 +1,7 @@
-﻿using MediaBrowser.Common.Net;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -6,9 +9,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -29,7 +29,7 @@ namespace MediaBrowser.Providers.Music
         {
             return new List<ImageType>
             {
-                ImageType.Primary, 
+                ImageType.Primary,
                 ImageType.Logo,
                 ImageType.Banner,
                 ImageType.Backdrop
@@ -133,23 +133,13 @@ namespace MediaBrowser.Providers.Music
             });
         }
 
-        public string Name
-        {
-            get { return "TheAudioDB"; }
-        }
+        public string Name => "TheAudioDB";
 
         public bool Supports(BaseItem item)
         {
             return item is MusicArtist;
         }
-
-        public int Order
-        {
-            get
-            {
-                // After fanart
-                return 1;
-            }
-        }
+        // After fanart
+        public int Order => 1;
     }
 }

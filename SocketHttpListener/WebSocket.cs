@@ -3,15 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.IO;
 using SocketHttpListener.Net.WebSockets;
-using SocketHttpListener.Primitives;
 using HttpStatusCode = SocketHttpListener.Net.HttpStatusCode;
-using System.Net.Sockets;
 using WebSocketState = System.Net.WebSockets.WebSocketState;
 
 namespace SocketHttpListener
@@ -81,11 +78,8 @@ namespace SocketHttpListener
             init();
         }
 
-        public static TimeSpan DefaultKeepAliveInterval
-        {
-            // In the .NET Framework, this pulls the value from a P/Invoke.  Here we just hardcode it to a reasonable default.
-            get { return TimeSpan.FromSeconds(30); }
-        }
+        // In the .NET Framework, this pulls the value from a P/Invoke.  Here we just hardcode it to a reasonable default.
+        public static TimeSpan DefaultKeepAliveInterval => TimeSpan.FromSeconds(30);
 
         #endregion
 
@@ -96,13 +90,7 @@ namespace SocketHttpListener
         /// One of the <see cref="WebSocketState"/> enum values, indicates the state of the WebSocket
         /// connection. The default value is <see cref="WebSocketState.Connecting"/>.
         /// </value>
-        public WebSocketState ReadyState
-        {
-            get
-            {
-                return _readyState;
-            }
-        }
+        public WebSocketState ReadyState => _readyState;
 
         #region Public Events
 
@@ -740,7 +728,7 @@ namespace SocketHttpListener
         {
             if (data == null)
             {
-                throw new ArgumentNullException("data");
+                throw new ArgumentNullException(nameof(data));
             }
 
             var msg = _readyState.CheckIfOpen();
@@ -765,7 +753,7 @@ namespace SocketHttpListener
         {
             if (data == null)
             {
-                throw new ArgumentNullException("data");
+                throw new ArgumentNullException(nameof(data));
             }
 
             var msg = _readyState.CheckIfOpen();

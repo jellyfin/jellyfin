@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -45,7 +45,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 writer.WriteLine("</div>");
                 writer.WriteLine("</body>");
-                
+
                 writer.WriteLine("</tt>");
             }
         }

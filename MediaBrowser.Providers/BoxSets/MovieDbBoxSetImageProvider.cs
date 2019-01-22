@@ -1,4 +1,9 @@
-﻿using MediaBrowser.Common.Net;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
@@ -6,11 +11,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Providers.Movies;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.BoxSets
 {
@@ -23,15 +23,9 @@ namespace MediaBrowser.Providers.BoxSets
             _httpClient = httpClient;
         }
 
-        public string Name
-        {
-            get { return ProviderName; }
-        }
+        public string Name => ProviderName;
 
-        public static string ProviderName
-        {
-            get { return "TheMovieDb"; }
-        }
+        public static string ProviderName => "TheMovieDb";
 
         public bool Supports(BaseItem item)
         {
@@ -42,7 +36,7 @@ namespace MediaBrowser.Providers.BoxSets
         {
             return new List<ImageType>
             {
-                ImageType.Primary, 
+                ImageType.Primary,
                 ImageType.Backdrop
             };
         }
@@ -150,10 +144,7 @@ namespace MediaBrowser.Providers.BoxSets
                 .ThenByDescending(i => i.vote_count);
         }
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

@@ -1,23 +1,3 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Querying;
-using Emby.Naming.Audio;
-using Emby.Naming.Common;
-using Emby.Naming.TV;
-using Emby.Naming.Video;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -27,26 +7,42 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Naming.Audio;
+using Emby.Naming.Common;
+using Emby.Naming.TV;
+using Emby.Naming.Video;
 using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
+using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Model.Channels;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Tasks;
+using MediaBrowser.Providers.MediaInfo;
+using Microsoft.Extensions.Logging;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
-using MediaBrowser.Common.Configuration;
-
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Tasks;
-using Emby.Server.Implementations.Playlists;
-using MediaBrowser.Providers.MediaInfo;
-using MediaBrowser.Controller;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -147,13 +143,7 @@ namespace Emby.Server.Implementations.Library
         /// Gets the library items cache.
         /// </summary>
         /// <value>The library items cache.</value>
-        private ConcurrentDictionary<Guid, BaseItem> LibraryItemsCache
-        {
-            get
-            {
-                return _libraryItemsCache;
-            }
-        }
+        private ConcurrentDictionary<Guid, BaseItem> LibraryItemsCache => _libraryItemsCache;
 
         private readonly IFileSystem _fileSystem;
 
@@ -165,9 +155,19 @@ namespace Emby.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public LibraryManager(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataManager userDataRepository, Func<ILibraryMonitor> libraryMonitorFactory, IFileSystem fileSystem, Func<IProviderManager> providerManagerFactory, Func<IUserViewManager> userviewManager)
+        public LibraryManager(
+            IServerApplicationHost appHost,
+            ILoggerFactory loggerFactory,
+            ITaskManager taskManager,
+            IUserManager userManager,
+            IServerConfigurationManager configurationManager,
+            IUserDataManager userDataRepository,
+            Func<ILibraryMonitor> libraryMonitorFactory,
+            IFileSystem fileSystem,
+            Func<IProviderManager> providerManagerFactory,
+            Func<IUserViewManager> userviewManager)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(LibraryManager));
             _taskManager = taskManager;
             _userManager = userManager;
             ConfigurationManager = configurationManager;
@@ -188,7 +188,6 @@ namespace Emby.Server.Implementations.Library
         /// Adds the parts.
         /// </summary>
         /// <param name="rules">The rules.</param>
-        /// <param name="pluginFolders">The plugin folders.</param>
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
@@ -277,7 +276,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
             if (item is IItemByName)
             {
@@ -317,7 +316,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
 
             var parent = item.GetOwner() ?? item.GetParent();
@@ -329,7 +328,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
 
             if (item.SourceType == SourceType.Channel)
@@ -398,7 +397,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     try
                     {
-                         _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
+                        _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
                         if (fileSystemInfo.IsDirectory)
                         {
                             _fileSystem.DeleteDirectory(fileSystemInfo.FullName, true);
@@ -443,13 +442,12 @@ namespace Emby.Server.Implementations.Library
                 ItemRepository.DeleteItem(child.Id, CancellationToken.None);
             }
 
-            BaseItem removed;
-            _libraryItemsCache.TryRemove(item.Id, out removed);
+            _libraryItemsCache.TryRemove(item.Id, out BaseItem removed);
 
             ReportItemRemoved(item, parent);
         }
 
-        private IEnumerable<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
+        private static IEnumerable<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
         {
             var list = new List<string>
             {
@@ -502,11 +500,11 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             if (key.StartsWith(ConfigurationManager.ApplicationPaths.ProgramDataPath))
@@ -542,7 +540,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (fileInfo == null)
             {
-                throw new ArgumentNullException("fileInfo");
+                throw new ArgumentNullException(nameof(fileInfo));
             }
 
             var fullPath = fileInfo.FullName;
@@ -722,14 +720,14 @@ namespace Emby.Server.Implementations.Library
         /// Creates the root media folder
         /// </summary>
         /// <returns>AggregateFolder.</returns>
-        /// <exception cref="System.InvalidOperationException">Cannot create the root folder until plugins have loaded</exception>
+        /// <exception cref="InvalidOperationException">Cannot create the root folder until plugins have loaded</exception>
         public AggregateFolder CreateRootFolder()
         {
             var rootFolderPath = ConfigurationManager.ApplicationPaths.RootFolderPath;
 
             _fileSystem.CreateDirectory(rootFolderPath);
 
-            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath))).DeepCopy<Folder,AggregateFolder>();
+            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath))).DeepCopy<Folder, AggregateFolder>();
 
             // In case program data folder was moved
             if (!string.Equals(rootFolder.Path, rootFolderPath, StringComparison.Ordinal))
@@ -798,7 +796,7 @@ namespace Emby.Server.Implementations.Library
 
                         if (tmpItem == null)
                         {
-                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath))).DeepCopy<Folder,UserRootFolder>();
+                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath))).DeepCopy<Folder, UserRootFolder>();
                         }
 
                         // In case program data folder was moved
@@ -818,12 +816,12 @@ namespace Emby.Server.Implementations.Library
 
         public BaseItem FindByPath(string path, bool? isFolder)
         {
-            // If this returns multiple items it could be tricky figuring out which one is correct. 
+            // If this returns multiple items it could be tricky figuring out which one is correct.
             // In most cases, the newest one will be and the others obsolete but not yet cleaned up
 
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             //_logger.LogInformation("FindByPath {0}", path);
@@ -916,12 +914,12 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>Task{Year}.</returns>
-        /// <exception cref="System.ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public Year GetYear(int value)
         {
             if (value <= 0)
             {
-                throw new ArgumentOutOfRangeException("Years less than or equal to 0 are invalid.");
+                throw new ArgumentOutOfRangeException(nameof(value), "Years less than or equal to 0 are invalid.");
             }
 
             var name = value.ToString(CultureInfo.InvariantCulture);
@@ -1244,17 +1242,15 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id</exception>
         public BaseItem GetItemById(Guid id)
         {
             if (id.Equals(Guid.Empty))
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
-            BaseItem item;
-
-            if (LibraryItemsCache.TryGetValue(id, out item))
+            if (LibraryItemsCache.TryGetValue(id, out BaseItem item))
             {
                 return item;
             }
@@ -1699,7 +1695,7 @@ namespace Emby.Server.Implementations.Library
             {
                 try
                 {
-                    // Try to resolve the path into a video 
+                    // Try to resolve the path into a video
                     video = ResolvePath(_fileSystem.GetFileSystemInfo(info.Path)) as Video;
 
                     if (video == null)
@@ -1828,7 +1824,7 @@ namespace Emby.Server.Implementations.Library
         /// Creates the item.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="parent">The parent item.</param>
         /// <returns>Task.</returns>
         public void CreateItem(BaseItem item, BaseItem parent)
         {
@@ -2023,7 +2019,7 @@ namespace Emby.Server.Implementations.Library
             return GetCollectionFoldersInternal(item, allUserRootChildren);
         }
 
-        private List<Folder> GetCollectionFoldersInternal(BaseItem item, List<Folder> allUserRootChildren)
+        private static List<Folder> GetCollectionFoldersInternal(BaseItem item, List<Folder> allUserRootChildren)
         {
             return allUserRootChildren
                 .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path, StringComparer.OrdinalIgnoreCase))
@@ -2086,7 +2082,7 @@ namespace Emby.Server.Implementations.Library
 
         public string GetConfiguredContentType(BaseItem item, bool inheritConfiguredPath)
         {
-            ICollectionFolder collectionFolder = item as ICollectionFolder;
+            var collectionFolder = item as ICollectionFolder;
             if (collectionFolder != null)
             {
                 return collectionFolder.CollectionType;
@@ -2247,7 +2243,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (parent == null)
             {
-                throw new ArgumentNullException("parent");
+                throw new ArgumentNullException(nameof(parent));
             }
 
             var name = parent.Name;
@@ -2313,7 +2309,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             var parentIdString = parentId.Equals(Guid.Empty) ? null : parentId.ToString("N");
@@ -2382,7 +2378,7 @@ namespace Emby.Server.Implementations.Library
             string videoPath,
             string[] files)
         {
-             new SubtitleResolver(BaseItem.LocalizationManager, _fileSystem).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
+            new SubtitleResolver(BaseItem.LocalizationManager, _fileSystem).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
         }
 
         public bool IsVideoFile(string path, LibraryOptions libraryOptions)
@@ -2428,11 +2424,11 @@ namespace Emby.Server.Implementations.Library
 
             var episodeInfo = episode.IsFileProtocol ?
                 resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) :
-                new Emby.Naming.TV.EpisodeInfo();
+                new Naming.TV.EpisodeInfo();
 
             if (episodeInfo == null)
             {
-                episodeInfo = new Emby.Naming.TV.EpisodeInfo();
+                episodeInfo = new Naming.TV.EpisodeInfo();
             }
 
             var changed = false;
@@ -2596,7 +2592,7 @@ namespace Emby.Server.Implementations.Library
                     video.ParentId = Guid.Empty;
                     video.OwnerId = owner.Id;
                     video.ExtraType = ExtraType.Trailer;
-                    video.TrailerTypes = new [] { TrailerType.LocalTrailer };
+                    video.TrailerTypes = new[] { TrailerType.LocalTrailer };
 
                     return video;
 
@@ -2708,15 +2704,15 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
             if (string.IsNullOrWhiteSpace(from))
             {
-                throw new ArgumentNullException("from");
+                throw new ArgumentNullException(nameof(from));
             }
             if (string.IsNullOrWhiteSpace(to))
             {
-                throw new ArgumentNullException("to");
+                throw new ArgumentNullException(nameof(to));
             }
 
             from = from.Trim();
@@ -2864,7 +2860,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             name = _fileSystem.GetValidFilename(name);
@@ -2937,7 +2933,7 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
-        private bool ValidateNetworkPath(string path)
+        private static bool ValidateNetworkPath(string path)
         {
             //if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             //{
@@ -2962,14 +2958,14 @@ namespace Emby.Server.Implementations.Library
         {
             if (pathInfo == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(pathInfo));
             }
 
             var path = pathInfo.Path;
 
             if (string.IsNullOrWhiteSpace(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             if (!_fileSystem.DirectoryExists(path))
@@ -3017,7 +3013,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (pathInfo == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(pathInfo));
             }
 
             if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !ValidateNetworkPath(pathInfo.NetworkPath))
@@ -3075,7 +3071,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
@@ -3116,7 +3112,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             var removeList = new List<NameValuePair>();
@@ -3148,7 +3144,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrEmpty(mediaPath))
             {
-                throw new ArgumentNullException("mediaPath");
+                throw new ArgumentNullException(nameof(mediaPath));
             }
 
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.Updates
@@ -36,10 +36,7 @@ namespace MediaBrowser.Model.Updates
         /// </summary>
         /// <value>The version.</value>
         [IgnoreDataMember]
-        public Version version
-        {
-            get { return _version ?? (_version = new Version(ValueOrDefault(versionStr, "0.0.0.1"))); }
-        }
+        public Version version => _version ?? (_version = new Version(ValueOrDefault(versionStr, "0.0.0.1")));
 
         /// <summary>
         /// Values the or default.

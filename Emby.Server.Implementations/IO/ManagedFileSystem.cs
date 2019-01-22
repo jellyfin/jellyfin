@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.System;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
 {
@@ -29,9 +29,14 @@ namespace Emby.Server.Implementations.IO
 
         private string _defaultDirectory;
 
-        public ManagedFileSystem(ILogger logger, IEnvironmentInfo environmentInfo, string defaultDirectory, string tempPath, bool enableSeparateFileAndDirectoryQueries)
+        public ManagedFileSystem(
+            ILoggerFactory loggerFactory,
+            IEnvironmentInfo environmentInfo,
+            string defaultDirectory,
+            string tempPath,
+            bool enableSeparateFileAndDirectoryQueries)
         {
-            Logger = logger;
+            Logger = loggerFactory.CreateLogger("FileSystem");
             _supportsAsyncFileStreams = true;
             _tempPath = tempPath;
             _environmentInfo = environmentInfo;
@@ -85,17 +90,11 @@ namespace Emby.Server.Implementations.IO
             {
                 // Be consistent across platforms because the windows server will fail to query network shares that don't follow windows conventions
                 // https://referencesource.microsoft.com/#mscorlib/system/io/path.cs
-                _invalidFileNameChars = new char[] { '\"', '<', '>', '|', '\0', (Char)1, (Char)2, (Char)3, (Char)4, (Char)5, (Char)6, (Char)7, (Char)8, (Char)9, (Char)10, (Char)11, (Char)12, (Char)13, (Char)14, (Char)15, (Char)16, (Char)17, (Char)18, (Char)19, (Char)20, (Char)21, (Char)22, (Char)23, (Char)24, (Char)25, (Char)26, (Char)27, (Char)28, (Char)29, (Char)30, (Char)31, ':', '*', '?', '\\', '/' };
+                _invalidFileNameChars = new char[] { '\"', '<', '>', '|', '\0', (char)1, (char)2, (char)3, (char)4, (char)5, (char)6, (char)7, (char)8, (char)9, (char)10, (char)11, (char)12, (char)13, (char)14, (char)15, (char)16, (char)17, (char)18, (char)19, (char)20, (char)21, (char)22, (char)23, (char)24, (char)25, (char)26, (char)27, (char)28, (char)29, (char)30, (char)31, ':', '*', '?', '\\', '/' };
             }
         }
 
-        public char DirectorySeparatorChar
-        {
-            get
-            {
-                return Path.DirectorySeparatorChar;
-            }
-        }
+        public char DirectorySeparatorChar => Path.DirectorySeparatorChar;
 
         public string GetFullPath(string path)
         {
@@ -107,12 +106,12 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns><c>true</c> if the specified filename is shortcut; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.ArgumentNullException">filename</exception>
+        /// <exception cref="ArgumentNullException">filename</exception>
         public virtual bool IsShortcut(string filename)
         {
             if (string.IsNullOrEmpty(filename))
             {
-                throw new ArgumentNullException("filename");
+                throw new ArgumentNullException(nameof(filename));
             }
 
             var extension = Path.GetExtension(filename);
@@ -124,12 +123,12 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">filename</exception>
+        /// <exception cref="ArgumentNullException">filename</exception>
         public virtual string ResolveShortcut(string filename)
         {
             if (string.IsNullOrEmpty(filename))
             {
-                throw new ArgumentNullException("filename");
+                throw new ArgumentNullException(nameof(filename));
             }
 
             var extension = Path.GetExtension(filename);
@@ -145,7 +144,7 @@ namespace Emby.Server.Implementations.IO
 
         public string MakeAbsolutePath(string folderPath, string filePath)
         {
-            if (String.IsNullOrWhiteSpace(filePath)) return filePath;
+            if (string.IsNullOrWhiteSpace(filePath)) return filePath;
 
             if (filePath.Contains(@"://")) return filePath; //stream
             if (filePath.Length > 3 && filePath[1] == ':' && filePath[2] == '/') return filePath; //absolute local path
@@ -159,7 +158,7 @@ namespace Emby.Server.Implementations.IO
             var firstChar = filePath[0];
             if (firstChar == '/')
             {
-                // For this we don't really know. 
+                // For this we don't really know.
                 return filePath;
             }
             if (firstChar == '\\') //relative path
@@ -191,7 +190,7 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="shortcutPath">The shortcut path.</param>
         /// <param name="target">The target.</param>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// shortcutPath
         /// or
         /// target
@@ -200,12 +199,12 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(shortcutPath))
             {
-                throw new ArgumentNullException("shortcutPath");
+                throw new ArgumentNullException(nameof(shortcutPath));
             }
 
             if (string.IsNullOrEmpty(target))
             {
-                throw new ArgumentNullException("target");
+                throw new ArgumentNullException(nameof(target));
             }
 
             var extension = Path.GetExtension(shortcutPath);
@@ -321,7 +320,7 @@ namespace Emby.Server.Implementations.IO
             return result;
         }
 
-        private ExtendedFileSystemInfo GetExtendedFileSystemInfo(string path)
+        private static ExtendedFileSystemInfo GetExtendedFileSystemInfo(string path)
         {
             var result = new ExtendedFileSystemInfo();
 
@@ -350,7 +349,7 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">filename</exception>
+        /// <exception cref="ArgumentNullException">filename</exception>
         public string GetValidFilename(string filename)
         {
             var builder = new StringBuilder(filename);
@@ -451,18 +450,15 @@ namespace Emby.Server.Implementations.IO
         }
 
         public Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, FileOpenOptions fileOpenOptions)
-        {
-            var defaultBufferSize = 4096;
-            return new FileStream(path, GetFileMode(mode), GetFileAccess(access), GetFileShare(share), defaultBufferSize, GetFileOptions(fileOpenOptions));
-        }
+            => new FileStream(path, GetFileMode(mode), GetFileAccess(access), GetFileShare(share), 4096, GetFileOptions(fileOpenOptions));
 
-        private FileOptions GetFileOptions(FileOpenOptions mode)
+        private static FileOptions GetFileOptions(FileOpenOptions mode)
         {
             var val = (int)mode;
             return (FileOptions)val;
         }
 
-        private FileMode GetFileMode(FileOpenMode mode)
+        private static FileMode GetFileMode(FileOpenMode mode)
         {
             switch (mode)
             {
@@ -483,7 +479,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        private FileAccess GetFileAccess(FileAccessMode mode)
+        private static FileAccess GetFileAccess(FileAccessMode mode)
         {
             switch (mode)
             {
@@ -498,7 +494,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        private FileShare GetFileShare(FileShareMode mode)
+        private static FileShare GetFileShare(FileShareMode mode)
         {
             switch (mode)
             {
@@ -532,7 +528,7 @@ namespace Emby.Server.Implementations.IO
                 }
                 else
                 {
-                    FileAttributes attributes = File.GetAttributes(path);
+                    var attributes = File.GetAttributes(path);
                     attributes = RemoveAttribute(attributes, FileAttributes.Hidden);
                     File.SetAttributes(path, attributes);
                 }
@@ -556,7 +552,7 @@ namespace Emby.Server.Implementations.IO
                 }
                 else
                 {
-                    FileAttributes attributes = File.GetAttributes(path);
+                    var attributes = File.GetAttributes(path);
                     attributes = RemoveAttribute(attributes, FileAttributes.ReadOnly);
                     File.SetAttributes(path, attributes);
                 }
@@ -619,12 +615,12 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(file1))
             {
-                throw new ArgumentNullException("file1");
+                throw new ArgumentNullException(nameof(file1));
             }
 
             if (string.IsNullOrEmpty(file2))
             {
-                throw new ArgumentNullException("file2");
+                throw new ArgumentNullException(nameof(file2));
             }
 
             var temp1 = Path.Combine(_tempPath, Guid.NewGuid().ToString("N"));
@@ -640,7 +636,7 @@ namespace Emby.Server.Implementations.IO
             CopyFile(temp1, file2, true);
         }
 
-        private char GetDirectorySeparatorChar(string path)
+        private static char GetDirectorySeparatorChar(string path)
         {
             return Path.DirectorySeparatorChar;
         }
@@ -649,12 +645,12 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(parentPath))
             {
-                throw new ArgumentNullException("parentPath");
+                throw new ArgumentNullException(nameof(parentPath));
             }
 
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             var separatorChar = GetDirectorySeparatorChar(parentPath);
@@ -666,7 +662,7 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             var parent = GetDirectoryName(path);
@@ -688,7 +684,7 @@ namespace Emby.Server.Implementations.IO
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             if (path.EndsWith(":\\", StringComparison.OrdinalIgnoreCase))
@@ -765,16 +761,11 @@ namespace Emby.Server.Implementations.IO
             // Only include drives in the ready state or this method could end up being very slow, waiting for drives to timeout
             return DriveInfo.GetDrives().Where(d => d.IsReady).Select(d => new FileSystemMetadata
             {
-                Name = GetName(d),
+                Name = d.Name,
                 FullName = d.RootDirectory.FullName,
                 IsDirectory = true
 
             }).ToList();
-        }
-
-        private string GetName(DriveInfo drive)
-        {
-            return drive.Name;
         }
 
         public IEnumerable<FileSystemMetadata> GetDirectories(string path, bool recursive = false)
@@ -850,17 +841,6 @@ namespace Emby.Server.Implementations.IO
         public Stream OpenRead(string path)
         {
             return File.OpenRead(path);
-        }
-
-        private void CopyFileUsingStreams(string source, string target, bool overwrite)
-        {
-            using (var sourceStream = OpenRead(source))
-            {
-                using (var targetStream = GetFileStream(target, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
-                {
-                    sourceStream.CopyTo(targetStream);
-                }
-            }
         }
 
         public void CopyFile(string source, string target, bool overwrite)
@@ -972,7 +952,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        private void RunProcess(string path, string args, string workingDirectory)
+        private static void RunProcess(string path, string args, string workingDirectory)
         {
             using (var process = Process.Start(new ProcessStartInfo
             {

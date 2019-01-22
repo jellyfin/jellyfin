@@ -1,16 +1,16 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Providers;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Threading;
-using System.Xml;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Xml;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
@@ -18,7 +18,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
     {
         public void Fetch(MetadataResult<Episode> item,
             List<LocalImageInfo> images,
-            string metadataFile, 
+            string metadataFile,
             CancellationToken cancellationToken)
         {
             Fetch(item, metadataFile, cancellationToken);
@@ -97,9 +97,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(number))
                         {
-                            int num;
-
-                            if (int.TryParse(number, out num))
+                            if (int.TryParse(number, out var num))
                             {
                                 item.ParentIndexNumber = num;
                             }
@@ -113,9 +111,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(number))
                         {
-                            int num;
-
-                            if (int.TryParse(number, out num))
+                            if (int.TryParse(number, out var num))
                             {
                                 item.IndexNumber = num;
                             }
@@ -129,9 +125,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(number))
                         {
-                            int num;
-
-                            if (int.TryParse(number, out num))
+                            if (int.TryParse(number, out var num))
                             {
                                 item.IndexNumberEnd = num;
                             }
@@ -145,10 +139,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            int rval;
-
                             // int.TryParse is local aware, so it can be probamatic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
+                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var rval))
                             {
                                 item.AirsBeforeEpisodeNumber = rval;
                             }
@@ -163,10 +155,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            int rval;
-
                             // int.TryParse is local aware, so it can be probamatic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
+                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var rval))
                             {
                                 item.AirsAfterSeasonNumber = rval;
                             }
@@ -181,10 +171,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            int rval;
-
                             // int.TryParse is local aware, so it can be probamatic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
+                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var rval))
                             {
                                 item.AirsBeforeSeasonNumber = rval;
                             }
@@ -199,10 +187,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            int rval;
-
                             // int.TryParse is local aware, so it can be probamatic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
+                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var rval))
                             {
                                 item.AirsBeforeSeasonNumber = rval;
                             }
@@ -217,10 +203,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            int rval;
-
                             // int.TryParse is local aware, so it can be probamatic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
+                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var rval))
                             {
                                 item.AirsBeforeEpisodeNumber = rval;
                             }

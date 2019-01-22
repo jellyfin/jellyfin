@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Controller.Net;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Services;
 using Emby.Server.Implementations.Net;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Services;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -33,7 +33,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         /// <value>The web socket connecting.</value>
         Action<WebSocketConnectingEventArgs> WebSocketConnecting { get; set; }
-        
+
         /// <summary>
         /// Starts this instance.
         /// </summary>

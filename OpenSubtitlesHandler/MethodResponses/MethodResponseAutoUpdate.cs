@@ -1,4 +1,4 @@
-﻿/* This file is part of OpenSubtitles Handler
+/* This file is part of OpenSubtitles Handler
    A library that handle OpenSubtitles.org XML-RPC methods.
 
    Copyright © Ala Ibrahim Hadid 2013
@@ -17,7 +17,6 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using System.ComponentModel;
 
 namespace OpenSubtitlesHandler
 {
@@ -37,22 +36,22 @@ namespace OpenSubtitlesHandler
         private string _comments;
         private string _url_linux;
         /// <summary>
-        /// Latest application version 
+        /// Latest application version
         /// </summary>
         [Description("Latest application version"), Category("AutoUpdate")]
         public string version { get { return _version; } set { _version = value; } }
         /// <summary>
-        /// Download URL for Windows version 
+        /// Download URL for Windows version
         /// </summary>
         [Description("Download URL for Windows version"), Category("AutoUpdate")]
         public string url_windows { get { return _url_windows; } set { _url_windows = value; } }
         /// <summary>
-        /// Application changelog and other comments  
+        /// Application changelog and other comments
         /// </summary>
         [Description("Application changelog and other comments"), Category("AutoUpdate")]
         public string comments { get { return _comments; } set { _comments = value; } }
         /// <summary>
-        /// Download URL for Linux version 
+        /// Download URL for Linux version
         /// </summary>
         [Description("Download URL for Linux version"), Category("AutoUpdate")]
         public string url_linux { get { return _url_linux; } set { _url_linux = value; } }

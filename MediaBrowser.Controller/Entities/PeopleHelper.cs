@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -11,12 +11,12 @@ namespace MediaBrowser.Controller.Entities
         {
             if (person == null)
             {
-                throw new ArgumentNullException("person");
+                throw new ArgumentNullException(nameof(person));
             }
 
             if (string.IsNullOrEmpty(person.Name))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentException("The person's name was empty or null.", nameof(person));
             }
 
             // Normalize
@@ -103,7 +103,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             foreach (var i in people)

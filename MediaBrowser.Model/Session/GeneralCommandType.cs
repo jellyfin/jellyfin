@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Model.Session
+namespace MediaBrowser.Model.Session
 {
     /// <summary>
     /// This exists simply to identify a set of known commands.

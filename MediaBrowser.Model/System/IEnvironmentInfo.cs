@@ -1,17 +1,13 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
 namespace MediaBrowser.Model.System
 {
     public interface IEnvironmentInfo
     {
-        MediaBrowser.Model.System.OperatingSystem OperatingSystem { get; }
+        OperatingSystem OperatingSystem { get; }
         string OperatingSystemName { get; }
         string OperatingSystemVersion { get; }
         Architecture SystemArchitecture { get; }
-        string GetEnvironmentVariable(string name);
-        void SetProcessEnvironmentVariable(string name, string value);
-        string StackTrace { get; }
-        char PathSeparator { get; }
     }
 
     public enum OperatingSystem

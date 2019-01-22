@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
@@ -20,13 +20,13 @@ namespace Emby.Dlna.PlayTo
 
             if (document == null)
                 return list;
-            
+
             var item = (from result in document.Descendants("Result") select result).FirstOrDefault();
 
             if (item == null)
                 return list;
 
-            var uPnpResponse = XElement.Parse((String)item);
+            var uPnpResponse = XElement.Parse((string)item);
 
             var uObjects = from container in uPnpResponse.Elements(uPnpNamespaces.containers)
                            select new uParserObject { Element = container };

@@ -1,6 +1,6 @@
-﻿using Emby.Naming.Common;
 using System;
 using System.IO;
+using Emby.Naming.Common;
 
 namespace Emby.Naming.Video
 {
@@ -22,7 +22,7 @@ namespace Emby.Naming.Video
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             // Note: the tags need be be surrounded be either a space ( ), hyphen -, dot . or underscore _.

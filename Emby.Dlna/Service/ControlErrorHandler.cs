@@ -1,4 +1,3 @@
-﻿using MediaBrowser.Controller.Dlna;
 using System;
 using System.IO;
 using System.Text;
@@ -10,7 +9,7 @@ namespace Emby.Dlna.Service
     public class ControlErrorHandler
     {
         private const string NS_SOAPENV = "http://schemas.xmlsoap.org/soap/envelope/";
-        
+
         public ControlResponse GetResponse(Exception ex)
         {
             var settings = new XmlWriterSettings
@@ -21,7 +20,7 @@ namespace Emby.Dlna.Service
 
             StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8);
 
-            using (XmlWriter writer = XmlWriter.Create(builder, settings))
+            using (var writer = XmlWriter.Create(builder, settings))
             {
                 writer.WriteStartDocument(true);
 

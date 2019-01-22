@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
 {

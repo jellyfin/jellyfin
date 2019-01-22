@@ -1,12 +1,10 @@
-﻿using MediaBrowser.Controller;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Resolvers;
 using System;
 using System.IO;
 using System.Linq;
-
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers
@@ -26,10 +24,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
-        public override ResolverPriority Priority
-        {
-            get { return ResolverPriority.First; }
-        }
+        public override ResolverPriority Priority => ResolverPriority.First;
 
         /// <summary>
         /// Resolves the specified args.

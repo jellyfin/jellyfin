@@ -1,12 +1,12 @@
-﻿using MediaBrowser.Model.Extensions;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
@@ -24,8 +24,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         public SubtitleTrackInfo Parse(Stream stream, CancellationToken cancellationToken)
         {
             var trackInfo = new SubtitleTrackInfo();
-            List<SubtitleTrackEvent> trackEvents = new List<SubtitleTrackEvent>();
-            using ( var reader = new StreamReader(stream))
+            var trackEvents = new List<SubtitleTrackEvent>();
+            using (var reader = new StreamReader(stream))
             {
                 string line;
                 while ((line = reader.ReadLine()) != null)
@@ -36,14 +36,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         continue;
                     }
-                    var subEvent = new SubtitleTrackEvent {Id = line};
+                    var subEvent = new SubtitleTrackEvent { Id = line };
                     line = reader.ReadLine();
 
                     if (string.IsNullOrWhiteSpace(line))
                     {
                         continue;
                     }
-                    
+
                     var time = Regex.Split(line, @"[\t ]*-->[\t ]*");
 
                     if (time.Length < 2)
@@ -81,11 +81,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return trackInfo;
         }
 
-        long GetTicks(string time) {
-            TimeSpan span;
-            return TimeSpan.TryParseExact(time, @"hh\:mm\:ss\.fff", _usCulture, out span)
+        long GetTicks(string time)
+        {
+            return TimeSpan.TryParseExact(time, @"hh\:mm\:ss\.fff", _usCulture, out var span)
                 ? span.Ticks
-                : (TimeSpan.TryParseExact(time, @"hh\:mm\:ss\,fff", _usCulture, out span) 
+                : (TimeSpan.TryParseExact(time, @"hh\:mm\:ss\,fff", _usCulture, out span)
                 ? span.Ticks : 0);
         }
     }

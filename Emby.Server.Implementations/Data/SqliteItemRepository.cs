@@ -6,17 +6,17 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using Emby.Server.Implementations.Devices;
 using Emby.Server.Implementations.Playlists;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
@@ -24,17 +24,13 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Reflection;
-using SQLitePCL.pretty;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Threading;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Library;
+using Microsoft.Extensions.Logging;
+using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -49,13 +45,7 @@ namespace Emby.Server.Implementations.Data
         /// Gets the name of the repository
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get
-            {
-                return "SQLite";
-            }
-        }
+        public string Name => "SQLite";
 
         /// <summary>
         /// Gets the json serializer.
@@ -77,16 +67,24 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
-        public SqliteItemRepository(IServerConfigurationManager config, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, ILogger logger, IAssemblyInfo assemblyInfo, IFileSystem fileSystem, IEnvironmentInfo environmentInfo, ITimerFactory timerFactory)
-            : base(logger)
+        public SqliteItemRepository(
+            IServerConfigurationManager config,
+            IServerApplicationHost appHost,
+            IJsonSerializer jsonSerializer,
+            ILoggerFactory loggerFactory,
+            IAssemblyInfo assemblyInfo,
+            IFileSystem fileSystem,
+            IEnvironmentInfo environmentInfo,
+            ITimerFactory timerFactory)
+            : base(loggerFactory.CreateLogger(nameof(SqliteItemRepository)))
         {
             if (config == null)
             {
-                throw new ArgumentNullException("config");
+                throw new ArgumentNullException(nameof(config));
             }
             if (jsonSerializer == null)
             {
-                throw new ArgumentNullException("jsonSerializer");
+                throw new ArgumentNullException(nameof(jsonSerializer));
             }
 
             _appHost = appHost;
@@ -101,21 +99,9 @@ namespace Emby.Server.Implementations.Data
 
         private const string ChaptersTableName = "Chapters2";
 
-        protected override int? CacheSize
-        {
-            get
-            {
-                return 20000;
-            }
-        }
+        protected override int? CacheSize => 20000;
 
-        protected override bool EnableTempStoreMemory
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableTempStoreMemory => true;
 
         /// <summary>
         /// Opens the connection to the database
@@ -455,7 +441,7 @@ namespace Emby.Server.Implementations.Data
             "ColorTransfer"
         };
 
-        private string GetSaveItemCommandText()
+        private static string GetSaveItemCommandText()
         {
             var saveColumns = new List<string>
             {
@@ -553,12 +539,12 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         public void SaveItem(BaseItem item, CancellationToken cancellationToken)
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
 
             SaveItems(new List<BaseItem> { item }, cancellationToken);
@@ -568,7 +554,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
 
             CheckDisposed();
@@ -596,7 +582,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="items">The items.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// items
         /// or
         /// cancellationToken
@@ -605,7 +591,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (items == null)
             {
-                throw new ArgumentNullException("items");
+                throw new ArgumentNullException(nameof(items));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -1070,7 +1056,7 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.MoveNext();
         }
 
-        private string SerializeProviderIds(BaseItem item)
+        private static string SerializeProviderIds(BaseItem item)
         {
             // Ideally we shouldn't need this IsNullOrWhiteSpace check but we're seeing some cases of bad data slip through
             var ids = item.ProviderIds
@@ -1085,7 +1071,7 @@ namespace Emby.Server.Implementations.Data
             return string.Join("|", ids.Select(i => i.Key + "=" + i.Value).ToArray());
         }
 
-        private void DeserializeProviderIds(string value, BaseItem item)
+        private static void DeserializeProviderIds(string value, BaseItem item)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -1186,25 +1172,21 @@ namespace Emby.Server.Implementations.Data
 
             image.Path = RestorePath(parts[0]);
 
-            long ticks;
-            if (long.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out ticks))
+            if (long.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks))
             {
                 image.DateModified = new DateTime(ticks, DateTimeKind.Utc);
             }
 
-            ImageType type;
-            if (Enum.TryParse(parts[2], true, out type))
+            if (Enum.TryParse(parts[2], true, out ImageType type))
             {
                 image.Type = type;
             }
 
             if (parts.Length >= 5)
             {
-                int width;
-                int height;
-                if (int.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out width))
+                if (int.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out var width))
                 {
-                    if (int.TryParse(parts[4], NumberStyles.Integer, CultureInfo.InvariantCulture, out height))
+                    if (int.TryParse(parts[4], NumberStyles.Integer, CultureInfo.InvariantCulture, out var height))
                     {
                         image.Width = width;
                         image.Height = height;
@@ -1220,13 +1202,13 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentException"></exception>
         public BaseItem RetrieveItem(Guid id)
         {
             if (id.Equals(Guid.Empty))
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             CheckDisposed();
@@ -1611,8 +1593,7 @@ namespace Emby.Server.Implementations.Data
 
             if (!reader.IsDBNull(index))
             {
-                ProgramAudio audio;
-                if (Enum.TryParse(reader.GetString(index), true, out audio))
+                if (Enum.TryParse(reader.GetString(index), true, out ProgramAudio audio))
                 {
                     item.Audio = audio;
                 }
@@ -1656,9 +1637,7 @@ namespace Emby.Server.Implementations.Data
                     item.LockedFields = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(
                         i =>
                         {
-                            MetadataFields parsedValue;
-
-                            if (Enum.TryParse(i, true, out parsedValue))
+                            if (Enum.TryParse(i, true, out MetadataFields parsedValue))
                             {
                                 return parsedValue;
                             }
@@ -1696,9 +1675,7 @@ namespace Emby.Server.Implementations.Data
                         trailer.TrailerTypes = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(
                             i =>
                             {
-                                TrailerType parsedValue;
-
-                                if (Enum.TryParse(i, true, out parsedValue))
+                                if (Enum.TryParse(i, true, out TrailerType parsedValue))
                                 {
                                     return parsedValue;
                                 }
@@ -1879,8 +1856,7 @@ namespace Emby.Server.Implementations.Data
 
             if (!reader.IsDBNull(index))
             {
-                ExtraType extraType;
-                if (Enum.TryParse(reader.GetString(index), true, out extraType))
+                if (Enum.TryParse(reader.GetString(index), true, out ExtraType extraType))
                 {
                     item.ExtraType = extraType;
                 }
@@ -1948,7 +1924,7 @@ namespace Emby.Server.Implementations.Data
             return item;
         }
 
-        private Guid[] SplitToGuids(string value)
+        private static Guid[] SplitToGuids(string value)
         {
             var ids = value.Split('|');
 
@@ -1965,9 +1941,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Gets chapters for an item
         /// </summary>
-        /// <param name="id">The id.</param>
+        /// <param name="item">The item.</param>
         /// <returns>IEnumerable{ChapterInfo}.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id</exception>
         public List<ChapterInfo> GetChapters(BaseItem item)
         {
             CheckDisposed();
@@ -1996,10 +1972,10 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Gets a single chapter for an item
         /// </summary>
-        /// <param name="id">The id.</param>
+        /// <param name="item">The item.</param>
         /// <param name="index">The index.</param>
         /// <returns>ChapterInfo.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id</exception>
         public ChapterInfo GetChapter(BaseItem item, int index)
         {
             CheckDisposed();
@@ -2067,12 +2043,12 @@ namespace Emby.Server.Implementations.Data
 
             if (id.Equals(Guid.Empty))
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             if (chapters == null)
             {
-                throw new ArgumentNullException("chapters");
+                throw new ArgumentNullException(nameof(chapters));
             }
 
             using (WriteLock.Write())
@@ -2144,7 +2120,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private bool EnableJoinUserData(InternalItemsQuery query)
+        private static bool EnableJoinUserData(InternalItemsQuery query)
         {
             if (query.User == null)
             {
@@ -2681,7 +2657,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (query == null)
             {
-                throw new ArgumentNullException("query");
+                throw new ArgumentNullException(nameof(query));
             }
 
             CheckDisposed();
@@ -2739,7 +2715,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (query == null)
             {
-                throw new ArgumentNullException("query");
+                throw new ArgumentNullException(nameof(query));
             }
 
             CheckDisposed();
@@ -2928,7 +2904,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (query == null)
             {
-                throw new ArgumentNullException("query");
+                throw new ArgumentNullException(nameof(query));
             }
 
             CheckDisposed();
@@ -3212,7 +3188,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (query == null)
             {
-                throw new ArgumentNullException("query");
+                throw new ArgumentNullException(nameof(query));
             }
 
             CheckDisposed();
@@ -3286,7 +3262,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (query == null)
             {
-                throw new ArgumentNullException("query");
+                throw new ArgumentNullException(nameof(query));
             }
 
             CheckDisposed();
@@ -3362,7 +3338,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (query == null)
             {
-                throw new ArgumentNullException("query");
+                throw new ArgumentNullException(nameof(query));
             }
 
             CheckDisposed();
@@ -4038,7 +4014,7 @@ namespace Emby.Server.Implementations.Data
 
             if (query.PersonIds.Length > 0)
             {
-                // TODO: Should this query with CleanName ? 
+                // TODO: Should this query with CleanName ?
 
                 var clauses = new List<string>();
                 var index = 0;
@@ -5171,8 +5147,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
         private IEnumerable<string> MapIncludeItemTypes(string value)
         {
-            string[] result;
-            if (_types.TryGetValue(value, out result))
+            if (_types.TryGetValue(value, out string[] result))
             {
                 return result;
             }
@@ -5184,7 +5159,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         {
             if (id.Equals(Guid.Empty))
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             CheckDisposed();
@@ -5233,7 +5208,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         {
             if (query == null)
             {
-                throw new ArgumentNullException("query");
+                throw new ArgumentNullException(nameof(query));
             }
 
             CheckDisposed();
@@ -5273,7 +5248,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         {
             if (query == null)
             {
-                throw new ArgumentNullException("query");
+                throw new ArgumentNullException(nameof(query));
             }
 
             CheckDisposed();
@@ -5387,19 +5362,19 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         {
             if (itemId.Equals(Guid.Empty))
             {
-                throw new ArgumentNullException("itemId");
+                throw new ArgumentNullException(nameof(itemId));
             }
 
             if (ancestorIds == null)
             {
-                throw new ArgumentNullException("ancestorIds");
+                throw new ArgumentNullException(nameof(ancestorIds));
             }
 
             CheckDisposed();
 
             var itemIdBlob = itemId.ToGuidBlob();
 
-            // First delete 
+            // First delete
             deleteAncestorsStatement.Reset();
             deleteAncestorsStatement.TryBind("@ItemId", itemIdBlob);
             deleteAncestorsStatement.MoveNext();
@@ -5556,7 +5531,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         {
             if (query == null)
             {
-                throw new ArgumentNullException("query");
+                throw new ArgumentNullException(nameof(query));
             }
 
             if (!query.Limit.HasValue)
@@ -5915,19 +5890,19 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         {
             if (itemId.Equals(Guid.Empty))
             {
-                throw new ArgumentNullException("itemId");
+                throw new ArgumentNullException(nameof(itemId));
             }
 
             if (values == null)
             {
-                throw new ArgumentNullException("keys");
+                throw new ArgumentNullException(nameof(values));
             }
 
             CheckDisposed();
 
             var guidBlob = itemId.ToGuidBlob();
 
-            // First delete 
+            // First delete
             db.Execute("delete from ItemValues where ItemId=@Id", guidBlob);
 
             InsertItemValues(guidBlob, values, db);
@@ -5991,12 +5966,12 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         {
             if (itemId.Equals(Guid.Empty))
             {
-                throw new ArgumentNullException("itemId");
+                throw new ArgumentNullException(nameof(itemId));
             }
 
             if (people == null)
             {
-                throw new ArgumentNullException("people");
+                throw new ArgumentNullException(nameof(people));
             }
 
             CheckDisposed();
@@ -6102,7 +6077,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             if (query == null)
             {
-                throw new ArgumentNullException("query");
+                throw new ArgumentNullException(nameof(query));
             }
 
             var cmdText = "select " + string.Join(",", _mediaStreamSaveColumns) + " from mediastreams where";
@@ -6158,12 +6133,12 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             if (id.Equals(Guid.Empty))
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             if (streams == null)
             {
-                throw new ArgumentNullException("streams");
+                throw new ArgumentNullException(nameof(streams));
             }
 
             cancellationToken.ThrowIfCancellationRequested();

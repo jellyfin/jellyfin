@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The tuner host identifier.</value>
         public string TunerHostId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the type of the channel.
         /// </summary>

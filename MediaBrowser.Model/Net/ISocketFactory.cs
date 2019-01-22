@@ -1,4 +1,3 @@
-﻿
 using System.IO;
 
 namespace MediaBrowser.Model.Net
@@ -7,14 +6,13 @@ namespace MediaBrowser.Model.Net
     /// Implemented by components that can create a platform specific UDP socket implementation, and wrap it in the cross platform <see cref="ISocket"/> interface.
     /// </summary>
     public interface ISocketFactory
-	{
-
-		/// <summary>
-		/// Createa a new unicast socket using the specified local port number.
-		/// </summary>
-		/// <param name="localPort">The local port to bind to.</param>
-		/// <returns>A <see cref="ISocket"/> implementation.</returns>
-		ISocket CreateUdpSocket(int localPort);
+    {
+        /// <summary>
+        /// Createa a new unicast socket using the specified local port number.
+        /// </summary>
+        /// <param name="localPort">The local port to bind to.</param>
+        /// <returns>A <see cref="ISocket"/> implementation.</returns>
+        ISocket CreateUdpSocket(int localPort);
 
         ISocket CreateUdpBroadcastSocket(int localPort);
 

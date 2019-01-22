@@ -1,5 +1,5 @@
-﻿using Emby.Dlna.Common;
 using System.Collections.Generic;
+using Emby.Dlna.Common;
 
 namespace Emby.Dlna.ContentDirectory
 {
@@ -7,7 +7,7 @@ namespace Emby.Dlna.ContentDirectory
     {
         public IEnumerable<ServiceAction> GetActions()
         {
-            return new []
+            return new[]
             {
                 GetSearchCapabilitiesAction(),
                 GetSortCapabilitiesAction(),
@@ -20,7 +20,7 @@ namespace Emby.Dlna.ContentDirectory
             };
         }
 
-        private ServiceAction GetGetSystemUpdateIDAction()
+        private static ServiceAction GetGetSystemUpdateIDAction()
         {
             var action = new ServiceAction
             {
@@ -37,7 +37,7 @@ namespace Emby.Dlna.ContentDirectory
             return action;
         }
 
-        private ServiceAction GetSearchCapabilitiesAction()
+        private static ServiceAction GetSearchCapabilitiesAction()
         {
             var action = new ServiceAction
             {
@@ -54,7 +54,7 @@ namespace Emby.Dlna.ContentDirectory
             return action;
         }
 
-        private ServiceAction GetSortCapabilitiesAction()
+        private static ServiceAction GetSortCapabilitiesAction()
         {
             var action = new ServiceAction
             {
@@ -71,7 +71,7 @@ namespace Emby.Dlna.ContentDirectory
             return action;
         }
 
-        private ServiceAction GetX_GetFeatureListAction()
+        private static ServiceAction GetX_GetFeatureListAction()
         {
             var action = new ServiceAction
             {
@@ -88,7 +88,7 @@ namespace Emby.Dlna.ContentDirectory
             return action;
         }
 
-        private ServiceAction GetSearchAction()
+        private static ServiceAction GetSearchAction()
         {
             var action = new ServiceAction
             {
@@ -334,7 +334,7 @@ namespace Emby.Dlna.ContentDirectory
 
             return action;
         }
-        
+
         private ServiceAction GetXSetBookmarkAction()
         {
             var action = new ServiceAction

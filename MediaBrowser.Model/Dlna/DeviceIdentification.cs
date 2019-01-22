@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Model.Dlna
+namespace MediaBrowser.Model.Dlna
 {
     public class DeviceIdentification
     {
@@ -55,7 +55,7 @@
 
         public DeviceIdentification()
         {
-            Headers = new HttpHeaderInfo[] {};
+            Headers = new HttpHeaderInfo[] { };
         }
     }
 }

@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Controller.Entities;
+using System;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
-using System;
 
 namespace Emby.Server.Implementations.Sorting
 {
@@ -26,13 +26,13 @@ namespace Emby.Server.Implementations.Sorting
         /// </summary>
         /// <param name="x">The x.</param>
         /// <returns>DateTime.</returns>
-        private DateTime GetDate(BaseItem x)
+        private static DateTime GetDate(BaseItem x)
         {
             if (x.PremiereDate.HasValue)
             {
                 return x.PremiereDate.Value;
             }
-            
+
             if (x.ProductionYear.HasValue)
             {
                 try
@@ -51,9 +51,6 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return ItemSortBy.PremiereDate; }
-        }
+        public string Name => ItemSortBy.PremiereDate;
     }
 }

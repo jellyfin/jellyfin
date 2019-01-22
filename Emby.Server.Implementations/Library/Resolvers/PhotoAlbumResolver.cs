@@ -1,11 +1,9 @@
-﻿using MediaBrowser.Controller.Drawing;
+using System;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
-using System;
-using System.IO;
-using System.Linq;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
@@ -79,13 +77,6 @@ namespace Emby.Server.Implementations.Library.Resolvers
             return false;
         }
 
-        public override ResolverPriority Priority
-        {
-            get
-            {
-                // Behind special folder resolver
-                return ResolverPriority.Second;
-            }
-        }
+        public override ResolverPriority Priority => ResolverPriority.Second;
     }
 }

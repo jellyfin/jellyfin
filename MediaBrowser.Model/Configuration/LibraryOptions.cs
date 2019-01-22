@@ -1,6 +1,6 @@
-﻿using System;
-using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -100,7 +100,7 @@ namespace MediaBrowser.Model.Configuration
 
         public ImageOption GetImageOptions(ImageType type)
         {
-            foreach (ImageOption i in ImageOptions)
+            foreach (var i in ImageOptions)
             {
                 if (i.Type == type)
                 {
@@ -108,10 +108,9 @@ namespace MediaBrowser.Model.Configuration
                 }
             }
 
-            ImageOption[] options;
-            if (DefaultImageOptions.TryGetValue(Type, out options))
+            if (DefaultImageOptions.TryGetValue(Type, out ImageOption[] options))
             {
-                foreach (ImageOption i in options)
+                foreach (var i in options)
                 {
                     if (i.Type == type)
                     {

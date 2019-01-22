@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Model.Services
 {
@@ -17,7 +13,7 @@ namespace MediaBrowser.Model.Services
         void SetCookie(Cookie cookie);
 
         /// <summary>
-        /// Removes all pending Set-Cookie instructions 
+        /// Removes all pending Set-Cookie instructions
         /// </summary>
         void ClearCookies();
     }

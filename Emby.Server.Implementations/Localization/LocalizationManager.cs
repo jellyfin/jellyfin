@@ -1,17 +1,17 @@
-﻿using MediaBrowser.Model.Extensions;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Reflection;
+using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Localization
 {
@@ -45,12 +45,18 @@ namespace Emby.Server.Implementations.Localization
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        public LocalizationManager(IServerConfigurationManager configurationManager, IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, IAssemblyInfo assemblyInfo, ITextLocalizer textLocalizer)
+        public LocalizationManager(
+            IServerConfigurationManager configurationManager,
+            IFileSystem fileSystem,
+            IJsonSerializer jsonSerializer,
+            ILoggerFactory loggerFactory,
+            IAssemblyInfo assemblyInfo,
+            ITextLocalizer textLocalizer)
         {
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(LocalizationManager));
             _assemblyInfo = assemblyInfo;
             _textLocalizer = textLocalizer;
 
@@ -138,7 +144,7 @@ namespace Emby.Server.Implementations.Localization
                 new ParentalRating("FSK-18", 9)
             });
 
-            LoadRatings("ru", new [] {
+            LoadRatings("ru", new[] {
 
                 new ParentalRating("RU-0+", 1),
                 new ParentalRating("RU-6+", 3),
@@ -165,13 +171,7 @@ namespace Emby.Server.Implementations.Localization
         /// Gets the localization path.
         /// </summary>
         /// <value>The localization path.</value>
-        public string LocalizationPath
-        {
-            get
-            {
-                return Path.Combine(_configurationManager.ApplicationPaths.ProgramDataPath, "localization");
-            }
-        }
+        public string LocalizationPath => Path.Combine(_configurationManager.ApplicationPaths.ProgramDataPath, "localization");
 
         public string RemoveDiacritics(string text)
         {
@@ -304,9 +304,7 @@ namespace Emby.Server.Implementations.Localization
         /// <param name="countryCode">The country code.</param>
         private Dictionary<string, ParentalRating> GetRatings(string countryCode)
         {
-            Dictionary<string, ParentalRating> value;
-
-            _allParentalRatings.TryGetValue(countryCode, out value);
+            _allParentalRatings.TryGetValue(countryCode, out var value);
 
             return value;
         }
@@ -326,9 +324,7 @@ namespace Emby.Server.Implementations.Localization
 
                     if (parts.Length == 2)
                     {
-                        int value;
-
-                        if (int.TryParse(parts[1], NumberStyles.Integer, UsCulture, out value))
+                        if (int.TryParse(parts[1], NumberStyles.Integer, UsCulture, out var value))
                         {
                             return new ParentalRating { Name = parts[0], Value = value };
                         }
@@ -357,7 +353,7 @@ namespace Emby.Server.Implementations.Localization
         {
             if (string.IsNullOrEmpty(rating))
             {
-                throw new ArgumentNullException("rating");
+                throw new ArgumentNullException(nameof(rating));
             }
 
             if (_unratedValues.Contains(rating, StringComparer.OrdinalIgnoreCase))
@@ -370,9 +366,7 @@ namespace Emby.Server.Implementations.Localization
 
             var ratingsDictionary = GetParentalRatingsDictionary();
 
-            ParentalRating value;
-
-            if (ratingsDictionary.TryGetValue(rating, out value))
+            if (ratingsDictionary.TryGetValue(rating, out ParentalRating value))
             {
                 return value.Value;
             }
@@ -433,9 +427,7 @@ namespace Emby.Server.Implementations.Localization
 
             var dictionary = GetLocalizationDictionary(culture);
 
-            string value;
-
-            if (dictionary.TryGetValue(phrase, out value))
+            if (dictionary.TryGetValue(phrase, out var value))
             {
                 return value;
             }
@@ -452,7 +444,7 @@ namespace Emby.Server.Implementations.Localization
         {
             if (string.IsNullOrEmpty(culture))
             {
-                throw new ArgumentNullException("culture");
+                throw new ArgumentNullException(nameof(culture));
             }
 
             const string prefix = "Core";
@@ -465,7 +457,7 @@ namespace Emby.Server.Implementations.Localization
         {
             if (string.IsNullOrEmpty(culture))
             {
-                throw new ArgumentNullException("culture");
+                throw new ArgumentNullException(nameof(culture));
             }
 
             var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -494,7 +486,7 @@ namespace Emby.Server.Implementations.Localization
             }
         }
 
-        private string GetResourceFilename(string culture)
+        private static string GetResourceFilename(string culture)
         {
             var parts = culture.Split('-');
 

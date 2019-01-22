@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 
@@ -25,13 +25,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
-        public virtual ResolverPriority Priority
-        {
-            get
-            {
-                return ResolverPriority.First;
-            }
-        }
+        public virtual ResolverPriority Priority => ResolverPriority.First;
 
         /// <summary>
         /// Sets initial values on the newly resolved item

@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MediaBrowser.Model.System;
-using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Common;
+using System;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.EntryPoints
 {

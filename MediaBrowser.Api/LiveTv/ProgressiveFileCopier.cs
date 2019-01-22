@@ -1,4 +1,3 @@
-﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -7,7 +6,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
-using MediaBrowser.Controller.IO;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.LiveTv
@@ -47,13 +45,7 @@ namespace MediaBrowser.Api.LiveTv
             _streamHelper = streamHelper;
         }
 
-        public IDictionary<string, string> Headers
-        {
-            get
-            {
-                return _outputHeaders;
-            }
-        }
+        public IDictionary<string, string> Headers => _outputHeaders;
 
         private Stream GetInputStream(bool allowAsyncFileRead)
         {

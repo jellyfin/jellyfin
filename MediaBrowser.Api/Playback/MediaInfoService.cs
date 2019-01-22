@@ -1,23 +1,23 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
@@ -118,7 +118,7 @@ namespace MediaBrowser.Api.Playback
             var authInfo = _authContext.GetAuthorizationInfo(Request);
 
             var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None).ConfigureAwait(false);
-           
+
             var profile = request.DeviceProfile;
             if (profile == null)
             {
@@ -262,6 +262,7 @@ namespace MediaBrowser.Api.Playback
                 catch (Exception ex)
                 {
                     mediaSources = new List<MediaSourceInfo>();
+                    // TODO Log exception
                     // TODO PlaybackException ??
                     //result.ErrorCode = ex.ErrorCode;
                 }
@@ -386,10 +387,10 @@ namespace MediaBrowser.Api.Playback
             }
             else
             {
-                Logger.LogInformation("User policy for {0}. EnablePlaybackRemuxing: {1} EnableVideoPlaybackTranscoding: {2} EnableAudioPlaybackTranscoding: {3}", 
+                Logger.LogInformation("User policy for {0}. EnablePlaybackRemuxing: {1} EnableVideoPlaybackTranscoding: {2} EnableAudioPlaybackTranscoding: {3}",
                     user.Name,
                     user.Policy.EnablePlaybackRemuxing,
-                    user.Policy.EnableVideoPlaybackTranscoding, 
+                    user.Policy.EnableVideoPlaybackTranscoding,
                     user.Policy.EnableAudioPlaybackTranscoding);
             }
 

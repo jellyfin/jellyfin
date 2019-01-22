@@ -1,13 +1,12 @@
-﻿using System;
 using System.Text;
 
 namespace Emby.XmlTv.Entities
 {
     public class XmlTvIcon
     {
-        public String Source { get; set; }
-        public Int32? Width { get; set; }
-        public Int32? Height { get; set; }
+        public string Source { get; set; }
+        public int? Width { get; set; }
+        public int? Height { get; set; }
 
         public override string ToString()
         {

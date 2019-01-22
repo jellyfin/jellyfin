@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,10 +9,10 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="taskManager">The task manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// scheduledTask
         /// or
         /// applicationPaths
@@ -78,23 +78,23 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             if (scheduledTask == null)
             {
-                throw new ArgumentNullException("scheduledTask");
+                throw new ArgumentNullException(nameof(scheduledTask));
             }
             if (applicationPaths == null)
             {
-                throw new ArgumentNullException("applicationPaths");
+                throw new ArgumentNullException(nameof(applicationPaths));
             }
             if (taskManager == null)
             {
-                throw new ArgumentNullException("taskManager");
+                throw new ArgumentNullException(nameof(taskManager));
             }
             if (jsonSerializer == null)
             {
-                throw new ArgumentNullException("jsonSerializer");
+                throw new ArgumentNullException(nameof(jsonSerializer));
             }
             if (logger == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException(nameof(logger));
             }
 
             ScheduledTask = scheduledTask;
@@ -171,28 +171,19 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return ScheduledTask.Name; }
-        }
+        public string Name => ScheduledTask.Name;
 
         /// <summary>
         /// Gets the description.
         /// </summary>
         /// <value>The description.</value>
-        public string Description
-        {
-            get { return ScheduledTask.Description; }
-        }
+        public string Description => ScheduledTask.Description;
 
         /// <summary>
         /// Gets the category.
         /// </summary>
         /// <value>The category.</value>
-        public string Category
-        {
-            get { return ScheduledTask.Category; }
-        }
+        public string Category => ScheduledTask.Category;
 
         /// <summary>
         /// Gets the current cancellation token
@@ -241,15 +232,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <value>The triggers.</value>
         private Tuple<TaskTriggerInfo, ITaskTrigger>[] InternalTriggers
         {
-            get
-            {
-                return _triggers;
-            }
+            get => _triggers;
             set
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
                 // Cleanup current triggers
@@ -268,7 +256,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Gets the triggers that define when the task will run
         /// </summary>
         /// <value>The triggers.</value>
-        /// <exception cref="System.ArgumentNullException">value</exception>
+        /// <exception cref="ArgumentNullException">value</exception>
         public TaskTriggerInfo[] Triggers
         {
             get
@@ -280,7 +268,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
                 // This null check is not great, but is needed to handle bad user input, or user mucking with the config file incorrectly
@@ -377,7 +365,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="options">Task options.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.InvalidOperationException">Cannot execute a Task that is already running</exception>
+        /// <exception cref="InvalidOperationException">Cannot execute a Task that is already running</exception>
         public async Task Execute(TaskOptions options)
         {
             var task = Task.Run(async () => await ExecuteInternal(options).ConfigureAwait(false));
@@ -473,7 +461,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Stops the task if it is currently executing
         /// </summary>
-        /// <exception cref="System.InvalidOperationException">Cannot cancel a Task unless it is in the Running state.</exception>
+        /// <exception cref="InvalidOperationException">Cannot cancel a Task unless it is in the Running state.</exception>
         public void Cancel()
         {
             if (State != TaskState.Running)
@@ -717,8 +705,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>BaseTaskTrigger.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        /// <exception cref="System.ArgumentException">Invalid trigger type:  + info.Type</exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException">Invalid trigger type:  + info.Type</exception>
         private ITaskTrigger GetTrigger(TaskTriggerInfo info)
         {
             var options = new TaskOptions
@@ -730,7 +718,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 if (!info.TimeOfDayTicks.HasValue)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentException("Info did not contain a TimeOfDayTicks.", nameof(info));
                 }
 
                 return new DailyTrigger
@@ -744,12 +732,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 if (!info.TimeOfDayTicks.HasValue)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentException("Info did not contain a TimeOfDayTicks.", nameof(info));
                 }
 
                 if (!info.DayOfWeek.HasValue)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentException("Info did not contain a DayOfWeek.", nameof(info));
                 }
 
                 return new WeeklyTrigger
@@ -764,7 +752,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 if (!info.IntervalTicks.HasValue)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentException("Info did not contain a IntervalTicks.", nameof(info));
                 }
 
                 return new IntervalTrigger
@@ -778,7 +766,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 if (!info.SystemEvent.HasValue)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentException("Info did not contain a SystemEvent.", nameof(info));
                 }
 
                 return new SystemEventTrigger(_systemEvents)

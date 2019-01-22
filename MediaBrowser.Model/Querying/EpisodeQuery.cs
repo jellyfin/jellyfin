@@ -1,4 +1,3 @@
-﻿
 namespace MediaBrowser.Model.Querying
 {
     public class EpisodeQuery
@@ -53,7 +52,7 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The start item identifier.</value>
         public string StartItemId { get; set; }
-   
+
         public EpisodeQuery()
         {
             Fields = new ItemFields[] { };

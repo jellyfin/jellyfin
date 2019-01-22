@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -25,7 +25,7 @@ namespace Emby.XmlTv.Console
             var timer = Stopwatch.StartNew();
             System.Console.WriteLine("Running XMLTv Parsing");
 
-            var resultsFile = String.Format("C:\\Temp\\{0}_Results_{1:HHmmss}.txt", 
+            var resultsFile = String.Format("C:\\Temp\\{0}_Results_{1:HHmmss}.txt",
                 Path.GetFileNameWithoutExtension(filename),
                 DateTimeOffset.UtcNow);
 
