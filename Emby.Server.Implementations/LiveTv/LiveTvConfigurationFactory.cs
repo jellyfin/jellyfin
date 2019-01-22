@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.LiveTv;
 using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.LiveTv;
 
 namespace Emby.Server.Implementations.LiveTv
 {

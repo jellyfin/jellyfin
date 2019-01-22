@@ -2,7 +2,8 @@
     "Serilog": {
         "MinimumLevel": "Information",
         "WriteTo": [
-            { "Name": "Console",
+            {
+                "Name": "Console",
                 "Args": {
                     "outputTemplate": "[{Timestamp:HH:mm:ss}] [{Level:u3}] {Message:lj}{NewLine}{Exception}"
                 }

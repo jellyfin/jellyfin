@@ -9,17 +9,14 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Drawing;
-using Emby.Drawing.Skia;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.EnvironmentInfo;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.System;
+using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -90,7 +87,7 @@ namespace Jellyfin.Server
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
-            var fileSystem = new ManagedFileSystem(_loggerFactory.CreateLogger("FileSystem"), environmentInfo, null, appPaths.TempDirectory, true);
+            var fileSystem = new ManagedFileSystem(_loggerFactory, environmentInfo, null, appPaths.TempDirectory, true);
 
             using (var appHost = new CoreAppHost(
                 appPaths,
@@ -99,12 +96,12 @@ namespace Jellyfin.Server
                 fileSystem,
                 environmentInfo,
                 new NullImageEncoder(),
-                new SystemEvents(_loggerFactory.CreateLogger("SystemEvents")),
-                new NetworkManager(_loggerFactory.CreateLogger("NetworkManager"), environmentInfo)))
+                new SystemEvents(),
+                new NetworkManager(_loggerFactory, environmentInfo)))
             {
                 appHost.Init();
 
-                appHost.ImageProcessor.ImageEncoder = getImageEncoder(_logger, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo, appHost.LocalizationManager);
+                appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
 
                 _logger.LogInformation("Running startup tasks");
 
@@ -257,28 +254,25 @@ namespace Jellyfin.Server
             }
         }
 
-        public static IImageEncoder getImageEncoder(
-            ILogger logger,
+        public static IImageEncoder GetImageEncoder(
             IFileSystem fileSystem,
-            StartupOptions startupOptions,
-            Func<IHttpClient> httpClient,
             IApplicationPaths appPaths,
-            IEnvironmentInfo environment,
             ILocalizationManager localizationManager)
         {
             try
             {
-                return new SkiaEncoder(logger, appPaths, httpClient, fileSystem, localizationManager);
+                return new SkiaEncoder(_loggerFactory, appPaths, fileSystem, localizationManager);
             }
             catch (Exception ex)
             {
-                logger.LogInformation(ex, "Skia not available. Will fallback to NullIMageEncoder. {0}");
+                _logger.LogInformation(ex, "Skia not available. Will fallback to NullIMageEncoder. {0}");
             }
 
             return new NullImageEncoder();
         }
 
-        private static MediaBrowser.Model.System.OperatingSystem getOperatingSystem() {
+        private static MediaBrowser.Model.System.OperatingSystem getOperatingSystem()
+        {
             switch (Environment.OSVersion.Platform)
             {
                 case PlatformID.MacOSX:
@@ -287,22 +281,22 @@ namespace Jellyfin.Server
                     return MediaBrowser.Model.System.OperatingSystem.Windows;
                 case PlatformID.Unix:
                 default:
-                {
-                    string osDescription = RuntimeInformation.OSDescription;
-                    if (osDescription.Contains("linux", StringComparison.OrdinalIgnoreCase))
                     {
-                        return MediaBrowser.Model.System.OperatingSystem.Linux;
+                        string osDescription = RuntimeInformation.OSDescription;
+                        if (osDescription.Contains("linux", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return MediaBrowser.Model.System.OperatingSystem.Linux;
+                        }
+                        else if (osDescription.Contains("darwin", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return MediaBrowser.Model.System.OperatingSystem.OSX;
+                        }
+                        else if (osDescription.Contains("bsd", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return MediaBrowser.Model.System.OperatingSystem.BSD;
+                        }
+                        throw new Exception($"Can't resolve OS with description: '{osDescription}'");
                     }
-                    else if (osDescription.Contains("darwin", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return MediaBrowser.Model.System.OperatingSystem.OSX;
-                    }
-                    else if (osDescription.Contains("bsd", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return MediaBrowser.Model.System.OperatingSystem.BSD;
-                    }
-                    throw new Exception($"Can't resolve OS with description: '{osDescription}'");
-                }
             }
         }
 
@@ -340,7 +334,7 @@ namespace Jellyfin.Server
             }
             else
             {
-                commandLineArgsString = string .Join(" ",
+                commandLineArgsString = string.Join(" ",
                     Environment.GetCommandLineArgs()
                         .Skip(1)
                         .Select(NormalizeCommandLineArgument)

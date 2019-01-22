@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Reflection;
 
 namespace MediaBrowser.Controller.Plugins

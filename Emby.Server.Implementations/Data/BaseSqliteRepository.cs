@@ -1,12 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using SQLitePCL.pretty;
 using System.Linq;
+using System.Threading;
+using Microsoft.Extensions.Logging;
 using SQLitePCL;
+using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -255,7 +254,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(GetType().Name ,"Object has been disposed and cannot be accessed.");
+                throw new ObjectDisposedException(GetType().Name, "Object has been disposed and cannot be accessed.");
             }
         }
 

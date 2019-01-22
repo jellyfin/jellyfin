@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
@@ -11,7 +11,7 @@ namespace Rssdp
     /// Represents a discovered device, containing basic information about the device and the location of it's full device description document. Also provides convenience methods for retrieving the device description document.
     /// </summary>
     /// <seealso cref="SsdpDevice"/>
-    /// <seealso cref="Rssdp.Infrastructure.ISsdpDeviceLocator"/>
+    /// <seealso cref="Infrastructure.ISsdpDeviceLocator"/>
     public sealed class DiscoveredSsdpDevice
     {
 

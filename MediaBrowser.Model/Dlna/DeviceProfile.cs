@@ -1,8 +1,7 @@
-﻿using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.MediaInfo;
-using System.Collections.Generic;
-using System.Xml.Serialization;
 using System;
+using System.Xml.Serialization;
+using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -22,7 +21,7 @@ namespace MediaBrowser.Model.Dlna
         /// Gets or sets the identification.
         /// </summary>
         /// <value>The identification.</value>
-        public MediaBrowser.Model.Dlna.DeviceIdentification Identification { get; set; }
+        public DeviceIdentification Identification { get; set; }
 
         public string FriendlyName { get; set; }
         public string Manufacturer { get; set; }
@@ -239,7 +238,7 @@ namespace MediaBrowser.Model.Dlna
                 var conditionProcessor = new ConditionProcessor();
 
                 var anyOff = false;
-                foreach (ProfileCondition c in i.Conditions)
+                foreach (var c in i.Conditions)
                 {
                     if (!conditionProcessor.IsImageConditionSatisfied(GetModelProfileCondition(c), width, height))
                     {

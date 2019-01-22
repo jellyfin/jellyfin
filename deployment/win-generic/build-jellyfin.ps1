@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param(
     [switch]$InstallFFMPEG,
     [switch]$InstallNSSM,
@@ -37,7 +37,7 @@ function Install-FFMPEG {
     Write-Verbose "Checking Architecture"
     if($Architecture -notin @('x86','x64')){
         Write-Warning "No builds available for your selected architecture of $Architecture"
-        Write-Warning "FFMPEG will not be installed" 
+        Write-Warning "FFMPEG will not be installed"
     }elseif($Architecture -eq 'x64'){
          Write-Verbose "Downloading 64 bit FFMPEG"
          Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-4.1-win64-static.zip -UseBasicParsing -OutFile "$tempdir/fmmpeg.zip" | Write-Verbose
@@ -45,7 +45,7 @@ function Install-FFMPEG {
          Write-Verbose "Downloading 32 bit FFMPEG"
          Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-4.1-win32-static.zip -UseBasicParsing -OutFile "$tempdir/fmmpeg.zip" | Write-Verbose
     }
-   
+
     Expand-Archive "$tempdir/fmmpeg.zip" -DestinationPath "$tempdir/ffmpeg/" | Write-Verbose
     if($Architecture -eq 'x64'){
         Write-Verbose "Copying Binaries to Jellyfin location"
@@ -70,12 +70,12 @@ function Install-NSSM {
     Write-Verbose "Checking Architecture"
     if($Architecture -notin @('x86','x64')){
         Write-Warning "No builds available for your selected architecture of $Architecture"
-        Write-Warning "NSSM will not be installed" 
+        Write-Warning "NSSM will not be installed"
     }else{
          Write-Verbose "Downloading NSSM"
          Invoke-WebRequest -Uri https://nssm.cc/ci/nssm-2.24-101-g897c7ad.zip -UseBasicParsing -OutFile "$tempdir/nssm.zip" | Write-Verbose
     }
-   
+
     Expand-Archive "$tempdir/nssm.zip" -DestinationPath "$tempdir/nssm/" | Write-Verbose
     if($Architecture -eq 'x64'){
         Write-Verbose "Copying Binaries to Jellyfin location"

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Model.Activity

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Globalization;
+using System.Text;
 
 namespace SocketHttpListener.Net
 {
@@ -54,7 +54,7 @@ namespace SocketHttpListener.Net
         public static Uri GetRequestUri(string rawUri, string cookedUriScheme, string cookedUriHost,
             string cookedUriPath, string cookedUriQuery)
         {
-            HttpListenerRequestUriBuilder builder = new HttpListenerRequestUriBuilder(rawUri,
+            var builder = new HttpListenerRequestUriBuilder(rawUri,
                 cookedUriScheme, cookedUriHost, cookedUriPath, cookedUriQuery);
 
             return builder.Build();
@@ -232,8 +232,7 @@ namespace SocketHttpListener.Net
         {
             // http.sys only supports %uXXXX (4 hex-digits), even though unicode code points could have up to
             // 6 hex digits. Therefore we parse always 4 characters after %u and convert them to an int.
-            int codePointValue;
-            if (!int.TryParse(codePoint, NumberStyles.HexNumber, null, out codePointValue))
+            if (!int.TryParse(codePoint, NumberStyles.HexNumber, null, out var codePointValue))
             {
                 //if (NetEventSource.IsEnabled)
                 //    NetEventSource.Error(this, SR.Format(SR.net_log_listener_cant_convert_percent_value, codePoint));
@@ -264,8 +263,7 @@ namespace SocketHttpListener.Net
 
         private bool AddPercentEncodedOctetToRawOctetsList(Encoding encoding, string escapedCharacter)
         {
-            byte encodedValue;
-            if (!byte.TryParse(escapedCharacter, NumberStyles.HexNumber, null, out encodedValue))
+            if (!byte.TryParse(escapedCharacter, NumberStyles.HexNumber, null, out byte encodedValue))
             {
                 //if (NetEventSource.IsEnabled) NetEventSource.Error(this, SR.Format(SR.net_log_listener_cant_convert_percent_value, escapedCharacter));
                 return false;
@@ -327,7 +325,7 @@ namespace SocketHttpListener.Net
 
         private static string GetOctetsAsString(IEnumerable<byte> octets)
         {
-            StringBuilder octetString = new StringBuilder();
+            var octetString = new StringBuilder();
 
             bool first = true;
             foreach (byte octet in octets)

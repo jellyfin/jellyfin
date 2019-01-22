@@ -1,9 +1,8 @@
-﻿using MediaBrowser.Controller.Entities.Audio;
+using System;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
-using System.Collections.Generic;
 using MediaBrowser.Model.Serialization;
-using System;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -18,13 +17,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public string[] AllArtists
-        {
-            get
-            {
-                return Artists;
-            }
-        }
+        public string[] AllArtists => Artists;
 
         public override UnratedItem GetBlockUnratedType()
         {

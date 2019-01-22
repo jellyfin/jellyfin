@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+using System;
 using System.Text.RegularExpressions;
 using MediaBrowser.Model.Cryptography;
 

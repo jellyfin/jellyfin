@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
 using System.Collections.Generic;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Sorting
 {

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using Emby.Server.Implementations.Networking;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Net
 {
@@ -16,18 +16,6 @@ namespace Emby.Server.Implementations.Net
         // Not entirely happy with this. Would have liked to have done something more generic/reusable,
         // but that wasn't really the point so kept to YAGNI principal for now, even if the
         // interfaces are a bit ugly, specific and make assumptions.
-
-        private readonly ILogger _logger;
-
-        public SocketFactory(ILogger logger)
-        {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            _logger = logger;
-        }
 
         public ISocket CreateTcpSocket(IpAddressInfo remoteAddress, int remotePort)
         {

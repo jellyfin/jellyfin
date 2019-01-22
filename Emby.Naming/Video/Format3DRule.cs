@@ -1,4 +1,3 @@
-﻿
 namespace Emby.Naming.Video
 {
     public class Format3DRule

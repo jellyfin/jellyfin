@@ -1,9 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading;
-using System.Text;
 
 namespace MediaBrowser.Common.Net
 {
@@ -26,11 +24,8 @@ namespace MediaBrowser.Common.Net
         /// <value>The accept header.</value>
         public string AcceptHeader
         {
-            get { return GetHeaderValue("Accept"); }
-            set
-            {
-                RequestHeaders["Accept"] = value;
-            }
+            get => GetHeaderValue("Accept");
+            set => RequestHeaders["Accept"] = value;
         }
         /// <summary>
         /// Gets or sets the cancellation token.
@@ -50,11 +45,8 @@ namespace MediaBrowser.Common.Net
         /// <value>The user agent.</value>
         public string UserAgent
         {
-            get { return GetHeaderValue("User-Agent"); }
-            set
-            {
-                RequestHeaders["User-Agent"] = value;
-            }
+            get => GetHeaderValue("User-Agent");
+            set => RequestHeaders["User-Agent"] = value;
         }
 
         /// <summary>
@@ -110,9 +102,7 @@ namespace MediaBrowser.Common.Net
 
         private string GetHeaderValue(string name)
         {
-            string value;
-
-            RequestHeaders.TryGetValue(name, out value);
+            RequestHeaders.TryGetValue(name, out var value);
 
             return value;
         }
@@ -133,7 +123,7 @@ namespace MediaBrowser.Common.Net
             TimeoutMs = 20000;
         }
 
-        public void SetPostData(IDictionary<string,string> values)
+        public void SetPostData(IDictionary<string, string> values)
         {
             var strings = values.Keys.Select(key => string.Format("{0}={1}", key, values[key]));
             var postContent = string.Join("&", strings.ToArray());

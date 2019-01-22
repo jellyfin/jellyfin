@@ -1,4 +1,3 @@
-﻿
 namespace MediaBrowser.Model.Updates
 {
     /// <summary>
@@ -18,7 +17,7 @@ namespace MediaBrowser.Model.Updates
         /// <value>The available version.</value>
         public string AvailableVersion
         {
-            get { return Package != null ? Package.versionStr : "0.0.0.1"; }
+            get => Package != null ? Package.versionStr : "0.0.0.1";
             set { } // need this for the serializer
         }
 

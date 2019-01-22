@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Updates;
 using System.Runtime.InteropServices;
+using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Model.System
 {
@@ -16,6 +16,15 @@ namespace MediaBrowser.Model.System
         /// <value>The display name of the operating system.</value>
         public string OperatingSystemDisplayName { get; set; }
 
+        /// <summary>
+        /// The product name. This is the AssemblyProduct name.
+        /// </summary>
+        public string ProductName { get; set; }
+
+        /// <summary>
+        /// Get or sets the package name.
+        /// </summary>
+        /// <value>The value of the '-package' command line argument.</value>
         public string PackageName { get; set; }
 
         /// <summary>

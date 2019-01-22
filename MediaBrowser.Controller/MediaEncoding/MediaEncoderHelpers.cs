@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Model.IO;
-using MediaBrowser.Model.MediaInfo;
 using System;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -31,14 +31,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return GetPlayableStreamFiles(fileSystem, isoMount.MountedPath, playableStreamFileNames);
             }
 
-            return new[] {videoPath};
+            return new[] { videoPath };
         }
 
         private static string[] GetPlayableStreamFiles(IFileSystem fileSystem, string rootPath, string[] filenames)
         {
             if (filenames.Length == 0)
             {
-                return new string[]{};
+                return new string[] { };
             }
 
             var allFiles = fileSystem

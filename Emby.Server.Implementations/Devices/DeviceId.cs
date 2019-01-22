@@ -25,8 +25,7 @@ namespace Emby.Server.Implementations.Devices
                 {
                     var value = File.ReadAllText(CachePath, Encoding.UTF8);
 
-                    Guid guid;
-                    if (Guid.TryParse(value, out guid))
+                    if (Guid.TryParse(value, out var guid))
                     {
                         return value;
                     }
@@ -87,7 +86,10 @@ namespace Emby.Server.Implementations.Devices
 
         private string _id;
 
-        public DeviceId(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
+        public DeviceId(
+            IApplicationPaths appPaths,
+            ILoggerFactory loggerFactory,
+            IFileSystem fileSystem)
         {
             if (fileSystem == null)
             {
@@ -95,7 +97,7 @@ namespace Emby.Server.Implementations.Devices
             }
 
             _appPaths = appPaths;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger("SystemId");
             _fileSystem = fileSystem;
         }
 

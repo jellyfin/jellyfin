@@ -1,13 +1,11 @@
 using System;
-using System.Collections.Specialized;
-using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
-using HttpStatusCode = SocketHttpListener.Net.HttpStatusCode;
-using HttpVersion = SocketHttpListener.Net.HttpVersion;
-using System.Linq;
 using MediaBrowser.Model.Services;
 using SocketHttpListener.Net;
+using HttpStatusCode = SocketHttpListener.Net.HttpStatusCode;
+using HttpVersion = SocketHttpListener.Net.HttpVersion;
 
 namespace SocketHttpListener
 {
@@ -48,13 +46,7 @@ namespace SocketHttpListener
 
         #region Public Properties
 
-        public CookieCollection Cookies
-        {
-            get
-            {
-                return GetCookies(Headers, true);
-            }
-        }
+        public CookieCollection Cookies => GetCookies(Headers, true);
 
         private static CookieCollection GetCookies(QueryParamCollection headers, bool response)
         {
@@ -64,21 +56,9 @@ namespace SocketHttpListener
                    : CookieHelper.Parse(headers[name], response);
         }
 
-        public bool IsProxyAuthenticationRequired
-        {
-            get
-            {
-                return _code == "407";
-            }
-        }
+        public bool IsProxyAuthenticationRequired => _code == "407";
 
-        public bool IsUnauthorized
-        {
-            get
-            {
-                return _code == "401";
-            }
-        }
+        public bool IsUnauthorized => _code == "401";
 
         public bool IsWebSocketResponse
         {
@@ -92,21 +72,9 @@ namespace SocketHttpListener
             }
         }
 
-        public string Reason
-        {
-            get
-            {
-                return _reason;
-            }
-        }
+        public string Reason => _reason;
 
-        public string StatusCode
-        {
-            get
-            {
-                return _code;
-            }
-        }
+        public string StatusCode => _code;
 
         #endregion
 

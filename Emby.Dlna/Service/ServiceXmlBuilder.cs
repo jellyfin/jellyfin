@@ -1,7 +1,6 @@
-using Emby.Dlna.Common;
 using System.Collections.Generic;
-using System.Security;
 using System.Text;
+using Emby.Dlna.Common;
 using Emby.Dlna.Server;
 
 namespace Emby.Dlna.Service

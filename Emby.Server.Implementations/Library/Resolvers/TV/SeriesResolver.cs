@@ -1,20 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Emby.Naming.TV;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using Emby.Naming.Common;
-using Emby.Naming.TV;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.TV
 {
@@ -112,7 +107,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             return null;
         }
 
-        public static bool IsSeriesFolder(string path,
+        public static bool IsSeriesFolder(
+            string path,
             IEnumerable<FileSystemMetadata> fileSystemChildren,
             IDirectoryService directoryService,
             IFileSystem fileSystem,
@@ -140,7 +136,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 {
                     if (IsSeasonFolder(child.FullName, isTvContentType, libraryManager))
                     {
-                        //logger.LogDebug("{0} is a series because of season folder {1}.", path, child.FullName);
+                        logger.LogDebug("{Path} is a series because of season folder {Dir}.", path, child.FullName);
                         return true;
                     }
                 }
@@ -156,7 +152,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
                         var namingOptions = ((LibraryManager)libraryManager).GetNamingOptions();
 
-                        var episodeResolver = new Emby.Naming.TV.EpisodeResolver(namingOptions);
+                        var episodeResolver = new Naming.TV.EpisodeResolver(namingOptions);
                         bool? isNamed = null;
                         bool? isOptimistic = null;
 
@@ -166,7 +162,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                             isOptimistic = false;
                         }
 
-                        var episodeInfo = episodeResolver.Resolve(fullName, false, isNamed, isOptimistic, null, false);
+                        var episodeInfo = episodeResolver.Resolve(fullName, false, isNamed, isOptimistic, fillExtendedInfo: false);
                         if (episodeInfo != null && episodeInfo.EpisodeNumber.HasValue)
                         {
                             return true;
@@ -175,7 +171,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 }
             }
 
-            //logger.LogDebug("{0} is not a series folder.", path);
+            logger.LogDebug("{Path} is not a series folder.", path);
             return false;
         }
 
@@ -184,7 +180,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [is place holder] [the specified path]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.ArgumentNullException">path</exception>
+        /// <exception cref="ArgumentNullException">path</exception>
         private static bool IsVideoPlaceHolder(string path)
         {
             if (string.IsNullOrEmpty(path))

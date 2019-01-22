@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Tests.ConsistencyTests.TextIndexing
+namespace MediaBrowser.Tests.ConsistencyTests.TextIndexing
 {
     public struct WordOccurrence
     {

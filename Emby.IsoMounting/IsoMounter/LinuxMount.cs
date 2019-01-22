@@ -45,11 +45,13 @@ namespace IsoMounter
         protected virtual void Dispose(bool disposing)
         {
 
-            if (disposed) {
+            if (disposed)
+            {
                 return;
             }
 
-            if (disposing) {
+            if (disposing)
+            {
 
                 //
                 // Free managed objects here.

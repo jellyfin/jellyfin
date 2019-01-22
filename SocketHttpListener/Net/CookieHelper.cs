@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SocketHttpListener.Net
 {
@@ -44,13 +43,12 @@ namespace SocketHttpListener.Net
                     if (i < pairs.Length - 1)
                         buffer.AppendFormat(", {0}", pairs[++i].Trim());
 
-                    DateTime expires;
                     if (!DateTime.TryParseExact(
                       buffer.ToString(),
                       new[] { "ddd, dd'-'MMM'-'yyyy HH':'mm':'ss 'GMT'", "r" },
                       new CultureInfo("en-US"),
                       DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal,
-                      out expires))
+                      out var expires))
                         expires = DateTime.Now;
 
                     if (cookie != null && cookie.Expires == DateTime.MinValue)

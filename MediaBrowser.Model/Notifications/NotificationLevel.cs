@@ -1,4 +1,3 @@
-﻿
 namespace MediaBrowser.Model.Notifications
 {
     public enum NotificationLevel

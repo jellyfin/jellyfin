@@ -1,12 +1,12 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.LiveTv;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 
@@ -63,10 +63,7 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         [IgnoreDataMember]
-        public override SourceType SourceType
-        {
-            get { return SourceType.LiveTV; }
-        }
+        public override SourceType SourceType => SourceType.LiveTV;
 
         /// <summary>
         /// The start date of the program, in UTC.
@@ -103,13 +100,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is sports; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public bool IsSports
-        {
-            get
-            {
-                return Tags.Contains("Sports", StringComparer.OrdinalIgnoreCase);
-            }
-        }
+        public bool IsSports => Tags.Contains("Sports", StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is series.
@@ -123,52 +114,28 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is live; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public bool IsLive
-        {
-            get
-            {
-                return Tags.Contains("Live", StringComparer.OrdinalIgnoreCase);
-            }
-        }
+        public bool IsLive => Tags.Contains("Live", StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is news.
         /// </summary>
         /// <value><c>true</c> if this instance is news; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public bool IsNews
-        {
-            get
-            {
-                return Tags.Contains("News", StringComparer.OrdinalIgnoreCase);
-            }
-        }
+        public bool IsNews => Tags.Contains("News", StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is kids.
         /// </summary>
         /// <value><c>true</c> if this instance is kids; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public bool IsKids
-        {
-            get
-            {
-                return Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
-            }
-        }
+        public bool IsKids => Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is premiere.
         /// </summary>
         /// <value><c>true</c> if this instance is premiere; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public bool IsPremiere
-        {
-            get
-            {
-                return Tags.Contains("Premiere", StringComparer.OrdinalIgnoreCase);
-            }
-        }
+        public bool IsPremiere => Tags.Contains("Premiere", StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Returns the folder containing the item.
@@ -176,13 +143,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The containing folder path.</value>
         [IgnoreDataMember]
-        public override string ContainingFolderPath
-        {
-            get
-            {
-                return Path;
-            }
-        }
+        public override string ContainingFolderPath => Path;
 
         //[IgnoreDataMember]
         //public override string MediaType
@@ -251,13 +212,7 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         [IgnoreDataMember]
-        public override bool SupportsAncestors
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsAncestors => false;
 
         private LiveTvOptions GetConfiguration()
         {
@@ -313,6 +268,6 @@ namespace MediaBrowser.Controller.LiveTv
             return list;
         }
 
-        public string SeriesName { get; set;}
+        public string SeriesName { get; set; }
     }
 }

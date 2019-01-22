@@ -1,15 +1,3 @@
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Session;
-using MediaBrowser.MediaEncoding.Probing;
-using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -17,12 +5,23 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Session;
+using MediaBrowser.MediaEncoding.Probing;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Diagnostics;
-using MediaBrowser.Model.System;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
@@ -71,7 +70,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly string _originalFFProbePath;
         private readonly int DefaultImageExtractionTimeoutMs;
 
-        public MediaEncoder(ILogger logger,
+        public MediaEncoder(
+            ILoggerFactory loggerFactory,
             IJsonSerializer jsonSerializer,
             string ffMpegPath,
             string ffProbePath,
@@ -90,7 +90,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IProcessFactory processFactory,
             int defaultImageExtractionTimeoutMs)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(MediaEncoder));
             _jsonSerializer = jsonSerializer;
             ConfigurationManager = configurationManager;
             FileSystem = fileSystem;
@@ -416,10 +416,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// Gets the encoder path.
         /// </summary>
         /// <value>The encoder path.</value>
-        public string EncoderPath
-        {
-            get { return FFMpegPath; }
-        }
+        public string EncoderPath => FFMpegPath;
 
         /// <summary>
         /// Gets the media info.
@@ -461,7 +458,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="inputFiles">The input files.</param>
         /// <param name="protocol">The protocol.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentException">Unrecognized InputType</exception>
+        /// <exception cref="ArgumentException">Unrecognized InputType</exception>
         public string GetInputArgument(string[] inputFiles, MediaProtocol protocol)
         {
             return EncodingUtils.GetInputArgument(inputFiles.ToList(), protocol);
@@ -1022,7 +1019,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public bool CanExtractSubtitles(string codec)
         {
-            return false;
+            // TODO is there ever a case when a subtitle can't be extracted??
+            return true;
         }
 
         private class ProcessWrapper : IDisposable

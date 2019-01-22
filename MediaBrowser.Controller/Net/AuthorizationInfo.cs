@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
 using System;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -9,11 +9,7 @@ namespace MediaBrowser.Controller.Net
         /// Gets or sets the user identifier.
         /// </summary>
         /// <value>The user identifier.</value>
-        public Guid UserId {
-            get {
-                return User == null ? Guid.Empty : User.Id;
-            }
-        }
+        public Guid UserId => User == null ? Guid.Empty : User.Id;
 
         /// <summary>
         /// Gets or sets the device identifier.

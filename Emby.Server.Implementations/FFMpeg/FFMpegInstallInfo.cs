@@ -1,4 +1,3 @@
-﻿
 namespace Emby.Server.Implementations.FFMpeg
 {
     public class FFMpegInstallInfo

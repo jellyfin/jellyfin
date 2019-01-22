@@ -1,4 +1,3 @@
-﻿using MediaBrowser.Model.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -6,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
@@ -17,13 +17,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         public SubtitleTrackInfo Parse(Stream stream, CancellationToken cancellationToken)
         {
             var trackInfo = new SubtitleTrackInfo();
-            List<SubtitleTrackEvent> trackEvents = new List<SubtitleTrackEvent>();
+            var trackEvents = new List<SubtitleTrackEvent>();
             var eventIndex = 1;
             using (var reader = new StreamReader(stream))
             {
                 string line;
                 while (reader.ReadLine() != "[Events]")
-                {}
+                { }
                 var headers = ParseFieldHeaders(reader.ReadLine());
 
                 while ((line = reader.ReadLine()) != null)
@@ -34,9 +34,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         continue;
                     }
-                    if(line.StartsWith("["))
+                    if (line.StartsWith("["))
                         break;
-                    if(string.IsNullOrEmpty(line))
+                    if (string.IsNullOrEmpty(line))
                         continue;
                     var subEvent = new SubtitleTrackEvent { Id = eventIndex.ToString(_usCulture) };
                     eventIndex++;
@@ -61,13 +61,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         long GetTicks(string time)
         {
-            TimeSpan span;
-            return TimeSpan.TryParseExact(time, @"h\:mm\:ss\.ff", _usCulture, out span)
-                ? span.Ticks: 0;
+            return TimeSpan.TryParseExact(time, @"h\:mm\:ss\.ff", _usCulture, out var span)
+                ? span.Ticks : 0;
         }
 
-        private Dictionary<string,int> ParseFieldHeaders(string line) {
-            var fields = line.Substring(8).Split(',').Select(x=>x.Trim()).ToList();
+        private Dictionary<string, int> ParseFieldHeaders(string line)
+        {
+            var fields = line.Substring(8).Split(',').Select(x => x.Trim()).ToList();
 
             var result = new Dictionary<string, int> {
                                                          {"Start", fields.IndexOf("Start")},
