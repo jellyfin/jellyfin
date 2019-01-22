@@ -179,9 +179,9 @@ fi
 - PR636 Allow subtitle extraction and conversion in direct streaming
 - PR637 Remove unused font
 - PR638 Removed XmlTv testfiles and nuget install
-- PR639 Fix segment_time_delta for ffmpeg 4.1
 - PR646: Fix infinite loop bug on subtitle.m3u8 request
 - PR655: Support trying local branches in submodule
+- PR661: Fix NullRef from progress report
 - jellyfin-web:
 - PR1: Change webcomponents to non-minified version
 - PR4: Fix user profile regression
@@ -212,5 +212,6 @@ fi
 - PR48: Remove Sync code
 - PR52: Fix progress color
 - PR53: Fix user tabs color
+- PR54: Add back button to server dashboard
 * Fri Jan 11 2019 Thomas Büttner <thomas@vergesslicher.tech> - 10.0.2-1
 - TODO Changelog for 10.0.2
