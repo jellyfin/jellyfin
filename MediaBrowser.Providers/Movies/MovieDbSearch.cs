@@ -1,10 +1,3 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -12,6 +5,13 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -180,10 +180,8 @@ namespace MediaBrowser.Providers.Movies
 
                             if (!string.IsNullOrWhiteSpace(i.release_date))
                             {
-                                DateTime r;
-
-                            // These dates are always in this exact format
-                            if (DateTime.TryParseExact(i.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
+                                // These dates are always in this exact format
+                                if (DateTime.TryParseExact(i.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out var r))
                                 {
                                     remoteResult.PremiereDate = r.ToUniversalTime();
                                     remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
@@ -235,10 +233,8 @@ namespace MediaBrowser.Providers.Movies
 
                             if (!string.IsNullOrWhiteSpace(i.first_air_date))
                             {
-                                DateTime r;
-
-                            // These dates are always in this exact format
-                            if (DateTime.TryParseExact(i.first_air_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
+                                // These dates are always in this exact format
+                                if (DateTime.TryParseExact(i.first_air_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out var r))
                                 {
                                     remoteResult.PremiereDate = r.ToUniversalTime();
                                     remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;

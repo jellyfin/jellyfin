@@ -1,22 +1,20 @@
-﻿using MediaBrowser.Model.IO;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Movies;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.Globalization;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -27,7 +25,7 @@ namespace MediaBrowser.Providers.TV
     {
         public MovieDbEpisodeImageProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILoggerFactory loggerFactory)
             : base(httpClient, configurationManager, jsonSerializer, fileSystem, localization, loggerFactory)
-        {}
+        { }
 
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
@@ -119,23 +117,13 @@ namespace MediaBrowser.Providers.TV
             return GetResponse(url, cancellationToken);
         }
 
-        public string Name
-        {
-            get { return "TheMovieDb"; }
-        }
+        public string Name => "TheMovieDb";
 
         public bool Supports(BaseItem item)
         {
             return item is Controller.Entities.TV.Episode;
         }
-
-        public int Order
-        {
-            get
-            {
-                // After tvdb
-                return 1;
-            }
-        }
+        // After TheTvDb
+        public int Order => 1;
     }
 }

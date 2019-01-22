@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities.Audio
@@ -41,49 +41,22 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPlayedStatus
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool SupportsPlayedStatus => true;
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get { return false; }
-        }
+        public override bool SupportsPeople => false;
 
         [IgnoreDataMember]
-        public override bool SupportsAddingToPlaylist
-        {
-            get { return true; }
-        }
+        public override bool SupportsAddingToPlaylist => true;
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get { return true; }
-        }
+        public override bool SupportsInheritedParentImages => true;
 
         [IgnoreDataMember]
-        protected override bool SupportsOwnedItems
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected override bool SupportsOwnedItems => false;
 
         [IgnoreDataMember]
-        public override Folder LatestItemsIndexContainer
-        {
-            get
-            {
-                return AlbumEntity;
-            }
-        }
+        public override Folder LatestItemsIndexContainer => AlbumEntity;
 
         public override bool CanDownload()
         {
@@ -115,23 +88,14 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
-        public MusicAlbum AlbumEntity
-        {
-            get { return FindParent<MusicAlbum>(); }
-        }
+        public MusicAlbum AlbumEntity => FindParent<MusicAlbum>();
 
         /// <summary>
         /// Gets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
         [IgnoreDataMember]
-        public override string MediaType
-        {
-            get
-            {
-                return Model.Entities.MediaType.Audio;
-            }
-        }
+        public override string MediaType => Model.Entities.MediaType.Audio;
 
         /// <summary>
         /// Creates the name of the sort.

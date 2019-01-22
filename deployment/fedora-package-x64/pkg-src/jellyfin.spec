@@ -1,13 +1,13 @@
 %global         debug_package %{nil}
 # jellyfin tag to package
-%global         gittag v10.0.1
+%global         gittag v10.0.2
 # Taglib-sharp commit of the submodule since github archive doesn't include submodules
 %global         taglib_commit ee5ab21742b71fd1b87ee24895582327e9e04776
 %global         taglib_shortcommit %(c=%{taglib_commit}; echo ${c:0:7})
 
 AutoReq:        no
 Name:           jellyfin
-Version:        10.0.1
+Version:        10.0.2
 Release:        1%{?dist}
 Summary:        The Free Software Media Browser
 License:        GPLv2

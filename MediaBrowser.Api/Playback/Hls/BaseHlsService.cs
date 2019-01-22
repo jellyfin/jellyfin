@@ -1,20 +1,20 @@
-﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback.Hls
@@ -52,10 +52,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// Gets the type of the transcoding job.
         /// </summary>
         /// <value>The type of the transcoding job.</value>
-        protected override TranscodingJobType TranscodingJobType
-        {
-            get { return TranscodingJobType.Hls; }
-        }
+        protected override TranscodingJobType TranscodingJobType => TranscodingJobType.Hls;
 
         /// <summary>
         /// Processes the request.
@@ -201,7 +198,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
                             while (!reader.EndOfStream)
                             {
-                                var line =  reader.ReadLine();
+                                var line = reader.ReadLine();
 
                                 if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
                                 {

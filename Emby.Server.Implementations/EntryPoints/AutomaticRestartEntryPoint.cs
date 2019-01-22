@@ -1,16 +1,16 @@
-﻿using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Controller.Session;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Tasks;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {

@@ -1,7 +1,3 @@
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Net;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,8 +9,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Emby.Server.Implementations.Services;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 using IRequest = MediaBrowser.Model.Services.IRequest;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
@@ -96,8 +96,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            string expires;
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string expires))
             {
                 responseHeaders["Expires"] = "-1";
             }
@@ -115,7 +114,8 @@ namespace Emby.Server.Implementations.HttpServer
             string compressionType = null;
             bool isHeadRequest = false;
 
-            if (requestContext != null) {
+            if (requestContext != null)
+            {
                 compressionType = GetCompressionType(requestContext, content, contentType);
                 isHeadRequest = string.Equals(requestContext.Verb, "head", StringComparison.OrdinalIgnoreCase);
             }
@@ -142,8 +142,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            string expires;
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string expires))
             {
                 responseHeaders["Expires"] = "-1";
             }
@@ -187,8 +186,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            string expires;
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string expires))
             {
                 responseHeaders["Expires"] = "-1";
             }
@@ -716,7 +714,7 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 ifNoneMatchHeader = (ifNoneMatchHeader ?? string.Empty).Trim('\"');
 
-                if (Guid.TryParse(ifNoneMatchHeader, out Guid ifNoneMatch)
+                if (Guid.TryParse(ifNoneMatchHeader, out var ifNoneMatch)
                     && cacheKey.Equals(ifNoneMatch))
                 {
                     return true;

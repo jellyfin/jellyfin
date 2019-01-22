@@ -1,23 +1,22 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Extensions;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Reflection;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.WebDashboard.Api
 {
@@ -206,7 +205,7 @@ namespace MediaBrowser.WebDashboard.Api
                     return _resultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => Task.FromResult(stream));
                 }
 
-                return _resultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator(DashboardUIPath).ModifyHtml("dummy.html", stream, null, _appHost.ApplicationVersion.ToString(), null));
+                return _resultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator(DashboardUIPath).ModifyHtml("dummy.html", stream, null, _appHost.ApplicationVersion, null));
             }
 
             throw new ResourceNotFoundException();
@@ -365,7 +364,7 @@ namespace MediaBrowser.WebDashboard.Api
         private Task<Stream> GetResourceStream(string basePath, string virtualPath, string localizationCulture)
         {
             return GetPackageCreator(basePath)
-                .GetResource(virtualPath, null, localizationCulture, _appHost.ApplicationVersion.ToString());
+                .GetResource(virtualPath, null, localizationCulture, _appHost.ApplicationVersion);
         }
 
         private PackageCreator GetPackageCreator(string basePath)
@@ -401,7 +400,7 @@ namespace MediaBrowser.WebDashboard.Api
                 CopyDirectory(inputPath, targetPath);
             }
 
-            var appVersion = _appHost.ApplicationVersion.ToString();
+            var appVersion = _appHost.ApplicationVersion;
 
             await DumpHtml(packageCreator, inputPath, targetPath, mode, appVersion);
 

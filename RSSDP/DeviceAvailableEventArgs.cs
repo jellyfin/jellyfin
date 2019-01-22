@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,7 +7,7 @@ using MediaBrowser.Model.Net;
 namespace Rssdp
 {
     /// <summary>
-    /// Event arguments for the <see cref="Rssdp.Infrastructure.SsdpDeviceLocatorBase.DeviceAvailable"/> event.
+    /// Event arguments for the <see cref="Infrastructure.SsdpDeviceLocatorBase.DeviceAvailable"/> event.
     /// </summary>
     public sealed class DeviceAvailableEventArgs : EventArgs
     {
@@ -18,17 +18,17 @@ namespace Rssdp
         private readonly DiscoveredSsdpDevice _DiscoveredDevice;
 		private readonly bool _IsNewlyDiscovered;
 
-		#endregion
+        #endregion
 
-		#region Constructors
+        #region Constructors
 
-		/// <summary>
-		/// Full constructor.
-		/// </summary>
-		/// <param name="discoveredDevice">A <see cref="DiscoveredSsdpDevice"/> instance representing the available device.</param>
-		/// <param name="isNewlyDiscovered">A boolean value indicating whether or not this device came from the cache. See <see cref="IsNewlyDiscovered"/> for more detail.</param>
-		/// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="discoveredDevice"/> parameter is null.</exception>
-		public DeviceAvailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool isNewlyDiscovered)
+        /// <summary>
+        /// Full constructor.
+        /// </summary>
+        /// <param name="discoveredDevice">A <see cref="DiscoveredSsdpDevice"/> instance representing the available device.</param>
+        /// <param name="isNewlyDiscovered">A boolean value indicating whether or not this device came from the cache. See <see cref="IsNewlyDiscovered"/> for more detail.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the <paramref name="discoveredDevice"/> parameter is null.</exception>
+        public DeviceAvailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool isNewlyDiscovered)
 		{
 			if (discoveredDevice == null) throw new ArgumentNullException(nameof(discoveredDevice));
 
@@ -48,10 +48,10 @@ namespace Rssdp
 			get { return _IsNewlyDiscovered; }
 		}
 
-		/// <summary>
-		/// A reference to a <see cref="Rssdp.DiscoveredSsdpDevice"/> instance containing the discovered details and allowing access to the full device description.
-		/// </summary>
-		public DiscoveredSsdpDevice DiscoveredDevice
+        /// <summary>
+        /// A reference to a <see cref="DiscoveredSsdpDevice"/> instance containing the discovered details and allowing access to the full device description.
+        /// </summary>
+        public DiscoveredSsdpDevice DiscoveredDevice
 		{
 			get { return _DiscoveredDevice; }
 		} 

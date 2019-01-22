@@ -1,22 +1,3 @@
-using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Connect;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Events;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -25,13 +6,32 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Connect;
+using MediaBrowser.Model.Cryptography;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Users;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -80,9 +80,20 @@ namespace Emby.Server.Implementations.Library
         private IAuthenticationProvider[] _authenticationProviders;
         private DefaultAuthenticationProvider _defaultAuthenticationProvider;
 
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ICryptoProvider cryptographyProvider)
+        public UserManager(
+            ILoggerFactory loggerFactory,
+            IServerConfigurationManager configurationManager,
+            IUserRepository userRepository,
+            IXmlSerializer xmlSerializer,
+            INetworkManager networkManager,
+            Func<IImageProcessor> imageProcessorFactory,
+            Func<IDtoService> dtoServiceFactory,
+            IServerApplicationHost appHost,
+            IJsonSerializer jsonSerializer,
+            IFileSystem fileSystem,
+            ICryptoProvider cryptographyProvider)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(UserManager));
             UserRepository = userRepository;
             _xmlSerializer = xmlSerializer;
             _networkManager = networkManager;
@@ -158,7 +169,7 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>User.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public User GetUserById(Guid id)
         {
             if (id.Equals(Guid.Empty))
@@ -619,8 +630,8 @@ namespace Emby.Server.Implementations.Library
         /// <param name="user">The user.</param>
         /// <param name="newName">The new name.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentException"></exception>
         public async Task RenameUser(User user, string newName)
         {
             if (user == null)
@@ -652,8 +663,8 @@ namespace Emby.Server.Implementations.Library
         /// Updates the user.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <exception cref="System.ArgumentNullException">user</exception>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentException"></exception>
         public void UpdateUser(User user)
         {
             if (user == null)
@@ -683,8 +694,8 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>User.</returns>
-        /// <exception cref="System.ArgumentNullException">name</exception>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">name</exception>
+        /// <exception cref="ArgumentException"></exception>
         public async Task<User> CreateUser(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -731,8 +742,8 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentException"></exception>
         public async Task DeleteUser(User user)
         {
             if (user == null)

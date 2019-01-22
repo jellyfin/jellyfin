@@ -1,15 +1,3 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,10 +6,22 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
-using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 using Microsoft.Extensions.Logging;
+using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -936,10 +936,10 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var timeDeltaParam = string.Empty;
 
-            if (isEncoding && startNumber > 0)
+            if (isEncoding && state.TargetFramerate > 0)
             {
-                var startTime = state.SegmentLength * startNumber;
-                timeDeltaParam = string.Format("-segment_time_delta -{0}", startTime);
+                float startTime = 1 / (state.TargetFramerate.Value * 2);
+                timeDeltaParam = string.Format("-segment_time_delta {0}", Math.Round(startTime, 3));
             }
 
             var segmentFormat = GetSegmentFileExtension(state.Request).TrimStart('.');

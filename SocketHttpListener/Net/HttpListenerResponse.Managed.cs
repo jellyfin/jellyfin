@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
-using MediaBrowser.Model.Text;
-using SocketHttpListener.Primitives;
 using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 
 namespace SocketHttpListener.Net
@@ -19,12 +16,10 @@ namespace SocketHttpListener.Net
         private int _statusCode = 200;
         internal object _headersLock = new object();
         private bool _forceCloseChunked;
-        private ITextEncoding _textEncoding;
 
-        internal HttpListenerResponse(HttpListenerContext context, ITextEncoding textEncoding)
+        internal HttpListenerResponse(HttpListenerContext context)
         {
             _httpContext = context;
-            _textEncoding = textEncoding;
         }
 
         internal bool ForceCloseChunked => _forceCloseChunked;
@@ -39,7 +34,7 @@ namespace SocketHttpListener.Net
 
         public Version ProtocolVersion
         {
-            get { return _version; }
+            get => _version;
             set
             {
                 CheckDisposed();
@@ -58,7 +53,7 @@ namespace SocketHttpListener.Net
 
         public int StatusCode
         {
-            get { return _statusCode; }
+            get => _statusCode;
             set
             {
                 CheckDisposed();
@@ -264,8 +259,8 @@ namespace SocketHttpListener.Net
                 ComputeCookies();
             }
 
-            Encoding encoding = _textEncoding.GetDefaultEncoding();
-            StreamWriter writer = new StreamWriter(ms, encoding, 256);
+            var encoding = Encoding.UTF8;
+            var writer = new StreamWriter(ms, encoding, 256);
             writer.Write("HTTP/1.1 {0} ", _statusCode); // "1.1" matches Windows implementation, which ignores the response version
             writer.Flush();
             byte[] statusDescriptionBytes = WebHeaderEncoding.GetBytes(StatusDescription);

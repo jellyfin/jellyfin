@@ -1,11 +1,3 @@
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Playlists;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Playlists;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,12 +5,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Extensions;
-using PlaylistsNET;
+using MediaBrowser.Model.Playlists;
+using Microsoft.Extensions.Logging;
 using PlaylistsNET.Content;
 using PlaylistsNET.Models;
-using PlaylistsNET.Utils;
 
 namespace Emby.Server.Implementations.Playlists
 {
@@ -31,12 +28,18 @@ namespace Emby.Server.Implementations.Playlists
         private readonly IUserManager _userManager;
         private readonly IProviderManager _providerManager;
 
-        public PlaylistManager(ILibraryManager libraryManager, IFileSystem fileSystem, ILibraryMonitor iLibraryMonitor, ILogger logger, IUserManager userManager, IProviderManager providerManager)
+        public PlaylistManager(
+            ILibraryManager libraryManager,
+            IFileSystem fileSystem,
+            ILibraryMonitor iLibraryMonitor,
+            ILoggerFactory loggerFactory,
+            IUserManager userManager,
+            IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(PlaylistManager));
             _userManager = userManager;
             _providerManager = providerManager;
         }
@@ -472,12 +475,12 @@ namespace Emby.Server.Implementations.Playlists
                 folderPath = folderPath + Path.DirectorySeparatorChar;
             }
 
-            Uri folderUri = new Uri(folderPath);
-            Uri fileAbsoluteUri = new Uri(fileAbsolutePath);
+            var folderUri = new Uri(folderPath);
+            var fileAbsoluteUri = new Uri(fileAbsolutePath);
 
             if (folderUri.Scheme != fileAbsoluteUri.Scheme) { return fileAbsolutePath; } // path can't be made relative.
 
-            Uri relativeUri = folderUri.MakeRelativeUri(fileAbsoluteUri);
+            var relativeUri = folderUri.MakeRelativeUri(fileAbsoluteUri);
             string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
 
             if (fileAbsoluteUri.Scheme.Equals("file", StringComparison.CurrentCultureIgnoreCase))

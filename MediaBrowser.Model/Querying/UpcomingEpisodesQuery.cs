@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Querying
 {
@@ -51,7 +51,7 @@ namespace MediaBrowser.Model.Querying
 
         public UpcomingEpisodesQuery()
         {
-            EnableImageTypes = new ImageType[] {};
+            EnableImageTypes = new ImageType[] { };
         }
     }
 }

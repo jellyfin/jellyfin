@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api

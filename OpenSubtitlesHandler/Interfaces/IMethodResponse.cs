@@ -1,4 +1,4 @@
-﻿/* This file is part of OpenSubtitles Handler
+/* This file is part of OpenSubtitles Handler
    A library that handle OpenSubtitles.org XML-RPC methods.
 
    Copyright © Ala Ibrahim Hadid 2013
@@ -17,7 +17,6 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using System;
-using System.ComponentModel;
 
 namespace OpenSubtitlesHandler
 {

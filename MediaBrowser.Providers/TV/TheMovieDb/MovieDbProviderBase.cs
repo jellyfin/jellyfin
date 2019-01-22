@@ -1,18 +1,16 @@
-﻿using MediaBrowser.Model.IO;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Providers.Movies;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Providers.Movies;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -36,10 +34,7 @@ namespace MediaBrowser.Providers.TV
             _logger = loggerFactory.CreateLogger(GetType().Name);
         }
 
-        protected ILogger Logger
-        {
-            get { return _logger; }
-        }
+        protected ILogger Logger => _logger;
 
         protected async Task<RootObject> GetEpisodeInfo(string seriesTmdbId, int season, int episodeNumber, string preferredMetadataLanguage,
             CancellationToken cancellationToken)

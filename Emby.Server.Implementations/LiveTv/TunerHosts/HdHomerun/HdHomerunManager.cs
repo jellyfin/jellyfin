@@ -1,14 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Controller.LiveTv;
-using System.Net;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -133,8 +132,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var receiveBuffer = new byte[8192];
             var response = await socket.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
 
-            string returnVal;
-            ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal);
+            ParseReturnMessage(response.Buffer, response.ReceivedBytes, out string returnVal);
 
             return string.Equals(returnVal, "none", StringComparison.OrdinalIgnoreCase);
         }
@@ -168,9 +166,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 var lockkeyMsg = CreateSetMessage(i, "lockkey", lockKeyString, null);
                 await tcpClient.SendToAsync(lockkeyMsg, 0, lockkeyMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
                 var response = await tcpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
-                string returnVal;
                 // parse response to make sure it worked
-                if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
+                if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out var returnVal))
                     continue;
 
                 var commandList = commands.GetCommands();
@@ -223,8 +220,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     await tcpClient.SendToAsync(channelMsg, 0, channelMsg.Length, new IpEndPointInfo(_remoteIp, HdHomeRunPort), cancellationToken).ConfigureAwait(false);
                     var response = await tcpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
                     // parse response to make sure it worked
-                    string returnVal;
-                    if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
+                    if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out string returnVal))
                     {
                         return;
                     }

@@ -1,4 +1,12 @@
-﻿using MediaBrowser.Common.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -6,23 +14,12 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
-using MediaBrowser.Providers.TV;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Extensions;
+using MediaBrowser.Providers.TV;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -49,15 +46,9 @@ namespace MediaBrowser.Providers.Music
             Current = this;
         }
 
-        public string Name
-        {
-            get { return ProviderName; }
-        }
+        public string Name => ProviderName;
 
-        public static string ProviderName
-        {
-            get { return "FanArt"; }
-        }
+        public static string ProviderName => "FanArt";
 
         public bool Supports(BaseItem item)
         {
@@ -170,7 +161,6 @@ namespace MediaBrowser.Providers.Music
                 if (!string.IsNullOrEmpty(url))
                 {
                     var likesString = i.likes;
-                    int likes;
 
                     var info = new RemoteImageInfo
                     {
@@ -183,7 +173,7 @@ namespace MediaBrowser.Providers.Music
                         Language = i.lang
                     };
 
-                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Integer, _usCulture, out likes))
+                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Integer, _usCulture, out var likes))
                     {
                         info.CommunityRating = likes;
                     }
@@ -195,10 +185,7 @@ namespace MediaBrowser.Providers.Music
             }).Where(i => i != null));
         }
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

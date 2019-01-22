@@ -66,7 +66,7 @@ namespace Mono.Nat.Pmp
 
         public override bool Equals(object obj)
         {
-            PmpNatDevice device = obj as PmpNatDevice;
+            var device = obj as PmpNatDevice;
             return (device == null) ? false : this.Equals(device);
         }
 

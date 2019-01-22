@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,10 +20,10 @@ namespace Rssdp.Infrastructure
         protected abstract void Dispose(bool disposing);
 
         /// <summary>
-        /// Throws and <see cref="System.ObjectDisposedException"/> if the <see cref="IsDisposed"/> property is true.
+        /// Throws and <see cref="ObjectDisposedException"/> if the <see cref="IsDisposed"/> property is true.
         /// </summary>
         /// <seealso cref="IsDisposed"/>
-        /// <exception cref="System.ObjectDisposedException">Thrown if the <see cref="IsDisposed"/> property is true.</exception>
+        /// <exception cref="ObjectDisposedException">Thrown if the <see cref="IsDisposed"/> property is true.</exception>
         /// <seealso cref="Dispose()"/>
         protected virtual void ThrowIfDisposed()
         {

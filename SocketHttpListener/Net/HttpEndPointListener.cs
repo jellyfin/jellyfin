@@ -1,21 +1,14 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
-using MediaBrowser.Model.Text;
-using SocketHttpListener.Primitives;
-using ProtocolType = MediaBrowser.Model.Net.ProtocolType;
-using SocketType = MediaBrowser.Model.Net.SocketType;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace SocketHttpListener.Net
 {
@@ -36,19 +29,19 @@ namespace SocketHttpListener.Net
         private bool _enableDualMode;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly ISocketFactory _socketFactory;
-        private readonly ITextEncoding _textEncoding;
         private readonly IStreamHelper _streamHelper;
         private readonly IFileSystem _fileSystem;
         private readonly IEnvironmentInfo _environment;
 
-        public HttpEndPointListener(HttpListener listener, IPAddress addr, int port, bool secure, X509Certificate cert, ILogger logger, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, IStreamHelper streamHelper, ITextEncoding textEncoding, IFileSystem fileSystem, IEnvironmentInfo environment)
+        public HttpEndPointListener(HttpListener listener, IPAddress addr, int port, bool secure, X509Certificate cert,
+            ILogger logger, ICryptoProvider cryptoProvider, ISocketFactory socketFactory, IStreamHelper streamHelper,
+            IFileSystem fileSystem, IEnvironmentInfo environment)
         {
             this._listener = listener;
             _logger = logger;
             _cryptoProvider = cryptoProvider;
             _socketFactory = socketFactory;
             _streamHelper = streamHelper;
-            _textEncoding = textEncoding;
             _fileSystem = fileSystem;
             _environment = environment;
 
@@ -64,13 +57,7 @@ namespace SocketHttpListener.Net
             CreateSocket();
         }
 
-        internal HttpListener Listener
-        {
-            get
-            {
-                return _listener;
-            }
-        }
+        internal HttpListener Listener => _listener;
 
         private void CreateSocket()
         {
@@ -172,7 +159,7 @@ namespace SocketHttpListener.Net
             }
             catch (Exception ex)
             {
-                HttpEndPointListener epl = (HttpEndPointListener)acceptEventArg.UserToken;
+                var epl = (HttpEndPointListener)acceptEventArg.UserToken;
 
                 epl._logger.LogError(ex, "Error in socket.AcceptAsync");
             }
@@ -188,7 +175,7 @@ namespace SocketHttpListener.Net
 
         private static async void ProcessAccept(SocketAsyncEventArgs args)
         {
-            HttpEndPointListener epl = (HttpEndPointListener)args.UserToken;
+            var epl = (HttpEndPointListener)args.UserToken;
 
             if (epl._closed)
             {
@@ -209,7 +196,7 @@ namespace SocketHttpListener.Net
                 return;
             }
 
-            if(accepted == null)
+            if (accepted == null)
             {
                 return;
             }
@@ -226,7 +213,7 @@ namespace SocketHttpListener.Net
                 var localEndPointString = accepted.LocalEndPoint == null ? string.Empty : accepted.LocalEndPoint.ToString();
                 //_logger.LogInformation("HttpEndPointListener Accepting connection from {0} to {1} secure connection requested: {2}", remoteEndPointString, localEndPointString, _secure);
 
-                HttpConnection conn = new HttpConnection(epl._logger, accepted, epl, epl._secure, epl._cert, epl._cryptoProvider, epl._streamHelper, epl._textEncoding, epl._fileSystem, epl._environment);
+                var conn = new HttpConnection(epl._logger, accepted, epl, epl._secure, epl._cert, epl._cryptoProvider, epl._streamHelper, epl._fileSystem, epl._environment);
 
                 await conn.Init().ConfigureAwait(false);
 
@@ -288,9 +275,8 @@ namespace SocketHttpListener.Net
 
         public bool BindContext(HttpListenerContext context)
         {
-            HttpListenerRequest req = context.Request;
-            ListenerPrefix prefix;
-            HttpListener listener = SearchListener(req.Url, out prefix);
+            var req = context.Request;
+            HttpListener listener = SearchListener(req.Url, out var prefix);
             if (listener == null)
                 return false;
 
@@ -323,7 +309,7 @@ namespace SocketHttpListener.Net
             if (host != null && host != "")
             {
                 Dictionary<ListenerPrefix, HttpListener> localPrefixes = _prefixes;
-                foreach (ListenerPrefix p in localPrefixes.Keys)
+                foreach (var p in localPrefixes.Keys)
                 {
                     string ppath = p.Path;
                     if (ppath.Length < bestLength)

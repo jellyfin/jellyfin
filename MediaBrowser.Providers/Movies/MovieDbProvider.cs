@@ -1,14 +1,3 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,13 +5,21 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Common;
-
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -89,10 +86,8 @@ namespace MediaBrowser.Providers.Movies
 
                 if (!string.IsNullOrWhiteSpace(obj.release_date))
                 {
-                    DateTime r;
-
                     // These dates are always in this exact format
-                    if (DateTime.TryParse(obj.release_date, _usCulture, DateTimeStyles.None, out r))
+                    if (DateTime.TryParse(obj.release_date, _usCulture, DateTimeStyles.None, out var r))
                     {
                         remoteResult.PremiereDate = r.ToUniversalTime();
                         remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
@@ -125,10 +120,7 @@ namespace MediaBrowser.Providers.Movies
             return movieDb.GetMetadata(id, cancellationToken);
         }
 
-        public string Name
-        {
-            get { return "TheMovieDb"; }
-        }
+        public string Name => "TheMovieDb";
 
         /// <summary>
         /// The _TMDB settings task
@@ -432,7 +424,7 @@ namespace MediaBrowser.Providers.Movies
             _lastRequestTicks = DateTime.UtcNow.Ticks;
 
             options.BufferContent = true;
-            options.UserAgent = "Emby/" + _appHost.ApplicationVersion;
+            options.UserAgent = _appHost.ApplicationUserAgent;
 
             return await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
         }
@@ -636,13 +628,7 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
-        public int Order
-        {
-            get
-            {
-                return 1;
-            }
-        }
+        public int Order => 1;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

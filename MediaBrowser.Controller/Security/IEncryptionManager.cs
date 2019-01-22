@@ -1,4 +1,3 @@
-﻿
 namespace MediaBrowser.Controller.Security
 {
     public interface IEncryptionManager

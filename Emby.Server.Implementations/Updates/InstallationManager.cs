@@ -11,13 +11,13 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
-using MediaBrowser.Controller.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Updates
 {
@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.Updates
         private readonly string _packageRuntime;
 
         public InstallationManager(
-            ILogger logger,
+            ILoggerFactory loggerFactory,
             IApplicationHost appHost,
             IApplicationPaths appPaths,
             IHttpClient httpClient,
@@ -131,9 +131,9 @@ namespace Emby.Server.Implementations.Updates
             ICryptoProvider cryptographyProvider,
             string packageRuntime)
         {
-            if (logger == null)
+            if (loggerFactory == null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             CurrentInstallations = new List<Tuple<InstallationInfo, CancellationTokenSource>>();
@@ -147,7 +147,7 @@ namespace Emby.Server.Implementations.Updates
             _fileSystem = fileSystem;
             _cryptographyProvider = cryptographyProvider;
             _packageRuntime = packageRuntime;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(InstallationManager));
         }
 
         private static Version GetPackageVersion(PackageVersionInfo version)
@@ -292,9 +292,7 @@ namespace Emby.Server.Implementations.Updates
                 return true;
             }
 
-            Version requiredVersion;
-
-            return Version.TryParse(packageVersionInfo.requiredVersionStr, out requiredVersion) && currentServerVersion >= requiredVersion;
+            return Version.TryParse(packageVersionInfo.requiredVersionStr, out var requiredVersion) && currentServerVersion >= requiredVersion;
         }
 
         /// <summary>
@@ -390,7 +388,7 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">package</exception>
+        /// <exception cref="ArgumentNullException">package</exception>
         public async Task InstallPackage(PackageVersionInfo package, bool isPlugin, IProgress<double> progress, CancellationToken cancellationToken)
         {
             if (package == null)
@@ -601,7 +599,7 @@ namespace Emby.Server.Implementations.Updates
         /// Uninstalls a plugin
         /// </summary>
         /// <param name="plugin">The plugin.</param>
-        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         public void UninstallPlugin(IPlugin plugin)
         {
             plugin.OnUninstalling();

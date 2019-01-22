@@ -1,13 +1,12 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
-using Emby.Naming.Video;
 using System;
 using System.IO;
 using System.Linq;
+using Emby.Naming.Video;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
@@ -50,7 +49,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
 
             // If the path is a file check for a matching extensions
-            var parser = new Emby.Naming.Video.VideoResolver(namingOptions);
+            var parser = new VideoResolver(namingOptions);
 
             if (args.IsDirectory)
             {

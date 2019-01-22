@@ -1,9 +1,7 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Configuration;
 using System.Collections.Generic;
 using System.IO;
-
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.MediaEncoding.Configuration

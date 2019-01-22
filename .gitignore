@@ -263,3 +263,4 @@ deployment/**/pkg-dist/
 deployment/**/pkg-dist-tmp/
 deployment/collect-dist/
 
+jellyfin_version.ini

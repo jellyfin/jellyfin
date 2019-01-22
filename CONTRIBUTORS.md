@@ -13,6 +13,7 @@
  - [LeoVerto](https://github.com/LeoVerto)
  - [grafixeyehero](https://github.com/grafixeyehero)
  - [cvium](https://github.com/cvium)
+ - [wtayl0r](https://github.com/wtayl0r)
  
 # Emby Contributors
 

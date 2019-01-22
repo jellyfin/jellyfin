@@ -1,8 +1,8 @@
-﻿using Emby.Naming.Common;
-using Emby.Naming.Video;
 using System;
 using System.IO;
 using System.Linq;
+using Emby.Naming.Common;
+using Emby.Naming.Video;
 
 namespace Emby.Naming.TV
 {
@@ -22,17 +22,17 @@ namespace Emby.Naming.TV
                 throw new ArgumentNullException(nameof(path));
             }
 
-            var isStub = false;
+            bool isStub = false;
             string container = null;
             string stubType = null;
 
             if (!IsDirectory)
             {
-                var extension = Path.GetExtension(path) ?? string.Empty;
+                var extension = Path.GetExtension(path);
                 // Check supported extensions
                 if (!_options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
-                    var stubResult = new StubResolver(_options).ResolveFile(path);
+                    var stubResult = StubResolver.ResolveFile(path, _options);
 
                     isStub = stubResult.IsStub;
 

@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.System;
+using Microsoft.Extensions.Logging;
 
 namespace SocketHttpListener.Net
 {
@@ -228,7 +226,7 @@ namespace SocketHttpListener.Net
         {
             if (_closed)
             {
-                HttpStreamAsyncResult ares = new HttpStreamAsyncResult(this);
+                var ares = new HttpStreamAsyncResult(this);
                 ares._callback = cback;
                 ares._state = state;
                 ares.Complete();

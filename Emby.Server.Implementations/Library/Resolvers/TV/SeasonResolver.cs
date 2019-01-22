@@ -1,10 +1,9 @@
 using System.Globalization;
+using Emby.Naming.TV;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
-using Emby.Naming.Common;
-using Emby.Naming.TV;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.TV
@@ -64,7 +63,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
                 if (!season.IndexNumber.HasValue || !seasonParserResult.IsSeasonFolder)
                 {
-                    var resolver = new Emby.Naming.TV.EpisodeResolver(namingOptions);
+                    var resolver = new Naming.TV.EpisodeResolver(namingOptions);
 
                     var folderName = System.IO.Path.GetFileName(path);
                     var testPath = "\\\\test\\" + folderName;

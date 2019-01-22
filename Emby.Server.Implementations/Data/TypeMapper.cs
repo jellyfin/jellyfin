@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
-using MediaBrowser.Model.Reflection;
 using System.Linq;
+using MediaBrowser.Model.Reflection;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="typeName">Name of the type.</param>
         /// <returns>Type.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public Type GetType(string typeName)
         {
             if (string.IsNullOrEmpty(typeName))

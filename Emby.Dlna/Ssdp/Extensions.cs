@@ -1,6 +1,3 @@
-﻿using System;
-using System.Net;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Emby.Dlna.Ssdp

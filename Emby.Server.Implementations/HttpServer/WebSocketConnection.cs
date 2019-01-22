@@ -1,15 +1,15 @@
-﻿using System.Text;
-using MediaBrowser.Controller.Net;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
-using System;
+﻿using System;
+using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Text;
-using System.Net.WebSockets;
 using Emby.Server.Implementations.Net;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
+using UtfUnknown;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -68,7 +68,6 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         /// <value>The query string.</value>
         public QueryParamCollection QueryString { get; set; }
-        private readonly ITextEncoding _textEncoding;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
@@ -77,8 +76,8 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
-        /// <exception cref="System.ArgumentNullException">socket</exception>
-        public WebSocketConnection(IWebSocket socket, string remoteEndPoint, IJsonSerializer jsonSerializer, ILogger logger, ITextEncoding textEncoding)
+        /// <exception cref="ArgumentNullException">socket</exception>
+        public WebSocketConnection(IWebSocket socket, string remoteEndPoint, IJsonSerializer jsonSerializer, ILogger logger)
         {
             if (socket == null)
             {
@@ -110,7 +109,6 @@ namespace Emby.Server.Implementations.HttpServer
 
             RemoteEndPoint = remoteEndPoint;
             _logger = logger;
-            _textEncoding = textEncoding;
 
             socket.Closed += socket_Closed;
         }
@@ -132,8 +130,7 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 return;
             }
-
-            var charset = _textEncoding.GetDetectedEncodingName(bytes, bytes.Length, null, false);
+            var charset = CharsetDetector.DetectFromBytes(bytes).Detected?.EncodingName;
 
             if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
             {
@@ -141,7 +138,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             else
             {
-                OnReceiveInternal(_textEncoding.GetASCIIEncoding().GetString(bytes, 0, bytes.Length));
+                OnReceiveInternal(Encoding.ASCII.GetString(bytes, 0, bytes.Length));
             }
         }
 
@@ -161,7 +158,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             var bytes = memory.Slice(0, length).ToArray();
 
-            var charset = _textEncoding.GetDetectedEncodingName(bytes, bytes.Length, null, false);
+            var charset = CharsetDetector.DetectFromBytes(bytes).Detected?.EncodingName;
 
             if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
             {
@@ -169,7 +166,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             else
             {
-                OnReceiveInternal(_textEncoding.GetASCIIEncoding().GetString(bytes, 0, bytes.Length));
+                OnReceiveInternal(Encoding.ASCII.GetString(bytes, 0, bytes.Length));
             }
         }
 
@@ -215,7 +212,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">message</exception>
+        /// <exception cref="ArgumentNullException">message</exception>
         public Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
         {
             if (message == null)

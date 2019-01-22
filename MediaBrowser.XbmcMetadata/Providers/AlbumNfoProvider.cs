@@ -1,14 +1,12 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Providers;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.XbmcMetadata.Parsers;
 using System.IO;
 using System.Threading;
-
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
+using MediaBrowser.XbmcMetadata.Parsers;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Providers
 {

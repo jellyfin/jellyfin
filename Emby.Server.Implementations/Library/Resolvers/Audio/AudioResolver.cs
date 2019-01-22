@@ -1,16 +1,14 @@
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Entities;
 using System;
-using MediaBrowser.Controller.Entities;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Controller.Providers;
-using System.Collections.Generic;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Extensions;
-using Emby.Naming.Video;
 using Emby.Naming.AudioBook;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Audio
 {

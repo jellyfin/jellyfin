@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Dlna;
 using System;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Model.MediaInfo
 {

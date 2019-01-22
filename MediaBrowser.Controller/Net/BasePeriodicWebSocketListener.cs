@@ -1,12 +1,12 @@
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Threading;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.WebSockets;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
+using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Net
@@ -83,13 +83,7 @@ namespace MediaBrowser.Controller.Net
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        protected virtual bool SendOnTimer
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected virtual bool SendOnTimer => false;
 
         protected virtual void ParseMessageParams(string[] values)
         {

@@ -5,22 +5,21 @@ using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
-using MediaBrowser.Controller.Library;
 
 namespace Emby.Server.Implementations.Data
 {
     public class SqliteUserDataRepository : BaseSqliteRepository, IUserDataRepository
     {
-        private readonly IFileSystem _fileSystem;
-
-        public SqliteUserDataRepository(ILogger logger, IApplicationPaths appPaths, IFileSystem fileSystem)
-            : base(logger)
+        public SqliteUserDataRepository(
+            ILoggerFactory loggerFactory,
+            IApplicationPaths appPaths)
+            : base(loggerFactory.CreateLogger(nameof(SqliteUserDataRepository)))
         {
-            _fileSystem = fileSystem;
             DbFilePath = Path.Combine(appPaths.DataPath, "library.db");
         }
 
@@ -110,7 +109,7 @@ namespace Emby.Server.Implementations.Data
 
         private List<Guid> GetAllUserIdsWithUserData(IDatabaseConnection db)
         {
-            List<Guid> list = new List<Guid>();
+            var list = new List<Guid>();
 
             using (var statement = PrepareStatement(db, "select DISTINCT UserId from UserData where UserId not null"))
             {
@@ -271,7 +270,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="internalUserId">The user id.</param>
         /// <param name="key">The key.</param>
         /// <returns>Task{UserItemData}.</returns>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// userId
         /// or
         /// key

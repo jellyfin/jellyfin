@@ -1,6 +1,5 @@
-﻿using System.IO;
+using System.IO;
 using MediaBrowser.Model.IO;
-using SharpCompress.Archives.Rar;
 using SharpCompress.Archives.SevenZip;
 using SharpCompress.Archives.Tar;
 using SharpCompress.Common;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,9 +8,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
@@ -36,22 +34,10 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPlayedStatus
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPlayedStatus => false;
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsInheritedParentImages => false;
 
         public override bool CanDelete()
         {
@@ -117,8 +103,7 @@ namespace MediaBrowser.Controller.Entities
         {
             lock (LibraryOptions)
             {
-                LibraryOptions options;
-                if (!LibraryOptions.TryGetValue(path, out options))
+                if (!LibraryOptions.TryGetValue(path, out var options))
                 {
                     options = LoadLibraryOptions(path);
                     LibraryOptions[path] = options;
@@ -160,22 +145,10 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The display prefs id.</value>
         [IgnoreDataMember]
-        public override Guid DisplayPreferencesId
-        {
-            get
-            {
-                return Id;
-            }
-        }
+        public override Guid DisplayPreferencesId => Id;
 
         [IgnoreDataMember]
-        public override string[] PhysicalLocations
-        {
-            get
-            {
-                return PhysicalLocationsList;
-            }
-        }
+        public override string[] PhysicalLocations => PhysicalLocationsList;
 
         public override bool IsSaveLocalMetadataEnabled()
         {
@@ -339,10 +312,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The actual children.</value>
         [IgnoreDataMember]
-        public override IEnumerable<BaseItem> Children
-        {
-            get { return GetActualChildren(); }
-        }
+        public override IEnumerable<BaseItem> Children => GetActualChildren();
 
         public IEnumerable<BaseItem> GetActualChildren()
         {
@@ -388,12 +358,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPeople => false;
     }
 }

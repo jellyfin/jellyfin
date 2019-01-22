@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Dlna;
-using System.Xml.Serialization;
+using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Profiles
 {

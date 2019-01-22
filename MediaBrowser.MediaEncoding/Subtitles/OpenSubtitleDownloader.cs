@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -83,10 +83,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return _encryption.DecryptString(password.Substring(2));
         }
 
-        public string Name
-        {
-            get { return "Open Subtitles"; }
-        }
+        public string Name => "Open Subtitles";
 
         private SubtitleOptions GetOptions()
         {

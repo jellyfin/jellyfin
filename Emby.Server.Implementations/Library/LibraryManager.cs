@@ -1,23 +1,3 @@
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Querying;
-using Emby.Naming.Audio;
-using Emby.Naming.Common;
-using Emby.Naming.TV;
-using Emby.Naming.Video;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -27,26 +7,42 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Naming.Audio;
+using Emby.Naming.Common;
+using Emby.Naming.TV;
+using Emby.Naming.Video;
 using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
+using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Model.Channels;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Tasks;
+using MediaBrowser.Providers.MediaInfo;
+using Microsoft.Extensions.Logging;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
-using MediaBrowser.Common.Configuration;
-
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Tasks;
-using Emby.Server.Implementations.Playlists;
-using MediaBrowser.Providers.MediaInfo;
-using MediaBrowser.Controller;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -159,9 +155,19 @@ namespace Emby.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public LibraryManager(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataManager userDataRepository, Func<ILibraryMonitor> libraryMonitorFactory, IFileSystem fileSystem, Func<IProviderManager> providerManagerFactory, Func<IUserViewManager> userviewManager)
+        public LibraryManager(
+            IServerApplicationHost appHost,
+            ILoggerFactory loggerFactory,
+            ITaskManager taskManager,
+            IUserManager userManager,
+            IServerConfigurationManager configurationManager,
+            IUserDataManager userDataRepository,
+            Func<ILibraryMonitor> libraryMonitorFactory,
+            IFileSystem fileSystem,
+            Func<IProviderManager> providerManagerFactory,
+            Func<IUserViewManager> userviewManager)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(LibraryManager));
             _taskManager = taskManager;
             _userManager = userManager;
             ConfigurationManager = configurationManager;
@@ -391,7 +397,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     try
                     {
-                         _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
+                        _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
                         if (fileSystemInfo.IsDirectory)
                         {
                             _fileSystem.DeleteDirectory(fileSystemInfo.FullName, true);
@@ -436,8 +442,7 @@ namespace Emby.Server.Implementations.Library
                 ItemRepository.DeleteItem(child.Id, CancellationToken.None);
             }
 
-            BaseItem removed;
-            _libraryItemsCache.TryRemove(item.Id, out removed);
+            _libraryItemsCache.TryRemove(item.Id, out BaseItem removed);
 
             ReportItemRemoved(item, parent);
         }
@@ -715,14 +720,14 @@ namespace Emby.Server.Implementations.Library
         /// Creates the root media folder
         /// </summary>
         /// <returns>AggregateFolder.</returns>
-        /// <exception cref="System.InvalidOperationException">Cannot create the root folder until plugins have loaded</exception>
+        /// <exception cref="InvalidOperationException">Cannot create the root folder until plugins have loaded</exception>
         public AggregateFolder CreateRootFolder()
         {
             var rootFolderPath = ConfigurationManager.ApplicationPaths.RootFolderPath;
 
             _fileSystem.CreateDirectory(rootFolderPath);
 
-            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath))).DeepCopy<Folder,AggregateFolder>();
+            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath))).DeepCopy<Folder, AggregateFolder>();
 
             // In case program data folder was moved
             if (!string.Equals(rootFolder.Path, rootFolderPath, StringComparison.Ordinal))
@@ -791,7 +796,7 @@ namespace Emby.Server.Implementations.Library
 
                         if (tmpItem == null)
                         {
-                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath))).DeepCopy<Folder,UserRootFolder>();
+                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath))).DeepCopy<Folder, UserRootFolder>();
                         }
 
                         // In case program data folder was moved
@@ -909,12 +914,12 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>Task{Year}.</returns>
-        /// <exception cref="System.ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public Year GetYear(int value)
         {
             if (value <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(value),"Years less than or equal to 0 are invalid.");
+                throw new ArgumentOutOfRangeException(nameof(value), "Years less than or equal to 0 are invalid.");
             }
 
             var name = value.ToString(CultureInfo.InvariantCulture);
@@ -1237,7 +1242,7 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id</exception>
         public BaseItem GetItemById(Guid id)
         {
             if (id.Equals(Guid.Empty))
@@ -1245,9 +1250,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(id));
             }
 
-            BaseItem item;
-
-            if (LibraryItemsCache.TryGetValue(id, out item))
+            if (LibraryItemsCache.TryGetValue(id, out BaseItem item))
             {
                 return item;
             }
@@ -2079,7 +2082,7 @@ namespace Emby.Server.Implementations.Library
 
         public string GetConfiguredContentType(BaseItem item, bool inheritConfiguredPath)
         {
-            ICollectionFolder collectionFolder = item as ICollectionFolder;
+            var collectionFolder = item as ICollectionFolder;
             if (collectionFolder != null)
             {
                 return collectionFolder.CollectionType;
@@ -2375,7 +2378,7 @@ namespace Emby.Server.Implementations.Library
             string videoPath,
             string[] files)
         {
-             new SubtitleResolver(BaseItem.LocalizationManager, _fileSystem).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
+            new SubtitleResolver(BaseItem.LocalizationManager, _fileSystem).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
         }
 
         public bool IsVideoFile(string path, LibraryOptions libraryOptions)
@@ -2421,11 +2424,11 @@ namespace Emby.Server.Implementations.Library
 
             var episodeInfo = episode.IsFileProtocol ?
                 resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) :
-                new Emby.Naming.TV.EpisodeInfo();
+                new Naming.TV.EpisodeInfo();
 
             if (episodeInfo == null)
             {
-                episodeInfo = new Emby.Naming.TV.EpisodeInfo();
+                episodeInfo = new Naming.TV.EpisodeInfo();
             }
 
             var changed = false;
@@ -2589,7 +2592,7 @@ namespace Emby.Server.Implementations.Library
                     video.ParentId = Guid.Empty;
                     video.OwnerId = owner.Id;
                     video.ExtraType = ExtraType.Trailer;
-                    video.TrailerTypes = new [] { TrailerType.LocalTrailer };
+                    video.TrailerTypes = new[] { TrailerType.LocalTrailer };
 
                     return video;
 

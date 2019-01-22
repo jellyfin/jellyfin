@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             try
             {
-                await _sessionManager.SendMessageToUserSessions<TimerEventInfo>(users, name, info, CancellationToken.None);
+                await _sessionManager.SendMessageToUserSessions(users, name, info, CancellationToken.None);
             }
             catch (ObjectDisposedException)
             {

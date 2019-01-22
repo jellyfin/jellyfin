@@ -91,7 +91,7 @@ namespace Mono.Nat.Upnp
 
         protected XmlWriter CreateWriter(StringBuilder sb)
         {
-            XmlWriterSettings settings = new XmlWriterSettings();
+            var settings = new XmlWriterSettings();
             settings.ConformanceLevel = ConformanceLevel.Fragment;
             return XmlWriter.Create(sb, settings);
         }

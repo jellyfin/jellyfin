@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Emby.Server.Implementations.AppBase;
@@ -8,8 +8,8 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Configuration
 {
@@ -119,7 +119,7 @@ namespace Emby.Server.Implementations.Configuration
         /// Replaces the configuration.
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
-        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <exception cref="DirectoryNotFoundException"></exception>
         public override void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
             var newConfig = (ServerConfiguration)newConfiguration;
@@ -137,7 +137,7 @@ namespace Emby.Server.Implementations.Configuration
         /// Validates the SSL certificate.
         /// </summary>
         /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <exception cref="DirectoryNotFoundException"></exception>
         private void ValidateSslCertificate(BaseApplicationConfiguration newConfig)
         {
             var serverConfig = (ServerConfiguration)newConfig;
@@ -159,7 +159,7 @@ namespace Emby.Server.Implementations.Configuration
         /// Validates the metadata path.
         /// </summary>
         /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <exception cref="DirectoryNotFoundException"></exception>
         private void ValidateMetadataPath(ServerConfiguration newConfig)
         {
             var newPath = newConfig.MetadataPath;

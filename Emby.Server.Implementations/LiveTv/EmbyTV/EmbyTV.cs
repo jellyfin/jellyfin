@@ -8,36 +8,36 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using Emby.Server.Implementations.Library;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.LiveTv;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Diagnostics;
-using MediaBrowser.Model.System;
-using MediaBrowser.Model.Threading;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Reflection;
-using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.MediaInfo;
-using Emby.Server.Implementations.Library;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.System;
+using MediaBrowser.Model.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -395,8 +395,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private async Task<EpgChannelData> GetEpgChannels(IListingsProvider provider, ListingsProviderInfo info, bool enableCache, CancellationToken cancellationToken)
         {
-            EpgChannelData result;
-            if (!enableCache || !_epgChannels.TryGetValue(info.Id, out result))
+            if (!enableCache || !_epgChannels.TryGetValue(info.Id, out var result))
             {
                 var channels = await provider.GetChannels(info, cancellationToken).ConfigureAwait(false);
 
@@ -648,9 +647,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     TimerCancelled(this, new GenericEventArgs<string>(timerId));
                 }
             }
-            ActiveRecordingInfo activeRecordingInfo;
 
-            if (_activeRecordings.TryGetValue(timerId, out activeRecordingInfo))
+            if (_activeRecordings.TryGetValue(timerId, out var activeRecordingInfo))
             {
                 activeRecordingInfo.Timer = timer;
                 activeRecordingInfo.CancellationTokenSource.Cancel();
@@ -817,8 +815,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             // Only update if not currently active
-            ActiveRecordingInfo activeRecordingInfo;
-            if (!_activeRecordings.TryGetValue(updatedTimer.Id, out activeRecordingInfo))
+            if (!_activeRecordings.TryGetValue(updatedTimer.Id, out var activeRecordingInfo))
             {
                 existingTimer.PrePaddingSeconds = updatedTimer.PrePaddingSeconds;
                 existingTimer.PostPaddingSeconds = updatedTimer.PostPaddingSeconds;
@@ -860,9 +857,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public string GetActiveRecordingPath(string id)
         {
-            ActiveRecordingInfo info;
-
-            if (_activeRecordings.TryGetValue(id, out info))
+            if (_activeRecordings.TryGetValue(id, out var info))
             {
                 return info.Path;
             }
@@ -1428,8 +1423,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             TriggerRefresh(recordPath);
             _libraryMonitor.ReportFileSystemChangeComplete(recordPath, false);
 
-            ActiveRecordingInfo removed;
-            _activeRecordings.TryRemove(timer.Id, out removed);
+            _activeRecordings.TryRemove(timer.Id, out var removed);
 
             if (recordingStatus != RecordingStatus.Completed && DateTime.UtcNow < timer.EndDate && timer.RetryCount < 10)
             {
@@ -1990,11 +1984,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     CloseOutput = false
                 };
 
-                using (XmlWriter writer = XmlWriter.Create(stream, settings))
+                using (var writer = XmlWriter.Create(stream, settings))
                 {
                     writer.WriteStartDocument(true);
                     writer.WriteStartElement("tvshow");
-
                     string id;
                     if (timer.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out id))
                     {
@@ -2057,7 +2050,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 var isSeriesEpisode = timer.IsProgramSeries;
 
-                using (XmlWriter writer = XmlWriter.Create(stream, settings))
+                using (var writer = XmlWriter.Create(stream, settings))
                 {
                     writer.WriteStartDocument(true);
 
@@ -2419,12 +2412,42 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     if (updateTimerSettings)
                     {
-                        existingTimer.KeepUntil = seriesTimer.KeepUntil;
-                        existingTimer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
-                        existingTimer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
-                        existingTimer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
-                        existingTimer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
-                        existingTimer.Priority = seriesTimer.Priority;
+                        // Only update if not currently active - test both new timer and existing in case Id's are different
+                        // Id's could be different if the timer was created manually prior to series timer creation
+                        if (!_activeRecordings.TryGetValue(timer.Id, out var activeRecordingInfo) && !_activeRecordings.TryGetValue(existingTimer.Id, out activeRecordingInfo))
+                        {
+                            UpdateExistingTimerWithNewMetadata(existingTimer, timer);
+
+                            // Needed by ShouldCancelTimerForSeriesTimer
+                            timer.IsManual = existingTimer.IsManual;
+
+                            if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
+                            {
+                                existingTimer.Status = RecordingStatus.Cancelled;
+                            }
+                            else if (!existingTimer.IsManual)
+                            {
+                                existingTimer.Status = RecordingStatus.New;
+                            }
+
+                            if (existingTimer.Status != RecordingStatus.Cancelled)
+                            {
+                                enabledTimersForSeries.Add(existingTimer);
+                            }
+
+                            if (updateTimerSettings)
+                            {
+                                existingTimer.KeepUntil = seriesTimer.KeepUntil;
+                                existingTimer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
+                                existingTimer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
+                                existingTimer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
+                                existingTimer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
+                                existingTimer.Priority = seriesTimer.Priority;
+                            }
+
+                            existingTimer.SeriesTimerId = seriesTimer.Id;
+                            _timerProvider.Update(existingTimer);
+                        }
                     }
 
                     existingTimer.SeriesTimerId = seriesTimer.Id;
@@ -2497,7 +2520,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (string.IsNullOrWhiteSpace(channelId) && !parent.ChannelId.Equals(Guid.Empty))
             {
-                if (!tempChannelCache.TryGetValue(parent.ChannelId, out var channel))
+                if (!tempChannelCache.TryGetValue(parent.ChannelId, out LiveTvChannel channel))
                 {
                     channel = _libraryManager.GetItemList(new InternalItemsQuery
                     {
@@ -2556,7 +2579,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (!programInfo.ChannelId.Equals(Guid.Empty))
             {
-                if (!tempChannelCache.TryGetValue(programInfo.ChannelId, out var channel))
+                if (!tempChannelCache.TryGetValue(programInfo.ChannelId, out LiveTvChannel channel))
                 {
                     channel = _libraryManager.GetItemList(new InternalItemsQuery
                     {

@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Providers;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Xml;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
@@ -28,9 +28,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(number))
                         {
-                            int num;
-
-                            if (int.TryParse(number, NumberStyles.Integer, CultureInfo.InvariantCulture, out num))
+                            if (int.TryParse(number, NumberStyles.Integer, CultureInfo.InvariantCulture, out var num))
                             {
                                 item.IndexNumber = num;
                             }

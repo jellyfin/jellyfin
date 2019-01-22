@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using Emby.Dlna.Common;
 using Emby.Dlna.Service;
-using System.Collections.Generic;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
 {

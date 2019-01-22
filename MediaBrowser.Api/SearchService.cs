@@ -1,17 +1,16 @@
-﻿using System.Linq;
+using System;
+using System.Linq;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Services;
-using System;
 
 namespace MediaBrowser.Api
 {

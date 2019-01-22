@@ -1,24 +1,24 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.LiveTv;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
-using System.IO;
-using MediaBrowser.Controller.Library;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
@@ -135,9 +135,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             var protocol = _mediaSourceManager.GetPathProtocol(path);
 
-            Uri uri;
             var isRemote = true;
-            if (Uri.TryCreate(path, UriKind.Absolute, out uri))
+            if (Uri.TryCreate(path, UriKind.Absolute, out var uri))
             {
                 isRemote = !_networkManager.IsInLocalNetwork(uri.Host);
             }

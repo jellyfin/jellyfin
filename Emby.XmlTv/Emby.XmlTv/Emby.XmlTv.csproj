@@ -1,4 +1,3 @@
-﻿
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
@@ -7,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\SharedVersion.cs" Link="SharedVersion.cs" />
+    <Compile Include="..\..\SharedVersion.cs" />
   </ItemGroup>
 
 </Project>

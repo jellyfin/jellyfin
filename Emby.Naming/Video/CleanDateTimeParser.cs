@@ -1,9 +1,9 @@
 using System;
-using Emby.Naming.Common;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Emby.Naming.Common;
 
 namespace Emby.Naming.Video
 {
@@ -71,8 +71,7 @@ namespace Emby.Naming.Video
 
             if (match.Success && match.Groups.Count == 4)
             {
-                int year;
-                if (match.Groups[1].Success && match.Groups[2].Success && int.TryParse(match.Groups[2].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out year))
+                if (match.Groups[1].Success && match.Groups[2].Success && int.TryParse(match.Groups[2].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
                 {
                     name = match.Groups[1].Value;
                     result.Year = year;
