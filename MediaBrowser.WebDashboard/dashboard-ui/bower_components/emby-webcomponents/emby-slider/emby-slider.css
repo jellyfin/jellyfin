@@ -10,7 +10,7 @@ _:-ms-input-placeholder {
     -moz-appearance: none;
     -ms-appearance: none;
     appearance: none;
-    height: 150%;/*150% is needed, else ie and edge won't display the thumb properly*/
+    height: .2em;
     background: 0 0;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -42,13 +42,11 @@ _:-ms-input-placeholder {
 
 .mdl-slider::-moz-range-track {
     background: #444;
-    border: none;
-    width: calc(100% - 20px);
+    border: none
 }
 
 .mdl-slider::-moz-range-progress {
-    background: #00a4dc;
-    width: calc(100% - 20px);
+    background: #00a4dc
 }
 
 .mdl-slider::-ms-track {
@@ -82,10 +80,10 @@ _:-ms-input-placeholder {
 }
 
 .mdl-slider-hoverthumb::-webkit-slider-thumb {
+    margin-left: -.12em;
     -webkit-transform: scale(.7, .7);
     transform: scale(.7, .7)
 }
-
 
 .mdl-slider:hover::-webkit-slider-thumb {
     -webkit-transform: none;
@@ -98,19 +96,13 @@ _:-ms-input-placeholder {
 
 .mdl-slider::-moz-range-thumb {
     -moz-appearance: none;
-    width: 0.9em;
-    height: 0.9em;
+    width: 1.8em;
+    height: 1.8em;
     box-sizing: border-box;
     border-radius: 50%;
     background: #00a4dc;
-    border: none;
-    transform: Scale(1.4, 1.4);
+    border: none
 }
-
-.mdl-slider:hover::-moz-range-thumb {
-    transform: scale(2, 2)
-}
-
 
 .mdl-slider::-ms-thumb {
     -webkit-appearance: none;
@@ -124,11 +116,12 @@ _:-ms-input-placeholder {
 }
 
 .mdl-slider-hoverthumb::-ms-thumb {
+    margin-left: -.4em;
     transform: scale(.5, .5)
 }
 
 .mdl-slider:hover::-ms-thumb {
-    transform: scale(.9, .9)
+    transform: none
 }
 
 .mdl-slider[disabled]::-webkit-slider-thumb {
@@ -164,20 +157,11 @@ _:-ms-input-placeholder {
     flex-direction: row
 }
 
-.mdl-slider-background-flex-container {
-    padding-left: 10px;
-    padding-right: 10px;
-    width: 100%;
-    box-sizing: border-box;
-    margin-top: -.05em;
-    top: 50%;
-    position: absolute;
-}
-
 .mdl-slider-background-flex {
     background: #333;
+    position: absolute;
     height: .2em;
-    margin-top: -.08em;
+    margin-top: -.1em;
     width: 100%;
     top: 50%;
     left: 0;
@@ -186,7 +170,7 @@ _:-ms-input-placeholder {
     display: flex;
     overflow: hidden;
     border: 0;
-    padding: 0;
+    padding: 0
 }
 
 .mdl-slider-background-flex-inner {
