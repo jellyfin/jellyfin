@@ -1,4 +1,4 @@
-ARG DOTNET_VERSION=2.2
+ARG DOTNET_VERSION=3.0
 
 
 FROM microsoft/dotnet:${DOTNET_VERSION}-sdk-stretch-arm32v7 as builder
