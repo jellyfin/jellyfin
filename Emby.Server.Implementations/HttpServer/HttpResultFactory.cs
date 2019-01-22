@@ -535,7 +535,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             var contentType = options.ContentType;
             var etag = requestContext.Headers.Get("If-None-Match");
-            var cacheKey = etag != null ? new Guid(etag.Trim("\"")) : Guid.Empty;
+            var cacheKey = etag != null ? new Guid(etag.Trim('\"')) : Guid.Empty;
             if (!cacheKey.Equals(Guid.Empty))
             {
                 var key = cacheKey.ToString("N");
