@@ -182,6 +182,7 @@ fi
 - PR646: Fix infinite loop bug on subtitle.m3u8 request
 - PR655: Support trying local branches in submodule
 - PR661: Fix NullRef from progress report
+- PR666: Add cross-platform build for arm64
 - jellyfin-web:
 - PR1: Change webcomponents to non-minified version
 - PR4: Fix user profile regression
