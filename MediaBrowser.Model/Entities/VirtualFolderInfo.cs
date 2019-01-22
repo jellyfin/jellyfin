@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Model.Configuration;
 using System;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Model.Entities
 {

@@ -1,21 +1,19 @@
-﻿using MediaBrowser.Common;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.LiveTv;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Extensions;
-using System.Collections.Generic;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.LiveTv;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv
 {
@@ -28,11 +26,16 @@ namespace Emby.Server.Implementations.LiveTv
         private readonly IApplicationHost _appHost;
         private readonly ILibraryManager _libraryManager;
 
-        public LiveTvDtoService(IDtoService dtoService, IImageProcessor imageProcessor, ILogger logger, IApplicationHost appHost, ILibraryManager libraryManager)
+        public LiveTvDtoService(
+            IDtoService dtoService,
+            IImageProcessor imageProcessor,
+            ILoggerFactory loggerFactory,
+            IApplicationHost appHost,
+            ILibraryManager libraryManager)
         {
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(LiveTvDtoService));
             _appHost = appHost;
             _libraryManager = libraryManager;
         }
@@ -321,6 +324,7 @@ namespace Emby.Server.Implementations.LiveTv
                     }
                     catch (Exception ex)
                     {
+                        _logger.LogDebug(ex, "GetImageCacheTag raised an exception in LiveTvDtoService.FillImages.");
                     }
                 }
 
@@ -331,10 +335,10 @@ namespace Emby.Server.Implementations.LiveTv
                     {
                         try
                         {
-                            dto.ParentBackdropImageTags = new string[]
-                        {
-                                _imageProcessor.GetImageCacheTag(program, image)
-                        };
+                            dto.ParentBackdropImageTags = new[]
+                            {
+                                    _imageProcessor.GetImageCacheTag(program, image)
+                            };
                             dto.ParentBackdropItemId = program.Id.ToString("N");
                         }
                         catch (Exception ex)

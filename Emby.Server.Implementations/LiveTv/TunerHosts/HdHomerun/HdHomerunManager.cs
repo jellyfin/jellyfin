@@ -1,14 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Controller.LiveTv;
-using System.Net;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -37,10 +36,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var commands = new List<Tuple<string, string>>();
 
-            if (!String.IsNullOrEmpty(_channel))
+            if (!string.IsNullOrEmpty(_channel))
                 commands.Add(Tuple.Create("channel", _channel));
 
-            if (!String.IsNullOrEmpty(_program))
+            if (!string.IsNullOrEmpty(_program))
                 commands.Add(Tuple.Create("program", _program));
             return commands;
         }
@@ -61,11 +60,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var commands = new List<Tuple<string, string>>();
 
-            if (!String.IsNullOrEmpty(_channel))
+            if (!string.IsNullOrEmpty(_channel))
             {
                 if (!string.IsNullOrEmpty(_profile) && !string.Equals(_profile, "native", StringComparison.OrdinalIgnoreCase))
                 {
-                    commands.Add(Tuple.Create("vchannel", String.Format("{0} transcode={1}", _channel, _profile)));
+                    commands.Add(Tuple.Create("vchannel", string.Format("{0} transcode={1}", _channel, _profile)));
                 }
                 else
                 {
@@ -123,7 +122,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
         }
 
-        private async Task<bool> CheckTunerAvailability(ISocket socket, IpAddressInfo remoteIp, int tuner, CancellationToken cancellationToken)
+        private static async Task<bool> CheckTunerAvailability(ISocket socket, IpAddressInfo remoteIp, int tuner, CancellationToken cancellationToken)
         {
             var ipEndPoint = new IpEndPointInfo(remoteIp, HdHomeRunPort);
 
@@ -133,8 +132,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var receiveBuffer = new byte[8192];
             var response = await socket.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
 
-            string returnVal;
-            ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal);
+            ParseReturnMessage(response.Buffer, response.ReceivedBytes, out string returnVal);
 
             return string.Equals(returnVal, "none", StringComparison.OrdinalIgnoreCase);
         }
@@ -164,13 +162,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     continue;
 
                 _activeTuner = i;
-                var lockKeyString = String.Format("{0:d}", lockKeyValue);
+                var lockKeyString = string.Format("{0:d}", lockKeyValue);
                 var lockkeyMsg = CreateSetMessage(i, "lockkey", lockKeyString, null);
                 await tcpClient.SendToAsync(lockkeyMsg, 0, lockkeyMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
                 var response = await tcpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
-                string returnVal;
                 // parse response to make sure it worked
-                if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
+                if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out var returnVal))
                     continue;
 
                 var commandList = commands.GetCommands();
@@ -188,7 +185,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 }
 
-                var targetValue = String.Format("rtp://{0}:{1}", localIp, localPort);
+                var targetValue = string.Format("rtp://{0}:{1}", localIp, localPort);
                 var targetMsg = CreateSetMessage(i, "target", targetValue, lockKeyValue);
 
                 await tcpClient.SendToAsync(targetMsg, 0, targetMsg.Length, ipEndPoint, cancellationToken).ConfigureAwait(false);
@@ -223,8 +220,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     await tcpClient.SendToAsync(channelMsg, 0, channelMsg.Length, new IpEndPointInfo(_remoteIp, HdHomeRunPort), cancellationToken).ConfigureAwait(false);
                     var response = await tcpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
                     // parse response to make sure it worked
-                    string returnVal;
-                    if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out returnVal))
+                    if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out string returnVal))
                     {
                         return;
                     }
@@ -262,7 +258,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private static byte[] CreateGetMessage(int tuner, string name)
         {
-            var byteName = Encoding.UTF8.GetBytes(String.Format("/tuner{0}/{1}\0", tuner, name));
+            var byteName = Encoding.UTF8.GetBytes(string.Format("/tuner{0}/{1}\0", tuner, name));
             int messageLength = byteName.Length + 10; // 4 bytes for header + 4 bytes for crc + 2 bytes for tag name and length
 
             var message = new byte[messageLength];
@@ -280,10 +276,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return message;
         }
 
-        private static byte[] CreateSetMessage(int tuner, String name, String value, uint? lockkey)
+        private static byte[] CreateSetMessage(int tuner, string name, string value, uint? lockkey)
         {
-            var byteName = Encoding.UTF8.GetBytes(String.Format("/tuner{0}/{1}\0", tuner, name));
-            var byteValue = Encoding.UTF8.GetBytes(String.Format("{0}\0", value));
+            var byteName = Encoding.UTF8.GetBytes(string.Format("/tuner{0}/{1}\0", tuner, name));
+            var byteValue = Encoding.UTF8.GetBytes(string.Format("{0}\0", value));
 
             int messageLength = byteName.Length + byteValue.Length + 12;
             if (lockkey.HasValue)
@@ -360,7 +356,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private static bool ParseReturnMessage(byte[] buf, int numBytes, out string returnVal)
         {
-            returnVal = String.Empty;
+            returnVal = string.Empty;
 
             if (numBytes < 4)
                 return false;
@@ -411,7 +407,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private class HdHomerunCrc
         {
-            private static UInt32[] crc_table = {
+            private static uint[] crc_table = {
             0x00000000, 0x77073096, 0xee0e612c, 0x990951ba,
             0x076dc419, 0x706af48f, 0xe963a535, 0x9e6495a3,
             0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -477,7 +473,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
             0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d };
 
-            public static UInt32 GetCrc32(byte[] bytes, int numBytes)
+            public static uint GetCrc32(byte[] bytes, int numBytes)
             {
                 var hash = 0xffffffff;
                 for (var i = 0; i < numBytes; i++)

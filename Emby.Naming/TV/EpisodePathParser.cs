@@ -1,9 +1,9 @@
-﻿using Emby.Naming.Common;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Emby.Naming.Common;
 
 namespace Emby.Naming.TV
 {
@@ -74,7 +74,7 @@ namespace Emby.Naming.TV
             return result ?? new EpisodePathParserResult();
         }
 
-        private EpisodePathParserResult Parse(string name, EpisodeExpression expression)
+        private static EpisodePathParserResult Parse(string name, EpisodeExpression expression)
         {
             var result = new EpisodePathParserResult();
 
@@ -122,8 +122,7 @@ namespace Emby.Naming.TV
                 }
                 else if (expression.IsNamed)
                 {
-                    int num;
-                    if (int.TryParse(match.Groups["seasonnumber"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out num))
+                    if (int.TryParse(match.Groups["seasonnumber"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var num))
                     {
                         result.SeasonNumber = num;
                     }
@@ -133,7 +132,7 @@ namespace Emby.Naming.TV
                         result.EpisodeNumber = num;
                     }
 
-                    Group endingNumberGroup = match.Groups["endingepnumber"];
+                    var endingNumberGroup = match.Groups["endingepnumber"];
                     if (endingNumberGroup.Success)
                     {
                         // Will only set EndingEpsiodeNumber if the captured number is not followed by additional numbers
@@ -154,8 +153,7 @@ namespace Emby.Naming.TV
                 }
                 else
                 {
-                    int num;
-                    if (int.TryParse(match.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out num))
+                    if (int.TryParse(match.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var num))
                     {
                         result.SeasonNumber = num;
                     }

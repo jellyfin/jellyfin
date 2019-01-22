@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Activity;
-using MediaBrowser.Model.Querying;
 using System;
 using System.Globalization;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.System

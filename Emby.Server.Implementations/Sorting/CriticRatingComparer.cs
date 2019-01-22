@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
 
@@ -20,7 +20,7 @@ namespace Emby.Server.Implementations.Sorting
             return GetValue(x).CompareTo(GetValue(y));
         }
 
-        private float GetValue(BaseItem x)
+        private static float GetValue(BaseItem x)
         {
             return x.CriticRating ?? 0;
         }
@@ -29,9 +29,6 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return ItemSortBy.CriticRating; }
-        }
+        public string Name => ItemSortBy.CriticRating;
     }
 }

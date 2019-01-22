@@ -1,9 +1,9 @@
-﻿using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Services;
-using System.Net.WebSockets;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -62,7 +62,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">message</exception>
+        /// <exception cref="ArgumentNullException">message</exception>
         Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken);
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="text">The text.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">buffer</exception>
+        /// <exception cref="ArgumentNullException">buffer</exception>
         Task SendAsync(string text, CancellationToken cancellationToken);
     }
 }

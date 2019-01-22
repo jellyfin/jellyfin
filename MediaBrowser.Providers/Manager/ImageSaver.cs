@@ -1,14 +1,3 @@
-﻿using MediaBrowser.Common.Configuration;
-
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,8 +5,17 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Net;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -65,7 +63,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">mimeType</exception>
+        /// <exception cref="ArgumentNullException">mimeType</exception>
         public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
             return SaveImage(item, source, mimeType, type, imageIndex, null, cancellationToken);
@@ -75,7 +73,7 @@ namespace MediaBrowser.Providers.Manager
         {
             if (string.IsNullOrEmpty(mimeType))
             {
-                throw new ArgumentNullException("mimeType");
+                throw new ArgumentNullException(nameof(mimeType));
             }
 
             var saveLocally = item.SupportsLocalMetadata && item.IsSaveLocalMetadataEnabled() && !item.ExtraType.HasValue && !(item is Audio);
@@ -174,7 +172,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (FileNotFoundException)
                 {
-                    
+
                 }
                 finally
                 {
@@ -301,7 +299,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="type">The type.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// imageIndex
         /// or
         /// imageIndex
@@ -318,7 +316,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="type">The type.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="path">The path.</param>
-        /// <exception cref="System.ArgumentNullException">imageIndex
+        /// <exception cref="ArgumentNullException">imageIndex
         /// or
         /// imageIndex</exception>
         private void SetImagePath(BaseItem item, ImageType type, int? imageIndex, string path)
@@ -335,7 +333,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="mimeType">Type of the MIME.</param>
         /// <param name="saveLocally">if set to <c>true</c> [save locally].</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// imageIndex
         /// or
         /// imageIndex
@@ -492,7 +490,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="mimeType">Type of the MIME.</param>
         /// <returns>IEnumerable{System.String}.</returns>
-        /// <exception cref="System.ArgumentNullException">imageIndex</exception>
+        /// <exception cref="ArgumentNullException">imageIndex</exception>
         private string[] GetCompatibleSavePaths(BaseItem item, ImageType type, int? imageIndex, string mimeType)
         {
             var season = item as Season;
@@ -504,7 +502,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (!imageIndex.HasValue)
                 {
-                    throw new ArgumentNullException("imageIndex");
+                    throw new ArgumentNullException(nameof(imageIndex));
                 }
 
                 if (imageIndex.Value == 0)

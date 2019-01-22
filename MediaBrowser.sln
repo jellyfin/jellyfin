@@ -1,4 +1,3 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.3
@@ -35,8 +34,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSSDP", "RSSDP\RSSDP.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Dlna", "Emby.Dlna\Emby.Dlna.csproj", "{805844AB-E92F-45E6-9D99-4F6D48D129A5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Drawing.Skia", "Emby.Drawing.Skia\Emby.Drawing.Skia.csproj", "{2312DA6D-FF86-4597-9777-BCEEC32D96DD}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mono.Nat", "Mono.Nat\Mono.Nat.csproj", "{CB7F2326-6497-4A3D-BA03-48513B17A7BE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocketHttpListener", "SocketHttpListener\SocketHttpListener.csproj", "{1D74413B-E7CF-455B-B021-F52BDF881542}"
@@ -58,6 +55,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{41093F42-C7CC-4D07-956B-6182CBEDE2EC}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		SharedVersion.cs = SharedVersion.cs
 	EndProjectSection
 EndProject
 Global
@@ -130,10 +128,6 @@ Global
 		{805844AB-E92F-45E6-9D99-4F6D48D129A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{805844AB-E92F-45E6-9D99-4F6D48D129A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{805844AB-E92F-45E6-9D99-4F6D48D129A5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2312DA6D-FF86-4597-9777-BCEEC32D96DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2312DA6D-FF86-4597-9777-BCEEC32D96DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2312DA6D-FF86-4597-9777-BCEEC32D96DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2312DA6D-FF86-4597-9777-BCEEC32D96DD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CB7F2326-6497-4A3D-BA03-48513B17A7BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CB7F2326-6497-4A3D-BA03-48513B17A7BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB7F2326-6497-4A3D-BA03-48513B17A7BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -150,6 +144,10 @@ Global
 		{E5AF7B26-2239-4CE0-B477-0AA2018EDAA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5AF7B26-2239-4CE0-B477-0AA2018EDAA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E5AF7B26-2239-4CE0-B477-0AA2018EDAA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D45FC504-D06B-41A0-A220-C20B7E8F1304}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D45FC504-D06B-41A0-A220-C20B7E8F1304}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D45FC504-D06B-41A0-A220-C20B7E8F1304}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D45FC504-D06B-41A0-A220-C20B7E8F1304}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6EAFA7F0-8A82-49E6-B2FA-086C5CAEA95B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6EAFA7F0-8A82-49E6-B2FA-086C5CAEA95B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EAFA7F0-8A82-49E6-B2FA-086C5CAEA95B}.Release|Any CPU.ActiveCfg = Release|Any CPU

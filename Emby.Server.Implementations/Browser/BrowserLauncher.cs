@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Controller;
 using System;
+using MediaBrowser.Controller;
 
 namespace Emby.Server.Implementations.Browser
 {
@@ -41,7 +41,7 @@ namespace Emby.Server.Implementations.Browser
             }
             catch (NotSupportedException)
             {
-                
+
             }
             catch (Exception)
             {

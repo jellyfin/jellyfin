@@ -1,16 +1,3 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,11 +6,23 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Diagnostics;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
@@ -142,10 +141,7 @@ namespace MediaBrowser.Api.Playback
             return Path.Combine(folder, dataHash + (outputFileExtension ?? string.Empty).ToLower());
         }
 
-        protected virtual bool EnableOutputInSubFolder
-        {
-            get { return false; }
-        }
+        protected virtual bool EnableOutputInSubFolder => false;
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
@@ -535,8 +531,7 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (!string.IsNullOrWhiteSpace(val) && videoRequest != null)
                     {
-                        SubtitleDeliveryMethod method;
-                        if (Enum.TryParse(val, out method))
+                        if (Enum.TryParse(val, out SubtitleDeliveryMethod method))
                         {
                             videoRequest.SubtitleMethod = method;
                         }
@@ -595,8 +590,10 @@ namespace MediaBrowser.Api.Playback
         /// <param name="request">The stream request.</param>
         private void ParseStreamOptions(StreamRequest request)
         {
-            foreach (var param in Request.QueryString) {
-                if (Char.IsLower(param.Name[0])) {
+            foreach (var param in Request.QueryString)
+            {
+                if (char.IsLower(param.Name[0]))
+                {
                     // This was probably not parsed initially and should be a StreamOptions
                     // TODO: This should be incorporated either in the lower framework for parsing requests
                     // or the generated URL should correctly serialize it
@@ -638,8 +635,7 @@ namespace MediaBrowser.Api.Playback
             if (value.IndexOf(':') == -1)
             {
                 // Parses npt times in the format of '417.33'
-                double seconds;
-                if (double.TryParse(value, NumberStyles.Any, UsCulture, out seconds))
+                if (double.TryParse(value, NumberStyles.Any, UsCulture, out var seconds))
                 {
                     return TimeSpan.FromSeconds(seconds).Ticks;
                 }
@@ -654,8 +650,7 @@ namespace MediaBrowser.Api.Playback
 
             foreach (var time in tokens)
             {
-                double digit;
-                if (double.TryParse(time, NumberStyles.Any, UsCulture, out digit))
+                if (double.TryParse(time, NumberStyles.Any, UsCulture, out var digit))
                 {
                     secondsSum += digit * timeFactor;
                 }
@@ -753,7 +748,7 @@ namespace MediaBrowser.Api.Playback
             MediaSourceInfo mediaSource = null;
             if (string.IsNullOrWhiteSpace(request.LiveStreamId))
             {
-                TranscodingJob currentJob = !string.IsNullOrWhiteSpace(request.PlaySessionId) ?
+                var currentJob = !string.IsNullOrWhiteSpace(request.PlaySessionId) ?
                     ApiEntryPoint.Instance.GetTranscodingJob(request.PlaySessionId)
                     : null;
 
@@ -882,7 +877,7 @@ namespace MediaBrowser.Api.Playback
 
             if (profile == null)
             {
-                // Don't use settings from the default profile. 
+                // Don't use settings from the default profile.
                 // Only use a specific profile if it was requested.
                 return;
             }

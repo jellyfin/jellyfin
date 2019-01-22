@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Activity;
-using MediaBrowser.Model.Events;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Querying;
 using System;
 using System.Linq;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Activity
 {
@@ -16,9 +16,12 @@ namespace Emby.Server.Implementations.Activity
         private readonly ILogger _logger;
         private readonly IUserManager _userManager;
 
-        public ActivityManager(ILogger logger, IActivityRepository repo, IUserManager userManager)
+        public ActivityManager(
+            ILoggerFactory loggerFactory,
+            IActivityRepository repo,
+            IUserManager userManager)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(ActivityManager));
             _repo = repo;
             _userManager = userManager;
         }

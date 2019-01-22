@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Model.Sync;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Sync;
 
 namespace MediaBrowser.Controller.Sync
 {

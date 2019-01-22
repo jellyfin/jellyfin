@@ -1,4 +1,4 @@
-﻿using global::System;
+using global::System;
 
 namespace MediaBrowser.Model.Globalization
 {

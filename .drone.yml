@@ -9,4 +9,4 @@ steps:
 - name: build
   image: microsoft/dotnet:2-sdk
   commands:
-    - dotnet publish --configuration release --output /release
+    - dotnet publish --configuration release --output /release Jellyfin.Server

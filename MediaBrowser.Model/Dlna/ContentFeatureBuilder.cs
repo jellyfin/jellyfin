@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.Dlna
             // 0 = native, 1 = transcoded
             var orgCi = isDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
 
-            DlnaFlags flagValue = DlnaFlags.BackgroundTransferMode |
+            var flagValue = DlnaFlags.BackgroundTransferMode |
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
@@ -66,7 +66,7 @@ namespace MediaBrowser.Model.Dlna
             // 0 = native, 1 = transcoded
             string orgCi = isDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
 
-            DlnaFlags flagValue = DlnaFlags.StreamingTransferMode |
+            var flagValue = DlnaFlags.StreamingTransferMode |
                             DlnaFlags.BackgroundTransferMode |
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
@@ -131,7 +131,7 @@ namespace MediaBrowser.Model.Dlna
             // 0 = native, 1 = transcoded
             string orgCi = isDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
 
-            DlnaFlags flagValue = DlnaFlags.StreamingTransferMode |
+            var flagValue = DlnaFlags.StreamingTransferMode |
                             DlnaFlags.BackgroundTransferMode |
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
@@ -168,7 +168,7 @@ namespace MediaBrowser.Model.Dlna
                 videoCodecTag,
                 isAvc);
 
-            List<string> orgPnValues = new List<string>();
+            var orgPnValues = new List<string>();
 
             if (mediaProfile != null && !string.IsNullOrEmpty(mediaProfile.OrgPn))
             {
@@ -183,7 +183,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            List<string> contentFeatureList = new List<string>();
+            var contentFeatureList = new List<string>();
 
             foreach (string orgPn in orgPnValues)
             {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace MediaBrowser.Model.Services
 {
@@ -16,7 +16,7 @@ namespace MediaBrowser.Model.Services
         public string ParameterType { get; set; }
 
         /// <summary>
-        /// Gets or sets unique name for the parameter. Each name must be unique, even if they are associated with different paramType values. 
+        /// Gets or sets unique name for the parameter. Each name must be unique, even if they are associated with different paramType values.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -49,7 +49,7 @@ namespace MediaBrowser.Model.Services
         public bool AllowMultiple { get; set; }
 
         /// <summary>
-        /// Gets or sets route to which applies attribute, matches using StartsWith. By default applies to all routes. 
+        /// Gets or sets route to which applies attribute, matches using StartsWith. By default applies to all routes.
         /// </summary>
         public string Route { get; set; }
 

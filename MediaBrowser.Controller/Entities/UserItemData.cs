@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
@@ -28,20 +28,17 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the users 0-10 rating
         /// </summary>
         /// <value>The rating.</value>
-        /// <exception cref="System.ArgumentOutOfRangeException">Rating;A 0 to 10 rating is required for UserItemData.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Rating;A 0 to 10 rating is required for UserItemData.</exception>
         public double? Rating
         {
-            get
-            {
-                return _rating;
-            }
+            get => _rating;
             set
             {
                 if (value.HasValue)
                 {
                     if (value.Value < 0 || value.Value > 10)
                     {
-                        throw new ArgumentOutOfRangeException("value", "A 0 to 10 rating is required for UserItemData.");
+                        throw new ArgumentOutOfRangeException(nameof(value), "A 0 to 10 rating is required for UserItemData.");
                     }
                 }
 
@@ -90,7 +87,7 @@ namespace MediaBrowser.Controller.Entities
         public int? SubtitleStreamIndex { get; set; }
 
         public const double MinLikeValue = 6.5;
-    
+
         /// <summary>
         /// This is an interpreted property to indicate likes or dislikes
         /// This should never be serialized.

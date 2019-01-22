@@ -1,4 +1,4 @@
-﻿OpenSubtitlesHandler
+OpenSubtitlesHandler
 ====================
 This project is for OpenSubtitles.org integration‏. The point is to allow user to access OpenSubtitles.org database directly
 within ASM without the need to open internet browser.
@@ -12,7 +12,7 @@ mailto:ahdsoftwares@hotmail.com
 
 Resources:
 ==========
-* GetHash.dll: this dll is used to compute hash for movie. 
+* GetHash.dll: this dll is used to compute hash for movie.
   For more information please visit http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes#C2
 
 XML_RPC:

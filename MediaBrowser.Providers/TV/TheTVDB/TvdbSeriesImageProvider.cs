@@ -1,12 +1,3 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,9 +7,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.Providers.TV
@@ -39,15 +37,9 @@ namespace MediaBrowser.Providers.TV
             _xmlReaderSettingsFactory = xmlReaderSettingsFactory;
         }
 
-        public string Name
-        {
-            get { return ProviderName; }
-        }
+        public string Name => ProviderName;
 
-        public static string ProviderName
-        {
-            get { return "TheTVDB"; }
-        }
+        public static string ProviderName => "TheTVDB";
 
         public bool Supports(BaseItem item)
         {
@@ -58,7 +50,7 @@ namespace MediaBrowser.Providers.TV
         {
             return new List<ImageType>
             {
-                ImageType.Primary, 
+                ImageType.Primary,
                 ImageType.Banner,
                 ImageType.Backdrop
             };
@@ -205,9 +197,7 @@ namespace MediaBrowser.Providers.TV
                             {
                                 var val = reader.ReadElementContentAsString() ?? string.Empty;
 
-                                double rval;
-
-                                if (double.TryParse(val, NumberStyles.Any, _usCulture, out rval))
+                                if (double.TryParse(val, NumberStyles.Any, _usCulture, out var rval))
                                 {
                                     rating = rval;
                                 }
@@ -219,9 +209,7 @@ namespace MediaBrowser.Providers.TV
                             {
                                 var val = reader.ReadElementContentAsString() ?? string.Empty;
 
-                                int rval;
-
-                                if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var rval))
                                 {
                                     voteCount = rval;
                                 }
@@ -263,9 +251,7 @@ namespace MediaBrowser.Providers.TV
 
                                 if (resolutionParts.Length == 2)
                                 {
-                                    int rval;
-
-                                    if (int.TryParse(resolutionParts[0], NumberStyles.Integer, _usCulture, out rval))
+                                    if (int.TryParse(resolutionParts[0], NumberStyles.Integer, _usCulture, out var rval))
                                     {
                                         width = rval;
                                     }
@@ -341,10 +327,7 @@ namespace MediaBrowser.Providers.TV
 
         }
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

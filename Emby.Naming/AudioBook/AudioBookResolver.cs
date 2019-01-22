@@ -1,9 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using Emby.Naming.Common;
-using Emby.Naming.TV;
-using Emby.Naming.Video;
 
 namespace Emby.Naming.AudioBook
 {
@@ -30,7 +28,7 @@ namespace Emby.Naming.AudioBook
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
             if (IsDirectory)
                 return null;
@@ -46,7 +44,7 @@ namespace Emby.Naming.AudioBook
 
             var parsingResult = new AudioBookFilePathParser(_options)
                 .Parse(path, IsDirectory);
-            
+
             return new AudioBookFileInfo
             {
                 Path = path,

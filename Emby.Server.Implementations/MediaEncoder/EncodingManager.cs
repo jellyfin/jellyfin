@@ -1,11 +1,3 @@
-﻿using MediaBrowser.Controller.Chapters;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,11 +5,15 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Controller.Chapters;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.MediaEncoder
 {
@@ -30,13 +26,14 @@ namespace Emby.Server.Implementations.MediaEncoder
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
 
-        public EncodingManager(IFileSystem fileSystem,
-            ILogger logger,
+        public EncodingManager(
+            IFileSystem fileSystem,
+            ILoggerFactory loggerFactory,
             IMediaEncoder encoder,
             IChapterManager chapterManager, ILibraryManager libraryManager)
         {
             _fileSystem = fileSystem;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(EncodingManager));
             _encoder = encoder;
             _chapterManager = chapterManager;
             _libraryManager = libraryManager;
@@ -46,7 +43,7 @@ namespace Emby.Server.Implementations.MediaEncoder
         /// Gets the chapter images data path.
         /// </summary>
         /// <value>The chapter images data path.</value>
-        private string GetChapterImagesPath(BaseItem item)
+        private static string GetChapterImagesPath(BaseItem item)
         {
             return Path.Combine(item.GetInternalMetadataPath(), "chapters");
         }
@@ -202,7 +199,7 @@ namespace Emby.Server.Implementations.MediaEncoder
             return Path.Combine(GetChapterImagesPath(video), filename);
         }
 
-        private List<string> GetSavedChapterImages(Video video, IDirectoryService directoryService)
+        private static List<string> GetSavedChapterImages(Video video, IDirectoryService directoryService)
         {
             var path = GetChapterImagesPath(video);
 

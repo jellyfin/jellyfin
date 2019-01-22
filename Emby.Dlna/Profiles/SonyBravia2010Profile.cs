@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Dlna;
-using System.Xml.Serialization;
+using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Profiles
 {
@@ -41,7 +40,7 @@ namespace Emby.Dlna.Profiles
 
             EnableSingleAlbumArtLimit = true;
             EnableAlbumArtInDidl = true;
-            
+
             TranscodingProfiles = new[]
             {
                 new TranscodingProfile

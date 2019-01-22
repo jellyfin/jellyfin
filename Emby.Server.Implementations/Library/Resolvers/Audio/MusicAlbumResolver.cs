@@ -1,18 +1,14 @@
-﻿using MediaBrowser.Controller.Entities.Audio;
+using System;
+using System.Collections.Generic;
+using Emby.Naming.Audio;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using Emby.Naming.Audio;
-using System;
-using System.Collections.Generic;
-using System.IO;
-
-using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Audio
 {
@@ -36,14 +32,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
-        public override ResolverPriority Priority
-        {
-            get
-            {
-                // Behind special folder resolver
-                return ResolverPriority.Second;
-            } 
-        }
+        public override ResolverPriority Priority => ResolverPriority.Second;
 
         /// <summary>
         /// Resolves the specified args.

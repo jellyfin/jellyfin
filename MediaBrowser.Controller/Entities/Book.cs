@@ -1,22 +1,15 @@
-﻿using System;
+using System;
 using System.Linq;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
     public class Book : BaseItem, IHasLookupInfo<BookInfo>, IHasSeries
     {
         [IgnoreDataMember]
-        public override string MediaType
-        {
-            get
-            {
-                return Model.Entities.MediaType.Book;
-            }
-        }
+        public override string MediaType => Model.Entities.MediaType.Book;
 
         [IgnoreDataMember]
         public string SeriesPresentationUniqueKey { get; set; }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -14,7 +13,7 @@ namespace SocketHttpListener.Net
     // System.Net.ResponseStream
     //
     // Author:
-    //	Gonzalo Paniagua Javier (gonzalo@novell.com)
+    //  Gonzalo Paniagua Javier (gonzalo@novell.com)
     //
     // Copyright (c) 2005 Novell, Inc. (http://www.novell.com)
     //
@@ -25,10 +24,10 @@ namespace SocketHttpListener.Net
     // distribute, sublicense, and/or sell copies of the Software, and to
     // permit persons to whom the Software is furnished to do so, subject to
     // the following conditions:
-    // 
+    //
     // The above copyright notice and this permission notice shall be
     // included in all copies or substantial portions of the Software.
-    // 
+    //
     // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
     // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
     // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -109,7 +108,7 @@ namespace SocketHttpListener.Net
             var chunksForRemoving = new List<Chunk>(count);
             for (int i = 0; i < count; i++)
             {
-                Chunk chunk = _chunks[i];
+                var chunk = _chunks[i];
 
                 if (chunk.Offset == chunk.Bytes.Length)
                 {
@@ -181,10 +180,7 @@ namespace SocketHttpListener.Net
                 InternalWrite(buffer, ref offset, size);
         }
 
-        public bool WantMore
-        {
-            get { return (_chunkRead != _chunkSize || _chunkSize != 0 || _state != State.None); }
-        }
+        public bool WantMore => (_chunkRead != _chunkSize || _chunkSize != 0 || _state != State.None);
 
         public bool DataAvailable
         {
@@ -193,7 +189,7 @@ namespace SocketHttpListener.Net
                 int count = _chunks.Count;
                 for (int i = 0; i < count; i++)
                 {
-                    Chunk ch = _chunks[i];
+                    var ch = _chunks[i];
                     if (ch == null || ch.Bytes == null)
                         continue;
                     if (ch.Bytes.Length > 0 && ch.Offset < ch.Bytes.Length)
@@ -203,15 +199,9 @@ namespace SocketHttpListener.Net
             }
         }
 
-        public int TotalDataSize
-        {
-            get { return _totalWritten; }
-        }
+        public int TotalDataSize => _totalWritten;
 
-        public int ChunkLeft
-        {
-            get { return _chunkSize - _chunkRead; }
-        }
+        public int ChunkLeft => _chunkSize - _chunkRead;
 
         private State ReadBody(byte[] buffer, ref int offset, int size)
         {
@@ -271,7 +261,7 @@ namespace SocketHttpListener.Net
                 {
                     if (_saved.Length > 0)
                     {
-                        _chunkSize = Int32.Parse(RemoveChunkExtension(_saved.ToString()), NumberStyles.HexNumber);
+                        _chunkSize = int.Parse(RemoveChunkExtension(_saved.ToString()), NumberStyles.HexNumber);
                     }
                 }
                 catch (Exception)
@@ -285,7 +275,7 @@ namespace SocketHttpListener.Net
             _chunkRead = 0;
             try
             {
-                _chunkSize = Int32.Parse(RemoveChunkExtension(_saved.ToString()), NumberStyles.HexNumber);
+                _chunkSize = int.Parse(RemoveChunkExtension(_saved.ToString()), NumberStyles.HexNumber);
             }
             catch (Exception)
             {
@@ -378,7 +368,7 @@ namespace SocketHttpListener.Net
                 return State.Trailer;
             }
 
-            StringReader reader = new StringReader(_saved.ToString());
+            var reader = new StringReader(_saved.ToString());
             string line;
             while ((line = reader.ReadLine()) != null && line != "")
                 _headers.Add(line);
@@ -388,7 +378,7 @@ namespace SocketHttpListener.Net
 
         private static void ThrowProtocolViolation(string message)
         {
-            WebException we = new WebException(message, null, WebExceptionStatus.ServerProtocolViolation, null);
+            var we = new WebException(message, null, WebExceptionStatus.ServerProtocolViolation, null);
             throw we;
         }
     }

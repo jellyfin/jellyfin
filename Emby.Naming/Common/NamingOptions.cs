@@ -1,8 +1,7 @@
-﻿using Emby.Naming.Video;
-using System.Collections.Generic;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Emby.Naming.Video;
 
 namespace Emby.Naming.Common
 {
@@ -282,7 +281,7 @@ namespace Emby.Naming.Common
                 new EpisodeExpression(@".*(\\|\/)(?<seriesname>((?![Ss]([0-9]+)[][ ._-]*[Ee]([0-9]+))[^\\\/])*)?[Ss](?<seasonnumber>[0-9]+)[][ ._-]*[Ee](?<epnumber>[0-9]+)([^\\/]*)$")
                 {
                     IsNamed = true
-                }, 
+                },
                 // <!-- foo.ep01, foo.EP_01 -->
                 new EpisodeExpression(@"[\._ -]()[Ee][Pp]_?([0-9]+)([^\\/]*)$"),
                 new EpisodeExpression("([0-9]{4})[\\.-]([0-9]{2})[\\.-]([0-9]{2})", true)

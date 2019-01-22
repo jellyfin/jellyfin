@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -6,11 +6,10 @@ using System.Linq;
 using Emby.Server.Implementations.Data;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Activity;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Querying;
-using SQLitePCL.pretty;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Logging;
+using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Activity
 {
@@ -19,8 +18,8 @@ namespace Emby.Server.Implementations.Activity
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         protected IFileSystem FileSystem { get; private set; }
 
-        public ActivityRepository(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem)
-            : base(logger)
+        public ActivityRepository(ILoggerFactory loggerFactory, IServerApplicationPaths appPaths, IFileSystem fileSystem)
+            : base(loggerFactory.CreateLogger(nameof(ActivityRepository)))
         {
             DbFilePath = Path.Combine(appPaths.DataPath, "activitylog.db");
             FileSystem = fileSystem;
@@ -83,7 +82,7 @@ namespace Emby.Server.Implementations.Activity
         {
             if (entry == null)
             {
-                throw new ArgumentNullException("entry");
+                throw new ArgumentNullException(nameof(entry));
             }
 
             using (WriteLock.Write())
@@ -122,7 +121,7 @@ namespace Emby.Server.Implementations.Activity
         {
             if (entry == null)
             {
-                throw new ArgumentNullException("entry");
+                throw new ArgumentNullException(nameof(entry));
             }
 
             using (WriteLock.Write())
@@ -251,7 +250,7 @@ namespace Emby.Server.Implementations.Activity
             }
         }
 
-        private ActivityLogEntry GetEntry(IReadOnlyList<IResultSetValue> reader)
+        private static ActivityLogEntry GetEntry(IReadOnlyList<IResultSetValue> reader)
         {
             var index = 0;
 

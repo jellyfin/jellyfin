@@ -1,4 +1,4 @@
-﻿//============================================================================
+//============================================================================
 // BDInfo - Blu-ray Video and Audio Analysis Tool
 // Copyright © 2010 Cinema Squid
 //
@@ -109,7 +109,7 @@ namespace BDInfo
 
         public TSDescriptor Clone()
         {
-            TSDescriptor descriptor = 
+            var descriptor =
                 new TSDescriptor(Name, (byte)Value.Length);
             Value.CopyTo(descriptor.Value, 0);
             return descriptor;
@@ -142,26 +142,17 @@ namespace BDInfo
         public double PacketSeconds = 0;
         public int AngleIndex = 0;
 
-        public ulong PacketSize
-        {
-            get
-            {
-                return PacketCount * 192;
-            }
-        }
+        public ulong PacketSize => PacketCount * 192;
 
         private string _LanguageCode;
         public string LanguageCode
         {
-            get 
-            {
-                return _LanguageCode; 
-            }
-            set 
+            get => _LanguageCode;
+            set
             {
                 _LanguageCode = value;
                 LanguageName = LanguageCodes.GetName(value);
-            } 
+            }
         }
 
         public bool IsVideoStream
@@ -398,16 +389,10 @@ namespace BDInfo
             }
         }
 
-        public virtual string Description
-        {
-            get
-            {
-                return "";
-            }
-        }
+        public virtual string Description => "";
 
         public abstract TSStream Clone();
-        
+
         protected void CopyTo(TSStream stream)
         {
             stream.PID = PID;
@@ -419,7 +404,7 @@ namespace BDInfo
             if (Descriptors != null)
             {
                 stream.Descriptors = new List<TSDescriptor>();
-                foreach (TSDescriptor descriptor in Descriptors)
+                foreach (var descriptor in Descriptors)
                 {
                     stream.Descriptors.Add(descriptor.Clone());
                 }
@@ -435,7 +420,7 @@ namespace BDInfo
 
         public int Width;
         public int Height;
-        public bool IsInterlaced;        
+        public bool IsInterlaced;
         public int FrameRateEnumerator;
         public int FrameRateDenominator;
         public TSAspectRatio AspectRatio;
@@ -444,10 +429,7 @@ namespace BDInfo
         private TSVideoFormat _VideoFormat;
         public TSVideoFormat VideoFormat
         {
-            get
-            {
-                return _VideoFormat;
-            }
+            get => _VideoFormat;
             set
             {
                 _VideoFormat = value;
@@ -488,10 +470,7 @@ namespace BDInfo
         private TSFrameRate _FrameRate;
         public TSFrameRate FrameRate
         {
-            get
-            {
-                return _FrameRate;
-            }
+            get => _FrameRate;
             set
             {
                 _FrameRate = value;
@@ -574,14 +553,14 @@ namespace BDInfo
 
         public override TSStream Clone()
         {
-            TSVideoStream stream = new TSVideoStream();
+            var stream = new TSVideoStream();
             CopyTo(stream);
 
             stream.VideoFormat = _VideoFormat;
             stream.FrameRate = _FrameRate;
             stream.Width = Width;
             stream.Height = Height;
-            stream.IsInterlaced = IsInterlaced;        
+            stream.IsInterlaced = IsInterlaced;
             stream.FrameRateEnumerator = FrameRateEnumerator;
             stream.FrameRateDenominator = FrameRateDenominator;
             stream.AspectRatio = AspectRatio;
@@ -748,7 +727,7 @@ namespace BDInfo
 
         public override TSStream Clone()
         {
-            TSAudioStream stream = new TSAudioStream();
+            var stream = new TSAudioStream();
             CopyTo(stream);
 
             stream.SampleRate = SampleRate;
@@ -777,7 +756,7 @@ namespace BDInfo
 
         public override TSStream Clone()
         {
-            TSGraphicsStream stream = new TSGraphicsStream();
+            var stream = new TSGraphicsStream();
             CopyTo(stream);
             return stream;
         }
@@ -793,7 +772,7 @@ namespace BDInfo
 
         public override TSStream Clone()
         {
-            TSTextStream stream = new TSTextStream();
+            var stream = new TSTextStream();
             CopyTo(stream);
             return stream;
         }

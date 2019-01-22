@@ -1,11 +1,9 @@
-﻿using MediaBrowser.Controller.Configuration;
+using System.Collections.Generic;
+using System.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
-using System.Collections.Generic;
-using System.IO;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.LocalMetadata.Images
@@ -21,10 +19,7 @@ namespace MediaBrowser.LocalMetadata.Images
             _fileSystem = fileSystem;
         }
 
-        public string Name
-        {
-            get { return "Internal Images"; }
-        }
+        public string Name => "Internal Images";
 
         public bool Supports(BaseItem item)
         {
@@ -51,15 +46,8 @@ namespace MediaBrowser.LocalMetadata.Images
 
             return true;
         }
-
-        public int Order
-        {
-            get
-            {
-                // Make sure this is last so that all other locations are scanned first
-                return 1000;
-            }
-        }
+        // Make sure this is last so that all other locations are scanned first
+        public int Order => 1000;
 
         public List<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
         {

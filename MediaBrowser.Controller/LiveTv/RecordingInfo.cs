@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Model.LiveTv;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The timer identifier.</value>
         public string TimerId { get; set; }
-        
+
         /// <summary>
         /// ChannelId of the recording.
         /// </summary>
@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The type of the channel.</value>
         public ChannelType ChannelType { get; set; }
-     
+
         /// <summary>
         /// Name of the recording.
         /// </summary>
@@ -50,7 +50,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The URL.</value>
         public string Url { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the overview.
         /// </summary>

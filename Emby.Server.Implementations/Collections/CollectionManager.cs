@@ -1,24 +1,22 @@
-﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Controller.Collections;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Collections
 {
@@ -36,12 +34,19 @@ namespace Emby.Server.Implementations.Collections
         public event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
         public event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
 
-        public CollectionManager(ILibraryManager libraryManager, IApplicationPaths appPaths, ILocalizationManager localizationManager, IFileSystem fileSystem, ILibraryMonitor iLibraryMonitor, ILogger logger, IProviderManager providerManager)
+        public CollectionManager(
+            ILibraryManager libraryManager,
+            IApplicationPaths appPaths,
+            ILocalizationManager localizationManager,
+            IFileSystem fileSystem,
+            ILibraryMonitor iLibraryMonitor,
+            ILoggerFactory loggerFactory,
+            IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(CollectionManager));
             _providerManager = providerManager;
             _localizationManager = localizationManager;
             _appPaths = appPaths;

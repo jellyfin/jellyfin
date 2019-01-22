@@ -1,10 +1,3 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,11 +7,17 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -162,9 +161,7 @@ namespace MediaBrowser.Providers.TV
 
                 newUpdateTime = seriesToUpdate.Item2;
 
-                long lastUpdateValue;
-
-                long.TryParse(lastUpdateTime, NumberStyles.Any, UsCulture, out lastUpdateValue);
+                long.TryParse(lastUpdateTime, NumberStyles.Any, UsCulture, out var lastUpdateValue);
 
                 var nullableUpdateValue = lastUpdateValue == 0 ? (long?)null : lastUpdateValue;
 

@@ -1,8 +1,7 @@
-﻿using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Querying;
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.UserLibrary
@@ -214,7 +213,7 @@ namespace MediaBrowser.Api.UserLibrary
         public string Genres { get; set; }
 
         public string GenreIds { get; set; }
-        
+
         [ApiMember(Name = "OfficialRatings", Description = "Optional. If specified, results will be filtered based on OfficialRating. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string OfficialRatings { get; set; }
 
@@ -412,7 +411,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             return val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (VideoType)Enum.Parse(typeof(VideoType), v, true)).ToArray();
         }
-        
+
         /// <summary>
         /// Gets the filters.
         /// </summary>
@@ -460,7 +459,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (string.IsNullOrEmpty(val))
             {
-                return Array.Empty<ValueTuple<string, Model.Entities.SortOrder>>();
+                return Array.Empty<ValueTuple<string, SortOrder>>();
             }
 
             var vals = val.Split(',');
@@ -471,7 +470,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var sortOrders = requestedSortOrder.Split(',');
 
-            var result = new ValueTuple<string, Model.Entities.SortOrder>[vals.Length];
+            var result = new ValueTuple<string, SortOrder>[vals.Length];
 
             for (var i = 0; i < vals.Length; i++)
             {
@@ -480,7 +479,7 @@ namespace MediaBrowser.Api.UserLibrary
                 var sortOrderValue = sortOrders.Length > sortOrderIndex ? sortOrders[sortOrderIndex] : null;
                 var sortOrder = string.Equals(sortOrderValue, "Descending", StringComparison.OrdinalIgnoreCase) ? MediaBrowser.Model.Entities.SortOrder.Descending : MediaBrowser.Model.Entities.SortOrder.Ascending;
 
-                result[i] = new ValueTuple<string, Model.Entities.SortOrder>(vals[i], sortOrder);
+                result[i] = new ValueTuple<string, SortOrder>(vals[i], sortOrder);
             }
 
             return result;

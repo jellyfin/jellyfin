@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -117,7 +117,7 @@ namespace MediaBrowser.Model.IO
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>Stream.</returns>
-        Stream OpenRead(String path);
+        Stream OpenRead(string path);
 
         string DefaultDirectory { get; }
 
@@ -201,7 +201,7 @@ namespace MediaBrowser.Model.IO
         /// </summary>
         IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false);
 
-        IEnumerable<FileSystemMetadata> GetFiles(string path, string [] extensions, bool enableCaseSensitiveExtensions, bool recursive);
+        IEnumerable<FileSystemMetadata> GetFiles(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive);
 
         /// <summary>
         /// Gets the file system entries.
@@ -328,7 +328,7 @@ namespace MediaBrowser.Model.IO
 
         void SetExecutable(string path);
     }
-
+    //TODO Investigate if can be replaced by the one from System.IO ?
     public enum FileOpenMode
     {
         //

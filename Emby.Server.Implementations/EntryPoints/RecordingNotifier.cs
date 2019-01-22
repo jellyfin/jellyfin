@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Controller.Library;
@@ -58,11 +58,11 @@ namespace Emby.Server.Implementations.EntryPoints
 
             try
             {
-                await _sessionManager.SendMessageToUserSessions<TimerEventInfo>(users, name, info, CancellationToken.None);
+                await _sessionManager.SendMessageToUserSessions(users, name, info, CancellationToken.None);
             }
             catch (ObjectDisposedException)
             {
-
+                // TODO Log exception or Investigate and properly fix.
             }
             catch (Exception ex)
             {

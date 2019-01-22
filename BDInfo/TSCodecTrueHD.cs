@@ -1,4 +1,4 @@
-﻿//============================================================================
+//============================================================================
 // BDInfo - Blu-ray Video and Audio Analysis Tool
 // Copyright © 2010 Cinema Squid
 //
@@ -36,7 +36,7 @@ namespace BDInfo
             for (int i = 0; i < buffer.Length; i++)
             {
                 sync = (sync << 8) + buffer.ReadByte();
-                if (sync == 0xF8726FBA) 
+                if (sync == 0xF8726FBA)
                 {
                     syncFound = true;
                     break;
@@ -63,7 +63,7 @@ namespace BDInfo
             int ratebits = buffer.ReadBits(4);
             if (ratebits != 0xF)
             {
-                stream.SampleRate = 
+                stream.SampleRate =
                     (((ratebits & 8) > 0 ? 44100 : 48000) << (ratebits & 7));
             }
             int temp1 = buffer.ReadBits(8);
@@ -149,9 +149,9 @@ namespace BDInfo
             int peak_bitrate = buffer.ReadBits(15);
             peak_bitrate = (peak_bitrate * stream.SampleRate) >> 4;
 
-            double peak_bitdepth = 
-                (double)peak_bitrate / 
-                (stream.ChannelCount + stream.LFE) / 
+            double peak_bitdepth =
+                (double)peak_bitrate /
+                (stream.ChannelCount + stream.LFE) /
                 stream.SampleRate;
             if (peak_bitdepth > 14)
             {
@@ -164,7 +164,7 @@ namespace BDInfo
 
 #if DEBUG
             System.Diagnostics.Debug.WriteLine(string.Format(
-                "{0}\t{1}\t{2:F2}", 
+                "{0}\t{1}\t{2:F2}",
                 stream.PID, peak_bitrate, peak_bitdepth));
 #endif
             /*

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -41,11 +41,11 @@ namespace Rssdp.Infrastructure
         /// </summary>
         public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, ITimerFactory timerFactory, string osName, string osVersion)
         {
-            if (communicationsServer == null) throw new ArgumentNullException("communicationsServer");
-            if (osName == null) throw new ArgumentNullException("osName");
-            if (osName.Length == 0) throw new ArgumentException("osName cannot be an empty string.", "osName");
-            if (osVersion == null) throw new ArgumentNullException("osVersion");
-            if (osVersion.Length == 0) throw new ArgumentException("osVersion cannot be an empty string.", "osName");
+            if (communicationsServer == null) throw new ArgumentNullException(nameof(communicationsServer));
+            if (osName == null) throw new ArgumentNullException(nameof(osName));
+            if (osName.Length == 0) throw new ArgumentException("osName cannot be an empty string.", nameof(osName));
+            if (osVersion == null) throw new ArgumentNullException(nameof(osVersion));
+            if (osVersion.Length == 0) throw new ArgumentException("osVersion cannot be an empty string.", nameof(osName));
 
             _SupportPnpRootDevice = true;
             _timerFactory = timerFactory;
@@ -76,16 +76,16 @@ namespace Rssdp.Infrastructure
         /// <para>This method ignores duplicate device adds (if the same device instance is added multiple times, the second and subsequent add calls do nothing).</para>
         /// </remarks>
         /// <param name="device">The <see cref="SsdpDevice"/> instance to add.</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
-        /// <exception cref="System.InvalidOperationException">Thrown if the <paramref name="device"/> contains property values that are not acceptable to the UPnP 1.0 specification.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the <paramref name="device"/> contains property values that are not acceptable to the UPnP 1.0 specification.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "t", Justification = "Capture task to local variable supresses compiler warning, but task is not really needed.")]
         public void AddDevice(SsdpRootDevice device)
         {
-            if (device == null) throw new ArgumentNullException("device");
+            if (device == null) throw new ArgumentNullException(nameof(device));
 
             ThrowIfDisposed();
 
-            TimeSpan minCacheTime = TimeSpan.Zero;
+            var minCacheTime = TimeSpan.Zero;
             bool wasAdded = false;
             lock (_Devices)
             {
@@ -113,13 +113,13 @@ namespace Rssdp.Infrastructure
         /// <para>This method does nothing if the device was not found in the collection.</para>
         /// </remarks>
         /// <param name="device">The <see cref="SsdpDevice"/> instance to add.</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
         public async Task RemoveDevice(SsdpRootDevice device)
         {
-            if (device == null) throw new ArgumentNullException("device");
+            if (device == null) throw new ArgumentNullException(nameof(device));
 
             bool wasRemoved = false;
-            TimeSpan minCacheTime = TimeSpan.Zero;
+            var minCacheTime = TimeSpan.Zero;
             lock (_Devices)
             {
                 if (_Devices.Contains(device))
@@ -418,7 +418,7 @@ namespace Rssdp.Infrastructure
 
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            // If needed later for non-server devices, these headers will need to be dynamic 
+            // If needed later for non-server devices, these headers will need to be dynamic
             values["HOST"] = "239.255.255.250:1900";
             values["DATE"] = DateTime.UtcNow.ToString("r");
             values["CACHE-CONTROL"] = "max-age = " + rootDevice.CacheLifetime.TotalSeconds;
@@ -463,7 +463,7 @@ namespace Rssdp.Infrastructure
 
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            // If needed later for non-server devices, these headers will need to be dynamic 
+            // If needed later for non-server devices, these headers will need to be dynamic
             values["HOST"] = "239.255.255.250:1900";
             values["DATE"] = DateTime.UtcNow.ToString("r");
             values["SERVER"] = string.Format("{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, ServerVersion);
@@ -538,9 +538,9 @@ namespace Rssdp.Infrastructure
                 //According to SSDP/UPnP spec, ignore message if missing these headers.
                 // Edit: But some devices do it anyway
                 //if (!e.Message.Headers.Contains("MX"))
-                //	WriteTrace("Ignoring search request - missing MX header.");
+                //    WriteTrace("Ignoring search request - missing MX header.");
                 //else if (!e.Message.Headers.Contains("MAN"))
-                //	WriteTrace("Ignoring search request - missing MAN header.");
+                //    WriteTrace("Ignoring search request - missing MAN header.");
                 //else
                 ProcessSearchRequest(GetFirstHeaderValue(e.Message.Headers, "MX"), GetFirstHeaderValue(e.Message.Headers, "ST"), e.ReceivedFrom, e.LocalIpAddress, CancellationToken.None);
             }

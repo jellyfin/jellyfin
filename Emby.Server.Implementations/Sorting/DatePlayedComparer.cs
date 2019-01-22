@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Controller.Entities;
+using System;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
-using System;
 
 namespace Emby.Server.Implementations.Sorting
 {
@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.Sorting
         /// </summary>
         /// <value>The user data repository.</value>
         public IUserDataManager UserDataRepository { get; set; }
-        
+
         /// <summary>
         /// Compares the specified x.
         /// </summary>
@@ -61,9 +61,6 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return ItemSortBy.DatePlayed; }
-        }
+        public string Name => ItemSortBy.DatePlayed;
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -21,7 +21,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <value>The response URL.</value>
         public string ResponseUrl { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the content.
         /// </summary>
@@ -50,7 +50,7 @@ namespace MediaBrowser.Common.Net
         /// Gets or sets the headers.
         /// </summary>
         /// <value>The headers.</value>
-        public Dictionary<string,string> Headers { get; set; }
+        public Dictionary<string, string> Headers { get; set; }
 
         private readonly IDisposable _disposable;
 

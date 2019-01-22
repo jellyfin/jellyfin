@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -39,7 +39,7 @@ namespace Rssdp.Infrastructure
         /// </summary>
         public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer, ITimerFactory timerFactory)
         {
-            if (communicationsServer == null) throw new ArgumentNullException("communicationsServer");
+            if (communicationsServer == null) throw new ArgumentNullException(nameof(communicationsServer));
 
             _CommunicationsServer = communicationsServer;
             _timerFactory = timerFactory;
@@ -53,7 +53,7 @@ namespace Rssdp.Infrastructure
         #region Events
 
         /// <summary>
-        /// Raised for when 
+        /// Raised for when
         /// <list type="bullet">
         /// <item>An 'alive' notification is received that a device, regardless of whether or not that device is not already in the cache or has previously raised this event.</item>
         /// <item>For each item found during a device <see cref="SearchAsync()"/> (cached or not), allowing clients to respond to found devices before the entire search is complete.</item>
@@ -164,8 +164,8 @@ namespace Rssdp.Infrastructure
 
         private Task SearchAsync(string searchTarget, TimeSpan searchWaitTime, CancellationToken cancellationToken)
         {
-            if (searchTarget == null) throw new ArgumentNullException("searchTarget");
-            if (searchTarget.Length == 0) throw new ArgumentException("searchTarget cannot be an empty string.", "searchTarget");
+            if (searchTarget == null) throw new ArgumentNullException(nameof(searchTarget));
+            if (searchTarget.Length == 0) throw new ArgumentException("searchTarget cannot be an empty string.", nameof(searchTarget));
             if (searchWaitTime.TotalSeconds < 0) throw new ArgumentException("searchWaitTime must be a positive time.");
             if (searchWaitTime.TotalSeconds > 0 && searchWaitTime.TotalSeconds <= 1) throw new ArgumentException("searchWaitTime must be zero (if you are not using the result and relying entirely in the events), or greater than one second.");
 
@@ -185,7 +185,7 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="StopListeningForNotifications"/>
         /// <seealso cref="DeviceAvailable"/>
         /// <seealso cref="DeviceUnavailable"/>
-        /// <exception cref="System.ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/>  ty is true.</exception>
+        /// <exception cref="ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/>  ty is true.</exception>
         public void StartListeningForNotifications()
         {
             ThrowIfDisposed();
@@ -204,7 +204,7 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="StartListeningForNotifications"/>
         /// <seealso cref="DeviceAvailable"/>
         /// <seealso cref="DeviceUnavailable"/>
-        /// <exception cref="System.ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true.</exception>
+        /// <exception cref="ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true.</exception>
         public void StopListeningForNotifications()
         {
             ThrowIfDisposed();

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
@@ -12,14 +12,14 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Text;
 using Microsoft.Extensions.Logging;
+using UtfUnknown;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
@@ -34,22 +34,20 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IHttpClient _httpClient;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IProcessFactory _processFactory;
-        private readonly ITextEncoding _textEncoding;
 
         public SubtitleEncoder(
             ILibraryManager libraryManager,
-            ILogger logger,
+            ILoggerFactory loggerFactory,
             IApplicationPaths appPaths,
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
             IJsonSerializer json,
             IHttpClient httpClient,
             IMediaSourceManager mediaSourceManager,
-            IProcessFactory processFactory,
-            ITextEncoding textEncoding)
+            IProcessFactory processFactory)
         {
             _libraryManager = libraryManager;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(SubtitleEncoder));
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
@@ -57,22 +55,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _httpClient = httpClient;
             _mediaSourceManager = mediaSourceManager;
             _processFactory = processFactory;
-            _textEncoding = textEncoding;
         }
 
-        private string SubtitleCachePath
-        {
-            get
-            {
-                return Path.Combine(_appPaths.DataPath, "subtitles");
-            }
-        }
+        private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
 
         private Stream ConvertSubtitles(Stream stream,
             string inputFormat,
             string outputFormat,
             long startTimeTicks,
-            long? endTimeTicks,
+            long endTimeTicks,
             bool preserveOriginalTimestamps,
             CancellationToken cancellationToken)
         {
@@ -100,19 +91,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return ms;
         }
 
-        private void FilterEvents(SubtitleTrackInfo track, long startPositionTicks, long? endTimeTicks, bool preserveTimestamps)
+        private void FilterEvents(SubtitleTrackInfo track, long startPositionTicks, long endTimeTicks, bool preserveTimestamps)
         {
             // Drop subs that are earlier than what we're looking for
             track.TrackEvents = track.TrackEvents
                 .SkipWhile(i => (i.StartPositionTicks - startPositionTicks) < 0 || (i.EndPositionTicks - startPositionTicks) < 0)
                 .ToArray();
 
-            if (endTimeTicks.HasValue)
+            if (endTimeTicks > 0)
             {
-                long endTime = endTimeTicks.Value;
-
                 track.TrackEvents = track.TrackEvents
-                    .TakeWhile(i => i.StartPositionTicks <= endTime)
+                    .TakeWhile(i => i.StartPositionTicks <= endTimeTicks)
                     .ToArray();
             }
 
@@ -130,11 +119,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
             if (string.IsNullOrWhiteSpace(mediaSourceId))
             {
-                throw new ArgumentNullException("mediaSourceId");
+                throw new ArgumentNullException(nameof(mediaSourceId));
             }
 
             // TODO network path substition useful ?
@@ -202,13 +191,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 var bytes = await GetBytes(path, protocol, cancellationToken).ConfigureAwait(false);
 
-                var charset = _textEncoding.GetDetectedEncodingName(bytes, bytes.Length, language, true);
-                _logger.LogDebug("charset {0} detected for {1}", charset ?? "null", path);
+                var charset = CharsetDetector.DetectFromBytes(bytes).Detected?.EncodingName;
+                _logger.LogDebug("charset {CharSet} detected for {Path}", charset ?? "null", path);
 
                 if (!string.IsNullOrEmpty(charset))
                 {
+                    // Make sure we have all the code pages we can get
+                    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                     using (var inputStream = new MemoryStream(bytes))
-                    using (var reader = new StreamReader(inputStream, _textEncoding.GetEncodingFromCharset(charset)))
+                    using (var reader = new StreamReader(inputStream, Encoding.GetEncoding(charset)))
                     {
                         var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
@@ -300,7 +291,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (string.IsNullOrEmpty(format))
             {
-                throw new ArgumentNullException("format");
+                throw new ArgumentNullException(nameof(format));
             }
 
             if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase))
@@ -328,7 +319,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (string.IsNullOrEmpty(format))
             {
-                throw new ArgumentNullException("format");
+                throw new ArgumentNullException(nameof(format));
             }
 
             if (string.Equals(format, "json", StringComparison.OrdinalIgnoreCase))
@@ -414,7 +405,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// inputPath
         /// or
         /// outputPath
@@ -423,12 +414,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (string.IsNullOrEmpty(inputPath))
             {
-                throw new ArgumentNullException("inputPath");
+                throw new ArgumentNullException(nameof(inputPath));
             }
 
             if (string.IsNullOrEmpty(outputPath))
             {
-                throw new ArgumentNullException("outputPath");
+                throw new ArgumentNullException(nameof(outputPath));
             }
 
             _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
@@ -531,7 +522,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentException">Must use inputPath list overload</exception>
+        /// <exception cref="ArgumentException">Must use inputPath list overload</exception>
         private async Task ExtractTextSubtitle(
             string[] inputFiles,
             MediaProtocol protocol,
@@ -566,12 +557,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (string.IsNullOrEmpty(inputPath))
             {
-                throw new ArgumentNullException("inputPath");
+                throw new ArgumentNullException(nameof(inputPath));
             }
 
             if (string.IsNullOrEmpty(outputPath))
             {
-                throw new ArgumentNullException("outputPath");
+                throw new ArgumentNullException(nameof(outputPath));
             }
 
             _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
@@ -729,7 +720,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             var bytes = await GetBytes(path, protocol, cancellationToken).ConfigureAwait(false);
 
-            var charset = _textEncoding.GetDetectedEncodingName(bytes, bytes.Length, language, true);
+            var charset = CharsetDetector.DetectFromBytes(bytes).Detected?.EncodingName;
 
             _logger.LogDebug("charset {0} detected for {Path}", charset ?? "null", path);
 
@@ -740,7 +731,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (protocol == MediaProtocol.Http)
             {
-                HttpRequestOptions opts = new HttpRequestOptions()
+                var opts = new HttpRequestOptions()
                 {
                     Url = path,
                     CancellationToken = cancellationToken
@@ -759,7 +750,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 return _fileSystem.ReadAllBytes(path);
             }
 
-            throw new ArgumentOutOfRangeException("protocol");
+            throw new ArgumentOutOfRangeException(nameof(protocol));
         }
     }
 }

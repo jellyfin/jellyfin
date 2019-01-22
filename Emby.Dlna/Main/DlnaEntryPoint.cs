@@ -1,4 +1,10 @@
-﻿using MediaBrowser.Common.Configuration;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Emby.Dlna.PlayTo;
+using Emby.Dlna.Ssdp;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -6,25 +12,19 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.TV;
-using Emby.Dlna.PlayTo;
-using Emby.Dlna.Ssdp;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Threading;
 using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Logging;
 using Rssdp;
 using Rssdp.Infrastructure;
-using System.Threading;
 
 namespace Emby.Dlna.Main
 {
@@ -75,11 +75,11 @@ namespace Emby.Dlna.Main
             IUserDataManager userDataManager,
             ILocalizationManager localizationManager,
             IMediaSourceManager mediaSourceManager,
-            IDeviceDiscovery deviceDiscovery, 
-            IMediaEncoder mediaEncoder, 
-            ISocketFactory socketFactory, 
-            ITimerFactory timerFactory, 
-            IEnvironmentInfo environmentInfo, 
+            IDeviceDiscovery deviceDiscovery,
+            IMediaEncoder mediaEncoder,
+            ISocketFactory socketFactory,
+            ITimerFactory timerFactory,
+            IEnvironmentInfo environmentInfo,
             INetworkManager networkManager,
             IUserViewManager userViewManager,
             IXmlReaderSettingsFactory xmlReaderSettingsFactory,
@@ -104,19 +104,19 @@ namespace Emby.Dlna.Main
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger("Dlna");
 
-            ContentDirectory = new ContentDirectory.ContentDirectory(dlnaManager, 
-                userDataManager, 
-                imageProcessor, 
-                libraryManager, 
-                config, 
-                userManager, 
-                _logger, 
-                httpClient, 
-                localizationManager, 
-                mediaSourceManager, 
+            ContentDirectory = new ContentDirectory.ContentDirectory(dlnaManager,
+                userDataManager,
+                imageProcessor,
+                libraryManager,
+                config,
+                userManager,
+                _logger,
+                httpClient,
+                localizationManager,
+                mediaSourceManager,
                 userViewManager,
-                mediaEncoder, 
-                xmlReaderSettingsFactory, 
+                mediaEncoder,
+                xmlReaderSettingsFactory,
                 tvSeriesManager);
 
             ConnectionManager = new ConnectionManager.ConnectionManager(dlnaManager, config, _logger, httpClient, xmlReaderSettingsFactory);
@@ -271,18 +271,18 @@ namespace Emby.Dlna.Main
                 var device = new SsdpRootDevice
                 {
                     CacheLifetime = TimeSpan.FromSeconds(1800), //How long SSDP clients can cache this info.
-                    Location = uri, // Must point to the URL that serves your devices UPnP description document. 
+                    Location = uri, // Must point to the URL that serves your devices UPnP description document.
                     FriendlyName = "Jellyfin",
                     Manufacturer = "Jellyfin",
                     ModelName = "Jellyfin Server",
                     Uuid = udn
-                    // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.                
+                    // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
                 };
 
                 SetProperies(device, fullService);
                 _Publisher.AddDevice(device);
 
-                var embeddedDevices = new []
+                var embeddedDevices = new[]
                 {
                     "urn:schemas-upnp-org:service:ContentDirectory:1",
                     "urn:schemas-upnp-org:service:ConnectionManager:1",
@@ -297,7 +297,7 @@ namespace Emby.Dlna.Main
                         Manufacturer = device.Manufacturer,
                         ModelName = device.ModelName,
                         Uuid = udn
-                        // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.                
+                        // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
                     };
 
                     SetProperies(embeddedDevice, subDevice);
@@ -308,8 +308,7 @@ namespace Emby.Dlna.Main
 
         private string CreateUuid(string text)
         {
-            Guid guid;
-            if (!Guid.TryParse(text, out guid))
+            if (!Guid.TryParse(text, out var guid))
             {
                 guid = text.GetMD5();
             }

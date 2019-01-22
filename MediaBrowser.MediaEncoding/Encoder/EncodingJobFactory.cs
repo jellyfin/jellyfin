@@ -1,18 +1,16 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -25,7 +23,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IMediaEncoder _mediaEncoder;
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         public EncodingJobFactory(ILogger logger, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager, IConfigurationManager config, IMediaEncoder mediaEncoder)
         {
             _logger = logger;
@@ -255,7 +253,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (profile == null)
             {
-                // Don't use settings from the default profile. 
+                // Don't use settings from the default profile.
                 // Only use a specific profile if it was requested.
                 return;
             }

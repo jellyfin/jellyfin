@@ -1,19 +1,12 @@
-﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dlna;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Threading;
+using Microsoft.Extensions.Logging;
 using Rssdp;
 using Rssdp.Infrastructure;
 
@@ -59,9 +52,13 @@ namespace Emby.Dlna.Ssdp
         private readonly ISocketFactory _socketFactory;
         private ISsdpCommunicationsServer _commsServer;
 
-        public DeviceDiscovery(ILogger logger, IServerConfigurationManager config, ISocketFactory socketFactory, ITimerFactory timerFactory)
+        public DeviceDiscovery(
+            ILoggerFactory loggerFactory,
+            IServerConfigurationManager config,
+            ISocketFactory socketFactory,
+            ITimerFactory timerFactory)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(nameof(DeviceDiscovery));
             _config = config;
             _socketFactory = socketFactory;
             _timerFactory = timerFactory;
@@ -83,8 +80,8 @@ namespace Emby.Dlna.Ssdp
                 {
                     _deviceLocator = new SsdpDeviceLocator(_commsServer, _timerFactory);
 
-                    // (Optional) Set the filter so we only see notifications for devices we care about 
-                    // (can be any search target value i.e device type, uuid value etc - any value that appears in the 
+                    // (Optional) Set the filter so we only see notifications for devices we care about
+                    // (can be any search target value i.e device type, uuid value etc - any value that appears in the
                     // DiscoverdSsdpDevice.NotificationType property or that is used with the searchTarget parameter of the Search method).
                     //_DeviceLocator.NotificationFilter = "upnp:rootdevice";
 

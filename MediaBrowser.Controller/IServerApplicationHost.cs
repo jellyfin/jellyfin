@@ -1,11 +1,10 @@
-﻿using MediaBrowser.Common;
-using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
 using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.System;
 
 namespace MediaBrowser.Controller
 {
@@ -37,7 +36,7 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The HTTPS port.</value>
         int HttpsPort { get; }
-        
+
         /// <summary>
         /// Gets a value indicating whether [supports HTTPS].
         /// </summary>

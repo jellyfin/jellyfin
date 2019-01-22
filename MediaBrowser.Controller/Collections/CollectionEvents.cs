@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 
 namespace MediaBrowser.Controller.Collections
 {

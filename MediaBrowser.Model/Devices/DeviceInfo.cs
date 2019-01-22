@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Session;
 using System;
+using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Model.Devices
 {

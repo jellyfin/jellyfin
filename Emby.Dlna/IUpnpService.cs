@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace Emby.Dlna
 {
@@ -10,7 +10,7 @@ namespace Emby.Dlna
         /// <param name="headers">The headers.</param>
         /// <returns>System.String.</returns>
         string GetServiceXml(IDictionary<string, string> headers);
-        
+
         /// <summary>
         /// Processes the control request.
         /// </summary>

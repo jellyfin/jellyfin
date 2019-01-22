@@ -13,10 +13,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -34,23 +34,22 @@ using System.Threading.Tasks;
 
 namespace Mono.Nat
 {
-	public abstract class AbstractNatDevice : INatDevice
-	{
-		private DateTime lastSeen;
-		
-		protected AbstractNatDevice ()
-		{
+    public abstract class AbstractNatDevice : INatDevice
+    {
+        private DateTime lastSeen;
 
-		}
+        protected AbstractNatDevice()
+        {
+        }
 
-		public abstract IPAddress LocalAddress { get; }
-		
-		public DateTime LastSeen
-		{
-			get { return lastSeen; }
-			set { lastSeen = value; }
-		}
+        public abstract IPAddress LocalAddress { get; }
 
-	    public abstract Task CreatePortMap(Mapping mapping);
-	}
+        public DateTime LastSeen
+        {
+            get { return lastSeen; }
+            set { lastSeen = value; }
+        }
+
+        public abstract Task CreatePortMap(Mapping mapping);
+    }
 }

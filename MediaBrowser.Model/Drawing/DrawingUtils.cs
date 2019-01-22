@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Model.Drawing
+namespace MediaBrowser.Model.Drawing
 {
     /// <summary>
     /// Class DrawingUtils

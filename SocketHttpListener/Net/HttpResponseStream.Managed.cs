@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.System;
+using Microsoft.Extensions.Logging;
 
 namespace SocketHttpListener.Net
 {
@@ -19,7 +17,7 @@ namespace SocketHttpListener.Net
     // System.Net.ResponseStream
     //
     // Author:
-    //	Gonzalo Paniagua Javier (gonzalo@novell.com)
+    //  Gonzalo Paniagua Javier (gonzalo@novell.com)
     //
     // Copyright (c) 2005 Novell, Inc. (http://www.novell.com)
     //
@@ -30,10 +28,10 @@ namespace SocketHttpListener.Net
     // distribute, sublicense, and/or sell copies of the Software, and to
     // permit persons to whom the Software is furnished to do so, subject to
     // the following conditions:
-    // 
+    //
     // The above copyright notice and this permission notice shall be
     // included in all copies or substantial portions of the Software.
-    // 
+    //
     // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
     // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
     // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -157,7 +155,7 @@ namespace SocketHttpListener.Net
         private static byte[] s_crlf = new byte[] { 13, 10 };
         private static byte[] GetChunkSizeBytes(int size, bool final)
         {
-            string str = String.Format("{0:x}\r\n{1}", size, final ? "\r\n" : "");
+            string str = string.Format("{0:x}\r\n{1}", size, final ? "\r\n" : "");
             return Encoding.ASCII.GetBytes(str);
         }
 
@@ -228,7 +226,7 @@ namespace SocketHttpListener.Net
         {
             if (_closed)
             {
-                HttpStreamAsyncResult ares = new HttpStreamAsyncResult(this);
+                var ares = new HttpStreamAsyncResult(this);
                 ares._callback = cback;
                 ares._state = state;
                 ares.Complete();

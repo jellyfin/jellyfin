@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="dashboard-ui\**\*.*">
+    <None Include="jellyfin-web\src\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

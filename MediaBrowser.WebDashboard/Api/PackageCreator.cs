@@ -1,17 +1,13 @@
-﻿using MediaBrowser.Controller.Configuration;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.WebDashboard.Api
 {
@@ -59,7 +55,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="path">The path.</param>
         /// <param name="format">The format.</param>
         /// <returns><c>true</c> if the specified path is HTML; otherwise, <c>false</c>.</returns>
-        private bool IsFormat(string path, string format)
+        private static bool IsFormat(string path, string format)
         {
             return Path.GetExtension(path).EndsWith(format, StringComparison.OrdinalIgnoreCase);
         }
