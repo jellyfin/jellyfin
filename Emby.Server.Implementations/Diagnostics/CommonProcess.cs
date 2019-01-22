@@ -43,9 +43,11 @@ namespace Emby.Server.Implementations.Diagnostics
                 StartInfo = startInfo
             };
 
-
-            _process.EnableRaisingEvents = true;
-            _process.Exited += _process_Exited;
+            if (options.EnableRaisingEvents)
+            {
+                _process.EnableRaisingEvents = true;
+                _process.Exited += _process_Exited;
+            }
 
         }
 
@@ -140,7 +142,7 @@ namespace Emby.Server.Implementations.Diagnostics
 
             _process.Exited += (sender, args) => taskSource.TrySetResult(true);
 
-            cancellationToken.Register(()=>taskSource.TrySetResult(HasExited));
+            cancellationToken.Register(() => taskSource.TrySetResult(HasExited));
 
 
             return taskSource.Task;

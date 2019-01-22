@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
@@ -72,7 +72,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string inputFormat,
             string outputFormat,
             long startTimeTicks,
-            long? endTimeTicks,
+            long endTimeTicks,
             bool preserveOriginalTimestamps,
             CancellationToken cancellationToken)
         {
@@ -100,16 +100,16 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return ms;
         }
 
-        private void FilterEvents(SubtitleTrackInfo track, long startPositionTicks, long? endTimeTicks, bool preserveTimestamps)
+        private void FilterEvents(SubtitleTrackInfo track, long startPositionTicks, long endTimeTicks, bool preserveTimestamps)
         {
             // Drop subs that are earlier than what we're looking for
             track.TrackEvents = track.TrackEvents
                 .SkipWhile(i => (i.StartPositionTicks - startPositionTicks) < 0 || (i.EndPositionTicks - startPositionTicks) < 0)
                 .ToArray();
 
-            if (endTimeTicks.HasValue)
+            if (endTimeTicks>0)
             {
-                long endTime = endTimeTicks.Value;
+                long endTime = endTimeTicks;
 
                 track.TrackEvents = track.TrackEvents
                     .TakeWhile(i => i.StartPositionTicks <= endTime)
@@ -446,7 +446,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 UseShellExecute = false,
                 FileName = _mediaEncoder.EncoderPath,
                 Arguments = string.Format("{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
-
+                EnableRaisingEvents = true,
                 IsHidden = true,
                 ErrorDialog = false
             });
@@ -583,7 +583,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
-
+                EnableRaisingEvents = true,
                 FileName = _mediaEncoder.EncoderPath,
                 Arguments = processArgs,
                 IsHidden = true,
@@ -603,7 +603,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw;
             }
 
+            
             var ranToCompletion = await process.WaitForExitAsync(300000).ConfigureAwait(false);
+            _logger.LogInformation("task ranToCompletion");
 
             if (!ranToCompletion)
             {
