@@ -4712,9 +4712,21 @@ namespace Emby.Server.Implementations.Data
                         continue;
                     }
 
-                    var paramName = "@HasAnyProviderId" + index;
+                    // TODO this seems to be an idea for a better schema where ProviderIds are their own table
+                    //      buut this is not implemented
                     //hasProviderIds.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = '" + pair.Key + "'), '') <> " + paramName + ")");
+
+                    // TODO this is a really BAD way to do it since the pair:
+                    //      Tmdb, 1234 matches Tmdb=1234 but also Tmdb=1234567
+                    //      and maybe even NotTmdb=1234.
+
+                    // this is a placeholder for this specific pair to correlate it in the bigger query
+                    var paramName = "@HasAnyProviderId" + index;
+
+                    // this is a search for the placeholder
                     hasProviderIds.Add("ProviderIds like " + paramName + "");
+
+                    // this replaces the placeholder with a value, here: %key=val%
                     if (statement != null)
                     {
                         statement.TryBind(paramName, "%" + pair.Key + "=" + pair.Value + "%");
