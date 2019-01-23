@@ -646,7 +646,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (!(this is UserRootFolder) && !(this is AggregateFolder))
             {
-                if (!query.ParentId.Equals(Guid.Empty))
+                if (query.ParentId.Equals(Guid.Empty))
                 {
                     query.Parent = this;
                 }
