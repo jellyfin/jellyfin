@@ -939,7 +939,8 @@ namespace MediaBrowser.Api.Playback.Hls
             if (isEncoding && startNumber > 0)
             {
                 var startTime = state.SegmentLength * startNumber;
-                timeDeltaParam = string.Format("-segment_time_delta -{0}", startTime);
+                string startTimeString = startTime.ToString(_ffmpegTimeDeltaFormat);
+                timeDeltaParam = string.Format("-segment_time_delta {0}", startTimeString);
             }
 
             var segmentFormat = GetSegmentFileExtension(state.Request).TrimStart('.');

@@ -76,6 +76,7 @@ namespace MediaBrowser.Api.Playback
         protected IAuthorizationContext AuthorizationContext { get; private set; }
 
         protected EncodingHelper EncodingHelper { get; set; }
+        protected NumberFormatInfo _ffmpegTimeDeltaFormat { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
@@ -96,6 +97,12 @@ namespace MediaBrowser.Api.Playback
             IsoManager = isoManager;
             MediaEncoder = mediaEncoder;
             EncodingHelper = new EncodingHelper(MediaEncoder, FileSystem, SubtitleEncoder);
+
+            _ffmpegTimeDeltaFormat = new NumberFormatInfo() {
+                NumberDecimalDigits = 3,
+                NumberDecimalSeparator = ".",
+                NumberGroupSeparator = ""
+            };
         }
 
         /// <summary>
