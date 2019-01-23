@@ -188,12 +188,10 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                var conditionProcessor = new ConditionProcessor();
-
                 var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
                 {
-                    if (!conditionProcessor.IsAudioConditionSatisfied(GetModelProfileCondition(c), audioChannels, audioBitrate, audioSampleRate, audioBitDepth))
+                    if (!ConditionProcessor.IsAudioConditionSatisfied(GetModelProfileCondition(c), audioChannels, audioBitrate, audioSampleRate, audioBitDepth))
                     {
                         anyOff = true;
                         break;
@@ -235,12 +233,10 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                var conditionProcessor = new ConditionProcessor();
-
                 var anyOff = false;
                 foreach (var c in i.Conditions)
                 {
-                    if (!conditionProcessor.IsImageConditionSatisfied(GetModelProfileCondition(c), width, height))
+                    if (!ConditionProcessor.IsImageConditionSatisfied(GetModelProfileCondition(c), width, height))
                     {
                         anyOff = true;
                         break;
@@ -301,12 +297,10 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                var conditionProcessor = new ConditionProcessor();
-
                 var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
                 {
-                    if (!conditionProcessor.IsVideoConditionSatisfied(GetModelProfileCondition(c), width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
+                    if (!ConditionProcessor.IsVideoConditionSatisfied(GetModelProfileCondition(c), width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                     {
                         anyOff = true;
                         break;

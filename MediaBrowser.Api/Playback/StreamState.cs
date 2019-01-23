@@ -167,7 +167,7 @@ namespace MediaBrowser.Api.Playback
         public DeviceProfile DeviceProfile { get; set; }
 
         public TranscodingJob TranscodingJob;
-        public void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
+        public override void ReportTranscodingProgress(TimeSpan? transcodingPosition, float framerate, double? percentComplete, long bytesTranscoded, int? bitRate)
         {
             ApiEntryPoint.Instance.ReportTranscodingProgress(TranscodingJob, this, transcodingPosition, framerate, percentComplete, bytesTranscoded, bitRate);
         }
