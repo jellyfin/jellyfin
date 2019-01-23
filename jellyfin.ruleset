@@ -3,5 +3,7 @@
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
     <!-- disable warning SA1101: Prefix local calls with 'this.' -->
     <Rule Id="SA1101" Action="None" />
+    <!-- disable warning SA1200: Using directive must appear within a namespace declaration -->
+    <Rule Id="SA1200" Action="None" />
   </Rules>
 </RuleSet>
