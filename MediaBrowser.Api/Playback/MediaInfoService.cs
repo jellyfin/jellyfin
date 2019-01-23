@@ -74,8 +74,19 @@ namespace MediaBrowser.Api.Playback
         private readonly IUserManager _userManager;
         private readonly IJsonSerializer _json;
         private readonly IAuthorizationContext _authContext;
+        private readonly ILogger _logger;
 
-        public MediaInfoService(IMediaSourceManager mediaSourceManager, IDeviceManager deviceManager, ILibraryManager libraryManager, IServerConfigurationManager config, INetworkManager networkManager, IMediaEncoder mediaEncoder, IUserManager userManager, IJsonSerializer json, IAuthorizationContext authContext)
+        public MediaInfoService(
+            IMediaSourceManager mediaSourceManager,
+            IDeviceManager deviceManager,
+            ILibraryManager libraryManager,
+            IServerConfigurationManager config,
+            INetworkManager networkManager,
+            IMediaEncoder mediaEncoder,
+            IUserManager userManager,
+            IJsonSerializer json,
+            IAuthorizationContext authContext,
+            ILoggerFactory loggerFactory)
         {
             _mediaSourceManager = mediaSourceManager;
             _deviceManager = deviceManager;
@@ -86,6 +97,7 @@ namespace MediaBrowser.Api.Playback
             _userManager = userManager;
             _json = json;
             _authContext = authContext;
+            _logger = loggerFactory.CreateLogger(nameof(MediaInfoService));
         }
 
         public object Get(GetBitrateTestBytes request)
@@ -165,7 +177,7 @@ namespace MediaBrowser.Api.Playback
 
             var profile = request.DeviceProfile;
 
-            //Logger.Info("GetPostedPlaybackInfo profile: {0}", _json.SerializeToString(profile));
+            //Logger.LogInformation("GetPostedPlaybackInfo profile: {profile}", _json.SerializeToString(profile));
 
             if (profile == null)
             {
@@ -262,7 +274,7 @@ namespace MediaBrowser.Api.Playback
                 catch (Exception ex)
                 {
                     mediaSources = new List<MediaSourceInfo>();
-                    // TODO Log exception
+                    _logger.LogError(ex, "Could not find media sources for item id {id}", id);
                     // TODO PlaybackException ??
                     //result.ErrorCode = ex.ErrorCode;
                 }
