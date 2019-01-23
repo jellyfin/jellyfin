@@ -224,7 +224,7 @@ namespace Jellyfin.Server
                         .GetManifestResourceStream("Jellyfin.Server.Resources.Configuration.logging.json"))
                     using (Stream fstr = File.Open(configPath, FileMode.CreateNew))
                     {
-                        await rscstr.CopyToAsync(fstr);
+                        await rscstr.CopyToAsync(fstr).ConfigureAwait(false);
                     }
                 }
                 var configuration = new ConfigurationBuilder()
@@ -334,11 +334,9 @@ namespace Jellyfin.Server
             }
             else
             {
-                commandLineArgsString = string.Join(" ",
-                    Environment.GetCommandLineArgs()
-                        .Skip(1)
-                        .Select(NormalizeCommandLineArgument)
-                    );
+                commandLineArgsString = string.Join(
+                    " ",
+                    Environment.GetCommandLineArgs().Skip(1).Select(NormalizeCommandLineArgument));
             }
 
             _logger.LogInformation("Executable: {0}", module);
