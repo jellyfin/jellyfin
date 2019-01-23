@@ -1,6 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
-using System.Collections.Generic;
 using System;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -55,7 +54,7 @@ namespace MediaBrowser.Model.Dlna
         /// </summary>
         /// <value>The audio transcoding bitrate.</value>
         public int? AudioTranscodingBitrate { get; set; }
-        
+
         /// <summary>
         /// Gets the maximum bitrate.
         /// </summary>

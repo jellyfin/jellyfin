@@ -1,12 +1,12 @@
-﻿using System;
-using MediaBrowser.Controller.Library;
-using System.Threading;
-using MediaBrowser.Model.Tasks;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -30,10 +30,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         public string Description => "Refresh user infos";
 
-        public string Category
-        {
-            get { return "Library"; }
-        }
+        public string Category => "Library";
 
         public bool IsHidden => true;
 

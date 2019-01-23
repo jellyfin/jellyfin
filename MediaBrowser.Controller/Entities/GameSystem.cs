@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Model.Serialization;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
@@ -18,31 +18,13 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The display prefs id.</value>
         [IgnoreDataMember]
-        public override Guid DisplayPreferencesId
-        {
-            get
-            {
-                return Id;
-            }
-        }
+        public override Guid DisplayPreferencesId => Id;
 
         [IgnoreDataMember]
-        public override bool SupportsPlayedStatus
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPlayedStatus => false;
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsInheritedParentImages => false;
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -90,12 +72,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPeople => false;
     }
 }

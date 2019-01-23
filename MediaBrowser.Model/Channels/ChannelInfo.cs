@@ -1,4 +1,3 @@
-﻿
 namespace MediaBrowser.Model.Channels
 {
     public class ChannelInfo

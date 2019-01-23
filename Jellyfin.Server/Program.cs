@@ -6,20 +6,17 @@ using System.Net;
 using System.Net.Security;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Emby.Drawing;
-using Emby.Drawing.Skia;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.EnvironmentInfo;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
-using Jellyfin.Server.Native;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.System;
+using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -30,12 +27,12 @@ namespace Jellyfin.Server
 {
     public static class Program
     {
-        private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
-        private static ILoggerFactory _loggerFactory;
+        private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
+        private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
         private static ILogger _logger;
         private static bool _restartOnShutdown;
 
-        public static async Task<int> Main(string[] args)
+        public static async Task Main(string[] args)
         {
             StartupOptions options = new StartupOptions(args);
             Version version = Assembly.GetEntryAssembly().GetName().Version;
@@ -43,16 +40,42 @@ namespace Jellyfin.Server
             if (options.ContainsOption("-v") || options.ContainsOption("--version"))
             {
                 Console.WriteLine(version.ToString());
-                return 0;
             }
 
-            ServerApplicationPaths appPaths = createApplicationPaths(options);
+            ServerApplicationPaths appPaths = CreateApplicationPaths(options);
+
+            // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
+            Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
             await createLogger(appPaths);
-            _loggerFactory = new SerilogLoggerFactory();
             _logger = _loggerFactory.CreateLogger("Main");
 
-            AppDomain.CurrentDomain.UnhandledException += (sender, e) 
+            AppDomain.CurrentDomain.UnhandledException += (sender, e)
                 => _logger.LogCritical((Exception)e.ExceptionObject, "Unhandled Exception");
+
+            // Intercept Ctrl+C and Ctrl+Break
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                if (_tokenSource.IsCancellationRequested)
+                {
+                    return; // Already shutting down
+                }
+                e.Cancel = true;
+                _logger.LogInformation("Ctrl+C, shutting down");
+                Environment.ExitCode = 128 + 2;
+                Shutdown();
+            };
+
+            // Register a SIGTERM handler
+            AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+            {
+                if (_tokenSource.IsCancellationRequested)
+                {
+                    return; // Already shutting down
+                }
+                _logger.LogInformation("Received a SIGTERM signal, shutting down");
+                Environment.ExitCode = 128 + 15;
+                Shutdown();
+            };
 
             _logger.LogInformation("Jellyfin version: {Version}", version);
 
@@ -64,30 +87,37 @@ namespace Jellyfin.Server
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
-            var fileSystem = new ManagedFileSystem(_loggerFactory.CreateLogger("FileSystem"), environmentInfo, null, appPaths.TempDirectory, true);
+            var fileSystem = new ManagedFileSystem(_loggerFactory, environmentInfo, null, appPaths.TempDirectory, true);
 
             using (var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
                 fileSystem,
-                new PowerManagement(),
                 environmentInfo,
                 new NullImageEncoder(),
-                new SystemEvents(_loggerFactory.CreateLogger("SystemEvents")),
-                new NetworkManager(_loggerFactory.CreateLogger("NetworkManager"), environmentInfo)))
+                new SystemEvents(),
+                new NetworkManager(_loggerFactory, environmentInfo)))
             {
                 appHost.Init();
 
-                appHost.ImageProcessor.ImageEncoder = getImageEncoder(_logger, fileSystem, options, () => appHost.HttpClient, appPaths, environmentInfo, appHost.LocalizationManager);
+                appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
 
                 _logger.LogInformation("Running startup tasks");
 
                 await appHost.RunStartupTasks();
 
                 // TODO: read input for a stop command
-                // Block main thread until shutdown
-                await ApplicationTaskCompletionSource.Task;
+
+                try
+                {
+                    // Block main thread until shutdown
+                    await Task.Delay(-1, _tokenSource.Token);
+                }
+                catch (TaskCanceledException)
+                {
+                    // Don't throw on cancellation
+                }
 
                 _logger.LogInformation("Disposing app host");
             }
@@ -96,49 +126,89 @@ namespace Jellyfin.Server
             {
                 StartNewInstance(options);
             }
-
-            return 0;
         }
 
-        private static ServerApplicationPaths createApplicationPaths(StartupOptions options)
+        private static ServerApplicationPaths CreateApplicationPaths(StartupOptions options)
         {
-            string programDataPath;
-            if (options.ContainsOption("-programdata"))
+            string programDataPath = Environment.GetEnvironmentVariable("JELLYFIN_DATA_PATH");
+            if (string.IsNullOrEmpty(programDataPath))
             {
-                programDataPath = options.GetOption("-programdata");
-            }
-            else
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (options.ContainsOption("-programdata"))
                 {
-                    programDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    programDataPath = options.GetOption("-programdata");
                 }
                 else
                 {
-                    // $XDG_DATA_HOME defines the base directory relative to which user specific data files should be stored.
-                    programDataPath = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
-                    // If $XDG_DATA_HOME is either not set or empty, $HOME/.local/share should be used.
-                    if (string.IsNullOrEmpty(programDataPath))
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
+                        programDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                     }
+                    else
+                    {
+                        // $XDG_DATA_HOME defines the base directory relative to which user specific data files should be stored.
+                        programDataPath = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+                        // If $XDG_DATA_HOME is either not set or empty, $HOME/.local/share should be used.
+                        if (string.IsNullOrEmpty(programDataPath))
+                        {
+                            programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
+                        }
+                    }
+
+                    programDataPath = Path.Combine(programDataPath, "jellyfin");
                 }
-                programDataPath = Path.Combine(programDataPath, "jellyfin");
+            }
+
+            if (string.IsNullOrEmpty(programDataPath))
+            {
+                Console.WriteLine("Cannot continue without path to program data folder (try -programdata)");
+                Environment.Exit(1);
+            }
+            else
+            {
+                Directory.CreateDirectory(programDataPath);
+            }
+
+            string configDir = Environment.GetEnvironmentVariable("JELLYFIN_CONFIG_DIR");
+            if (string.IsNullOrEmpty(configDir))
+            {
+                if (options.ContainsOption("-configdir"))
+                {
+                    configDir = options.GetOption("-configdir");
+                }
+                else
+                {
+                    // Let BaseApplicationPaths set up the default value
+                    configDir = null;
+                }
+            }
+
+            if (configDir != null)
+            {
+                Directory.CreateDirectory(configDir);
             }
 
             string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
             if (string.IsNullOrEmpty(logDir))
             {
-                logDir = Path.Combine(programDataPath, "logs");
-                // Ensure logDir exists
+                if (options.ContainsOption("-logdir"))
+                {
+                    logDir = options.GetOption("-logdir");
+                }
+                else
+                {
+                    // Let BaseApplicationPaths set up the default value
+                    logDir = null;
+                }
+            }
+
+            if (logDir != null)
+            {
                 Directory.CreateDirectory(logDir);
-                // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
-                Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", logDir);
             }
 
             string appPath = AppContext.BaseDirectory;
 
-            return new ServerApplicationPaths(programDataPath, appPath, appPath, logDir);
+            return new ServerApplicationPaths(programDataPath, appPath, appPath, logDir, configDir);
         }
 
         private static async Task createLogger(IApplicationPaths appPaths)
@@ -173,10 +243,10 @@ namespace Jellyfin.Server
             {
                 Serilog.Log.Logger = new LoggerConfiguration()
                     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] {Message:lj}{NewLine}{Exception}")
-                    .WriteTo.File(
+                    .WriteTo.Async(x => x.File(
                         Path.Combine(appPaths.LogDirectoryPath, "log_.log"),
                         rollingInterval: RollingInterval.Day,
-                        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] {Message}{NewLine}{Exception}")
+                        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] {Message}{NewLine}{Exception}"))
                     .Enrich.FromLogContext()
                     .CreateLogger();
 
@@ -184,28 +254,25 @@ namespace Jellyfin.Server
             }
         }
 
-        public static IImageEncoder getImageEncoder(
-            ILogger logger, 
-            IFileSystem fileSystem, 
-            StartupOptions startupOptions, 
-            Func<IHttpClient> httpClient,
+        public static IImageEncoder GetImageEncoder(
+            IFileSystem fileSystem,
             IApplicationPaths appPaths,
-            IEnvironmentInfo environment,
             ILocalizationManager localizationManager)
         {
             try
             {
-                return new SkiaEncoder(logger, appPaths, httpClient, fileSystem, localizationManager);
+                return new SkiaEncoder(_loggerFactory, appPaths, fileSystem, localizationManager);
             }
             catch (Exception ex)
             {
-                logger.LogInformation(ex, "Skia not available. Will fallback to NullIMageEncoder. {0}");
+                _logger.LogInformation(ex, "Skia not available. Will fallback to NullIMageEncoder. {0}");
             }
 
             return new NullImageEncoder();
         }
 
-        private static MediaBrowser.Model.System.OperatingSystem getOperatingSystem() {
+        private static MediaBrowser.Model.System.OperatingSystem getOperatingSystem()
+        {
             switch (Environment.OSVersion.Platform)
             {
                 case PlatformID.MacOSX:
@@ -214,28 +281,31 @@ namespace Jellyfin.Server
                     return MediaBrowser.Model.System.OperatingSystem.Windows;
                 case PlatformID.Unix:
                 default:
-                {
-                    string osDescription = RuntimeInformation.OSDescription;
-                    if (osDescription.Contains("linux", StringComparison.OrdinalIgnoreCase))
                     {
-                        return MediaBrowser.Model.System.OperatingSystem.Linux;
+                        string osDescription = RuntimeInformation.OSDescription;
+                        if (osDescription.Contains("linux", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return MediaBrowser.Model.System.OperatingSystem.Linux;
+                        }
+                        else if (osDescription.Contains("darwin", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return MediaBrowser.Model.System.OperatingSystem.OSX;
+                        }
+                        else if (osDescription.Contains("bsd", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return MediaBrowser.Model.System.OperatingSystem.BSD;
+                        }
+                        throw new Exception($"Can't resolve OS with description: '{osDescription}'");
                     }
-                    else if (osDescription.Contains("darwin", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return MediaBrowser.Model.System.OperatingSystem.OSX;
-                    }
-                    else if (osDescription.Contains("bsd", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return MediaBrowser.Model.System.OperatingSystem.BSD;
-                    }
-                    throw new Exception($"Can't resolve OS with description: '{osDescription}'");
-                }
             }
         }
 
-        public static  void Shutdown()
+        public static void Shutdown()
         {
-            ApplicationTaskCompletionSource.SetResult(true);
+            if (!_tokenSource.IsCancellationRequested)
+            {
+                _tokenSource.Cancel();
+            }
         }
 
         public static void Restart()
@@ -264,7 +334,7 @@ namespace Jellyfin.Server
             }
             else
             {
-                commandLineArgsString = string .Join(" ", 
+                commandLineArgsString = string.Join(" ",
                     Environment.GetCommandLineArgs()
                         .Skip(1)
                         .Select(NormalizeCommandLineArgument)

@@ -1,4 +1,4 @@
-﻿
+
 namespace Emby.Dlna.Common
 {
     public class DeviceIcon

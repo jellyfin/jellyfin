@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Sony Blu-ray Player 2015</Name>
   <Identification>
     <ModelNumber>BDP-2015</ModelNumber>

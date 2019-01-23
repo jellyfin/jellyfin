@@ -1,15 +1,3 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.XbmcMetadata.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,10 +7,20 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
-using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
+using MediaBrowser.XbmcMetadata.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
@@ -132,21 +130,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
-        public string Name
-        {
-            get
-            {
-                return SaverName;
-            }
-        }
+        public string Name => SaverName;
 
-        public static string SaverName
-        {
-            get
-            {
-                return "Nfo";
-            }
-        }
+        public static string SaverName => "Nfo";
 
         public string GetSavePath(BaseItem item)
         {
@@ -243,7 +229,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 CloseOutput = false
             };
 
-            using (XmlWriter writer = XmlWriter.Create(stream, settings))
+            using (var writer = XmlWriter.Create(stream, settings))
             {
                 var root = GetRootElementName(item);
 

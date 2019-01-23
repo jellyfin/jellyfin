@@ -1,10 +1,9 @@
-﻿using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -99,7 +98,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="program">The program.</param>
         /// <returns>Task{SeriesTimerInfo}.</returns>
         Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken, ProgramInfo program = null);
-        
+
         /// <summary>
         /// Gets the series timers asynchronous.
         /// </summary>

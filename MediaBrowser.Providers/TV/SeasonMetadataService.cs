@@ -1,15 +1,15 @@
-﻿using MediaBrowser.Controller.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Providers.Manager;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Providers.Manager;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -54,13 +54,7 @@ namespace MediaBrowser.Providers.TV
             return updateType;
         }
 
-        protected override bool EnableUpdatingPremiereDateFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingPremiereDateFromChildren => true;
 
         protected override IList<BaseItem> GetChildrenForMetadataUpdates(Season item)
         {

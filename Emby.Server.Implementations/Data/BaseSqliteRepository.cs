@@ -1,12 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using SQLitePCL.pretty;
 using System.Linq;
+using System.Threading;
+using Microsoft.Extensions.Logging;
 using SQLitePCL;
+using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -24,15 +23,9 @@ namespace Emby.Server.Implementations.Data
             WriteLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         }
 
-        protected TransactionMode TransactionMode
-        {
-            get { return TransactionMode.Deferred; }
-        }
+        protected TransactionMode TransactionMode => TransactionMode.Deferred;
 
-        protected TransactionMode ReadTransactionMode
-        {
-            get { return TransactionMode.Deferred; }
-        }
+        protected TransactionMode ReadTransactionMode => TransactionMode.Deferred;
 
         internal static int ThreadSafeMode { get; set; }
 
@@ -58,10 +51,7 @@ namespace Emby.Server.Implementations.Data
         private string _defaultWal;
         protected ManagedConnection _connection;
 
-        protected virtual bool EnableSingleConnection
-        {
-            get { return true; }
-        }
+        protected virtual bool EnableSingleConnection => true;
 
         protected ManagedConnection CreateConnection(bool isReadOnly = false)
         {
@@ -238,21 +228,9 @@ namespace Emby.Server.Implementations.Data
             Logger.LogInformation("PRAGMA synchronous=" + db.Query("PRAGMA synchronous").SelectScalarString().First());
         }
 
-        protected virtual bool EnableTempStoreMemory
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected virtual bool EnableTempStoreMemory => false;
 
-        protected virtual int? CacheSize
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected virtual int? CacheSize => null;
 
         internal static void CheckOk(int rc)
         {
@@ -276,7 +254,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(GetType().Name + " has been disposed and cannot be accessed.");
+                throw new ObjectDisposedException(GetType().Name, "Object has been disposed and cannot be accessed.");
             }
         }
 

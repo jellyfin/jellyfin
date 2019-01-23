@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Model.Tasks
+namespace MediaBrowser.Model.Tasks
 {
     public interface IConfigurableScheduledTask
     {

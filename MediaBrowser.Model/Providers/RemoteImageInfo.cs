@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Providers
@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.Providers
         /// Gets a url used for previewing a smaller version
         /// </summary>
         public string ThumbnailUrl { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the height.
         /// </summary>

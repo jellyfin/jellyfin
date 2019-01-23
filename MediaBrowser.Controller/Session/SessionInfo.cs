@@ -1,11 +1,11 @@
+using System;
+using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
-using System;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Threading;
-using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Session
 {
@@ -142,7 +142,7 @@ namespace MediaBrowser.Controller.Session
             {
                 if (Capabilities == null)
                 {
-                    return new string[] {};
+                    return new string[] { };
                 }
                 return Capabilities.SupportedCommands;
             }

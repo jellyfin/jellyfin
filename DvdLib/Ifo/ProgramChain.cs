@@ -1,8 +1,6 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
+using System.Linq;
 
 namespace DvdLib.Ifo
 {
@@ -68,7 +66,7 @@ namespace DvdLib.Ifo
             ProhibitedUserOperations = (UserOperation)br.ReadUInt32();
             AudioStreamControl = br.ReadBytes(16);
             SubpictureStreamControl = br.ReadBytes(128);
-            
+
             _nextProgramNumber = br.ReadUInt16();
             _prevProgramNumber = br.ReadUInt16();
             _goupProgramNumber = br.ReadUInt16();
@@ -89,7 +87,7 @@ namespace DvdLib.Ifo
             br.BaseStream.Seek(startPos + _cellPositionOffset, SeekOrigin.Begin);
             for (int cellNum = 0; cellNum < _cellCount; cellNum++)
             {
-                Cell c = new Cell();
+                var c = new Cell();
                 c.ParsePosition(br);
                 Cells.Add(c);
             }
@@ -101,12 +99,12 @@ namespace DvdLib.Ifo
             }
 
             br.BaseStream.Seek(startPos + _programMapOffset, SeekOrigin.Begin);
-            List<int> cellNumbers = new List<int>();
+            var cellNumbers = new List<int>();
             for (int progNum = 0; progNum < _programCount; progNum++) cellNumbers.Add(br.ReadByte() - 1);
 
             for (int i = 0; i < cellNumbers.Count; i++)
             {
-                int max = (i + 1 == cellNumbers.Count) ? _cellCount : cellNumbers[i+1];
+                int max = (i + 1 == cellNumbers.Count) ? _cellCount : cellNumbers[i + 1];
                 Programs.Add(new Program(Cells.Where((c, idx) => idx >= cellNumbers[i] && idx < max).ToList()));
             }
         }

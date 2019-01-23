@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Controller.LiveTv;
 using System;
 using System.Globalization;
+using MediaBrowser.Controller.LiveTv;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {

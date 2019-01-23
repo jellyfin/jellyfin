@@ -1,30 +1,21 @@
-﻿using MediaBrowser.Common.Configuration;
+using System;
+using System.Xml;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Xml;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
     public class SeriesNfoParser : BaseNfoParser<Series>
     {
-        protected override bool SupportsUrlAfterClosingXmlTag
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool SupportsUrlAfterClosingXmlTag => true;
 
-        protected override string MovieDbParserSearchString
-        {
-            get { return "themoviedb.org/tv/"; }
-        }
+        protected override string MovieDbParserSearchString => "themoviedb.org/tv/";
 
         /// <summary>
         /// Fetches the data from XML node.
@@ -62,21 +53,21 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
                 case "airs_dayofweek":
-                {
-                    item.AirDays = TVUtils.GetAirDays(reader.ReadElementContentAsString());
-                    break;
-                }
+                    {
+                        item.AirDays = TVUtils.GetAirDays(reader.ReadElementContentAsString());
+                        break;
+                    }
 
                 case "airs_time":
-                {
-                    var val = reader.ReadElementContentAsString();
-
-                    if (!string.IsNullOrWhiteSpace(val))
                     {
-                        item.AirTime = val;
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            item.AirTime = val;
+                        }
+                        break;
                     }
-                    break;
-                }
 
                 case "status":
                     {
@@ -84,8 +75,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(status))
                         {
-                            SeriesStatus seriesStatus;
-                            if (Enum.TryParse(status, true, out seriesStatus))
+                            if (Enum.TryParse(status, true, out SeriesStatus seriesStatus))
                             {
                                 item.Status = seriesStatus;
                             }

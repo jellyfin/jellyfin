@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Model.Net
+namespace MediaBrowser.Model.Net
 {
     public class EndPointInfo
     {

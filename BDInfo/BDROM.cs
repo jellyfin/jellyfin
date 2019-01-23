@@ -1,4 +1,4 @@
-﻿//============================================================================
+//============================================================================
 // BDInfo - Blu-ray Video and Audio Analysis Tool
 // Copyright © 2010 Cinema Squid
 //
@@ -22,7 +22,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Text;
 
 namespace BDInfo
 {
@@ -72,12 +71,11 @@ namespace BDInfo
 
         public event OnPlaylistFileScanError PlaylistFileScanError;
 
-        public BDROM(
-            string path, IFileSystem fileSystem, ITextEncoding textEncoding)
+        public BDROM(string path, IFileSystem fileSystem)
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             _fileSystem = fileSystem;
@@ -164,17 +162,17 @@ namespace BDInfo
             if (DirectoryPLAYLIST != null)
             {
                 FileSystemMetadata[] files = GetFiles(DirectoryPLAYLIST.FullName, ".mpls").ToArray();
-                foreach (FileSystemMetadata file in files)
+                foreach (var file in files)
                 {
                     PlaylistFiles.Add(
-                        file.Name.ToUpper(), new TSPlaylistFile(this, file, _fileSystem, textEncoding));
+                        file.Name.ToUpper(), new TSPlaylistFile(this, file, _fileSystem));
                 }
             }
 
             if (DirectorySTREAM != null)
             {
                 FileSystemMetadata[] files = GetFiles(DirectorySTREAM.FullName, ".m2ts").ToArray();
-                foreach (FileSystemMetadata file in files)
+                foreach (var file in files)
                 {
                     StreamFiles.Add(
                         file.Name.ToUpper(), new TSStreamFile(file, _fileSystem));
@@ -184,17 +182,17 @@ namespace BDInfo
             if (DirectoryCLIPINF != null)
             {
                 FileSystemMetadata[] files = GetFiles(DirectoryCLIPINF.FullName, ".clpi").ToArray();
-                foreach (FileSystemMetadata file in files)
+                foreach (var file in files)
                 {
                     StreamClipFiles.Add(
-                        file.Name.ToUpper(), new TSStreamClipFile(file, _fileSystem, textEncoding));
+                        file.Name.ToUpper(), new TSStreamClipFile(file, _fileSystem));
                 }
             }
 
             if (DirectorySSIF != null)
             {
                 FileSystemMetadata[] files = GetFiles(DirectorySSIF.FullName, ".ssif").ToArray();
-                foreach (FileSystemMetadata file in files)
+                foreach (var file in files)
                 {
                     InterleavedFiles.Add(
                         file.Name.ToUpper(), new TSInterleavedFile(file));
@@ -214,8 +212,8 @@ namespace BDInfo
 
         public void Scan()
         {
-            List<TSStreamClipFile> errorStreamClipFiles = new List<TSStreamClipFile>();
-            foreach (TSStreamClipFile streamClipFile in StreamClipFiles.Values)
+            var errorStreamClipFiles = new List<TSStreamClipFile>();
+            foreach (var streamClipFile in StreamClipFiles.Values)
             {
                 try
                 {
@@ -235,11 +233,11 @@ namespace BDInfo
                             break;
                         }
                     }
-                    else throw ex;
+                    else throw;
                 }
             }
 
-            foreach (TSStreamFile streamFile in StreamFiles.Values)
+            foreach (var streamFile in StreamFiles.Values)
             {
                 string ssifName = Path.GetFileNameWithoutExtension(streamFile.Name) + ".SSIF";
                 if (InterleavedFiles.ContainsKey(ssifName))
@@ -252,8 +250,8 @@ namespace BDInfo
             StreamFiles.Values.CopyTo(streamFiles, 0);
             Array.Sort(streamFiles, CompareStreamFiles);
 
-            List<TSPlaylistFile> errorPlaylistFiles = new List<TSPlaylistFile>();
-            foreach (TSPlaylistFile playlistFile in PlaylistFiles.Values)
+            var errorPlaylistFiles = new List<TSPlaylistFile>();
+            foreach (var playlistFile in PlaylistFiles.Values)
             {
                 try
                 {
@@ -273,19 +271,19 @@ namespace BDInfo
                             break;
                         }
                     }
-                    else throw ex;
+                    else throw;
                 }
             }
 
-            List<TSStreamFile> errorStreamFiles = new List<TSStreamFile>();
-            foreach (TSStreamFile streamFile in streamFiles)
+            var errorStreamFiles = new List<TSStreamFile>();
+            foreach (var streamFile in streamFiles)
             {
                 try
                 {
-                    List<TSPlaylistFile> playlists = new List<TSPlaylistFile>();
-                    foreach (TSPlaylistFile playlist in PlaylistFiles.Values)
+                    var playlists = new List<TSPlaylistFile>();
+                    foreach (var playlist in PlaylistFiles.Values)
                     {
-                        foreach (TSStreamClip streamClip in playlist.StreamClips)
+                        foreach (var streamClip in playlist.StreamClips)
                         {
                             if (streamClip.Name == streamFile.Name)
                             {
@@ -310,16 +308,16 @@ namespace BDInfo
                             break;
                         }
                     }
-                    else throw ex;
+                    else throw;
                 }
             }
 
-            foreach (TSPlaylistFile playlistFile in PlaylistFiles.Values)
+            foreach (var playlistFile in PlaylistFiles.Values)
             {
                 playlistFile.Initialize();
                 if (!Is50Hz)
                 {
-                    foreach (TSVideoStream videoStream in playlistFile.VideoStreams)
+                    foreach (var videoStream in playlistFile.VideoStreams)
                     {
                         if (videoStream.FrameRate == TSFrameRate.FRAMERATE_25 ||
                             videoStream.FrameRate == TSFrameRate.FRAMERATE_50)
@@ -336,7 +334,7 @@ namespace BDInfo
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             FileSystemMetadata dir = _fileSystem.GetDirectoryInfo(path);
@@ -369,7 +367,7 @@ namespace BDInfo
             if (dir != null)
             {
                 FileSystemMetadata[] children = _fileSystem.GetDirectories(dir.FullName).ToArray();
-                foreach (FileSystemMetadata child in children)
+                foreach (var child in children)
                 {
                     if (string.Equals(child.Name, name, StringComparison.OrdinalIgnoreCase))
                     {
@@ -378,7 +376,7 @@ namespace BDInfo
                 }
                 if (searchDepth > 0)
                 {
-                    foreach (FileSystemMetadata child in children)
+                    foreach (var child in children)
                     {
                         GetDirectory(
                             name, child, searchDepth - 1);
@@ -395,7 +393,7 @@ namespace BDInfo
             //if (!ExcludeDirs.Contains(directoryInfo.Name.ToUpper()))  // TODO: Keep?
             {
                 FileSystemMetadata[] pathFiles = _fileSystem.GetFiles(directoryInfo.FullName).ToArray();
-                foreach (FileSystemMetadata pathFile in pathFiles)
+                foreach (var pathFile in pathFiles)
                 {
                     if (pathFile.Extension.ToUpper() == ".SSIF")
                     {
@@ -405,7 +403,7 @@ namespace BDInfo
                 }
 
                 FileSystemMetadata[] pathChildren = _fileSystem.GetDirectories(directoryInfo.FullName).ToArray();
-                foreach (FileSystemMetadata pathChild in pathChildren)
+                foreach (var pathChild in pathChildren)
                 {
                     size += GetDirectorySize(pathChild);
                 }

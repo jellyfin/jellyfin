@@ -1,7 +1,6 @@
-﻿using MediaBrowser.Model.Entities;
 using System;
 using System.Linq;
-using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -17,7 +16,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrEmpty(url))
             {
-                throw new ArgumentNullException("url");
+                throw new ArgumentNullException(nameof(url));
             }
 
             var current = item.RemoteTrailers.FirstOrDefault(i => string.Equals(i.Url, url, StringComparison.OrdinalIgnoreCase));
@@ -35,7 +34,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    item.RemoteTrailers = item.RemoteTrailers.Concat(new [] { mediaUrl }).ToArray();
+                    item.RemoteTrailers = item.RemoteTrailers.Concat(new[] { mediaUrl }).ToArray();
                 }
             }
         }

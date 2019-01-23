@@ -1,17 +1,14 @@
-﻿using MediaBrowser.Controller.Configuration;
+using System.Collections.Generic;
+using System.IO;
+using System.Xml;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Xml;
-
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
@@ -58,7 +55,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteAttributeString("cache", string.Format("{0}.xml", tvdb));
                 writer.WriteString(string.Format("http://www.thetvdb.com/api/1D62F2F90030C444/series/{0}/all/{1}.zip", tvdb, language));
                 writer.WriteEndElement();
-                
+
                 writer.WriteEndElement();
             }
 

@@ -1,23 +1,11 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Extensions;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Plugins;
-using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations
 {
@@ -27,10 +15,13 @@ namespace Emby.Server.Implementations
         private readonly ILogger _logger;
         private readonly IHttpResultFactory _resultFactory;
 
-        public ResourceFileManager(IHttpResultFactory resultFactory, ILogger logger, IFileSystem fileSystem)
+        public ResourceFileManager(
+            IHttpResultFactory resultFactory,
+            ILoggerFactory loggerFactory,
+            IFileSystem fileSystem)
         {
             _resultFactory = resultFactory;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger("ResourceManager");
             _fileSystem = fileSystem;
         }
 

@@ -1,20 +1,18 @@
-﻿using MediaBrowser.Common.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Querying;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Movies
@@ -370,7 +368,7 @@ namespace MediaBrowser.Api.Movies
         {
             var people = _libraryManager.GetPeople(new InternalPeopleQuery
             {
-                ExcludePersonTypes = new []
+                ExcludePersonTypes = new[]
                 {
                     PersonType.Director
                 },

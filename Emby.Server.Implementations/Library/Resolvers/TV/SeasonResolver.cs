@@ -1,10 +1,9 @@
-﻿using System.Globalization;
+using System.Globalization;
+using Emby.Naming.TV;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
-using Emby.Naming.Common;
-using Emby.Naming.TV;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.TV
@@ -28,6 +27,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// Initializes a new instance of the <see cref="SeasonResolver"/> class.
         /// </summary>
         /// <param name="config">The config.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="localization">The localization</param>
+        /// <param name="logger">The logger</param>
         public SeasonResolver(IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization, ILogger logger)
         {
             _config = config;
@@ -61,7 +63,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
                 if (!season.IndexNumber.HasValue || !seasonParserResult.IsSeasonFolder)
                 {
-                    var resolver = new Emby.Naming.TV.EpisodeResolver(namingOptions);
+                    var resolver = new Naming.TV.EpisodeResolver(namingOptions);
 
                     var folderName = System.IO.Path.GetFileName(path);
                     var testPath = "\\\\test\\" + folderName;

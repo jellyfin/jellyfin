@@ -1,9 +1,9 @@
-﻿using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
-using MediaBrowser.Model.Configuration;
 using System.Linq;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -158,7 +158,7 @@ namespace MediaBrowser.Controller.Entities
         public bool EnableGroupByMetadataKey { get; set; }
         public bool? HasChapterImages { get; set; }
 
-        public ValueTuple<string, SortOrder>[] OrderBy { get; set; } 
+        public ValueTuple<string, SortOrder>[] OrderBy { get; set; }
 
         public DateTime? MinDateCreated { get; set; }
         public DateTime? MinDateLastSaved { get; set; }

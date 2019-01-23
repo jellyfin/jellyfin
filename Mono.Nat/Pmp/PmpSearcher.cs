@@ -15,10 +15,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -81,12 +81,12 @@ namespace Mono.Nat
 
             try
             {
-                foreach (NetworkInterface n in NetworkInterface.GetAllNetworkInterfaces())
+                foreach (var n in NetworkInterface.GetAllNetworkInterfaces())
                 {
                     if (n.OperationalStatus != OperationalStatus.Up && n.OperationalStatus != OperationalStatus.Unknown)
                         continue;
                     IPInterfaceProperties properties = n.GetIPProperties();
-                    List<IPEndPoint> gatewayList = new List<IPEndPoint>();
+                    var gatewayList = new List<IPEndPoint>();
 
                     foreach (GatewayIPAddressInformation gateway in properties.GatewayAddresses)
                     {
@@ -105,11 +105,11 @@ namespace Mono.Nat
                                 gatewayList.Add(new IPEndPoint(gw2, PmpConstants.ServerPort));
                             }
                         }
-                        foreach (var unicast in properties.UnicastAddresses)
+                        foreach (UnicastIPAddressInformation unicast in properties.UnicastAddresses)
                         {
                             if (/*unicast.DuplicateAddressDetectionState == DuplicateAddressDetectionState.Preferred
-							    && unicast.AddressPreferredLifetime != UInt32.MaxValue
-							    && */unicast.Address.AddressFamily == AddressFamily.InterNetwork)
+                                && unicast.AddressPreferredLifetime != UInt32.MaxValue
+                                && */unicast.Address.AddressFamily == AddressFamily.InterNetwork)
                             {
                                 var bytes = unicast.Address.GetAddressBytes();
                                 bytes[3] = 1;
@@ -120,7 +120,7 @@ namespace Mono.Nat
 
                     if (gatewayList.Count > 0)
                     {
-                        foreach (UnicastIPAddressInformation address in properties.UnicastAddresses)
+                        foreach (var address in properties.UnicastAddresses)
                         {
                             if (address.Address.AddressFamily == AddressFamily.InterNetwork)
                             {
@@ -165,7 +165,7 @@ namespace Mono.Nat
 
         async Task Search(UdpClient client)
         {
-            // Sort out the time for the next search first. The spec says the 
+            // Sort out the time for the next search first. The spec says the
             // timeout should double after each attempt. Once it reaches 64 seconds
             // (and that attempt fails), assume no devices available
             nextSearch = DateTime.Now.AddMilliseconds(timeout);
@@ -189,8 +189,8 @@ namespace Mono.Nat
 
         bool IsSearchAddress(IPAddress address)
         {
-            foreach (List<IPEndPoint> gatewayList in gatewayLists.Values)
-                foreach (IPEndPoint gatewayEndpoint in gatewayList)
+            foreach (var gatewayList in gatewayLists.Values)
+                foreach (var gatewayEndpoint in gatewayList)
                     if (gatewayEndpoint.Address.Equals(address))
                         return true;
             return false;
@@ -210,7 +210,7 @@ namespace Mono.Nat
             if (errorcode != 0)
                 _logger.LogDebug("Non zero error: {0}", errorcode);
 
-            IPAddress publicIp = new IPAddress(new byte[] { response[8], response[9], response[10], response[11] });
+            var publicIp = new IPAddress(new byte[] { response[8], response[9], response[10], response[11] });
             nextSearch = DateTime.Now.AddMinutes(5);
             timeout = 250;
 

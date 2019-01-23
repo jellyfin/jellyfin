@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Controller.Providers;
+using System;
+using System.Collections.Generic;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using System.Collections.Generic;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using System;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.Entities
         public TrailerType[] TrailerTypes { get; set; }
 
         public override double GetDefaultPrimaryImageAspectRatio()
-            => 2 / 3;
+            => 2.0 / 3;
 
         public override UnratedItem GetBlockUnratedType()
         {
@@ -94,13 +94,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool StopRefreshIfLocalMetadataFound
-        {
-            get
-            {
-                // Need people id's from internet metadata
-                return false;
-            }
-        }
+        public override bool StopRefreshIfLocalMetadataFound => false;
     }
 }

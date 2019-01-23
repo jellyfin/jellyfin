@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
@@ -98,7 +98,7 @@ namespace MediaBrowser.Api
     [Route("/Environment/DefaultDirectoryBrowser", "GET", Summary = "Gets the parent path of a given path")]
     public class GetDefaultDirectoryBrowser : IReturn<DefaultDirectoryBrowserInfo>
     {
-        
+
     }
 
     /// <summary>
@@ -124,7 +124,7 @@ namespace MediaBrowser.Api
         {
             if (networkManager == null)
             {
-                throw new ArgumentNullException("networkManager");
+                throw new ArgumentNullException(nameof(networkManager));
             }
 
             _networkManager = networkManager;
@@ -193,7 +193,7 @@ namespace MediaBrowser.Api
 
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("Path");
+                throw new ArgumentNullException(nameof(Path));
             }
 
             var networkPrefix = UncSeparatorString + UncSeparatorString;

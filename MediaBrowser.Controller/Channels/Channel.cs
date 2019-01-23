@@ -1,12 +1,10 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Channels;
-using MediaBrowser.Model.Querying;
 using System;
 using System.Linq;
-using MediaBrowser.Model.Serialization;
 using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -33,19 +31,10 @@ namespace MediaBrowser.Controller.Channels
         }
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsInheritedParentImages => false;
 
         [IgnoreDataMember]
-        public override SourceType SourceType
-        {
-            get { return SourceType.Channel; }
-        }
+        public override SourceType SourceType => SourceType.Channel;
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {

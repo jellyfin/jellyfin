@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -9,8 +9,8 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.AppBase
 {
@@ -99,6 +99,7 @@ namespace Emby.Server.Implementations.AppBase
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
+        /// <param name="fileSystem">The file system</param>
         protected BaseConfigurationManager(IApplicationPaths applicationPaths, ILoggerFactory loggerFactory, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
         {
             CommonApplicationPaths = applicationPaths;
@@ -150,12 +151,12 @@ namespace Emby.Server.Implementations.AppBase
         /// Replaces the configuration.
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
-        /// <exception cref="System.ArgumentNullException">newConfiguration</exception>
+        /// <exception cref="ArgumentNullException">newConfiguration</exception>
         public virtual void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
             if (newConfiguration == null)
             {
-                throw new ArgumentNullException("newConfiguration");
+                throw new ArgumentNullException(nameof(newConfiguration));
             }
 
             ValidateCachePath(newConfiguration);
@@ -187,7 +188,7 @@ namespace Emby.Server.Implementations.AppBase
         /// Replaces the cache path.
         /// </summary>
         /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <exception cref="DirectoryNotFoundException"></exception>
         private void ValidateCachePath(BaseApplicationConfiguration newConfig)
         {
             var newPath = newConfig.CachePath;
@@ -283,7 +284,7 @@ namespace Emby.Server.Implementations.AppBase
                 validatingStore.Validate(currentConfiguration, configuration);
             }
 
-            NamedConfigurationUpdating?.Invoke( this, new ConfigurationUpdateEventArgs
+            NamedConfigurationUpdating?.Invoke(this, new ConfigurationUpdateEventArgs
             {
                 Key = key,
                 NewConfiguration = configuration

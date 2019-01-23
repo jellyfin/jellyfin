@@ -1,29 +1,28 @@
-﻿using MediaBrowser.Common.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
-using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Notifications;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Authentication;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Activity
 {
@@ -202,7 +201,7 @@ namespace Emby.Server.Implementations.Activity
             return name;
         }
 
-        private string GetPlaybackNotificationType(string mediaType)
+        private static string GetPlaybackNotificationType(string mediaType)
         {
             if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
             {
@@ -220,7 +219,7 @@ namespace Emby.Server.Implementations.Activity
             return null;
         }
 
-        private string GetPlaybackStoppedNotificationType(string mediaType)
+        private static string GetPlaybackStoppedNotificationType(string mediaType)
         {
             if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
             {
@@ -528,7 +527,7 @@ namespace Emby.Server.Implementations.Activity
             const int DaysInMonth = 30;
 
             // Get each non-zero value from TimeSpan component
-            List<string> values = new List<string>();
+            var values = new List<string>();
 
             // Number of years
             int days = span.Days;
@@ -559,7 +558,7 @@ namespace Emby.Server.Implementations.Activity
                 values.Add(CreateValueString(span.Seconds, "second"));
 
             // Combine values into string
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             for (int i = 0; i < values.Count; i++)
             {
                 if (builder.Length > 0)
@@ -577,8 +576,8 @@ namespace Emby.Server.Implementations.Activity
         /// <param name="description">The name of this item (singular form)</param>
         private static string CreateValueString(int value, string description)
         {
-            return String.Format("{0:#,##0} {1}",
-                value, value == 1 ? description : String.Format("{0}s", description));
+            return string.Format("{0:#,##0} {1}",
+                value, value == 1 ? description : string.Format("{0}s", description));
         }
     }
 }

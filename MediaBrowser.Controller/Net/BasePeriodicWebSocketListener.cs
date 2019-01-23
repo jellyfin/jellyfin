@@ -1,12 +1,12 @@
-﻿using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Threading;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.WebSockets;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
+using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Net
@@ -50,7 +50,7 @@ namespace MediaBrowser.Controller.Net
         {
             if (logger == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException(nameof(logger));
             }
 
             Logger = logger;
@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller.Net
         {
             if (message == null)
             {
-                throw new ArgumentNullException("message");
+                throw new ArgumentNullException(nameof(message));
             }
 
             if (string.Equals(message.MessageType, Name + "Start", StringComparison.OrdinalIgnoreCase))
@@ -83,17 +83,11 @@ namespace MediaBrowser.Controller.Net
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        protected virtual bool SendOnTimer
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected virtual bool SendOnTimer => false;
 
         protected virtual void ParseMessageParams(string[] values)
         {
-            
+
         }
 
         /// <summary>
@@ -269,7 +263,7 @@ namespace MediaBrowser.Controller.Net
                 }
                 catch (ObjectDisposedException)
                 {
-
+                    //TODO Investigate and properly fix.
                 }
             }
 
@@ -280,10 +274,13 @@ namespace MediaBrowser.Controller.Net
             }
             catch (ObjectDisposedException)
             {
-
+                //TODO Investigate and properly fix.
             }
 
-            ActiveConnections.Remove(connection);
+            lock (ActiveConnections)
+            {
+                ActiveConnections.Remove(connection);
+            }
         }
 
         /// <summary>

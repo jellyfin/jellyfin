@@ -1,1 +1,0 @@
-importScripts("bower_components/emby-webcomponents/serviceworker/notifications.js", "bower_components/emby-webcomponents/serviceworker/sync.js");

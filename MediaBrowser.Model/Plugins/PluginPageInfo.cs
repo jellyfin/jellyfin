@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Model.Plugins
+namespace MediaBrowser.Model.Plugins
 {
     public class PluginPageInfo
     {

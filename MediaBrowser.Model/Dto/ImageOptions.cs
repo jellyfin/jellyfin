@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Dto
@@ -92,7 +92,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The un played count.</value>
         public int? UnPlayedCount { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the color of the background.
         /// </summary>

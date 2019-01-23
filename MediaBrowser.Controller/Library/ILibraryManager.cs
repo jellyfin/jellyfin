@@ -1,22 +1,19 @@
-﻿using MediaBrowser.Controller.Entities;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Querying;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -103,7 +100,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>Task{Year}.</returns>
-        /// <exception cref="System.ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         Year GetYear(int value);
 
         /// <summary>
@@ -163,7 +160,6 @@ namespace MediaBrowser.Controller.Library
         /// Adds the parts.
         /// </summary>
         /// <param name="rules">The rules.</param>
-        /// <param name="pluginFolders">The plugin folders.</param>
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
@@ -298,7 +294,7 @@ namespace MediaBrowser.Controller.Library
             string name,
             Guid parentId,
             string viewType,
-            string sortNamen);
+            string sortName);
 
         /// <summary>
         /// Gets the named view.

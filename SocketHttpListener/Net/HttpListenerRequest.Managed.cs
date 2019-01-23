@@ -1,12 +1,7 @@
-﻿using System;
-using System.Text;
-using System.Collections.Specialized;
-using System.Globalization;
+using System;
 using System.IO;
-using System.Security.Authentication.ExtendedProtection;
-using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Text;
 
 namespace SocketHttpListener.Net
 {
@@ -183,14 +178,14 @@ namespace SocketHttpListener.Net
                 }
             }
 
-            if (String.Compare(Headers[HttpKnownHeaderNames.Expect], "100-continue", StringComparison.OrdinalIgnoreCase) == 0)
+            if (string.Compare(Headers[HttpKnownHeaderNames.Expect], "100-continue", StringComparison.OrdinalIgnoreCase) == 0)
             {
                 HttpResponseStream output = _context.Connection.GetResponseStream();
                 output.InternalWrite(s_100continue, 0, s_100continue.Length);
             }
         }
 
-        internal static string Unquote(String str)
+        internal static string Unquote(string str)
         {
             int start = str.IndexOf('\"');
             int end = str.LastIndexOf('\"');

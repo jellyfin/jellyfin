@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.LiveTv;
 using System.Collections.Generic;
+using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -39,7 +39,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is visible; otherwise, <c>false</c>.</value>
         public bool IsVisible { get; set; }
-        
+
         public LiveTvServiceStatusInfo()
         {
             Tuners = new List<LiveTvTunerInfo>();

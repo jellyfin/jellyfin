@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Services;
 
 namespace Emby.Server.Implementations.Services
@@ -73,7 +72,7 @@ namespace Emby.Server.Implementations.Services
         public void RegisterRestPaths(HttpListenerHost appHost, Type requestType, Type serviceType)
         {
             var attrs = appHost.GetRouteAttributes(requestType);
-            foreach (RouteAttribute attr in attrs)
+            foreach (var attr in attrs)
             {
                 var restPath = new RestPath(appHost.CreateInstance, appHost.GetParseFn, requestType, serviceType, attr.Path, attr.Verbs, attr.IsHidden, attr.Summary, attr.Description);
 
@@ -90,8 +89,7 @@ namespace Emby.Server.Implementations.Services
             if (restPath.Path.IndexOfAny(InvalidRouteChars) != -1)
                 throw new ArgumentException(string.Format("Route '{0}' on '{1}' contains invalid chars. ", restPath.Path, restPath.RequestType.GetMethodName()));
 
-            List<RestPath> pathsAtFirstMatch;
-            if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out pathsAtFirstMatch))
+            if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out List<RestPath> pathsAtFirstMatch))
             {
                 pathsAtFirstMatch = new List<RestPath>();
                 RestPathMap[restPath.FirstMatchHashKey] = pathsAtFirstMatch;

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
 using System.Xml.Serialization;
-using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -28,7 +26,7 @@ namespace MediaBrowser.Model.Dlna
 
         public ResponseProfile()
         {
-            Conditions = new ProfileCondition[] {};
+            Conditions = new ProfileCondition[] { };
         }
 
         public string[] GetContainers()

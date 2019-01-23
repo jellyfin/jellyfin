@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 
 using Emby.XmlTv.Classes;
@@ -16,7 +16,7 @@ namespace Emby.XmlTv.Test
         {
             var testFile = Path.GetFullPath(@"MultilanguageData.xml");
             var reader = new XmlTvReader(testFile, "es");
-            
+
             Assert.AreEqual(Parse("01 Jan 2016 00:00:00"), reader.ParseDate("2016"));
             Assert.AreEqual(Parse("01 Jan 2016 00:00:00"), reader.ParseDate("201601"));
             Assert.AreEqual(Parse("01 Jan 2016 00:00:00"), reader.ParseDate("20160101"));

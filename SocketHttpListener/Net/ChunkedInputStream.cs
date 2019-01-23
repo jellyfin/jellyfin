@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using System.Runtime.InteropServices;
-using SocketHttpListener.Primitives;
 
 namespace SocketHttpListener.Net
 {
@@ -12,7 +10,7 @@ namespace SocketHttpListener.Net
     // System.Net.ResponseStream
     //
     // Author:
-    //	Gonzalo Paniagua Javier (gonzalo@novell.com)
+    //  Gonzalo Paniagua Javier (gonzalo@novell.com)
     //
     // Copyright (c) 2005 Novell, Inc. (http://www.novell.com)
     //
@@ -23,10 +21,10 @@ namespace SocketHttpListener.Net
     // distribute, sublicense, and/or sell copies of the Software, and to
     // permit persons to whom the Software is furnished to do so, subject to
     // the following conditions:
-    // 
+    //
     // The above copyright notice and this permission notice shall be
     // included in all copies or substantial portions of the Software.
-    // 
+    //
     // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
     // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
     // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -63,14 +61,14 @@ namespace SocketHttpListener.Net
                     : base(stream, buffer, offset, length)
         {
             _context = context;
-            WebHeaderCollection coll = (WebHeaderCollection)context.Request.Headers;
+            var coll = (WebHeaderCollection)context.Request.Headers;
             _decoder = new ChunkStream(coll);
         }
 
         public ChunkStream Decoder
         {
-            get { return _decoder; }
-            set { _decoder = value; }
+            get => _decoder;
+            set => _decoder = value;
         }
 
         protected override int ReadCore(byte[] buffer, int offset, int count)
@@ -81,7 +79,7 @@ namespace SocketHttpListener.Net
 
         protected override IAsyncResult BeginReadCore(byte[] buffer, int offset, int size, AsyncCallback cback, object state)
         {
-            HttpStreamAsyncResult ares = new HttpStreamAsyncResult(this);
+            var ares = new HttpStreamAsyncResult(this);
             ares._callback = cback;
             ares._state = state;
             if (_no_more_data || size == 0 || _closed)
@@ -109,7 +107,7 @@ namespace SocketHttpListener.Net
             ares._buffer = new byte[8192];
             ares._offset = 0;
             ares._count = 8192;
-            ReadBufferState rb = new ReadBufferState(buffer, offset, size, ares);
+            var rb = new ReadBufferState(buffer, offset, size, ares);
             rb.InitialCount += nread;
             base.BeginReadCore(ares._buffer, ares._offset, ares._count, OnRead, rb);
             return ares;
@@ -118,7 +116,7 @@ namespace SocketHttpListener.Net
         private void OnRead(IAsyncResult base_ares)
         {
             ReadBufferState rb = (ReadBufferState)base_ares.AsyncState;
-            HttpStreamAsyncResult ares = rb.Ares;
+            var ares = rb.Ares;
             try
             {
                 int nread = base.EndRead(base_ares);
@@ -157,7 +155,7 @@ namespace SocketHttpListener.Net
             if (asyncResult == null)
                 throw new ArgumentNullException(nameof(asyncResult));
 
-            HttpStreamAsyncResult ares = asyncResult as HttpStreamAsyncResult;
+            var ares = asyncResult as HttpStreamAsyncResult;
             if (ares == null || !ReferenceEquals(this, ares._parent))
             {
                 throw new ArgumentException("Invalid async result");

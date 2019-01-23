@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace MediaBrowser.MediaEncoding.Probing
 {
@@ -149,7 +149,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <value>The bits_per_raw_sample.</value>
         public int bits_per_raw_sample { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the r_frame_rate.
         /// </summary>

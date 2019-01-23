@@ -1,4 +1,3 @@
-﻿
 namespace MediaBrowser.Model.Services
 {
     // marker interface

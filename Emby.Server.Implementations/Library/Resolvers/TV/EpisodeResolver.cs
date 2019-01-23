@@ -1,7 +1,7 @@
-﻿using System;
+using System;
+using System.Linq;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using System.Linq;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 
@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             }
 
             var season = parent as Season;
-            // Just in case the user decided to nest episodes. 
+            // Just in case the user decided to nest episodes.
             // Not officially supported but in some cases we can handle it.
             if (season == null)
             {
@@ -36,8 +36,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
             // Also handle flat tv folders
-            if (season != null || 
-                string.Equals(args.GetCollectionType(), CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) || 
+            if (season != null ||
+                string.Equals(args.GetCollectionType(), CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) ||
                 args.HasParent<Series>())
             {
                 var episode = ResolveVideo<Episode>(args, false);

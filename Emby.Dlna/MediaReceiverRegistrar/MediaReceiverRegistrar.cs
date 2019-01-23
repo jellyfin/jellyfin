@@ -1,11 +1,9 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dlna;
-using Emby.Dlna.Service;
-using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
+using Emby.Dlna.Service;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
 {

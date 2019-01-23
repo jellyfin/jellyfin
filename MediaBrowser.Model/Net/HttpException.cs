@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 
 namespace MediaBrowser.Model.Net
@@ -28,7 +28,7 @@ namespace MediaBrowser.Model.Net
         public HttpException(string message, Exception innerException)
             : base(message, innerException)
         {
-            
+
         }
 
         /// <summary>

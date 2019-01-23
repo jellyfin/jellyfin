@@ -1,13 +1,3 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Providers.Movies;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,10 +5,18 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Providers.Movies;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -46,8 +44,7 @@ namespace MediaBrowser.Providers.TV
         {
             var result = new MetadataResult<Season>();
 
-            string seriesTmdbId;
-            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out seriesTmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out string seriesTmdbId);
 
             var seasonNumber = info.IndexNumber;
 
@@ -111,10 +108,7 @@ namespace MediaBrowser.Providers.TV
             return result;
         }
 
-        public string Name
-        {
-            get { return "TheMovieDb"; }
-        }
+        public string Name => "TheMovieDb";
 
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeasonInfo searchInfo, CancellationToken cancellationToken)
         {
@@ -145,11 +139,11 @@ namespace MediaBrowser.Providers.TV
         {
             if (string.IsNullOrEmpty(tmdbId))
             {
-                throw new ArgumentNullException("tmdbId");
+                throw new ArgumentNullException(nameof(tmdbId));
             }
             if (string.IsNullOrEmpty(language))
             {
-                throw new ArgumentNullException("language");
+                throw new ArgumentNullException(nameof(language));
             }
 
             var path = GetDataFilePath(tmdbId, seasonNumber, language);
@@ -172,11 +166,11 @@ namespace MediaBrowser.Providers.TV
         {
             if (string.IsNullOrEmpty(tmdbId))
             {
-                throw new ArgumentNullException("tmdbId");
+                throw new ArgumentNullException(nameof(tmdbId));
             }
             if (string.IsNullOrEmpty(preferredLanguage))
             {
-                throw new ArgumentNullException("preferredLanguage");
+                throw new ArgumentNullException(nameof(preferredLanguage));
             }
 
             var path = MovieDbSeriesProvider.GetSeriesDataPath(_configurationManager.ApplicationPaths, tmdbId);
@@ -194,7 +188,7 @@ namespace MediaBrowser.Providers.TV
 
             var dataFilePath = GetDataFilePath(id, seasonNumber, preferredMetadataLanguage);
 
-			_fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(dataFilePath));
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(dataFilePath));
             _jsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
 

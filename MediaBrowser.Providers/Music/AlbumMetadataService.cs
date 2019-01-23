@@ -1,17 +1,15 @@
-﻿using MediaBrowser.Controller.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Providers.Manager;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.Entities;
+using MediaBrowser.Providers.Manager;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -52,34 +50,16 @@ namespace MediaBrowser.Providers.Music
             return updateType;
         }
 
-        protected override bool EnableUpdatingPremiereDateFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingPremiereDateFromChildren => true;
 
-        protected override bool EnableUpdatingGenresFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingGenresFromChildren => true;
 
-        protected override bool EnableUpdatingStudiosFromChildren
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool EnableUpdatingStudiosFromChildren => true;
 
         private ItemUpdateType SetAlbumArtistFromSongs(MusicAlbum item, IEnumerable<Audio> songs)
         {
             var updateType = ItemUpdateType.None;
-            
+
             var artists = songs
                 .SelectMany(i => i.AlbumArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)

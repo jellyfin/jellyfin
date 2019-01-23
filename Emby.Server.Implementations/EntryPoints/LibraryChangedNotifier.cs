@@ -1,21 +1,20 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -90,8 +89,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             var progress = e.Argument.Item2;
 
-            DateTime lastMessageSendTime;
-            if (_lastProgressMessageTimes.TryGetValue(item.Id, out lastMessageSendTime))
+            if (_lastProgressMessageTimes.TryGetValue(item.Id, out var lastMessageSendTime))
             {
                 if (progress > 0 && progress < 100 && (DateTime.UtcNow - lastMessageSendTime).TotalMilliseconds < 1000)
                 {
@@ -142,7 +140,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _providerManager_RefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 100)));
         }
 
-        private bool EnableRefreshMessage(BaseItem item)
+        private static bool EnableRefreshMessage(BaseItem item)
         {
             var folder = item as Folder;
 
@@ -387,7 +385,7 @@ namespace Emby.Server.Implementations.EntryPoints
             };
         }
 
-        private bool FilterItem(BaseItem item)
+        private static bool FilterItem(BaseItem item)
         {
             if (!item.IsFolder && !item.HasPathProtocol)
             {
@@ -471,7 +469,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer.Dispose();
                     LibraryUpdateTimer = null;
                 }
-                
+
                 _libraryManager.ItemAdded -= libraryManager_ItemAdded;
                 _libraryManager.ItemUpdated -= libraryManager_ItemUpdated;
                 _libraryManager.ItemRemoved -= libraryManager_ItemRemoved;

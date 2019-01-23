@@ -1,30 +1,29 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Api.UserLibrary;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Cryptography;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Cryptography;
-using System.Text;
-using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Api.LiveTv
 {
@@ -1030,7 +1029,7 @@ namespace MediaBrowser.Api.LiveTv
             query.IsKids = request.IsKids;
             query.IsSports = request.IsSports;
             query.SeriesTimerId = request.SeriesTimerId;
-            query.Genres = (request.Genres ?? String.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            query.Genres = (request.Genres ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             query.GenreIds = GetGuids(request.GenreIds);
 
             if (!request.LibrarySeriesId.Equals(Guid.Empty))

@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Model.Querying
+namespace MediaBrowser.Model.Querying
 {
     public class AllThemeMediaResult
     {
@@ -7,7 +7,7 @@
         public ThemeMediaResult ThemeSongsResult { get; set; }
 
         public ThemeMediaResult SoundtrackSongsResult { get; set; }
-        
+
         public AllThemeMediaResult()
         {
             ThemeVideosResult = new ThemeMediaResult();

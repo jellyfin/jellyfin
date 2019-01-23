@@ -1,4 +1,4 @@
-﻿/* This file is part of OpenSubtitles Handler
+/* This file is part of OpenSubtitles Handler
    A library that handle OpenSubtitles.org XML-RPC methods.
 
    Copyright © Ala Ibrahim Hadid 2013
@@ -18,7 +18,6 @@
  */
 
 using System.Collections.Generic;
-using System.ComponentModel;
 namespace OpenSubtitlesHandler
 {
     [MethodResponseDescription("ServerInfo method response",
@@ -49,12 +48,12 @@ namespace OpenSubtitlesHandler
         private List<string> _last_update_strings = new List<string>();
 
         /// <summary>
-        /// Version of server's XML-RPC API implementation 
+        /// Version of server's XML-RPC API implementation
         /// </summary>
         [Description("Version of server's XML-RPC API implementation"), Category("OS")]
         public string xmlrpc_version { get { return _xmlrpc_version; } set { _xmlrpc_version = value; } }
         /// <summary>
-        /// XML-RPC interface URL 
+        /// XML-RPC interface URL
         /// </summary>
         [Description("XML-RPC interface URL"), Category("OS")]
         public string xmlrpc_url { get { return _xmlrpc_url; } set { _xmlrpc_url = value; } }
@@ -64,27 +63,27 @@ namespace OpenSubtitlesHandler
         [Description("Server's application name and version"), Category("OS")]
         public string application { get { return _application; } set { _application = value; } }
         /// <summary>
-        /// Contact e-mail address for server related quuestions and problems 
+        /// Contact e-mail address for server related quuestions and problems
         /// </summary>
         [Description("Contact e-mail address for server related quuestions and problems"), Category("OS")]
         public string contact { get { return _contact; } set { _contact = value; } }
         /// <summary>
-        /// Main server URL  
+        /// Main server URL
         /// </summary>
         [Description("Main server URL"), Category("OS")]
         public string website_url { get { return _website_url; } set { _website_url = value; } }
         /// <summary>
-        /// Number of users currently online   
+        /// Number of users currently online
         /// </summary>
         [Description("Number of users currently online"), Category("OS")]
         public int users_online_total { get { return _users_online_total; } set { _users_online_total = value; } }
         /// <summary>
-        /// Number of users currently online using a client application (XML-RPC API)   
+        /// Number of users currently online using a client application (XML-RPC API)
         /// </summary>
         [Description("Number of users currently online using a client application (XML-RPC API)"), Category("OS")]
         public int users_online_program { get { return _users_online_program; } set { _users_online_program = value; } }
         /// <summary>
-        /// Number of currently logged-in users 
+        /// Number of currently logged-in users
         /// </summary>
         [Description("Number of currently logged-in users"), Category("OS")]
         public int users_loggedin { get { return _users_loggedin; } set { _users_loggedin = value; } }
@@ -104,7 +103,7 @@ namespace OpenSubtitlesHandler
         [Description("Total number of subtitle downloads"), Category("OS")]
         public string subs_downloads { get { return _subs_downloads; } set { _subs_downloads = value; } }
         /// <summary>
-        /// Total number of subtitle files stored on the server 
+        /// Total number of subtitle files stored on the server
         /// </summary>
         [Description("Total number of subtitle files stored on the server"), Category("OS")]
         public string subs_subtitle_files { get { return _subs_subtitle_files; } set { _subs_subtitle_files = value; } }
@@ -119,7 +118,7 @@ namespace OpenSubtitlesHandler
         [Description("Total number of movie A.K.A. titles in the database"), Category("OS")]
         public string movies_aka { get { return _movies_aka; } set { _movies_aka = value; } }
         /// <summary>
-        /// Total number of subtitle languages supported 
+        /// Total number of subtitle languages supported
         /// </summary>
         [Description("Total number of subtitle languages supported"), Category("OS")]
         public string total_subtitles_languages { get { return _total_subtitles_languages; } set { _total_subtitles_languages = value; } }

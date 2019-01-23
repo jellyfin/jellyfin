@@ -1,7 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Priority_Queue
 {
@@ -36,12 +34,12 @@ namespace Priority_Queue
         bool Contains(TItem node);
 
         /// <summary>
-        /// Removes a node from the queue.  The node does not need to be the head of the queue.  
+        /// Removes a node from the queue.  The node does not need to be the head of the queue.
         /// </summary>
         void Remove(TItem node);
 
         /// <summary>
-        /// Call this method to change the priority of a node.  
+        /// Call this method to change the priority of a node.
         /// </summary>
         void UpdatePriority(TItem node, TPriority priority);
 

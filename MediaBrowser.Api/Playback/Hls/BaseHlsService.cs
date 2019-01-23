@@ -1,20 +1,20 @@
-﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback.Hls
@@ -52,10 +52,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// Gets the type of the transcoding job.
         /// </summary>
         /// <value>The type of the transcoding job.</value>
-        protected override TranscodingJobType TranscodingJobType
-        {
-            get { return TranscodingJobType.Hls; }
-        }
+        protected override TranscodingJobType TranscodingJobType => TranscodingJobType.Hls;
 
         /// <summary>
         /// Processes the request.
@@ -201,7 +198,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
                             while (!reader.EndOfStream)
                             {
-                                var line =  reader.ReadLine();
+                                var line = reader.ReadLine();
 
                                 if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
                                 {
@@ -269,7 +266,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 var outputTsArg = Path.Combine(FileSystem.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request);
 
-                var timeDeltaParam = String.Empty;
+                var timeDeltaParam = string.Empty;
 
                 var segmentFormat = GetSegmentFileExtension(state.Request).TrimStart('.');
                 if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
@@ -296,7 +293,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 ).Trim();
             }
 
-            // add when stream copying? 
+            // add when stream copying?
             // -avoid_negative_ts make_zero -fflags +genpts
 
             var args = string.Format("{0} {1} {2} -map_metadata -1 -map_chapters -1 -threads {3} {4} {5} -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero {6} -hls_time {7} -individual_header_trailer 0 -start_number {8} -hls_list_size {9}{10} -y \"{11}\"",

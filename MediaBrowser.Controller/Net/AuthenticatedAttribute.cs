@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
@@ -44,14 +44,11 @@ namespace MediaBrowser.Controller.Net
         /// &gt;0 Executed after global request filters
         /// </summary>
         /// <value>The priority.</value>
-        public int Priority
-        {
-            get { return 0; }
-        }
+        public int Priority => 0;
 
         public string[] GetRoles()
         {
-            return (Roles ?? string.Empty).Split(new []{ ',' }, StringSplitOptions.RemoveEmptyEntries);
+            return (Roles ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public bool AllowLocalOnly { get; set; }

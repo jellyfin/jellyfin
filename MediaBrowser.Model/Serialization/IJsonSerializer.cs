@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.Serialization
         /// </summary>
         /// <param name="obj">The obj.</param>
         /// <param name="stream">The stream.</param>
-        /// <exception cref="System.ArgumentNullException">obj</exception>
+        /// <exception cref="ArgumentNullException">obj</exception>
         void SerializeToStream(object obj, Stream stream);
 
         /// <summary>
@@ -19,7 +19,7 @@ namespace MediaBrowser.Model.Serialization
         /// </summary>
         /// <param name="obj">The obj.</param>
         /// <param name="file">The file.</param>
-        /// <exception cref="System.ArgumentNullException">obj</exception>
+        /// <exception cref="ArgumentNullException">obj</exception>
         void SerializeToFile(object obj, string file);
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace MediaBrowser.Model.Serialization
         /// <param name="type">The type.</param>
         /// <param name="file">The file.</param>
         /// <returns>System.Object.</returns>
-        /// <exception cref="System.ArgumentNullException">type</exception>
+        /// <exception cref="ArgumentNullException">type</exception>
         object DeserializeFromFile(Type type, string file);
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace MediaBrowser.Model.Serialization
         /// <typeparam name="T"></typeparam>
         /// <param name="file">The file.</param>
         /// <returns>``0.</returns>
-        /// <exception cref="System.ArgumentNullException">file</exception>
+        /// <exception cref="ArgumentNullException">file</exception>
         T DeserializeFromFile<T>(string file)
             where T : class;
 
@@ -47,7 +47,7 @@ namespace MediaBrowser.Model.Serialization
         /// <typeparam name="T"></typeparam>
         /// <param name="stream">The stream.</param>
         /// <returns>``0.</returns>
-        /// <exception cref="System.ArgumentNullException">stream</exception>
+        /// <exception cref="ArgumentNullException">stream</exception>
         T DeserializeFromStream<T>(Stream stream);
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace MediaBrowser.Model.Serialization
         /// <typeparam name="T"></typeparam>
         /// <param name="text">The text.</param>
         /// <returns>``0.</returns>
-        /// <exception cref="System.ArgumentNullException">text</exception>
+        /// <exception cref="ArgumentNullException">text</exception>
         T DeserializeFromString<T>(string text);
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace MediaBrowser.Model.Serialization
         /// <param name="stream">The stream.</param>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
-        /// <exception cref="System.ArgumentNullException">stream</exception>
+        /// <exception cref="ArgumentNullException">stream</exception>
         object DeserializeFromStream(Stream stream, Type type);
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace MediaBrowser.Model.Serialization
         /// <param name="json">The json.</param>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
-        /// <exception cref="System.ArgumentNullException">json</exception>
+        /// <exception cref="ArgumentNullException">json</exception>
         object DeserializeFromString(string json, Type type);
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace MediaBrowser.Model.Serialization
         /// </summary>
         /// <param name="obj">The obj.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">obj</exception>
+        /// <exception cref="ArgumentNullException">obj</exception>
         string SerializeToString(object obj);
 
         Task<object> DeserializeFromStreamAsync(Stream stream, Type type);

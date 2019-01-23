@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-
 namespace Emby.Naming.Video
 {
-    public class StubResult
+    public struct StubResult
     {
         /// <summary>
         /// Gets or sets a value indicating whether this instance is stub.
@@ -14,15 +12,5 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <value>The type of the stub.</value>
         public string StubType { get; set; }
-        /// <summary>
-        /// Gets or sets the tokens.
-        /// </summary>
-        /// <value>The tokens.</value>
-        public List<string> Tokens { get; set; }
-
-        public StubResult()
-        {
-            Tokens = new List<string>();
-        }
     }
 }

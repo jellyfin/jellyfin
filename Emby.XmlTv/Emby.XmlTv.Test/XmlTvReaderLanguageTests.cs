@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -12,23 +12,22 @@ namespace Emby.XmlTv.Test
     [TestClass]
     public class XmlTvReaderLanguageTests
     {
-        /*
-            <title lang="es">Homes Under the Hammer - Spanish</title>
-		    <title lang="es">Homes Under the Hammer - Spanish 2</title>
-		    <title lang="en">Homes Under the Hammer - English</title>
-		    <title lang="en">Homes Under the Hammer - English 2</title>
-		    <title lang="">Homes Under the Hammer - Empty Language</title>
-		    <title lang="">Homes Under the Hammer - Empty Language 2</title>
-		    <title>Homes Under the Hammer - No Language</title>
-		    <title>Homes Under the Hammer - No Language 2</title>
-            */
+        /* <title lang="es">Homes Under the Hammer - Spanish</title>
+         * <title lang="es">Homes Under the Hammer - Spanish 2</title>
+         * <title lang="en">Homes Under the Hammer - English</title>
+         * <title lang="en">Homes Under the Hammer - English 2</title>
+         * <title lang="">Homes Under the Hammer - Empty Language</title>
+         * <title lang="">Homes Under the Hammer - Empty Language 2</title>
+         * <title>Homes Under the Hammer - No Language</title>
+         * <title>Homes Under the Hammer - No Language 2</title>
+         */
 
-        /*  Expected Behaviour:
-            - Language = Null   Homes Under the Hammer - No Language
-            - Language = ""   Homes Under the Hammer - No Language
-            - Language = es     Homes Under the Hammer - Spanish
-            - Language = en     Homes Under the Hammer - English
-        */
+        /* Expected Behaviour:
+         *  - Language = Null   Homes Under the Hammer - No Language
+         *  - Language = ""     Homes Under the Hammer - No Language
+         *  - Language = es     Homes Under the Hammer - Spanish
+         *  - Language = en     Homes Under the Hammer - English
+         */
 
         [TestMethod]
         [DeploymentItem("Xml Files\\MultilanguageData.xml")]

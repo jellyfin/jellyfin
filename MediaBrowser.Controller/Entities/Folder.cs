@@ -1,27 +1,23 @@
-﻿using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.Channels;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Controller.Collections;
-using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -51,80 +47,35 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsThemeMedia
-        {
-            get { return true; }
-        }
+        public override bool SupportsThemeMedia => true;
 
         [IgnoreDataMember]
-        public virtual bool IsPreSorted
-        {
-            get { return false; }
-        }
+        public virtual bool IsPreSorted => false;
 
         [IgnoreDataMember]
-        public virtual bool IsPhysicalRoot
-        {
-            get { return false; }
-        }
+        public virtual bool IsPhysicalRoot => false;
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool SupportsInheritedParentImages => true;
 
         [IgnoreDataMember]
-        public override bool SupportsPlayedStatus
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool SupportsPlayedStatus => true;
 
         /// <summary>
         /// Gets a value indicating whether this instance is folder.
         /// </summary>
         /// <value><c>true</c> if this instance is folder; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
-        public override bool IsFolder
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsFolder => true;
 
         [IgnoreDataMember]
-        public override bool IsDisplayedAsFolder
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsDisplayedAsFolder => true;
 
         [IgnoreDataMember]
-        public virtual bool SupportsCumulativeRunTimeTicks
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public virtual bool SupportsCumulativeRunTimeTicks => false;
 
         [IgnoreDataMember]
-        public virtual bool SupportsDateLastMediaAdded
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public virtual bool SupportsDateLastMediaAdded => false;
 
         public override bool CanDelete()
         {
@@ -176,10 +127,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        protected virtual bool SupportsShortcutChildren
-        {
-            get { return false; }
-        }
+        protected virtual bool SupportsShortcutChildren => false;
 
         /// <summary>
         /// Adds the child.
@@ -187,7 +135,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.InvalidOperationException">Unable to add  + item.Name</exception>
+        /// <exception cref="InvalidOperationException">Unable to add  + item.Name</exception>
         public void AddChild(BaseItem item, CancellationToken cancellationToken)
         {
             item.SetParent(this);
@@ -214,23 +162,14 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The actual children.</value>
         [IgnoreDataMember]
-        public virtual IEnumerable<BaseItem> Children
-        {
-            get
-            {
-                return LoadChildren();
-            }
-        }
+        public virtual IEnumerable<BaseItem> Children => LoadChildren();
 
         /// <summary>
         /// thread-safe access to all recursive children of this folder - without regard to user
         /// </summary>
         /// <value>The recursive children.</value>
         [IgnoreDataMember]
-        public IEnumerable<BaseItem> RecursiveChildren
-        {
-            get { return GetRecursiveChildren(); }
-        }
+        public IEnumerable<BaseItem> RecursiveChildren => GetRecursiveChildren();
 
         public override bool IsVisible(User user)
         {
@@ -392,9 +331,7 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var child in nonCachedChildren)
                 {
-                    BaseItem currentChild;
-
-                    if (currentChildren.TryGetValue(child.Id, out currentChild))
+                    if (currentChildren.TryGetValue(child.Id, out BaseItem currentChild))
                     {
                         validChildren.Add(currentChild);
 
@@ -997,7 +934,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (items == null)
             {
-                throw new ArgumentNullException("items");
+                throw new ArgumentNullException(nameof(items));
             }
 
             if (CollapseBoxSetItems(query, queryParent, user, configurationManager))
@@ -1252,7 +1189,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (user == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(user));
             }
 
             //the true root should return our users root folder children
@@ -1322,7 +1259,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="user">The user.</param>
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
         {
             return GetRecursiveChildren(user, null);
@@ -1332,7 +1269,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             var result = new Dictionary<Guid, BaseItem>();
@@ -1425,13 +1362,7 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        protected virtual bool FilterLinkedChildrenPerUser
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected virtual bool FilterLinkedChildrenPerUser => false;
 
         public bool ContainsLinkedChildByItemId(Guid itemId)
         {
@@ -1528,13 +1459,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        protected override bool SupportsOwnedItems
-        {
-            get
-            {
-                return base.SupportsOwnedItems || SupportsShortcutChildren;
-            }
-        }
+        protected override bool SupportsOwnedItems => base.SupportsOwnedItems || SupportsShortcutChildren;
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
@@ -1705,7 +1630,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                // These are just far too slow. 
+                // These are just far too slow.
                 if (this is ICollectionFolder)
                 {
                     return false;

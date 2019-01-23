@@ -1,14 +1,14 @@
-﻿using MediaBrowser.Controller.Authentication;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Session;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Session
 {
@@ -43,7 +43,7 @@ namespace MediaBrowser.Controller.Session
         event EventHandler<SessionEventArgs> SessionEnded;
 
         event EventHandler<SessionEventArgs> SessionActivity;
-        
+
         /// <summary>
         /// Occurs when [capabilities changed].
         /// </summary>
@@ -58,7 +58,7 @@ namespace MediaBrowser.Controller.Session
         /// Occurs when [authentication succeeded].
         /// </summary>
         event EventHandler<GenericEventArgs<AuthenticationResult>> AuthenticationSucceeded;
-        
+
         /// <summary>
         /// Gets the sessions.
         /// </summary>
@@ -90,7 +90,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         Task OnPlaybackProgress(PlaybackProgressInfo info);
 
         Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated);
@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         Task OnPlaybackStopped(PlaybackStopInfo info);
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendGeneralCommand(string controllingSessionId, string sessionId, GeneralCommand command, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Sends the message command.
         /// </summary>
@@ -189,7 +189,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendMessageToUserDeviceSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Sends the restart required message.
         /// </summary>

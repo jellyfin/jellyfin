@@ -1,5 +1,8 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -7,13 +10,9 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.System;
 using MediaBrowser.Model.LiveTv;
-using System.Collections.Generic;
-using System.Net.Sockets;
-using System.Net;
+using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -38,7 +37,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             EnableStreamSharing = true;
         }
 
-        private Socket CreateSocket(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
+        private static Socket CreateSocket(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
         {
             var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
 
@@ -144,7 +143,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             });
         }
 
-        private void Resolve(TaskCompletionSource<bool> openTaskCompletionSource)
+        private static void Resolve(TaskCompletionSource<bool> openTaskCompletionSource)
         {
             Task.Run(() =>
             {
@@ -204,16 +203,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
             {
                 if (buffer == null)
-                    throw new ArgumentNullException("buffer");
+                    throw new ArgumentNullException(nameof(buffer));
 
                 if (offset + count < 0)
-                    throw new ArgumentOutOfRangeException("offset + count must not be negative", "offset+count");
+                    throw new ArgumentOutOfRangeException(nameof(offset), "offset + count must not be negative");
 
                 if (offset + count > buffer.Length)
-                    throw new ArgumentException("offset + count must not be greater than the length of buffer", "offset+count");
+                    throw new ArgumentException("offset + count must not be greater than the length of buffer");
 
                 if (disposed)
-                    throw new ObjectDisposedException(typeof(UdpClientStream).ToString());
+                    throw new ObjectDisposedException(nameof(UdpClientStream));
 
                 // This will always receive a 1328 packet size (PacketSize + RtpHeaderSize)
                 // The RTP header will be stripped so see how many reads we need to make to fill the buffer.
@@ -238,16 +237,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             public override int Read(byte[] buffer, int offset, int count)
             {
                 if (buffer == null)
-                    throw new ArgumentNullException("buffer");
+                    throw new ArgumentNullException(nameof(buffer));
 
                 if (offset + count < 0)
                     throw new ArgumentOutOfRangeException("offset + count must not be negative", "offset+count");
 
                 if (offset + count > buffer.Length)
-                    throw new ArgumentException("offset + count must not be greater than the length of buffer", "offset+count");
+                    throw new ArgumentException("offset + count must not be greater than the length of buffer");
 
                 if (disposed)
-                    throw new ObjectDisposedException(typeof(UdpClientStream).ToString());
+                    throw new ObjectDisposedException(nameof(UdpClientStream));
 
                 // This will always receive a 1328 packet size (PacketSize + RtpHeaderSize)
                 // The RTP header will be stripped so see how many reads we need to make to fill the buffer.
@@ -274,49 +273,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 disposed = true;
             }
 
-            public override bool CanRead
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
+            public override bool CanRead => throw new NotImplementedException();
 
-            public override bool CanSeek
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
+            public override bool CanSeek => throw new NotImplementedException();
 
-            public override bool CanWrite
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
+            public override bool CanWrite => throw new NotImplementedException();
 
-            public override long Length
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
+            public override long Length => throw new NotImplementedException();
 
             public override long Position
             {
-                get
-                {
-                    throw new NotImplementedException();
-                }
+                get => throw new NotImplementedException();
 
-                set
-                {
-                    throw new NotImplementedException();
-                }
+                set => throw new NotImplementedException();
             }
 
             public override void Flush()

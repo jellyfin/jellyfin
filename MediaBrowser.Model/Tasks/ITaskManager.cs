@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Events;
@@ -52,7 +52,7 @@ namespace MediaBrowser.Model.Tasks
 
         void QueueIfNotRunning<T>()
             where T : IScheduledTask;
-        
+
         /// <summary>
         /// Queues the scheduled task.
         /// </summary>
@@ -69,7 +69,7 @@ namespace MediaBrowser.Model.Tasks
 
         void Execute<T>()
             where T : IScheduledTask;
-        
+
         event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
         event EventHandler<TaskCompletionEventArgs> TaskCompleted;
 

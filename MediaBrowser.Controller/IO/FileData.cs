@@ -1,9 +1,9 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.IO
 {
@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.IO
         /// <param name="flattenFolderDepth">The flatten folder depth.</param>
         /// <param name="resolveShortcuts">if set to <c>true</c> [resolve shortcuts].</param>
         /// <returns>Dictionary{System.StringFileSystemInfo}.</returns>
-        /// <exception cref="System.ArgumentNullException">path</exception>
+        /// <exception cref="ArgumentNullException">path</exception>
         public static FileSystemMetadata[] GetFilteredFileSystemEntries(IDirectoryService directoryService,
             string path,
             IFileSystem fileSystem,
@@ -46,11 +46,11 @@ namespace MediaBrowser.Controller.IO
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
             if (args == null)
             {
-                throw new ArgumentNullException("args");
+                throw new ArgumentNullException(nameof(args));
             }
 
             var entries = directoryService.GetFileSystemEntries(path);

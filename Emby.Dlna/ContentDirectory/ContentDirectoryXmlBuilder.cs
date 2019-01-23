@@ -1,6 +1,6 @@
-﻿using Emby.Dlna.Common;
-using Emby.Dlna.Service;
 using System.Collections.Generic;
+using Emby.Dlna.Common;
+using Emby.Dlna.Service;
 
 namespace Emby.Dlna.ContentDirectory
 {
@@ -8,11 +8,11 @@ namespace Emby.Dlna.ContentDirectory
     {
         public string GetXml()
         {
-            return new ServiceXmlBuilder().GetXml(new ServiceActionListBuilder().GetActions(), 
+            return new ServiceXmlBuilder().GetXml(new ServiceActionListBuilder().GetActions(),
                 GetStateVariables());
         }
 
-        private IEnumerable<StateVariable> GetStateVariables()
+        private static IEnumerable<StateVariable> GetStateVariables()
         {
             var list = new List<StateVariable>();
 
