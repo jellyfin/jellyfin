@@ -918,30 +918,6 @@ namespace MediaBrowser.Api.Playback.Hls
             return args;
         }
 
-        private NumberFormatInfo _ffmpegSegmentTimeDeltaNumberFormat = null;
-        protected NumberFormatInfo ffmpegSegmentTimeDeltaNumberFormat
-        {
-            get
-            {
-                if (_ffmpegSegmentTimeDeltaNumberFormat == null)
-                {
-                    NumberFormatInfo nfi = new NumberFormatInfo();
-                    nfi.CurrencySymbol = "";
-                    nfi.NaNSymbol = "0";
-                    nfi.NegativeInfinitySymbol = "0";
-                    nfi.NegativeSign = "";
-                    nfi.NumberDecimalDigits = 3;
-                    nfi.NumberDecimalSeparator = ".";
-                    nfi.NumberGroupSeparator = "";
-                    nfi.PositiveInfinitySymbol = "0";
-                    nfi.PositiveSign = "";
-                    nfi.PercentSymbol = "0";
-                    _ffmpegSegmentTimeDeltaNumberFormat = nfi;
-                }
-                return _ffmpegSegmentTimeDeltaNumberFormat;
-            }
-        }
-
         protected override string GetCommandLineArguments(string outputPath, EncodingOptions encodingOptions, StreamState state, bool isEncoding)
         {
             var videoCodec = EncodingHelper.GetVideoEncoder(state, encodingOptions);
@@ -963,7 +939,7 @@ namespace MediaBrowser.Api.Playback.Hls
             if (isEncoding && startNumber > 0)
             {
                 var startTime = state.SegmentLength * startNumber;
-                string startTimeString = startTime.ToString(ffmpegSegmentTimeDeltaNumberFormat);
+                string startTimeString = startTime.ToString(_ffmpegTimeDeltaFormat);
                 timeDeltaParam = string.Format("-segment_time_delta {0}", startTimeString);
             }
 
