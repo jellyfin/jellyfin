@@ -3,11 +3,14 @@
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
-    <ProjectReference Include="..\ThirdParty\taglib-sharp\src\taglib-sharp.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TagLibSharp" Version="2.2.0-beta" />
   </ItemGroup>
 
   <PropertyGroup>
