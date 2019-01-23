@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using System.IO;
 using System.Text;
 using System.Threading;
+using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {

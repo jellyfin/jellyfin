@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -29,31 +29,13 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The containing folder path.</value>
         [IgnoreDataMember]
-        public override string ContainingFolderPath
-        {
-            get
-            {
-                return Path;
-            }
-        }
+        public override string ContainingFolderPath => Path;
 
         [IgnoreDataMember]
-        public override bool IsDisplayedAsFolder
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsDisplayedAsFolder => true;
 
         [IgnoreDataMember]
-        public override bool SupportsAncestors
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsAncestors => false;
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -81,13 +63,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsPeople => false;
 
         public static string GetPath(string name)
         {

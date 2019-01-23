@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Controller.Sync
 {

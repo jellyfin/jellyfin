@@ -1,8 +1,8 @@
-﻿using Emby.Naming.Common;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Emby.Naming.Common;
 
 namespace Emby.Naming.TV
 {
@@ -72,8 +72,7 @@ namespace Emby.Naming.TV
 
             if (supportNumericSeasonFolders)
             {
-                int val;
-                if (int.TryParse(filename, NumberStyles.Integer, CultureInfo.InvariantCulture, out val))
+                if (int.TryParse(filename, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
                 {
                     return new Tuple<int?, bool>(val, true);
                 }
@@ -83,8 +82,7 @@ namespace Emby.Naming.TV
             {
                 var testFilename = filename.Substring(1);
 
-                int val;
-                if (int.TryParse(testFilename, NumberStyles.Integer, CultureInfo.InvariantCulture, out val))
+                if (int.TryParse(testFilename, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
                 {
                     return new Tuple<int?, bool>(val, true);
                 }
@@ -121,8 +119,7 @@ namespace Emby.Naming.TV
 
             part = part.Substring(1);
 
-            int value;
-            if (int.TryParse(part, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
+            if (int.TryParse(part, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
             {
                 return value;
             }

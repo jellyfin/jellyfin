@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Diagnostics;
+using MediaBrowser.Model.Diagnostics;
 
 namespace Emby.Server.Implementations.Diagnostics
 {

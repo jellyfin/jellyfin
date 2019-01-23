@@ -1,12 +1,12 @@
-﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators
 {

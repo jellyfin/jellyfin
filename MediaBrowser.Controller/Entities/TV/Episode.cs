@@ -1,10 +1,10 @@
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
@@ -47,61 +47,25 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        protected override bool SupportsOwnedItems
-        {
-            get
-            {
-                return IsStacked || MediaSourceCount > 1;
-            }
-        }
+        protected override bool SupportsOwnedItems => IsStacked || MediaSourceCount > 1;
 
         [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages
-        {
-            get { return true; }
-        }
+        public override bool SupportsInheritedParentImages => true;
 
         [IgnoreDataMember]
-        public override bool SupportsPeople
-        {
-            get { return true; }
-        }
+        public override bool SupportsPeople => true;
 
         [IgnoreDataMember]
-        public int? AiredSeasonNumber
-        {
-            get
-            {
-                return AirsAfterSeasonNumber ?? AirsBeforeSeasonNumber ?? ParentIndexNumber;
-            }
-        }
+        public int? AiredSeasonNumber => AirsAfterSeasonNumber ?? AirsBeforeSeasonNumber ?? ParentIndexNumber;
 
         [IgnoreDataMember]
-        public override Folder LatestItemsIndexContainer
-        {
-            get
-            {
-                return Series;
-            }
-        }
+        public override Folder LatestItemsIndexContainer => Series;
 
         [IgnoreDataMember]
-        public override Guid DisplayParentId
-        {
-            get
-            {
-                return SeasonId;
-            }
-        }
+        public override Guid DisplayParentId => SeasonId;
 
         [IgnoreDataMember]
-        protected override bool EnableDefaultVideoUserDataKeys
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected override bool EnableDefaultVideoUserDataKeys => false;
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -111,7 +75,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 return 0;
             }
 
-            return 16 / 9;
+            return 16.0 / 9;
         }
 
         public override List<string> GetUserDataKeys()
@@ -143,7 +107,8 @@ namespace MediaBrowser.Controller.Entities.TV
             get
             {
                 var seriesId = SeriesId;
-                if (seriesId.Equals(Guid.Empty)) {
+                if (seriesId.Equals(Guid.Empty))
+                {
                     seriesId = FindSeriesId();
                 }
                 return !seriesId.Equals(Guid.Empty) ? (LibraryManager.GetItemById(seriesId) as Series) : null;
@@ -156,7 +121,8 @@ namespace MediaBrowser.Controller.Entities.TV
             get
             {
                 var seasonId = SeasonId;
-                if (seasonId.Equals(Guid.Empty)) {
+                if (seasonId.Equals(Guid.Empty))
+                {
                     seasonId = FindSeasonId();
                 }
                 return !seasonId.Equals(Guid.Empty) ? (LibraryManager.GetItemById(seasonId) as Season) : null;
@@ -164,13 +130,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public bool IsInSeasonFolder
-        {
-            get
-            {
-                return FindParent<Season>() != null;
-            }
-        }
+        public bool IsInSeasonFolder => FindParent<Season>() != null;
 
         [IgnoreDataMember]
         public string SeriesPresentationUniqueKey { get; set; }
@@ -276,13 +236,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public bool IsMissingEpisode
-        {
-            get
-            {
-                return LocationType == LocationType.Virtual;
-            }
-        }
+        public bool IsMissingEpisode => LocationType == LocationType.Virtual;
 
         [IgnoreDataMember]
         public Guid SeasonId { get; set; }

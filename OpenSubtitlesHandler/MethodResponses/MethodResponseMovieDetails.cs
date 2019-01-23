@@ -1,4 +1,4 @@
-﻿/* This file is part of OpenSubtitles Handler
+/* This file is part of OpenSubtitles Handler
    A library that handle OpenSubtitles.org XML-RPC methods.
 
    Copyright © Ala Ibrahim Hadid 2013
@@ -36,7 +36,7 @@ namespace OpenSubtitlesHandler
         private string title;
         private string year;
         private string coverLink;
-       
+
         private string duration;
         private string tagline;
         private string plot;

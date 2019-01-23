@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,22 +20,19 @@ namespace Rssdp.Infrastructure
 
         #region Fields
 
-        /* 
-		  
-		 We could technically use one socket listening on port 1900 for everything.
-		 This should get both multicast (notifications) and unicast (search response) messages, however 
-		 this often doesn't work under Windows because the MS SSDP service is running. If that service 
-		 is running then it will steal the unicast messages and we will never see search responses. 
-		 Since stopping the service would be a bad idea (might not be allowed security wise and might 
-		 break other apps running on the system) the only other work around is to use two sockets.
-		
-		 We use one socket to listen for/receive notifications and search requests (_BroadcastListenSocket).
-		 We use a second socket, bound to a different local port, to send search requests and listen for 
-		 responses (_SendSocket). The responses  are sent to the local port this socket is bound to, 
-		 which isn't port 1900 so the MS service doesn't steal them. While the caller can specify a  local 
-		 port to use, we will default to 0 which allows the underlying system to auto-assign a free port.
-		  
-		*/
+        /* We could technically use one socket listening on port 1900 for everything.
+         * This should get both multicast (notifications) and unicast (search response) messages, however
+         * this often doesn't work under Windows because the MS SSDP service is running. If that service
+         * is running then it will steal the unicast messages and we will never see search responses.
+         * Since stopping the service would be a bad idea (might not be allowed security wise and might
+         * break other apps running on the system) the only other work around is to use two sockets.
+         *
+         * We use one socket to listen for/receive notifications and search requests (_BroadcastListenSocket).
+         * We use a second socket, bound to a different local port, to send search requests and listen for
+         * responses (_SendSocket). The responses  are sent to the local port this socket is bound to,
+         * which isn't port 1900 so the MS service doesn't steal them. While the caller can specify a  local
+         * port to use, we will default to 0 which allows the underlying system to auto-assign a free port.
+         */
 
         private object _BroadcastListenSocketSynchroniser = new object();
         private ISocket _BroadcastListenSocket;
@@ -76,7 +73,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Minimum constructor.
         /// </summary>
-        /// <exception cref="System.ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
         public SsdpCommunicationsServer(ISocketFactory socketFactory, INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
             : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger, enableMultiSocketBinding)
         {
@@ -85,12 +82,12 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Full constructor.
         /// </summary>
-        /// <exception cref="System.ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
-        /// <exception cref="System.ArgumentOutOfRangeException">The <paramref name="multicastTimeToLive"/> argument is less than or equal to zero.</exception>
+        /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">The <paramref name="multicastTimeToLive"/> argument is less than or equal to zero.</exception>
         public SsdpCommunicationsServer(ISocketFactory socketFactory, int localPort, int multicastTimeToLive, INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
         {
-            if (socketFactory == null) throw new ArgumentNullException("socketFactory");
-            if (multicastTimeToLive <= 0) throw new ArgumentOutOfRangeException("multicastTimeToLive", "multicastTimeToLive must be greater than zero.");
+            if (socketFactory == null) throw new ArgumentNullException(nameof(socketFactory));
+            if (multicastTimeToLive <= 0) throw new ArgumentOutOfRangeException(nameof(multicastTimeToLive), "multicastTimeToLive must be greater than zero.");
 
             _BroadcastListenSocketSynchroniser = new object();
             _SendSocketSynchroniser = new object();
@@ -114,7 +111,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Causes the server to begin listening for multicast messages, being SSDP search requests and notifications.
         /// </summary>
-        /// <exception cref="System.ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
+        /// <exception cref="ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
         public void BeginListeningForBroadcasts()
         {
             ThrowIfDisposed();
@@ -129,6 +126,10 @@ namespace Rssdp.Infrastructure
                         {
                             _BroadcastListenSocket = ListenForBroadcastsAsync();
                         }
+                        catch (SocketException ex)
+                        {
+                            _logger.LogError("Failed to bind to port 1900: {Message}. DLNA will be unavailable", ex.Message);
+                        }
                         catch (Exception ex)
                         {
                             _logger.LogError(ex, "Error in BeginListeningForBroadcasts");
@@ -141,14 +142,14 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Causes the server to stop listening for multicast messages, being SSDP search requests and notifications.
         /// </summary>
-        /// <exception cref="System.ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
+        /// <exception cref="ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
         public void StopListeningForBroadcasts()
         {
             lock (_BroadcastListenSocketSynchroniser)
             {
                 if (_BroadcastListenSocket != null)
                 {
-                    _logger.LogInformation("{0} disposing _BroadcastListenSocket.", GetType().Name);
+                    _logger.LogInformation("{0} disposing _BroadcastListenSocket", GetType().Name);
                     _BroadcastListenSocket.Dispose();
                     _BroadcastListenSocket = null;
                 }
@@ -160,7 +161,7 @@ namespace Rssdp.Infrastructure
         /// </summary>
         public async Task SendMessage(byte[] messageData, IpEndPointInfo destination, IpAddressInfo fromLocalIpAddress, CancellationToken cancellationToken)
         {
-            if (messageData == null) throw new ArgumentNullException("messageData");
+            if (messageData == null) throw new ArgumentNullException(nameof(messageData));
 
             ThrowIfDisposed();
 
@@ -245,7 +246,7 @@ namespace Rssdp.Infrastructure
         /// </summary>
         public async Task SendMulticastMessage(string message, int sendCount, CancellationToken cancellationToken)
         {
-            if (message == null) throw new ArgumentNullException("messageData");
+            if (message == null) throw new ArgumentNullException(nameof(message));
 
             byte[] messageData = Encoding.UTF8.GetBytes(message);
 
@@ -272,7 +273,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Stops listening for search responses on the local, unicast socket.
         /// </summary>
-        /// <exception cref="System.ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
+        /// <exception cref="ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
         public void StopListeningForResponses()
         {
             lock (_SendSocketSynchroniser)
@@ -443,7 +444,7 @@ namespace Rssdp.Infrastructure
         private void ProcessMessage(string data, IpEndPointInfo endPoint, IpAddressInfo receivedOnLocalIpAddress)
         {
             //Responses start with the HTTP version, prefixed with HTTP/ while
-            //requests start with a method which can vary and might be one we haven't 
+            //requests start with a method which can vary and might be one we haven't
             //seen/don't know. We'll check if this message is a request or a response
             //by checking for the HTTP/ prefix on the start of the message.
             if (data.StartsWith("HTTP/", StringComparison.OrdinalIgnoreCase))

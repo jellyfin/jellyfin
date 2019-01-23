@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace MediaBrowser.Model.Tasks
 {
@@ -36,7 +36,7 @@ namespace MediaBrowser.Model.Tasks
         /// </summary>
         /// <value>The key.</value>
         public string Key { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>

@@ -18,20 +18,11 @@ namespace SocketHttpListener.Net
             this.listener = listener;
         }
 
-        public int Count
-        {
-            get { return prefixes.Count; }
-        }
+        public int Count => prefixes.Count;
 
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
-        public bool IsSynchronized
-        {
-            get { return false; }
-        }
+        public bool IsSynchronized => false;
 
         public void Add(string uriPrefix)
         {
@@ -85,7 +76,7 @@ namespace SocketHttpListener.Net
         {
             listener.CheckDisposed();
             if (uriPrefix == null)
-                throw new ArgumentNullException("uriPrefix");
+                throw new ArgumentNullException(nameof(uriPrefix));
 
             bool result = prefixes.Remove(uriPrefix);
             if (result && listener.IsListening)

@@ -1,0 +1,14 @@
+[Unit]
+Description = Jellyfin Media Server
+After = network.target
+
+[Service]
+Type = simple
+EnvironmentFile = /etc/default/jellyfin
+User = jellyfin
+ExecStart = /usr/bin/jellyfin -programdata ${JELLYFIN_DATA_DIRECTORY} -configdir ${JELLYFIN_CONFIG_DIRECTORY} -logdir ${JELLYFIN_LOG_DIRECTORY} -restartpath ${JELLYFIN_RESTART_SCRIPT} ${JELLYFIN_ADD_OPTS}
+Restart = on-failure
+TimeoutSec = 15
+
+[Install]
+WantedBy = multi-user.target

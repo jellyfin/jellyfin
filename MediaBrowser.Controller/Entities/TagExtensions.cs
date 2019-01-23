@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             var current = item.Tags;
@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    item.Tags = current.Concat(new [] { name }).ToArray();
+                    item.Tags = current.Concat(new[] { name }).ToArray();
                 }
             }
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
 

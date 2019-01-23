@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.Dto;
@@ -20,12 +20,12 @@ namespace MediaBrowser.Model.Services
             }
         }
 
-        private StringComparison GetStringComparison()
+        private static StringComparison GetStringComparison()
         {
             return StringComparison.OrdinalIgnoreCase;
         }
 
-        private StringComparer GetStringComparer()
+        private static StringComparer GetStringComparer()
         {
             return StringComparer.OrdinalIgnoreCase;
         }
@@ -177,40 +177,8 @@ namespace MediaBrowser.Model.Services
         /// <returns>The query parameter value or array of values</returns>
         public string this[string name]
         {
-            get { return Get(name); }
-            set
-            {
-                Set(name, value);
-                //var parameters = this.Where(p => p.Name == name).ToArray();
-                //var values = new[] { value };
-
-                //for (int i = 0; ; i++)
-                //{
-                //    if (i < parameters.Length && i < values.Length)
-                //    {
-                //        if (values[i] == null)
-                //            Remove(parameters[i]);
-                //        else if (values[i] is NameValuePair)
-                //            this[IndexOf(parameters[i])] = (NameValuePair)values[i];
-                //        else
-                //            parameters[i].Value = values[i];
-                //    }
-                //    else if (i < parameters.Length)
-                //        Remove(parameters[i]);
-                //    else if (i < values.Length)
-                //    {
-                //        if (values[i] != null)
-                //        {
-                //            if (values[i] is NameValuePair)
-                //                Add((NameValuePair)values[i]);
-                //            else
-                //                Add(name, values[i]);
-                //        }
-                //    }
-                //    else
-                //        break;
-                //}
-            }
+            get => Get(name);
+            set => Set(name, value);
         }
 
         private string GetQueryStringValue(NameValuePair pair)
@@ -218,7 +186,7 @@ namespace MediaBrowser.Model.Services
             return pair.Name + "=" + pair.Value;
         }
 
-        public override String ToString()
+        public override string ToString()
         {
             var vals = this.Select(GetQueryStringValue).ToArray();
 

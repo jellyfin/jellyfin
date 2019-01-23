@@ -1,26 +1,17 @@
-﻿using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Providers.Music
 {
     public class MusicBrainzReleaseGroupExternalId : IExternalId
     {
-        public string Name
-        {
-            get { return "MusicBrainz Release Group"; }
-        }
+        public string Name => "MusicBrainz Release Group";
 
-        public string Key
-        {
-            get { return MetadataProviders.MusicBrainzReleaseGroup.ToString(); }
-        }
+        public string Key => MetadataProviders.MusicBrainzReleaseGroup.ToString();
 
-        public string UrlFormatString
-        {
-            get { return "https://musicbrainz.org/release-group/{0}"; }
-        }
+        public string UrlFormatString => "https://musicbrainz.org/release-group/{0}";
 
         public bool Supports(IHasProviderIds item)
         {
@@ -30,20 +21,11 @@ namespace MediaBrowser.Providers.Music
 
     public class MusicBrainzAlbumArtistExternalId : IExternalId
     {
-        public string Name
-        {
-            get { return "MusicBrainz Album Artist"; }
-        }
+        public string Name => "MusicBrainz Album Artist";
 
-        public string Key
-        {
-            get { return MetadataProviders.MusicBrainzAlbumArtist.ToString(); }
-        }
+        public string Key => MetadataProviders.MusicBrainzAlbumArtist.ToString();
 
-        public string UrlFormatString
-        {
-            get { return "https://musicbrainz.org/artist/{0}"; }
-        }
+        public string UrlFormatString => "https://musicbrainz.org/artist/{0}";
 
         public bool Supports(IHasProviderIds item)
         {
@@ -53,20 +35,11 @@ namespace MediaBrowser.Providers.Music
 
     public class MusicBrainzAlbumExternalId : IExternalId
     {
-        public string Name
-        {
-            get { return "MusicBrainz Album"; }
-        }
+        public string Name => "MusicBrainz Album";
 
-        public string Key
-        {
-            get { return MetadataProviders.MusicBrainzAlbum.ToString(); }
-        }
+        public string Key => MetadataProviders.MusicBrainzAlbum.ToString();
 
-        public string UrlFormatString
-        {
-            get { return "https://musicbrainz.org/release/{0}"; }
-        }
+        public string UrlFormatString => "https://musicbrainz.org/release/{0}";
 
         public bool Supports(IHasProviderIds item)
         {
@@ -76,20 +49,11 @@ namespace MediaBrowser.Providers.Music
 
     public class MusicBrainzArtistExternalId : IExternalId
     {
-        public string Name
-        {
-            get { return "MusicBrainz"; }
-        }
+        public string Name => "MusicBrainz";
 
-        public string Key
-        {
-            get { return MetadataProviders.MusicBrainzArtist.ToString(); }
-        }
+        public string Key => MetadataProviders.MusicBrainzArtist.ToString();
 
-        public string UrlFormatString
-        {
-            get { return "https://musicbrainz.org/artist/{0}"; }
-        }
+        public string UrlFormatString => "https://musicbrainz.org/artist/{0}";
 
         public bool Supports(IHasProviderIds item)
         {
@@ -99,20 +63,11 @@ namespace MediaBrowser.Providers.Music
 
     public class MusicBrainzOtherArtistExternalId : IExternalId
     {
-        public string Name
-        {
-            get { return "MusicBrainz Artist"; }
-        }
+        public string Name => "MusicBrainz Artist";
 
-        public string Key
-        {
-            get { return MetadataProviders.MusicBrainzArtist.ToString(); }
-        }
+        public string Key => MetadataProviders.MusicBrainzArtist.ToString();
 
-        public string UrlFormatString
-        {
-            get { return "https://musicbrainz.org/artist/{0}"; }
-        }
+        public string UrlFormatString => "https://musicbrainz.org/artist/{0}";
 
         public bool Supports(IHasProviderIds item)
         {
@@ -122,20 +77,11 @@ namespace MediaBrowser.Providers.Music
 
     public class MusicBrainzTrackId : IExternalId
     {
-        public string Name
-        {
-            get { return "MusicBrainz Track"; }
-        }
+        public string Name => "MusicBrainz Track";
 
-        public string Key
-        {
-            get { return MetadataProviders.MusicBrainzTrack.ToString(); }
-        }
+        public string Key => MetadataProviders.MusicBrainzTrack.ToString();
 
-        public string UrlFormatString
-        {
-            get { return "https://musicbrainz.org/track/{0}"; }
-        }
+        public string UrlFormatString => "https://musicbrainz.org/track/{0}";
 
         public bool Supports(IHasProviderIds item)
         {
@@ -145,20 +91,11 @@ namespace MediaBrowser.Providers.Music
 
     public class ImvdbId : IExternalId
     {
-        public string Name
-        {
-            get { return "IMVDb"; }
-        }
+        public string Name => "IMVDb";
 
-        public string Key
-        {
-            get { return "IMVDb"; }
-        }
+        public string Key => "IMVDb";
 
-        public string UrlFormatString
-        {
-            get { return null; }
-        }
+        public string UrlFormatString => null;
 
         public bool Supports(IHasProviderIds item)
         {

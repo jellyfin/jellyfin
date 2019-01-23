@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
@@ -6,31 +6,13 @@ namespace MediaBrowser.Controller.Entities
     public class Photo : BaseItem
     {
         [IgnoreDataMember]
-        public override bool SupportsLocalMetadata
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool SupportsLocalMetadata => false;
 
         [IgnoreDataMember]
-        public override string MediaType
-        {
-            get
-            {
-                return Model.Entities.MediaType.Photo;
-            }
-        }
+        public override string MediaType => Model.Entities.MediaType.Photo;
 
         [IgnoreDataMember]
-        public override Folder LatestItemsIndexContainer
-        {
-            get
-            {
-                return AlbumEntity;
-            }
-        }
+        public override Folder LatestItemsIndexContainer => AlbumEntity;
 
 
         [IgnoreDataMember]
@@ -79,8 +61,7 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
-                width /= Height.Value;
-                return width;
+                return width / height;
             }
 
             return base.GetDefaultPrimaryImageAspectRatio();

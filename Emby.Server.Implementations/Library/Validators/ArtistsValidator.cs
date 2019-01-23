@@ -1,16 +1,12 @@
-﻿using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Library;
-using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators
 {
@@ -94,7 +90,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 {
                     continue;
                 }
-                
+
                 _logger.LogInformation("Deleting dead {2} {0} {1}.", item.Id.ToString("N"), item.Name, item.GetType().Name);
 
                 _libraryManager.DeleteItem(item, new DeleteOptions

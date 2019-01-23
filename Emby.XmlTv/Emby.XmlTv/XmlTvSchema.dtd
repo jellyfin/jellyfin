@@ -1,4 +1,4 @@
-﻿<!-- DTD for TV listings
+<!-- DTD for TV listings
 
 This is a DTD to represent a TV listing.  It doesn't explicitly group
 programmes by day or by channel, instead broadcast time and channel

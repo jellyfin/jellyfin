@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -19,8 +19,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    TimeSpan startTime = TimeSpan.FromTicks(trackEvent.StartPositionTicks);
-                    TimeSpan endTime = TimeSpan.FromTicks(trackEvent.EndPositionTicks);
+                    var startTime = TimeSpan.FromTicks(trackEvent.StartPositionTicks);
+                    var endTime = TimeSpan.FromTicks(trackEvent.EndPositionTicks);
 
                     // make sure the start and end times are different and seqential
                     if (endTime.TotalMilliseconds <= startTime.TotalMilliseconds)

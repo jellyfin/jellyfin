@@ -1,20 +1,18 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -31,15 +29,9 @@ namespace MediaBrowser.Providers.Movies
             _fileSystem = fileSystem;
         }
 
-        public string Name
-        {
-            get { return ProviderName; }
-        }
+        public string Name => ProviderName;
 
-        public static string ProviderName
-        {
-            get { return "TheMovieDb"; }
-        }
+        public static string ProviderName => "TheMovieDb";
 
         public bool Supports(BaseItem item)
         {
@@ -50,7 +42,7 @@ namespace MediaBrowser.Providers.Movies
         {
             return new List<ImageType>
             {
-                ImageType.Primary, 
+                ImageType.Primary,
                 ImageType.Backdrop
             };
         }
@@ -201,10 +193,7 @@ namespace MediaBrowser.Providers.Movies
             return null;
         }
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

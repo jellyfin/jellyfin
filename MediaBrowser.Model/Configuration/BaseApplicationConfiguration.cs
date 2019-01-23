@@ -1,5 +1,3 @@
-﻿using MediaBrowser.Model.Updates;
-
 namespace MediaBrowser.Model.Configuration
 {
     /// <summary>
@@ -30,12 +28,6 @@ namespace MediaBrowser.Model.Configuration
         public int LogFileRetentionDays { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [run at startup].
-        /// </summary>
-        /// <value><c>true</c> if [run at startup]; otherwise, <c>false</c>.</value>
-        public bool RunAtStartup { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is first run.
         /// </summary>
         /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
@@ -46,7 +38,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The cache path.</value>
         public string CachePath { get; set; }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationConfiguration" /> class.
         /// </summary>

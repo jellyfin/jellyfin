@@ -1,4 +1,3 @@
-﻿
 namespace MediaBrowser.Controller.Library
 {
     public class DeleteOptions

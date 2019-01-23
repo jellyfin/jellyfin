@@ -47,10 +47,7 @@ namespace SocketHttpListener.Net
             }
         }
 
-        public object AsyncState
-        {
-            get { return _state; }
-        }
+        public object AsyncState => _state;
 
         public WaitHandle AsyncWaitHandle
         {

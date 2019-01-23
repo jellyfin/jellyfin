@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using Emby.Server.MediaEncoding.Subtitles;
@@ -98,7 +98,7 @@ namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
 
             var result = File.ReadAllText("testVTT.vtt");
             var expectedText = File.ReadAllText(@"MediaEncoding\Subtitles\TestSubtitles\expected.vtt");
-            
+
             Assert.AreEqual(expectedText, result);
         }
     }

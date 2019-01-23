@@ -1,4 +1,4 @@
-﻿/* This file is part of OpenSubtitles Handler
+/* This file is part of OpenSubtitles Handler
    A library that handle OpenSubtitles.org XML-RPC methods.
 
    Copyright © Ala Ibrahim Hadid 2013
@@ -82,7 +82,7 @@ namespace XmlRpcHandler
             base()
         {
             values = new List<IXmlRpcValue>();
-            foreach (DateTime val in dates)
+            foreach (var val in dates)
             {
                 values.Add(new XmlRpcValueBasic(val));
             }
@@ -91,7 +91,7 @@ namespace XmlRpcHandler
             base()
         {
             values = new List<IXmlRpcValue>();
-            foreach (XmlRpcValueBasic val in basicValues)
+            foreach (var val in basicValues)
             {
                 values.Add(val);
             }
@@ -100,7 +100,7 @@ namespace XmlRpcHandler
             base()
         {
             values = new List<IXmlRpcValue>();
-            foreach (XmlRpcValueStruct val in structs)
+            foreach (var val in structs)
             {
                 values.Add(val);
             }
@@ -109,7 +109,7 @@ namespace XmlRpcHandler
             base()
         {
             values = new List<IXmlRpcValue>();
-            foreach (XmlRpcValueArray val in arrays)
+            foreach (var val in arrays)
             {
                 values.Add(val);
             }

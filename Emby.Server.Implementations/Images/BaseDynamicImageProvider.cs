@@ -1,22 +1,18 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Playlists;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using MediaBrowser.Model.IO;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.Configuration;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 
 namespace Emby.Server.Implementations.Images
@@ -193,10 +189,7 @@ namespace Emby.Server.Implementations.Images
             return outputPath;
         }
 
-        public string Name
-        {
-            get { return "Dynamic Image Provider"; }
-        }
+        public string Name => "Dynamic Image Provider";
 
         protected virtual string CreateImage(BaseItem item,
             List<BaseItem> itemsWithImages,
@@ -232,10 +225,7 @@ namespace Emby.Server.Implementations.Images
             throw new ArgumentException("Unexpected image type");
         }
 
-        protected virtual int MaxImageAgeDays
-        {
-            get { return 7; }
-        }
+        protected virtual int MaxImageAgeDays => 7;
 
         public bool HasChanged(BaseItem item, IDirectoryService directoryServicee)
         {
@@ -293,14 +283,7 @@ namespace Emby.Server.Implementations.Images
             return true;
         }
 
-        public int Order
-        {
-            get
-            {
-                // Run before the default image provider which will download placeholders
-                return 0;
-            }
-        }
+        public int Order => 0;
 
         protected string CreateSingleImage(List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType)
         {

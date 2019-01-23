@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Controller.Entities;
+using System;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
-using System;
 
 namespace Emby.Server.Implementations.Sorting
 {
@@ -18,7 +18,7 @@ namespace Emby.Server.Implementations.Sorting
             return string.Compare(GetValue(x), GetValue(y), StringComparison.CurrentCultureIgnoreCase);
         }
 
-        private string GetValue(BaseItem item)
+        private static string GetValue(BaseItem item)
         {
             var hasSeries = item as IHasSeries;
 
@@ -29,9 +29,6 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return ItemSortBy.SeriesSortName; }
-        }
+        public string Name => ItemSortBy.SeriesSortName;
     }
 }

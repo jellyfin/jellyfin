@@ -1,10 +1,9 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.LiveTv;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Tasks;
 
 namespace Emby.Server.Implementations.LiveTv
@@ -20,20 +19,11 @@ namespace Emby.Server.Implementations.LiveTv
             _config = config;
         }
 
-        public string Name
-        {
-            get { return "Refresh Guide"; }
-        }
+        public string Name => "Refresh Guide";
 
-        public string Description
-        {
-            get { return "Downloads channel information from live tv services."; }
-        }
+        public string Description => "Downloads channel information from live tv services.";
 
-        public string Category
-        {
-            get { return "Live TV"; }
-        }
+        public string Category => "Live TV";
 
         public Task Execute(System.Threading.CancellationToken cancellationToken, IProgress<double> progress)
         {
@@ -48,8 +38,8 @@ namespace Emby.Server.Implementations.LiveTv
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[] { 
-            
+            return new[] {
+
                 // Every so often
                 new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks}
             };
@@ -60,24 +50,12 @@ namespace Emby.Server.Implementations.LiveTv
             return _config.GetConfiguration<LiveTvOptions>("livetv");
         }
 
-        public bool IsHidden
-        {
-            get { return _liveTvManager.Services.Count == 1 && GetConfiguration().TunerHosts.Length == 0; }
-        }
+        public bool IsHidden => _liveTvManager.Services.Count == 1 && GetConfiguration().TunerHosts.Length == 0;
 
-        public bool IsEnabled
-        {
-            get { return true; }
-        }
+        public bool IsEnabled => true;
 
-        public bool IsLogged
-        {
-            get { return true; }
-        }
+        public bool IsLogged => true;
 
-        public string Key
-        {
-            get { return "RefreshGuide"; }
-        }
+        public string Key => "RefreshGuide";
     }
 }

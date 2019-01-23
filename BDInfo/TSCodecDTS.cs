@@ -1,4 +1,4 @@
-﻿//============================================================================
+//============================================================================
 // BDInfo - Blu-ray Video and Audio Analysis Tool
 // Copyright © 2010 Cinema Squid
 //
@@ -148,7 +148,7 @@ namespace BDInfo
                     stream.IsVBR = true;
                     stream.IsInitialized = true;
                     break;
-                
+
                 default:
                     stream.IsVBR = false;
                     stream.IsInitialized = true;

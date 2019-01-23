@@ -11,41 +11,27 @@ namespace Jellyfin.Server
 {
     public class CoreAppHost : ApplicationHost
     {
-        public CoreAppHost(ServerApplicationPaths applicationPaths, ILoggerFactory loggerFactory, StartupOptions options, IFileSystem fileSystem, IPowerManagement powerManagement, IEnvironmentInfo environmentInfo, MediaBrowser.Controller.Drawing.IImageEncoder imageEncoder, ISystemEvents systemEvents, MediaBrowser.Common.Net.INetworkManager networkManager)
-            : base(applicationPaths, loggerFactory, options, fileSystem, powerManagement, environmentInfo, imageEncoder, systemEvents, networkManager)
+        public CoreAppHost(ServerApplicationPaths applicationPaths, ILoggerFactory loggerFactory, StartupOptions options, IFileSystem fileSystem, IEnvironmentInfo environmentInfo, MediaBrowser.Controller.Drawing.IImageEncoder imageEncoder, ISystemEvents systemEvents, MediaBrowser.Common.Net.INetworkManager networkManager)
+            : base(applicationPaths, loggerFactory, options, fileSystem, environmentInfo, imageEncoder, systemEvents, networkManager)
         {
         }
 
-        public override bool CanSelfRestart
-        {
-            get
-            {
-                // A restart script must be provided
-                return StartupOptions.ContainsOption("-restartpath");
-            }
-        }
+        public override bool CanSelfRestart => StartupOptions.ContainsOption("-restartpath");
 
         protected override void RestartInternal() => Program.Restart();
 
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()
-            => new [] { typeof(CoreAppHost).Assembly };
+            => new[] { typeof(CoreAppHost).Assembly };
 
         protected override void ShutdownInternal() => Program.Shutdown();
 
-        protected override bool SupportsDualModeSockets
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool SupportsDualModeSockets => true;
 
         protected override IHttpListener CreateHttpListener()
             => new WebSocketSharpListener(
                 Logger,
                 Certificate,
                 StreamHelper,
-                TextEncoding,
                 NetworkManager,
                 SocketFactory,
                 CryptographyProvider,

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -60,13 +60,18 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="logger">The logger.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
         /// <exception cref="System.ArgumentException">kernel</exception>
-        public TaskManager(IApplicationPaths applicationPaths, IJsonSerializer jsonSerializer, ILogger logger, IFileSystem fileSystem, ISystemEvents systemEvents)
+        public TaskManager(
+            IApplicationPaths applicationPaths,
+            IJsonSerializer jsonSerializer,
+            ILoggerFactory loggerFactory,
+            IFileSystem fileSystem,
+            ISystemEvents systemEvents)
         {
             ApplicationPaths = applicationPaths;
             JsonSerializer = jsonSerializer;
-            Logger = logger;
+            Logger = loggerFactory.CreateLogger(nameof(TaskManager));
             _fileSystem = fileSystem;
             _systemEvents = systemEvents;
 
@@ -94,7 +99,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             try
             {
-                lines = _fileSystem.ReadAllLines(path).ToList() ;
+                lines = _fileSystem.ReadAllLines(path).ToList();
             }
             catch
             {
@@ -364,8 +369,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 var list = new List<Tuple<Type, TaskOptions>>();
 
-                Tuple<Type, TaskOptions> item;
-                while (_taskQueue.TryDequeue(out item))
+                while (_taskQueue.TryDequeue(out var item))
                 {
                     if (list.All(i => i.Item1 != item.Item1))
                     {

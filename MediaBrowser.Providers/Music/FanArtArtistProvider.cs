@@ -1,4 +1,12 @@
-﻿using MediaBrowser.Common.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -6,29 +14,18 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
-using MediaBrowser.Providers.TV;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Extensions;
+using MediaBrowser.Providers.TV;
 
 namespace MediaBrowser.Providers.Music
 {
     public class FanartArtistProvider : IRemoteImageProvider, IHasOrder
     {
-        internal const string ApiKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
+        internal const string ApiKey = "184e1a2b1fe3b94935365411f919f638";
         private const string FanArtBaseUrl = "https://webservice.fanart.tv/v3.1/music/{1}?api_key={0}";
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
@@ -49,15 +46,9 @@ namespace MediaBrowser.Providers.Music
             Current = this;
         }
 
-        public string Name
-        {
-            get { return ProviderName; }
-        }
+        public string Name => ProviderName;
 
-        public static string ProviderName
-        {
-            get { return "FanArt"; }
-        }
+        public static string ProviderName => "FanArt";
 
         public bool Supports(BaseItem item)
         {
@@ -68,7 +59,7 @@ namespace MediaBrowser.Providers.Music
         {
             return new List<ImageType>
             {
-                ImageType.Primary, 
+                ImageType.Primary,
                 ImageType.Logo,
                 ImageType.Art,
                 ImageType.Banner,
@@ -84,7 +75,7 @@ namespace MediaBrowser.Providers.Music
 
             var artistMusicBrainzId = artist.GetProviderId(MetadataProviders.MusicBrainzArtist);
 
-            if (!String.IsNullOrEmpty(artistMusicBrainzId))
+            if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
                 await EnsureArtistJson(artistMusicBrainzId, cancellationToken).ConfigureAwait(false);
 
@@ -106,24 +97,24 @@ namespace MediaBrowser.Providers.Music
 
             var language = item.GetPreferredMetadataLanguage();
 
-            var isLanguageEn = String.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
+            var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 
             // Sort first by width to prioritize HD versions
             return list.OrderByDescending(i => i.Width ?? 0)
                 .ThenByDescending(i =>
                 {
-                    if (String.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
                     {
                         return 3;
                     }
                     if (!isLanguageEn)
                     {
-                        if (String.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
                         {
                             return 2;
                         }
                     }
-                    if (String.IsNullOrEmpty(i.Language))
+                    if (string.IsNullOrEmpty(i.Language))
                     {
                         return isLanguageEn ? 3 : 2;
                     }
@@ -170,7 +161,6 @@ namespace MediaBrowser.Providers.Music
                 if (!string.IsNullOrEmpty(url))
                 {
                     var likesString = i.likes;
-                    int likes;
 
                     var info = new RemoteImageInfo
                     {
@@ -183,7 +173,7 @@ namespace MediaBrowser.Providers.Music
                         Language = i.lang
                     };
 
-                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Integer, _usCulture, out likes))
+                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Integer, _usCulture, out var likes))
                     {
                         info.CommunityRating = likes;
                     }
@@ -195,10 +185,7 @@ namespace MediaBrowser.Providers.Music
             }).Where(i => i != null));
         }
 
-        public int Order
-        {
-            get { return 0; }
-        }
+        public int Order => 0;
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

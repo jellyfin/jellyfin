@@ -1,4 +1,4 @@
-﻿using System.Xml.Serialization;
+using System.Xml.Serialization;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.Dlna
         public ProfileCondition(ProfileConditionType condition, ProfileConditionValue property, string value)
             : this(condition, property, value, false)
         {
-            
+
         }
 
         public ProfileCondition(ProfileConditionType condition, ProfileConditionValue property, string value, bool isRequired)

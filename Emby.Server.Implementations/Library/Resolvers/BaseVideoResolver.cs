@@ -1,13 +1,12 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
-using Emby.Naming.Video;
 using System;
 using System.IO;
 using System.Linq;
+using Emby.Naming.Video;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
@@ -48,9 +47,9 @@ namespace Emby.Server.Implementations.Library.Resolvers
               where TVideoType : Video, new()
         {
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
-            
+
             // If the path is a file check for a matching extensions
-            var parser = new Emby.Naming.Video.VideoResolver(namingOptions);
+            var parser = new VideoResolver(namingOptions);
 
             if (args.IsDirectory)
             {
@@ -120,7 +119,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
                 if (video != null)
                 {
-                    video.Name = parseName ? 
+                    video.Name = parseName ?
                         videoInfo.Name :
                         Path.GetFileName(args.Path);
 
@@ -150,7 +149,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     };
 
                     SetVideoType(video, videoInfo);
-                    
+
                     video.Name = parseName ?
                         videoInfo.Name :
                         Path.GetFileNameWithoutExtension(args.Path);
@@ -281,7 +280,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             return string.Equals(name, "video_ts.ifo", StringComparison.OrdinalIgnoreCase);
         }
-        
+
         /// <summary>
         /// Determines whether [is blu ray directory] [the specified directory name].
         /// </summary>

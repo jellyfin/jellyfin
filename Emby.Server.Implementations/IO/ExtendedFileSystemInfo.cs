@@ -1,7 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Emby.Server.Implementations.IO
 {
     public class ExtendedFileSystemInfo

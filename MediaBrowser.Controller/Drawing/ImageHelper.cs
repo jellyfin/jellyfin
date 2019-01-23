@@ -1,4 +1,3 @@
-﻿using System;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;

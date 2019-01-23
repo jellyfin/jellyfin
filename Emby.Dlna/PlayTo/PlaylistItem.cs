@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.PlayTo
 {

@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
 using System;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities

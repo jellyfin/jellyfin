@@ -1,25 +1,18 @@
-﻿using Emby.Naming.Common;
 using System;
 using System.IO;
 using System.Linq;
+using Emby.Naming.Common;
 
 namespace Emby.Naming.Video
 {
-    public class StubResolver
+    public static class StubResolver
     {
-        private readonly NamingOptions _options;
-
-        public StubResolver(NamingOptions options)
-        {
-            _options = options;
-        }
-
-        public StubResult ResolveFile(string path)
+        public static StubResult ResolveFile(string path, NamingOptions options)
         {
             var result = new StubResult();
             var extension = Path.GetExtension(path) ?? string.Empty;
-            
-            if (_options.StubFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+
+            if (options.StubFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
             {
                 result.IsStub = true;
 
@@ -27,12 +20,11 @@ namespace Emby.Naming.Video
 
                 var token = (Path.GetExtension(path) ?? string.Empty).TrimStart('.');
 
-                foreach (var rule in _options.StubTypes)
+                foreach (var rule in options.StubTypes)
                 {
                     if (string.Equals(rule.Token, token, StringComparison.OrdinalIgnoreCase))
                     {
                         result.StubType = rule.StubType;
-                        result.Tokens.Add(token);
                         break;
                     }
                 }

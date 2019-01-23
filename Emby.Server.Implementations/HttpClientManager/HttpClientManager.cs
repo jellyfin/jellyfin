@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,8 +13,8 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.HttpClientManager
 {
@@ -44,18 +44,22 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
         /// </summary>
-        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem, Func<string> defaultUserAgentFn)
+        public HttpClientManager(
+            IApplicationPaths appPaths,
+            ILoggerFactory loggerFactory,
+            IFileSystem fileSystem,
+            Func<string> defaultUserAgentFn)
         {
             if (appPaths == null)
             {
-                throw new ArgumentNullException("appPaths");
+                throw new ArgumentNullException(nameof(appPaths));
             }
-            if (logger == null)
+            if (loggerFactory == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger("HttpClient");
             _fileSystem = fileSystem;
             _appPaths = appPaths;
             _defaultUserAgentFn = defaultUserAgentFn;
@@ -82,19 +86,17 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// <param name="host">The host.</param>
         /// <param name="enableHttpCompression">if set to <c>true</c> [enable HTTP compression].</param>
         /// <returns>HttpClient.</returns>
-        /// <exception cref="System.ArgumentNullException">host</exception>
+        /// <exception cref="ArgumentNullException">host</exception>
         private HttpClientInfo GetHttpClient(string host, bool enableHttpCompression)
         {
             if (string.IsNullOrEmpty(host))
             {
-                throw new ArgumentNullException("host");
+                throw new ArgumentNullException(nameof(host));
             }
-
-            HttpClientInfo client;
 
             var key = host + enableHttpCompression;
 
-            if (!_httpClients.TryGetValue(key, out client))
+            if (!_httpClients.TryGetValue(key, out var client))
             {
                 client = new HttpClientInfo();
 
@@ -104,7 +106,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             return client;
         }
 
-        private WebRequest CreateWebRequest(string url)
+        private static WebRequest CreateWebRequest(string url)
         {
             try
             {
@@ -125,7 +127,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             string url = options.Url;
 
-            Uri uriAddress = new Uri(url);
+            var uriAddress = new Uri(url);
             string userInfo = uriAddress.UserInfo;
             if (!string.IsNullOrWhiteSpace(userInfo))
             {
@@ -133,7 +135,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                 url = url.Replace(userInfo + "@", string.Empty);
             }
 
-            WebRequest request = CreateWebRequest(url);
+            var request = CreateWebRequest(url);
 
             if (request is HttpWebRequest httpWebRequest)
             {
@@ -185,10 +187,10 @@ namespace Emby.Server.Implementations.HttpClientManager
             return request;
         }
 
-        private CredentialCache GetCredential(string url, string username, string password)
+        private static CredentialCache GetCredential(string url, string username, string password)
         {
             //ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3;
-            CredentialCache credentialCache = new CredentialCache();
+            var credentialCache = new CredentialCache();
             credentialCache.Add(new Uri(url), "Basic", new NetworkCredential(username, password));
             return credentialCache;
         }
@@ -220,7 +222,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             }
         }
 
-        private void SetUserAgent(HttpWebRequest request, string userAgent)
+        private static void SetUserAgent(HttpWebRequest request, string userAgent)
         {
             request.UserAgent = userAgent;
         }
@@ -266,7 +268,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             var responseCachePath = Path.Combine(_appPaths.CachePath, "httpclient", urlHash);
 
-            var response = await GetCachedResponse(responseCachePath, options.CacheLength, url).ConfigureAwait(false);
+            var response = GetCachedResponse(responseCachePath, options.CacheLength, url);
             if (response != null)
             {
                 return response;
@@ -282,30 +284,24 @@ namespace Emby.Server.Implementations.HttpClientManager
             return response;
         }
 
-        private async Task<HttpResponseInfo> GetCachedResponse(string responseCachePath, TimeSpan cacheLength, string url)
+        private HttpResponseInfo GetCachedResponse(string responseCachePath, TimeSpan cacheLength, string url)
         {
             try
             {
                 if (_fileSystem.GetLastWriteTimeUtc(responseCachePath).Add(cacheLength) > DateTime.UtcNow)
                 {
-                    using (var stream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true))
+                    var stream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true);
+
+                    return new HttpResponseInfo
                     {
-                        var memoryStream = new MemoryStream();
-
-                        await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-                        memoryStream.Position = 0;
-
-                        return new HttpResponseInfo
-                        {
-                            ResponseUrl = url,
-                            Content = memoryStream,
-                            StatusCode = HttpStatusCode.OK,
-                            ContentLength = memoryStream.Length
-                        };
-                    }
+                        ResponseUrl = url,
+                        Content = stream,
+                        StatusCode = HttpStatusCode.OK,
+                        ContentLength = stream.Length
+                    };
                 }
             }
-            catch (FileNotFoundException)
+            catch (FileNotFoundException) // REVIEW: @bond Is this really faster?
             {
 
             }
@@ -321,19 +317,11 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(responseCachePath));
 
-            using (var responseStream = response.Content)
+            using (var fileStream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.None, true))
             {
-                var memoryStream = new MemoryStream();
-                await responseStream.CopyToAsync(memoryStream).ConfigureAwait(false);
-                memoryStream.Position = 0;
+                await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
 
-                using (var fileStream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.None, true))
-                {
-                    await memoryStream.CopyToAsync(fileStream).ConfigureAwait(false);
-
-                    memoryStream.Position = 0;
-                    response.Content = memoryStream;
-                }
+                response.Content.Position = 0;
             }
         }
 
@@ -389,7 +377,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             {
                 options.ResourcePool?.Release();
 
-                throw new HttpException(string.Format("Connection to {0} timed out", options.Url)) { IsTimedOut = true };
+                throw new HttpException($"Connection to {options.Url} timed out") { IsTimedOut = true };
             }
 
             if (options.LogRequest)
@@ -491,7 +479,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             return responseInfo;
         }
 
-        private void SetHeaders(WebHeaderCollection headers, HttpResponseInfo responseInfo)
+        private static void SetHeaders(WebHeaderCollection headers, HttpResponseInfo responseInfo)
         {
             foreach (var key in headers.AllKeys)
             {
@@ -541,7 +529,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (options.Progress == null)
             {
-                throw new ArgumentNullException("progress");
+                throw new ArgumentException("Options did not have a Progress value.", nameof(options));
             }
 
             options.CancellationToken.ThrowIfCancellationRequested();
@@ -616,7 +604,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             }
         }
 
-        private long? GetContentLength(HttpWebResponse response)
+        private static long? GetContentLength(HttpWebResponse response)
         {
             var length = response.ContentLength;
 
@@ -704,7 +692,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             if (string.IsNullOrEmpty(options.Url))
             {
-                throw new ArgumentNullException("options");
+                throw new ArgumentNullException(nameof(options));
             }
         }
 
@@ -713,7 +701,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <returns>System.String.</returns>
-        private string GetHostFromUrl(string url)
+        private static string GetHostFromUrl(string url)
         {
             var index = url.IndexOf("://", StringComparison.OrdinalIgnoreCase);
 
@@ -803,11 +791,11 @@ namespace Emby.Server.Implementations.HttpClientManager
             };
         }
 
-        private Task<WebResponse> GetResponseAsync(WebRequest request, TimeSpan timeout)
+        private static Task<WebResponse> GetResponseAsync(WebRequest request, TimeSpan timeout)
         {
             var taskCompletion = new TaskCompletionSource<WebResponse>();
 
-            Task<WebResponse> asyncTask = Task.Factory.FromAsync<WebResponse>(request.BeginGetResponse, request.EndGetResponse, null);
+            var asyncTask = Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null);
 
             ThreadPool.RegisterWaitForSingleObject((asyncTask as IAsyncResult).AsyncWaitHandle, TimeoutCallback, request, timeout, true);
             var callback = new TaskCallback { taskCompletion = taskCompletion };
@@ -823,7 +811,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             if (timedOut && state != null)
             {
-                WebRequest request = (WebRequest)state;
+                var request = (WebRequest)state;
                 request.Abort();
             }
         }

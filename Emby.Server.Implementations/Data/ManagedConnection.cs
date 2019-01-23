@@ -1,13 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
-    public class ManagedConnection :  IDisposable
+    public class ManagedConnection : IDisposable
     {
         private SQLiteDatabaseConnection db;
         private readonly bool _closeOnDispose;
@@ -50,7 +47,7 @@ namespace Emby.Server.Implementations.Data
 
         public T RunInTransaction<T>(Func<IDatabaseConnection, T> action, TransactionMode mode)
         {
-            return db.RunInTransaction<T>(action, mode);
+            return db.RunInTransaction(action, mode);
         }
 
         public IEnumerable<IReadOnlyList<IResultSetValue>> Query(string sql)

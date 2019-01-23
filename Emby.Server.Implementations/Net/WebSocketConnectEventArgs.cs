@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System;
 using MediaBrowser.Model.Services;
 
 namespace Emby.Server.Implementations.Net

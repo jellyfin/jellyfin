@@ -1,14 +1,6 @@
-﻿using System;
 using System.Linq;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -62,17 +54,17 @@ namespace MediaBrowser.Controller.Entities
                 item.SetImagePath(imageType, BaseItem.FileSystem.GetFileInfo(file));
             }
         }
-        
+
         /// <summary>
         /// Copies all properties on object. Skips properties that do not exist.
         /// </summary>
         /// <param name="source">The source object.</param>
         /// <param name="dest">The destination object.</param>
-        public static void DeepCopy<T, TU>(this T source, TU dest) 
+        public static void DeepCopy<T, TU>(this T source, TU dest)
         where T : BaseItem
         where TU : BaseItem
         {
-            var sourceProps = typeof (T).GetProperties().Where(x => x.CanRead).ToList();
+            var sourceProps = typeof(T).GetProperties().Where(x => x.CanRead).ToList();
             var destProps = typeof(TU).GetProperties()
                     .Where(x => x.CanWrite)
                     .ToList();
@@ -82,7 +74,7 @@ namespace MediaBrowser.Controller.Entities
                 if (destProps.Any(x => x.Name == sourceProp.Name))
                 {
                     var p = destProps.First(x => x.Name == sourceProp.Name);
-                    p.SetValue(dest, sourceProp.GetValue(source, null), null);                    
+                    p.SetValue(dest, sourceProp.GetValue(source, null), null);
                 }
 
             }
@@ -93,7 +85,7 @@ namespace MediaBrowser.Controller.Entities
         /// Copies all properties on newly created object. Skips properties that do not exist.
         /// </summary>
         /// <param name="source">The source object.</param>
-        public static TU DeepCopy<T, TU>(this T source) 
+        public static TU DeepCopy<T, TU>(this T source)
         where T : BaseItem
         where TU : BaseItem, new()
         {

@@ -1,17 +1,17 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -62,9 +62,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     UpdateTimer.Change(UpdateDuration, Timeout.Infinite);
                 }
 
-                List<BaseItem> keys;
-
-                if (!_changedItems.TryGetValue(e.UserId, out keys))
+                if (!_changedItems.TryGetValue(e.UserId, out List<BaseItem> keys))
                 {
                     keys = new List<BaseItem>();
                     _changedItems[e.UserId] = keys;

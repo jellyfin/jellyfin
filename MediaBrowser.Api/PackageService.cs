@@ -1,15 +1,15 @@
-﻿using MediaBrowser.Common;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Updates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
+using MediaBrowser.Common.Updates;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Api
 {
@@ -139,7 +139,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetPackage request)
         {
-            var packages = _installationManager.GetAvailablePackages(CancellationToken.None, applicationVersion: _appHost.ApplicationVersion).Result;
+            var packages = _installationManager.GetAvailablePackages(CancellationToken.None, applicationVersion: typeof(PackageService).Assembly.GetName().Version).Result;
 
             var result = packages.FirstOrDefault(p => string.Equals(p.guid, request.AssemblyGuid ?? "none", StringComparison.OrdinalIgnoreCase))
                          ?? packages.FirstOrDefault(p => p.name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
@@ -154,7 +154,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public async Task<object> Get(GetPackages request)
         {
-            IEnumerable<PackageInfo> packages = await _installationManager.GetAvailablePackages(CancellationToken.None, false, request.PackageType, _appHost.ApplicationVersion).ConfigureAwait(false);
+            IEnumerable<PackageInfo> packages = await _installationManager.GetAvailablePackages(CancellationToken.None, false, request.PackageType, typeof(PackageService).Assembly.GetName().Version).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(request.TargetSystems))
             {
@@ -189,7 +189,7 @@ namespace MediaBrowser.Api
         public async Task Post(InstallPackage request)
         {
             var package = string.IsNullOrEmpty(request.Version) ?
-                await _installationManager.GetLatestCompatibleVersion(request.Name, request.AssemblyGuid, _appHost.ApplicationVersion, request.UpdateClass).ConfigureAwait(false) :
+                await _installationManager.GetLatestCompatibleVersion(request.Name, request.AssemblyGuid, typeof(PackageService).Assembly.GetName().Version, request.UpdateClass).ConfigureAwait(false) :
                 await _installationManager.GetPackage(request.Name, request.AssemblyGuid, request.UpdateClass, Version.Parse(request.Version)).ConfigureAwait(false);
 
             if (package == null)

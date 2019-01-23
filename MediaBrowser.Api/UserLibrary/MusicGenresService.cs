@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -6,7 +7,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
-using System.Collections.Generic;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 
@@ -60,7 +60,7 @@ namespace MediaBrowser.Api.UserLibrary
             var dtoOptions = GetDtoOptions(AuthorizationContext, request);
 
             var item = GetMusicGenre(request.Name, LibraryManager, dtoOptions);
-            
+
             if (!request.UserId.Equals(Guid.Empty))
             {
                 var user = UserManager.GetUserById(request.UserId);

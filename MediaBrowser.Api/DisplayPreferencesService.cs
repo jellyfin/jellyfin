@@ -1,9 +1,8 @@
-﻿using MediaBrowser.Controller.Net;
+using System.Threading;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
@@ -41,7 +40,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Client", Description = "Client", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Client { get; set; }
     }
-    
+
     /// <summary>
     /// Class DisplayPreferencesService
     /// </summary>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace MediaBrowser.Model.Search
 {
@@ -14,7 +14,7 @@ namespace MediaBrowser.Model.Search
         public Guid ItemId { get; set; }
 
         public Guid Id { get; set; }
- 
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -26,7 +26,7 @@ namespace MediaBrowser.Model.Search
         /// </summary>
         /// <value>The matched term.</value>
         public string MatchedTerm { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the index number.
         /// </summary>
@@ -38,7 +38,7 @@ namespace MediaBrowser.Model.Search
         /// </summary>
         /// <value>The production year.</value>
         public int? ProductionYear { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the parent index number.
         /// </summary>
@@ -74,7 +74,7 @@ namespace MediaBrowser.Model.Search
         /// </summary>
         /// <value>The backdrop image item identifier.</value>
         public string BackdropImageItemId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the type.
         /// </summary>
@@ -82,13 +82,13 @@ namespace MediaBrowser.Model.Search
         public string Type { get; set; }
 
         public bool? IsFolder { get; set; }
-  
+
         /// <summary>
         /// Gets or sets the run time ticks.
         /// </summary>
         /// <value>The run time ticks.</value>
         public long? RunTimeTicks { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the type of the media.
         /// </summary>

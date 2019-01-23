@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Authentication;
@@ -67,7 +66,7 @@ namespace Emby.Server.Implementations.Library
 
             if (string.IsNullOrWhiteSpace(newPasswordHash))
             {
-                throw new ArgumentNullException("newPasswordHash");
+                throw new ArgumentNullException(nameof(newPasswordHash));
             }
 
             user.Password = newPasswordHash;

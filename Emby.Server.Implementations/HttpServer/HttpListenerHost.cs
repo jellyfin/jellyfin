@@ -1,27 +1,25 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Net;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Services;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Security;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Text;
-using System.Net.Sockets;
-using Emby.Server.Implementations.Net;
-using MediaBrowser.Model.Events;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -38,11 +36,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
-
         private readonly IServerApplicationHost _appHost;
-
-        private readonly ITextEncoding _textEncoding;
-
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly Func<Type, Func<string, object>> _funcParseFn;
@@ -55,47 +49,32 @@ namespace Emby.Server.Implementations.HttpServer
         private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
         private readonly List<IWebSocketConnection> _webSocketConnections = new List<IWebSocketConnection>();
 
-        public HttpListenerHost(IServerApplicationHost applicationHost,
-            ILogger logger,
+        public HttpListenerHost(
+            IServerApplicationHost applicationHost,
+            ILoggerFactory loggerFactory,
             IServerConfigurationManager config,
-            string defaultRedirectPath, INetworkManager networkManager, ITextEncoding textEncoding, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer, Func<Type, Func<string, object>> funcParseFn)
+            string defaultRedirectPath,
+            INetworkManager networkManager,
+            IJsonSerializer jsonSerializer,
+            IXmlSerializer xmlSerializer,
+            Func<Type, Func<string, object>> funcParseFn)
         {
-            Instance = this;
-
             _appHost = applicationHost;
+            _logger = loggerFactory.CreateLogger("HttpServer");
+            _config = config;
             DefaultRedirectPath = defaultRedirectPath;
             _networkManager = networkManager;
-            _textEncoding = textEncoding;
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
-            _config = config;
-
-            _logger = logger;
             _funcParseFn = funcParseFn;
 
-            ResponseFilters = new Action<IRequest, IResponse, object>[] { };
+            Instance = this;
+            ResponseFilters = Array.Empty<Action<IRequest, IResponse, object>>();
         }
 
         public string GlobalResponse { get; set; }
 
-        readonly Dictionary<Type, int> _mapExceptionToStatusCode = new Dictionary<Type, int>
-            {
-                {typeof (ResourceNotFoundException), 404},
-                {typeof (RemoteServiceUnavailableException), 502},
-                {typeof (FileNotFoundException), 404},
-                //{typeof (DirectoryNotFoundException), 404},
-                {typeof (SecurityException), 401},
-                {typeof (PaymentRequiredException), 402},
-                {typeof (ArgumentException), 400}
-            };
-
-        protected ILogger Logger
-        {
-            get
-            {
-                return _logger;
-            }
-        }
+        protected ILogger Logger => _logger;
 
         public object CreateInstance(Type type)
         {
@@ -103,7 +82,7 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <summary>
-        /// Applies the request filters. Returns whether or not the request has been handled 
+        /// Applies the request filters. Returns whether or not the request has been handled
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
@@ -111,9 +90,9 @@ namespace Emby.Server.Implementations.HttpServer
         {
             //Exec all RequestFilter attributes with Priority < 0
             var attributes = GetRequestFilterAttributes(requestDto.GetType());
-            var i = 0;
-            var count = attributes.Count;
 
+            int count = attributes.Count;
+            int i = 0;
             for (; i < count && attributes[i].Priority < 0; i++)
             {
                 var attribute = attributes[i];
@@ -130,8 +109,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public Type GetServiceTypeByRequest(Type requestType)
         {
-            Type serviceType;
-            ServiceOperationsMap.TryGetValue(requestType, out serviceType);
+            ServiceOperationsMap.TryGetValue(requestType, out var serviceType);
             return serviceType;
         }
 
@@ -162,7 +140,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return;
             }
 
-            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger, _textEncoding)
+            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger)
             {
                 OnReceive = ProcessWebSocketMessageReceived,
                 Url = e.Url,
@@ -176,10 +154,7 @@ namespace Emby.Server.Implementations.HttpServer
                 _webSocketConnections.Add(connection);
             }
 
-            if (WebSocketConnected != null)
-            {
-                WebSocketConnected?.Invoke(this, new GenericEventArgs<IWebSocketConnection>(connection));
-            }
+            WebSocketConnected?.Invoke(this, new GenericEventArgs<IWebSocketConnection>(connection));
         }
 
         private void Connection_Closed(object sender, EventArgs e)
@@ -190,10 +165,9 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private Exception GetActualException(Exception ex)
+        private static Exception GetActualException(Exception ex)
         {
-            var agg = ex as AggregateException;
-            if (agg != null)
+            if (ex is AggregateException agg)
             {
                 var inner = agg.InnerException;
                 if (inner != null)
@@ -215,27 +189,16 @@ namespace Emby.Server.Implementations.HttpServer
 
         private int GetStatusCode(Exception ex)
         {
-            if (ex is ArgumentException)
+            switch (ex)
             {
-                return 400;
+                case ArgumentException _: return 400;
+                case SecurityException _: return 401;
+                case DirectoryNotFoundException _:
+                case FileNotFoundException _:
+                case ResourceNotFoundException _: return 404;
+                case RemoteServiceUnavailableException _: return 502;
+                default: return 500;
             }
-
-            var exceptionType = ex.GetType();
-
-            int statusCode;
-            if (!_mapExceptionToStatusCode.TryGetValue(exceptionType, out statusCode))
-            {
-                if (ex is DirectoryNotFoundException)
-                {
-                    statusCode = 404;
-                }
-                else
-                {
-                    statusCode = 500;
-                }
-            }
-
-            return statusCode;
         }
 
         private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace, bool logExceptionMessage)
@@ -321,32 +284,25 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private readonly Dictionary<string, int> _skipLogExtensions = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        private static readonly string[] _skipLogExtensions =
         {
-            {".js", 0},
-            {".css", 0},
-            {".woff", 0},
-            {".woff2", 0},
-            {".ttf", 0},
-            {".html", 0}
+            ".js",
+            ".css",
+            ".woff",
+            ".woff2",
+            ".ttf",
+            ".html"
         };
 
         private bool EnableLogging(string url, string localPath)
         {
             var extension = GetExtension(url);
 
-            if (string.IsNullOrEmpty(extension) || !_skipLogExtensions.ContainsKey(extension))
-            {
-                if (string.IsNullOrEmpty(localPath) || localPath.IndexOf("system/ping", StringComparison.OrdinalIgnoreCase) == -1)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return ((string.IsNullOrEmpty(extension) || !_skipLogExtensions.Contains(extension))
+                && (string.IsNullOrEmpty(localPath) || localPath.IndexOf("system/ping", StringComparison.OrdinalIgnoreCase) == -1));
         }
 
-        private string GetExtension(string url)
+        private static string GetExtension(string url)
         {
             var parts = url.Split(new[] { '?' }, 2);
 
@@ -379,18 +335,18 @@ namespace Emby.Server.Implementations.HttpServer
             string pagePathWithoutQueryString = url.Split(new[] { '?' }, StringSplitOptions.RemoveEmptyEntries)[0];
 
             return newQueryString.Count > 0
-                ? String.Format("{0}?{1}", pagePathWithoutQueryString, newQueryString)
+                ? string.Format("{0}?{1}", pagePathWithoutQueryString, newQueryString)
                 : pagePathWithoutQueryString;
         }
 
-        private string GetUrlToLog(string url)
+        private static string GetUrlToLog(string url)
         {
             url = RemoveQueryStringByKey(url, "api_key");
 
             return url;
         }
 
-        private string NormalizeConfiguredLocalAddress(string address)
+        private static string NormalizeConfiguredLocalAddress(string address)
         {
             var index = address.Trim('/').IndexOf('/');
 
@@ -566,9 +522,7 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase) ||
-                    localPath.IndexOf("mediabrowser/web", StringComparison.OrdinalIgnoreCase) != -1)
+                if (localPath.IndexOf("mediabrowser/web", StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     httpRes.StatusCode = 200;
                     httpRes.ContentType = "text/html";
@@ -711,8 +665,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return null;
             }
 
-            string contentType;
-            var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, out contentType);
+            var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, out string contentType);
 
             if (restPath != null)
             {
@@ -723,11 +676,11 @@ namespace Emby.Server.Implementations.HttpServer
                 };
             }
 
-            _logger.LogError("Could not find handler for {pathInfo}", pathInfo);
+            _logger.LogError("Could not find handler for {PathInfo}", pathInfo);
             return null;
         }
 
-        private Task Write(IResponse response, string text)
+        private static Task Write(IResponse response, string text)
         {
             var bOutput = Encoding.UTF8.GetBytes(text);
             response.SetContentLength(bOutput.Length);
@@ -737,14 +690,13 @@ namespace Emby.Server.Implementations.HttpServer
 
         private void RedirectToSecureUrl(IHttpRequest httpReq, IResponse httpRes, string url)
         {
-            int currentPort;
-            Uri uri;
-            if (Uri.TryCreate(url, UriKind.Absolute, out uri))
+            if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
             {
-                currentPort = uri.Port;
-                var builder = new UriBuilder(uri);
-                builder.Port = _config.Configuration.PublicHttpsPort;
-                builder.Scheme = "https";
+                var builder = new UriBuilder(uri)
+                {
+                    Port = _config.Configuration.PublicHttpsPort,
+                    Scheme = "https"
+                };
                 url = builder.Uri.ToString();
 
                 RedirectToUrl(httpRes, url);
@@ -844,16 +796,12 @@ namespace Emby.Server.Implementations.HttpServer
 
         public Task<object> DeserializeJson(Type type, Stream stream)
         {
-            //using (var reader = new StreamReader(stream))
-            //{
-            //    var json = reader.ReadToEnd();
-            //    logger.LogInformation(json);
-            //    return _jsonSerializer.DeserializeFromString(json, type);
-            //}
             return _jsonSerializer.DeserializeFromStreamAsync(stream, type);
         }
 
-        private string NormalizeEmbyRoutePath(string path)
+        //TODO Add Jellyfin Route Path Normalizer
+
+        private static string NormalizeEmbyRoutePath(string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {
@@ -863,7 +811,7 @@ namespace Emby.Server.Implementations.HttpServer
             return "emby/" + path;
         }
 
-        private string NormalizeMediaBrowserRoutePath(string path)
+        private static string NormalizeMediaBrowserRoutePath(string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {
@@ -873,7 +821,7 @@ namespace Emby.Server.Implementations.HttpServer
             return "mediabrowser/" + path;
         }
 
-        private string DoubleNormalizeEmbyRoutePath(string path)
+        private static string DoubleNormalizeEmbyRoutePath(string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {

@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.LiveTv;
 using System.Collections.Generic;
+using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -28,7 +28,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The URL.</value>
         public string Url { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the status.
         /// </summary>
@@ -52,7 +52,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The name of the program.</value>
         public string ProgramName { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the clients.
         /// </summary>
@@ -64,7 +64,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance can reset; otherwise, <c>false</c>.</value>
         public bool CanReset { get; set; }
-        
+
         public LiveTvTunerInfo()
         {
             Clients = new List<string>();

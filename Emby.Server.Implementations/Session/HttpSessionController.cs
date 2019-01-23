@@ -1,9 +1,3 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Session;
-using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,6 +5,10 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Session;
 
 namespace Emby.Server.Implementations.Session
 {
@@ -36,26 +34,11 @@ namespace Emby.Server.Implementations.Session
             _sessionManager = sessionManager;
         }
 
-        private string PostUrl
-        {
-            get
-            {
-                return string.Format("http://{0}{1}", Session.RemoteEndPoint, _postUrl);
-            }
-        }
+        private string PostUrl => string.Format("http://{0}{1}", Session.RemoteEndPoint, _postUrl);
 
-        public bool IsSessionActive
-        {
-            get
-            {
-                return (DateTime.UtcNow - Session.LastActivityDate).TotalMinutes <= 5;
-            }
-        }
+        public bool IsSessionActive => (DateTime.UtcNow - Session.LastActivityDate).TotalMinutes <= 5;
 
-        public bool SupportsMediaControl
-        {
-            get { return true; }
-        }
+        public bool SupportsMediaControl => true;
 
         private Task SendMessage(string name, string messageId, CancellationToken cancellationToken)
         {
@@ -122,7 +105,7 @@ namespace Emby.Server.Implementations.Session
             return SendMessage(command.Command.ToString(), messageId, args, cancellationToken);
         }
 
-        private string[] _supportedMessages = new string[] {  };
+        private string[] _supportedMessages = new string[] { };
         public Task SendMessage<T>(string name, string messageId, T data, ISessionController[] allControllers, CancellationToken cancellationToken)
         {
             if (!IsSessionActive)
@@ -164,7 +147,7 @@ namespace Emby.Server.Implementations.Session
             {
                 if (typeof(T) == typeof(string))
                 {
-                    var str = data as String;
+                    var str = data as string;
                     if (!string.IsNullOrEmpty(str))
                     {
                         options.RequestContent = str;
@@ -189,7 +172,7 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
-        private string ToQueryString(Dictionary<string, string> nvc)
+        private static string ToQueryString(Dictionary<string, string> nvc)
         {
             var array = (from item in nvc
                          select string.Format("{0}={1}", WebUtility.UrlEncode(item.Key), WebUtility.UrlEncode(item.Value)))
