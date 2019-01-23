@@ -10,7 +10,7 @@ declare -a actions=( 'build' 'package' 'sign' 'publish' )
 
 # The list of possible platforms, based on directories under 'deployment/'
 declare -a platforms=( $(
-    find deployment/ -maxdepth 1 -mindepth 1 -type d | sed 's/deployment\///' | sort
+    find deployment/ -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | sort
 ) )
 
 # The list of standard dependencies required by all build scripts; individual
@@ -171,16 +171,27 @@ if ! git diff-index --quiet HEAD --; then
 fi
 
 git fetch --all
-git checkout origin/${web_branch} || {
-    echo "ERROR: 'jellyfin-web' branch ${web_branch} is invalid."
-    exit 1
-}
+# If this is an official branch name, fetch it from origin
+official_branches_regex="^master$|^dev$|^release-.*$|^hotfix-.*$"
+if [[ ${web_branch} =~ ${official_branches_regex} ]]; then
+    git checkout origin/${web_branch} || {
+        echo "ERROR: 'jellyfin-web' branch 'origin/${web_branch}' is invalid."
+        exit 1
+    }
+# Otherwise, just check out the local branch (for testing, etc.)
+else
+    git checkout ${web_branch} || {
+        echo "ERROR: 'jellyfin-web' branch '${web_branch}' is invalid."
+        exit 1
+    }
+fi
 popd
 
 # Execute each platform and action in order, if said action is enabled
 pushd deployment/
 for target_platform in ${platform[@]}; do
     echo -e "> Processing platform ${target_platform}"
+    date_start=$( date +%s )
     pushd ${target_platform}
     for target_action in ${action[@]}; do
         echo -e ">> Processing action ${target_action}"
@@ -199,6 +210,8 @@ for target_platform in ${platform[@]}; do
             ./clean.sh 
         fi
     fi
+    date_end=$( date +%s )
+    echo -e "> Completed platform ${target_platform} in $( expr ${date_end} - ${date_start} ) seconds."
     popd
 done
 popd
