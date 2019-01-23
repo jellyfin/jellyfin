@@ -66,21 +66,21 @@ namespace MediaBrowser.Model.Dlna
                 return MaxBitrate;
             }
 
-            if (Profile == null)
+            if (Profile != null)
             {
-                return null;
-            }
-
-            if (Context == EncodingContext.Static)
-            {
-                if (isAudio && Profile.MaxStaticMusicBitrate.HasValue)
+                if (Context == EncodingContext.Static)
                 {
-                    return Profile.MaxStaticMusicBitrate;
+                    if (isAudio && Profile.MaxStaticMusicBitrate.HasValue)
+                    {
+                        return Profile.MaxStaticMusicBitrate;
+                    }
+                    return Profile.MaxStaticBitrate;
                 }
-                return Profile.MaxStaticBitrate;
+
+                return Profile.MaxStreamingBitrate;
             }
 
-            return Profile.MaxStreamingBitrate;
+            return null;
         }
     }
 }

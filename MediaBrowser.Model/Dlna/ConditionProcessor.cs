@@ -5,10 +5,9 @@ using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {
-    public static class ConditionProcessor
+    public class ConditionProcessor
     {
-        public static bool IsVideoConditionSatisfied(
-            ProfileCondition condition,
+        public bool IsVideoConditionSatisfied(ProfileCondition condition,
             int? width,
             int? height,
             int? videoBitDepth,
@@ -65,7 +64,7 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        public static bool IsImageConditionSatisfied(ProfileCondition condition, int? width, int? height)
+        public bool IsImageConditionSatisfied(ProfileCondition condition, int? width, int? height)
         {
             switch (condition.Property)
             {
@@ -78,7 +77,7 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        public static bool IsAudioConditionSatisfied(ProfileCondition condition, int? audioChannels, int? audioBitrate, int? audioSampleRate, int? audioBitDepth)
+        public bool IsAudioConditionSatisfied(ProfileCondition condition, int? audioChannels, int? audioBitrate, int? audioSampleRate, int? audioBitDepth)
         {
             switch (condition.Property)
             {
@@ -95,8 +94,7 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        public static bool IsVideoAudioConditionSatisfied(
-            ProfileCondition condition,
+        public bool IsVideoAudioConditionSatisfied(ProfileCondition condition,
             int? audioChannels,
             int? audioBitrate,
             int? audioSampleRate,
@@ -123,7 +121,7 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        private static bool IsConditionSatisfied(ProfileCondition condition, int? currentValue)
+        private bool IsConditionSatisfied(ProfileCondition condition, int? currentValue)
         {
             if (!currentValue.HasValue)
             {
@@ -152,7 +150,7 @@ namespace MediaBrowser.Model.Dlna
             return false;
         }
 
-        private static bool IsConditionSatisfied(ProfileCondition condition, string currentValue)
+        private bool IsConditionSatisfied(ProfileCondition condition, string currentValue)
         {
             if (string.IsNullOrEmpty(currentValue))
             {
@@ -177,7 +175,7 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        private static bool IsConditionSatisfied(ProfileCondition condition, bool? currentValue)
+        private bool IsConditionSatisfied(ProfileCondition condition, bool? currentValue)
         {
             if (!currentValue.HasValue)
             {
@@ -201,7 +199,7 @@ namespace MediaBrowser.Model.Dlna
             return false;
         }
 
-        private static bool IsConditionSatisfied(ProfileCondition condition, float currentValue)
+        private bool IsConditionSatisfied(ProfileCondition condition, float currentValue)
         {
             if (currentValue <= 0)
             {
@@ -229,7 +227,7 @@ namespace MediaBrowser.Model.Dlna
             return false;
         }
 
-        private static bool IsConditionSatisfied(ProfileCondition condition, double? currentValue)
+        private bool IsConditionSatisfied(ProfileCondition condition, double? currentValue)
         {
             if (!currentValue.HasValue)
             {
@@ -257,7 +255,7 @@ namespace MediaBrowser.Model.Dlna
             return false;
         }
 
-        private static bool IsConditionSatisfied(ProfileCondition condition, TransportStreamTimestamp? timestamp)
+        private bool IsConditionSatisfied(ProfileCondition condition, TransportStreamTimestamp? timestamp)
         {
             if (!timestamp.HasValue)
             {

@@ -19,7 +19,6 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -76,24 +75,7 @@ namespace MediaBrowser.Api.Playback
     [Authenticated]
     public class UniversalAudioService : BaseApiService
     {
-        public UniversalAudioService(
-            IServerConfigurationManager serverConfigurationManager,
-            IUserManager userManager,
-            ILibraryManager libraryManager,
-            IIsoManager isoManager,
-            IMediaEncoder mediaEncoder,
-            IFileSystem fileSystem,
-            IDlnaManager dlnaManager,
-            IDeviceManager deviceManager,
-            ISubtitleEncoder subtitleEncoder,
-            IMediaSourceManager mediaSourceManager,
-            IZipClient zipClient,
-            IJsonSerializer jsonSerializer,
-            IAuthorizationContext authorizationContext,
-            IImageProcessor imageProcessor,
-            INetworkManager networkManager,
-            IEnvironmentInfo environmentInfo,
-            ILoggerFactory loggerFactory)
+        public UniversalAudioService(IServerConfigurationManager serverConfigurationManager, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, IDeviceManager deviceManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext, IImageProcessor imageProcessor, INetworkManager networkManager, IEnvironmentInfo environmentInfo)
         {
             ServerConfigurationManager = serverConfigurationManager;
             UserManager = userManager;
@@ -111,8 +93,6 @@ namespace MediaBrowser.Api.Playback
             ImageProcessor = imageProcessor;
             NetworkManager = networkManager;
             EnvironmentInfo = environmentInfo;
-            _loggerFactory = loggerFactory;
-            _logger = loggerFactory.CreateLogger(nameof(UniversalAudioService));
         }
 
         protected IServerConfigurationManager ServerConfigurationManager { get; private set; }
@@ -131,8 +111,6 @@ namespace MediaBrowser.Api.Playback
         protected IImageProcessor ImageProcessor { get; private set; }
         protected INetworkManager NetworkManager { get; private set; }
         protected IEnvironmentInfo EnvironmentInfo { get; private set; }
-        private ILoggerFactory _loggerFactory;
-        private ILogger _logger;
 
         public Task<object> Get(GetUniversalAudioStream request)
         {
@@ -243,7 +221,7 @@ namespace MediaBrowser.Api.Playback
 
             AuthorizationContext.GetAuthorizationInfo(Request).DeviceId = request.DeviceId;
 
-            var mediaInfoService = new MediaInfoService(MediaSourceManager, DeviceManager, LibraryManager, ServerConfigurationManager, NetworkManager, MediaEncoder, UserManager, JsonSerializer, AuthorizationContext, _loggerFactory)
+            var mediaInfoService = new MediaInfoService(MediaSourceManager, DeviceManager, LibraryManager, ServerConfigurationManager, NetworkManager, MediaEncoder, UserManager, JsonSerializer, AuthorizationContext)
             {
                 Request = Request
             };

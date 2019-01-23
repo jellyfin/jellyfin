@@ -94,7 +94,7 @@ namespace MediaBrowser.Api.Playback.Hls
     [Authenticated]
     public class DynamicHlsService : BaseHlsService
     {
-
+        
         public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext, INetworkManager networkManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, jsonSerializer, authorizationContext)
         {
             NetworkManager = networkManager;
@@ -918,6 +918,30 @@ namespace MediaBrowser.Api.Playback.Hls
             return args;
         }
 
+        private NumberFormatInfo _ffmpegSegmentTimeDeltaNumberFormat = null;
+        protected NumberFormatInfo ffmpegSegmentTimeDeltaNumberFormat
+        {
+            get
+            {
+                if (_ffmpegSegmentTimeDeltaNumberFormat == null)
+                {
+                    NumberFormatInfo nfi = new NumberFormatInfo();
+                    nfi.CurrencySymbol = "";
+                    nfi.NaNSymbol = "0";
+                    nfi.NegativeInfinitySymbol = "0";
+                    nfi.NegativeSign = "";
+                    nfi.NumberDecimalDigits = 3;
+                    nfi.NumberDecimalSeparator = ".";
+                    nfi.NumberGroupSeparator = "";
+                    nfi.PositiveInfinitySymbol = "0";
+                    nfi.PositiveSign = "";
+                    nfi.PercentSymbol = "0";
+                    _ffmpegSegmentTimeDeltaNumberFormat = nfi;
+                }
+                return _ffmpegSegmentTimeDeltaNumberFormat;
+            }
+        }
+
         protected override string GetCommandLineArguments(string outputPath, EncodingOptions encodingOptions, StreamState state, bool isEncoding)
         {
             var videoCodec = EncodingHelper.GetVideoEncoder(state, encodingOptions);
@@ -936,10 +960,10 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var timeDeltaParam = string.Empty;
 
-            if (isEncoding && startNumber > 0)
+            if (isEncoding && state.TargetFramerate > 0)
             {
-                var startTime = state.SegmentLength * startNumber;
-                string startTimeString = startTime.ToString(_ffmpegTimeDeltaFormat);
+                float startTime = 1 / (state.TargetFramerate.Value * 2);
+                string startTimeString = startTime.ToString(ffmpegSegmentTimeDeltaNumberFormat);
                 timeDeltaParam = string.Format("-segment_time_delta {0}", startTimeString);
             }
 

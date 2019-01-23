@@ -105,21 +105,25 @@ namespace Emby.Server.Implementations.Diagnostics
         {
             return _process.WaitForExit(timeMs);
         }
-        
+
         public Task<bool> WaitForExitAsync(int timeMs)
         {
-            //Note: For this function to work correctly, the option EnableRisingEvents needs to be set to true.
+            //if (_process.WaitForExit(100))
+            //{
+            //    return Task.FromResult(true);
+            //}
 
-            if (HasExited)
-            {
-                return Task.FromResult(true);
-            }
-
+            //timeMs -= 100;
             timeMs = Math.Max(0, timeMs);
 
             var tcs = new TaskCompletionSource<bool>();
 
             var cancellationToken = new CancellationTokenSource(timeMs).Token;
+
+            if (HasExited)
+            {
+                return Task.FromResult(true);
+            }
 
             _process.Exited += (sender, args) => tcs.TrySetResult(true);
 
