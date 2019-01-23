@@ -938,7 +938,9 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (isEncoding && startNumber > 0)
             {
+                //format requirements for the segment_time_delta parameter are: no negative numbers, and a decimal '.' has to be used for floating numbers. (So no ',')
                 var startTime = state.SegmentLength * startNumber;
+                if (startTime < 0) { startTime *= -1; }//make sure the startTime is a positive number.
                 string startTimeString = startTime.ToString(_ffmpegTimeDeltaFormat);
                 timeDeltaParam = string.Format("-segment_time_delta {0}", startTimeString);
             }
