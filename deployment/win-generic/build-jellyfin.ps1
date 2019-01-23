@@ -40,21 +40,21 @@ function Install-FFMPEG {
         Write-Warning "FFMPEG will not be installed"
     }elseif($Architecture -eq 'x64'){
          Write-Verbose "Downloading 64 bit FFMPEG"
-         Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-4.1-win64-static.zip -UseBasicParsing -OutFile "$tempdir/fmmpeg.zip" | Write-Verbose
+         Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-4.0.2-win64-static.zip -UseBasicParsing -OutFile "$tempdir/fmmpeg.zip" | Write-Verbose
     }else{
          Write-Verbose "Downloading 32 bit FFMPEG"
-         Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-4.1-win32-static.zip -UseBasicParsing -OutFile "$tempdir/fmmpeg.zip" | Write-Verbose
+         Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-4.0.2-win32-static.zip -UseBasicParsing -OutFile "$tempdir/fmmpeg.zip" | Write-Verbose
     }
 
     Expand-Archive "$tempdir/fmmpeg.zip" -DestinationPath "$tempdir/ffmpeg/" | Write-Verbose
     if($Architecture -eq 'x64'){
         Write-Verbose "Copying Binaries to Jellyfin location"
-        Get-ChildItem "$tempdir/ffmpeg/ffmpeg-4.1-win64-static/bin" | ForEach-Object {
+        Get-ChildItem "$tempdir/ffmpeg/ffmpeg-4.0.2-win64-static/bin" | ForEach-Object {
             Copy-Item $_.FullName -Destination $installLocation | Write-Verbose
         }
     }else{
         Write-Verbose "Copying Binaries to Jellyfin location"
-        Get-ChildItem "$tempdir/ffmpeg/ffmpeg-4.1-win32-static/bin" | ForEach-Object {
+        Get-ChildItem "$tempdir/ffmpeg/ffmpeg-4.0.2-win32-static/bin" | ForEach-Object {
             Copy-Item $_.FullName -Destination $installLocation | Write-Verbose
         }
     }
@@ -102,8 +102,8 @@ if($InstallNSSM.IsPresent -or ($InstallNSSM -eq $true)){
     Write-Verbose "Starting NSSM Install"
     Install-NSSM $InstallLocation $Architecture
 }
-Copy-Item .\install-jellyfin.ps1 $InstallLocation\install-jellyfin.ps1
-Copy-Item .\install.bat $InstallLocation\install.bat
+Copy-Item .\deployment\win-generic\install-jellyfin.ps1 $InstallLocation\install-jellyfin.ps1
+Copy-Item .\deployment\win-generic\install.bat $InstallLocation\install.bat
 if($GenerateZip.IsPresent -or ($GenerateZip -eq $true)){
     Compress-Archive -Path $InstallLocation -DestinationPath "$InstallLocation/jellyfin.zip" -Force
 }
