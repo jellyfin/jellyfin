@@ -960,7 +960,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var timeDeltaParam = string.Empty;
 
-            if (isEncoding && startNumber > 0)
+            if (isEncoding && state.TargetFramerate > 0)
             {
                 float startTime = 1 / (state.TargetFramerate.Value * 2);
                 string startTimeString = startTime.ToString(ffmpegSegmentTimeDeltaNumberFormat);

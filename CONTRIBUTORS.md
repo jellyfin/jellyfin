@@ -14,8 +14,7 @@
  - [grafixeyehero](https://github.com/grafixeyehero)
  - [cvium](https://github.com/cvium)
  - [wtayl0r](https://github.com/wtayl0r)
- - [TtheCreator](https://github.com/Tthecreator)
-
+ 
 # Emby Contributors
 
  - [LukePulverenti](https://github.com/LukePulverenti)

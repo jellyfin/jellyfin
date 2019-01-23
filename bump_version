@@ -47,20 +47,10 @@ if ! git diff-index --quiet HEAD --; then
 fi
 
 git fetch --all
-# If this is an official branch name, fetch it from origin
-official_branches_regex="^master$|^dev$|^release-.*$|^hotfix-.*$"
-if [[ ${web_branch} =~ ${official_branches_regex} ]]; then
-    git checkout origin/${web_branch} || {
-        echo "ERROR: 'jellyfin-web' branch 'origin/${web_branch}' is invalid."
-        exit 1
-    }
-# Otherwise, just check out the local branch (for testing, etc.)
-else
-    git checkout ${web_branch} || {
-        echo "ERROR: 'jellyfin-web' branch '${web_branch}' is invalid."
-        exit 1
-    }
-fi
+git checkout origin/${web_branch} || {
+    echo "ERROR: 'jellyfin-web' branch ${web_branch} is invalid."
+    exit 1
+}
 popd
 
 new_version="$1"
@@ -104,7 +94,7 @@ for repo in ./ MediaBrowser.WebDashboard/jellyfin-web/; do
     pushd ${repo}
 
     # Find the last release commit, so we know what's happened since
-    last_master_branch="release-${old_version}"
+    last_master_branch="master-${old_version}" # TODO: Set to `release-` for next release, so we can properly parse both repos with the new branch standard
     last_master_merge_commit="$(
         git log --merges --pretty=oneline \
             | grep -F "${last_master_branch}" \
@@ -160,7 +150,7 @@ echo -e "### DEBIAN PACKAGE CHANGELOG: Verify this file looks correct or edit ac
 jellyfin (${new_version}-1) unstable; urgency=medium
 ${changelog_string_deb}
 
- -- Jellyfin Packaging Team <packaging@jellyfin.org>  $( date --rfc-2822 )
+-- Jellyfin Packaging Team <packaging@jellyfin.org>  $( date --rfc-2822 )
 " >> ${debian_changelog_temp}
 cat ${debian_changelog_file} >> ${debian_changelog_temp}
 # Edit the file to verify

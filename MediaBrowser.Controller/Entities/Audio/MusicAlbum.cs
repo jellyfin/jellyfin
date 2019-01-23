@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// </summary>
         /// <value>The tracks.</value>
         [IgnoreDataMember]
-        public IEnumerable<Audio> Tracks => GetRecursiveChildren(i => i is Audio).Cast<Audio>();
+        public IEnumerable<BaseItem> Tracks => GetRecursiveChildren(i => i is Audio);
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
