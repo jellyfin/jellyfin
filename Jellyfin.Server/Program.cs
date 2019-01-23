@@ -99,7 +99,7 @@ namespace Jellyfin.Server
                 new SystemEvents(),
                 new NetworkManager(_loggerFactory, environmentInfo)))
             {
-                await appHost.Init();
+                await appHost.InitAsync();
 
                 appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
 

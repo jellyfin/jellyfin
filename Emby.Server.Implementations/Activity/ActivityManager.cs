@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.Activity
             _userManager = userManager;
         }
 
-        public async Task Create(ActivityLogEntry entry)
+        public async Task CreateAsync(ActivityLogEntry entry)
         {
             entry.Date = DateTime.UtcNow;
 

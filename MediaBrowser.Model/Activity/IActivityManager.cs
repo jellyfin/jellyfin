@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Activity
     {
         event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
 
-        Task Create(ActivityLogEntry entry);
+        Task CreateAsync(ActivityLogEntry entry);
 
         IEnumerable<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? x, int? y);
     }
