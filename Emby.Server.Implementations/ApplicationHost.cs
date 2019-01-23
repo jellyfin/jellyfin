@@ -709,7 +709,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public async Task Init()
+        public async Task InitAsync()
         {
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
@@ -739,7 +739,7 @@ namespace Emby.Server.Implementations
 
             SetHttpLimit();
 
-            await RegisterResources();
+            await RegisterResourcesAsync();
 
             FindParts();
         }
@@ -754,7 +754,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-        protected async Task RegisterResources()
+        protected async Task RegisterResourcesAsync()
         {
             RegisterSingleInstance(ConfigurationManager);
             RegisterSingleInstance<IApplicationHost>(this);
@@ -931,7 +931,7 @@ namespace Emby.Server.Implementations
             EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, LoggerFactory, MediaEncoder, ChapterManager, LibraryManager);
             RegisterSingleInstance(EncodingManager);
 
-            var activityLogRepo = await GetActivityLogRepository();
+            var activityLogRepo = await GetActivityLogRepositoryAsync();
             RegisterSingleInstance(activityLogRepo);
             RegisterSingleInstance<IActivityManager>(new ActivityManager(LoggerFactory, activityLogRepo, UserManager));
 
@@ -1146,7 +1146,7 @@ namespace Emby.Server.Implementations
             return repo;
         }
 
-        private async Task<IActivityRepository> GetActivityLogRepository()
+        private async Task<IActivityRepository> GetActivityLogRepositoryAsync()
         {
             var repo = new ActivityRepository(ServerConfigurationManager.ApplicationPaths.DataPath);
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -92,18 +93,18 @@ namespace Emby.Server.Implementations.Activity
             _appHost.ApplicationUpdated += _appHost_ApplicationUpdated;
         }
 
-        void _deviceManager_CameraImageUploaded(object sender, GenericEventArgs<CameraImageUploadInfo> e)
+        async void _deviceManager_CameraImageUploaded(object sender, GenericEventArgs<CameraImageUploadInfo> e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("CameraImageUploadedFrom"), e.Argument.Device.Name),
                 Type = NotificationType.CameraImageUploaded.ToString()
             });
         }
 
-        void _userManager_UserLockedOut(object sender, GenericEventArgs<User> e)
+        async void _userManager_UserLockedOut(object sender, GenericEventArgs<User> e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("UserLockedOutWithName"), e.Argument.Name),
                 Type = NotificationType.UserLockedOut.ToString(),
@@ -111,9 +112,9 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _subManager_SubtitleDownloadFailure(object sender, SubtitleDownloadFailureEventArgs e)
+        async void _subManager_SubtitleDownloadFailure(object sender, SubtitleDownloadFailureEventArgs e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("SubtitleDownloadFailureFromForItem"), e.Provider, Notifications.Notifications.GetItemName(e.Item)),
                 Type = "SubtitleDownloadFailure",
@@ -122,7 +123,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _sessionManager_PlaybackStopped(object sender, PlaybackStopEventArgs e)
+        async void _sessionManager_PlaybackStopped(object sender, PlaybackStopEventArgs e)
         {
             var item = e.MediaInfo;
 
@@ -145,7 +146,7 @@ namespace Emby.Server.Implementations.Activity
 
             var user = e.Users.First();
 
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("UserStoppedPlayingItemWithValues"), user.Name, GetItemName(item), e.DeviceName),
                 Type = GetPlaybackStoppedNotificationType(item.MediaType),
@@ -153,7 +154,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _sessionManager_PlaybackStart(object sender, PlaybackProgressEventArgs e)
+        async void _sessionManager_PlaybackStart(object sender, PlaybackProgressEventArgs e)
         {
             var item = e.MediaInfo;
 
@@ -176,7 +177,7 @@ namespace Emby.Server.Implementations.Activity
 
             var user = e.Users.First();
 
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("UserStartedPlayingItemWithValues"), user.Name, GetItemName(item), e.DeviceName),
                 Type = GetPlaybackNotificationType(item.MediaType),
@@ -237,7 +238,7 @@ namespace Emby.Server.Implementations.Activity
             return null;
         }
 
-        void _sessionManager_SessionEnded(object sender, SessionEventArgs e)
+        async void _sessionManager_SessionEnded(object sender, SessionEventArgs e)
         {
             string name;
             var session = e.SessionInfo;
@@ -254,7 +255,7 @@ namespace Emby.Server.Implementations.Activity
                 name = string.Format(_localization.GetLocalizedString("UserOfflineFromDevice"), session.UserName, session.DeviceName);
             }
 
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = name,
                 Type = "SessionEnded",
@@ -263,11 +264,11 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _sessionManager_AuthenticationSucceeded(object sender, GenericEventArgs<AuthenticationResult> e)
+        async void _sessionManager_AuthenticationSucceeded(object sender, GenericEventArgs<AuthenticationResult> e)
         {
             var user = e.Argument.User;
 
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("AuthenticationSucceededWithUserName"), user.Name),
                 Type = "AuthenticationSucceeded",
@@ -276,9 +277,9 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _sessionManager_AuthenticationFailed(object sender, GenericEventArgs<AuthenticationRequest> e)
+        async void _sessionManager_AuthenticationFailed(object sender, GenericEventArgs<AuthenticationRequest> e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("FailedLoginAttemptWithUserName"), e.Argument.Username),
                 Type = "AuthenticationFailed",
@@ -287,9 +288,9 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _appHost_ApplicationUpdated(object sender, GenericEventArgs<PackageVersionInfo> e)
+        async void _appHost_ApplicationUpdated(object sender, GenericEventArgs<PackageVersionInfo> e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("MessageApplicationUpdatedTo"), e.Argument.versionStr),
                 Type = NotificationType.ApplicationUpdateInstalled.ToString(),
@@ -297,27 +298,27 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        async void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("MessageNamedServerConfigurationUpdatedWithValue"), e.Key),
                 Type = "NamedConfigurationUpdated"
             });
         }
 
-        void _config_ConfigurationUpdated(object sender, EventArgs e)
+        async void _config_ConfigurationUpdated(object sender, EventArgs e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = _localization.GetLocalizedString("MessageServerConfigurationUpdated"),
                 Type = "ServerConfigurationUpdated"
             });
         }
 
-        void _userManager_UserPolicyUpdated(object sender, GenericEventArgs<User> e)
+        async void _userManager_UserPolicyUpdated(object sender, GenericEventArgs<User> e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("UserPolicyUpdatedWithName"), e.Argument.Name),
                 Type = "UserPolicyUpdated",
@@ -325,18 +326,18 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _userManager_UserDeleted(object sender, GenericEventArgs<User> e)
+        async void _userManager_UserDeleted(object sender, GenericEventArgs<User> e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("UserDeletedWithName"), e.Argument.Name),
                 Type = "UserDeleted"
             });
         }
 
-        void _userManager_UserPasswordChanged(object sender, GenericEventArgs<User> e)
+        async void _userManager_UserPasswordChanged(object sender, GenericEventArgs<User> e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("UserPasswordChangedWithName"), e.Argument.Name),
                 Type = "UserPasswordChanged",
@@ -344,9 +345,9 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _userManager_UserCreated(object sender, GenericEventArgs<User> e)
+        async void _userManager_UserCreated(object sender, GenericEventArgs<User> e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("UserCreatedWithName"), e.Argument.Name),
                 Type = "UserCreated",
@@ -354,9 +355,9 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _subManager_SubtitlesDownloaded(object sender, SubtitleDownloadEventArgs e)
+        async void _subManager_SubtitlesDownloaded(object sender, SubtitleDownloadEventArgs e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("SubtitlesDownloadedForItem"), Notifications.Notifications.GetItemName(e.Item)),
                 Type = "SubtitlesDownloaded",
@@ -365,7 +366,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _sessionManager_SessionStarted(object sender, SessionEventArgs e)
+        async void _sessionManager_SessionStarted(object sender, SessionEventArgs e)
         {
             string name;
             var session = e.SessionInfo;
@@ -382,7 +383,7 @@ namespace Emby.Server.Implementations.Activity
                 name = string.Format(_localization.GetLocalizedString("UserOnlineFromDevice"), session.UserName, session.DeviceName);
             }
 
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = name,
                 Type = "SessionStarted",
@@ -391,9 +392,9 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _installationManager_PluginUpdated(object sender, GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> e)
+        async void _installationManager_PluginUpdated(object sender, GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("PluginUpdatedWithName"), e.Argument.Item1.Name),
                 Type = NotificationType.PluginUpdateInstalled.ToString(),
@@ -402,18 +403,18 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _installationManager_PluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
+        async void _installationManager_PluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("PluginUninstalledWithName"), e.Argument.Name),
                 Type = NotificationType.PluginUninstalled.ToString()
             });
         }
 
-        void _installationManager_PluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> e)
+        async void _installationManager_PluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> e)
         {
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("PluginInstalledWithName"), e.Argument.name),
                 Type = NotificationType.PluginInstalled.ToString(),
@@ -421,11 +422,11 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _installationManager_PackageInstallationFailed(object sender, InstallationFailedEventArgs e)
+        async void _installationManager_PackageInstallationFailed(object sender, InstallationFailedEventArgs e)
         {
             var installationInfo = e.InstallationInfo;
 
-            CreateLogEntry(new ActivityLogEntry
+            await CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("NameInstallFailed"), installationInfo.Name),
                 Type = NotificationType.InstallationFailed.ToString(),
@@ -434,7 +435,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _taskManager_TaskCompleted(object sender, TaskCompletionEventArgs e)
+        async void _taskManager_TaskCompleted(object sender, TaskCompletionEventArgs e)
         {
             var result = e.Result;
             var task = e.Task;
@@ -461,7 +462,7 @@ namespace Emby.Server.Implementations.Activity
                     vals.Add(e.Result.LongErrorMessage);
                 }
 
-                CreateLogEntry(new ActivityLogEntry
+                await CreateLogEntry(new ActivityLogEntry
                 {
                     Name = string.Format(_localization.GetLocalizedString("ScheduledTaskFailedWithName"), task.Name),
                     Type = NotificationType.TaskFailed.ToString(),
@@ -472,11 +473,11 @@ namespace Emby.Server.Implementations.Activity
             }
         }
 
-        private void CreateLogEntry(ActivityLogEntry entry)
+        private async Task CreateLogEntry(ActivityLogEntry entry)
         {
             try
             {
-                _activityManager.Create(entry);
+                await _activityManager.CreateAsync(entry);
             }
             catch
             {
