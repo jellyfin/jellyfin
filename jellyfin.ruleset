@@ -3,7 +3,7 @@
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
     <!-- disable warning SA1101: Prefix local calls with 'this.' -->
     <Rule Id="SA1101" Action="None" />
-    <!-- disable warning SA1200: Using directive must appear within a namespace declaration -->
+    <!-- disable warning SA1200: 'using' directive must appear within a namespace declaration -->
     <Rule Id="SA1200" Action="None" />
     <!-- disable warning SA1309: Fields must not begin with an underscore -->
     <Rule Id="SA1309" Action="None" />
