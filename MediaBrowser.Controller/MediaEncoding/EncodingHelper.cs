@@ -1743,12 +1743,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 filters.Add(subParam);
 
-		// Ensure proper filters are passed to ffmpeg in case of hardware acceleration via VA-API
-		// Reference: https://trac.ffmpeg.org/wiki/Hardware/VAAPI
-		if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
-		{
-		    filters.Add("hwmap");
-		}
+                // Ensure proper filters are passed to ffmpeg in case of hardware acceleration via VA-API
+                // Reference: https://trac.ffmpeg.org/wiki/Hardware/VAAPI
+                if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+                {
+                    filters.Add("hwmap");
+                }
 
                 if (allowTimeStampCopy)
                 {
