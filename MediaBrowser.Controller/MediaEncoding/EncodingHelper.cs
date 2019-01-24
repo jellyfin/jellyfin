@@ -1439,7 +1439,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase) && outputSizeParam.Length == 0)
             {
-                outputSizeParam = ",format=nv12|vaapi,hwupload";
+                outputSizeParam = ",format=nv12|vaapi,hwupload,hwmap=mode=read+write+direct";
             }
 
             var videoSizeParam = string.Empty;
@@ -1742,6 +1742,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var subParam = GetTextSubtitleParam(state);
 
                 filters.Add(subParam);
+
+		// Ensure proper filters are passed to ffmpeg in case of hardware acceleration via VA-API
+		// Reference: https://trac.ffmpeg.org/wiki/Hardware/VAAPI
+		if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+		{
+		    filters.Add("hwmap");
+		}
 
                 if (allowTimeStampCopy)
                 {
