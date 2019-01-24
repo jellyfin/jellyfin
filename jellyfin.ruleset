@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Rules for Jellyfin.Server" Description="Code analysis rules for Jellyfin.Server.csproj" ToolsVersion="14.0">
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <!-- disable warning SA1101: Prefix local calls with 'this.' -->
+    <Rule Id="SA1101" Action="None" />
+    <!-- disable warning SA1200: 'using' directive must appear within a namespace declaration -->
+    <Rule Id="SA1200" Action="None" />
+    <!-- disable warning SA1309: Fields must not begin with an underscore -->
+    <Rule Id="SA1309" Action="None" />
+    <!-- disable warning SA1633: The file header is missing or not located at the top of the file -->
+    <Rule Id="SA1633" Action="None" />
+  </Rules>
+</RuleSet>
