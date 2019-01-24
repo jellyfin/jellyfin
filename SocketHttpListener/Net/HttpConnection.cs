@@ -32,8 +32,6 @@ namespace SocketHttpListener.Net
         int _reuses;
         bool _contextBound;
         bool secure;
-        int _timeout = 90000; // 90k ms for first request, 15k ms from then on
-        private Timer _timer;
         IPEndPoint local_ep;
         HttpListener _lastListener;
         X509Certificate cert;
@@ -91,8 +89,6 @@ namespace SocketHttpListener.Net
 
         public async Task Init()
         {
-            _timer = new Timer(OnTimeout, null, Timeout.Infinite, Timeout.Infinite);
-
             if (ssl_stream != null)
             {
                 var enableAsync = true;
@@ -162,14 +158,10 @@ namespace SocketHttpListener.Net
                 _buffer = new byte[BufferSize];
             try
             {
-                if (_reuses == 1)
-                    _timeout = 15000;
-                //_timer.Change(_timeout, Timeout.Infinite);
                 _stream.BeginRead(_buffer, 0, BufferSize, s_onreadCallback, this);
             }
             catch
             {
-                //_timer.Change(Timeout.Infinite, Timeout.Infinite);
                 CloseSocket();
                 Unbind();
             }
@@ -216,7 +208,6 @@ namespace SocketHttpListener.Net
 
         private void OnReadInternal(IAsyncResult ares)
         {
-            //_timer.Change(Timeout.Infinite, Timeout.Infinite);
             int nread = -1;
             try
             {

@@ -357,7 +357,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var list = new List<Tuple<StringBuilder, bool>>();
 
-            int thisMarker = 0, thisNumericChunk = 0;
+            int thisMarker = 0;
 
             while (thisMarker < s1.Length)
             {
