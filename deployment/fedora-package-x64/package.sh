@@ -19,7 +19,8 @@ pkg_src_dir="`pwd`/pkg-src"
 current_user="`whoami`"
 image_name="jellyfin-rpmbuild"
 docker_sudo=""
-if ! $(id -Gn | grep -q 'docker') && [ ! ${EUID:-1000} -eq 0 ] && [ ! $USER == "root" ]; then
+if ! $(id -Gn | grep -q 'docker') && [ ! ${EUID:-1000} -eq 0 ] && \
+ [ ! $USER == "root" ] && ! $(echo "$OSTYPE" | grep -q "darwin"); then
     docker_sudo=sudo
 fi
 
