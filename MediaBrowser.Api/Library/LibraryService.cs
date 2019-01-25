@@ -839,7 +839,7 @@ namespace MediaBrowser.Api.Library
         {
             try
             {
-                _activityManager.Create(new ActivityLogEntry
+                _activityManager.CreateAsync(new ActivityLogEntry
                 {
                     Name = string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Name, item.Name),
                     Type = "UserDownloadingContent",
