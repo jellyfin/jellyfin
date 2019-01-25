@@ -17,7 +17,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Implementations.LiveTv.Listings
+namespace Emby.Server.Implementations.LiveTv.Listings
 {
     public class XmlTvListingsProvider : IListingsProvider
     {

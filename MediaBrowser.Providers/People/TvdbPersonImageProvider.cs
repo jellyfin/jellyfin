@@ -18,6 +18,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Xml;
 using MediaBrowser.Providers.TV;
+using MediaBrowser.Providers.TV.TheTVDB;
 
 namespace MediaBrowser.Providers.People
 {

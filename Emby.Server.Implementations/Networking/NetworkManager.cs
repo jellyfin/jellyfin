@@ -280,7 +280,7 @@ namespace Emby.Server.Implementations.Networking
 
                 if (normalizedSubnet.IndexOf('/') != -1)
                 {
-                    var ipnetwork = IPNetwork.Parse(normalizedSubnet);
+                    var ipnetwork = IPNetwork.IPNetwork.Parse(normalizedSubnet);
                     if (ipnetwork.Contains(address))
                     {
                         return true;

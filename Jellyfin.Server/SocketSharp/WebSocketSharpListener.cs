@@ -15,7 +15,7 @@ using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 using SocketHttpListener.Net;
 
-namespace Jellyfin.SocketSharp
+namespace Jellyfin.Server.SocketSharp
 {
     public class WebSocketSharpListener : IHttpListener
     {

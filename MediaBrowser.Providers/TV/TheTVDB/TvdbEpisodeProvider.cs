@@ -18,7 +18,7 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.TV
+namespace MediaBrowser.Providers.TV.TheTVDB
 {
 
     /// <summary>

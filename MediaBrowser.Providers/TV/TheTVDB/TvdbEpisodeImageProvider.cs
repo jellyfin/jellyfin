@@ -14,7 +14,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 
-namespace MediaBrowser.Providers.TV
+namespace MediaBrowser.Providers.TV.TheTVDB
 {
     public class TvdbEpisodeImageProvider : IRemoteImageProvider
     {

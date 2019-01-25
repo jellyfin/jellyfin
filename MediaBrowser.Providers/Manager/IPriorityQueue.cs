@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Priority_Queue
+namespace MediaBrowser.Providers.Manager
 {
     /// <summary>
     /// Credit: https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp

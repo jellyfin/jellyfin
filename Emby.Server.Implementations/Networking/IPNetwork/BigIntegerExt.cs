@@ -1,11 +1,10 @@
+using System;
 using System.Collections.Generic;
+using System.Numerics;
+using System.Text;
 
-namespace System.Net
+namespace Emby.Server.Implementations.Networking.IPNetwork
 {
-    using System;
-    using System.Numerics;
-    using System.Text;
-
     /// <summary>
     /// Extension methods to convert <see cref="BigInteger"/>
     /// instances to hexadecimal, octal, and binary strings.

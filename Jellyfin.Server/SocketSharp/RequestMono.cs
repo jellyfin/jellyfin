@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 
-namespace Jellyfin.SocketSharp
+namespace Jellyfin.Server.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {

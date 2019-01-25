@@ -16,6 +16,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
+using MediaBrowser.Providers.TV.TheTVDB;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV

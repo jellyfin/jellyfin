@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.HttpServer;
-using Jellyfin.SocketSharp;
+using Jellyfin.Server.SocketSharp;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;

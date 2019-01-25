@@ -22,7 +22,7 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Music;
 
-namespace MediaBrowser.Providers.TV
+namespace MediaBrowser.Providers.TV.FanArt
 {
     public class FanartSeriesProvider : IRemoteImageProvider, IHasOrder
     {

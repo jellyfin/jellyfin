@@ -1,4 +1,4 @@
-namespace Priority_Queue
+namespace MediaBrowser.Providers.Manager
 {
     /// Credit: https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
     public class GenericPriorityQueueNode<TPriority>

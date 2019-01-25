@@ -19,7 +19,7 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Providers.TV
+namespace MediaBrowser.Providers.TV.FanArt
 {
     public class FanArtSeasonProvider : IRemoteImageProvider, IHasOrder
     {
