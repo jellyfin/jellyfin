@@ -83,15 +83,15 @@ namespace Jellyfin.SocketSharp
 
         private void ProcessContext(HttpListenerContext context)
         {
-            //InitTask(context, _disposeCancellationToken);
-            Task.Run(() => InitTask(context, _disposeCancellationToken));
+            var _ = Task.Run(async () => await InitTask(context, _disposeCancellationToken));
         }
 
-        private void LogRequest(ILogger logger, HttpListenerRequest request)
+        private static void LogRequest(ILogger logger, HttpListenerRequest request)
         {
             var url = request.Url.ToString();
 
-            logger.LogInformation("{0} {1}. UserAgent: {2}", request.IsWebSocketRequest ? "WS" : "HTTP " + request.HttpMethod, url, request.UserAgent ?? string.Empty);
+            logger.LogInformation("{0} {1}. UserAgent: {2}",
+                request.IsWebSocketRequest ? "WS" : "HTTP " + request.HttpMethod, url, request.UserAgent ?? string.Empty);
         }
 
         private Task InitTask(HttpListenerContext context, CancellationToken cancellationToken)
@@ -196,7 +196,7 @@ namespace Jellyfin.SocketSharp
         {
             try
             {
-                ctx.Response.StatusCode = 200;
+                ctx.Response.StatusCode = statusCode;
                 ctx.Response.Close();
             }
             catch (ObjectDisposedException)

@@ -242,7 +242,6 @@ namespace Jellyfin.SocketSharp
             return request.ContentType.StartsWith(contentType, StringComparison.OrdinalIgnoreCase);
         }
 
-        public const string Xml = "application/xml";
         private static string GetQueryStringContentType(IRequest httpReq)
         {
             var format = httpReq.QueryString["format"];
@@ -250,22 +249,40 @@ namespace Jellyfin.SocketSharp
             {
                 const int formatMaxLength = 4;
                 var pi = httpReq.PathInfo;
-                if (pi == null || pi.Length <= formatMaxLength) return null;
-                if (pi[0] == '/') pi = pi.Substring(1);
+                if (pi == null || pi.Length <= formatMaxLength)
+                {
+                    return null;
+                }
+                if (pi[0] == '/')
+                {
+                    pi = pi.Substring(1);
+                }
                 format = LeftPart(pi, '/');
-                if (format.Length > formatMaxLength) return null;
+                if (format.Length > formatMaxLength)
+                {
+                    return null;
+                }
             }
 
             format = LeftPart(format, '.').ToLower();
-            if (format.Contains("json")) return "application/json";
-            if (format.Contains("xml")) return Xml;
+            if (format.Contains("json", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/json";
+            }
+            if (format.Contains("xml", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/xml";
+            }
 
             return null;
         }
 
         public static string LeftPart(string strVal, char needle)
         {
-            if (strVal == null) return null;
+            if (strVal == null)
+            {
+                return null;
+            }
             var pos = strVal.IndexOf(needle);
             return pos == -1
                 ? strVal
@@ -283,14 +300,14 @@ namespace Jellyfin.SocketSharp
                 {
                     var mode = HandlerFactoryPath;
 
-                    var pos = request.RawUrl.IndexOf("?");
+                    var pos = request.RawUrl.IndexOf("?", StringComparison.Ordinal);
                     if (pos != -1)
                     {
                         var path = request.RawUrl.Substring(0, pos);
                         this.pathInfo = GetPathInfo(
                             path,
                             mode,
-                            mode ?? "");
+                            mode ?? string.Empty);
                     }
                     else
                     {
@@ -307,18 +324,27 @@ namespace Jellyfin.SocketSharp
         private static string GetPathInfo(string fullPath, string mode, string appPath)
         {
             var pathInfo = ResolvePathInfoFromMappedPath(fullPath, mode);
-            if (!string.IsNullOrEmpty(pathInfo)) return pathInfo;
+            if (!string.IsNullOrEmpty(pathInfo))
+            {
+                return pathInfo;
+            }
 
             //Wildcard mode relies on this to work out the handlerPath
             pathInfo = ResolvePathInfoFromMappedPath(fullPath, appPath);
-            if (!string.IsNullOrEmpty(pathInfo)) return pathInfo;
+            if (!string.IsNullOrEmpty(pathInfo))
+            {
+                return pathInfo;
+            }
 
             return fullPath;
         }
 
         private static string ResolvePathInfoFromMappedPath(string fullPath, string mappedPathRoot)
         {
-            if (mappedPathRoot == null) return null;
+            if (mappedPathRoot == null)
+            {
+                return null;
+            }
 
             var sbPathInfo = new StringBuilder();
             var fullPathParts = fullPath.Split('/');
@@ -345,7 +371,10 @@ namespace Jellyfin.SocketSharp
                     }
                 }
             }
-            if (!pathRootFound) return null;
+            if (!pathRootFound)
+            {
+                return null;
+            }
 
             var path = sbPathInfo.ToString();
             return path.Length > 1 ? path.TrimEnd('/') : "/";
@@ -400,7 +429,10 @@ namespace Jellyfin.SocketSharp
         public static Encoding GetEncoding(string contentTypeHeader)
         {
             var param = GetParameter(contentTypeHeader, "charset=");
-            if (param == null) return null;
+            if (param == null)
+            {
+                return null;
+            }
             try
             {
                 return Encoding.GetEncoding(param);
@@ -423,7 +455,9 @@ namespace Jellyfin.SocketSharp
                 if (httpFiles == null)
                 {
                     if (files == null)
-                        return httpFiles = new IHttpFile[0];
+                    {
+                        return httpFiles = Array.Empty<IHttpFile>();
+                    }
 
                     httpFiles = new IHttpFile[files.Count];
                     var i = 0;
