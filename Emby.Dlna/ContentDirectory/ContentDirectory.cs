@@ -76,7 +76,6 @@ namespace Emby.Dlna.ContentDirectory
                           _dlna.GetDefaultProfile();
 
             var serverAddress = request.RequestedUrl.Substring(0, request.RequestedUrl.IndexOf("/dlna", StringComparison.OrdinalIgnoreCase));
-            string accessToken = null;
 
             var user = GetUser(profile);
 
@@ -85,7 +84,7 @@ namespace Emby.Dlna.ContentDirectory
                 _libraryManager,
                 profile,
                 serverAddress,
-                accessToken,
+                null,
                 _imageProcessor,
                 _userDataManager,
                 user,

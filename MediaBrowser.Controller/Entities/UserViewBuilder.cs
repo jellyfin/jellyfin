@@ -508,7 +508,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsLiked.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user, item);
+                userData = userDataManager.GetUserData(user, item);
 
                 if (!userData.Likes.HasValue || userData.Likes != query.IsLiked.Value)
                 {

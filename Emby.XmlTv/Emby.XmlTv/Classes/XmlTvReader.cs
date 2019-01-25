@@ -1005,7 +1005,7 @@ namespace Emby.XmlTv.Classes
             }
         }
 
-        public static Regex _regDateWithOffset = new Regex(@"^(?<dateDigits>[0-9]{4,14})(\s(?<dateOffset>[+-]*[0-9]{1,4}))?$");
+        public const string _regDateWithOffset = @"^(?<dateDigits>[0-9]{4,14})(\s(?<dateOffset>[+-]*[0-9]{1,4}))?$";
 
         public DateTimeOffset? ParseDate(string dateValue)
         {
@@ -1018,50 +1018,47 @@ namespace Emby.XmlTv.Classes
             '200007281733 BST', '200209', '19880523083000 +0300'.  (BST == +0100.)
             */
 
-            DateTimeOffset? result = null;
-
-            if (!string.IsNullOrEmpty(dateValue))
+            if (string.IsNullOrEmpty(dateValue))
             {
-                var completeDate = "20000101000000";
-                var dateComponent = string.Empty;
-                var dateOffset = "+00:00";
+                return null;
+            }
 
-                var match = _regDateWithOffset.Match(dateValue);
-                if (match.Success)
+            var completeDate = "20000101000000";
+            var dateComponent = string.Empty;
+            var dateOffset = "+00:00";
+            var match = Regex.Match(dateValue, _regDateWithOffset);
+            if (match.Success)
+            {
+                dateComponent = match.Groups["dateDigits"].Value;
+                if (!string.IsNullOrEmpty(match.Groups["dateOffset"].Value))
                 {
-                    dateComponent = match.Groups["dateDigits"].Value;
-                    if (!string.IsNullOrEmpty(match.Groups["dateOffset"].Value))
+                    dateOffset = match.Groups["dateOffset"].Value; // Add in the colon to ease parsing later
+                    if (dateOffset.Length == 5)
                     {
-                        dateOffset = match.Groups["dateOffset"].Value; // Add in the colon to ease parsing later
-                        if (dateOffset.Length == 5)
-                        {
-                            dateOffset = dateOffset.Insert(3, ":"); // Add in the colon to ease parsing later
-                        }
-                        else
-                        {
-                            dateOffset = "+00:00";
-                        }
+                        dateOffset = dateOffset.Insert(3, ":"); // Add in the colon to ease parsing later
                     }
-                }
-
-                // Pad out the date component part to 14 characaters so 2016061509 becomes 20160615090000
-                if (dateComponent.Length < 14)
-                {
-                    dateComponent = dateComponent + completeDate.Substring(dateComponent.Length, completeDate.Length - dateComponent.Length);
-                }
-
-                var standardDate = string.Format("{0} {1}", dateComponent, dateOffset);
-                if (DateTimeOffset.TryParseExact(standardDate, "yyyyMMddHHmmss zzz", CultureInfo.CurrentCulture, DateTimeStyles.None, out var parsedDateTime))
-                {
-                    return parsedDateTime.ToUniversalTime();
-                }
-                else
-                {
-                    //Logger.LogWarning("Unable to parse the date {0} from standardised form {1}", dateValue, standardDate);
+                    else
+                    {
+                        dateOffset = "+00:00";
+                    }
                 }
             }
 
-            return result;
+            // Pad out the date component part to 14 characaters so 2016061509 becomes 20160615090000
+            if (dateComponent.Length < 14)
+            {
+                dateComponent = dateComponent + completeDate.Substring(dateComponent.Length, completeDate.Length - dateComponent.Length);
+            }
+
+            var standardDate = string.Format("{0} {1}", dateComponent, dateOffset);
+            if (DateTimeOffset.TryParseExact(standardDate, "yyyyMMddHHmmss zzz", CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTimeOffset parsedDateTime))
+            {
+                return parsedDateTime.ToUniversalTime();
+            }
+
+            // Logger.LogWarning("Unable to parse the date {0} from standardised form {1}", dateValue, standardDate);
+
+            return null;
         }
 
         public string StandardiseDate(string value)
@@ -1070,7 +1067,7 @@ namespace Emby.XmlTv.Classes
             var dateComponent = string.Empty;
             var dateOffset = "+0000";
 
-            var match = _regDateWithOffset.Match(value);
+            var match = Regex.Match(value, _regDateWithOffset);
             if (match.Success)
             {
                 dateComponent = match.Groups["dateDigits"].Value;

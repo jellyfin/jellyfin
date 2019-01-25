@@ -510,12 +510,10 @@ namespace MediaBrowser.Providers.Music
             return new ValueTuple<string, string>();
         }
 
-        private static ValueTuple<string, string> ParseArtistNameCredit(XmlReader reader)
+        private static (string, string) ParseArtistNameCredit(XmlReader reader)
         {
             reader.MoveToContent();
             reader.Read();
-
-            string name = null;
 
             // http://stackoverflow.com/questions/2299632/why-does-xmlreader-skip-every-other-element-if-there-is-no-whitespace-separator
 
@@ -547,7 +545,7 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            return new ValueTuple<string, string>(name, null);
+            return (null, null);
         }
 
         private static ValueTuple<string, string> ParseArtistArtistCredit(XmlReader reader, string artistId)

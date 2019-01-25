@@ -466,9 +466,8 @@ namespace Emby.Server.Implementations
         private static Tuple<Assembly, string> GetAssembly(Type type)
         {
             var assembly = type.GetTypeInfo().Assembly;
-            string path = null;
 
-            return new Tuple<Assembly, string>(assembly, path);
+            return new Tuple<Assembly, string>(assembly, null);
         }
 
         public virtual IStreamHelper CreateStreamHelper()
