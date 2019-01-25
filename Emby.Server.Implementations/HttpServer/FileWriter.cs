@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.HttpServer
         private long RangeStart { get; set; }
         private long RangeEnd { get; set; }
         private long RangeLength { get; set; }
-        private long TotalContentLength { get; set; }
+        public long TotalContentLength { get; set; }
 
         public Action OnComplete { get; set; }
         public Action OnError { get; set; }
