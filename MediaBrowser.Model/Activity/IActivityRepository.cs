@@ -1,12 +1,12 @@
-using System.Linq;
-using System.Threading.Tasks;
+using System;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Model.Activity
 {
     public interface IActivityRepository
     {
-        Task CreateAsync(ActivityLogEntry entry);
+        void Create(ActivityLogEntry entry);
 
-        IQueryable<ActivityLogEntry> GetActivityLogEntries();
+        QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? z, int? startIndex, int? limit);
     }
 }
