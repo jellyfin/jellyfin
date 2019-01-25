@@ -131,7 +131,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Inits this instance.
         /// </summary>
-        Task InitAsync();
+        void Init();
 
         /// <summary>
         /// Creates the instance.

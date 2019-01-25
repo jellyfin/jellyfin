@@ -1,10 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Activity
@@ -27,38 +26,20 @@ namespace Emby.Server.Implementations.Activity
             _userManager = userManager;
         }
 
-        public async Task CreateAsync(ActivityLogEntry entry)
+        public void Create(ActivityLogEntry entry)
         {
             entry.Date = DateTime.UtcNow;
 
-            await _repo.CreateAsync(entry);
+            _repo.Create(entry);
 
             EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(entry));
         }
 
-        public IEnumerable<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit)
+        public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit)
         {
-            var result = _repo.GetActivityLogEntries();
+            var result = _repo.GetActivityLogEntries(minDate, hasUserId, startIndex, limit);
 
-            if (minDate.HasValue)
-            {
-                result = result.Where(x => x.Date >= minDate.Value);
-            }
-            if (hasUserId.HasValue)
-            {
-                result = result.Where(x => x.UserId != null && x.UserId != Guid.Empty);
-            }
-            if (startIndex.HasValue)
-            {
-                result = result.Where(x => x.Id >= startIndex.Value);
-            }
-            if (limit.HasValue)
-            {
-                result = result.Take(limit.Value);
-            }
-
-            // Add images for each user
-            foreach (var item in result)
+            foreach (var item in result.Items.Where(i => !i.UserId.Equals(Guid.Empty)))
             {
                 var user = _userManager.GetUserById(item.UserId);
 
@@ -69,7 +50,12 @@ namespace Emby.Server.Implementations.Activity
                 }
             }
 
-            return result.AsEnumerable();
+            return result;
+        }
+
+        public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit)
+        {
+            return GetActivityLogEntries(minDate, null, startIndex, limit);
         }
     }
 }
