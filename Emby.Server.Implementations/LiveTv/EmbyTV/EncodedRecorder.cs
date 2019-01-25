@@ -175,12 +175,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             var videoStream = mediaSource.VideoStream;
-            string videoDecoder = null;
-
-            if (!string.IsNullOrEmpty(videoDecoder))
-            {
-                inputModifier += " " + videoDecoder;
-            }
 
             if (mediaSource.ReadAtNativeFramerate)
             {
