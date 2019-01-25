@@ -49,7 +49,7 @@ namespace MediaBrowser.Model.Globalization
         /// Gets the localization options.
         /// </summary>
         /// <returns>IEnumerable{LocalizatonOption}.</returns>
-        LocalizatonOption[] GetLocalizationOptions();
+        LocalizationOption[] GetLocalizationOptions();
 
         string RemoveDiacritics(string text);
 

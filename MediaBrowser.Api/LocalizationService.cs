@@ -33,7 +33,7 @@ namespace MediaBrowser.Api
     /// Class ParentalRatings
     /// </summary>
     [Route("/Localization/Options", "GET", Summary = "Gets localization options")]
-    public class GetLocalizationOptions : IReturn<LocalizatonOption[]>
+    public class GetLocalizationOptions : IReturn<LocalizationOption[]>
     {
     }
 
