@@ -22,11 +22,6 @@ RUN export DOTNET_CLI_TELEMETRY_OPTOUT=1 \
 
 
 FROM microsoft/dotnet:${DOTNET_VERSION}-runtime
-COPY --from=builder /jellyfin /jellyfin
-COPY --from=ffmpeg /ffmpeg-bin/* /usr/bin/
-EXPOSE 8096
-VOLUME /config /media
-
 # libfontconfig1 is required for Skia
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y \
@@ -34,4 +29,8 @@ RUN apt-get update \
  && apt-get clean autoclean \
  && apt-get autoremove \
  && rm -rf /var/lib/{apt,dpkg,cache,log}
+COPY --from=builder /jellyfin /jellyfin
+COPY --from=ffmpeg /ffmpeg-bin/* /usr/bin/
+EXPOSE 8096
+VOLUME /config /media
 ENTRYPOINT dotnet /jellyfin/jellyfin.dll -programdata /config
