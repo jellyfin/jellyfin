@@ -53,7 +53,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <value>The task manager.</value>
         private ITaskManager TaskManager { get; set; }
         private readonly IFileSystem _fileSystem;
-        private readonly ISystemEvents _systemEvents;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTaskWorker" /> class.
@@ -74,7 +73,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// or
         /// logger
         /// </exception>
-        public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger, IFileSystem fileSystem, ISystemEvents systemEvents)
+        public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger, IFileSystem fileSystem)
         {
             if (scheduledTask == null)
             {
@@ -103,7 +102,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
             JsonSerializer = jsonSerializer;
             Logger = logger;
             _fileSystem = fileSystem;
-            _systemEvents = systemEvents;
 
             InitTriggerEvents();
         }
@@ -758,20 +756,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 return new IntervalTrigger
                 {
                     Interval = TimeSpan.FromTicks(info.IntervalTicks.Value),
-                    TaskOptions = options
-                };
-            }
-
-            if (info.Type.Equals(typeof(SystemEventTrigger).Name, StringComparison.OrdinalIgnoreCase))
-            {
-                if (!info.SystemEvent.HasValue)
-                {
-                    throw new ArgumentException("Info did not contain a SystemEvent.", nameof(info));
-                }
-
-                return new SystemEventTrigger(_systemEvents)
-                {
-                    SystemEvent = info.SystemEvent.Value,
                     TaskOptions = options
                 };
             }

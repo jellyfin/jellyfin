@@ -60,7 +60,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly IProviderManager _providerManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IProcessFactory _processFactory;
-        private readonly ISystemEvents _systemEvents;
         private readonly IAssemblyInfo _assemblyInfo;
         private IMediaSourceManager _mediaSourceManager;
 
@@ -90,8 +89,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             IProviderManager providerManager,
             IMediaEncoder mediaEncoder,
             ITimerFactory timerFactory,
-            IProcessFactory processFactory,
-            ISystemEvents systemEvents)
+            IProcessFactory processFactory)
         {
             Current = this;
 
@@ -105,7 +103,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _providerManager = providerManager;
             _mediaEncoder = mediaEncoder;
             _processFactory = processFactory;
-            _systemEvents = systemEvents;
             _liveTvManager = (LiveTvManager)liveTvManager;
             _jsonSerializer = jsonSerializer;
             _assemblyInfo = assemblyInfo;
@@ -131,13 +128,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             _timerProvider.RestartTimers();
 
-            _systemEvents.Resume += _systemEvents_Resume;
             await CreateRecordingFolders().ConfigureAwait(false);
-        }
-
-        private void _systemEvents_Resume(object sender, EventArgs e)
-        {
-            _timerProvider.RestartTimers();
         }
 
         private async void OnRecordingFoldersChanged()

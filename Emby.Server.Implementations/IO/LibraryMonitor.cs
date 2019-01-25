@@ -140,7 +140,14 @@ namespace Emby.Server.Implementations.IO
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryMonitor" /> class.
         /// </summary>
-        public LibraryMonitor(ILoggerFactory loggerFactory, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ITimerFactory timerFactory, ISystemEvents systemEvents, IEnvironmentInfo environmentInfo)
+        public LibraryMonitor(
+            ILoggerFactory loggerFactory,
+            ITaskManager taskManager,
+            ILibraryManager libraryManager,
+            IServerConfigurationManager configurationManager,
+            IFileSystem fileSystem,
+            ITimerFactory timerFactory,
+            IEnvironmentInfo environmentInfo)
         {
             if (taskManager == null)
             {
@@ -154,26 +161,9 @@ namespace Emby.Server.Implementations.IO
             _fileSystem = fileSystem;
             _timerFactory = timerFactory;
             _environmentInfo = environmentInfo;
-
-            systemEvents.Resume += _systemEvents_Resume;
         }
 
-        private void _systemEvents_Resume(object sender, EventArgs e)
-        {
-            Restart();
-        }
-
-        private void Restart()
-        {
-            Stop();
-
-            if (!_disposed)
-            {
-                Start();
-            }
-        }
-
-        private bool IsLibraryMonitorEnabaled(BaseItem item)
+        private bool IsLibraryMonitorEnabled(BaseItem item)
         {
             if (item is BasePluginFolder)
             {
@@ -200,7 +190,7 @@ namespace Emby.Server.Implementations.IO
             var paths = LibraryManager
                 .RootFolder
                 .Children
-                .Where(IsLibraryMonitorEnabaled)
+                .Where(IsLibraryMonitorEnabled)
                 .OfType<Folder>()
                 .SelectMany(f => f.PhysicalLocations)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -223,7 +213,7 @@ namespace Emby.Server.Implementations.IO
 
         private void StartWatching(BaseItem item)
         {
-            if (IsLibraryMonitorEnabaled(item))
+            if (IsLibraryMonitorEnabled(item))
             {
                 StartWatchingPath(item.Path);
             }

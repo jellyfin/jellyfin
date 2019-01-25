@@ -11,8 +11,8 @@ namespace Jellyfin.Server
 {
     public class CoreAppHost : ApplicationHost
     {
-        public CoreAppHost(ServerApplicationPaths applicationPaths, ILoggerFactory loggerFactory, StartupOptions options, IFileSystem fileSystem, IEnvironmentInfo environmentInfo, MediaBrowser.Controller.Drawing.IImageEncoder imageEncoder, ISystemEvents systemEvents, MediaBrowser.Common.Net.INetworkManager networkManager)
-            : base(applicationPaths, loggerFactory, options, fileSystem, environmentInfo, imageEncoder, systemEvents, networkManager)
+        public CoreAppHost(ServerApplicationPaths applicationPaths, ILoggerFactory loggerFactory, StartupOptions options, IFileSystem fileSystem, IEnvironmentInfo environmentInfo, MediaBrowser.Controller.Drawing.IImageEncoder imageEncoder, MediaBrowser.Common.Net.INetworkManager networkManager)
+            : base(applicationPaths, loggerFactory, options, fileSystem, environmentInfo, imageEncoder, networkManager)
         {
         }
 

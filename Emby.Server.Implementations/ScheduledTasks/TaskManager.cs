@@ -46,8 +46,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <value>The application paths.</value>
         private IApplicationPaths ApplicationPaths { get; set; }
 
-        private readonly ISystemEvents _systemEvents;
-
         /// <summary>
         /// Gets the logger.
         /// </summary>
@@ -66,52 +64,14 @@ namespace Emby.Server.Implementations.ScheduledTasks
             IApplicationPaths applicationPaths,
             IJsonSerializer jsonSerializer,
             ILoggerFactory loggerFactory,
-            IFileSystem fileSystem,
-            ISystemEvents systemEvents)
+            IFileSystem fileSystem)
         {
             ApplicationPaths = applicationPaths;
             JsonSerializer = jsonSerializer;
             Logger = loggerFactory.CreateLogger(nameof(TaskManager));
             _fileSystem = fileSystem;
-            _systemEvents = systemEvents;
 
             ScheduledTasks = new IScheduledTaskWorker[] { };
-        }
-
-        private void BindToSystemEvent()
-        {
-            _systemEvents.Resume += _systemEvents_Resume;
-        }
-
-        private void _systemEvents_Resume(object sender, EventArgs e)
-        {
-            foreach (var task in ScheduledTasks)
-            {
-                task.ReloadTriggerEvents();
-            }
-        }
-
-        public void RunTaskOnNextStartup(string key)
-        {
-            var path = Path.Combine(ApplicationPaths.CachePath, "startuptasks.txt");
-
-            List<string> lines;
-
-            try
-            {
-                lines = _fileSystem.ReadAllLines(path).ToList();
-            }
-            catch
-            {
-                lines = new List<string>();
-            }
-
-            if (!lines.Contains(key, StringComparer.OrdinalIgnoreCase))
-            {
-                lines.Add(key);
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
-                _fileSystem.WriteAllLines(path, lines);
-            }
         }
 
         private void RunStartupTasks()
@@ -290,11 +250,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
             var myTasks = ScheduledTasks.ToList();
 
             var list = tasks.ToList();
-            myTasks.AddRange(list.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger, _fileSystem, _systemEvents)));
+            myTasks.AddRange(list.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger, _fileSystem)));
 
             ScheduledTasks = myTasks.ToArray();
-
-            BindToSystemEvent();
 
             RunStartupTasks();
         }
