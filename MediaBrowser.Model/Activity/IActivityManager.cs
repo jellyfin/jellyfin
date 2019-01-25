@@ -1,6 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Model.Activity
 {
@@ -8,10 +9,8 @@ namespace MediaBrowser.Model.Activity
     {
         event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
 
-        void Create(ActivityLogEntry entry);
+        Task CreateAsync(ActivityLogEntry entry);
 
-        QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit);
-
-        QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? x, int? y);
+        IEnumerable<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? x, int? y);
     }
 }
