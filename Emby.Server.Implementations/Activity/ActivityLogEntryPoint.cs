@@ -502,7 +502,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.PlaybackStart -= _sessionManager_PlaybackStart;
             _sessionManager.PlaybackStopped -= _sessionManager_PlaybackStopped;
 
-            _subManager.SubtitlesDownloaded -= _subManager_SubtitlesDownloaded;
             _subManager.SubtitleDownloadFailure -= _subManager_SubtitleDownloadFailure;
 
             _userManager.UserCreated -= _userManager_UserCreated;

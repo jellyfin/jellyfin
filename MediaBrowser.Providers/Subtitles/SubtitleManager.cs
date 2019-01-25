@@ -30,9 +30,7 @@ namespace MediaBrowser.Providers.Subtitles
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _monitor;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly IServerConfigurationManager _config;
 
-        public event EventHandler<SubtitleDownloadEventArgs> SubtitlesDownloaded;
         public event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
 
         private ILocalizationManager _localization;
@@ -42,14 +40,12 @@ namespace MediaBrowser.Providers.Subtitles
             IFileSystem fileSystem,
             ILibraryMonitor monitor,
             IMediaSourceManager mediaSourceManager,
-            IServerConfigurationManager config,
             ILocalizationManager localizationManager)
         {
             _logger = loggerFactory.CreateLogger(nameof(SubtitleManager));
             _fileSystem = fileSystem;
             _monitor = monitor;
             _mediaSourceManager = mediaSourceManager;
-            _config = config;
             _localization = localizationManager;
         }
 
@@ -132,11 +128,6 @@ namespace MediaBrowser.Providers.Subtitles
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return results.SelectMany(i => i).ToArray();
-        }
-
-        private SubtitleOptions GetOptions()
-        {
-            return _config.GetConfiguration<SubtitleOptions>("subtitles");
         }
 
         public Task DownloadSubtitles(Video video, string subtitleId, CancellationToken cancellationToken)
