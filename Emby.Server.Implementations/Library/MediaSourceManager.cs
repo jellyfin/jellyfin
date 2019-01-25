@@ -469,7 +469,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             // TODO: Don't hardcode this
-            var isAudio = false;
+            const bool isAudio = false;
 
             try
             {
@@ -480,9 +480,11 @@ namespace Emby.Server.Implementations.Library
                 else
                 {
                     // hack - these two values were taken from LiveTVMediaSourceProvider
-                    var cacheKey = request.OpenToken;
+                    string cacheKey = request.OpenToken;
 
-                    await new LiveStreamHelper(_mediaEncoder(), _logger, _jsonSerializer, _appPaths).AddMediaInfoWithProbe(mediaSource, isAudio, cacheKey, true, cancellationToken).ConfigureAwait(false);
+                    await new LiveStreamHelper(_mediaEncoder(), _logger, _jsonSerializer, _appPaths)
+                        .AddMediaInfoWithProbe(mediaSource, isAudio, cacheKey, true, cancellationToken)
+                        .ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -491,6 +493,7 @@ namespace Emby.Server.Implementations.Library
                 AddMediaInfo(mediaSource, isAudio);
             }
 
+            // TODO: @bond Fix
             var json = _jsonSerializer.SerializeToString(mediaSource);
             _logger.LogInformation("Live stream opened: " + json);
             var clone = _jsonSerializer.DeserializeFromString<MediaSourceInfo>(json);

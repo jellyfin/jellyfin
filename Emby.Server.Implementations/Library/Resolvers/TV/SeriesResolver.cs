@@ -153,16 +153,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         var namingOptions = ((LibraryManager)libraryManager).GetNamingOptions();
 
                         var episodeResolver = new Naming.TV.EpisodeResolver(namingOptions);
-                        bool? isNamed = null;
-                        bool? isOptimistic = null;
 
-                        if (!isTvContentType)
-                        {
-                            isNamed = true;
-                            isOptimistic = false;
-                        }
-
-                        var episodeInfo = episodeResolver.Resolve(fullName, false, isNamed, isOptimistic, fillExtendedInfo: false);
+                        var episodeInfo = episodeResolver.Resolve(fullName, false, true, false, fillExtendedInfo: false);
                         if (episodeInfo != null && episodeInfo.EpisodeNumber.HasValue)
                         {
                             return true;

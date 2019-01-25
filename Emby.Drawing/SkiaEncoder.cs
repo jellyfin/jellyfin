@@ -270,17 +270,10 @@ namespace Emby.Drawing
                     // create the bitmap
                     var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
 
-                    if (bitmap != null)
-                    {
-                        // decode
-                        codec.GetPixels(bitmap.Info, bitmap.GetPixels());
+                    // decode
+                    codec.GetPixels(bitmap.Info, bitmap.GetPixels());
 
-                        origin = codec.EncodedOrigin;
-                    }
-                    else
-                    {
-                        origin = GetSKEncodedOrigin(orientation);
-                    }
+                    origin = codec.EncodedOrigin;
 
                     return bitmap;
                 }

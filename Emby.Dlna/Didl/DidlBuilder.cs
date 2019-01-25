@@ -932,13 +932,7 @@ namespace Emby.Dlna.Didl
 
         private void AddCover(BaseItem item, BaseItem context, StubType? stubType, XmlWriter writer)
         {
-            ImageDownloadInfo imageInfo = null;
-
-            // Finally, just use the image from the item
-            if (imageInfo == null)
-            {
-                imageInfo = GetImageInfo(item);
-            }
+            ImageDownloadInfo imageInfo = GetImageInfo(item);;
 
             if (imageInfo == null)
             {
