@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Security.Principal;
 using System.Text;
@@ -7,7 +7,7 @@ using SocketHttpListener.Net.WebSockets;
 
 namespace SocketHttpListener.Net
 {
-    public sealed unsafe partial class HttpListenerContext
+    public sealed partial class HttpListenerContext
     {
         private HttpConnection _connection;
 
