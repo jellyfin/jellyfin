@@ -437,7 +437,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 UseShellExecute = false,
                 FileName = _mediaEncoder.EncoderPath,
                 Arguments = string.Format("{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
-
+                EnableRaisingEvents = true,
                 IsHidden = true,
                 ErrorDialog = false
             });
@@ -574,7 +574,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
-
+                EnableRaisingEvents = true,
                 FileName = _mediaEncoder.EncoderPath,
                 Arguments = processArgs,
                 IsHidden = true,

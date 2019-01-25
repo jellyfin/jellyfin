@@ -644,12 +644,9 @@ namespace MediaBrowser.Controller.Entities
                 return PostFilterAndSort(items, query, true);
             }
 
-            if (!(this is UserRootFolder) && !(this is AggregateFolder))
+            if (!(this is UserRootFolder) && !(this is AggregateFolder) && query.ParentId == Guid.Empty)
             {
-                if (!query.ParentId.Equals(Guid.Empty))
-                {
-                    query.Parent = this;
-                }
+                query.Parent = this;
             }
 
             if (RequiresPostFiltering2(query))

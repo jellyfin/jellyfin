@@ -24,7 +24,6 @@ namespace SocketHttpListener
     {
         #region Private Fields
 
-        private string _base64Key;
         private Action _closeContext;
         private CompressionMethod _compression;
         private WebSocketContext _context;
@@ -35,20 +34,12 @@ namespace SocketHttpListener
         private object _forMessageEventQueue;
         private object _forSend;
         private const string _guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-        private Func<WebSocketContext, string>
-                                        _handshakeRequestChecker;
         private Queue<MessageEventArgs> _messageEventQueue;
-        private uint _nonceCount;
-        private string _origin;
-        private bool _preAuth;
         private string _protocol;
-        private string[] _protocols;
-        private Uri _proxyUri;
         private volatile WebSocketState _readyState;
         private AutoResetEvent _receivePong;
         private bool _secure;
         private Stream _stream;
-        private Uri _uri;
         private const string _version = "13";
 
         #endregion

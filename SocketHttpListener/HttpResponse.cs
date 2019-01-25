@@ -115,10 +115,6 @@ namespace SocketHttpListener
 
             output.Append(CrLf);
 
-            var entity = EntityBody;
-            if (entity.Length > 0)
-                output.Append(entity);
-
             return output.ToString();
         }
 

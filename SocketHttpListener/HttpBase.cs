@@ -13,12 +13,6 @@ namespace SocketHttpListener
 
         #endregion
 
-        #region Internal Fields
-
-        internal byte[] EntityBodyData;
-
-        #endregion
-
         #region Protected Fields
 
         protected const string CrLf = "\r\n";
@@ -36,18 +30,6 @@ namespace SocketHttpListener
         #endregion
 
         #region Public Properties
-
-        public string EntityBody
-        {
-            get
-            {
-                var data = EntityBodyData;
-
-                return data != null && data.Length > 0
-                       ? getEncoding(_headers["Content-Type"]).GetString(data, 0, data.Length)
-                       : string.Empty;
-            }
-        }
 
         public QueryParamCollection Headers => _headers;
 

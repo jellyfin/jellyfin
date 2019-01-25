@@ -47,7 +47,6 @@ namespace Mono.Nat
     {
         public event EventHandler<DeviceEventArgs> DeviceFound;
 
-        private DateTime nextSearch;
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
 
@@ -96,11 +95,6 @@ namespace Mono.Nat
 
         public void Handle(IPAddress localAddress, byte[] response, IPEndPoint endpoint)
         {
-        }
-
-        public DateTime NextSearch
-        {
-            get { return nextSearch; }
         }
 
         private void OnDeviceFound(DeviceEventArgs args)
