@@ -86,12 +86,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                     .Where(i => !LibraryManager.IgnoreFile(i, args.Parent))
                     .ToList();
 
-                if (isBooksCollectionType)
-                {
-                    return FindAudio<AudioBook>(args, args.Path, args.Parent, files, args.DirectoryService, collectionType, false);
-                }
-
-                return null;
+                return FindAudio<AudioBook>(args, args.Path, args.Parent, files, args.DirectoryService, collectionType, false);
             }
 
             if (LibraryManager.IsAudioFile(args.Path, libraryOptions))
@@ -145,36 +140,19 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         private T FindAudio<T>(ItemResolveArgs args, string path, Folder parent, List<FileSystemMetadata> fileSystemEntries, IDirectoryService directoryService, string collectionType, bool parseName)
             where T : MediaBrowser.Controller.Entities.Audio.Audio, new()
         {
-            var multiDiscFolders = new List<FileSystemMetadata>();
-
-            var libraryOptions = args.GetLibraryOptions();
-            var filesFromOtherItems = new List<FileSystemMetadata>();
-
             // TODO: Allow GetMultiDiscMovie in here
-            var supportsMultiVersion = false;
+            const bool supportsMultiVersion = false;
 
             var result = ResolveMultipleAudio<T>(parent, fileSystemEntries, directoryService, supportsMultiVersion, collectionType, parseName) ??
                 new MultiItemResolverResult();
 
             if (result.Items.Count == 1)
             {
-                var videoPath = result.Items[0].Path;
-
                 // If we were supporting this we'd be checking filesFromOtherItems
-                var hasOtherItems = false;
-
-                if (!hasOtherItems)
-                {
-                    var item = (T)result.Items[0];
-                    item.IsInMixedFolder = false;
-                    item.Name = Path.GetFileName(item.ContainingFolderPath);
-                    return item;
-                }
-            }
-
-            if (result.Items.Count == 0 && multiDiscFolders.Count > 0)
-            {
-                //return GetMultiDiscAudio<T>(multiDiscFolders, directoryService);
+                var item = (T)result.Items[0];
+                item.IsInMixedFolder = false;
+                item.Name = Path.GetFileName(item.ContainingFolderPath);
+                return item;
             }
 
             return null;
@@ -194,11 +172,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 {
                     leftOver.Add(child);
                 }
-                else if (IsIgnored(child.Name))
-                {
-
-                }
-                else
+                else if (!IsIgnored(child.Name))
                 {
                     files.Add(child);
                 }

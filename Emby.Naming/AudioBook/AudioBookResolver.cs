@@ -30,8 +30,11 @@ namespace Emby.Naming.AudioBook
             {
                 throw new ArgumentNullException(nameof(path));
             }
-            if (IsDirectory)
+
+            if (IsDirectory) // TODO
+            {
                 return null;
+            }
 
             var extension = Path.GetExtension(path) ?? string.Empty;
             // Check supported extensions

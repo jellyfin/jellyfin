@@ -354,10 +354,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             int? height = null;
             bool isInterlaced = true;
             string videoCodec = null;
-            string audioCodec = null;
 
             int? videoBitrate = null;
-            int? audioBitrate = null;
 
             var isHd = channelInfo.IsHD ?? true;
 
@@ -427,20 +425,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
-            if (channelInfo != null)
+            if (string.IsNullOrWhiteSpace(videoCodec))
             {
-                if (string.IsNullOrWhiteSpace(videoCodec))
-                {
-                    videoCodec = channelInfo.VideoCodec;
-                }
-                audioCodec = channelInfo.AudioCodec;
-
-                if (!videoBitrate.HasValue)
-                {
-                    videoBitrate = isHd ? 15000000 : 2000000;
-                }
-                audioBitrate = isHd ? 448000 : 192000;
+                videoCodec = channelInfo.VideoCodec;
             }
+            string audioCodec = channelInfo.AudioCodec;
+
+            if (!videoBitrate.HasValue)
+            {
+                videoBitrate = isHd ? 15000000 : 2000000;
+            }
+            int? audioBitrate = isHd ? 448000 : 192000;
 
             // normalize
             if (string.Equals(videoCodec, "mpeg2", StringComparison.OrdinalIgnoreCase))

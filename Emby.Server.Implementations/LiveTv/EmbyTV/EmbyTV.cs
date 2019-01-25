@@ -1133,8 +1133,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 IgnoreIndex = true
             };
 
-            var isAudio = false;
-            await new LiveStreamHelper(_mediaEncoder, _logger, _jsonSerializer, _config.CommonApplicationPaths).AddMediaInfoWithProbe(stream, isAudio, false, cancellationToken).ConfigureAwait(false);
+            await new LiveStreamHelper(_mediaEncoder, _logger, _jsonSerializer, _config.CommonApplicationPaths)
+                .AddMediaInfoWithProbe(stream, false, false, cancellationToken).ConfigureAwait(false);
 
             return new List<MediaSourceInfo>
             {
@@ -1149,12 +1149,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public Task RecordLiveStream(string id, CancellationToken cancellationToken)
         {
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public Task ResetTuner(string id, CancellationToken cancellationToken)
         {
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         async void _timerProvider_TimerFired(object sender, GenericEventArgs<TimerInfo> e)
