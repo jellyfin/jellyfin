@@ -1,6 +1,6 @@
 [submodule "ThirdParty/taglib-sharp"]
 	path = ThirdParty/taglib-sharp
-	url = https://github.com/mono/taglib-sharp.git
+	url = https://github.com/mono/taglib-sharp
 [submodule "MediaBrowser.WebDashboard/jellyfin-web"]
 	path = MediaBrowser.WebDashboard/jellyfin-web
 	url = https://github.com/jellyfin/jellyfin-web.git
