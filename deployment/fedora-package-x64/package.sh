@@ -18,10 +18,15 @@ output_dir="`pwd`/pkg-dist"
 pkg_src_dir="`pwd`/pkg-src"
 current_user="`whoami`"
 image_name="jellyfin-rpmbuild"
+docker_sudo=""
+if ! $(id -Gn | grep -q 'docker') && [ ! ${EUID:-1000} -eq 0 ] && \
+ [ ! $USER == "root" ] && ! $(echo "$OSTYPE" | grep -q "darwin"); then
+    docker_sudo=sudo
+fi
 
 cleanup() {
     set +o errexit
-    docker image rm $image_name --force
+    $docker_sudo docker image rm $image_name --force
     rm -rf "$package_temporary_dir"
     rm -rf "$pkg_src_dir/jellyfin-${VERSION}.tar.gz"
 }
@@ -30,7 +35,7 @@ GNU_TAR=1
 mkdir -p "$package_temporary_dir"
 echo "Bundling all sources for RPM build."
 tar \
---transform "s,^\.,jellyfin-${VERSION}" \
+--transform "s,^\.,jellyfin-${VERSION}," \
 --exclude='.git*' \
 --exclude='**/.git' \
 --exclude='**/.hg' \
@@ -42,10 +47,8 @@ tar \
 --exclude='**/.nuget' \
 --exclude='*.deb' \
 --exclude='*.rpm' \
--Jcvf \
-"$package_temporary_dir/jellyfin-${VERSION}.tar.xz" \
--C "../.." \
-./ || true && GNU_TAR=0
+-zcf "$pkg_src_dir/jellyfin-${VERSION}.tar.gz" \
+-C "../.." ./ || GNU_TAR=0
 
 if [ $GNU_TAR -eq 0 ]; then
     echo "The installed tar binary did not support --transform. Using workaround."
@@ -75,9 +78,9 @@ if [ $GNU_TAR -eq 0 ]; then
     tar -zcf "$pkg_src_dir/jellyfin-${VERSION}.tar.gz" -C "$package_temporary_dir" "jellyfin-${VERSION}"
 fi
 
-docker build ../.. -t "$image_name" -f ./Dockerfile
+$docker_sudo docker build ../.. -t "$image_name" -f ./Dockerfile
 mkdir -p "$output_dir"
-docker run --rm -v "$package_temporary_dir:/temp" "$image_name" sh -c 'find /build/rpmbuild -maxdepth 3 -type f -name "jellyfin*.rpm" -exec mv {} /temp \;'
+$docker_sudo docker run --rm -v "$package_temporary_dir:/temp" "$image_name" sh -c 'find /build/rpmbuild -maxdepth 3 -type f -name "jellyfin*.rpm" -exec mv {} /temp \;'
 chown -R "$current_user" "$package_temporary_dir" \
 || sudo chown -R "$current_user" "$package_temporary_dir"
 mv "$package_temporary_dir"/*.rpm "$output_dir"

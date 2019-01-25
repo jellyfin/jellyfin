@@ -23,8 +23,7 @@ get_version()
 (
     local ROOT=${1-$DEFAULT_ROOT}
     grep "AssemblyVersion" ${ROOT}/SharedVersion.cs \
-        | sed -E 's/\[assembly: ?AssemblyVersion\("([0-9\.]+)"\)\]/\1/' \
-        | sed -E 's/.0$//'
+        | sed -E 's/\[assembly: ?AssemblyVersion\("([0-9\.]+)"\)\]/\1/' 
 )
 
 # Run a build
