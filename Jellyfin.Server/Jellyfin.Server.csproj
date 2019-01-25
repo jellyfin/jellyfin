@@ -28,7 +28,6 @@
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
