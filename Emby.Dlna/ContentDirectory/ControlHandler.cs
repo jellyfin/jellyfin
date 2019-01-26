@@ -483,27 +483,26 @@ namespace Emby.Dlna.ContentDirectory
                 return GetGenreItems(item, Guid.Empty, user, sort, startIndex, limit);
             }
 
-            if (!stubType.HasValue || stubType.Value != StubType.Folder)
+            if ((!stubType.HasValue || stubType.Value != StubType.Folder)
+                && item is IHasCollectionType collectionFolder)
             {
-                var collectionFolder = item as IHasCollectionType;
-                if (collectionFolder != null && string.Equals(CollectionType.Music, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(CollectionType.Music, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetMusicFolders(item, user, stubType, sort, startIndex, limit);
                 }
-                if (collectionFolder != null && string.Equals(CollectionType.Movies, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(CollectionType.Movies, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetMovieFolders(item, user, stubType, sort, startIndex, limit);
                 }
-                if (collectionFolder != null && string.Equals(CollectionType.TvShows, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(CollectionType.TvShows, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetTvFolders(item, user, stubType, sort, startIndex, limit);
                 }
-
-                if (collectionFolder != null && string.Equals(CollectionType.Folders, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(CollectionType.Folders, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetFolders(item, user, stubType, sort, startIndex, limit);
                 }
-                if (collectionFolder != null && string.Equals(CollectionType.LiveTv, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(CollectionType.LiveTv, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetLiveTvChannels(item, user, stubType, sort, startIndex, limit);
                 }
