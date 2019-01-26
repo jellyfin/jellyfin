@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.AppBase
                 // If the file didn't exist before, or if something has changed, re-save
                 if (buffer == null || !buffer.SequenceEqual(newBytes))
                 {
-                    fileSystem.CreateDirectory(fileSystem.GetDirectoryName(path));
+                    fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                     // Save it after load in case we got new items
                     fileSystem.WriteAllBytes(path, newBytes);

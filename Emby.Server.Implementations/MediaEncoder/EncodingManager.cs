@@ -141,7 +141,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
                             var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, protocol, null, Array.Empty<string>());
 
-                            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                             var container = video.Container;
 

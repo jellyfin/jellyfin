@@ -228,7 +228,7 @@ namespace MediaBrowser.Controller.Entities
                     return Path;
                 }
 
-                return FileSystem.GetDirectoryName(Path);
+                return System.IO.Path.GetDirectoryName(Path);
             }
         }
 
@@ -2208,7 +2208,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var allFiles = ImageInfos
                 .Where(i => i.IsLocalFile)
-                .Select(i => FileSystem.GetDirectoryName(i.Path))
+                .Select(i => System.IO.Path.GetDirectoryName(i.Path))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .SelectMany(i => directoryService.GetFilePaths(i))
                 .ToList();
@@ -2396,7 +2396,7 @@ namespace MediaBrowser.Controller.Entities
             var extensions = new List<string> { ".nfo", ".xml", ".srt", ".vtt", ".sub", ".idx", ".txt", ".edl", ".bif", ".smi", ".ttml" };
             extensions.AddRange(SupportedImageExtensions);
 
-            return FileSystem.GetFiles(FileSystem.GetDirectoryName(Path), extensions.ToArray(), false, false)
+            return FileSystem.GetFiles(System.IO.Path.GetDirectoryName(Path), extensions.ToArray(), false, false)
                 .Where(i => System.IO.Path.GetFileNameWithoutExtension(i.FullName).StartsWith(filename, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }

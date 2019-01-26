@@ -233,14 +233,14 @@ namespace MediaBrowser.Providers.Manager
         {
             _logger.LogDebug("Saving image to {0}", path);
 
-            var parentFolder = _fileSystem.GetDirectoryName(path);
+            var parentFolder = Path.GetDirectoryName(path);
 
             try
             {
                 _libraryMonitor.ReportFileSystemChangeBeginning(path);
                 _libraryMonitor.ReportFileSystemChangeBeginning(parentFolder);
 
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 _fileSystem.SetAttributes(path, false, false);
 
@@ -437,7 +437,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (type == ImageType.Primary && item is Episode)
                 {
-                    path = Path.Combine(_fileSystem.GetDirectoryName(item.Path), "metadata", filename + extension);
+                    path = Path.Combine(Path.GetDirectoryName(item.Path), "metadata", filename + extension);
                 }
 
                 else if (item.IsInMixedFolder)
@@ -569,7 +569,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (item is Episode)
                 {
-                    var seasonFolder = _fileSystem.GetDirectoryName(item.Path);
+                    var seasonFolder = Path.GetDirectoryName(item.Path);
 
                     var imageFilename = _fileSystem.GetFileNameWithoutExtension(item.Path) + "-thumb" + extension;
 
@@ -617,7 +617,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 imageFilename = "poster";
             }
-            var folder = _fileSystem.GetDirectoryName(item.Path);
+            var folder = Path.GetDirectoryName(item.Path);
 
             return Path.Combine(folder, _fileSystem.GetFileNameWithoutExtension(item.Path) + "-" + imageFilename + extension);
         }

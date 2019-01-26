@@ -187,7 +187,7 @@ namespace MediaBrowser.Providers.TV
             tmdbId = seriesInfo.id.ToString(_usCulture);
 
             string dataFilePath = GetDataFilePath(tmdbId, language);
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(dataFilePath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
             _jsonSerializer.SerializeToFile(seriesInfo, dataFilePath);
 
             await EnsureSeriesInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
@@ -351,7 +351,7 @@ namespace MediaBrowser.Providers.TV
 
             var dataFilePath = GetDataFilePath(id, preferredMetadataLanguage);
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(dataFilePath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
             _jsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }

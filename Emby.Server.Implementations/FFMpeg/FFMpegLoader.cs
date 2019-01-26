@@ -92,7 +92,7 @@ namespace Emby.Server.Implementations.FFMpeg
                 else
                 {
                     info = existingVersion;
-                    versionedDirectoryPath = _fileSystem.GetDirectoryName(info.EncoderPath);
+                    versionedDirectoryPath = Path.GetDirectoryName(info.EncoderPath);
                     excludeFromDeletions.Add(versionedDirectoryPath);
                 }
             }
@@ -130,7 +130,7 @@ namespace Emby.Server.Implementations.FFMpeg
                     {
                         EncoderPath = encoder,
                         ProbePath = probe,
-                        Version = Path.GetFileName(_fileSystem.GetDirectoryName(probe))
+                        Version = Path.GetFileName(Path.GetDirectoryName(probe))
                     };
                 }
             }

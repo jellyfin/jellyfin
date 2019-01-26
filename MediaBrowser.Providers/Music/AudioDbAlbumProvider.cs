@@ -153,7 +153,7 @@ namespace MediaBrowser.Providers.Music
 
             var path = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             using (var httpResponse = await _httpClient.SendAsync(new HttpRequestOptions
             {

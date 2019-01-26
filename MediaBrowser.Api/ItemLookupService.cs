@@ -305,7 +305,7 @@ namespace MediaBrowser.Api
 
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(fullCachePath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(fullCachePath));
             using (var stream = result.Content)
             {
                 using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
@@ -314,7 +314,7 @@ namespace MediaBrowser.Api
                 }
             }
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(pointerCachePath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
             _fileSystem.WriteAllText(pointerCachePath, fullCachePath);
         }
 

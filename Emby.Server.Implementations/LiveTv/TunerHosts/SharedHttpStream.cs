@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -35,7 +36,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             var url = mediaSource.Path;
 
-            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(TempFilePath));
+            FileSystem.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
             var typeName = GetType().Name;
             Logger.LogInformation("Opening " + typeName + " Live stream from {0}", url);

@@ -42,11 +42,11 @@ namespace Emby.Server.Implementations
 
         private string GetResourcePath(string basePath, string virtualPath)
         {
-            var fullPath = Path.Combine(basePath, virtualPath.Replace('/', _fileSystem.DirectorySeparatorChar));
+            var fullPath = Path.Combine(basePath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
 
             try
             {
-                fullPath = _fileSystem.GetFullPath(fullPath);
+                fullPath = Path.GetFullPath(fullPath);
             }
             catch (Exception ex)
             {

@@ -1228,7 +1228,7 @@ namespace Emby.Server.Implementations.Library
         private string GetCollectionType(string path)
         {
             return _fileSystem.GetFilePaths(path, new[] { ".collection" }, true, false)
-                .Select(i => _fileSystem.GetFileNameWithoutExtension(i))
+                .Select(i => Path.GetFileNameWithoutExtension(i))
                 .FirstOrDefault(i => !string.IsNullOrEmpty(i));
         }
 
@@ -2976,7 +2976,7 @@ namespace Emby.Server.Implementations.Library
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
 
-            var shortcutFilename = _fileSystem.GetFileNameWithoutExtension(path);
+            var shortcutFilename = Path.GetFileNameWithoutExtension(path);
 
             var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
 

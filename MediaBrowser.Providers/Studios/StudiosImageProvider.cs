@@ -151,7 +151,7 @@ namespace MediaBrowser.Providers.Studios
 
                 }).ConfigureAwait(false);
 
-                fileSystem.CreateDirectory(fileSystem.GetDirectoryName(file));
+                fileSystem.CreateDirectory(Path.GetDirectoryName(file));
 
                 try
                 {

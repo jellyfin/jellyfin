@@ -139,7 +139,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     {
                         previouslyFailedImages.Add(key);
 
-                        var parentPath = _fileSystem.GetDirectoryName(failHistoryPath);
+                        var parentPath = Path.GetDirectoryName(failHistoryPath);
 
                         _fileSystem.CreateDirectory(parentPath);
 

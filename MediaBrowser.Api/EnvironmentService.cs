@@ -303,7 +303,7 @@ namespace MediaBrowser.Api
 
         public object Get(GetParentPath request)
         {
-            var parent = _fileSystem.GetDirectoryName(request.Path);
+            var parent = Path.GetDirectoryName(request.Path);
 
             if (string.IsNullOrEmpty(parent))
             {

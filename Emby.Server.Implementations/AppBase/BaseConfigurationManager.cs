@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.AppBase
             Logger.LogInformation("Saving system configuration");
             var path = CommonApplicationPaths.SystemConfigurationFilePath;
 
-            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(path));
+            FileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_configurationSyncLock)
             {
@@ -294,7 +294,7 @@ namespace Emby.Server.Implementations.AppBase
             _configurations.AddOrUpdate(key, configuration, (k, v) => configuration);
 
             var path = GetConfigurationFile(key);
-            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(path));
+            FileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_configurationSyncLock)
             {

@@ -305,7 +305,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
         private async Task CacheResponse(HttpResponseInfo response, string responseCachePath)
         {
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(responseCachePath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(responseCachePath));
 
             using (var fileStream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.None, true))
             {

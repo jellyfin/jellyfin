@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Devices
             {
                 var path = CachePath;
 
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 lock (_syncLock)
                 {

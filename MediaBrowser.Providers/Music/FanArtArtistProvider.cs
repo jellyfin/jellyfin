@@ -233,7 +233,7 @@ namespace MediaBrowser.Providers.Music
 
             var jsonPath = GetArtistJsonPath(_config.ApplicationPaths, musicBrainzId);
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(jsonPath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(jsonPath));
 
             try
             {

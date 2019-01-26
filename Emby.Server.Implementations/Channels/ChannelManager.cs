@@ -355,7 +355,7 @@ namespace Emby.Server.Implementations.Channels
                 return;
             }
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             _jsonSerializer.SerializeToFile(mediaSources, path);
         }
@@ -834,7 +834,7 @@ namespace Emby.Server.Implementations.Channels
         {
             try
             {
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 _jsonSerializer.SerializeToFile(result, path);
             }

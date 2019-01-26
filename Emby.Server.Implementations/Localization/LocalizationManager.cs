@@ -337,7 +337,7 @@ namespace Emby.Server.Implementations.Localization
             .Where(i => i != null)
             .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
-            var countryCode = _fileSystem.GetFileNameWithoutExtension(file)
+            var countryCode = Path.GetFileNameWithoutExtension(file)
                 .Split('-')
                 .Last();
 

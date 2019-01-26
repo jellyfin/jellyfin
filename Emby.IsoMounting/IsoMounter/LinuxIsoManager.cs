@@ -39,7 +39,7 @@ namespace IsoMounter
             _logger = logger;
             ProcessFactory = processFactory;
 
-            MountPointRoot = FileSystem.DirectorySeparatorChar + "tmp" + FileSystem.DirectorySeparatorChar + "Emby";
+            MountPointRoot = Path.DirectorySeparatorChar + "tmp" + Path.DirectorySeparatorChar + "Emby";
 
             _logger.LogDebug(
                 "[{0}] System PATH is currently set to [{1}].",
@@ -216,7 +216,7 @@ namespace IsoMounter
 
                 if (!string.IsNullOrEmpty(path) && FileSystem.FileExists(path = Path.Combine(path, name)))
                 {
-                    return FileSystem.GetFullPath(path);
+                    return Path.GetFullPath(path);
                 }
             }
 

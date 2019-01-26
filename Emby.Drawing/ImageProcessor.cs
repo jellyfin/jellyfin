@@ -631,7 +631,7 @@ namespace Emby.Drawing
                     return (enhancedImagePath, treatmentRequiresTransparency);
                 }
 
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(enhancedImagePath));
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(enhancedImagePath));
 
                 await ExecuteImageEnhancers(supportedEnhancers, originalImagePath, enhancedImagePath, item, imageType, imageIndex).ConfigureAwait(false);
 

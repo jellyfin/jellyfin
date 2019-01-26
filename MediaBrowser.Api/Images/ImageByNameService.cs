@@ -158,7 +158,7 @@ namespace MediaBrowser.Api.Images
 
         private string GetThemeName(string path, string rootImagePath)
         {
-            var parentName = _fileSystem.GetDirectoryName(path);
+            var parentName = Path.GetDirectoryName(path);
 
             if (string.Equals(parentName, rootImagePath, StringComparison.OrdinalIgnoreCase))
             {

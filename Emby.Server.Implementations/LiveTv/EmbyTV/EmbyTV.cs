@@ -1489,7 +1489,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             _logger.LogInformation("Triggering refresh on {path}", path);
 
-            var item = GetAffectedBaseItem(_fileSystem.GetDirectoryName(path));
+            var item = GetAffectedBaseItem(Path.GetDirectoryName(path));
 
             if (item != null)
             {
@@ -1500,8 +1500,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     RefreshPaths = new string[]
                     {
                         path,
-                        _fileSystem.GetDirectoryName(path),
-                        _fileSystem.GetDirectoryName(_fileSystem.GetDirectoryName(path))
+                        Path.GetDirectoryName(path),
+                        Path.GetDirectoryName(Path.GetDirectoryName(path))
                     }
 
                 }, RefreshPriority.High);
@@ -1512,13 +1512,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             BaseItem item = null;
 
-            var parentPath = _fileSystem.GetDirectoryName(path);
+            var parentPath = Path.GetDirectoryName(path);
 
             while (item == null && !string.IsNullOrEmpty(path))
             {
                 item = _libraryManager.FindByPath(path, null);
 
-                path = _fileSystem.GetDirectoryName(path);
+                path = Path.GetDirectoryName(path);
             }
 
             if (item != null)
@@ -1676,7 +1676,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             while (FileExists(path, timerId))
             {
-                var parent = _fileSystem.GetDirectoryName(originalPath);
+                var parent = Path.GetDirectoryName(originalPath);
                 var name = Path.GetFileNameWithoutExtension(originalPath);
                 name += " - " + index.ToString(CultureInfo.InvariantCulture);
 
@@ -1822,7 +1822,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            var imageSavePath = Path.Combine(_fileSystem.GetDirectoryName(recordingPath), imageSaveFilenameWithoutExtension);
+            var imageSavePath = Path.Combine(Path.GetDirectoryName(recordingPath), imageSaveFilenameWithoutExtension);
 
             // preserve original image extension
             imageSavePath = Path.ChangeExtension(imageSavePath, Path.GetExtension(image.Path));

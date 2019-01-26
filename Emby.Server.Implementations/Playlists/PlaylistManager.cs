@@ -455,7 +455,7 @@ namespace Emby.Server.Implementations.Playlists
 
         private string NormalizeItemPath(string playlistPath, string itemPath)
         {
-            return MakeRelativePath(_fileSystem.GetDirectoryName(playlistPath), itemPath);
+            return MakeRelativePath(Path.GetDirectoryName(playlistPath), itemPath);
         }
 
         private static string MakeRelativePath(string folderPath, string fileAbsolutePath)

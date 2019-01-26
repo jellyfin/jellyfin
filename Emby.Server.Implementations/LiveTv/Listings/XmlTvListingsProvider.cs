@@ -83,7 +83,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
 
             }).ConfigureAwait(false);
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(cacheFile));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFile));
 
             _fileSystem.CopyFile(tempFile, cacheFile, true);
 

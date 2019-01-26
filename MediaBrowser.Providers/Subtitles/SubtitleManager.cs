@@ -217,7 +217,7 @@ namespace MediaBrowser.Providers.Subtitles
 
                 try
                 {
-                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(savePath));
+                    _fileSystem.CreateDirectory(Path.GetDirectoryName(savePath));
 
                     using (var fs = _fileSystem.GetFileStream(savePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                     {

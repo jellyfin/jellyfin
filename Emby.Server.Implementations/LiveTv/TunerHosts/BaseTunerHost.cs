@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     {
                         try
                         {
-                            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(channelCacheFile));
+                            FileSystem.CreateDirectory(Path.GetDirectoryName(channelCacheFile));
                             JsonSerializer.SerializeToFile(channels, channelCacheFile);
                         }
                         catch (IOException)
