@@ -37,7 +37,7 @@ namespace Emby.Drawing
 
         public bool SupportsImageEncoding => false;
 
-        public ImageSize GetImageSize(string path)
+        public ImageDimensions GetImageSize(string path)
         {
             throw new NotImplementedException();
         }

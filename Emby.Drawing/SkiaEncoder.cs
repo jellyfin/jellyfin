@@ -168,18 +168,14 @@ namespace Emby.Drawing
             }
         }
 
-        public ImageSize GetImageSize(string path)
+        public ImageDimensions GetImageSize(string path)
         {
             using (var s = new SKFileStream(path))
             using (var codec = SKCodec.Create(s))
             {
                 var info = codec.Info;
 
-                return new ImageSize
-                {
-                    Width = info.Width,
-                    Height = info.Height
-                };
+                return new ImageDimensions(info.Width, info.Height);
             }
         }
 
@@ -513,7 +509,7 @@ namespace Emby.Drawing
 
                 //_logger.LogInformation("Color type {0}", bitmap.Info.ColorType);
 
-                var originalImageSize = new ImageSize(bitmap.Width, bitmap.Height);
+                var originalImageSize = new ImageDimensions(bitmap.Width, bitmap.Height);
 
                 if (!options.CropWhiteSpace && options.HasDefaultOptions(inputPath, originalImageSize) && !autoOrient)
                 {
@@ -523,8 +519,8 @@ namespace Emby.Drawing
 
                 var newImageSize = ImageHelper.GetNewImageSize(options, originalImageSize);
 
-                var width = Convert.ToInt32(Math.Round(newImageSize.Width));
-                var height = Convert.ToInt32(Math.Round(newImageSize.Height));
+                var width = newImageSize.Width;
+                var height = newImageSize.Height;
 
                 using (var resizedBitmap = new SKBitmap(width, height))//, bitmap.ColorType, bitmap.AlphaType))
                 {
@@ -626,7 +622,7 @@ namespace Emby.Drawing
         {
             try
             {
-                var currentImageSize = new ImageSize(imageWidth, imageHeight);
+                var currentImageSize = new ImageDimensions(imageWidth, imageHeight);
 
                 if (options.AddPlayedIndicator)
                 {

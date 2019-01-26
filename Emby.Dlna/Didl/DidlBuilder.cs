@@ -1088,8 +1088,8 @@ namespace Emby.Dlna.Didl
             //{
             //    var size = _imageProcessor.GetImageSize(imageInfo);
 
-            //    width = Convert.ToInt32(size.Width);
-            //    height = Convert.ToInt32(size.Height);
+            //    width = size.Width;
+            //    height = size.Height;
             //}
             //catch
             //{
@@ -1162,8 +1162,7 @@ namespace Emby.Dlna.Didl
                 info.ImageTag,
                 format,
                 maxWidth.ToString(CultureInfo.InvariantCulture),
-                maxHeight.ToString(CultureInfo.InvariantCulture)
-                );
+                maxHeight.ToString(CultureInfo.InvariantCulture));
 
             var width = info.Width;
             var height = info.Height;
@@ -1172,15 +1171,11 @@ namespace Emby.Dlna.Didl
 
             if (width.HasValue && height.HasValue)
             {
-                var newSize = DrawingUtils.Resize(new ImageSize
-                {
-                    Height = height.Value,
-                    Width = width.Value
+                var newSize = DrawingUtils.Resize(
+                        new ImageDimensions(width.Value, height.Value), 0, 0, maxWidth, maxHeight);
 
-                }, 0, 0, maxWidth, maxHeight);
-
-                width = Convert.ToInt32(newSize.Width);
-                height = Convert.ToInt32(newSize.Height);
+                width = newSize.Width;
+                height = newSize.Height;
 
                 var normalizedFormat = format
                     .Replace("jpeg", "jpg", StringComparison.OrdinalIgnoreCase);

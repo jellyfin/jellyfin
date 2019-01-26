@@ -319,7 +319,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
                 {
-                    var size = new ImageSize
+                    var size = new ImageDimensions
                     {
                         Width = VideoStream.Width.Value,
                         Height = VideoStream.Height.Value
@@ -331,7 +331,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         BaseRequest.MaxWidth ?? 0,
                         BaseRequest.MaxHeight ?? 0);
 
-                    return Convert.ToInt32(newSize.Width);
+                    return newSize.Width;
                 }
 
                 if (!IsVideoRequest)
@@ -349,7 +349,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
                 {
-                    var size = new ImageSize
+                    var size = new ImageDimensions
                     {
                         Width = VideoStream.Width.Value,
                         Height = VideoStream.Height.Value
@@ -361,7 +361,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         BaseRequest.MaxWidth ?? 0,
                         BaseRequest.MaxHeight ?? 0);
 
-                    return Convert.ToInt32(newSize.Height);
+                    return newSize.Height;
                 }
 
                 if (!IsVideoRequest)

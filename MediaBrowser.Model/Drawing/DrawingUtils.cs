@@ -1,3 +1,5 @@
+using System;
+
 namespace MediaBrowser.Model.Drawing
 {
     /// <summary>
@@ -14,27 +16,25 @@ namespace MediaBrowser.Model.Drawing
         /// <param name="maxWidth">A max fixed width, if desired</param>
         /// <param name="maxHeight">A max fixed height, if desired</param>
         /// <returns>A new size object</returns>
-        public static ImageSize Resize(ImageSize size,
-            double width,
-            double height,
-            double maxWidth,
-            double maxHeight)
+        public static ImageDimensions Resize(ImageDimensions size,
+            int width,
+            int height,
+            int maxWidth,
+            int maxHeight)
         {
-            double newWidth = size.Width;
-            double newHeight = size.Height;
+            int newWidth = size.Width;
+            int newHeight = size.Height;
 
             if (width > 0 && height > 0)
             {
                 newWidth = width;
                 newHeight = height;
             }
-
             else if (height > 0)
             {
                 newWidth = GetNewWidth(newHeight, newWidth, height);
                 newHeight = height;
             }
-
             else if (width > 0)
             {
                 newHeight = GetNewHeight(newHeight, newWidth, width);
@@ -53,7 +53,7 @@ namespace MediaBrowser.Model.Drawing
                 newWidth = maxWidth;
             }
 
-            return new ImageSize { Width = newWidth, Height = newHeight };
+            return new ImageDimensions(newWidth, newHeight);
         }
 
         /// <summary>
@@ -62,15 +62,9 @@ namespace MediaBrowser.Model.Drawing
         /// <param name="currentHeight">Height of the current.</param>
         /// <param name="currentWidth">Width of the current.</param>
         /// <param name="newHeight">The new height.</param>
-        /// <returns>System.Double.</returns>
-        private static double GetNewWidth(double currentHeight, double currentWidth, double newHeight)
-        {
-            double scaleFactor = newHeight;
-            scaleFactor /= currentHeight;
-            scaleFactor *= currentWidth;
-
-            return scaleFactor;
-        }
+        /// <returns>the new width</returns>
+        private static int GetNewWidth(int currentHeight, int currentWidth, int newHeight)
+            => Convert.ToInt32((double)newHeight / currentHeight * currentWidth);
 
         /// <summary>
         /// Gets the new height.
@@ -79,13 +73,7 @@ namespace MediaBrowser.Model.Drawing
         /// <param name="currentWidth">Width of the current.</param>
         /// <param name="newWidth">The new width.</param>
         /// <returns>System.Double.</returns>
-        private static double GetNewHeight(double currentHeight, double currentWidth, double newWidth)
-        {
-            double scaleFactor = newWidth;
-            scaleFactor /= currentWidth;
-            scaleFactor *= currentHeight;
-
-            return scaleFactor;
-        }
+        private static int GetNewHeight(int currentHeight, int currentWidth, int newWidth)
+            => Convert.ToInt32((double)newWidth / currentWidth * currentHeight);
     }
 }

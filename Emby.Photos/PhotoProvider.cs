@@ -185,8 +185,8 @@ namespace Emby.Photos
 
                     if (size.Width > 0 && size.Height > 0)
                     {
-                        item.Width = Convert.ToInt32(size.Width);
-                        item.Height = Convert.ToInt32(size.Height);
+                        item.Width = size.Width;
+                        item.Height = size.Height;
                     }
                 }
                 catch (ArgumentException)

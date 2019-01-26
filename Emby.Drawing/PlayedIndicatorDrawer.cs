@@ -7,7 +7,7 @@ namespace Emby.Drawing
     {
         private const int OffsetFromTopRightCorner = 38;
 
-        public static void DrawPlayedIndicator(SKCanvas canvas, ImageSize imageSize)
+        public static void DrawPlayedIndicator(SKCanvas canvas, ImageDimensions imageSize)
         {
             var x = imageSize.Width - OffsetFromTopRightCorner;
 
