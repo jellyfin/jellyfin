@@ -244,7 +244,7 @@ namespace Emby.Drawing
 
             try
             {
-                if (!_fileSystem.FileExists(cacheFilePath))
+                if (!File.Exists(cacheFilePath))
                 {
                     if (options.CropWhiteSpace && !SupportsTransparency(originalImagePath))
                     {
@@ -626,7 +626,7 @@ namespace Emby.Drawing
             try
             {
                 // Check again in case of contention
-                if (_fileSystem.FileExists(enhancedImagePath))
+                if (File.Exists(enhancedImagePath))
                 {
                     return (enhancedImagePath, treatmentRequiresTransparency);
                 }

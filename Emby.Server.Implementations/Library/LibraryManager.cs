@@ -2863,7 +2863,7 @@ namespace Emby.Server.Implementations.Library
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
 
             var virtualFolderPath = Path.Combine(rootFolderPath, name);
-            while (_fileSystem.DirectoryExists(virtualFolderPath))
+            while (Directory.Exists(virtualFolderPath))
             {
                 name += "1";
                 virtualFolderPath = Path.Combine(rootFolderPath, name);
@@ -2872,7 +2872,7 @@ namespace Emby.Server.Implementations.Library
             var mediaPathInfos = options.PathInfos;
             if (mediaPathInfos != null)
             {
-                var invalidpath = mediaPathInfos.FirstOrDefault(i => !_fileSystem.DirectoryExists(i.Path));
+                var invalidpath = mediaPathInfos.FirstOrDefault(i => !Directory.Exists(i.Path));
                 if (invalidpath != null)
                 {
                     throw new ArgumentException("The specified path does not exist: " + invalidpath.Path + ".");
@@ -2935,7 +2935,7 @@ namespace Emby.Server.Implementations.Library
             //    // We can't validate protocol-based paths, so just allow them
             //    if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) == -1)
             //    {
-            //        return _fileSystem.DirectoryExists(path);
+            //        return Directory.Exists(path);
             //    }
             //}
 
@@ -2963,7 +2963,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(path));
             }
 
-            if (!_fileSystem.DirectoryExists(path))
+            if (!Directory.Exists(path))
             {
                 throw new FileNotFoundException("The path does not exist.");
             }
@@ -2980,7 +2980,7 @@ namespace Emby.Server.Implementations.Library
 
             var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
 
-            while (_fileSystem.FileExists(lnk))
+            while (File.Exists(lnk))
             {
                 shortcutFilename += "1";
                 lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
@@ -3073,7 +3073,7 @@ namespace Emby.Server.Implementations.Library
 
             var path = Path.Combine(rootFolderPath, name);
 
-            if (!_fileSystem.DirectoryExists(path))
+            if (!Directory.Exists(path))
             {
                 throw new FileNotFoundException("The media folder does not exist");
             }
@@ -3145,7 +3145,7 @@ namespace Emby.Server.Implementations.Library
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
 
-            if (!_fileSystem.DirectoryExists(virtualFolderPath))
+            if (!Directory.Exists(virtualFolderPath))
             {
                 throw new FileNotFoundException(string.Format("The media collection {0} does not exist", virtualFolderName));
             }

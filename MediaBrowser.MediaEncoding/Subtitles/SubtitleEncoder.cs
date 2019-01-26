@@ -386,7 +386,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             try
             {
-                if (!_fileSystem.FileExists(outputPath))
+                if (!File.Exists(outputPath))
                 {
                     await ConvertTextSubtitleToSrtInternal(inputPath, language, inputProtocol, outputPath, cancellationToken).ConfigureAwait(false);
                 }
@@ -481,7 +481,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 failed = true;
 
-                if (_fileSystem.FileExists(outputPath))
+                if (File.Exists(outputPath))
                 {
                     try
                     {
@@ -494,7 +494,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
                 }
             }
-            else if (!_fileSystem.FileExists(outputPath))
+            else if (!File.Exists(outputPath))
             {
                 failed = true;
             }
@@ -537,7 +537,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             try
             {
-                if (!_fileSystem.FileExists(outputPath))
+                if (!File.Exists(outputPath))
                 {
                     await ExtractTextSubtitleInternal(_mediaEncoder.GetInputArgument(inputFiles, protocol), subtitleStreamIndex, outputCodec, outputPath, cancellationToken).ConfigureAwait(false);
                 }
@@ -634,7 +634,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     _logger.LogError(ex, "Error deleting extracted subtitle {Path}", outputPath);
                 }
             }
-            else if (!_fileSystem.FileExists(outputPath))
+            else if (!File.Exists(outputPath))
             {
                 failed = true;
             }

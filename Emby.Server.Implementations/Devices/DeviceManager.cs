@@ -431,7 +431,7 @@ namespace Emby.Server.Implementations.Devices
             {
                 var path = _deviceManager.GetUploadsPath();
 
-                if (_fileSystem.DirectoryExists(path))
+                if (Directory.Exists(path))
                 {
                     try
                     {

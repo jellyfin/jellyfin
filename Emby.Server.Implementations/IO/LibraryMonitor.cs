@@ -277,7 +277,7 @@ namespace Emby.Server.Implementations.IO
         /// <param name="path">The path.</param>
         private void StartWatchingPath(string path)
         {
-            if (!_fileSystem.DirectoryExists(path))
+            if (!Directory.Exists(path))
             {
                 // Seeing a crash in the mono runtime due to an exception being thrown on a different thread
                 Logger.LogInformation("Skipping realtime monitor for {0} because the path does not exist", path);

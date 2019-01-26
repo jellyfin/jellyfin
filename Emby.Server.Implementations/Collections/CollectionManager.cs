@@ -359,7 +359,7 @@ namespace Emby.Server.Implementations.Collections
             {
                 var path = _collectionManager.GetCollectionsFolderPath();
 
-                if (_fileSystem.DirectoryExists(path))
+                if (Directory.Exists(path))
                 {
                     try
                     {

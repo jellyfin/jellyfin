@@ -387,7 +387,7 @@ namespace MediaBrowser.Providers.Manager
                     var existing = item.GetImageInfo(type, 0);
                     if (existing != null)
                     {
-                        if (existing.IsLocalFile && !_fileSystem.FileExists(existing.Path))
+                        if (existing.IsLocalFile && !File.Exists(existing.Path))
                         {
                             item.RemoveImage(existing);
                             changed = true;

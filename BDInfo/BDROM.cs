@@ -150,7 +150,7 @@ namespace BDInfo
                 Is3D = true;
             }
 
-            if (_fileSystem.FileExists(Path.Combine(DirectoryRoot.FullName, "FilmIndex.xml")))
+            if (File.Exists(Path.Combine(DirectoryRoot.FullName, "FilmIndex.xml")))
             {
                 IsDBOX = true;
             }

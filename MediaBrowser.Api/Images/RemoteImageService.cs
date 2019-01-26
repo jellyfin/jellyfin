@@ -222,7 +222,7 @@ namespace MediaBrowser.Api.Images
             {
                 contentPath = _fileSystem.ReadAllText(pointerCachePath);
 
-                if (_fileSystem.FileExists(contentPath))
+                if (File.Exists(contentPath))
                 {
                     return await ResultFactory.GetStaticFileResult(Request, contentPath).ConfigureAwait(false);
                 }

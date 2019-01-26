@@ -214,7 +214,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     throw new ArgumentNullException(nameof(path));
                 }
 
-                if (!FileSystem.FileExists(path) && !FileSystem.DirectoryExists(path))
+                if (!File.Exists(path) && Directory.Exists(path))
                 {
                     throw new ResourceNotFoundException();
                 }
@@ -288,12 +288,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (!string.IsNullOrWhiteSpace(appPath))
             {
-                if (FileSystem.DirectoryExists(appPath))
+                if (Directory.Exists(appPath))
                 {
                     return GetPathsFromDirectory(appPath);
                 }
 
-                if (FileSystem.FileExists(appPath))
+                if (File.Exists(appPath))
                 {
                     return new Tuple<string, string>(appPath, GetProbePathFromEncoderPath(appPath));
                 }
@@ -336,7 +336,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var ffmpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase) && !excludeExtensions.Contains(Path.GetExtension(i) ?? string.Empty));
             var ffprobePath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffprobe", StringComparison.OrdinalIgnoreCase) && !excludeExtensions.Contains(Path.GetExtension(i) ?? string.Empty));
 
-            if (string.IsNullOrWhiteSpace(ffmpegPath) || !FileSystem.FileExists(ffmpegPath))
+            if (string.IsNullOrWhiteSpace(ffmpegPath) || !File.Exists(ffmpegPath))
             {
                 files = FileSystem.GetFilePaths(path, true);
 

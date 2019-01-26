@@ -164,7 +164,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             TranscodingJob job = null;
 
-            if (FileSystem.FileExists(segmentPath))
+            if (File.Exists(segmentPath))
             {
                 job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                 return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, requestedIndex, job, cancellationToken).ConfigureAwait(false);
@@ -177,7 +177,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             try
             {
-                if (FileSystem.FileExists(segmentPath))
+                if (File.Exists(segmentPath))
                 {
                     job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                     transcodingLock.Release();
@@ -433,7 +433,7 @@ namespace MediaBrowser.Api.Playback.Hls
             TranscodingJob transcodingJob,
             CancellationToken cancellationToken)
         {
-            var segmentFileExists = FileSystem.FileExists(segmentPath);
+            var segmentFileExists = File.Exists(segmentPath);
 
             // If all transcoding has completed, just return immediately
             if (transcodingJob != null && transcodingJob.HasExited && segmentFileExists)
@@ -465,7 +465,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     {
                         if (!segmentFileExists)
                         {
-                            segmentFileExists = FileSystem.FileExists(segmentPath);
+                            segmentFileExists = File.Exists(segmentPath);
                         }
                         if (segmentFileExists)
                         {

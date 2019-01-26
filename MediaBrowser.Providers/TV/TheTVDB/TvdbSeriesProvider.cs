@@ -1526,7 +1526,7 @@ namespace MediaBrowser.Providers.TV
             var file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber, episodeNumber));
 
             // Only save the file if not already there, or if the episode has changed
-            if (hasEpisodeChanged || !_fileSystem.FileExists(file))
+            if (hasEpisodeChanged || !File.Exists(file))
             {
                 using (var fileStream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.None, true))
                 {
@@ -1546,7 +1546,7 @@ namespace MediaBrowser.Providers.TV
                 file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", absoluteNumber));
 
                 // Only save the file if not already there, or if the episode has changed
-                if (hasEpisodeChanged || !_fileSystem.FileExists(file))
+                if (hasEpisodeChanged || !File.Exists(file))
                 {
                     using (var fileStream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.None, true))
                     {
@@ -1567,7 +1567,7 @@ namespace MediaBrowser.Providers.TV
                 file = Path.Combine(seriesDataPath, string.Format("episode-dvd-{0}-{1}.xml", dvdSeasonNumber, dvdEpisodeNumber));
 
                 // Only save the file if not already there, or if the episode has changed
-                if (hasEpisodeChanged || !_fileSystem.FileExists(file))
+                if (hasEpisodeChanged || !File.Exists(file))
                 {
                     using (var fileStream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.None, true))
                     {

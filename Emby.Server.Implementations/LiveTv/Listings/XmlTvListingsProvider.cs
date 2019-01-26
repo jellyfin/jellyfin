@@ -61,7 +61,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
 
             string cacheFilename = DateTime.UtcNow.DayOfYear.ToString(CultureInfo.InvariantCulture) + "-" + DateTime.UtcNow.Hour.ToString(CultureInfo.InvariantCulture) + ".xml";
             string cacheFile = Path.Combine(_config.ApplicationPaths.CachePath, "xmltv", cacheFilename);
-            if (_fileSystem.FileExists(cacheFile))
+            if (File.Exists(cacheFile))
             {
                 return UnzipIfNeeded(path, cacheFile);
             }
@@ -255,7 +255,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
         public Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
             // Assume all urls are valid. check files for existence
-            if (!info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase) && !_fileSystem.FileExists(info.Path))
+            if (!info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase) && !File.Exists(info.Path))
             {
                 throw new FileNotFoundException("Could not find the XmlTv file specified:", info.Path);
             }

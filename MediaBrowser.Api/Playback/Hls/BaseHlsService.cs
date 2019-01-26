@@ -83,13 +83,13 @@ namespace MediaBrowser.Api.Playback.Hls
             TranscodingJob job = null;
             var playlist = state.OutputFilePath;
 
-            if (!FileSystem.FileExists(playlist))
+            if (!File.Exists(playlist))
             {
                 var transcodingLock = ApiEntryPoint.Instance.GetTranscodingLock(playlist);
                 await transcodingLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
                 try
                 {
-                    if (!FileSystem.FileExists(playlist))
+                    if (!File.Exists(playlist))
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
                         try

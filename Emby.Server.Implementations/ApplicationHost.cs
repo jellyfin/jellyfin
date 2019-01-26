@@ -1008,7 +1008,7 @@ namespace Emby.Server.Implementations
 
             try
             {
-                if (!FileSystemManager.FileExists(certificateLocation))
+                if (!File.Exists(certificateLocation))
                 {
                     return null;
                 }
@@ -1434,7 +1434,7 @@ namespace Emby.Server.Implementations
 
             //if (generateCertificate)
             //{
-            //    if (!FileSystemManager.FileExists(certPath))
+            //    if (!File.Exists(certPath))
             //    {
             //        FileSystemManager.CreateDirectory(FileSystemManager.GetDirectoryName(certPath));
 

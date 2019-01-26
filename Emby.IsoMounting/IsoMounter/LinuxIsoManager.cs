@@ -214,7 +214,7 @@ namespace IsoMounter
             {
                 string path = test.Trim();
 
-                if (!string.IsNullOrEmpty(path) && FileSystem.FileExists(path = Path.Combine(path, name)))
+                if (!string.IsNullOrEmpty(path) && File.Exists(path = Path.Combine(path, name)))
                 {
                     return Path.GetFullPath(path);
                 }

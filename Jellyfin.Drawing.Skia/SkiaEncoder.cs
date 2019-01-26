@@ -257,7 +257,7 @@ namespace Jellyfin.Drawing.Skia
 
         internal static SKBitmap Decode(string path, bool forceCleanBitmap, IFileSystem fileSystem, ImageOrientation? orientation, out SKEncodedOrigin origin)
         {
-            if (!fileSystem.FileExists(path))
+            if (!File.Exists(path))
             {
                 throw new FileNotFoundException("File not found", path);
             }

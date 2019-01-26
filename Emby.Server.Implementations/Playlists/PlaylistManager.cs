@@ -164,7 +164,7 @@ namespace Emby.Server.Implementations.Playlists
 
         private string GetTargetPath(string path)
         {
-            while (_fileSystem.DirectoryExists(path))
+            while (Directory.Exists(path))
             {
                 path += "1";
             }

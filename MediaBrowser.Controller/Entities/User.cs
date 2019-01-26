@@ -168,14 +168,14 @@ namespace MediaBrowser.Controller.Entities
                 var oldConfigurationDirectory = ConfigurationDirectoryPath;
 
                 // Exceptions will be thrown if these paths already exist
-                if (FileSystem.DirectoryExists(newConfigDirectory))
+                if (Directory.Exists(newConfigDirectory))
                 {
                     Directory.Delete(newConfigDirectory, true);
                 }
 
-                if (FileSystem.DirectoryExists(oldConfigurationDirectory))
+                if (Directory.Exists(oldConfigurationDirectory))
                 {
-                    FileSystem.MoveDirectory(oldConfigurationDirectory, newConfigDirectory);
+                    Directory.Move(oldConfigurationDirectory, newConfigDirectory);
                 }
                 else
                 {

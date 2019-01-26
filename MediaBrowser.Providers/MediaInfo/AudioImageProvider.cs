@@ -58,7 +58,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var path = GetAudioImagePath(item);
 
-            if (!_fileSystem.FileExists(path))
+            if (!File.Exists(path))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 

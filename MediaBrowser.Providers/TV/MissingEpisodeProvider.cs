@@ -58,7 +58,7 @@ namespace MediaBrowser.Providers.TV
             }
 
             // Check this in order to avoid logging an exception due to directory not existing
-            if (!_fileSystem.DirectoryExists(seriesDataPath))
+            if (Directory.Exists(seriesDataPath))
             {
                 return false;
             }

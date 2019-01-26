@@ -197,7 +197,7 @@ namespace Emby.Server.Implementations.AppBase
                 && !string.Equals(CommonConfiguration.CachePath ?? string.Empty, newPath))
             {
                 // Validate
-                if (!FileSystem.DirectoryExists(newPath))
+                if (!Directory.Exists(newPath))
                 {
                     throw new FileNotFoundException(string.Format("{0} does not exist.", newPath));
                 }
