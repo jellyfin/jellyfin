@@ -12,7 +12,7 @@ using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
 
-namespace Emby.Drawing
+namespace Jellyfin.Drawing.Skia
 {
     public class SkiaEncoder : IImageEncoder
     {

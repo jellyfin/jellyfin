@@ -5,7 +5,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
 using SkiaSharp;
 
-namespace Emby.Drawing
+namespace Jellyfin.Drawing.Skia
 {
     public class StripCollageBuilder
     {
@@ -43,21 +43,14 @@ namespace Emby.Drawing
             return SKEncodedImageFormat.Png;
         }
 
-        public void BuildPosterCollage(string[] paths, string outputPath, int width, int height)
-        {
-            // @todo
-        }
-
         public void BuildSquareCollage(string[] paths, string outputPath, int width, int height)
         {
             using (var bitmap = BuildSquareCollageBitmap(paths, width, height))
+            using (var outputStream = new SKFileWStream(outputPath))
             {
-                using (var outputStream = new SKFileWStream(outputPath))
+                using (var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels()))
                 {
-                    using (var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels()))
-                    {
-                        pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
-                    }
+                    pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
                 }
             }
         }
