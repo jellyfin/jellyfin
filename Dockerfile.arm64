@@ -24,10 +24,10 @@ RUN export DOTNET_CLI_TELEMETRY_OPTOUT=1 \
 
 
 FROM microsoft/dotnet:${DOTNET_VERSION}-runtime-stretch-slim-arm64v8
+RUN apt-get update \
+ && apt-get install -y ffmpeg
 COPY --from=qemu_extract qemu-* /usr/bin
 COPY --from=builder /jellyfin /jellyfin
 EXPOSE 8096
-RUN apt-get update \
- && apt-get install -y ffmpeg
 VOLUME /config /media
 ENTRYPOINT dotnet /jellyfin/jellyfin.dll -programdata /config
