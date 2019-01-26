@@ -107,7 +107,7 @@ namespace Emby.Server.Implementations.Serialization
         public object DeserializeFromFile(Type type, string file)
         {
             _logger.LogDebug("Deserializing file {0}", file);
-            using (var stream = _fileSystem.OpenRead(file))
+            using (var stream = File.OpenRead(file))
             {
                 return DeserializeFromStream(type, stream);
             }

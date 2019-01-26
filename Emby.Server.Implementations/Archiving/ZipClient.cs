@@ -29,7 +29,7 @@ namespace Emby.Server.Implementations.Archiving
         /// <param name="overwriteExistingFiles">if set to <c>true</c> [overwrite existing files].</param>
         public void ExtractAll(string sourceFile, string targetPath, bool overwriteExistingFiles)
         {
-            using (var fileStream = _fileSystem.OpenRead(sourceFile))
+            using (var fileStream = File.OpenRead(sourceFile))
             {
                 ExtractAll(fileStream, targetPath, overwriteExistingFiles);
             }
@@ -115,7 +115,7 @@ namespace Emby.Server.Implementations.Archiving
         /// <param name="overwriteExistingFiles">if set to <c>true</c> [overwrite existing files].</param>
         public void ExtractAllFrom7z(string sourceFile, string targetPath, bool overwriteExistingFiles)
         {
-            using (var fileStream = _fileSystem.OpenRead(sourceFile))
+            using (var fileStream = File.OpenRead(sourceFile))
             {
                 ExtractAllFrom7z(fileStream, targetPath, overwriteExistingFiles);
             }
@@ -155,7 +155,7 @@ namespace Emby.Server.Implementations.Archiving
         /// <param name="overwriteExistingFiles">if set to <c>true</c> [overwrite existing files].</param>
         public void ExtractAllFromTar(string sourceFile, string targetPath, bool overwriteExistingFiles)
         {
-            using (var fileStream = _fileSystem.OpenRead(sourceFile))
+            using (var fileStream = File.OpenRead(sourceFile))
             {
                 ExtractAllFromTar(fileStream, targetPath, overwriteExistingFiles);
             }

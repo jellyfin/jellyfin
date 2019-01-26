@@ -70,7 +70,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 var tempFile = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false);
 
-                _fileSystem.CopyFile(tempFile, path, true);
+                File.Copy(tempFile, path, true);
 
                 try
                 {

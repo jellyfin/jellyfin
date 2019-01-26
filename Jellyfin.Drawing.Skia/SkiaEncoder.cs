@@ -220,7 +220,7 @@ namespace Jellyfin.Drawing.Skia
             var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path) ?? string.Empty);
 
             Directory.CreateDirectory(Path.GetDirectoryName(tempPath));
-            fileSystem.CopyFile(path, tempPath, true);
+            File.Copy(path, tempPath, true);
 
             return tempPath;
         }

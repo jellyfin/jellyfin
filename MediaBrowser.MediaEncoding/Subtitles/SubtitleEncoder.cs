@@ -210,7 +210,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             }
 
-            return _fileSystem.OpenRead(path);
+            return File.OpenRead(path);
         }
 
         private async Task<SubtitleInfo> GetReadableFile(
@@ -672,7 +672,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string text;
             Encoding encoding;
 
-            using (var fileStream = _fileSystem.OpenRead(file))
+            using (var fileStream = File.OpenRead(file))
             using (var reader = new StreamReader(fileStream, true))
             {
                 encoding = reader.CurrentEncoding;

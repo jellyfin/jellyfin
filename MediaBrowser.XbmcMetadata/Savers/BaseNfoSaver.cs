@@ -974,7 +974,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             settings.IgnoreProcessingInstructions = true;
             settings.IgnoreComments = true;
 
-            using (var fileStream = fileSystem.OpenRead(path))
+            using (var fileStream = File.OpenRead(path))
             {
                 using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
                 {

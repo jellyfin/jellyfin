@@ -443,7 +443,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             //Copy all the files & Replaces any files with the same name
             foreach (var newPath in _fileSystem.GetFiles(source, true))
-                _fileSystem.CopyFile(newPath.FullName, newPath.FullName.Replace(source, destination), true);
+                File.Copy(newPath.FullName, newPath.FullName.Replace(source, destination), true);
         }
     }
 

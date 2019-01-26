@@ -300,7 +300,7 @@ namespace Emby.Server.Implementations.Images
             var ext = Path.GetExtension(image);
 
             var outputPath = Path.ChangeExtension(outputPathWithoutExtension, ext);
-            FileSystem.CopyFile(image, outputPath, true);
+            File.Copy(image, outputPath, true);
 
             return outputPath;
         }

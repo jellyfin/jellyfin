@@ -155,7 +155,7 @@ namespace MediaBrowser.Providers.Studios
 
                 try
                 {
-                    fileSystem.CopyFile(temp, file, true);
+                    File.Copy(temp, file, true);
                 }
                 catch
                 {

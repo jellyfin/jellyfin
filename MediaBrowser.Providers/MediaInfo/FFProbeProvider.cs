@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -196,7 +197,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private void FetchShortcutInfo(BaseItem item)
         {
-            item.ShortcutPath = _fileSystem.ReadAllLines(item.Path)
+            item.ShortcutPath = File.ReadAllLines(item.Path)
                 .Select(NormalizeStrmLine)
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && !i.StartsWith("#", StringComparison.OrdinalIgnoreCase));
         }

@@ -1827,7 +1827,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             // preserve original image extension
             imageSavePath = Path.ChangeExtension(imageSavePath, Path.GetExtension(image.Path));
 
-            _fileSystem.CopyFile(image.Path, imageSavePath, true);
+            File.Copy(image.Path, imageSavePath, true);
         }
 
         private async Task SaveRecordingImages(string recordingPath, LiveTvProgram program)

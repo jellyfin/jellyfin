@@ -555,7 +555,7 @@ namespace Emby.Server.Implementations.Updates
             var packageChecksum = string.IsNullOrWhiteSpace(package.checksum) ? Guid.Empty : new Guid(package.checksum);
             if (!packageChecksum.Equals(Guid.Empty)) // support for legacy uploads for now
             {
-                using (var stream = _fileSystem.OpenRead(tempFile))
+                using (var stream = File.OpenRead(tempFile))
                 {
                     var check = Guid.Parse(BitConverter.ToString(_cryptographyProvider.ComputeMD5(stream)).Replace("-", string.Empty));
                     if (check != packageChecksum)
@@ -571,7 +571,7 @@ namespace Emby.Server.Implementations.Updates
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(target));
-                _fileSystem.CopyFile(tempFile, target, true);
+                File.Copy(tempFile, target, true);
                 //If it is an archive - write out a version file so we know what it is
                 if (isArchive)
                 {

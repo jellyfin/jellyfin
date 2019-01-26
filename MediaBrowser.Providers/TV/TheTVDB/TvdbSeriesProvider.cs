@@ -263,7 +263,7 @@ namespace MediaBrowser.Providers.TV
 
             if (!string.Equals(downloadLangaugeXmlFile, saveAsLanguageXmlFile, StringComparison.OrdinalIgnoreCase))
             {
-                _fileSystem.CopyFile(downloadLangaugeXmlFile, saveAsLanguageXmlFile, true);
+                File.Copy(downloadLangaugeXmlFile, saveAsLanguageXmlFile, true);
             }
 
             await ExtractEpisodes(seriesDataPath, downloadLangaugeXmlFile, lastTvDbUpdateTime).ConfigureAwait(false);
