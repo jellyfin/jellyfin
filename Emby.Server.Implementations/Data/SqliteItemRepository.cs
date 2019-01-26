@@ -208,6 +208,7 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "OwnerId", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "Width", "INT", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "Height", "INT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Size", "BIGINT", existingColumnNames);
 
                     existingColumnNames = GetColumnNames(db, "ItemValues");
                     AddColumn(db, "ItemValues", "CleanValue", "Text", existingColumnNames);
@@ -347,6 +348,7 @@ namespace Emby.Server.Implementations.Data
             "OfficialRating",
             "ForcedSortName",
             "RunTimeTicks",
+            "Size",
             "DateCreated",
             "DateModified",
             "guid",
@@ -459,6 +461,7 @@ namespace Emby.Server.Implementations.Data
                 "SortName",
                 "ForcedSortName",
                 "RunTimeTicks",
+                "Size",
                 "DateCreated",
                 "DateModified",
                 "PreferredMetadataLanguage",
@@ -755,6 +758,7 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@ForcedSortName", item.ForcedSortName);
 
             saveItemStatement.TryBind("@RunTimeTicks", item.RunTimeTicks);
+            saveItemStatement.TryBind("@Size", item.Size);
 
             saveItemStatement.TryBind("@DateCreated", item.DateCreated);
             saveItemStatement.TryBind("@DateModified", item.DateModified);
@@ -1520,6 +1524,12 @@ namespace Emby.Server.Implementations.Data
             if (!reader.IsDBNull(index))
             {
                 item.RunTimeTicks = reader.GetInt64(index);
+            }
+            index++;
+
+            if (!reader.IsDBNull(index))
+            {
+                item.Size = reader.GetInt64(index);
             }
             index++;
 
