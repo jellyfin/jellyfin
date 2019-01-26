@@ -96,7 +96,6 @@ namespace Jellyfin.Server
                 fileSystem,
                 environmentInfo,
                 new NullImageEncoder(),
-                new SystemEvents(),
                 new NetworkManager(_loggerFactory, environmentInfo)))
             {
                 appHost.Init();

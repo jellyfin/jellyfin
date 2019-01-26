@@ -26,12 +26,6 @@ namespace MediaBrowser.Model.Tasks
         public long? IntervalTicks { get; set; }
 
         /// <summary>
-        /// Gets or sets the system event.
-        /// </summary>
-        /// <value>The system event.</value>
-        public SystemEvent? SystemEvent { get; set; }
-
-        /// <summary>
         /// Gets or sets the day of week.
         /// </summary>
         /// <value>The day of week.</value>
