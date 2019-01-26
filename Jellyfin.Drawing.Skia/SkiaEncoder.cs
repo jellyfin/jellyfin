@@ -12,7 +12,7 @@ using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
 
-namespace Emby.Drawing
+namespace Jellyfin.Drawing.Skia
 {
     public class SkiaEncoder : IImageEncoder
     {
@@ -72,16 +72,11 @@ namespace Emby.Drawing
             _logger.LogInformation("SkiaSharp version: " + GetVersion());
         }
 
-        public static string GetVersion()
-        {
-            return typeof(SKBitmap).GetTypeInfo().Assembly.GetName().Version.ToString();
-        }
+        public static Version GetVersion()
+            => typeof(SKBitmap).GetTypeInfo().Assembly.GetName().Version;
 
         private static bool IsTransparent(SKColor color)
-        {
-
-            return (color.Red == 255 && color.Green == 255 && color.Blue == 255) || color.Alpha == 0;
-        }
+            => (color.Red == 255 && color.Green == 255 && color.Blue == 255) || color.Alpha == 0;
 
         public static SKEncodedImageFormat GetImageFormat(ImageFormat selectedFormat)
         {
@@ -130,33 +125,51 @@ namespace Emby.Drawing
             for (int row = 0; row < bitmap.Height; ++row)
             {
                 if (IsTransparentRow(bitmap, row))
+                {
                     topmost = row + 1;
-                else break;
+                }
+                else
+                {
+                    break;
+                }
             }
 
             int bottommost = bitmap.Height;
             for (int row = bitmap.Height - 1; row >= 0; --row)
             {
                 if (IsTransparentRow(bitmap, row))
+                {
                     bottommost = row;
-                else break;
+                }
+                else
+                {
+                    break;
+                }
             }
 
             int leftmost = 0, rightmost = bitmap.Width;
             for (int col = 0; col < bitmap.Width; ++col)
             {
                 if (IsTransparentColumn(bitmap, col))
+                {
                     leftmost = col + 1;
+                }
                 else
+                {
                     break;
+                }
             }
 
             for (int col = bitmap.Width - 1; col >= 0; --col)
             {
                 if (IsTransparentColumn(bitmap, col))
+                {
                     rightmost = col;
+                }
                 else
+                {
                     break;
+                }
             }
 
             var newRect = SKRectI.Create(leftmost, topmost, rightmost - leftmost, bottommost - topmost);
@@ -180,9 +193,7 @@ namespace Emby.Drawing
         }
 
         private static bool HasDiacritics(string text)
-        {
-            return !string.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
-        }
+            => !string.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
 
         private static bool RequiresSpecialCharacterHack(string path)
         {
@@ -243,6 +254,7 @@ namespace Emby.Drawing
         }
 
         private static string[] TransparentImageTypes = new string[] { ".png", ".gif", ".webp" };
+
         internal static SKBitmap Decode(string path, bool forceCleanBitmap, IFileSystem fileSystem, ImageOrientation? orientation, out SKEncodedOrigin origin)
         {
             if (!fileSystem.FileExists(path))
@@ -267,7 +279,7 @@ namespace Emby.Drawing
                     var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
 
                     // decode
-                    codec.GetPixels(bitmap.Info, bitmap.GetPixels());
+                    var _ = codec.GetPixels(bitmap.Info, bitmap.GetPixels());
 
                     origin = codec.EncodedOrigin;
 
@@ -316,14 +328,11 @@ namespace Emby.Drawing
             {
                 var bitmap = GetBitmap(path, cropWhitespace, true, orientation, out origin);
 
-                if (bitmap != null)
+                if (bitmap != null && origin != SKEncodedOrigin.TopLeft)
                 {
-                    if (origin != SKEncodedOrigin.TopLeft)
+                    using (bitmap)
                     {
-                        using (bitmap)
-                        {
-                            return OrientImage(bitmap, origin);
-                        }
+                        return OrientImage(bitmap, origin);
                     }
                 }
 
@@ -347,7 +356,6 @@ namespace Emby.Drawing
 
             switch (origin)
             {
-
                 case SKEncodedOrigin.TopRight:
                     {
                         var rotated = new SKBitmap(bitmap.Width, bitmap.Height);
@@ -366,11 +374,8 @@ namespace Emby.Drawing
                         var rotated = new SKBitmap(bitmap.Width, bitmap.Height);
                         using (var surface = new SKCanvas(rotated))
                         {
-                            float px = bitmap.Width;
-                            px /= 2;
-
-                            float py = bitmap.Height;
-                            py /= 2;
+                            float px = (float)bitmap.Width / 2;
+                            float py = (float)bitmap.Height / 2;
 
                             surface.RotateDegrees(180, px, py);
                             surface.DrawBitmap(bitmap, 0, 0);
@@ -384,11 +389,9 @@ namespace Emby.Drawing
                         var rotated = new SKBitmap(bitmap.Width, bitmap.Height);
                         using (var surface = new SKCanvas(rotated))
                         {
-                            float px = bitmap.Width;
-                            px /= 2;
+                            float px = (float)bitmap.Width / 2;
 
-                            float py = bitmap.Height;
-                            py /= 2;
+                            float py = (float)bitmap.Height / 2;
 
                             surface.Translate(rotated.Width, 0);
                             surface.Scale(-1, 1);
@@ -412,7 +415,6 @@ namespace Emby.Drawing
                                 surface.RotateDegrees(90);
 
                                 surface.DrawBitmap(bitmap, 0, 0);
-
                             }
 
                             var flippedBitmap = new SKBitmap(rotated.Width, rotated.Height);
@@ -477,8 +479,7 @@ namespace Emby.Drawing
                         return rotated;
                     }
 
-                default:
-                    return bitmap;
+                default: return bitmap;
             }
         }
 
@@ -488,6 +489,7 @@ namespace Emby.Drawing
             {
                 throw new ArgumentNullException(nameof(inputPath));
             }
+
             if (string.IsNullOrWhiteSpace(inputPath))
             {
                 throw new ArgumentNullException(nameof(outputPath));
@@ -507,11 +509,11 @@ namespace Emby.Drawing
                     throw new ArgumentOutOfRangeException(string.Format("Skia unable to read image {0}", inputPath));
                 }
 
-                //_logger.LogInformation("Color type {0}", bitmap.Info.ColorType);
-
                 var originalImageSize = new ImageDimensions(bitmap.Width, bitmap.Height);
 
-                if (!options.CropWhiteSpace && options.HasDefaultOptions(inputPath, originalImageSize) && !autoOrient)
+                if (!options.CropWhiteSpace
+                    && options.HasDefaultOptions(inputPath, originalImageSize)
+                    && !autoOrient)
                 {
                     // Just spit out the original file if all the options are default
                     return inputPath;
@@ -522,7 +524,7 @@ namespace Emby.Drawing
                 var width = newImageSize.Width;
                 var height = newImageSize.Height;
 
-                using (var resizedBitmap = new SKBitmap(width, height))//, bitmap.ColorType, bitmap.AlphaType))
+                using (var resizedBitmap = new SKBitmap(width, height, bitmap.ColorType, bitmap.AlphaType))
                 {
                     // scale image
                     bitmap.ScalePixels(resizedBitmap, SKFilterQuality.High);
@@ -532,12 +534,10 @@ namespace Emby.Drawing
                     {
                         _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
                         using (var outputStream = new SKFileWStream(outputPath))
+                        using (var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels()))
                         {
-                            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels()))
-                            {
-                                pixmap.Encode(outputStream, skiaOutputFormat, quality);
-                                return outputPath;
-                            }
+                            pixmap.Encode(outputStream, skiaOutputFormat, quality);
+                            return outputPath;
                         }
                     }
 
@@ -600,8 +600,7 @@ namespace Emby.Drawing
 
         public void CreateImageCollage(ImageCollageOptions options)
         {
-            double ratio = options.Width;
-            ratio /= options.Height;
+            double ratio = (double)options.Width / options.Height;
 
             if (ratio >= 1.4)
             {
@@ -613,7 +612,7 @@ namespace Emby.Drawing
             }
             else
             {
-                // @todo create Poster collage capability
+                // TODO: Create Poster collage capability
                 new StripCollageBuilder(_appPaths, _fileSystem).BuildSquareCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
             }
         }
