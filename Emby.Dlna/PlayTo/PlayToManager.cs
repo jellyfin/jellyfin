@@ -162,9 +162,7 @@ namespace Emby.Dlna.PlayTo
                 uuid = location.GetMD5().ToString("N");
             }
 
-            string deviceName = null;
-
-            var sessionInfo = _sessionManager.LogSessionActivity("DLNA", _appHost.ApplicationVersion, uuid, deviceName, uri.OriginalString, null);
+            var sessionInfo = _sessionManager.LogSessionActivity("DLNA", _appHost.ApplicationVersion, uuid, null, uri.OriginalString, null);
 
             var controller = sessionInfo.SessionControllers.OfType<PlayToController>().FirstOrDefault();
 
@@ -172,7 +170,7 @@ namespace Emby.Dlna.PlayTo
             {
                 var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger, _timerFactory, cancellationToken).ConfigureAwait(false);
 
-                deviceName = device.Properties.Name;
+                string deviceName = device.Properties.Name;
 
                 _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
 
@@ -186,8 +184,6 @@ namespace Emby.Dlna.PlayTo
                     serverAddress = _appHost.GetLocalApiUrl(info.LocalIpAddress);
                 }
 
-                string accessToken = null;
-
                 controller = new PlayToController(sessionInfo,
                    _sessionManager,
                    _libraryManager,
@@ -196,7 +192,7 @@ namespace Emby.Dlna.PlayTo
                    _userManager,
                    _imageProcessor,
                    serverAddress,
-                   accessToken,
+                   null,
                    _deviceDiscovery,
                    _userDataManager,
                    _localization,
