@@ -317,7 +317,7 @@ namespace Emby.Server.Implementations
         private IUserDataManager UserDataManager { get; set; }
         private IUserRepository UserRepository { get; set; }
         internal IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
-        internal IItemRepository ItemRepository { get; set; }
+        internal SqliteItemRepository ItemRepository { get; set; }
 
         private INotificationManager NotificationManager { get; set; }
         private ISubtitleManager SubtitleManager { get; set; }
@@ -836,9 +836,8 @@ namespace Emby.Server.Implementations
             DisplayPreferencesRepository = displayPreferencesRepo;
             RegisterSingleInstance(DisplayPreferencesRepository);
 
-            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, this, JsonSerializer, LoggerFactory, assemblyInfo, FileSystemManager, EnvironmentInfo, TimerFactory);
-            ItemRepository = itemRepo;
-            RegisterSingleInstance(ItemRepository);
+            ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, JsonSerializer, LoggerFactory, assemblyInfo);
+            RegisterSingleInstance<IItemRepository>(ItemRepository);
 
             AuthenticationRepository = GetAuthenticationRepository();
             RegisterSingleInstance(AuthenticationRepository);
@@ -956,7 +955,7 @@ namespace Emby.Server.Implementations
             ((UserManager)UserManager).Initialize();
 
             ((UserDataManager)UserDataManager).Repository = userDataRepo;
-            itemRepo.Initialize(userDataRepo, UserManager);
+            ItemRepository.Initialize(userDataRepo, UserManager);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
         }
 

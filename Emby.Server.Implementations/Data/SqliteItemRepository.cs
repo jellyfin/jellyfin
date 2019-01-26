@@ -69,10 +69,7 @@ namespace Emby.Server.Implementations.Data
             IServerApplicationHost appHost,
             IJsonSerializer jsonSerializer,
             ILoggerFactory loggerFactory,
-            IAssemblyInfo assemblyInfo,
-            IFileSystem fileSystem,
-            IEnvironmentInfo environmentInfo,
-            ITimerFactory timerFactory)
+            IAssemblyInfo assemblyInfo)
             : base(loggerFactory.CreateLogger(nameof(SqliteItemRepository)))
         {
             if (config == null)
