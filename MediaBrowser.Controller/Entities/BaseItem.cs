@@ -2509,7 +2509,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Path))
             {
-                Name = FileSystem.GetFileNameWithoutExtension(Path);
+                Name = System.IO.Path.GetFileNameWithoutExtension(Path);
                 hasChanges = true;
             }
 
