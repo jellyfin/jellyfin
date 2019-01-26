@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.Devices
 
                 lock (_syncLock)
                 {
-                    _fileSystem.WriteAllText(path, id, Encoding.UTF8);
+                    File.WriteAllText(path, id, Encoding.UTF8);
                 }
             }
             catch (Exception ex)

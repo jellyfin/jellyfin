@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations
 
         public string ReadAllText(string basePath, string virtualPath)
         {
-            return _fileSystem.ReadAllText(GetResourcePath(basePath, virtualPath));
+            return File.ReadAllText(GetResourcePath(basePath, virtualPath));
         }
 
         private string GetResourcePath(string basePath, string virtualPath)

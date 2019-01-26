@@ -2889,7 +2889,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     var path = Path.Combine(virtualFolderPath, collectionType + ".collection");
 
-                    _fileSystem.WriteAllBytes(path, Array.Empty<byte>());
+                    File.WriteAllBytes(path, Array.Empty<byte>());
                 }
 
                 CollectionFolder.SaveLibraryOptions(virtualFolderPath, options);

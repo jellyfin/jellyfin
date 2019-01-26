@@ -340,7 +340,8 @@ namespace Emby.Server.Implementations.Playlists
                     playlist.PlaylistEntries.Add(entry);
                 }
 
-                _fileSystem.WriteAllText(playlistPath, new WplContent().ToText(playlist));
+                string text = new WplContent().ToText(playlist);
+                File.WriteAllText(playlistPath, text);
             }
             if (string.Equals(".zpl", extension, StringComparison.OrdinalIgnoreCase))
             {
@@ -373,7 +374,8 @@ namespace Emby.Server.Implementations.Playlists
                     playlist.PlaylistEntries.Add(entry);
                 }
 
-                _fileSystem.WriteAllText(playlistPath, new ZplContent().ToText(playlist));
+                string text = new ZplContent().ToText(playlist);
+                File.WriteAllText(playlistPath, text);
             }
             if (string.Equals(".m3u", extension, StringComparison.OrdinalIgnoreCase))
             {
@@ -401,7 +403,8 @@ namespace Emby.Server.Implementations.Playlists
                     playlist.PlaylistEntries.Add(entry);
                 }
 
-                _fileSystem.WriteAllText(playlistPath, new M3uContent().ToText(playlist));
+                string text = new M3uContent().ToText(playlist);
+                File.WriteAllText(playlistPath, text);
             }
             if (string.Equals(".m3u8", extension, StringComparison.OrdinalIgnoreCase))
             {
@@ -429,7 +432,8 @@ namespace Emby.Server.Implementations.Playlists
                     playlist.PlaylistEntries.Add(entry);
                 }
 
-                _fileSystem.WriteAllText(playlistPath, new M3u8Content().ToText(playlist));
+                string text = new M3u8Content().ToText(playlist);
+                File.WriteAllText(playlistPath, text);
             }
             if (string.Equals(".pls", extension, StringComparison.OrdinalIgnoreCase))
             {
@@ -449,7 +453,8 @@ namespace Emby.Server.Implementations.Playlists
                     playlist.PlaylistEntries.Add(entry);
                 }
 
-                _fileSystem.WriteAllText(playlistPath, new PlsContent().ToText(playlist));
+                string text = new PlsContent().ToText(playlist);
+                File.WriteAllText(playlistPath, text);
             }
         }
 

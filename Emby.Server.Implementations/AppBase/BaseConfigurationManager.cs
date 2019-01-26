@@ -210,7 +210,8 @@ namespace Emby.Server.Implementations.AppBase
         {
             var file = Path.Combine(path, Guid.NewGuid().ToString());
 
-            FileSystem.WriteAllText(file, string.Empty);
+            string text = string.Empty;
+            File.WriteAllText(file, text);
             FileSystem.DeleteFile(file);
         }
 

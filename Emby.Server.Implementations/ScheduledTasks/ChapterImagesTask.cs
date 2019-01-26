@@ -105,7 +105,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 try
                 {
-                    previouslyFailedImages = _fileSystem.ReadAllText(failHistoryPath)
+                    previouslyFailedImages = File.ReadAllText(failHistoryPath)
                         .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                         .ToList();
                 }
@@ -143,7 +143,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                         Directory.CreateDirectory(parentPath);
 
-                        _fileSystem.WriteAllText(failHistoryPath, string.Join("|", previouslyFailedImages.ToArray()));
+                        string text = string.Join("|", previouslyFailedImages.ToArray());
+                        File.WriteAllText(failHistoryPath, text);
                     }
 
                     numComplete++;

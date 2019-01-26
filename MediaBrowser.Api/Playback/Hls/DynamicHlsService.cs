@@ -458,7 +458,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 try
                 {
-                    var text = FileSystem.ReadAllText(playlistPath, Encoding.UTF8);
+                    var text = File.ReadAllText(playlistPath, Encoding.UTF8);
 
                     // If it appears in the playlist, it's done
                     if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)

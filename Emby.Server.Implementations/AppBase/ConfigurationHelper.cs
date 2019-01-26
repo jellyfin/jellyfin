@@ -29,7 +29,7 @@ namespace Emby.Server.Implementations.AppBase
             // Use try/catch to avoid the extra file system lookup using File.Exists
             try
             {
-                buffer = fileSystem.ReadAllBytes(path);
+                buffer = File.ReadAllBytes(path);
 
                 configuration = xmlSerializer.DeserializeFromBytes(type, buffer);
             }
@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.AppBase
                     Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                     // Save it after load in case we got new items
-                    fileSystem.WriteAllBytes(path, newBytes);
+                    File.WriteAllBytes(path, newBytes);
                 }
 
                 return configuration;

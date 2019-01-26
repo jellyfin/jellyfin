@@ -169,7 +169,7 @@ namespace MediaBrowser.Api
         {
             var file = Path.Combine(path, Guid.NewGuid().ToString());
 
-            _fileSystem.WriteAllText(file, string.Empty);
+            File.WriteAllText(file, string.Empty);
             _fileSystem.DeleteFile(file);
         }
 

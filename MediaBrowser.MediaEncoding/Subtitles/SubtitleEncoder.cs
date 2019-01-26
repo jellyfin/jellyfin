@@ -747,7 +747,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
             if (protocol == MediaProtocol.File)
             {
-                return _fileSystem.ReadAllBytes(path);
+                return File.ReadAllBytes(path);
             }
 
             throw new ArgumentOutOfRangeException(nameof(protocol));

@@ -904,7 +904,7 @@ namespace Emby.Server.Implementations.Library
             // Tuesday, 22 August 2006 06:30 AM
             text.AppendLine("The pin code will expire at " + localExpirationTime.ToString("f1", CultureInfo.CurrentCulture));
 
-            _fileSystem.WriteAllText(path, text.ToString(), Encoding.UTF8);
+            File.WriteAllText(path, text.ToString(), Encoding.UTF8);
 
             var result = new PasswordPinCreationResult
             {
