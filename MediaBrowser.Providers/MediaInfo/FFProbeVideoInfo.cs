@@ -175,6 +175,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     video.RunTimeTicks = mediaInfo.RunTimeTicks;
                 }
+                video.Size = mediaInfo.Size;
 
                 if (video.VideoType == VideoType.VideoFile)
                 {
