@@ -1,3 +1,4 @@
+using System;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -6,7 +7,7 @@ namespace MediaBrowser.Controller.Drawing
 {
     public static class ImageHelper
     {
-        public static ImageSize GetNewImageSize(ImageProcessingOptions options, ImageSize? originalImageSize)
+        public static ImageDimensions GetNewImageSize(ImageProcessingOptions options, ImageDimensions? originalImageSize)
         {
             if (originalImageSize.HasValue)
             {
@@ -20,26 +21,26 @@ namespace MediaBrowser.Controller.Drawing
 
         public static IImageProcessor ImageProcessor { get; set; }
 
-        private static ImageSize GetSizeEstimate(ImageProcessingOptions options)
+        private static ImageDimensions GetSizeEstimate(ImageProcessingOptions options)
         {
             if (options.Width.HasValue && options.Height.HasValue)
             {
-                return new ImageSize(options.Width.Value, options.Height.Value);
+                return new ImageDimensions(options.Width.Value, options.Height.Value);
             }
 
-            var aspect = GetEstimatedAspectRatio(options.Image.Type, options.Item);
+            double aspect = GetEstimatedAspectRatio(options.Image.Type, options.Item);
 
-            var width = options.Width ?? options.MaxWidth;
+            int? width = options.Width ?? options.MaxWidth;
 
             if (width.HasValue)
             {
-                var heightValue = width.Value / aspect;
-                return new ImageSize(width.Value, heightValue);
+                int heightValue = Convert.ToInt32((double)width.Value / aspect);
+                return new ImageDimensions(width.Value, heightValue);
             }
 
             var height = options.Height ?? options.MaxHeight ?? 200;
-            var widthValue = aspect * height;
-            return new ImageSize(widthValue, height);
+            int widthValue = Convert.ToInt32(aspect * height);
+            return new ImageDimensions(widthValue, height);
         }
 
         private static double GetEstimatedAspectRatio(ImageType type, BaseItem item)

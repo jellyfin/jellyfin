@@ -57,7 +57,7 @@ namespace MediaBrowser.Controller.Drawing
                 !MaxHeight.HasValue;
         }
 
-        public bool HasDefaultOptions(string originalImagePath, ImageSize? size)
+        public bool HasDefaultOptions(string originalImagePath, ImageDimensions? size)
         {
             if (!size.HasValue)
             {

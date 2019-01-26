@@ -18,7 +18,6 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
-using SkiaSharp;
 
 namespace Emby.Drawing
 {
@@ -66,7 +65,7 @@ namespace Emby.Drawing
             _appPaths = appPaths;
 
             ImageEnhancers = Array.Empty<IImageEnhancer>();
-            
+
             ImageHelper.ImageProcessor = this;
         }
 
@@ -168,10 +167,10 @@ namespace Emby.Drawing
 
             string originalImagePath = originalImage.Path;
             DateTime dateModified = originalImage.DateModified;
-            ImageSize? originalImageSize = null;
+            ImageDimensions? originalImageSize = null;
             if (originalImage.Width > 0 && originalImage.Height > 0)
             {
-                originalImageSize = new ImageSize(originalImage.Width, originalImage.Height);
+                originalImageSize = new ImageDimensions(originalImage.Width, originalImage.Height);
             }
 
             if (!_imageEncoder.SupportsImageEncoding)
@@ -231,7 +230,7 @@ namespace Emby.Drawing
                 return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
-            ImageSize newSize = ImageHelper.GetNewImageSize(options, null);
+            ImageDimensions newSize = ImageHelper.GetNewImageSize(options, null);
             int quality = options.Quality;
 
             ImageFormat outputFormat = GetOutputFormat(options.SupportedOutputFormats, requiresTransparency);
@@ -334,7 +333,7 @@ namespace Emby.Drawing
         /// <summary>
         /// Gets the cache file path based on a set of parameters
         /// </summary>
-        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, int? blur, string backgroundColor, string foregroundLayer)
+        private string GetCacheFilePath(string originalPath, ImageDimensions outputSize, int quality, DateTime dateModified, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, int? blur, string backgroundColor, string foregroundLayer)
         {
             var filename = originalPath
                 + "width=" + outputSize.Width
@@ -378,26 +377,25 @@ namespace Emby.Drawing
             return GetCachePath(ResizedImageCachePath, filename, "." + format.ToString().ToLower());
         }
 
-        public ImageSize GetImageSize(BaseItem item, ItemImageInfo info)
+        public ImageDimensions GetImageSize(BaseItem item, ItemImageInfo info)
             => GetImageSize(item, info, true);
 
-        public ImageSize GetImageSize(BaseItem item, ItemImageInfo info, bool updateItem)
+        public ImageDimensions GetImageSize(BaseItem item, ItemImageInfo info, bool updateItem)
         {
             int width = info.Width;
             int height = info.Height;
 
             if (height > 0 && width > 0)
             {
-                return new ImageSize(width, height);
+                return new ImageDimensions(width, height);
             }
 
             string path = info.Path;
             _logger.LogInformation("Getting image size for item {ItemType} {Path}", item.GetType().Name, path);
 
-            var size = GetImageSize(path);
-
-            info.Height = Convert.ToInt32(size.Height);
-            info.Width = Convert.ToInt32(size.Width);
+            ImageDimensions size = GetImageSize(path);
+            info.Width = size.Width;
+            info.Height = size.Height;
 
             if (updateItem)
             {
@@ -410,20 +408,8 @@ namespace Emby.Drawing
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
-        public ImageSize GetImageSize(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            using (var s = new SKFileStream(path))
-            using (var codec = SKCodec.Create(s))
-            {
-                var info = codec.Info;
-                return new ImageSize(info.Width, info.Height);
-            }
-        }
+        public ImageDimensions GetImageSize(string path)
+            => _imageEncoder.GetImageSize(path);
 
         /// <summary>
         /// Gets the image cache tag.

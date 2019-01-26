@@ -953,22 +953,11 @@ namespace MediaBrowser.Model.Dlna
 
                 if (videoStream != null && videoStream.Width.HasValue && videoStream.Height.HasValue)
                 {
-                    var size = new ImageSize
-                    {
-                        Width = videoStream.Width.Value,
-                        Height = videoStream.Height.Value
-                    };
+                    ImageDimensions size = new ImageDimensions(videoStream.Width.Value, videoStream.Height.Value);
 
-                    double? maxWidth = MaxWidth.HasValue ? (double)MaxWidth.Value : (double?)null;
-                    double? maxHeight = MaxHeight.HasValue ? (double)MaxHeight.Value : (double?)null;
+                    size = DrawingUtils.Resize(size, 0, 0, MaxWidth ?? 0, MaxHeight ?? 0);
 
-                    var newSize = DrawingUtils.Resize(size,
-                        0,
-                        0,
-                        maxWidth ?? 0,
-                        maxHeight ?? 0);
-
-                    return Convert.ToInt32(newSize.Width);
+                    return size.Width;
                 }
 
                 return MaxWidth;
@@ -983,22 +972,11 @@ namespace MediaBrowser.Model.Dlna
 
                 if (videoStream != null && videoStream.Width.HasValue && videoStream.Height.HasValue)
                 {
-                    var size = new ImageSize
-                    {
-                        Width = videoStream.Width.Value,
-                        Height = videoStream.Height.Value
-                    };
+                    ImageDimensions size = new ImageDimensions(videoStream.Width.Value, videoStream.Height.Value);
 
-                    double? maxWidth = MaxWidth.HasValue ? (double)MaxWidth.Value : (double?)null;
-                    double? maxHeight = MaxHeight.HasValue ? (double)MaxHeight.Value : (double?)null;
+                    size = DrawingUtils.Resize(size, 0, 0, MaxWidth ?? 0, MaxHeight ?? 0);
 
-                    var newSize = DrawingUtils.Resize(size,
-                        0,
-                        0,
-                        maxWidth ?? 0,
-                        maxHeight ?? 0);
-
-                    return Convert.ToInt32(newSize.Height);
+                    return size.Height;
                 }
 
                 return MaxHeight;

@@ -424,11 +424,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (state.VideoStream != null && state.VideoStream.Width.HasValue)
                     {
                         // This is hacky but not sure how to get the exact subtitle resolution
-                        double height = state.VideoStream.Width.Value;
-                        height /= 16;
-                        height *= 9;
+                        int height = Convert.ToInt32((double)state.VideoStream.Width.Value / 16.0 * 9.0);
 
-                        arg += string.Format(" -canvas_size {0}:{1}", state.VideoStream.Width.Value.ToString(CultureInfo.InvariantCulture), Convert.ToInt32(height).ToString(CultureInfo.InvariantCulture));
+                        arg += string.Format(" -canvas_size {0}:{1}", state.VideoStream.Width.Value.ToString(CultureInfo.InvariantCulture), height.ToString(CultureInfo.InvariantCulture));
                     }
 
                     var subtitlePath = state.SubtitleStream.Path;

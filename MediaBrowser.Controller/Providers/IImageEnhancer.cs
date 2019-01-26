@@ -37,7 +37,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="originalImageSize">Size of the original image.</param>
         /// <returns>ImageSize.</returns>
-        ImageSize GetEnhancedImageSize(BaseItem item, ImageType imageType, int imageIndex, ImageSize originalImageSize);
+        ImageDimensions GetEnhancedImageSize(BaseItem item, ImageType imageType, int imageIndex, ImageDimensions originalImageSize);
 
         EnhancedImageInfo GetEnhancedImageInfo(BaseItem item, string inputFile, ImageType imageType, int imageIndex);
 

@@ -2235,11 +2235,7 @@ namespace MediaBrowser.Controller.Entities
         /// </exception>
         /// <exception cref="ArgumentNullException">item</exception>
         public string GetImagePath(ImageType imageType, int imageIndex)
-        {
-            var info = GetImageInfo(imageType, imageIndex);
-
-            return info == null ? null : info.Path;
-        }
+            => GetImageInfo(imageType, imageIndex)?.Path;
 
         /// <summary>
         /// Gets the image information.

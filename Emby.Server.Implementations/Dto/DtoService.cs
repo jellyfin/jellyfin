@@ -1428,7 +1428,7 @@ namespace Emby.Server.Implementations.Dto
 
             var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary);
 
-            ImageSize size;
+            ImageDimensions size;
 
             var defaultAspectRatio = item.GetDefaultPrimaryImageAspectRatio();
 
@@ -1439,9 +1439,9 @@ namespace Emby.Server.Implementations.Dto
                     return defaultAspectRatio;
                 }
 
-                double dummyWidth = 200;
-                double dummyHeight = dummyWidth / defaultAspectRatio;
-                size = new ImageSize(dummyWidth, dummyHeight);
+                int dummyWidth = 200;
+                int dummyHeight = Convert.ToInt32(dummyWidth / defaultAspectRatio);
+                size = new ImageDimensions(dummyWidth, dummyHeight);
             }
             else
             {
@@ -1481,7 +1481,7 @@ namespace Emby.Server.Implementations.Dto
             var width = size.Width;
             var height = size.Height;
 
-            if (width.Equals(0) || height.Equals(0))
+            if (width <= 0 || height <= 0)
             {
                 return null;
             }
