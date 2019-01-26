@@ -240,7 +240,7 @@ namespace MediaBrowser.Providers.Manager
                 _libraryMonitor.ReportFileSystemChangeBeginning(path);
                 _libraryMonitor.ReportFileSystemChangeBeginning(parentFolder);
 
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                 _fileSystem.SetAttributes(path, false, false);
 

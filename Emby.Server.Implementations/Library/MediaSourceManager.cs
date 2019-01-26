@@ -670,7 +670,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (cacheFilePath != null)
                 {
-                    _fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
+                    Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
                     _jsonSerializer.SerializeToFile(mediaInfo, cacheFilePath);
 
                     //_logger.LogDebug("Saved media info to {0}", cacheFilePath);

@@ -92,7 +92,7 @@ namespace MediaBrowser.Providers.Movies
                     tmdbId = movieInfo.id.ToString(_usCulture);
 
                     dataFilePath = MovieDbProvider.Current.GetDataFilePath(tmdbId, language);
-                    _fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+                    Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
                     _jsonSerializer.SerializeToFile(movieInfo, dataFilePath);
                 }
             }

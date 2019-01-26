@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             var url = mediaSource.Path;
 
-            FileSystem.CreateDirectory(Path.GetDirectoryName(TempFilePath));
+            Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
             var typeName = GetType().Name;
             Logger.LogInformation("Opening " + typeName + " Live stream from {0}", url);

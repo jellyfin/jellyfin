@@ -76,7 +76,7 @@ namespace Emby.Server.Implementations.Collections
                 return null;
             }
 
-            _fileSystem.CreateDirectory(path);
+            Directory.CreateDirectory(path);
 
             var libraryOptions = new LibraryOptions
             {
@@ -133,7 +133,7 @@ namespace Emby.Server.Implementations.Collections
 
             try
             {
-                _fileSystem.CreateDirectory(path);
+                Directory.CreateDirectory(path);
 
                 var collection = new BoxSet
                 {

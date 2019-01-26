@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
@@ -169,7 +170,7 @@ namespace MediaBrowser.Controller.Entities
                 // Exceptions will be thrown if these paths already exist
                 if (FileSystem.DirectoryExists(newConfigDirectory))
                 {
-                    FileSystem.DeleteDirectory(newConfigDirectory, true);
+                    Directory.Delete(newConfigDirectory, true);
                 }
 
                 if (FileSystem.DirectoryExists(oldConfigurationDirectory))
@@ -178,7 +179,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    FileSystem.CreateDirectory(newConfigDirectory);
+                    Directory.CreateDirectory(newConfigDirectory);
                 }
             }
 

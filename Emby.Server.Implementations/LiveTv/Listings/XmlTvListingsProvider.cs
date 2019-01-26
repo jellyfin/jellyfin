@@ -83,7 +83,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
 
             }).ConfigureAwait(false);
 
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFile));
+            Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
 
             _fileSystem.CopyFile(tempFile, cacheFile, true);
 
@@ -125,7 +125,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
             using (var stream = _fileSystem.OpenRead(file))
             {
                 string tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
-                _fileSystem.CreateDirectory(tempFolder);
+                Directory.CreateDirectory(tempFolder);
 
                 _zipClient.ExtractFirstFileFromGz(stream, tempFolder, "data.xml");
 
@@ -138,7 +138,7 @@ namespace Jellyfin.Server.Implementations.LiveTv.Listings
             using (var stream = _fileSystem.OpenRead(file))
             {
                 string tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
-                _fileSystem.CreateDirectory(tempFolder);
+                Directory.CreateDirectory(tempFolder);
 
                 _zipClient.ExtractAllFromGz(stream, tempFolder, true);
 

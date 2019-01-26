@@ -82,7 +82,7 @@ namespace MediaBrowser.Providers.TV
         {
             var path = TvdbSeriesProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
 
-            _fileSystem.CreateDirectory(path);
+            Directory.CreateDirectory(path);
 
             var timestampFile = Path.Combine(path, "time.txt");
 
@@ -390,7 +390,7 @@ namespace MediaBrowser.Providers.TV
 
             seriesDataPath = Path.Combine(seriesDataPath, id);
 
-            _fileSystem.CreateDirectory(seriesDataPath);
+            Directory.CreateDirectory(seriesDataPath);
 
             return TvdbSeriesProvider.Current.DownloadSeriesZip(id, MetadataProviders.Tvdb.ToString(), null, null, seriesDataPath, lastTvDbUpdateTime, preferredMetadataLanguage, cancellationToken);
         }

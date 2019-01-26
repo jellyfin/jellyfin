@@ -119,7 +119,7 @@ namespace Emby.Server.Implementations.Playlists
 
             try
             {
-                _fileSystem.CreateDirectory(path);
+                Directory.CreateDirectory(path);
 
                 var playlist = new Playlist
                 {

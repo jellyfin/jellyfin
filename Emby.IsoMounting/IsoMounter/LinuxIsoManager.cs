@@ -327,7 +327,7 @@ namespace IsoMounter
 
             try
             {
-                FileSystem.CreateDirectory(mountPoint);
+                Directory.CreateDirectory(mountPoint);
             }
             catch (UnauthorizedAccessException)
             {
@@ -377,7 +377,7 @@ namespace IsoMounter
 
                 try
                 {
-                    FileSystem.DeleteDirectory(mountPoint, false);
+                    Directory.Delete(mountPoint, false);
                 }
                 catch (Exception ex)
                 {
@@ -455,7 +455,7 @@ namespace IsoMounter
 
             try
             {
-                FileSystem.DeleteDirectory(mount.MountedPath, false);
+                Directory.Delete(mount.MountedPath, false);
             }
             catch (Exception ex)
             {

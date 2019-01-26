@@ -141,7 +141,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                         var parentPath = Path.GetDirectoryName(failHistoryPath);
 
-                        _fileSystem.CreateDirectory(parentPath);
+                        Directory.CreateDirectory(parentPath);
 
                         _fileSystem.WriteAllText(failHistoryPath, string.Join("|", previouslyFailedImages.ToArray()));
                     }

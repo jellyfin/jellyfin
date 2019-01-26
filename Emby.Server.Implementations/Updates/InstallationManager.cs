@@ -570,7 +570,7 @@ namespace Emby.Server.Implementations.Updates
             // Success - move it to the real target
             try
             {
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(target));
+                Directory.CreateDirectory(Path.GetDirectoryName(target));
                 _fileSystem.CopyFile(tempFile, target, true);
                 //If it is an archive - write out a version file so we know what it is
                 if (isArchive)

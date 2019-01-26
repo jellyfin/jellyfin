@@ -375,7 +375,7 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
-                    _fileSystem.DeleteDirectory(metadataPath, true);
+                    Directory.Delete(metadataPath, true);
                 }
                 catch (IOException)
                 {
@@ -402,11 +402,11 @@ namespace Emby.Server.Implementations.Library
                             _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
                             if (fileSystemInfo.IsDirectory)
                             {
-                                _fileSystem.DeleteDirectory(fileSystemInfo.FullName, true);
+                                Directory.Delete(fileSystemInfo.FullName, true);
                             }
                             else
                             {
-                                _fileSystem.DeleteFile(fileSystemInfo.FullName);
+                                File.Delete(fileSystemInfo.FullName);
                             }
                         }
                         catch (IOException)
@@ -720,7 +720,7 @@ namespace Emby.Server.Implementations.Library
         {
             var rootFolderPath = ConfigurationManager.ApplicationPaths.RootFolderPath;
 
-            _fileSystem.CreateDirectory(rootFolderPath);
+            Directory.CreateDirectory(rootFolderPath);
 
             var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath))).DeepCopy<Folder, AggregateFolder>();
 
@@ -734,7 +734,7 @@ namespace Emby.Server.Implementations.Library
             // Add in the plug-in folders
             var path = Path.Combine(ConfigurationManager.ApplicationPaths.DataPath, "playlists");
 
-            _fileSystem.CreateDirectory(path);
+            Directory.CreateDirectory(path);
 
             Folder folder = new PlaylistsFolder
             {
@@ -785,7 +785,7 @@ namespace Emby.Server.Implementations.Library
                     {
                         var userRootPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
 
-                        _fileSystem.CreateDirectory(userRootPath);
+                        Directory.CreateDirectory(userRootPath);
 
                         var tmpItem = GetItemById(GetNewItemId(userRootPath, typeof(UserRootFolder))) as UserRootFolder;
 
@@ -999,7 +999,7 @@ namespace Emby.Server.Implementations.Library
         public Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
             // Ensure the location is available.
-            _fileSystem.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
+            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
 
             return new PeopleValidator(this, _logger, ConfigurationManager, _fileSystem).ValidatePeople(cancellationToken, progress);
         }
@@ -2146,7 +2146,7 @@ namespace Emby.Server.Implementations.Library
 
             if (item == null || !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
             {
-                _fileSystem.CreateDirectory(path);
+                Directory.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -2191,7 +2191,7 @@ namespace Emby.Server.Implementations.Library
 
             if (item == null)
             {
-                _fileSystem.CreateDirectory(path);
+                Directory.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -2256,7 +2256,7 @@ namespace Emby.Server.Implementations.Library
 
             if (item == null)
             {
-                _fileSystem.CreateDirectory(path);
+                Directory.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -2324,7 +2324,7 @@ namespace Emby.Server.Implementations.Library
 
             if (item == null)
             {
-                _fileSystem.CreateDirectory(path);
+                Directory.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -2883,7 +2883,7 @@ namespace Emby.Server.Implementations.Library
 
             try
             {
-                _fileSystem.CreateDirectory(virtualFolderPath);
+                Directory.CreateDirectory(virtualFolderPath);
 
                 if (!string.IsNullOrEmpty(collectionType))
                 {
@@ -3082,7 +3082,7 @@ namespace Emby.Server.Implementations.Library
 
             try
             {
-                _fileSystem.DeleteDirectory(path, true);
+                Directory.Delete(path, true);
             }
             finally
             {

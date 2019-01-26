@@ -70,7 +70,7 @@ namespace Emby.Server.Implementations.Localization
 
             var localizationPath = LocalizationPath;
 
-            _fileSystem.CreateDirectory(localizationPath);
+            Directory.CreateDirectory(localizationPath);
 
             var existingFiles = GetRatingsFiles(localizationPath)
                 .Select(Path.GetFileName)

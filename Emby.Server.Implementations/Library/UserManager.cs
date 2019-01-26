@@ -1080,7 +1080,7 @@ namespace Emby.Server.Implementations.Library
 
             var path = GetPolicyFilePath(user);
 
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_policySyncLock)
             {
@@ -1176,7 +1176,7 @@ namespace Emby.Server.Implementations.Library
                 config = _jsonSerializer.DeserializeFromString<UserConfiguration>(json);
             }
 
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_configSyncLock)
             {

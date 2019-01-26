@@ -75,7 +75,7 @@ namespace Emby.Server.Implementations.FFMpeg
                 Version = version
             };
 
-            _fileSystem.CreateDirectory(versionedDirectoryPath);
+            Directory.CreateDirectory(versionedDirectoryPath);
 
             var excludeFromDeletions = new List<string> { versionedDirectoryPath };
 

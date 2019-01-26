@@ -67,7 +67,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 .CreateJob(options, EncodingHelper, IsVideoEncoder, progress, cancellationToken).ConfigureAwait(false);
 
             encodingJob.OutputFilePath = GetOutputFilePath(encodingJob);
-            FileSystem.CreateDirectory(Path.GetDirectoryName(encodingJob.OutputFilePath));
+            Directory.CreateDirectory(Path.GetDirectoryName(encodingJob.OutputFilePath));
 
             encodingJob.ReadInputAtNativeFramerate = options.ReadInputAtNativeFramerate;
 
@@ -105,7 +105,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             Logger.LogInformation(commandLineLogMessage);
 
             var logFilePath = Path.Combine(ConfigurationManager.CommonApplicationPaths.LogDirectoryPath, "transcode-" + Guid.NewGuid() + ".txt");
-            FileSystem.CreateDirectory(Path.GetDirectoryName(logFilePath));
+            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             encodingJob.LogFileStream = FileSystem.GetFileStream(logFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true);

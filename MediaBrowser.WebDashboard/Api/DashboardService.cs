@@ -390,7 +390,7 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 try
                 {
-                    _fileSystem.DeleteDirectory(targetPath, true);
+                    Directory.Delete(targetPath, true);
                 }
                 catch (IOException)
                 {
@@ -435,11 +435,11 @@ namespace MediaBrowser.WebDashboard.Api
 
         private void CopyDirectory(string source, string destination)
         {
-            _fileSystem.CreateDirectory(destination);
+            Directory.CreateDirectory(destination);
 
             //Now Create all of the directories
             foreach (var dirPath in _fileSystem.GetDirectories(source, true))
-                _fileSystem.CreateDirectory(dirPath.FullName.Replace(source, destination));
+                Directory.CreateDirectory(dirPath.FullName.Replace(source, destination));
 
             //Copy all the files & Replaces any files with the same name
             foreach (var newPath in _fileSystem.GetFiles(source, true))
