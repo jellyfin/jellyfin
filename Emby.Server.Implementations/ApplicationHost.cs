@@ -647,8 +647,10 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
-        public Task RunStartupTasks()
+        public async Task RunStartupTasks()
         {
+            Logger.LogInformation("Running startup tasks");
+
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
             ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
@@ -667,20 +669,20 @@ namespace Emby.Server.Implementations
             Logger.LogInformation("ServerId: {0}", SystemId);
 
             var entryPoints = GetExports<IServerEntryPoint>();
-            RunEntryPoints(entryPoints, true);
+
+            var now = DateTime.UtcNow;
+            await Task.WhenAll(StartEntryPoints(entryPoints, true));
+            Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:fff} ms", DateTime.Now - now);
 
             Logger.LogInformation("Core startup complete");
             HttpServer.GlobalResponse = null;
 
-            Logger.LogInformation("Post-init migrations complete");
-
-            RunEntryPoints(entryPoints, false);
-            Logger.LogInformation("All entry points have started");
-
-            return Task.CompletedTask;
+            now = DateTime.UtcNow;
+            await Task.WhenAll(StartEntryPoints(entryPoints, false));
+            Logger.LogInformation("Executed all post-startup entry points in {Elapsed:fff} ms", DateTime.Now - now);
         }
 
-        private void RunEntryPoints(IEnumerable<IServerEntryPoint> entryPoints, bool isBeforeStartup)
+        private IEnumerable<Task> StartEntryPoints(IEnumerable<IServerEntryPoint> entryPoints, bool isBeforeStartup)
         {
             foreach (var entryPoint in entryPoints)
             {
@@ -689,18 +691,9 @@ namespace Emby.Server.Implementations
                     continue;
                 }
 
-                var name = entryPoint.GetType().FullName;
-                Logger.LogInformation("Starting entry point {Name}", name);
-                var now = DateTime.UtcNow;
-                try
-                {
-                    entryPoint.Run();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error while running entrypoint {Name}", name);
-                }
-                Logger.LogInformation("Entry point completed: {Name}. Duration: {Duration} seconds", name, (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture), "ImageInfos");
+                Logger.LogDebug("Starting entry point {Type}", entryPoint.GetType());
+
+                yield return entryPoint.RunAsync();
             }
         }
 

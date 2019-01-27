@@ -125,9 +125,9 @@ namespace Emby.Dlna.Main
             Current = this;
         }
 
-        public void Run()
+        public async Task RunAsync()
         {
-            ((DlnaManager)_dlnaManager).InitProfiles();
+            await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
 
             ReloadComponents();
 

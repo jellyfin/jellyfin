@@ -130,7 +130,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Runs this instance.
         /// </summary>
-        public void Run()
+        public Task RunAsync()
         {
             try
             {
@@ -148,6 +148,8 @@ namespace MediaBrowser.Api
             {
                 Logger.LogError(ex, "Error deleting encoded media cache");
             }
+
+            return Task.CompletedTask;
         }
 
         public EncodingOptions GetEncodingOptions()
@@ -162,8 +164,7 @@ namespace MediaBrowser.Api
         {
             var path = _config.ApplicationPaths.TranscodingTempPath;
 
-            foreach (var file in _fileSystem.GetFilePaths(path, true)
-                .ToList())
+            foreach (var file in _fileSystem.GetFilePaths(path, true))
             {
                 _fileSystem.DeleteFile(file);
             }

@@ -425,7 +425,7 @@ namespace Emby.Server.Implementations.Devices
             _logger = logger;
         }
 
-        public async void Run()
+        public async Task RunAsync()
         {
             if (!_config.Configuration.CameraUploadUpgraded && _config.Configuration.IsStartupWizardCompleted)
             {

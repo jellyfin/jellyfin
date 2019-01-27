@@ -124,7 +124,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        public async void Start()
+        public async Task Start()
         {
             _timerProvider.RestartTimers();
 

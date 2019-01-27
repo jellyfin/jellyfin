@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Emby.Server.Implementations.Browser;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -32,11 +33,11 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// Runs this instance.
         /// </summary>
-        public void Run()
+        public Task RunAsync()
         {
             if (!_appHost.CanLaunchWebBrowser)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             if (!_config.Configuration.IsStartupWizardCompleted)
@@ -52,6 +53,8 @@ namespace Emby.Server.Implementations.EntryPoints
                     BrowserLauncher.OpenWebApp(_appHost);
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>

@@ -103,8 +103,6 @@ namespace Jellyfin.Server
 
                 appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
 
-                _logger.LogInformation("Running startup tasks");
-
                 await appHost.RunStartupTasks();
 
                 // TODO: read input for a stop command
@@ -118,8 +116,6 @@ namespace Jellyfin.Server
                 {
                     // Don't throw on cancellation
                 }
-
-                _logger.LogInformation("Disposing app host");
             }
 
             if (_restartOnShutdown)

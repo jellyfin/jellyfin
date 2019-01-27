@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -65,7 +66,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _providerManager = providerManager;
         }
 
-        public void Run()
+        public Task RunAsync()
         {
             _libraryManager.ItemAdded += libraryManager_ItemAdded;
             _libraryManager.ItemUpdated += libraryManager_ItemUpdated;
@@ -74,6 +75,8 @@ namespace Emby.Server.Implementations.EntryPoints
             _providerManager.RefreshCompleted += _providerManager_RefreshCompleted;
             _providerManager.RefreshStarted += _providerManager_RefreshStarted;
             _providerManager.RefreshProgress += _providerManager_RefreshProgress;
+
+            return Task.CompletedTask;
         }
 
         private Dictionary<Guid, DateTime> _lastProgressMessageTimes = new Dictionary<Guid, DateTime>();
