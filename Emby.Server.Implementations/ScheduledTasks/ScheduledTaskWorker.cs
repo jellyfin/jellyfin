@@ -129,21 +129,16 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 {
                     if (_lastExecutionResult == null && !_readFromFile)
                     {
-                        try
+                        if (File.Exists(path))
                         {
-                            _lastExecutionResult = JsonSerializer.DeserializeFromFile<TaskResult>(path);
-                        }
-                        catch (DirectoryNotFoundException)
-                        {
-                            // File doesn't exist. No biggie
-                        }
-                        catch (FileNotFoundException)
-                        {
-                            // File doesn't exist. No biggie
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.LogError(ex, "Error deserializing {path}", path);
+                            try
+                            {
+                                _lastExecutionResult = JsonSerializer.DeserializeFromFile<TaskResult>(path);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.LogError(ex, "Error deserializing {File}", path);
+                            }
                         }
                         _readFromFile = true;
                     }
@@ -532,28 +527,16 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
         private TaskTriggerInfo[] LoadTriggerSettings()
         {
-            try
-            {
-                var list = JsonSerializer.DeserializeFromFile<IEnumerable<TaskTriggerInfo>>(GetConfigurationFilePath());
-
-                if (list != null)
-                {
-                    return list.ToArray();
-                }
-            }
-            catch (FileNotFoundException)
+            string path = GetConfigurationFilePath();
+            if (!File.Exists(path))
             {
                 // File doesn't exist. No biggie. Return defaults.
+                GetDefaultTriggers();
             }
-            catch (DirectoryNotFoundException)
-            {
-                // File doesn't exist. No biggie. Return defaults.
-            }
-            catch
-            {
 
-            }
-            return GetDefaultTriggers();
+            var list = JsonSerializer.DeserializeFromFile<TaskTriggerInfo[]>(path);
+
+            return list ?? GetDefaultTriggers();
         }
 
         private TaskTriggerInfo[] GetDefaultTriggers()
