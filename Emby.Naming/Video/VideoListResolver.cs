@@ -184,6 +184,7 @@ namespace Emby.Naming.Video
                 return ordered.GroupBy(v => new {v.Name, v.Year}).Select(group => new VideoInfo
                 {
                     Name = folderName,
+                    Year = group.First().Year,
                     Files = group.First().Files,
                     AlternateVersions = group.Skip(1).Select(i => i.Files[0]).ToList(),
                     Extras = group.First().Extras.Concat(group.Skip(1).SelectMany(i => i.Extras)).ToList()
