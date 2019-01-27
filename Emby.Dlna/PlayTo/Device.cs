@@ -902,54 +902,75 @@ namespace Emby.Dlna.PlayTo
 
             var name = document.Descendants(uPnpNamespaces.ud.GetName("friendlyName")).FirstOrDefault();
             if (name != null && !string.IsNullOrWhiteSpace(name.Value))
+            {
                 friendlyNames.Add(name.Value);
+            }
 
             var room = document.Descendants(uPnpNamespaces.ud.GetName("roomName")).FirstOrDefault();
             if (room != null && !string.IsNullOrWhiteSpace(room.Value))
+            {
                 friendlyNames.Add(room.Value);
+            }
 
-            deviceProperties.Name = string.Join(" ", friendlyNames.ToArray());
+            deviceProperties.Name = string.Join(" ", friendlyNames);
 
             var model = document.Descendants(uPnpNamespaces.ud.GetName("modelName")).FirstOrDefault();
             if (model != null)
+            {
                 deviceProperties.ModelName = model.Value;
+            }
 
             var modelNumber = document.Descendants(uPnpNamespaces.ud.GetName("modelNumber")).FirstOrDefault();
             if (modelNumber != null)
+            {
                 deviceProperties.ModelNumber = modelNumber.Value;
+            }
 
             var uuid = document.Descendants(uPnpNamespaces.ud.GetName("UDN")).FirstOrDefault();
             if (uuid != null)
+            {
                 deviceProperties.UUID = uuid.Value;
+            }
 
             var manufacturer = document.Descendants(uPnpNamespaces.ud.GetName("manufacturer")).FirstOrDefault();
             if (manufacturer != null)
+            {
                 deviceProperties.Manufacturer = manufacturer.Value;
+            }
 
             var manufacturerUrl = document.Descendants(uPnpNamespaces.ud.GetName("manufacturerURL")).FirstOrDefault();
             if (manufacturerUrl != null)
+            {
                 deviceProperties.ManufacturerUrl = manufacturerUrl.Value;
+            }
 
             var presentationUrl = document.Descendants(uPnpNamespaces.ud.GetName("presentationURL")).FirstOrDefault();
             if (presentationUrl != null)
+            {
                 deviceProperties.PresentationUrl = presentationUrl.Value;
+            }
 
             var modelUrl = document.Descendants(uPnpNamespaces.ud.GetName("modelURL")).FirstOrDefault();
             if (modelUrl != null)
+            {
                 deviceProperties.ModelUrl = modelUrl.Value;
+            }
 
             var serialNumber = document.Descendants(uPnpNamespaces.ud.GetName("serialNumber")).FirstOrDefault();
             if (serialNumber != null)
+            {
                 deviceProperties.SerialNumber = serialNumber.Value;
+            }
 
             var modelDescription = document.Descendants(uPnpNamespaces.ud.GetName("modelDescription")).FirstOrDefault();
             if (modelDescription != null)
+            {
                 deviceProperties.ModelDescription = modelDescription.Value;
+            }
 
             deviceProperties.BaseUrl = string.Format("http://{0}:{1}", url.Host, url.Port);
 
             var icon = document.Descendants(uPnpNamespaces.ud.GetName("icon")).FirstOrDefault();
-
             if (icon != null)
             {
                 deviceProperties.Icon = CreateIcon(icon);
@@ -958,12 +979,16 @@ namespace Emby.Dlna.PlayTo
             foreach (var services in document.Descendants(uPnpNamespaces.ud.GetName("serviceList")))
             {
                 if (services == null)
+                {
                     continue;
+                }
 
                 var servicesList = services.Descendants(uPnpNamespaces.ud.GetName("service"));
 
                 if (servicesList == null)
+                {
                     continue;
+                }
 
                 foreach (var element in servicesList)
                 {
@@ -1065,13 +1090,10 @@ namespace Emby.Dlna.PlayTo
 
         private void OnPlaybackStart(uBaseObject mediaInfo)
         {
-            if (PlaybackStart != null)
+            PlaybackStart?.Invoke(this, new PlaybackStartEventArgs
             {
-                PlaybackStart.Invoke(this, new PlaybackStartEventArgs
-                {
-                    MediaInfo = mediaInfo
-                });
-            }
+                MediaInfo = mediaInfo
+            });
         }
 
         private void OnPlaybackProgress(uBaseObject mediaInfo)
@@ -1082,36 +1104,28 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            if (PlaybackProgress != null)
+            PlaybackProgress?.Invoke(this, new PlaybackProgressEventArgs
             {
-                PlaybackProgress.Invoke(this, new PlaybackProgressEventArgs
-                {
-                    MediaInfo = mediaInfo
-                });
-            }
+                MediaInfo = mediaInfo
+            });
         }
 
         private void OnPlaybackStop(uBaseObject mediaInfo)
         {
-            if (PlaybackStopped != null)
+
+            PlaybackStopped?.Invoke(this, new PlaybackStoppedEventArgs
             {
-                PlaybackStopped.Invoke(this, new PlaybackStoppedEventArgs
-                {
-                    MediaInfo = mediaInfo
-                });
-            }
+                MediaInfo = mediaInfo
+            });
         }
 
         private void OnMediaChanged(uBaseObject old, uBaseObject newMedia)
         {
-            if (MediaChanged != null)
+            MediaChanged?.Invoke(this, new MediaChangedEventArgs
             {
-                MediaChanged.Invoke(this, new MediaChangedEventArgs
-                {
-                    OldMediaInfo = old,
-                    NewMediaInfo = newMedia
-                });
-            }
+                OldMediaInfo = old,
+                NewMediaInfo = newMedia
+            });
         }
 
         #region IDisposable

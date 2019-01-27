@@ -148,7 +148,7 @@ namespace MediaBrowser.Providers.Manager
                             }
                             else
                             {
-                                var mimeType = "image/" + response.Format.ToString().ToLower();
+                                var mimeType = "image/" + response.Format.ToString().ToLowerInvariant();
 
                                 await _providerManager.SaveImage(item, response.Stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
                             }

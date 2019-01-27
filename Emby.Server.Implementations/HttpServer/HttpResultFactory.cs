@@ -394,7 +394,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             return contentType == null
                        ? null
-                       : contentType.Split(';')[0].ToLower().Trim();
+                       : contentType.Split(';')[0].ToLowerInvariant().Trim();
         }
 
         private static string SerializeToXmlString(object from)

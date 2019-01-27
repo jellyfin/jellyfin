@@ -145,7 +145,7 @@ namespace MediaBrowser.Api.Images
                         Theme = supportsThemes ? GetThemeName(i.FullName, path) : null,
                         Context = supportsThemes ? null : GetThemeName(i.FullName, path),
 
-                        Format = i.Extension.ToLower().TrimStart('.')
+                        Format = i.Extension.ToLowerInvariant().TrimStart('.')
                     })
                     .OrderBy(i => i.Name)
                     .ToList();

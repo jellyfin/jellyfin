@@ -168,14 +168,14 @@ namespace MediaBrowser.Providers.Subtitles
                         memoryStream.Position = 0;
 
                         var savePaths = new List<string>();
-                        var saveFileName = _fileSystem.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLower();
+                        var saveFileName = _fileSystem.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();
 
                         if (response.IsForced)
                         {
                             saveFileName += ".forced";
                         }
 
-                        saveFileName += "." + response.Format.ToLower();
+                        saveFileName += "." + response.Format.ToLowerInvariant();
 
                         if (saveInMediaFolder)
                         {
@@ -305,7 +305,7 @@ namespace MediaBrowser.Providers.Subtitles
 
         private string GetProviderId(string name)
         {
-            return name.ToLower().GetMD5().ToString("N");
+            return name.ToLowerInvariant().GetMD5().ToString("N");
         }
 
         private ISubtitleProvider GetProvider(string id)

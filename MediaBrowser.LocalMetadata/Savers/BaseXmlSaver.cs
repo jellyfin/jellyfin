@@ -172,7 +172,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             writer.WriteElementString("Added", item.DateCreated.ToLocalTime().ToString("G"));
 
-            writer.WriteElementString("LockData", item.IsLocked.ToString().ToLower());
+            writer.WriteElementString("LockData", item.IsLocked.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
 
             if (item.LockedFields.Length > 0)
             {
@@ -410,7 +410,9 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteStartElement("Share");
 
                 writer.WriteElementString("UserId", share.UserId);
-                writer.WriteElementString("CanEdit", share.CanEdit.ToString().ToLower());
+                writer.WriteElementString(
+                    "CanEdit",
+                    share.CanEdit.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
 
                 writer.WriteEndElement();
             }

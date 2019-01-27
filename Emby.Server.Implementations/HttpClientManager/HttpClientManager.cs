@@ -264,7 +264,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             }
 
             var url = options.Url;
-            var urlHash = url.ToLower().GetMD5().ToString("N");
+            var urlHash = url.ToLowerInvariant().GetMD5().ToString("N");
 
             var responseCachePath = Path.Combine(_appPaths.CachePath, "httpclient", urlHash);
 
@@ -384,11 +384,11 @@ namespace Emby.Server.Implementations.HttpClientManager
             {
                 if (options.LogRequestAsDebug)
                 {
-                    _logger.LogDebug("HttpClientManager {0}: {1}", httpMethod.ToUpper(), options.Url);
+                    _logger.LogDebug("HttpClientManager {0}: {1}", httpMethod.ToUpper(CultureInfo.CurrentCulture), options.Url);
                 }
                 else
                 {
-                    _logger.LogInformation("HttpClientManager {0}: {1}", httpMethod.ToUpper(), options.Url);
+                    _logger.LogInformation("HttpClientManager {0}: {1}", httpMethod.ToUpper(CultureInfo.CurrentCulture), options.Url);
                 }
             }
 

@@ -272,7 +272,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var outputFileExtension = GetOutputFileExtension(state);
 
-            var filename = state.Id + (outputFileExtension ?? string.Empty).ToLower();
+            var filename = state.Id + (outputFileExtension ?? string.Empty).ToLowerInvariant();
             return Path.Combine(folder, filename);
         }
 
@@ -310,7 +310,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (string.Equals(GetEncodingOptions().HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
                 {
-                    switch (state.MediaSource.VideoStream.Codec.ToLower())
+                    switch (state.MediaSource.VideoStream.Codec.ToLowerInvariant())
                     {
                         case "avc":
                         case "h264":

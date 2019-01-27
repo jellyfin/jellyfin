@@ -135,10 +135,10 @@ namespace MediaBrowser.Api.Playback
 
             if (EnableOutputInSubFolder)
             {
-                return Path.Combine(folder, dataHash, dataHash + (outputFileExtension ?? string.Empty).ToLower());
+                return Path.Combine(folder, dataHash, dataHash + (outputFileExtension ?? string.Empty).ToLowerInvariant());
             }
 
-            return Path.Combine(folder, dataHash + (outputFileExtension ?? string.Empty).ToLower());
+            return Path.Combine(folder, dataHash + (outputFileExtension ?? string.Empty).ToLowerInvariant());
         }
 
         protected virtual bool EnableOutputInSubFolder => false;

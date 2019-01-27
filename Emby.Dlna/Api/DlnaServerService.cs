@@ -236,7 +236,9 @@ namespace Emby.Dlna.Api
 
         public object Get(GetIcon request)
         {
-            var contentType = "image/" + Path.GetExtension(request.Filename).TrimStart('.').ToLower();
+            var contentType = "image/" + Path.GetExtension(request.Filename)
+                                            .TrimStart('.')
+                                            .ToLowerInvariant();
 
             var cacheLength = TimeSpan.FromDays(365);
             var cacheKey = Request.RawUrl.GetMD5();

@@ -300,7 +300,7 @@ namespace Emby.Dlna
 
                     profile = ReserializeProfile(tempProfile);
 
-                    profile.Id = path.ToLower().GetMD5().ToString("N");
+                    profile.Id = path.ToLowerInvariant().GetMD5().ToString("N");
 
                     _profiles[path] = new Tuple<InternalProfileInfo, DeviceProfile>(GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
 
@@ -352,7 +352,7 @@ namespace Emby.Dlna
 
                 Info = new DeviceProfileInfo
                 {
-                    Id = file.FullName.ToLower().GetMD5().ToString("N"),
+                    Id = file.FullName.ToLowerInvariant().GetMD5().ToString("N"),
                     Name = _fileSystem.GetFileNameWithoutExtension(file),
                     Type = type
                 }
@@ -506,7 +506,7 @@ namespace Emby.Dlna
                 ? ImageFormat.Png
                 : ImageFormat.Jpg;
 
-            var resource = GetType().Namespace + ".Images." + filename.ToLower();
+            var resource = GetType().Namespace + ".Images." + filename.ToLowerInvariant();
 
             return new ImageStream
             {

@@ -517,7 +517,7 @@ namespace Emby.Server.Implementations.Library
 
             if (forceCaseInsensitive || !ConfigurationManager.Configuration.EnableCaseSensitiveItemIds)
             {
-                key = key.ToLower();
+                key = key.ToLowerInvariant();
             }
 
             key = type.FullName + key;

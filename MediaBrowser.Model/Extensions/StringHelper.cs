@@ -51,7 +51,7 @@ namespace MediaBrowser.Model.Extensions
 
         public static string FirstToUpper(this string str)
         {
-            return string.IsNullOrEmpty(str) ? "" : str.Substring(0, 1).ToUpper() + str.Substring(1);
+            return string.IsNullOrEmpty(str) ? string.Empty : str.Substring(0, 1).ToUpperInvariant() + str.Substring(1);
         }
     }
 }

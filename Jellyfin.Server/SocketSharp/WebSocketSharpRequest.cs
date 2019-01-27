@@ -29,12 +29,24 @@ namespace Jellyfin.SocketSharp
 
         private static string GetHandlerPathIfAny(string listenerUrl)
         {
-            if (listenerUrl == null) return null;
+            if (listenerUrl == null)
+            {
+                return null;
+            }
+
             var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
-            if (pos == -1) return null;
+            if (pos == -1)
+            {
+                return null;
+            }
+
             var startHostUrl = listenerUrl.Substring(pos + "://".Length);
             var endPos = startHostUrl.IndexOf('/');
-            if (endPos == -1) return null;
+            if (endPos == -1)
+            {
+                return null;
+            }
+
             var endHostUrl = startHostUrl.Substring(endPos + 1);
             return string.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
         }
@@ -210,9 +222,13 @@ namespace Jellyfin.SocketSharp
                 if (acceptsAnything)
                 {
                     if (hasDefaultContentType)
+                    {
                         return defaultContentType;
-                    if (serverDefaultContentType != null)
+                    }
+                    else if (serverDefaultContentType != null)
+                    {
                         return serverDefaultContentType;
+                    }
                 }
             }
 
@@ -229,11 +245,16 @@ namespace Jellyfin.SocketSharp
 
         public static bool HasAnyOfContentTypes(IRequest request, params string[] contentTypes)
         {
-            if (contentTypes == null || request.ContentType == null) return false;
+            if (contentTypes == null || request.ContentType == null)
+            {
+                return false;
+            }
+
             foreach (var contentType in contentTypes)
             {
                 if (IsContentType(request, contentType)) return true;
             }
+
             return false;
         }
 
@@ -264,12 +285,12 @@ namespace Jellyfin.SocketSharp
                 }
             }
 
-            format = LeftPart(format, '.').ToLower();
+            format = LeftPart(format, '.').ToLowerInvariant();
             if (format.Contains("json", StringComparison.OrdinalIgnoreCase))
             {
                 return "application/json";
             }
-            if (format.Contains("xml", StringComparison.OrdinalIgnoreCase))
+            else if (format.Contains("xml", StringComparison.OrdinalIgnoreCase))
             {
                 return "application/xml";
             }
@@ -283,10 +304,9 @@ namespace Jellyfin.SocketSharp
             {
                 return null;
             }
+
             var pos = strVal.IndexOf(needle);
-            return pos == -1
-                ? strVal
-                : strVal.Substring(0, pos);
+            return pos == -1 ? strVal : strVal.Substring(0, pos);
         }
 
         public static string HandlerFactoryPath;
@@ -433,6 +453,7 @@ namespace Jellyfin.SocketSharp
             {
                 return null;
             }
+
             try
             {
                 return Encoding.GetEncoding(param);

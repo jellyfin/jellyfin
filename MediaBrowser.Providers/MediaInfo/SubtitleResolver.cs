@@ -119,7 +119,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     continue;
                 }
 
-                var codec = Path.GetExtension(fullName).ToLower().TrimStart('.');
+                var codec = Path.GetExtension(fullName).ToLowerInvariant().TrimStart('.');
 
                 if (string.Equals(codec, "txt", StringComparison.OrdinalIgnoreCase))
                 {

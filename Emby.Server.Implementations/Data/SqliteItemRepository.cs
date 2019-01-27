@@ -3905,7 +3905,7 @@ namespace Emby.Server.Implementations.Data
                 // lowercase this because SortName is stored as lowercase
                 if (statement != null)
                 {
-                    statement.TryBind("@NameStartsWithOrGreater", query.NameStartsWithOrGreater.ToLower());
+                    statement.TryBind("@NameStartsWithOrGreater", query.NameStartsWithOrGreater.ToLowerInvariant());
                 }
             }
             if (!string.IsNullOrWhiteSpace(query.NameLessThan))
@@ -3914,7 +3914,7 @@ namespace Emby.Server.Implementations.Data
                 // lowercase this because SortName is stored as lowercase
                 if (statement != null)
                 {
-                    statement.TryBind("@NameLessThan", query.NameLessThan.ToLower());
+                    statement.TryBind("@NameLessThan", query.NameLessThan.ToLowerInvariant());
                 }
             }
 
@@ -4822,7 +4822,7 @@ namespace Emby.Server.Implementations.Data
                 return value;
             }
 
-            return value.RemoveDiacritics().ToLower();
+            return value.RemoveDiacritics().ToLowerInvariant();
         }
 
         private bool EnableGroupByPresentationUniqueKey(InternalItemsQuery query)

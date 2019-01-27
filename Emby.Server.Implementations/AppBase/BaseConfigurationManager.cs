@@ -218,7 +218,7 @@ namespace Emby.Server.Implementations.AppBase
 
         private string GetConfigurationFile(string key)
         {
-            return Path.Combine(CommonApplicationPaths.ConfigurationDirectoryPath, key.ToLower() + ".xml");
+            return Path.Combine(CommonApplicationPaths.ConfigurationDirectoryPath, key.ToLowerInvariant() + ".xml");
         }
 
         public object GetConfiguration(string key)

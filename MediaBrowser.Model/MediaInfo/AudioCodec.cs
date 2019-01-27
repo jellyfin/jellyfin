@@ -8,9 +8,12 @@ namespace MediaBrowser.Model.MediaInfo
 
         public static string GetFriendlyName(string codec)
         {
-            if (string.IsNullOrEmpty(codec)) return "";
+            if (string.IsNullOrEmpty(codec))
+            {
+                return string.Empty;
+            }
 
-            switch (codec.ToLower())
+            switch (codec.ToLowerInvariant())
             {
                 case "ac3":
                     return "Dolby Digital";
@@ -19,7 +22,7 @@ namespace MediaBrowser.Model.MediaInfo
                 case "dca":
                     return "DTS";
                 default:
-                    return codec.ToUpper();
+                    return codec.ToUpperInvariant();
             }
         }
     }

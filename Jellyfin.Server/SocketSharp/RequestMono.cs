@@ -360,13 +360,13 @@ namespace Jellyfin.SocketSharp
                     int len = buffer.Length;
                     if (dest_offset > len)
                     {
-                        throw new ArgumentException("destination offset is beyond array size");
+                        throw new ArgumentException("destination offset is beyond array size", nameof(dest_offset));
                     }
 
                     // reordered to avoid possible integer overflow
                     if (dest_offset > len - count)
                     {
-                        throw new ArgumentException("Reading would overrun buffer");
+                        throw new ArgumentException("Reading would overrun buffer", nameof(count));
                     }
 
                     if (count > end - position)
@@ -528,7 +528,7 @@ namespace Jellyfin.SocketSharp
             }
         }
 
-        class HttpMultipart
+        private class HttpMultipart
         {
 
             public class Element
@@ -543,19 +543,19 @@ namespace Jellyfin.SocketSharp
                 public override string ToString()
                 {
                     return "ContentType " + ContentType + ", Name " + Name + ", Filename " + Filename + ", Start " +
-                        Start.ToString() + ", Length " + Length.ToString();
+                        Start.ToString(CultureInfo.CurrentCulture) + ", Length " + Length.ToString(CultureInfo.CurrentCulture);
                 }
             }
 
-            Stream data;
-            string boundary;
-            byte[] boundary_bytes;
-            byte[] buffer;
-            bool at_eof;
-            Encoding encoding;
-            StringBuilder sb;
+            private Stream data;
+            private string boundary;
+            private byte[] boundary_bytes;
+            private byte[] buffer;
+            private bool at_eof;
+            private Encoding encoding;
+            private StringBuilder sb;
 
-            const byte LF = (byte)'\n', CR = (byte)'\r';
+            private const byte LF = (byte)'\n', CR = (byte)'\r';
 
             // See RFC 2046
             // In the case of multipart entities, in which one or more different
@@ -610,7 +610,6 @@ namespace Jellyfin.SocketSharp
                 }
 
                 return sb.ToString();
-
             }
 
             private static string GetContentDispositionAttribute(string l, string name)

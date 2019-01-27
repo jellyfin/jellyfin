@@ -399,7 +399,7 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var name = serviceName + externalId + InternalVersionNumber;
 
-            return _libraryManager.GetNewItemId(name.ToLower(), typeof(LiveTvChannel));
+            return _libraryManager.GetNewItemId(name.ToLowerInvariant(), typeof(LiveTvChannel));
         }
 
         private const string ServiceName = "Emby";
@@ -407,21 +407,21 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var name = ServiceName + externalId + InternalVersionNumber;
 
-            return name.ToLower().GetMD5().ToString("N");
+            return name.ToLowerInvariant().GetMD5().ToString("N");
         }
 
         public Guid GetInternalSeriesTimerId(string externalId)
         {
             var name = ServiceName + externalId + InternalVersionNumber;
 
-            return name.ToLower().GetMD5();
+            return name.ToLowerInvariant().GetMD5();
         }
 
         public Guid GetInternalProgramId(string externalId)
         {
             var name = ServiceName + externalId + InternalVersionNumber;
 
-            return _libraryManager.GetNewItemId(name.ToLower(), typeof(LiveTvProgram));
+            return _libraryManager.GetNewItemId(name.ToLowerInvariant(), typeof(LiveTvProgram));
         }
 
         public async Task<TimerInfo> GetTimerInfo(TimerInfoDto dto, bool isNew, LiveTvManager liveTv, CancellationToken cancellationToken)
