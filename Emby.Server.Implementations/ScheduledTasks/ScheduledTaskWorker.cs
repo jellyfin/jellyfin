@@ -528,14 +528,13 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private TaskTriggerInfo[] LoadTriggerSettings()
         {
             string path = GetConfigurationFilePath();
-            if (!File.Exists(path))
+            TaskTriggerInfo[] list = null;
+            if (File.Exists(path))
             {
-                // File doesn't exist. No biggie. Return defaults.
-                GetDefaultTriggers();
+                list = JsonSerializer.DeserializeFromFile<TaskTriggerInfo[]>(path);
             }
 
-            var list = JsonSerializer.DeserializeFromFile<TaskTriggerInfo[]>(path);
-
+            // Return defaults if file doesn't exist.
             return list ?? GetDefaultTriggers();
         }
 
