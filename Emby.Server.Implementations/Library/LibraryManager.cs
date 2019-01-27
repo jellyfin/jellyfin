@@ -395,38 +395,33 @@ namespace Emby.Server.Implementations.Library
 
                 foreach (var fileSystemInfo in item.GetDeletePaths().ToList())
                 {
-                    try
+                    if (File.Exists(fileSystemInfo.FullName))
                     {
-                        _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
-                        if (fileSystemInfo.IsDirectory)
+                        try
                         {
-                            _fileSystem.DeleteDirectory(fileSystemInfo.FullName, true);
+                            _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
+                            if (fileSystemInfo.IsDirectory)
+                            {
+                                _fileSystem.DeleteDirectory(fileSystemInfo.FullName, true);
+                            }
+                            else
+                            {
+                                _fileSystem.DeleteFile(fileSystemInfo.FullName);
+                            }
                         }
-                        else
+                        catch (IOException)
                         {
-                            _fileSystem.DeleteFile(fileSystemInfo.FullName);
+                            if (isRequiredForDelete)
+                            {
+                                throw;
+                            }
                         }
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        // may have already been deleted manually by user
-                    }
-                    catch (DirectoryNotFoundException)
-                    {
-                        // may have already been deleted manually by user
-                    }
-                    catch (IOException)
-                    {
-                        if (isRequiredForDelete)
+                        catch (UnauthorizedAccessException)
                         {
-                            throw;
-                        }
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        if (isRequiredForDelete)
-                        {
-                            throw;
+                            if (isRequiredForDelete)
+                            {
+                                throw;
+                            }
                         }
                     }
 

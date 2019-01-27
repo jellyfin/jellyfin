@@ -1029,16 +1029,17 @@ namespace Emby.Server.Implementations.Library
         {
             var path = GetPolicyFilePath(user);
 
+            if (!File.Exists(path))
+            {
+                return GetDefaultPolicy(user);
+            }
+
             try
             {
                 lock (_policySyncLock)
                 {
                     return (UserPolicy)_xmlSerializer.DeserializeFromFile(typeof(UserPolicy), path);
                 }
-            }
-            catch (FileNotFoundException)
-            {
-                return GetDefaultPolicy(user);
             }
             catch (IOException)
             {
@@ -1128,16 +1129,17 @@ namespace Emby.Server.Implementations.Library
         {
             var path = GetConfigurationFilePath(user);
 
+            if (!File.Exists(path))
+            {
+                return new UserConfiguration();
+            }
+
             try
             {
                 lock (_configSyncLock)
                 {
                     return (UserConfiguration)_xmlSerializer.DeserializeFromFile(typeof(UserConfiguration), path);
                 }
-            }
-            catch (FileNotFoundException)
-            {
-                return new UserConfiguration();
             }
             catch (IOException)
             {

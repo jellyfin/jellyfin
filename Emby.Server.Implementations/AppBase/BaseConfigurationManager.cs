@@ -246,13 +246,14 @@ namespace Emby.Server.Implementations.AppBase
 
         private object LoadConfiguration(string path, Type configurationType)
         {
+            if (!File.Exists(path))
+            {
+                return Activator.CreateInstance(configurationType);
+            }
+
             try
             {
                 return XmlSerializer.DeserializeFromFile(configurationType, path);
-            }
-            catch (FileNotFoundException)
-            {
-                return Activator.CreateInstance(configurationType);
             }
             catch (IOException)
             {

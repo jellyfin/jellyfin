@@ -286,28 +286,18 @@ namespace Emby.Server.Implementations.HttpClientManager
 
         private HttpResponseInfo GetCachedResponse(string responseCachePath, TimeSpan cacheLength, string url)
         {
-            try
+            if (File.Exists(responseCachePath)
+                && _fileSystem.GetLastWriteTimeUtc(responseCachePath).Add(cacheLength) > DateTime.UtcNow)
             {
-                if (_fileSystem.GetLastWriteTimeUtc(responseCachePath).Add(cacheLength) > DateTime.UtcNow)
+                var stream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true);
+
+                return new HttpResponseInfo
                 {
-                    var stream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true);
-
-                    return new HttpResponseInfo
-                    {
-                        ResponseUrl = url,
-                        Content = stream,
-                        StatusCode = HttpStatusCode.OK,
-                        ContentLength = stream.Length
-                    };
-                }
-            }
-            catch (FileNotFoundException) // REVIEW: @bond Is this really faster?
-            {
-
-            }
-            catch (DirectoryNotFoundException)
-            {
-
+                    ResponseUrl = url,
+                    Content = stream,
+                    StatusCode = HttpStatusCode.OK,
+                    ContentLength = stream.Length
+                };
             }
 
             return null;
