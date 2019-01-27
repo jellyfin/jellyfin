@@ -179,7 +179,7 @@ namespace Emby.Naming.Video
 
             if (!string.IsNullOrEmpty(folderName) && folderName.Length > 1)
             {
-                var ordered = videos.OrderBy(i => i.Name).ToList();
+                var ordered = videos.OrderBy(i => i.Name);
 
                 return ordered.GroupBy(v => new {v.Name, v.Year}).Select(group => new VideoInfo
                 {
