@@ -89,7 +89,7 @@ namespace MediaBrowser.Common
         /// <typeparam name="T"></typeparam>
         /// <param name="manageLiftime">if set to <c>true</c> [manage liftime].</param>
         /// <returns>IEnumerable{``0}.</returns>
-        IEnumerable<T> GetExports<T>(bool manageLiftime = true);
+        IEnumerable<T> GetExports<T>(bool manageLifetime = true);
 
         /// <summary>
         /// Updates the application.
@@ -131,7 +131,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Inits this instance.
         /// </summary>
-        void Init();
+        Task Init();
 
         /// <summary>
         /// Creates the instance.

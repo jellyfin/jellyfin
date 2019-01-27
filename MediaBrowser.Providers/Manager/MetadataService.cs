@@ -566,8 +566,7 @@ namespace MediaBrowser.Providers.Manager
                 var providersWithChanges = providers
                     .Where(i =>
                     {
-                        var hasFileChangeMonitor = i as IHasItemChangeMonitor;
-                        if (hasFileChangeMonitor != null)
+                        if (i is IHasItemChangeMonitor hasFileChangeMonitor)
                         {
                             return HasChanged(item, hasFileChangeMonitor, options.DirectoryService);
                         }

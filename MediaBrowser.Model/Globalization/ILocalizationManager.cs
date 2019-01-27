@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Globalization
@@ -17,12 +19,12 @@ namespace MediaBrowser.Model.Globalization
         /// Gets the countries.
         /// </summary>
         /// <returns>IEnumerable{CountryInfo}.</returns>
-        CountryInfo[] GetCountries();
+        Task<CountryInfo[]> GetCountries();
         /// <summary>
         /// Gets the parental ratings.
         /// </summary>
         /// <returns>IEnumerable{ParentalRating}.</returns>
-        ParentalRating[] GetParentalRatings();
+        IEnumerable<ParentalRating> GetParentalRatings();
         /// <summary>
         /// Gets the rating level.
         /// </summary>
@@ -50,8 +52,6 @@ namespace MediaBrowser.Model.Globalization
         /// </summary>
         /// <returns>IEnumerable{LocalizatonOption}.</returns>
         LocalizationOption[] GetLocalizationOptions();
-
-        string RemoveDiacritics(string text);
 
         string NormalizeFormKD(string text);
 

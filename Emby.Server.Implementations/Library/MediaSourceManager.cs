@@ -322,18 +322,18 @@ namespace Emby.Server.Implementations.Library
 
         private string[] NormalizeLanguage(string language)
         {
-            if (language != null)
+            if (language == null)
             {
-                var culture = _localizationManager.FindLanguageInfo(language);
-                if (culture != null)
-                {
-                    return culture.ThreeLetterISOLanguageNames;
-                }
-
-                return new string[] { language };
+                return Array.Empty<string>();
             }
 
-            return Array.Empty<string>();
+            var culture = _localizationManager.FindLanguageInfo(language);
+            if (culture != null)
+            {
+                return culture.ThreeLetterISOLanguageNames;
+            }
+
+            return new string[] { language };
         }
 
         private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)

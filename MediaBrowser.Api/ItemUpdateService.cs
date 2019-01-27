@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -60,15 +61,15 @@ namespace MediaBrowser.Api
             _fileSystem = fileSystem;
         }
 
-        public object Get(GetMetadataEditorInfo request)
+        public async Task<object> Get(GetMetadataEditorInfo request)
         {
             var item = _libraryManager.GetItemById(request.ItemId);
 
             var info = new MetadataEditorInfo
             {
-                ParentalRatingOptions = _localizationManager.GetParentalRatings(),
+                ParentalRatingOptions = _localizationManager.GetParentalRatings().ToArray(),
                 ExternalIdInfos = _providerManager.GetExternalIdInfos(item).ToArray(),
-                Countries = _localizationManager.GetCountries(),
+                Countries = await _localizationManager.GetCountries(),
                 Cultures = _localizationManager.GetCultures()
             };
 
