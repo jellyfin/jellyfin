@@ -10,7 +10,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Users;
@@ -297,11 +296,6 @@ namespace MediaBrowser.Api
             if (request.IsHidden.HasValue)
             {
                 users = users.Where(i => i.Policy.IsHidden == request.IsHidden.Value);
-            }
-
-            if (request.IsGuest.HasValue)
-            {
-                users = users.Where(i => (i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.Guest) == request.IsGuest.Value);
             }
 
             if (filterByDevice)

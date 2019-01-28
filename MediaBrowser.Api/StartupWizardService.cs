@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
@@ -39,7 +38,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Startup/User", "POST", Summary = "Updates initial user info", IsHidden = true)]
-    public class UpdateStartupUser : StartupUser, IReturn<UpdateStartupUserResult>
+    public class UpdateStartupUser : StartupUser
     {
     }
 
@@ -102,12 +101,11 @@ namespace MediaBrowser.Api
             return new StartupUser
             {
                 Name = user.Name,
-                ConnectUserName = user.ConnectUserName,
                 Password = user.Password
             };
         }
 
-        public async Task<object> Post(UpdateStartupUser request)
+        public async Task Post(UpdateStartupUser request)
         {
             var user = _userManager.Users.First();
 
@@ -118,10 +116,6 @@ namespace MediaBrowser.Api
             if (!string.IsNullOrEmpty(request.Password)) {
                 await _userManager.ChangePassword(user, request.Password).ConfigureAwait(false);
             }
-
-            var result = new UpdateStartupUserResult();
-
-            return result;
         }
     }
 
@@ -135,12 +129,6 @@ namespace MediaBrowser.Api
     public class StartupUser
     {
         public string Name { get; set; }
-        public string ConnectUserName { get; set; }
         public string Password { get; set; }
-    }
-
-    public class UpdateStartupUserResult
-    {
-        public UserLinkResult UserLinkResult { get; set; }
     }
 }
