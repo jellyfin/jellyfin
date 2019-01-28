@@ -23,7 +23,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -211,11 +210,8 @@ namespace Emby.Server.Implementations.Library
             {
                 foreach (var user in users)
                 {
-                    if (!user.ConnectLinkType.HasValue || user.ConnectLinkType.Value == UserLinkType.LinkedUser)
-                    {
-                        user.Policy.IsAdministrator = true;
-                        UpdateUserPolicy(user, user.Policy, false);
-                    }
+                    user.Policy.IsAdministrator = true;
+                    UpdateUserPolicy(user, user.Policy, false);
                 }
             }
         }
@@ -273,13 +269,9 @@ namespace Emby.Server.Implementations.Library
 
             if (user != null)
             {
-                // Authenticate using local credentials if not a guest
-                if (!user.ConnectLinkType.HasValue || user.ConnectLinkType.Value != UserLinkType.Guest)
-                {
-                    var authResult = await AuthenticateLocalUser(username, password, hashedPassword, user, remoteEndPoint).ConfigureAwait(false);
-                    authenticationProvider = authResult.Item1;
-                    success = authResult.Item2;
-                }
+                var authResult = await AuthenticateLocalUser(username, password, hashedPassword, user, remoteEndPoint).ConfigureAwait(false);
+                authenticationProvider = authResult.Item1;
+                success = authResult.Item2;
             }
             else
             {
@@ -554,9 +546,6 @@ namespace Emby.Server.Implementations.Library
                 LastActivityDate = user.LastActivityDate,
                 LastLoginDate = user.LastLoginDate,
                 Configuration = user.Configuration,
-                ConnectLinkType = user.ConnectLinkType,
-                ConnectUserId = user.ConnectUserId,
-                ConnectUserName = user.ConnectUserName,
                 ServerId = _appHost.SystemId,
                 Policy = user.Policy
             };
@@ -815,11 +804,6 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(user));
             }
 
-            if (user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest)
-            {
-                throw new ArgumentException("Passwords for guests cannot be changed.");
-            }
-
             await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
 
             UpdateUser(user);
@@ -926,11 +910,6 @@ namespace Emby.Server.Implementations.Library
                 null :
                 GetUserByName(enteredUsername);
 
-            if (user != null && user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest)
-            {
-                throw new ArgumentException("Unable to process forgot password request for guests.");
-            }
-
             var action = ForgotPasswordAction.InNetworkRequired;
             string pinFile = null;
             DateTime? expirationDate = null;
@@ -975,10 +954,7 @@ namespace Emby.Server.Implementations.Library
                 _lastPin = null;
                 _lastPasswordPinCreationResult = null;
 
-                var users = Users.Where(i => !i.ConnectLinkType.HasValue || i.ConnectLinkType.Value != UserLinkType.Guest)
-                        .ToList();
-
-                foreach (var user in users)
+                foreach (var user in Users)
                 {
                     await ResetPassword(user).ConfigureAwait(false);
 
