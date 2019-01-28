@@ -177,15 +177,25 @@ namespace Jellyfin.Server
                 }
                 else
                 {
-                    // Let BaseApplicationPaths set up the default value
-                    configDir = null;
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        configDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    }
+                    else
+                    {
+                        // $XDG_CONFIG_HOME defines the base directory relative to which user specific configuration files should be stored.
+                        configDir = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
+                        // If $XDG_CONFIG_HOME is either not set or empty, $HOME/.config should be used.
+                        if (string.IsNullOrEmpty(configDir))
+                        {
+                            configDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
+                        }
+                    }
+
+                    configDir = Path.Combine(configDir, "jellyfin");
                 }
             }
-
-            if (configDir != null)
-            {
-                Directory.CreateDirectory(configDir);
-            }
+            Directory.CreateDirectory(configDir);
 
             string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
             if (string.IsNullOrEmpty(logDir))
