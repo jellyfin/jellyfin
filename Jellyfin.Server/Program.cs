@@ -6,8 +6,10 @@ using System.Net;
 using System.Net.Security;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using CommandLine;
 using Emby.Drawing;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.EnvironmentInfo;
@@ -26,9 +28,6 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server
 {
-    using CommandLine;
-    using System.Text.RegularExpressions;
-
     public static class Program
     {
         private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
@@ -41,8 +40,8 @@ namespace Jellyfin.Server
             // For backwards compatibility.
             // Modify any input arguments now which start with single-hyphen to POSIX standard
             // double-hyphen to allow parsing by CommandLineParser package.
-            var pattern = @"^(-[^-\s]{2})"; // Match -xx, not -x, not --xx, not xx
-            var substitution = @"-$1"; // Prepend with additional single-hyphen
+            const string pattern = @"^(-[^-\s]{2})"; // Match -xx, not -x, not --xx, not xx
+            const string substitution = @"-$1"; // Prepend with additional single-hyphen
             var regex = new Regex(pattern);
 
             for (var i = 0; i < args.Length; i++)
@@ -152,9 +151,9 @@ namespace Jellyfin.Server
             string programDataPath = Environment.GetEnvironmentVariable("JELLYFIN_DATA_PATH");
             if (string.IsNullOrEmpty(programDataPath))
             {
-                if (options.PathData != null)
+                if (options.DataDir != null)
                 {
-                    programDataPath = options.PathData;
+                    programDataPath = options.DataDir;
                 }
                 else
                 {
@@ -190,9 +189,9 @@ namespace Jellyfin.Server
             string configDir = Environment.GetEnvironmentVariable("JELLYFIN_CONFIG_DIR");
             if (string.IsNullOrEmpty(configDir))
             {
-                if (options.PathConfig != null)
+                if (options.ConfigDir != null)
                 {
-                    configDir = options.PathConfig;
+                    configDir = options.ConfigDir;
                 }
                 else
                 {
@@ -209,9 +208,9 @@ namespace Jellyfin.Server
             string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
             if (string.IsNullOrEmpty(logDir))
             {
-                if (options.PathLog != null)
+                if (options.LogDir != null)
                 {
-                    logDir = options.PathLog;
+                    logDir = options.LogDir;
                 }
                 else
                 {

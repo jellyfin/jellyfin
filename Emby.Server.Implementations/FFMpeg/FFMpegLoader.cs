@@ -6,6 +6,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
+using Emby.Server.Implementations.ParsedStartupOptions;
 
 namespace Emby.Server.Implementations.FFMpeg
 {
@@ -28,10 +29,10 @@ namespace Emby.Server.Implementations.FFMpeg
             _ffmpegInstallInfo = ffmpegInstallInfo;
         }
 
-        public FFMpegInfo GetFFMpegInfo(StartupOptions options)
+        public FFMpegInfo GetFFMpegInfo(IStartupOptions options)
         {
-            var customffMpegPath = options.FFmpeg;
-            var customffProbePath = options.FFprobe;
+            var customffMpegPath = options.FFmpegPath;
+            var customffProbePath = options.FFprobePath;
 
             if (!string.IsNullOrWhiteSpace(customffMpegPath) && !string.IsNullOrWhiteSpace(customffProbePath))
             {

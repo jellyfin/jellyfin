@@ -43,6 +43,7 @@ using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
+using Emby.Server.Implementations.ParsedStartupOptions;
 using Emby.Server.Implementations.Threading;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
@@ -142,7 +143,7 @@ namespace Emby.Server.Implementations
                     return false;
                 }
 
-                if (StartupOptions.Service)
+                if (StartupOptions.IsService)
                 {
                     return false;
                 }
@@ -344,7 +345,7 @@ namespace Emby.Server.Implementations
         protected IHttpResultFactory HttpResultFactory { get; private set; }
         protected IAuthService AuthService { get; private set; }
 
-        public StartupOptions StartupOptions { get; private set; }
+        public IStartupOptions StartupOptions { get; private set; }
 
         internal IImageEncoder ImageEncoder { get; private set; }
 
@@ -365,7 +366,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         public ApplicationHost(ServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
-            StartupOptions options,
+            IStartupOptions options,
             IFileSystem fileSystem,
             IEnvironmentInfo environmentInfo,
             IImageEncoder imageEncoder,
