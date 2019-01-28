@@ -20,18 +20,8 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The episode count.</value>
         public int EpisodeCount { get; set; }
-        /// <summary>
-        /// Gets or sets the game count.
-        /// </summary>
-        /// <value>The game count.</value>
-        public int GameCount { get; set; }
         public int ArtistCount { get; set; }
         public int ProgramCount { get; set; }
-        /// <summary>
-        /// Gets or sets the game system count.
-        /// </summary>
-        /// <value>The game system count.</value>
-        public int GameSystemCount { get; set; }
         /// <summary>
         /// Gets or sets the trailer count.
         /// </summary>

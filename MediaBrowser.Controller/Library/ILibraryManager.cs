@@ -89,13 +89,6 @@ namespace MediaBrowser.Controller.Library
         MusicGenre GetMusicGenre(string name);
 
         /// <summary>
-        /// Gets the game genre.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>Task{GameGenre}.</returns>
-        GameGenre GetGameGenre(string name);
-
-        /// <summary>
         /// Gets a Year
         /// </summary>
         /// <param name="value">The value.</param>
@@ -521,8 +514,6 @@ namespace MediaBrowser.Controller.Library
 
         Guid GetMusicGenreId(string name);
 
-        Guid GetGameGenreId(string name);
-
         Task AddVirtualFolder(string name, string collectionType, LibraryOptions options, bool refreshLibrary);
         Task RemoveVirtualFolder(string name, bool refreshLibrary);
         void AddMediaPath(string virtualFolderName, MediaPathInfo path);
@@ -531,7 +522,6 @@ namespace MediaBrowser.Controller.Library
 
         QueryResult<Tuple<BaseItem, ItemCounts>> GetGenres(InternalItemsQuery query);
         QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query);
-        QueryResult<Tuple<BaseItem, ItemCounts>> GetGameGenres(InternalItemsQuery query);
         QueryResult<Tuple<BaseItem, ItemCounts>> GetStudios(InternalItemsQuery query);
         QueryResult<Tuple<BaseItem, ItemCounts>> GetArtists(InternalItemsQuery query);
         QueryResult<Tuple<BaseItem, ItemCounts>> GetAlbumArtists(InternalItemsQuery query);

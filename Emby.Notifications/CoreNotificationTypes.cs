@@ -75,22 +75,12 @@ namespace Emby.Notifications
 
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.GamePlayback.ToString()
-                },
-
-                new NotificationTypeInfo
-                {
                      Type = NotificationType.VideoPlayback.ToString()
                 },
 
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.AudioPlaybackStopped.ToString()
-                },
-
-                new NotificationTypeInfo
-                {
-                     Type = NotificationType.GamePlaybackStopped.ToString()
                 },
 
                 new NotificationTypeInfo

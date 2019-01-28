@@ -471,8 +471,6 @@ namespace MediaBrowser.Providers.Manager
         {
             return new MetadataPluginSummary[]
             {
-                GetPluginSummary<Game>(),
-                GetPluginSummary<GameSystem>(),
                 GetPluginSummary<Movie>(),
                 GetPluginSummary<BoxSet>(),
                 GetPluginSummary<Book>(),

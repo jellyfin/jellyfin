@@ -43,10 +43,6 @@ namespace Emby.Server.Implementations.UserViews
             {
                 includeItemTypes = new string[] { "Book", "AudioBook" };
             }
-            else if (string.Equals(viewType, CollectionType.Games))
-            {
-                includeItemTypes = new string[] { "Game" };
-            }
             else if (string.Equals(viewType, CollectionType.BoxSets))
             {
                 includeItemTypes = new string[] { "BoxSet" };

@@ -808,7 +808,7 @@ namespace Emby.Dlna.Didl
             {
                 writer.WriteString(_profile.RequiresPlainFolders ? "object.container.storageFolder" : "object.container.genre.musicGenre");
             }
-            else if (item is Genre || item is GameGenre)
+            else if (item is Genre)
             {
                 writer.WriteString(_profile.RequiresPlainFolders ? "object.container.storageFolder" : "object.container.genre");
             }

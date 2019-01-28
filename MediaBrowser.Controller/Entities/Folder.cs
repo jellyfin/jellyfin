@@ -1149,16 +1149,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.MinPlayers.HasValue)
-            {
-                return false;
-            }
-
-            if (request.MaxPlayers.HasValue)
-            {
-                return false;
-            }
-
             if (request.MinCommunityRating.HasValue)
             {
                 return false;

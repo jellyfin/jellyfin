@@ -150,7 +150,6 @@ namespace MediaBrowser.Controller.Entities
 
         private static string[] OriginalFolderViewTypes = new string[]
             {
-                MediaBrowser.Model.Entities.CollectionType.Games,
                 MediaBrowser.Model.Entities.CollectionType.Books,
                 MediaBrowser.Model.Entities.CollectionType.MusicVideos,
                 MediaBrowser.Model.Entities.CollectionType.HomeVideos,

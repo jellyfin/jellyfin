@@ -848,52 +848,6 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            if (query.MinPlayers.HasValue)
-            {
-                var filterValue = query.MinPlayers.Value;
-
-                var game = item as Game;
-
-                if (game != null)
-                {
-                    var players = game.PlayersSupported ?? 1;
-
-                    var ok = players >= filterValue;
-
-                    if (!ok)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            if (query.MaxPlayers.HasValue)
-            {
-                var filterValue = query.MaxPlayers.Value;
-
-                var game = item as Game;
-
-                if (game != null)
-                {
-                    var players = game.PlayersSupported ?? 1;
-
-                    var ok = players <= filterValue;
-
-                    if (!ok)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
             if (query.MinCommunityRating.HasValue)
             {
                 var val = query.MinCommunityRating.Value;

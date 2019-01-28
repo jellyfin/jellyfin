@@ -454,7 +454,7 @@ namespace Emby.Dlna.ContentDirectory
                 User = user,
                 Recursive = true,
                 IsMissing = false,
-                ExcludeItemTypes = new[] { typeof(Game).Name, typeof(Book).Name },
+                ExcludeItemTypes = new[] { typeof(Book).Name },
                 IsFolder = isFolder,
                 MediaTypes = mediaTypes.ToArray(),
                 DtoOptions = GetDtoOptions()
@@ -523,7 +523,7 @@ namespace Emby.Dlna.ContentDirectory
                 Limit = limit,
                 StartIndex = startIndex,
                 IsVirtualItem = false,
-                ExcludeItemTypes = new[] { typeof(Game).Name, typeof(Book).Name },
+                ExcludeItemTypes = new[] { typeof(Book).Name },
                 IsPlaceHolder = false,
                 DtoOptions = GetDtoOptions()
             };

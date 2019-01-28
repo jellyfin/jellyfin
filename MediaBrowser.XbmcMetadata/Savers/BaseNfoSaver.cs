@@ -82,7 +82,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "lockedfields",
                     "zap2itid",
                     "tvrageid",
-                    "gamesdbid",
 
                     "musicbrainzartistid",
                     "musicbrainzalbumartistid",
@@ -735,13 +734,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 writer.WriteElementString("musicbrainzreleasegroupid", externalId);
                 writtenProviderIds.Add(MetadataProviders.MusicBrainzReleaseGroup.ToString());
-            }
-
-            externalId = item.GetProviderId(MetadataProviders.Gamesdb);
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                writer.WriteElementString("gamesdbid", externalId);
-                writtenProviderIds.Add(MetadataProviders.Gamesdb.ToString());
             }
 
             externalId = item.GetProviderId(MetadataProviders.TvRage);
