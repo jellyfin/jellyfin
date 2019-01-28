@@ -71,8 +71,6 @@ namespace MediaBrowser.Model.Querying
         public const string VideoBitRate = "VideoBitRate";
         public const string AirTime = "AirTime";
         public const string Studio = "Studio";
-        public const string Players = "Players";
-        public const string GameSystem = "GameSystem";
         public const string IsFavoriteOrLiked = "IsFavoriteOrLiked";
         public const string DateLastContentAdded = "DateLastContentAdded";
         public const string SeriesDatePlayed = "SeriesDatePlayed";

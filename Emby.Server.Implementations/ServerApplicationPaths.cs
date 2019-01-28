@@ -136,12 +136,6 @@ namespace Emby.Server.Implementations
             return path;
         }
 
-        /// <summary>
-        /// Gets the game genre path.
-        /// </summary>
-        /// <value>The game genre path.</value>
-        public string GameGenrePath => Path.Combine(InternalMetadataPath, "GameGenre");
-
         private string _internalMetadataPath;
         public string InternalMetadataPath
         {

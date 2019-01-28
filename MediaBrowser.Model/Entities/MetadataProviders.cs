@@ -5,7 +5,6 @@ namespace MediaBrowser.Model.Entities
     /// </summary>
     public enum MetadataProviders
     {
-        Gamesdb = 1,
         /// <summary>
         /// The imdb
         /// </summary>

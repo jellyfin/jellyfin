@@ -228,21 +228,6 @@ namespace MediaBrowser.Api
             return libraryManager.GetMusicGenre(name);
         }
 
-        protected GameGenre GetGameGenre(string name, ILibraryManager libraryManager, DtoOptions dtoOptions)
-        {
-            if (name.IndexOf(BaseItem.SlugChar) != -1)
-            {
-                var result = GetItemFromSlugName<GameGenre>(libraryManager, name, dtoOptions);
-
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-
-            return libraryManager.GetGameGenre(name);
-        }
-
         protected Person GetPerson(string name, ILibraryManager libraryManager, DtoOptions dtoOptions)
         {
             if (name.IndexOf(BaseItem.SlugChar) != -1)
@@ -348,10 +333,6 @@ namespace MediaBrowser.Api
             else if (type.IndexOf("MusicGenre", StringComparison.OrdinalIgnoreCase) == 0)
             {
                 item = GetMusicGenre(name, libraryManager, dtoOptions);
-            }
-            else if (type.IndexOf("GameGenre", StringComparison.OrdinalIgnoreCase) == 0)
-            {
-                item = GetGameGenre(name, libraryManager, dtoOptions);
             }
             else if (type.IndexOf("Studio", StringComparison.OrdinalIgnoreCase) == 0)
             {

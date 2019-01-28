@@ -1239,10 +1239,6 @@ namespace Emby.Server.Implementations.Data
             {
                 return false;
             }
-            else if (type == typeof(GameGenre))
-            {
-                return false;
-            }
             else if (type == typeof(Genre))
             {
                 return false;
@@ -4789,10 +4785,6 @@ namespace Emby.Server.Implementations.Data
             {
                 list.Add(typeof(MusicGenre).Name);
             }
-            if (IsTypeInQuery(typeof(GameGenre).Name, query))
-            {
-                list.Add(typeof(GameGenre).Name);
-            }
             if (IsTypeInQuery(typeof(MusicArtist).Name, query))
             {
                 list.Add(typeof(MusicArtist).Name);
@@ -4891,9 +4883,6 @@ namespace Emby.Server.Implementations.Data
             typeof(Book),
             typeof(CollectionFolder),
             typeof(Folder),
-            typeof(Game),
-            typeof(GameGenre),
-            typeof(GameSystem),
             typeof(Genre),
             typeof(Person),
             typeof(Photo),
@@ -5251,11 +5240,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             return GetItemValues(query, new[] { 2 }, typeof(Genre).FullName);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetGameGenres(InternalItemsQuery query)
-        {
-            return GetItemValues(query, new[] { 2 }, typeof(GameGenre).FullName);
-        }
-
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 2 }, typeof(MusicGenre).FullName);
@@ -5276,14 +5260,9 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             return GetItemValueNames(new[] { 2 }, new List<string> { "Audio", "MusicVideo", "MusicAlbum", "MusicArtist" }, new List<string>());
         }
 
-        public List<string> GetGameGenreNames()
-        {
-            return GetItemValueNames(new[] { 2 }, new List<string> { "Game" }, new List<string>());
-        }
-
         public List<string> GetGenreNames()
         {
-            return GetItemValueNames(new[] { 2 }, new List<string>(), new List<string> { "Audio", "MusicVideo", "MusicAlbum", "MusicArtist", "Game", "GameSystem" });
+            return GetItemValueNames(new[] { 2 }, new List<string>(), new List<string> { "Audio", "MusicVideo", "MusicAlbum", "MusicArtist" });
         }
 
         private List<string> GetItemValueNames(int[] itemValueTypes, List<string> withItemTypes, List<string> excludeItemTypes)
@@ -5651,10 +5630,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 else if (string.Equals(typeName, typeof(Audio).FullName, StringComparison.OrdinalIgnoreCase))
                 {
                     counts.SongCount = value;
-                }
-                else if (string.Equals(typeName, typeof(Game).FullName, StringComparison.OrdinalIgnoreCase))
-                {
-                    counts.GameCount = value;
                 }
                 else if (string.Equals(typeName, typeof(Trailer).FullName, StringComparison.OrdinalIgnoreCase))
                 {

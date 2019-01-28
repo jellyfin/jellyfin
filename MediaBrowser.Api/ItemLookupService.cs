@@ -57,12 +57,6 @@ namespace MediaBrowser.Api
     {
     }
 
-    [Route("/Items/RemoteSearch/Game", "POST")]
-    [Authenticated]
-    public class GetGameRemoteSearchResults : RemoteSearchQuery<GameInfo>, IReturn<List<RemoteSearchResult>>
-    {
-    }
-
     [Route("/Items/RemoteSearch/BoxSet", "POST")]
     [Authenticated]
     public class GetBoxSetRemoteSearchResults : RemoteSearchQuery<BoxSetInfo>, IReturn<List<RemoteSearchResult>>
@@ -169,13 +163,6 @@ namespace MediaBrowser.Api
         public async Task<object> Post(GetSeriesRemoteSearchResults request)
         {
             var result = await _providerManager.GetRemoteSearchResults<Series, SeriesInfo>(request, CancellationToken.None).ConfigureAwait(false);
-
-            return ToOptimizedResult(result);
-        }
-
-        public async Task<object> Post(GetGameRemoteSearchResults request)
-        {
-            var result = await _providerManager.GetRemoteSearchResults<Game, GameInfo>(request, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }

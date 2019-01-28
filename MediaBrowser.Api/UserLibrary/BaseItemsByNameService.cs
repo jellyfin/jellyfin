@@ -224,7 +224,6 @@ namespace MediaBrowser.Api.UserLibrary
             dto.TrailerCount = counts.TrailerCount;
             dto.AlbumCount = counts.AlbumCount;
             dto.SongCount = counts.SongCount;
-            dto.GameCount = counts.GameCount;
             dto.ArtistCount = counts.ArtistCount;
         }
 

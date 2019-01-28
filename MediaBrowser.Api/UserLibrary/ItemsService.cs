@@ -304,8 +304,6 @@ namespace MediaBrowser.Api.UserLibrary
                 VideoTypes = request.GetVideoTypes(),
                 AdjacentTo = request.AdjacentTo,
                 ItemIds = GetGuids(request.Ids),
-                MinPlayers = request.MinPlayers,
-                MaxPlayers = request.MaxPlayers,
                 MinCommunityRating = request.MinCommunityRating,
                 MinCriticRating = request.MinCriticRating,
                 ParentId = string.IsNullOrWhiteSpace(request.ParentId) ? Guid.Empty : new Guid(request.ParentId),

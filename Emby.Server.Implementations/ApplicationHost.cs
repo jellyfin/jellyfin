@@ -1671,7 +1671,6 @@ namespace Emby.Server.Implementations
 
             var minRequiredVersions = new Dictionary<string, Version>(StringComparer.OrdinalIgnoreCase)
             {
-                { "GameBrowser.dll", new Version(3, 1) },
                 { "moviethemesongs.dll", new Version(1, 6) },
                 { "themesongs.dll", new Version(1, 2) }
             };

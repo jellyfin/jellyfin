@@ -16,8 +16,6 @@ namespace MediaBrowser.Model.Channels
 
         MovieExtra = 6,
 
-        TvExtra = 7,
-
-        GameExtra = 8
+        TvExtra = 7
     }
 }

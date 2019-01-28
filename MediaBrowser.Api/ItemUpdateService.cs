@@ -154,11 +154,6 @@ namespace MediaBrowser.Api
                     Name = "Books",
                     Value = "books"
                 });
-                list.Add(new NameValuePair
-                {
-                    Name = "Games",
-                    Value = "games"
-                });
             }
 
             list.Add(new NameValuePair

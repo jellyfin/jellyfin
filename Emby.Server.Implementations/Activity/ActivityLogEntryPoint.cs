@@ -207,10 +207,6 @@ namespace Emby.Server.Implementations.Activity
             {
                 return NotificationType.AudioPlayback.ToString();
             }
-            if (string.Equals(mediaType, MediaType.Game, StringComparison.OrdinalIgnoreCase))
-            {
-                return NotificationType.GamePlayback.ToString();
-            }
             if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
                 return NotificationType.VideoPlayback.ToString();
@@ -224,10 +220,6 @@ namespace Emby.Server.Implementations.Activity
             if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
             {
                 return NotificationType.AudioPlaybackStopped.ToString();
-            }
-            if (string.Equals(mediaType, MediaType.Game, StringComparison.OrdinalIgnoreCase))
-            {
-                return NotificationType.GamePlaybackStopped.ToString();
             }
             if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
