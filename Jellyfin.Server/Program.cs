@@ -202,6 +202,31 @@ namespace Jellyfin.Server
                 Directory.CreateDirectory(configDir);
             }
 
+            string cacheDir = Environment.GetEnvironmentVariable("JELLYFIN_CACHE_DIR");
+            if (string.IsNullOrEmpty(cacheDir))
+            {
+                if (options.ContainsOption("-cachedir"))
+                {
+                    cacheDir = options.GetOption("-cachedir");
+                }
+                else if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // $XDG_CACHE_HOME defines the base directory relative to which user specific non-essential data files should be stored.
+                    cacheDir = Environment.GetEnvironmentVariable("XDG_CACHE_HOME");
+                    // If $XDG_CACHE_HOME is either not set or empty, $HOME/.cache should be used.
+                    if (string.IsNullOrEmpty(cacheDir))
+                    {
+                        cacheDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".cache");
+                    }
+                    cacheDir = Path.Combine(cacheDir, "jellyfin");
+                }
+            }
+
+            if (cacheDir != null)
+            {
+                Directory.CreateDirectory(cacheDir);
+            }
+
             string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
             if (string.IsNullOrEmpty(logDir))
             {
@@ -223,7 +248,7 @@ namespace Jellyfin.Server
 
             string appPath = AppContext.BaseDirectory;
 
-            return new ServerApplicationPaths(programDataPath, appPath, appPath, logDir, configDir);
+            return new ServerApplicationPaths(programDataPath, appPath, appPath, logDir, configDir, cacheDir);
         }
 
         private static async Task createLogger(IApplicationPaths appPaths)
