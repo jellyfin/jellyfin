@@ -142,7 +142,7 @@ namespace Emby.Server.Implementations
                     return false;
                 }
 
-                if (StartupOptions.ContainsOption("-service"))
+                if (StartupOptions.Service)
                 {
                     return false;
                 }
@@ -1748,7 +1748,7 @@ namespace Emby.Server.Implementations
                 EncoderLocationType = MediaEncoder.EncoderLocationType,
                 SystemArchitecture = EnvironmentInfo.SystemArchitecture,
                 SystemUpdateLevel = SystemUpdateLevel,
-                PackageName = StartupOptions.GetOption("-package")
+                PackageName = StartupOptions.PackageName
             };
         }
 

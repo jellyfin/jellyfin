@@ -26,6 +26,8 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server
 {
+    using CommandLine;
+
     public static class Program
     {
         private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
@@ -35,14 +37,18 @@ namespace Jellyfin.Server
 
         public static async Task Main(string[] args)
         {
-            StartupOptions options = new StartupOptions(args);
-            Version version = Assembly.GetEntryAssembly().GetName().Version;
+            // For CommandLine package, change default behaviour to output errors to stdout (instead of stderr)
+            var parser = new Parser(config => config.HelpWriter = Console.Out);
 
-            if (options.ContainsOption("-v") || options.ContainsOption("--version"))
-            {
-                Console.WriteLine(version.ToString());
-            }
+            // Parse the command line arguments and either start the app or exit indicating error
+            await parser.ParseArguments<StartupOptions>(args)
+                .MapResult(
+                    options => StartApp(options),
+                    errs => Task.FromResult(0)).ConfigureAwait(false);
+        }
 
+        private static async Task StartApp(StartupOptions options)
+        {
             ServerApplicationPaths appPaths = CreateApplicationPaths(options);
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
@@ -78,7 +84,7 @@ namespace Jellyfin.Server
                 Shutdown();
             };
 
-            _logger.LogInformation("Jellyfin version: {Version}", version);
+            _logger.LogInformation("Jellyfin version: {Version}", Assembly.GetEntryAssembly().GetName().Version);
 
             EnvironmentInfo environmentInfo = new EnvironmentInfo(getOperatingSystem());
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths, environmentInfo);
@@ -133,9 +139,9 @@ namespace Jellyfin.Server
             string programDataPath = Environment.GetEnvironmentVariable("JELLYFIN_DATA_PATH");
             if (string.IsNullOrEmpty(programDataPath))
             {
-                if (options.ContainsOption("-programdata"))
+                if (options.PathProgramData != null)
                 {
-                    programDataPath = options.GetOption("-programdata");
+                    programDataPath = options.PathProgramData;
                 }
                 else
                 {
@@ -171,9 +177,9 @@ namespace Jellyfin.Server
             string configDir = Environment.GetEnvironmentVariable("JELLYFIN_CONFIG_DIR");
             if (string.IsNullOrEmpty(configDir))
             {
-                if (options.ContainsOption("-configdir"))
+                if (options.PathConfig != null)
                 {
-                    configDir = options.GetOption("-configdir");
+                    configDir = options.PathConfig;
                 }
                 else
                 {
@@ -190,9 +196,9 @@ namespace Jellyfin.Server
             string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
             if (string.IsNullOrEmpty(logDir))
             {
-                if (options.ContainsOption("-logdir"))
+                if (options.PathLog != null)
                 {
-                    logDir = options.GetOption("-logdir");
+                    logDir = options.PathLog;
                 }
                 else
                 {
@@ -315,11 +321,11 @@ namespace Jellyfin.Server
             Shutdown();
         }
 
-        private static void StartNewInstance(StartupOptions startupOptions)
+        private static void StartNewInstance(StartupOptions options)
         {
             _logger.LogInformation("Starting new instance");
 
-            string module = startupOptions.GetOption("-restartpath");
+            string module = options.RestartPath;
 
             if (string.IsNullOrWhiteSpace(module))
             {
@@ -328,9 +334,9 @@ namespace Jellyfin.Server
 
             string commandLineArgsString;
 
-            if (startupOptions.ContainsOption("-restartargs"))
+            if (options.RestartArgs != null)
             {
-                commandLineArgsString = startupOptions.GetOption("-restartargs") ?? string.Empty;
+                commandLineArgsString = options.RestartArgs ?? string.Empty;
             }
             else
             {

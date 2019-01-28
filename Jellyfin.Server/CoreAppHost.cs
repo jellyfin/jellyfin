@@ -16,7 +16,7 @@ namespace Jellyfin.Server
         {
         }
 
-        public override bool CanSelfRestart => StartupOptions.ContainsOption("-restartpath");
+        public override bool CanSelfRestart => StartupOptions.RestartPath != null;
 
         protected override void RestartInternal() => Program.Restart();
 
