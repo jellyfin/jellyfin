@@ -209,7 +209,6 @@ namespace Emby.Server.Implementations.AppBase
         protected void EnsureWriteAccess(string path)
         {
             var file = Path.Combine(path, Guid.NewGuid().ToString());
-            
             File.WriteAllText(file, string.Empty);
             FileSystem.DeleteFile(file);
         }
