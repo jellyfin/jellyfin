@@ -6,7 +6,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
-using Emby.Server.Implementations.ParsedStartupOptions;
 
 namespace Emby.Server.Implementations.FFMpeg
 {

@@ -43,7 +43,6 @@ using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
-using Emby.Server.Implementations.ParsedStartupOptions;
 using Emby.Server.Implementations.Threading;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
