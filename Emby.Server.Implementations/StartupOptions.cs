@@ -7,8 +7,8 @@ namespace Emby.Server.Implementations
     /// </summary>
     public class StartupOptions
     {
-        [Option('d', "programdata", Required = false, HelpText = "Path to use for program data (databases files etc.).")]
-        public string PathProgramData { get; set; }
+        [Option('d', "datadir", Required = false, HelpText = "Path to use for the data folder (databases files etc.).")]
+        public string PathData { get; set; }
 
         [Option('c', "configdir", Required = false, HelpText = "Path to use for config data (user policies and puctures).")]
         public string PathConfig { get; set; }

@@ -27,6 +27,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 namespace Jellyfin.Server
 {
     using CommandLine;
+    using System.Text.RegularExpressions;
 
     public static class Program
     {
@@ -37,6 +38,18 @@ namespace Jellyfin.Server
 
         public static async Task Main(string[] args)
         {
+            // For backwards compatibility.
+            // Modify any input arguments now which start with single-hyphen to POSIX standard
+            // double-hyphen to allow parsing by CommandLineParser package.
+            var pattern = @"^(-[^-\s]{2})"; // Match -xx, not -x, not --xx, not xx
+            var substitution = @"-$1"; // Prepend with additional single-hyphen
+            var regex = new Regex(pattern);
+
+            for (var i = 0; i < args.Length; i++)
+            {
+                args[i] = regex.Replace(args[i], substitution);
+            }
+
             // For CommandLine package, change default behaviour to output errors to stdout (instead of stderr)
             var parser = new Parser(config => config.HelpWriter = Console.Out);
 
@@ -139,9 +152,9 @@ namespace Jellyfin.Server
             string programDataPath = Environment.GetEnvironmentVariable("JELLYFIN_DATA_PATH");
             if (string.IsNullOrEmpty(programDataPath))
             {
-                if (options.PathProgramData != null)
+                if (options.PathData != null)
                 {
-                    programDataPath = options.PathProgramData;
+                    programDataPath = options.PathData;
                 }
                 else
                 {
