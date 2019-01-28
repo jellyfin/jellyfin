@@ -1,30 +1,43 @@
-using System;
-using System.Linq;
-
 namespace Emby.Server.Implementations
 {
+    using CommandLine;
+
+    /// <summary>
+    /// Class used by CommandLine package when parsing the command line arguments.
+    /// </summary>
     public class StartupOptions
     {
-        private readonly string[] _options;
+        [Option('d', "programdata", Required = false, HelpText = "Path to use for program data (databases files etc.).")]
+        public string PathProgramData { get; set; }
 
-        public StartupOptions(string[] commandLineArgs)
-        {
-            _options = commandLineArgs;
-        }
+        [Option('c', "configdir", Required = false, HelpText = "Path to use for config data (user policies and puctures).")]
+        public string PathConfig { get; set; }
 
-        public bool ContainsOption(string option)
-            => _options.Contains(option, StringComparer.OrdinalIgnoreCase);
+        [Option('l', "logdir", Required = false, HelpText = "Path to use for writing log files.")]
+        public string PathLog { get; set; }
 
-        public string GetOption(string name)
-        {
-            int index = Array.IndexOf(_options, name);
 
-            if (index == -1)
-            {
-                return null;
-            }
+        [Option("ffmpeg", Required = false, HelpText = "Path to external FFmpeg exe to use in place of built-in.")]
+        public string FFmpeg { get; set; }
 
-            return _options.ElementAtOrDefault(index + 1);
-        }
+        [Option("ffprobe", Required = false, HelpText = "ffmpeg and ffprobe switches must be supplied together.")]
+        public string FFprobe { get; set; }
+
+
+        [Option("service", Required = false, HelpText = "Run as headless service.")]
+        public bool Service { get; set; }
+
+        [Option("noautorunwebapp", Required = false, HelpText = "Run headless if startup wizard is complete.")]
+        public bool NoAutoRunWebApp { get; set; }
+
+        [Option("package-name", Required = false, HelpText = "Used when packaging Jellyfin (example, synology).")]
+        public string PackageName { get; set; }
+
+
+        [Option("restartpath", Required = false, HelpText = "Path to reset script.")]
+        public string RestartPath { get; set; }
+
+        [Option("restartargs", Required = false, HelpText = "Arguments for restart script.")]
+        public string RestartArgs { get; set; }
     }
-}
+ }
