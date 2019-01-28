@@ -63,7 +63,8 @@ namespace MediaBrowser.Controller.Drawing
                 case ImageType.Logo:
                     return 2.58;
                 case ImageType.Primary:
-                    return item.GetDefaultPrimaryImageAspectRatio();
+                    double defaultPrimaryImageAspectRatio = item.GetDefaultPrimaryImageAspectRatio();
+                    return defaultPrimaryImageAspectRatio > 0 ? defaultPrimaryImageAspectRatio : 2.0 / 3;
                 default:
                     return 1;
             }

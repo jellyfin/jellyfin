@@ -1518,7 +1518,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual double GetDefaultPrimaryImageAspectRatio()
         {
-            return 2.0 / 3;
+            return 0;
         }
 
         public virtual string CreatePresentationUniqueKey()
