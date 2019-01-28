@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Api
 {
@@ -115,7 +114,10 @@ namespace MediaBrowser.Api
             user.Name = request.Name;
 
             _userManager.UpdateUser(user);
-            await _userManager.ChangePassword(user, request.Password).ConfigureAwait(false);
+
+            if (!string.IsNullOrEmpty(request.Password)) {
+                await _userManager.ChangePassword(user, request.Password).ConfigureAwait(false);
+            }
 
             var result = new UpdateStartupUserResult();
 
