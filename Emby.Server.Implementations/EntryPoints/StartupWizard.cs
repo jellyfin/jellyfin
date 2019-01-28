@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 var options = ((ApplicationHost)_appHost).StartupOptions;
 
-                if (options.AutoRunWebApp)
+                if (!options.NoAutoRunWebApp)
                 {
                     BrowserLauncher.OpenWebApp(_appHost);
                 }

@@ -1,5 +1,5 @@
 using CommandLine;
-using Emby.Server.Implementations.ParsedStartupOptions;
+using Emby.Server.Implementations;
 
 namespace Jellyfin.Server
 {
@@ -27,7 +27,7 @@ namespace Jellyfin.Server
         public bool IsService { get; set; }
 
         [Option("noautorunwebapp", Required = false, HelpText = "Run headless if startup wizard is complete.")]
-        public bool AutoRunWebApp { get => !NoautoRunWebApp; set => NoautoRunWebApp = value; }
+        public bool NoAutoRunWebApp { get; set; }
 
         [Option("package-name", Required = false, HelpText = "Used when packaging Jellyfin (example, synology).")]
         public string PackageName { get; set; }
@@ -37,11 +37,5 @@ namespace Jellyfin.Server
 
         [Option("restartargs", Required = false, HelpText = "Arguments for restart script.")]
         public string RestartArgs { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to run not run the web app.
-        /// Command line switch is --noautorunwebapp, which we store privately here, but provide inverse (AutoRunWebApp) for users.
-        /// </summary>
-        private bool NoautoRunWebApp { get; set; }
     }
 }

@@ -1,22 +1,7 @@
-namespace Emby.Server.Implementations.ParsedStartupOptions
+namespace Emby.Server.Implementations
 {
     public interface IStartupOptions
     {
-        /// <summary>
-        /// --datadir
-        /// </summary>
-        string DataDir { get; }
-
-        /// <summary>
-        /// --configdir
-        /// </summary>
-        string ConfigDir { get; }
-
-        /// <summary>
-        /// --logdir
-        /// </summary>
-        string LogDir { get; }
-
         /// <summary>
         /// --ffmpeg
         /// </summary>
@@ -35,7 +20,7 @@ namespace Emby.Server.Implementations.ParsedStartupOptions
         /// <summary>
         /// --noautorunwebapp
         /// </summary>
-        bool AutoRunWebApp { get; }
+        bool NoAutoRunWebApp { get; }
 
         /// <summary>
         /// --package-name
