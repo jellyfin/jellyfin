@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="PlaylistsNET" Version="1.0.2" />
+    <PackageReference Include="TvDbSharper" Version="2.0.0" />
   </ItemGroup>
 
   <PropertyGroup>
