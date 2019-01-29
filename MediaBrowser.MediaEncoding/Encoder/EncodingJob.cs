@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
@@ -40,7 +39,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _mediaSourceManager = mediaSourceManager;
             Id = Guid.NewGuid();
 
-            _logger = logger;
             TaskCompletionSource = new TaskCompletionSource<bool>();
         }
 

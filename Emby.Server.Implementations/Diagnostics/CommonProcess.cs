@@ -105,7 +105,7 @@ namespace Emby.Server.Implementations.Diagnostics
         {
             return _process.WaitForExit(timeMs);
         }
-        
+
         public Task<bool> WaitForExitAsync(int timeMs)
         {
             //Note: For this function to work correctly, the option EnableRisingEvents needs to be set to true.

@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
@@ -19,17 +16,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly IConfigurationManager _config;
         private readonly IMediaEncoder _mediaEncoder;
 
-        protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        public EncodingJobFactory(ILogger logger, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager, IConfigurationManager config, IMediaEncoder mediaEncoder)
+        public EncodingJobFactory(ILogger logger, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
         {
             _logger = logger;
             _libraryManager = libraryManager;
             _mediaSourceManager = mediaSourceManager;
-            _config = config;
             _mediaEncoder = mediaEncoder;
         }
 
@@ -118,11 +111,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 if (state.OutputVideoBitrate.HasValue)
                 {
                     var resolution = ResolutionNormalizer.Normalize(
-                        state.VideoStream == null ? (int?)null : state.VideoStream.BitRate,
-                        state.VideoStream == null ? (int?)null : state.VideoStream.Width,
-                        state.VideoStream == null ? (int?)null : state.VideoStream.Height,
+                        state.VideoStream?.BitRate,
+                        state.VideoStream?.Width,
+                        state.VideoStream?.Height,
                         state.OutputVideoBitrate.Value,
-                        state.VideoStream == null ? null : state.VideoStream.Codec,
+                        state.VideoStream?.Codec,
                         state.OutputVideoCodec,
                         videoRequest.MaxWidth,
                         videoRequest.MaxHeight);
@@ -144,40 +137,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return state;
         }
 
-        protected EncodingOptions GetEncodingOptions()
-        {
-            return _config.GetConfiguration<EncodingOptions>("encoding");
-        }
-
-        /// <summary>
-        /// Infers the video codec.
-        /// </summary>
-        /// <param name="container">The container.</param>
-        /// <returns>System.Nullable{VideoCodecs}.</returns>
-        private static string InferVideoCodec(string container)
-        {
-            var ext = "." + (container ?? string.Empty);
-
-            if (string.Equals(ext, ".asf", StringComparison.OrdinalIgnoreCase))
-            {
-                return "wmv";
-            }
-            if (string.Equals(ext, ".webm", StringComparison.OrdinalIgnoreCase))
-            {
-                return "vpx";
-            }
-            if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase) || string.Equals(ext, ".ogv", StringComparison.OrdinalIgnoreCase))
-            {
-                return "theora";
-            }
-            if (string.Equals(ext, ".m3u8", StringComparison.OrdinalIgnoreCase) || string.Equals(ext, ".ts", StringComparison.OrdinalIgnoreCase))
-            {
-                return "h264";
-            }
-
-            return "copy";
-        }
-
         private string InferAudioCodec(string container)
         {
             var ext = "." + (container ?? string.Empty);
@@ -186,65 +145,24 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 return "mp3";
             }
-            if (string.Equals(ext, ".aac", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(ext, ".aac", StringComparison.OrdinalIgnoreCase))
             {
                 return "aac";
             }
-            if (string.Equals(ext, ".wma", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(ext, ".wma", StringComparison.OrdinalIgnoreCase))
             {
                 return "wma";
             }
-            if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase))
-            {
-                return "vorbis";
-            }
-            if (string.Equals(ext, ".oga", StringComparison.OrdinalIgnoreCase))
-            {
-                return "vorbis";
-            }
-            if (string.Equals(ext, ".ogv", StringComparison.OrdinalIgnoreCase))
-            {
-                return "vorbis";
-            }
-            if (string.Equals(ext, ".webm", StringComparison.OrdinalIgnoreCase))
-            {
-                return "vorbis";
-            }
-            if (string.Equals(ext, ".webma", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(ext, ".oga", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(ext, ".ogv", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(ext, ".webm", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(ext, ".webma", StringComparison.OrdinalIgnoreCase))
             {
                 return "vorbis";
             }
 
             return "copy";
-        }
-
-        /// <summary>
-        /// Determines whether the specified stream is H264.
-        /// </summary>
-        /// <param name="stream">The stream.</param>
-        /// <returns><c>true</c> if the specified stream is H264; otherwise, <c>false</c>.</returns>
-        protected bool IsH264(MediaStream stream)
-        {
-            var codec = stream.Codec ?? string.Empty;
-
-            return codec.IndexOf("264", StringComparison.OrdinalIgnoreCase) != -1 ||
-                   codec.IndexOf("avc", StringComparison.OrdinalIgnoreCase) != -1;
-        }
-
-        private static int GetVideoProfileScore(string profile)
-        {
-            var list = new List<string>
-            {
-                "Constrained Baseline",
-                "Baseline",
-                "Extended",
-                "Main",
-                "High",
-                "Progressive High",
-                "Constrained High"
-            };
-
-            return Array.FindIndex(list.ToArray(), t => string.Equals(t, profile, StringComparison.OrdinalIgnoreCase));
         }
 
         private void ApplyDeviceProfileSettings(EncodingJob state)

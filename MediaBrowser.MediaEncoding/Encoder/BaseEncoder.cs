@@ -1,5 +1,5 @@
 using System;
-using System.Globalization;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -31,11 +31,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected readonly IMediaSourceManager MediaSourceManager;
         protected IProcessFactory ProcessFactory;
 
-        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
         protected EncodingHelper EncodingHelper;
 
-        protected BaseEncoder(MediaEncoder mediaEncoder,
+        protected BaseEncoder(
+            MediaEncoder mediaEncoder,
             ILogger logger,
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
@@ -43,7 +42,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ILibraryManager libraryManager,
             ISessionManager sessionManager,
             ISubtitleEncoder subtitleEncoder,
-            IMediaSourceManager mediaSourceManager, IProcessFactory processFactory)
+            IMediaSourceManager mediaSourceManager,
+            IProcessFactory processFactory)
         {
             MediaEncoder = mediaEncoder;
             Logger = logger;
@@ -59,11 +59,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             EncodingHelper = new EncodingHelper(MediaEncoder, FileSystem, SubtitleEncoder);
         }
 
-        public async Task<EncodingJob> Start(EncodingJobOptions options,
+        public async Task<EncodingJob> Start(
+            EncodingJobOptions options,
             IProgress<double> progress,
             CancellationToken cancellationToken)
         {
-            var encodingJob = await new EncodingJobFactory(Logger, LibraryManager, MediaSourceManager, ConfigurationManager, MediaEncoder)
+            var encodingJob = await new EncodingJobFactory(Logger, LibraryManager, MediaSourceManager, MediaEncoder)
                 .CreateJob(options, EncodingHelper, IsVideoEncoder, progress, cancellationToken).ConfigureAwait(false);
 
             encodingJob.OutputFilePath = GetOutputFilePath(encodingJob);
@@ -75,8 +76,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var commandLineArgs = GetCommandLineArguments(encodingJob);
 
-            var process = ProcessFactory.Create(new ProcessOptions
+            Process process = Process.Start(new ProcessStartInfo
             {
+                WindowStyle = ProcessWindowStyle.Hidden,
                 CreateNoWindow = true,
                 UseShellExecute = false,
 
@@ -88,10 +90,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 FileName = MediaEncoder.EncoderPath,
                 Arguments = commandLineArgs,
 
-                IsHidden = true,
-                ErrorDialog = false,
-                EnableRaisingEvents = true
+                ErrorDialog = false
             });
+
+            process.EnableRaisingEvents = true;
 
             var workingDirectory = GetWorkingDirectory(options);
             if (!string.IsNullOrWhiteSpace(workingDirectory))
@@ -128,29 +130,60 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw;
             }
 
-            cancellationToken.Register(() => Cancel(process, encodingJob));
+            cancellationToken.Register(async () => await Cancel(process, encodingJob));
 
-            // MUST read both stdout and stderr asynchronously or a deadlock may occurr
+            // MUST read both stdout and stderr asynchronously or a deadlock may occur
             //process.BeginOutputReadLine();
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             new JobLogger(Logger).StartStreamingLog(encodingJob, process.StandardError.BaseStream, encodingJob.LogFileStream);
 
-            // Wait for the file to exist before proceeeding
-            while (!File.Exists(encodingJob.OutputFilePath) && !encodingJob.HasExited)
-            {
-                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-            }
+            // Wait for the file to or for the process to stop
+            Task file = WaitForFileAsync(encodingJob.OutputFilePath);
+            await Task.WhenAny(encodingJob.TaskCompletionSource.Task, file).ConfigureAwait(false);
 
             return encodingJob;
         }
 
-        private void Cancel(IProcess process, EncodingJob job)
+        public static Task WaitForFileAsync(string path)
+        {
+            if (File.Exists(path))
+            {
+                return Task.CompletedTask;
+            }
+
+            var tcs = new TaskCompletionSource<bool>();
+            FileSystemWatcher watcher = new FileSystemWatcher(Path.GetDirectoryName(path));
+
+            watcher.Created += (s, e) =>
+            {
+                if (e.Name == Path.GetFileName(path))
+                {
+                    watcher.Dispose();
+                    tcs.TrySetResult(true);
+                }
+            };
+
+            watcher.Renamed += (s, e) =>
+            {
+                if (e.Name == Path.GetFileName(path))
+                {
+                    watcher.Dispose();
+                    tcs.TrySetResult(true);
+                }
+            };
+
+            watcher.EnableRaisingEvents = true;
+
+            return tcs.Task;
+        }
+
+        private async Task Cancel(Process process, EncodingJob job)
         {
             Logger.LogInformation("Killing ffmpeg process for {0}", job.OutputFilePath);
 
             //process.Kill();
-            process.StandardInput.WriteLine("q");
+            await process.StandardInput.WriteLineAsync("q");
 
             job.IsCancelled = true;
         }
@@ -160,28 +193,28 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="process">The process.</param>
         /// <param name="job">The job.</param>
-        private void OnFfMpegProcessExited(IProcess process, EncodingJob job)
+        private void OnFfMpegProcessExited(Process process, EncodingJob job)
         {
             job.HasExited = true;
 
             Logger.LogDebug("Disposing stream resources");
             job.Dispose();
 
-            var isSuccesful = false;
+            var isSuccessful = false;
 
             try
             {
                 var exitCode = process.ExitCode;
                 Logger.LogInformation("FFMpeg exited with code {0}", exitCode);
 
-                isSuccesful = exitCode == 0;
+                isSuccessful = exitCode == 0;
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "FFMpeg exited with an error.");
             }
 
-            if (isSuccesful && !job.IsCancelled)
+            if (isSuccessful && !job.IsCancelled)
             {
                 job.TaskCompletionSource.TrySetResult(true);
             }
