@@ -267,13 +267,13 @@ namespace MediaBrowser.Api.UserLibrary
 
             var session = GetSession(_sessionContext);
 
-            var dto = await UpdatePlayedStatus(user, request.Id, true, datePlayed).ConfigureAwait(false);
+            var dto = UpdatePlayedStatus(user, request.Id, true, datePlayed);
 
             foreach (var additionalUserInfo in session.AdditionalUsers)
             {
                 var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
 
-                await UpdatePlayedStatus(additionalUser, request.Id, true, datePlayed).ConfigureAwait(false);
+                UpdatePlayedStatus(additionalUser, request.Id, true, datePlayed);
             }
 
             return dto;
@@ -412,13 +412,13 @@ namespace MediaBrowser.Api.UserLibrary
 
             var session = GetSession(_sessionContext);
 
-            var dto = await UpdatePlayedStatus(user, request.Id, false, null).ConfigureAwait(false);
+            var dto = UpdatePlayedStatus(user, request.Id, false, null);
 
             foreach (var additionalUserInfo in session.AdditionalUsers)
             {
                 var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
 
-                await UpdatePlayedStatus(additionalUser, request.Id, false, null).ConfigureAwait(false);
+                UpdatePlayedStatus(additionalUser, request.Id, false, null);
             }
 
             return dto;
@@ -432,7 +432,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
         /// <param name="datePlayed">The date played.</param>
         /// <returns>Task.</returns>
-        private async Task<UserItemDataDto> UpdatePlayedStatus(User user, string itemId, bool wasPlayed, DateTime? datePlayed)
+        private UserItemDataDto UpdatePlayedStatus(User user, string itemId, bool wasPlayed, DateTime? datePlayed)
         {
             var item = _libraryManager.GetItemById(itemId);
 

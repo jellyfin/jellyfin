@@ -153,7 +153,11 @@ namespace MediaBrowser.Api
         private readonly INetworkManager _network;
         private readonly IDeviceManager _deviceManager;
 
-        public PluginService(IJsonSerializer jsonSerializer, IApplicationHost appHost, IInstallationManager installationManager, INetworkManager network, IDeviceManager deviceManager)
+        public PluginService(IJsonSerializer jsonSerializer,
+            IApplicationHost appHost,
+            IInstallationManager installationManager,
+            INetworkManager network,
+            IDeviceManager deviceManager)
             : base()
         {
             if (jsonSerializer == null)
@@ -173,7 +177,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public async Task<object> Get(GetRegistrationStatus request)
+        public object Get(GetRegistrationStatus request)
         {
             var record = new MBRegistrationRecord
             {
@@ -187,26 +191,12 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(record);
         }
 
-        //TODO this function is only kept for compatibility and should be removed once paid plugins break
-        public async Task<object> Get(GetRegistration request)
-        {
-            var info = new RegistrationInfo
-            {
-                ExpirationDate = DateTime.Now.AddYears(100),
-                IsRegistered = true,
-                IsTrial = false,
-                Name = request.Name
-            };
-
-            return ToOptimizedResult(info);
-        }
-
         /// <summary>
         /// Gets the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public async Task<object> Get(GetPlugins request)
+        public object Get(GetPlugins request)
         {
             var result = _appHost.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()).ToArray();
             return ToOptimizedResult(result);
@@ -230,7 +220,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public async Task<object> Get(GetPluginSecurityInfo request)
+        public object Get(GetPluginSecurityInfo request)
         {
             var result = new PluginSecurityInfo
             {
