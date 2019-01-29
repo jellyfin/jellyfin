@@ -8,19 +8,19 @@ namespace Jellyfin.Server
     /// </summary>
     public class StartupOptions : IStartupOptions
     {
-        [Option('d', "datadir", Required = false, HelpText = "Path to use for the data folder (databases files etc.).")]
+        [Option('d', "datadir", Required = false, HelpText = "Path to use for the data folder (database files, etc.).")]
         public string DataDir { get; set; }
 
-        [Option('c', "configdir", Required = false, HelpText = "Path to use for config data (user policies and puctures).")]
+        [Option('c', "configdir", Required = false, HelpText = "Path to use for configuration data (user settings and pictures).")]
         public string ConfigDir { get; set; }
 
         [Option('l', "logdir", Required = false, HelpText = "Path to use for writing log files.")]
         public string LogDir { get; set; }
 
-        [Option("ffmpeg", Required = false, HelpText = "Path to external FFmpeg exe to use in place of built-in.")]
+        [Option("ffmpeg", Required = false, HelpText = "Path to external FFmpeg executable to use in place of default found in PATH. Must be specified along with --ffprobe.")]
         public string FFmpegPath { get; set; }
 
-        [Option("ffprobe", Required = false, HelpText = "ffmpeg and ffprobe switches must be supplied together.")]
+        [Option("ffprobe", Required = false, HelpText = "Path to external FFprobe executable to use in place of default found in PATH. Must be specified along with --ffmpeg.")]
         public string FFprobePath { get; set; }
 
         [Option("service", Required = false, HelpText = "Run as headless service.")]
@@ -32,7 +32,7 @@ namespace Jellyfin.Server
         [Option("package-name", Required = false, HelpText = "Used when packaging Jellyfin (example, synology).")]
         public string PackageName { get; set; }
 
-        [Option("restartpath", Required = false, HelpText = "Path to reset script.")]
+        [Option("restartpath", Required = false, HelpText = "Path to restart script.")]
         public string RestartPath { get; set; }
 
         [Option("restartargs", Required = false, HelpText = "Arguments for restart script.")]

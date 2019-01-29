@@ -49,11 +49,8 @@ namespace Jellyfin.Server
                 args[i] = regex.Replace(args[i], substitution);
             }
 
-            // For CommandLine package, change default behaviour to output errors to stdout (instead of stderr)
-            var parser = new Parser(config => config.HelpWriter = Console.Out);
-
             // Parse the command line arguments and either start the app or exit indicating error
-            await parser.ParseArguments<StartupOptions>(args)
+            await Parser.Default.ParseArguments<StartupOptions>(args)
                 .MapResult(
                     options => StartApp(options),
                     errs => Task.FromResult(0)).ConfigureAwait(false);
