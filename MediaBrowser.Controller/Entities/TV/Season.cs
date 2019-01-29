@@ -97,7 +97,7 @@ namespace MediaBrowser.Controller.Entities.TV
                     return series.Path;
                 }
 
-                return FileSystem.GetDirectoryName(Path);
+                return System.IO.Path.GetDirectoryName(Path);
             }
         }
 

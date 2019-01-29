@@ -1,4 +1,4 @@
-﻿//============================================================================
+//============================================================================
 // BDInfo - Blu-ray Video and Audio Analysis Tool
 // Copyright © 2010 Cinema Squid
 //
@@ -57,7 +57,7 @@ namespace BDInfo
 #endif
                 Streams.Clear();
 
-                fileStream = _fileSystem.OpenRead(FileInfo.FullName);
+                fileStream = File.OpenRead(FileInfo.FullName);
                 fileReader = new BinaryReader(fileStream);
 
                 byte[] data = new byte[fileStream.Length];

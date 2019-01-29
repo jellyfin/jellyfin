@@ -345,7 +345,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (IsStacked)
                 {
-                    return FileSystem.GetDirectoryName(Path);
+                    return System.IO.Path.GetDirectoryName(Path);
                 }
 
                 if (!IsPlaceHolder)

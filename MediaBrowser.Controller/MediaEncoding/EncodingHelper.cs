@@ -434,7 +434,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (string.Equals(Path.GetExtension(subtitlePath), ".sub", StringComparison.OrdinalIgnoreCase))
                     {
                         var idxFile = Path.ChangeExtension(subtitlePath, ".idx");
-                        if (_fileSystem.FileExists(idxFile))
+                        if (File.Exists(idxFile))
                         {
                             subtitlePath = idxFile;
                         }
@@ -542,7 +542,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // var fallbackFontPath = Path.Combine(_appPaths.ProgramDataPath, "fonts", "DroidSansFallback.ttf");
             // string fallbackFontParam = string.Empty;
 
-            // if (!_fileSystem.FileExists(fallbackFontPath))
+            // if (!File.Exists(fallbackFontPath))
             // {
             //     _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(fallbackFontPath));
             //     using (var stream = _assemblyInfo.GetManifestResourceStream(GetType(), GetType().Namespace + ".DroidSansFallback.ttf"))

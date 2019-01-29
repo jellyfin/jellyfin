@@ -210,7 +210,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             }
 
-            return _fileSystem.OpenRead(path);
+            return File.OpenRead(path);
         }
 
         private async Task<SubtitleInfo> GetReadableFile(
@@ -386,7 +386,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             try
             {
-                if (!_fileSystem.FileExists(outputPath))
+                if (!File.Exists(outputPath))
                 {
                     await ConvertTextSubtitleToSrtInternal(inputPath, language, inputProtocol, outputPath, cancellationToken).ConfigureAwait(false);
                 }
@@ -422,7 +422,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException(nameof(outputPath));
             }
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             var encodingParam = await GetSubtitleFileCharacterSet(inputPath, language, inputProtocol, cancellationToken).ConfigureAwait(false);
 
@@ -481,7 +481,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 failed = true;
 
-                if (_fileSystem.FileExists(outputPath))
+                if (File.Exists(outputPath))
                 {
                     try
                     {
@@ -494,7 +494,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
                 }
             }
-            else if (!_fileSystem.FileExists(outputPath))
+            else if (!File.Exists(outputPath))
             {
                 failed = true;
             }
@@ -537,7 +537,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             try
             {
-                if (!_fileSystem.FileExists(outputPath))
+                if (!File.Exists(outputPath))
                 {
                     await ExtractTextSubtitleInternal(_mediaEncoder.GetInputArgument(inputFiles, protocol), subtitleStreamIndex, outputCodec, outputPath, cancellationToken).ConfigureAwait(false);
                 }
@@ -565,7 +565,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException(nameof(outputPath));
             }
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             var processArgs = string.Format("-i {0} -map 0:{1} -an -vn -c:s {2} \"{3}\"", inputPath,
                 subtitleStreamIndex, outputCodec, outputPath);
@@ -634,7 +634,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     _logger.LogError(ex, "Error deleting extracted subtitle {Path}", outputPath);
                 }
             }
-            else if (!_fileSystem.FileExists(outputPath))
+            else if (!File.Exists(outputPath))
             {
                 failed = true;
             }
@@ -672,7 +672,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string text;
             Encoding encoding;
 
-            using (var fileStream = _fileSystem.OpenRead(file))
+            using (var fileStream = File.OpenRead(file))
             using (var reader = new StreamReader(fileStream, true))
             {
                 encoding = reader.CurrentEncoding;
@@ -747,7 +747,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
             if (protocol == MediaProtocol.File)
             {
-                return _fileSystem.ReadAllBytes(path);
+                return File.ReadAllBytes(path);
             }
 
             throw new ArgumentOutOfRangeException(nameof(protocol));

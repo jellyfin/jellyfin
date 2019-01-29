@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -91,7 +92,7 @@ namespace MediaBrowser.Providers.Movies
                     tmdbId = movieInfo.id.ToString(_usCulture);
 
                     dataFilePath = MovieDbProvider.Current.GetDataFilePath(tmdbId, language);
-                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(dataFilePath));
+                    Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
                     _jsonSerializer.SerializeToFile(movieInfo, dataFilePath);
                 }
             }

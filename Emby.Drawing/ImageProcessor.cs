@@ -244,7 +244,7 @@ namespace Emby.Drawing
 
             try
             {
-                if (!_fileSystem.FileExists(cacheFilePath))
+                if (!File.Exists(cacheFilePath))
                 {
                     if (options.CropWhiteSpace && !SupportsTransparency(originalImagePath))
                     {
@@ -626,12 +626,12 @@ namespace Emby.Drawing
             try
             {
                 // Check again in case of contention
-                if (_fileSystem.FileExists(enhancedImagePath))
+                if (File.Exists(enhancedImagePath))
                 {
                     return (enhancedImagePath, treatmentRequiresTransparency);
                 }
 
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(enhancedImagePath));
+                Directory.CreateDirectory(Path.GetDirectoryName(enhancedImagePath));
 
                 await ExecuteImageEnhancers(supportedEnhancers, originalImagePath, enhancedImagePath, item, imageType, imageIndex).ConfigureAwait(false);
 

@@ -58,9 +58,9 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var path = GetAudioImagePath(item);
 
-            if (!_fileSystem.FileExists(path))
+            if (!File.Exists(path))
             {
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                 var imageStream = imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("front", StringComparison.OrdinalIgnoreCase) != -1) ??
                     imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("cover", StringComparison.OrdinalIgnoreCase) != -1) ??
@@ -70,7 +70,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 var tempFile = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false);
 
-                _fileSystem.CopyFile(tempFile, path, true);
+                File.Copy(tempFile, path, true);
 
                 try
                 {

@@ -305,7 +305,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
         private async Task CacheResponse(HttpResponseInfo response, string responseCachePath)
         {
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(responseCachePath));
+            Directory.CreateDirectory(Path.GetDirectoryName(responseCachePath));
 
             using (var fileStream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.None, true))
             {
@@ -513,7 +513,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             ValidateParams(options);
 
-            _fileSystem.CreateDirectory(_appPaths.TempDirectory);
+            Directory.CreateDirectory(_appPaths.TempDirectory);
 
             var tempFile = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
 

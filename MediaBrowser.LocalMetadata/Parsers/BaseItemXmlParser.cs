@@ -102,7 +102,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         {
             item.ResetPeople();
 
-            using (var fileStream = FileSystem.OpenRead(metadataFile))
+            using (var fileStream = File.OpenRead(metadataFile))
             {
                 using (var streamReader = new StreamReader(fileStream, encoding))
                 {

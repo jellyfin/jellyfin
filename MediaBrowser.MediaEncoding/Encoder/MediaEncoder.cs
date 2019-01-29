@@ -214,7 +214,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     throw new ArgumentNullException(nameof(path));
                 }
 
-                if (!FileSystem.FileExists(path) && !FileSystem.DirectoryExists(path))
+                if (!File.Exists(path) && !Directory.Exists(path))
                 {
                     throw new ResourceNotFoundException();
                 }
@@ -288,12 +288,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (!string.IsNullOrWhiteSpace(appPath))
             {
-                if (FileSystem.DirectoryExists(appPath))
+                if (Directory.Exists(appPath))
                 {
                     return GetPathsFromDirectory(appPath);
                 }
 
-                if (FileSystem.FileExists(appPath))
+                if (File.Exists(appPath))
                 {
                     return new Tuple<string, string>(appPath, GetProbePathFromEncoderPath(appPath));
                 }
@@ -336,7 +336,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var ffmpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase) && !excludeExtensions.Contains(Path.GetExtension(i) ?? string.Empty));
             var ffprobePath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffprobe", StringComparison.OrdinalIgnoreCase) && !excludeExtensions.Contains(Path.GetExtension(i) ?? string.Empty));
 
-            if (string.IsNullOrWhiteSpace(ffmpegPath) || !FileSystem.FileExists(ffmpegPath))
+            if (string.IsNullOrWhiteSpace(ffmpegPath) || !File.Exists(ffmpegPath))
             {
                 files = FileSystem.GetFilePaths(path, true);
 
@@ -353,7 +353,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetProbePathFromEncoderPath(string appPath)
         {
-            return FileSystem.GetFilePaths(FileSystem.GetDirectoryName(appPath))
+            return FileSystem.GetFilePaths(Path.GetDirectoryName(appPath))
                 .FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffprobe", StringComparison.OrdinalIgnoreCase));
         }
 
@@ -608,7 +608,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             var tempExtractPath = Path.Combine(ConfigurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".jpg");
-            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(tempExtractPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
 
             // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar then scale to width 600.
             // This filter chain may have adverse effects on recorded tv thumbnails if ar changes during presentation ex. commercials @ diff ar
@@ -770,7 +770,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 vf += string.Format(",scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam);
             }
 
-            FileSystem.CreateDirectory(targetDirectory);
+            Directory.CreateDirectory(targetDirectory);
             var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
 
             var args = string.Format("-i {0} -threads 0 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);

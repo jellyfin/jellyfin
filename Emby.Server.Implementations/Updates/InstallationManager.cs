@@ -555,7 +555,7 @@ namespace Emby.Server.Implementations.Updates
             var packageChecksum = string.IsNullOrWhiteSpace(package.checksum) ? Guid.Empty : new Guid(package.checksum);
             if (!packageChecksum.Equals(Guid.Empty)) // support for legacy uploads for now
             {
-                using (var stream = _fileSystem.OpenRead(tempFile))
+                using (var stream = File.OpenRead(tempFile))
                 {
                     var check = Guid.Parse(BitConverter.ToString(_cryptographyProvider.ComputeMD5(stream)).Replace("-", string.Empty));
                     if (check != packageChecksum)
@@ -570,12 +570,12 @@ namespace Emby.Server.Implementations.Updates
             // Success - move it to the real target
             try
             {
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(target));
-                _fileSystem.CopyFile(tempFile, target, true);
+                Directory.CreateDirectory(Path.GetDirectoryName(target));
+                File.Copy(tempFile, target, true);
                 //If it is an archive - write out a version file so we know what it is
                 if (isArchive)
                 {
-                    _fileSystem.WriteAllText(target + ".ver", package.versionStr);
+                    File.WriteAllText(target + ".ver", package.versionStr);
                 }
             }
             catch (IOException ex)
@@ -611,7 +611,7 @@ namespace Emby.Server.Implementations.Updates
             _logger.LogInformation("Deleting plugin file {0}", path);
 
             // Make this case-insensitive to account for possible incorrect assembly naming
-            var file = _fileSystem.GetFilePaths(_fileSystem.GetDirectoryName(path))
+            var file = _fileSystem.GetFilePaths(Path.GetDirectoryName(path))
                 .FirstOrDefault(i => string.Equals(i, path, StringComparison.OrdinalIgnoreCase));
 
             if (!string.IsNullOrWhiteSpace(file))

@@ -229,7 +229,7 @@ namespace MediaBrowser.Providers.People
             {
                 using (var json = response.Content)
                 {
-                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(dataFilePath));
+                    Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
                     using (var fs = _fileSystem.GetFileStream(dataFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                     {

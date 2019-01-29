@@ -375,7 +375,7 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
-                    _fileSystem.DeleteDirectory(metadataPath, true);
+                    Directory.Delete(metadataPath, true);
                 }
                 catch (IOException)
                 {
@@ -402,11 +402,11 @@ namespace Emby.Server.Implementations.Library
                             _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
                             if (fileSystemInfo.IsDirectory)
                             {
-                                _fileSystem.DeleteDirectory(fileSystemInfo.FullName, true);
+                                Directory.Delete(fileSystemInfo.FullName, true);
                             }
                             else
                             {
-                                _fileSystem.DeleteFile(fileSystemInfo.FullName);
+                                File.Delete(fileSystemInfo.FullName);
                             }
                         }
                         catch (IOException)
@@ -720,7 +720,7 @@ namespace Emby.Server.Implementations.Library
         {
             var rootFolderPath = ConfigurationManager.ApplicationPaths.RootFolderPath;
 
-            _fileSystem.CreateDirectory(rootFolderPath);
+            Directory.CreateDirectory(rootFolderPath);
 
             var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath))).DeepCopy<Folder, AggregateFolder>();
 
@@ -734,7 +734,7 @@ namespace Emby.Server.Implementations.Library
             // Add in the plug-in folders
             var path = Path.Combine(ConfigurationManager.ApplicationPaths.DataPath, "playlists");
 
-            _fileSystem.CreateDirectory(path);
+            Directory.CreateDirectory(path);
 
             Folder folder = new PlaylistsFolder
             {
@@ -785,7 +785,7 @@ namespace Emby.Server.Implementations.Library
                     {
                         var userRootPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
 
-                        _fileSystem.CreateDirectory(userRootPath);
+                        Directory.CreateDirectory(userRootPath);
 
                         var tmpItem = GetItemById(GetNewItemId(userRootPath, typeof(UserRootFolder))) as UserRootFolder;
 
@@ -999,7 +999,7 @@ namespace Emby.Server.Implementations.Library
         public Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
             // Ensure the location is available.
-            _fileSystem.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
+            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
 
             return new PeopleValidator(this, _logger, ConfigurationManager, _fileSystem).ValidatePeople(cancellationToken, progress);
         }
@@ -1228,7 +1228,7 @@ namespace Emby.Server.Implementations.Library
         private string GetCollectionType(string path)
         {
             return _fileSystem.GetFilePaths(path, new[] { ".collection" }, true, false)
-                .Select(i => _fileSystem.GetFileNameWithoutExtension(i))
+                .Select(i => Path.GetFileNameWithoutExtension(i))
                 .FirstOrDefault(i => !string.IsNullOrEmpty(i));
         }
 
@@ -2146,7 +2146,7 @@ namespace Emby.Server.Implementations.Library
 
             if (item == null || !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
             {
-                _fileSystem.CreateDirectory(path);
+                Directory.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -2191,7 +2191,7 @@ namespace Emby.Server.Implementations.Library
 
             if (item == null)
             {
-                _fileSystem.CreateDirectory(path);
+                Directory.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -2256,7 +2256,7 @@ namespace Emby.Server.Implementations.Library
 
             if (item == null)
             {
-                _fileSystem.CreateDirectory(path);
+                Directory.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -2324,7 +2324,7 @@ namespace Emby.Server.Implementations.Library
 
             if (item == null)
             {
-                _fileSystem.CreateDirectory(path);
+                Directory.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -2863,7 +2863,7 @@ namespace Emby.Server.Implementations.Library
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
 
             var virtualFolderPath = Path.Combine(rootFolderPath, name);
-            while (_fileSystem.DirectoryExists(virtualFolderPath))
+            while (Directory.Exists(virtualFolderPath))
             {
                 name += "1";
                 virtualFolderPath = Path.Combine(rootFolderPath, name);
@@ -2872,7 +2872,7 @@ namespace Emby.Server.Implementations.Library
             var mediaPathInfos = options.PathInfos;
             if (mediaPathInfos != null)
             {
-                var invalidpath = mediaPathInfos.FirstOrDefault(i => !_fileSystem.DirectoryExists(i.Path));
+                var invalidpath = mediaPathInfos.FirstOrDefault(i => !Directory.Exists(i.Path));
                 if (invalidpath != null)
                 {
                     throw new ArgumentException("The specified path does not exist: " + invalidpath.Path + ".");
@@ -2883,13 +2883,13 @@ namespace Emby.Server.Implementations.Library
 
             try
             {
-                _fileSystem.CreateDirectory(virtualFolderPath);
+                Directory.CreateDirectory(virtualFolderPath);
 
                 if (!string.IsNullOrEmpty(collectionType))
                 {
                     var path = Path.Combine(virtualFolderPath, collectionType + ".collection");
 
-                    _fileSystem.WriteAllBytes(path, Array.Empty<byte>());
+                    File.WriteAllBytes(path, Array.Empty<byte>());
                 }
 
                 CollectionFolder.SaveLibraryOptions(virtualFolderPath, options);
@@ -2935,7 +2935,7 @@ namespace Emby.Server.Implementations.Library
             //    // We can't validate protocol-based paths, so just allow them
             //    if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) == -1)
             //    {
-            //        return _fileSystem.DirectoryExists(path);
+            //        return Directory.Exists(path);
             //    }
             //}
 
@@ -2963,7 +2963,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(path));
             }
 
-            if (!_fileSystem.DirectoryExists(path))
+            if (!Directory.Exists(path))
             {
                 throw new FileNotFoundException("The path does not exist.");
             }
@@ -2976,11 +2976,11 @@ namespace Emby.Server.Implementations.Library
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
 
-            var shortcutFilename = _fileSystem.GetFileNameWithoutExtension(path);
+            var shortcutFilename = Path.GetFileNameWithoutExtension(path);
 
             var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
 
-            while (_fileSystem.FileExists(lnk))
+            while (File.Exists(lnk))
             {
                 shortcutFilename += "1";
                 lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
@@ -3073,7 +3073,7 @@ namespace Emby.Server.Implementations.Library
 
             var path = Path.Combine(rootFolderPath, name);
 
-            if (!_fileSystem.DirectoryExists(path))
+            if (!Directory.Exists(path))
             {
                 throw new FileNotFoundException("The media folder does not exist");
             }
@@ -3082,7 +3082,7 @@ namespace Emby.Server.Implementations.Library
 
             try
             {
-                _fileSystem.DeleteDirectory(path, true);
+                Directory.Delete(path, true);
             }
             finally
             {
@@ -3145,7 +3145,7 @@ namespace Emby.Server.Implementations.Library
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
 
-            if (!_fileSystem.DirectoryExists(virtualFolderPath))
+            if (!Directory.Exists(virtualFolderPath))
             {
                 throw new FileNotFoundException(string.Format("The media collection {0} does not exist", virtualFolderName));
             }

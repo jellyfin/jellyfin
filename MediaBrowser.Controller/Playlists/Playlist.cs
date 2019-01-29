@@ -50,7 +50,7 @@ namespace MediaBrowser.Controller.Playlists
 
                 if (IsPlaylistFile(path))
                 {
-                    return FileSystem.GetDirectoryName(path);
+                    return System.IO.Path.GetDirectoryName(path);
                 }
 
                 return path;

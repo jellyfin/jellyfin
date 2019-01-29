@@ -904,7 +904,7 @@ namespace Emby.Server.Implementations.Library
             // Tuesday, 22 August 2006 06:30 AM
             text.AppendLine("The pin code will expire at " + localExpirationTime.ToString("f1", CultureInfo.CurrentCulture));
 
-            _fileSystem.WriteAllText(path, text.ToString(), Encoding.UTF8);
+            File.WriteAllText(path, text.ToString(), Encoding.UTF8);
 
             var result = new PasswordPinCreationResult
             {
@@ -1080,7 +1080,7 @@ namespace Emby.Server.Implementations.Library
 
             var path = GetPolicyFilePath(user);
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_policySyncLock)
             {
@@ -1176,7 +1176,7 @@ namespace Emby.Server.Implementations.Library
                 config = _jsonSerializer.DeserializeFromString<UserConfiguration>(json);
             }
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_configSyncLock)
             {

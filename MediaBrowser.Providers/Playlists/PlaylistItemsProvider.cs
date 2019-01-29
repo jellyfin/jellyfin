@@ -45,7 +45,7 @@ namespace MediaBrowser.Providers.Playlists
                 return Task.FromResult(ItemUpdateType.None);
             }
 
-            using (var stream = _fileSystem.OpenRead(path))
+            using (var stream = File.OpenRead(path))
             {
                 var items = GetItems(stream, extension).ToArray();
 

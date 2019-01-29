@@ -82,7 +82,7 @@ namespace MediaBrowser.Providers.TV
         {
             var path = TvdbSeriesProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
 
-            _fileSystem.CreateDirectory(path);
+            Directory.CreateDirectory(path);
 
             var timestampFile = Path.Combine(path, "time.txt");
 
@@ -95,7 +95,7 @@ namespace MediaBrowser.Providers.TV
             }
 
             // Find out the last time we queried tvdb for updates
-            var lastUpdateTime = timestampFileInfo.Exists ? _fileSystem.ReadAllText(timestampFile, Encoding.UTF8) : string.Empty;
+            var lastUpdateTime = timestampFileInfo.Exists ? File.ReadAllText(timestampFile, Encoding.UTF8) : string.Empty;
 
             string newUpdateTime;
 
@@ -171,7 +171,7 @@ namespace MediaBrowser.Providers.TV
                 await UpdateSeries(listToUpdate, path, nullableUpdateValue, progress, cancellationToken).ConfigureAwait(false);
             }
 
-            _fileSystem.WriteAllText(timestampFile, newUpdateTime, Encoding.UTF8);
+            File.WriteAllText(timestampFile, newUpdateTime, Encoding.UTF8);
             progress.Report(100);
         }
 
@@ -390,7 +390,7 @@ namespace MediaBrowser.Providers.TV
 
             seriesDataPath = Path.Combine(seriesDataPath, id);
 
-            _fileSystem.CreateDirectory(seriesDataPath);
+            Directory.CreateDirectory(seriesDataPath);
 
             return TvdbSeriesProvider.Current.DownloadSeriesZip(id, MetadataProviders.Tvdb.ToString(), null, null, seriesDataPath, lastTvDbUpdateTime, preferredMetadataLanguage, cancellationToken);
         }

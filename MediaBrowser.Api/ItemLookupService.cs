@@ -265,9 +265,9 @@ namespace MediaBrowser.Api
 
             try
             {
-                contentPath = _fileSystem.ReadAllText(pointerCachePath);
+                contentPath = File.ReadAllText(pointerCachePath);
 
-                if (_fileSystem.FileExists(contentPath))
+                if (File.Exists(contentPath))
                 {
                     return await ResultFactory.GetStaticFileResult(Request, contentPath).ConfigureAwait(false);
                 }
@@ -284,7 +284,7 @@ namespace MediaBrowser.Api
             await DownloadImage(request.ProviderName, request.ImageUrl, urlHash, pointerCachePath).ConfigureAwait(false);
 
             // Read the pointer file again
-            contentPath = _fileSystem.ReadAllText(pointerCachePath);
+            contentPath = File.ReadAllText(pointerCachePath);
 
             return await ResultFactory.GetStaticFileResult(Request, contentPath).ConfigureAwait(false);
         }
@@ -305,7 +305,7 @@ namespace MediaBrowser.Api
 
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(fullCachePath));
+            Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
             using (var stream = result.Content)
             {
                 using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
@@ -314,8 +314,8 @@ namespace MediaBrowser.Api
                 }
             }
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(pointerCachePath));
-            _fileSystem.WriteAllText(pointerCachePath, fullCachePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
+            File.WriteAllText(pointerCachePath, fullCachePath);
         }
 
         /// <summary>

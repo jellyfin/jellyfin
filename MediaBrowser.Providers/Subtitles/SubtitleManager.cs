@@ -168,7 +168,7 @@ namespace MediaBrowser.Providers.Subtitles
                         memoryStream.Position = 0;
 
                         var savePaths = new List<string>();
-                        var saveFileName = _fileSystem.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLower();
+                        var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLower();
 
                         if (response.IsForced)
                         {
@@ -217,7 +217,7 @@ namespace MediaBrowser.Providers.Subtitles
 
                 try
                 {
-                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(savePath));
+                    Directory.CreateDirectory(Path.GetDirectoryName(savePath));
 
                     using (var fs = _fileSystem.GetFileStream(savePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                     {
