@@ -268,7 +268,7 @@ namespace Emby.Server.Implementations.Localization
                 countryCode = "us";
             }
 
-            var ratings = GetRatings(countryCode) ?? GetRatings("us");
+           return GetRatings(countryCode) ?? GetRatings("us");
 
             return ratings;
         }
