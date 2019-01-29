@@ -76,24 +76,26 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var commandLineArgs = GetCommandLineArguments(encodingJob);
 
-            Process process = Process.Start(new ProcessStartInfo
+            Process process = new Process
             {
-                WindowStyle = ProcessWindowStyle.Hidden,
-                CreateNoWindow = true,
-                UseShellExecute = false,
+                StartInfo = new ProcessStartInfo
+                {
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
 
-                // Must consume both stdout and stderr or deadlocks may occur
-                //RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
+                    // Must consume both stdout and stderr or deadlocks may occur
+                    //RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
 
-                FileName = MediaEncoder.EncoderPath,
-                Arguments = commandLineArgs,
+                    FileName = MediaEncoder.EncoderPath,
+                    Arguments = commandLineArgs,
 
-                ErrorDialog = false
-            });
-
-            process.EnableRaisingEvents = true;
+                    ErrorDialog = false
+                },
+                EnableRaisingEvents = true
+            };
 
             var workingDirectory = GetWorkingDirectory(options);
             if (!string.IsNullOrWhiteSpace(workingDirectory))
@@ -132,50 +134,42 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             cancellationToken.Register(async () => await Cancel(process, encodingJob));
 
-            // MUST read both stdout and stderr asynchronously or a deadlock may occur
-            //process.BeginOutputReadLine();
-
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             new JobLogger(Logger).StartStreamingLog(encodingJob, process.StandardError.BaseStream, encodingJob.LogFileStream);
 
-            // Wait for the file to or for the process to stop
-            Task file = WaitForFileAsync(encodingJob.OutputFilePath);
-            await Task.WhenAny(encodingJob.TaskCompletionSource.Task, file).ConfigureAwait(false);
+            Logger.LogInformation("test0");
 
-            return encodingJob;
-        }
-
-        public static Task WaitForFileAsync(string path)
-        {
-            if (File.Exists(path))
+            if (File.Exists(encodingJob.OutputFilePath))
             {
-                return Task.CompletedTask;
+                return encodingJob;
             }
 
-            var tcs = new TaskCompletionSource<bool>();
-            FileSystemWatcher watcher = new FileSystemWatcher(Path.GetDirectoryName(path));
+            Logger.LogInformation("test1");
 
-            watcher.Created += (s, e) =>
+            using (var watcher = new FileSystemWatcher(Path.GetDirectoryName(encodingJob.OutputFilePath)))
             {
-                if (e.Name == Path.GetFileName(path))
+                var tcs = new TaskCompletionSource<bool>();
+                string fileName = Path.GetFileName(encodingJob.OutputFilePath);
+
+                watcher.Created += (s, e) =>
                 {
-                    watcher.Dispose();
-                    tcs.TrySetResult(true);
-                }
-            };
+                    if (e.Name == fileName)
+                    {
+                        tcs.TrySetResult(true);
+                    }
+                };
 
-            watcher.Renamed += (s, e) =>
-            {
-                if (e.Name == Path.GetFileName(path))
-                {
-                    watcher.Dispose();
-                    tcs.TrySetResult(true);
-                }
-            };
+                watcher.EnableRaisingEvents = true;
 
-            watcher.EnableRaisingEvents = true;
+                Logger.LogInformation("test2");
 
-            return tcs.Task;
+                // Wait for the file to or for the process to stop
+                await Task.WhenAny(encodingJob.TaskCompletionSource.Task, tcs.Task).ConfigureAwait(false);
+
+                Logger.LogInformation("test3");
+
+                return encodingJob;
+            }
         }
 
         private async Task Cancel(Process process, EncodingJob job)

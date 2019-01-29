@@ -462,7 +462,7 @@ namespace MediaBrowser.Api
 
             Logger.LogInformation("Transcoding kill timer stopped for JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
 
-            KillTranscodingJob(job, true, path => true);
+            KillTranscodingJob(job, true, path => true).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -472,9 +472,9 @@ namespace MediaBrowser.Api
         /// <param name="playSessionId">The play session identifier.</param>
         /// <param name="deleteFiles">The delete files.</param>
         /// <returns>Task.</returns>
-        internal void KillTranscodingJobs(string deviceId, string playSessionId, Func<string, bool> deleteFiles)
+        internal Task KillTranscodingJobs(string deviceId, string playSessionId, Func<string, bool> deleteFiles)
         {
-            KillTranscodingJobs(j =>
+            return KillTranscodingJobs(j =>
             {
                 if (!string.IsNullOrWhiteSpace(playSessionId))
                 {
@@ -492,7 +492,7 @@ namespace MediaBrowser.Api
         /// <param name="killJob">The kill job.</param>
         /// <param name="deleteFiles">The delete files.</param>
         /// <returns>Task.</returns>
-        private void KillTranscodingJobs(Func<TranscodingJob, bool> killJob, Func<string, bool> deleteFiles)
+        private Task KillTranscodingJobs(Func<TranscodingJob, bool> killJob, Func<string, bool> deleteFiles)
         {
             var jobs = new List<TranscodingJob>();
 
@@ -505,13 +505,18 @@ namespace MediaBrowser.Api
 
             if (jobs.Count == 0)
             {
-                return;
+                return Task.CompletedTask;
             }
 
-            foreach (var job in jobs)
+            IEnumerable<Task> GetKillJobs()
             {
-                KillTranscodingJob(job, false, deleteFiles);
+                foreach (var job in jobs)
+                {
+                    yield return KillTranscodingJob(job, false, deleteFiles);
+                }
             }
+
+            return Task.WhenAll(GetKillJobs());
         }
 
         /// <summary>
@@ -520,7 +525,7 @@ namespace MediaBrowser.Api
         /// <param name="job">The job.</param>
         /// <param name="closeLiveStream">if set to <c>true</c> [close live stream].</param>
         /// <param name="delete">The delete.</param>
-        private async void KillTranscodingJob(TranscodingJob job, bool closeLiveStream, Func<string, bool> delete)
+        private async Task KillTranscodingJob(TranscodingJob job, bool closeLiveStream, Func<string, bool> delete)
         {
             job.DisposeKillTimer();
 
@@ -577,7 +582,7 @@ namespace MediaBrowser.Api
 
             if (delete(job.Path))
             {
-                DeletePartialStreamFiles(job.Path, job.Type, 0, 1500);
+                await DeletePartialStreamFiles(job.Path, job.Type, 0, 1500).ConfigureAwait(false);
             }
 
             if (closeLiveStream && !string.IsNullOrWhiteSpace(job.LiveStreamId))
@@ -588,12 +593,12 @@ namespace MediaBrowser.Api
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error closing live stream for {path}", job.Path);
+                    Logger.LogError(ex, "Error closing live stream for {Path}", job.Path);
                 }
             }
         }
 
-        private async void DeletePartialStreamFiles(string path, TranscodingJobType jobType, int retryCount, int delayMs)
+        private async Task DeletePartialStreamFiles(string path, TranscodingJobType jobType, int retryCount, int delayMs)
         {
             if (retryCount >= 10)
             {
@@ -623,7 +628,7 @@ namespace MediaBrowser.Api
             {
                 Logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
 
-                DeletePartialStreamFiles(path, jobType, retryCount + 1, 500);
+                await DeletePartialStreamFiles(path, jobType, retryCount + 1, 500).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -650,8 +655,7 @@ namespace MediaBrowser.Api
             var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
             var filesToDelete = _fileSystem.GetFilePaths(directory)
-                .Where(f => f.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1)
-                .ToList();
+                .Where(f => f.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1);
 
             Exception e = null;
 
