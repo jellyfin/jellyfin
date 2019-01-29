@@ -214,7 +214,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     throw new ArgumentNullException(nameof(path));
                 }
 
-                if (!File.Exists(path) && Directory.Exists(path))
+                if (!File.Exists(path) && !Directory.Exists(path))
                 {
                     throw new ResourceNotFoundException();
                 }
