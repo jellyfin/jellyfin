@@ -1,25 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 using TvDbSharper;
 using TvDbSharper.Dto;
@@ -35,7 +27,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;
-        private readonly TvDbClient _tvDbClient;
+        private readonly TvDbClientManager _tvDbClientManager;
 
         public TvdbSeriesProvider(IHttpClient httpClient, ILogger logger, ILibraryManager libraryManager, ILocalizationManager localizationManager)
         {
@@ -44,8 +36,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
             Current = this;
-            _tvDbClient = new TvDbClient();
-            _tvDbClient.Authentication.AuthenticateAsync(TVUtils.TvdbApiKey);
+            _tvDbClientManager = TvDbClientManager.Instance;
         }
 
         private string NormalizeLanguage(string language)
@@ -112,7 +103,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
         private async Task FetchSeriesData(MetadataResult<Series> result, string metadataLanguage, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
         {
-            _tvDbClient.AcceptedLanguage = NormalizeLanguage(metadataLanguage);
+            _tvDbClientManager.TvDbClient.AcceptedLanguage = NormalizeLanguage(metadataLanguage);
             var series = result.Item;
 
             if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out var tvdbId) && !string.IsNullOrEmpty(tvdbId))
@@ -133,7 +124,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             }
 
             // TODO call this function elsewhere?
-            var seriesResult = await _tvDbClient.Series.GetAsync(Convert.ToInt32(tvdbId), cancellationToken);
+            var seriesResult = await _tvDbClientManager.TvDbClient.Series.GetAsync(Convert.ToInt32(tvdbId), cancellationToken);
 
             // TODO error handling
             MapSeriesToResult(result, seriesResult.Data, cancellationToken);
@@ -142,22 +133,22 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             result.ResetPeople();
 
-            var actorsResult = await _tvDbClient.Series.GetActorsAsync(Convert.ToInt32(tvdbId), cancellationToken);
+            var actorsResult = await _tvDbClientManager.TvDbClient.Series.GetActorsAsync(Convert.ToInt32(tvdbId), cancellationToken);
             MapActorsToResult(result, actorsResult.Data);
         }
 
         private async Task<string> GetSeriesByRemoteId(string id, string idType, string language, CancellationToken cancellationToken)
         {
-            _tvDbClient.AcceptedLanguage = NormalizeLanguage(language);
+            _tvDbClientManager.TvDbClient.AcceptedLanguage = NormalizeLanguage(language);
             TvDbResponse<SeriesSearchResult[]> result;
 
             if (string.Equals(idType, MetadataProviders.Zap2It.ToString(), StringComparison.OrdinalIgnoreCase))
             {
-                result = await _tvDbClient.Search.SearchSeriesByZap2ItIdAsync(id, cancellationToken);
+                result = await _tvDbClientManager.TvDbClient.Search.SearchSeriesByZap2ItIdAsync(id, cancellationToken);
             }
             else
             {
-                result = await _tvDbClient.Search.SearchSeriesByImdbIdAsync(id, cancellationToken);
+                result = await _tvDbClientManager.TvDbClient.Search.SearchSeriesByImdbIdAsync(id, cancellationToken);
             }
 
             return result.Data.First().Id.ToString();
@@ -252,10 +243,10 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
         private async Task<List<RemoteSearchResult>> FindSeriesInternal(string name, string language, CancellationToken cancellationToken)
         {
-            _tvDbClient.AcceptedLanguage = NormalizeLanguage(language);
+            _tvDbClientManager.TvDbClient.AcceptedLanguage = NormalizeLanguage(language);
             var comparableName = GetComparableName(name);
             var list = new List<Tuple<List<string>, RemoteSearchResult>>();
-            TvDbResponse<SeriesSearchResult[]> result = await _tvDbClient.Search.SearchSeriesByNameAsync(comparableName, cancellationToken);
+            TvDbResponse<SeriesSearchResult[]> result = await _tvDbClientManager.TvDbClient.Search.SearchSeriesByNameAsync(comparableName, cancellationToken);
 
             foreach (var seriesSearchResult in result.Data)
             {

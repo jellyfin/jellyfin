@@ -22,13 +22,12 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         private readonly IHttpClient _httpClient;
-        private readonly TvDbClient _tvDbClient;
+        private readonly TvDbClientManager _tvDbClientManager;
 
         public TvdbSeasonImageProvider(IHttpClient httpClient)
         {
             _httpClient = httpClient;
-            _tvDbClient = new TvDbClient();
-            _tvDbClient.Authentication.AuthenticateAsync(TVUtils.TvdbApiKey);
+            _tvDbClientManager = TvDbClientManager.Instance;
         }
 
         public string Name => ProviderName;
@@ -62,7 +61,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             var seasonNumber = season.IndexNumber.Value;
             var language = item.GetPreferredMetadataLanguage();
-            _tvDbClient.AcceptedLanguage = language;
+            _tvDbClientManager.TvDbClient.AcceptedLanguage = language;
             var remoteImages = new List<RemoteImageInfo>();
             var keyTypes = new[] {KeyType.Season, KeyType.Seasonwide, KeyType.Fanart};
             // TODO error handling
@@ -73,10 +72,18 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     KeyType = keyType,
                     SubKey = seasonNumber.ToString()
                 };
-                var imageResults =
-                    await _tvDbClient.Series.GetImagesAsync(Convert.ToInt32(series.GetProviderId(MetadataProviders.Tvdb)), imageQuery, cancellationToken);
-
-                remoteImages.AddRange(GetImages(imageResults.Data, language));
+                try
+                {
+                    var imageResults =
+                        await _tvDbClientManager.TvDbClient.Series.GetImagesAsync(
+                            Convert.ToInt32(series.GetProviderId(MetadataProviders.Tvdb)), imageQuery,
+                            cancellationToken);
+                    remoteImages.AddRange(GetImages(imageResults.Data, language));
+                }
+                catch (TvDbServerException e)
+                {
+                    // TODO log
+                }
             }
 
             return remoteImages;
@@ -88,7 +95,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             foreach (Image image in images)
             {
-                var resolution = image.Resolution.Split('x');
                 var imageInfo = new RemoteImageInfo
                 {
                     RatingType = RatingType.Score,
@@ -97,10 +103,15 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     Url = TVUtils.BannerUrl + image.FileName,
                     ProviderName = ProviderName,
                     // TODO Language = image.LanguageId,
-                    Width = Convert.ToInt32(resolution[0]),
-                    Height = Convert.ToInt32(resolution[1]),
                     ThumbnailUrl = TVUtils.BannerUrl + image.Thumbnail
                 };
+
+                var resolution = image.Resolution.Split('x');
+                if (resolution.Length == 2)
+                {
+                    imageInfo.Width = Convert.ToInt32(resolution[0]);
+                    imageInfo.Height = Convert.ToInt32(resolution[1]);
+                }
 
                 if (string.Equals(image.KeyType, "season", StringComparison.OrdinalIgnoreCase))
                 {

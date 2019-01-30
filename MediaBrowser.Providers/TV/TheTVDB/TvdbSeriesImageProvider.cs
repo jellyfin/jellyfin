@@ -21,12 +21,12 @@ namespace MediaBrowser.Providers.TV.TheTVDB
     {
         private readonly IHttpClient _httpClient;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private readonly TvDbClient _tvDbClient = new TvDbClient();
+        private readonly TvDbClientManager _tvDbClientManager;
 
         public TvdbSeriesImageProvider(IHttpClient httpClient)
         {
             _httpClient = httpClient;
-            _tvDbClient.Authentication.AuthenticateAsync(TVUtils.TvdbApiKey);
+            _tvDbClientManager = TvDbClientManager.Instance;
         }
 
         public string Name => ProviderName;
@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             }
 
             var language = item.GetPreferredMetadataLanguage();
-            _tvDbClient.AcceptedLanguage = language;
+            _tvDbClientManager.TvDbClient.AcceptedLanguage = language;
             var remoteImages = new List<RemoteImageInfo>();
             var keyTypes = new[] {KeyType.Poster, KeyType.Series, KeyType.Fanart};
             // TODO error handling
@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     KeyType = keyType
                 };
                 var imageResults =
-                    await _tvDbClient.Series.GetImagesAsync(Convert.ToInt32(item.GetProviderId(MetadataProviders.Tvdb)), imageQuery, cancellationToken);
+                    await _tvDbClientManager.TvDbClient.Series.GetImagesAsync(Convert.ToInt32(item.GetProviderId(MetadataProviders.Tvdb)), imageQuery, cancellationToken);
 
                 remoteImages.AddRange(GetImages(imageResults.Data, language));
             }
@@ -80,7 +80,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             foreach (Image image in images)
             {
-                var resolution = image.Resolution.Split('x');
                 var imageInfo = new RemoteImageInfo
                 {
                     RatingType = RatingType.Score,
@@ -89,10 +88,15 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     Url = TVUtils.BannerUrl + image.FileName,
                     ProviderName = Name,
                     // TODO Language = image.LanguageId,
-                    Width = Convert.ToInt32(resolution[0]),
-                    Height = Convert.ToInt32(resolution[1]),
                     ThumbnailUrl = TVUtils.BannerUrl + image.Thumbnail
                 };
+
+                var resolution = image.Resolution.Split('x');
+                if (resolution.Length == 2)
+                {
+                    imageInfo.Width = Convert.ToInt32(resolution[0]);
+                    imageInfo.Height = Convert.ToInt32(resolution[1]);
+                }
 
 
                 if (string.Equals(image.KeyType, "poster", StringComparison.OrdinalIgnoreCase))

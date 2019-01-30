@@ -20,13 +20,12 @@ namespace MediaBrowser.Providers.TV.TheTVDB
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IHttpClient _httpClient;
-        private readonly TvDbClient _tvDbClient;
+        private readonly TvDbClientManager _tvDbClientManager;
 
         public TvdbEpisodeImageProvider(IHttpClient httpClient)
         {
             _httpClient = httpClient;
-            _tvDbClient = new TvDbClient();
-            _tvDbClient.Authentication.AuthenticateAsync(TVUtils.TvdbApiKey);
+            _tvDbClientManager = TvDbClientManager.Instance;
         }
 
         public string Name => "TheTVDB";
@@ -53,7 +52,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             {
                 var tvdbId = episode.GetProviderId(MetadataProviders.Tvdb);
                 // Process images
-                var episodeResult = await _tvDbClient.Episodes.GetAsync(Convert.ToInt32(tvdbId), cancellationToken);
+                var episodeResult = await _tvDbClientManager.TvDbClient.Episodes.GetAsync(Convert.ToInt32(tvdbId), cancellationToken);
 
                 var image = GetImageInfo(episodeResult.Data);
                 return new List<RemoteImageInfo>
