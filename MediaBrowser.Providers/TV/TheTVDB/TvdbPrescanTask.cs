@@ -80,7 +80,9 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var path = TvdbSeriesProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
+            return;
+            var path = "";
+            //var path = TvdbSeriesProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
 
             Directory.CreateDirectory(path);
 
@@ -392,7 +394,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             Directory.CreateDirectory(seriesDataPath);
 
-            return TvdbSeriesProvider.Current.DownloadSeriesZip(id, MetadataProviders.Tvdb.ToString(), null, null, seriesDataPath, lastTvDbUpdateTime, preferredMetadataLanguage, cancellationToken);
+            //return TvdbSeriesProvider.Current.DownloadSeriesZip(id, MetadataProviders.Tvdb.ToString(), null, null, seriesDataPath, lastTvDbUpdateTime, preferredMetadataLanguage, cancellationToken);
+            return Task.CompletedTask;
         }
     }
 }

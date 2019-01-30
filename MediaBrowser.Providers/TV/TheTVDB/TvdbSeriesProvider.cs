@@ -30,7 +30,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
     public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
         internal static TvdbSeriesProvider Current { get; private set; }
-        private readonly IZipClient _zipClient;
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
         private readonly IXmlReaderSettingsFactory _xmlSettings;
@@ -41,9 +40,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private readonly ILocalizationManager _localizationManager;
         private readonly TvDbClient _tvDbClient;
 
-        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager, IXmlReaderSettingsFactory xmlSettings, ILocalizationManager localizationManager)
+        public TvdbSeriesProvider(IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager, IXmlReaderSettingsFactory xmlSettings, ILocalizationManager localizationManager)
         {
-            _zipClient = zipClient;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
             _config = config;
@@ -53,6 +51,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             _localizationManager = localizationManager;
             Current = this;
             _tvDbClient = new TvDbClient();
+            _tvDbClient.Authentication.AuthenticateAsync(TVUtils.TvdbApiKey);
         }
 
         private string NormalizeLanguage(string language)
@@ -93,8 +92,10 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo itemId, CancellationToken cancellationToken)
         {
-            var result = new MetadataResult<Series>();
-            result.QueriedById = true;
+            var result = new MetadataResult<Series>
+            {
+                QueriedById = true
+            };
 
             if (!IsValidSeries(itemId.ProviderIds))
             {
@@ -106,13 +107,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             if (IsValidSeries(itemId.ProviderIds))
             {
-                var seriesDataPath = await EnsureSeriesInfo(itemId.ProviderIds, itemId.Name, itemId.Year, itemId.MetadataLanguage, cancellationToken).ConfigureAwait(false);
-
-                if (string.IsNullOrEmpty(seriesDataPath))
-                {
-                    return result;
-                }
-
                 result.Item = new Series();
                 result.HasMetadata = true;
 
@@ -122,156 +116,43 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             return result;
         }
 
-        /// <summary>
-        /// Fetches the series data.
-        /// </summary>
-        /// <param name="result">The result.</param>
-        /// <param name="metadataLanguage">The metadata language.</param>
-        /// <param name="seriesProviderIds">The series provider ids.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        private void FetchSeriesData(MetadataResult<Series> result, string metadataLanguage, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
+        private async Task FetchSeriesData(MetadataResult<Series> result, string metadataLanguage, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
         {
             _tvDbClient.AcceptedLanguage = NormalizeLanguage(metadataLanguage);
             var series = result.Item;
-            TvDbResponse<SeriesSearchResult[]> searchResult;
 
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out var tvdbId) && !string.IsNullOrEmpty(id))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out var tvdbId) && !string.IsNullOrEmpty(tvdbId))
             {
                 series.SetProviderId(MetadataProviders.Tvdb, tvdbId);
             }
 
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out var imdbId) && !string.IsNullOrEmpty(id))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out var imdbId) && !string.IsNullOrEmpty(imdbId))
             {
                 series.SetProviderId(MetadataProviders.Imdb, imdbId);
-                tvdbId = GetSeriesByRemoteId(imdbId, MetadataProviders.Imdb.ToString(), metadataLanguage, cancellationToken).Result.ToString();
+                tvdbId = await GetSeriesByRemoteId(imdbId, MetadataProviders.Imdb.ToString(), metadataLanguage, cancellationToken);
             }
 
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Zap2It.ToString(), out var zap2It) && !string.IsNullOrEmpty(id))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Zap2It.ToString(), out var zap2It) && !string.IsNullOrEmpty(zap2It))
             {
                 series.SetProviderId(MetadataProviders.Zap2It, zap2It);
-                tvdbId = GetSeriesByRemoteId(zap2It, MetadataProviders.Zap2It.ToString(), metadataLanguage, cancellationToken).Result.ToString();
+                tvdbId = await GetSeriesByRemoteId(zap2It, MetadataProviders.Zap2It.ToString(), metadataLanguage, cancellationToken);
             }
 
-            var seriesResult = _tvDbClient.Series.GetAsync(Convert.ToInt32(tvdbId), cancellationToken).Result;
-//            var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
-//
-//            var seriesXmlPath = GetSeriesXmlPath(seriesProviderIds, metadataLanguage);
-//            var actorsXmlPath = Path.Combine(seriesDataPath, "actors.xml");
+            // TODO call this function elsewhere?
+            var seriesResult = await _tvDbClient.Series.GetAsync(Convert.ToInt32(tvdbId), cancellationToken);
 
-            FetchSeriesInfo(result, searchResult, cancellationToken);
+            // TODO error handling
+            MapSeriesToResult(result, seriesResult.Data, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
 
             result.ResetPeople();
 
-            FetchActors(result, actorsXmlPath);
+            var actorsResult = await _tvDbClient.Series.GetActorsAsync(Convert.ToInt32(tvdbId), cancellationToken);
+            MapActorsToResult(result, actorsResult.Data);
         }
 
-        /// <summary>
-        /// Downloads the series zip.
-        /// </summary>
-        internal async Task DownloadSeriesZip(string seriesId, string idType, string seriesName, int? seriesYear, string seriesDataPath, long? lastTvDbUpdateTime, string preferredMetadataLanguage, CancellationToken cancellationToken)
-        {
-            try
-            {
-                await DownloadSeriesZip(seriesId, idType, seriesName, seriesYear, seriesDataPath, lastTvDbUpdateTime, preferredMetadataLanguage, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
-                return;
-            }
-            catch (HttpException ex)
-            {
-                if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
-                {
-                    throw;
-                }
-            }
-
-            if (!string.Equals(preferredMetadataLanguage, "en", StringComparison.OrdinalIgnoreCase))
-            {
-                await DownloadSeriesZip(seriesId, idType, seriesName, seriesYear, seriesDataPath, lastTvDbUpdateTime, "en", preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        private async Task DownloadSeriesZip(string seriesId, string idType, string seriesName, int? seriesYear, string seriesDataPath, long? lastTvDbUpdateTime, string preferredMetadataLanguage, string saveAsMetadataLanguage, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(seriesId))
-            {
-                throw new ArgumentNullException(nameof(seriesId));
-            }
-
-            if (!string.Equals(idType, "tvdb", StringComparison.OrdinalIgnoreCase))
-            {
-                seriesId = (await GetSeriesByRemoteId(seriesId, idType, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false)).ToString();
-            }
-
-            // If searching by remote id came up empty, then do a regular search
-            if (string.IsNullOrWhiteSpace(seriesId) && !string.IsNullOrWhiteSpace(seriesName))
-            {
-                var searchInfo = new SeriesInfo
-                {
-                    Name = seriesName,
-                    Year = seriesYear,
-                    MetadataLanguage = preferredMetadataLanguage
-                };
-                var results = await GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
-                var result = results.FirstOrDefault();
-                if (result != null)
-                {
-                    seriesId = result.GetProviderId(MetadataProviders.Tvdb);
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(seriesId))
-            {
-                throw new ArgumentNullException(nameof(seriesId));
-            }
-
-            var url = string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, NormalizeLanguage(preferredMetadataLanguage));
-
-            using (var response = await _httpClient.SendAsync(new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = cancellationToken,
-                BufferContent = false
-
-            }, "GET").ConfigureAwait(false))
-            {
-                using (var zipStream = response.Content)
-                {
-                    // Delete existing files
-                    DeleteXmlFiles(seriesDataPath);
-
-                    // Copy to memory stream because we need a seekable stream
-                    using (var ms = new MemoryStream())
-                    {
-                        await zipStream.CopyToAsync(ms).ConfigureAwait(false);
-
-                        ms.Position = 0;
-                        _zipClient.ExtractAllFromZip(ms, seriesDataPath, true);
-                    }
-                }
-            }
-
-            // Sanitize all files, except for extracted episode files
-            foreach (var file in _fileSystem.GetFilePaths(seriesDataPath, true).ToList()
-                .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
-                .Where(i => !Path.GetFileName(i).StartsWith("episode-", StringComparison.OrdinalIgnoreCase)))
-            {
-                await SanitizeXmlFile(file).ConfigureAwait(false);
-            }
-
-            var downloadLangaugeXmlFile = Path.Combine(seriesDataPath, NormalizeLanguage(preferredMetadataLanguage) + ".xml");
-            var saveAsLanguageXmlFile = Path.Combine(seriesDataPath, saveAsMetadataLanguage + ".xml");
-
-            if (!string.Equals(downloadLangaugeXmlFile, saveAsLanguageXmlFile, StringComparison.OrdinalIgnoreCase))
-            {
-                File.Copy(downloadLangaugeXmlFile, saveAsLanguageXmlFile, true);
-            }
-
-            await ExtractEpisodes(seriesDataPath, downloadLangaugeXmlFile, lastTvDbUpdateTime).ConfigureAwait(false);
-        }
-
-        private async Task<int> GetSeriesByRemoteId(string id, string idType, string language, CancellationToken cancellationToken)
+        private async Task<string> GetSeriesByRemoteId(string id, string idType, string language, CancellationToken cancellationToken)
         {
             _tvDbClient.AcceptedLanguage = NormalizeLanguage(language);
             TvDbResponse<SeriesSearchResult[]> result;
@@ -285,7 +166,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 result = await _tvDbClient.Search.SearchSeriesByImdbIdAsync(id, cancellationToken);
             }
 
-            return result.Data.First().Id;
+            return result.Data.First().Id.ToString();
         }
 
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
@@ -395,10 +276,10 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     Name = tvdbTitles.FirstOrDefault(),
                     ProductionYear = firstAired.Year,
                     SearchProviderName = Name,
-                    ImageUrl = seriesSearchResult.Banner
+                    ImageUrl = TVUtils.BannerUrl + seriesSearchResult.Banner
 
                 };
-                // TODO requires another query
+                // TODO requires another query, is it worth it?
                 // remoteSearchResult.SetProviderId(MetadataProviders.Imdb, seriesSearchResult.Id);
                 remoteSearchResult.SetProviderId(MetadataProviders.Tvdb, seriesSearchResult.Id.ToString());
                 list.Add(new Tuple<List<string>, RemoteSearchResult>(tvdbTitles, remoteSearchResult));
@@ -468,27 +349,26 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             return name.Trim();
         }
 
-        private void FetchSeriesInfo(MetadataResult<Series> result, TvDbResponse<TvDbSharper.Dto.Series> seriesResponse, CancellationToken cancellationToken)
+        private static void MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries, CancellationToken cancellationToken)
         {
             var episodeAirDates = new List<DateTime>();
-            var series = result.Item;
-            Series item = result.Item;
-            series.SetProviderId(MetadataProviders.Tvdb, seriesResponse.Data.Id.ToString());
-            series.Name = seriesResponse.Data.SeriesName;
-            series.Overview = (seriesResponse.Data.Overview ?? string.Empty).Trim();
+            Series series = result.Item;
+            series.SetProviderId(MetadataProviders.Tvdb, tvdbSeries.Id.ToString());
+            series.Name = tvdbSeries.SeriesName;
+            series.Overview = (tvdbSeries.Overview ?? string.Empty).Trim();
             // TODO result.ResultLanguage = (seriesResponse.Data. ?? string.Empty).Trim();
-            series.AirDays = TVUtils.GetAirDays(seriesResponse.Data.AirsDayOfWeek);
-            series.AirTime = seriesResponse.Data.AirsTime;
+            series.AirDays = TVUtils.GetAirDays(tvdbSeries.AirsDayOfWeek);
+            series.AirTime = tvdbSeries.AirsTime;
 
-            series.CommunityRating = (float?)seriesResponse.Data.SiteRating;
-            series.SetProviderId(MetadataProviders.Imdb, seriesResponse.Data.ImdbId);
-            series.SetProviderId(MetadataProviders.Zap2It, seriesResponse.Data.Zap2itId);
-            if (Enum.TryParse(seriesResponse.Data.Status, true, out SeriesStatus seriesStatus))
+            series.CommunityRating = (float?)tvdbSeries.SiteRating;
+            series.SetProviderId(MetadataProviders.Imdb, tvdbSeries.ImdbId);
+            series.SetProviderId(MetadataProviders.Zap2It, tvdbSeries.Zap2itId);
+            if (Enum.TryParse(tvdbSeries.Status, true, out SeriesStatus seriesStatus))
             {
                 series.Status = seriesStatus;
             }
 
-            if (DateTime.TryParse(seriesResponse.Data.FirstAired, out var date))
+            if (DateTime.TryParse(tvdbSeries.FirstAired, out var date))
             {
                 date = date.ToUniversalTime();
 
@@ -496,697 +376,40 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 series.ProductionYear = date.Year;
             }
 
-            series.RunTimeTicks = TimeSpan.FromMinutes(Convert.ToDouble(seriesResponse.Data.Runtime)).Ticks;
-
-
-            if (!string.IsNullOrWhiteSpace(val))
+            series.RunTimeTicks = TimeSpan.FromMinutes(Convert.ToDouble(tvdbSeries.Runtime)).Ticks;
+            foreach (var genre in tvdbSeries.Genre)
             {
-                var vals = val
-                    .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(i => i.Trim())
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .ToList();
-
-                if (vals.Count > 0)
-                {
-                    item.Genres = Array.Empty<string>();
-
-                    foreach (var genre in vals)
-                    {
-                        item.AddGenre(genre);
-                    }
-                }
+                series.AddGenre(genre);
             }
 
-            var val = reader.ReadElementContentAsString();
+            // TODO is network == studio?
+            series.AddStudio(tvdbSeries.Network);
 
-            if (!string.IsNullOrWhiteSpace(val))
-            {
-                var vals = val
-                    .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(i => i.Trim())
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .ToList();
-
-                if (vals.Count > 0)
-                {
-                    item.SetStudios(vals);
-                }
-            }
-
-//            using (var fileStream = _fileSystem.GetFileStream(seriesXmlPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
-//            {
-//                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
-//                {
-//                    // Use XmlReader for best performance
-//                    using (var reader = XmlReader.Create(streamReader, settings))
-//                    {
-//                        reader.MoveToContent();
-//                        reader.Read();
-//
-//                        // Loop through each element
-//                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-//                        {
-//                            cancellationToken.ThrowIfCancellationRequested();
-//
-//                            if (reader.NodeType == XmlNodeType.Element)
-//                            {
-//                                switch (reader.Name)
-//                                {
-//                                    case "Series":
-//                                        {
-//                                            if (reader.IsEmptyElement)
-//                                            {
-//                                                reader.Read();
-//                                                continue;
-//                                            }
-//                                            using (var subtree = reader.ReadSubtree())
-//                                            {
-//                                                FetchDataFromSeriesNode(result, subtree, cancellationToken);
-//                                            }
-//                                            break;
-//                                        }
-//
-//                                    case "Episode":
-//                                        {
-//                                            if (reader.IsEmptyElement)
-//                                            {
-//                                                reader.Read();
-//                                                continue;
-//                                            }
-//                                            using (var subtree = reader.ReadSubtree())
-//                                            {
-//                                                var date = GetFirstAiredDateFromEpisodeNode(subtree, cancellationToken);
-//
-//                                                if (date.HasValue)
-//                                                {
-//                                                    episiodeAirDates.Add(date.Value);
-//                                                }
-//                                            }
-//                                            break;
-//                                        }
-//
-//                                    default:
-//                                        reader.Skip();
-//                                        break;
-//                                }
-//                            }
-//                            else
-//                            {
-//                                reader.Read();
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-
+            // TODO is this necessary?
             if (result.Item.Status.HasValue && result.Item.Status.Value == SeriesStatus.Ended && episodeAirDates.Count > 0)
             {
                 result.Item.EndDate = episodeAirDates.Max();
             }
         }
 
-        private DateTime? GetFirstAiredDateFromEpisodeNode(XmlReader reader, CancellationToken cancellationToken)
+        private static void MapActorsToResult(MetadataResult<Series> result, IEnumerable<Actor> actors)
         {
-            DateTime? airDate = null;
-            int? seasonNumber = null;
-
-            reader.MoveToContent();
-            reader.Read();
-
-            // Loop through each element
-            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            foreach (Actor actor in actors)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (reader.NodeType == XmlNodeType.Element)
+                var personInfo = new PersonInfo
                 {
-                    switch (reader.Name)
-                    {
-                        case "FirstAired":
-                            {
-                                var val = reader.ReadElementContentAsString();
+                    Type = PersonType.Actor,
+                    Name = (actor.Name ?? string.Empty).Trim(),
+                    Role = actor.Role,
+                    ImageUrl = actor.Image,
+                    SortOrder = actor.SortOrder
+                };
 
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    if (DateTime.TryParse(val, out var date))
-                                    {
-                                        airDate = date.ToUniversalTime();
-                                    }
-                                }
-
-                                break;
-                            }
-
-                        case "SeasonNumber":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    // int.TryParse is local aware, so it can be probamatic, force us culture
-                                    if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var rval))
-                                    {
-                                        seasonNumber = rval;
-                                    }
-                                }
-
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
+                if (!string.IsNullOrWhiteSpace(personInfo.Name))
                 {
-                    reader.Read();
+                    result.AddPerson(personInfo);
                 }
             }
-
-            if (seasonNumber.HasValue && seasonNumber.Value != 0)
-            {
-                return airDate;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Fetches the actors.
-        /// </summary>
-        /// <param name="result">The result.</param>
-        /// <param name="actorsXmlPath">The actors XML path.</param>
-        private void FetchActors(MetadataResult<Series> result, string actorsXmlPath)
-        {
-            var settings = _xmlSettings.Create(false);
-
-            settings.CheckCharacters = false;
-            settings.IgnoreProcessingInstructions = true;
-            settings.IgnoreComments = true;
-
-            using (var fileStream = _fileSystem.GetFileStream(actorsXmlPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
-            {
-                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
-                {
-                    // Use XmlReader for best performance
-                    using (var reader = XmlReader.Create(streamReader, settings))
-                    {
-                        reader.MoveToContent();
-                        reader.Read();
-
-                        // Loop through each element
-                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                        {
-                            if (reader.NodeType == XmlNodeType.Element)
-                            {
-                                switch (reader.Name)
-                                {
-                                    case "Actor":
-                                        {
-                                            if (reader.IsEmptyElement)
-                                            {
-                                                reader.Read();
-                                                continue;
-                                            }
-                                            using (var subtree = reader.ReadSubtree())
-                                            {
-                                                FetchDataFromActorNode(result, subtree);
-                                            }
-                                            break;
-                                        }
-                                    default:
-                                        reader.Skip();
-                                        break;
-                                }
-                            }
-                            else
-                            {
-                                reader.Read();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Fetches the data from actor node.
-        /// </summary>
-        /// <param name="result">The result.</param>
-        /// <param name="reader">The reader.</param>
-        private void FetchDataFromActorNode(MetadataResult<Series> result, XmlReader reader)
-        {
-            reader.MoveToContent();
-
-            var personInfo = new PersonInfo();
-
-            reader.MoveToContent();
-            reader.Read();
-
-            // Loop through each element
-            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "Name":
-                            {
-                                personInfo.Name = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
-                                break;
-                            }
-
-                        case "Role":
-                            {
-                                personInfo.Role = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
-                                break;
-                            }
-
-                        case "id":
-                            {
-                                reader.Skip();
-                                break;
-                            }
-
-                        case "Image":
-                            {
-                                var url = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
-                                if (!string.IsNullOrWhiteSpace(url))
-                                {
-                                    personInfo.ImageUrl = TVUtils.BannerUrl + url;
-                                }
-                                break;
-                            }
-
-                        case "SortOrder":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    // int.TryParse is local aware, so it can be probamatic, force us culture
-                                    if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var rval))
-                                    {
-                                        personInfo.SortOrder = rval;
-                                    }
-                                }
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
-                {
-                    reader.Read();
-                }
-            }
-
-            personInfo.Type = PersonType.Actor;
-
-            if (!string.IsNullOrWhiteSpace(personInfo.Name))
-            {
-                result.AddPerson(personInfo);
-            }
-        }
-
-        private void FetchDataFromSeriesNode(MetadataResult<Series> result, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-
-        }
-
-        /// <summary>
-        /// Extracts info for each episode into invididual xml files so that they can be easily accessed without having to step through the entire series xml
-        /// </summary>
-        /// <param name="seriesDataPath">The series data path.</param>
-        /// <param name="xmlFile">The XML file.</param>
-        /// <param name="lastTvDbUpdateTime">The last tv db update time.</param>
-        /// <returns>Task.</returns>
-        private async Task ExtractEpisodes(string seriesDataPath, string xmlFile, long? lastTvDbUpdateTime)
-        {
-            var settings = _xmlSettings.Create(false);
-
-            settings.CheckCharacters = false;
-            settings.IgnoreProcessingInstructions = true;
-            settings.IgnoreComments = true;
-
-            using (var fileStream = _fileSystem.GetFileStream(xmlFile, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
-            {
-                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
-                {
-                    // Use XmlReader for best performance
-                    using (var reader = XmlReader.Create(streamReader, settings))
-                    {
-                        reader.MoveToContent();
-                        reader.Read();
-
-                        // Loop through each element
-                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                        {
-                            if (reader.NodeType == XmlNodeType.Element)
-                            {
-                                switch (reader.Name)
-                                {
-                                    case "Episode":
-                                        {
-                                            var outerXml = reader.ReadOuterXml();
-
-                                            await SaveEpsiodeXml(seriesDataPath, outerXml, lastTvDbUpdateTime).ConfigureAwait(false);
-                                            break;
-                                        }
-
-                                    default:
-                                        reader.Skip();
-                                        break;
-                                }
-                            }
-                            else
-                            {
-                                reader.Read();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private async Task SaveEpsiodeXml(string seriesDataPath, string xml, long? lastTvDbUpdateTime)
-        {
-            var settings = _xmlSettings.Create(false);
-
-            settings.CheckCharacters = false;
-            settings.IgnoreProcessingInstructions = true;
-            settings.IgnoreComments = true;
-
-            var seasonNumber = -1;
-            var episodeNumber = -1;
-            var absoluteNumber = -1;
-            var lastUpdateString = string.Empty;
-
-            var dvdSeasonNumber = -1;
-            var dvdEpisodeNumber = -1.0;
-
-            using (var streamReader = new StringReader(xml))
-            {
-                // Use XmlReader for best performance
-                using (var reader = XmlReader.Create(streamReader, settings))
-                {
-                    reader.MoveToContent();
-                    reader.Read();
-
-                    // Loop through each element
-                    while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                    {
-                        if (reader.NodeType == XmlNodeType.Element)
-                        {
-                            switch (reader.Name)
-                            {
-                                case "lastupdated":
-                                    {
-                                        lastUpdateString = reader.ReadElementContentAsString();
-                                        break;
-                                    }
-
-                                case "EpisodeNumber":
-                                    {
-                                        var val = reader.ReadElementContentAsString();
-                                        if (!string.IsNullOrWhiteSpace(val))
-                                        {
-                                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var num))
-                                            {
-                                                episodeNumber = num;
-                                            }
-                                        }
-                                        break;
-                                    }
-
-                                case "Combined_episodenumber":
-                                    {
-                                        var val = reader.ReadElementContentAsString();
-
-                                        if (!string.IsNullOrWhiteSpace(val))
-                                        {
-                                            if (float.TryParse(val, NumberStyles.Any, _usCulture, out var num))
-                                            {
-                                                dvdEpisodeNumber = num;
-                                            }
-                                        }
-
-                                        break;
-                                    }
-
-                                case "Combined_season":
-                                    {
-                                        var val = reader.ReadElementContentAsString();
-
-                                        if (!string.IsNullOrWhiteSpace(val))
-                                        {
-                                            if (float.TryParse(val, NumberStyles.Any, _usCulture, out var num))
-                                            {
-                                                dvdSeasonNumber = Convert.ToInt32(num);
-                                            }
-                                        }
-
-                                        break;
-                                    }
-
-                                case "absolute_number":
-                                    {
-                                        var val = reader.ReadElementContentAsString();
-                                        if (!string.IsNullOrWhiteSpace(val))
-                                        {
-                                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var num))
-                                            {
-                                                absoluteNumber = num;
-                                            }
-                                        }
-                                        break;
-                                    }
-
-                                case "SeasonNumber":
-                                    {
-                                        var val = reader.ReadElementContentAsString();
-                                        if (!string.IsNullOrWhiteSpace(val))
-                                        {
-                                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var num))
-                                            {
-                                                seasonNumber = num;
-                                            }
-                                        }
-                                        break;
-                                    }
-
-                                default:
-                                    reader.Skip();
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            reader.Read();
-                        }
-                    }
-                }
-            }
-
-            var hasEpisodeChanged = true;
-            if (!string.IsNullOrWhiteSpace(lastUpdateString) && lastTvDbUpdateTime.HasValue)
-            {
-                if (long.TryParse(lastUpdateString, NumberStyles.Any, _usCulture, out var num))
-                {
-                    hasEpisodeChanged = num >= lastTvDbUpdateTime.Value;
-                }
-            }
-
-            var file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber, episodeNumber));
-
-            // Only save the file if not already there, or if the episode has changed
-            if (hasEpisodeChanged || !File.Exists(file))
-            {
-                using (var fileStream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.None, true))
-                {
-                    using (var writer = XmlWriter.Create(fileStream, new XmlWriterSettings
-                    {
-                        Encoding = Encoding.UTF8,
-                        Async = true
-                    }))
-                    {
-                        await writer.WriteRawAsync(xml).ConfigureAwait(false);
-                    }
-                }
-            }
-
-            if (absoluteNumber != -1)
-            {
-                file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", absoluteNumber));
-
-                // Only save the file if not already there, or if the episode has changed
-                if (hasEpisodeChanged || !File.Exists(file))
-                {
-                    using (var fileStream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.None, true))
-                    {
-                        using (var writer = XmlWriter.Create(fileStream, new XmlWriterSettings
-                        {
-                            Encoding = Encoding.UTF8,
-                            Async = true
-                        }))
-                        {
-                            await writer.WriteRawAsync(xml).ConfigureAwait(false);
-                        }
-                    }
-                }
-            }
-
-            if (dvdSeasonNumber != -1 && dvdEpisodeNumber != -1 && (dvdSeasonNumber != seasonNumber || dvdEpisodeNumber != episodeNumber))
-            {
-                file = Path.Combine(seriesDataPath, string.Format("episode-dvd-{0}-{1}.xml", dvdSeasonNumber, dvdEpisodeNumber));
-
-                // Only save the file if not already there, or if the episode has changed
-                if (hasEpisodeChanged || !File.Exists(file))
-                {
-                    using (var fileStream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.None, true))
-                    {
-                        using (var writer = XmlWriter.Create(fileStream, new XmlWriterSettings
-                        {
-                            Encoding = Encoding.UTF8,
-                            Async = true
-                        }))
-                        {
-                            await writer.WriteRawAsync(xml).ConfigureAwait(false);
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the series data path.
-        /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="seriesProviderIds">The series provider ids.</param>
-        /// <returns>System.String.</returns>
-        internal static string GetSeriesDataPath(IApplicationPaths appPaths, Dictionary<string, string> seriesProviderIds)
-        {
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out string seriesId) && !string.IsNullOrEmpty(seriesId))
-            {
-                var seriesDataPath = Path.Combine(GetSeriesDataPath(appPaths), seriesId);
-
-                return seriesDataPath;
-            }
-
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out seriesId) && !string.IsNullOrEmpty(seriesId))
-            {
-                var seriesDataPath = Path.Combine(GetSeriesDataPath(appPaths), seriesId);
-
-                return seriesDataPath;
-            }
-
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Zap2It.ToString(), out seriesId) && !string.IsNullOrEmpty(seriesId))
-            {
-                var seriesDataPath = Path.Combine(GetSeriesDataPath(appPaths), seriesId);
-
-                return seriesDataPath;
-            }
-
-            return null;
-        }
-
-        public string GetSeriesXmlPath(Dictionary<string, string> seriesProviderIds, string language)
-        {
-            var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
-
-            var seriesXmlFilename = language.ToLowerInvariant() + ".xml";
-
-            return Path.Combine(seriesDataPath, seriesXmlFilename);
-        }
-
-        /// <summary>
-        /// Gets the series data path.
-        /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        /// <returns>System.String.</returns>
-        internal static string GetSeriesDataPath(IApplicationPaths appPaths)
-        {
-            var dataPath = Path.Combine(appPaths.CachePath, "tvdb");
-
-            return dataPath;
-        }
-
-        private void DeleteXmlFiles(string path)
-        {
-            try
-            {
-                foreach (var file in _fileSystem.GetFilePaths(path, true)
-                    .ToList())
-                {
-                    _fileSystem.DeleteFile(file);
-                }
-            }
-            catch (IOException)
-            {
-                // No biggie
-            }
-        }
-
-        /// <summary>
-        /// Sanitizes the XML file.
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <returns>Task.</returns>
-        private async Task SanitizeXmlFile(string file)
-        {
-            string validXml;
-
-            using (var fileStream = _fileSystem.GetFileStream(file, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true))
-            {
-                using (var reader = new StreamReader(fileStream))
-                {
-                    var xml = await reader.ReadToEndAsync().ConfigureAwait(false);
-
-                    validXml = StripInvalidXmlCharacters(xml);
-                }
-            }
-
-            using (var fileStream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
-            {
-                using (var writer = new StreamWriter(fileStream))
-                {
-                    await writer.WriteAsync(validXml).ConfigureAwait(false);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Strips the invalid XML characters.
-        /// </summary>
-        /// <param name="inString">The in string.</param>
-        /// <returns>System.String.</returns>
-        public static string StripInvalidXmlCharacters(string inString)
-        {
-            if (inString == null) return null;
-
-            var sbOutput = new StringBuilder();
-            char ch;
-
-            for (int i = 0; i < inString.Length; i++)
-            {
-                ch = inString[i];
-                if ((ch >= 0x0020 && ch <= 0xD7FF) ||
-                    (ch >= 0xE000 && ch <= 0xFFFD) ||
-                    ch == 0x0009 ||
-                    ch == 0x000A ||
-                    ch == 0x000D)
-                {
-                    sbOutput.Append(ch);
-                }
-            }
-            return sbOutput.ToString();
         }
 
         public string Name => "TheTVDB";

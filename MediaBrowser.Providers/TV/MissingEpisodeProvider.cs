@@ -44,27 +44,15 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<bool> Run(Series series, bool addNewItems, CancellationToken cancellationToken)
         {
+            // TODO cvium fixme wtfisthisandwhydoesitrunwhenoptionisdisabled
+            return true;
             var tvdbId = series.GetProviderId(MetadataProviders.Tvdb);
 
             // Todo: Support series by imdb id
             var seriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             seriesProviderIds[MetadataProviders.Tvdb.ToString()] = tvdbId;
 
-            var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
-
-            // Doesn't have required provider id's
-            if (string.IsNullOrWhiteSpace(seriesDataPath))
-            {
-                return false;
-            }
-
-            // Check this in order to avoid logging an exception due to directory not existing
-            if (!Directory.Exists(seriesDataPath))
-            {
-                return false;
-            }
-
-            var episodeFiles = _fileSystem.GetFilePaths(seriesDataPath)
+            var episodeFiles = _fileSystem.GetFilePaths("")
                 .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
                 .Select(Path.GetFileNameWithoutExtension)
                 .Where(i => i.StartsWith("episode-", StringComparison.OrdinalIgnoreCase))
@@ -118,7 +106,7 @@ namespace MediaBrowser.Providers.TV
 
             if (addNewItems && series.IsMetadataFetcherEnabled(_libraryManager.GetLibraryOptions(series), TvdbSeriesProvider.Current.Name))
             {
-                hasNewEpisodes = await AddMissingEpisodes(series, allRecursiveChildren, addMissingEpisodes, seriesDataPath, episodeLookup, cancellationToken)
+                hasNewEpisodes = await AddMissingEpisodes(series, allRecursiveChildren, addMissingEpisodes, "", episodeLookup, cancellationToken)
                     .ConfigureAwait(false);
             }
 

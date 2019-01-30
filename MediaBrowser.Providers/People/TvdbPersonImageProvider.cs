@@ -80,22 +80,9 @@ namespace MediaBrowser.Providers.People
 
         private RemoteImageInfo GetImageFromSeriesData(Series series, string personName, CancellationToken cancellationToken)
         {
-            var tvdbPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, series.ProviderIds);
+            //var actorsResult = await _tvDbClient.Series.GetActorsAsync(Convert.ToInt32(tvdbId), cancellationToken);
 
-            var actorXmlPath = Path.Combine(tvdbPath, "actors.xml");
-
-            try
-            {
-                return GetImageInfo(actorXmlPath, personName, cancellationToken);
-            }
-            catch (FileNotFoundException)
-            {
-                return null;
-            }
-            catch (IOException)
-            {
-                return null;
-            }
+            return null; // GetImageInfo(actorXmlPath, personName, cancellationToken);
         }
 
         private RemoteImageInfo GetImageInfo(string xmlFile, string personName, CancellationToken cancellationToken)

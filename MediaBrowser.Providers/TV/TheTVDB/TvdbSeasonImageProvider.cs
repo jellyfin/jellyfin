@@ -1,23 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Xml;
+using TvDbSharper;
+using TvDbSharper.Dto;
+using RatingType = MediaBrowser.Model.Dto.RatingType;
 
 namespace MediaBrowser.Providers.TV.TheTVDB
 {
@@ -25,17 +21,14 @@ namespace MediaBrowser.Providers.TV.TheTVDB
     {
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
-        private readonly IFileSystem _fileSystem;
-        private readonly IXmlReaderSettingsFactory _xmlSettings;
+        private readonly TvDbClient _tvDbClient;
 
-        public TvdbSeasonImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlSettings)
+        public TvdbSeasonImageProvider(IHttpClient httpClient)
         {
-            _config = config;
             _httpClient = httpClient;
-            _fileSystem = fileSystem;
-            _xmlSettings = xmlSettings;
+            _tvDbClient = new TvDbClient();
+            _tvDbClient.Authentication.AuthenticateAsync(TVUtils.TvdbApiKey);
         }
 
         public string Name => ProviderName;
@@ -62,91 +55,68 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             var season = (Season)item;
             var series = season.Series;
 
-            if (series != null && season.IndexNumber.HasValue && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
+            if (series == null || !season.IndexNumber.HasValue || !TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
             {
-                var seriesProviderIds = series.ProviderIds;
-                var seasonNumber = season.IndexNumber.Value;
-
-                var seriesDataPath = await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesProviderIds, series.Name, series.ProductionYear, series.GetPreferredMetadataLanguage(), cancellationToken).ConfigureAwait(false);
-
-                if (!string.IsNullOrEmpty(seriesDataPath))
-                {
-                    var path = Path.Combine(seriesDataPath, "banners.xml");
-
-                    try
-                    {
-                        return GetImages(path, item.GetPreferredMetadataLanguage(), seasonNumber, _xmlSettings, _fileSystem, cancellationToken);
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        // No tvdb data yet. Don't blow up
-                    }
-                    catch (IOException)
-                    {
-                        // No tvdb data yet. Don't blow up
-                    }
-                }
+                return new RemoteImageInfo[] { };
             }
 
-            return new RemoteImageInfo[] { };
+            var seasonNumber = season.IndexNumber.Value;
+            var language = item.GetPreferredMetadataLanguage();
+            _tvDbClient.AcceptedLanguage = language;
+            var remoteImages = new List<RemoteImageInfo>();
+            var keyTypes = new[] {KeyType.Season, KeyType.Seasonwide, KeyType.Fanart};
+            // TODO error handling
+            foreach (KeyType keyType in keyTypes)
+            {
+                var imageQuery = new ImagesQuery
+                {
+                    KeyType = keyType,
+                    SubKey = seasonNumber.ToString()
+                };
+                var imageResults =
+                    await _tvDbClient.Series.GetImagesAsync(Convert.ToInt32(series.GetProviderId(MetadataProviders.Tvdb)), imageQuery, cancellationToken);
+
+                remoteImages.AddRange(GetImages(imageResults.Data, language));
+            }
+
+            return remoteImages;
         }
 
-        internal static IEnumerable<RemoteImageInfo> GetImages(string xmlPath, string preferredLanguage, int seasonNumber, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem, CancellationToken cancellationToken)
+        private static IEnumerable<RemoteImageInfo> GetImages(Image[] images, string preferredLanguage)
         {
-            var settings = xmlReaderSettingsFactory.Create(false);
-
-            settings.CheckCharacters = false;
-            settings.IgnoreProcessingInstructions = true;
-            settings.IgnoreComments = true;
-
             var list = new List<RemoteImageInfo>();
 
-            using (var fileStream = fileSystem.GetFileStream(xmlPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+            foreach (Image image in images)
             {
-                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
+                var resolution = image.Resolution.Split('x');
+                var imageInfo = new RemoteImageInfo
                 {
-                    // Use XmlReader for best performance
-                    using (var reader = XmlReader.Create(streamReader, settings))
-                    {
-                        reader.MoveToContent();
-                        reader.Read();
+                    RatingType = RatingType.Score,
+                    CommunityRating = (double?)image.RatingsInfo.Average,
+                    VoteCount = image.RatingsInfo.Count,
+                    Url = TVUtils.BannerUrl + image.FileName,
+                    ProviderName = ProviderName,
+                    // TODO Language = image.LanguageId,
+                    Width = Convert.ToInt32(resolution[0]),
+                    Height = Convert.ToInt32(resolution[1]),
+                    ThumbnailUrl = TVUtils.BannerUrl + image.Thumbnail
+                };
 
-                        // Loop through each element
-                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            if (reader.NodeType == XmlNodeType.Element)
-                            {
-                                switch (reader.Name)
-                                {
-                                    case "Banner":
-                                        {
-                                            if (reader.IsEmptyElement)
-                                            {
-                                                reader.Read();
-                                                continue;
-                                            }
-                                            using (var subtree = reader.ReadSubtree())
-                                            {
-                                                AddImage(subtree, list, seasonNumber);
-                                            }
-                                            break;
-                                        }
-                                    default:
-                                        reader.Skip();
-                                        break;
-                                }
-                            }
-                            else
-                            {
-                                reader.Read();
-                            }
-                        }
-                    }
+                if (string.Equals(image.KeyType, "season", StringComparison.OrdinalIgnoreCase))
+                {
+                    imageInfo.Type = ImageType.Primary;
                 }
-            }
+                else if (string.Equals(image.KeyType, "seasonwide", StringComparison.OrdinalIgnoreCase))
+                {
+                    imageInfo.Type = ImageType.Banner;
+                }
+                else if (string.Equals(image.KeyType, "fanart", StringComparison.OrdinalIgnoreCase))
+                {
+                    imageInfo.Type = ImageType.Backdrop;
+                }
 
+                list.Add(imageInfo);
+            }
             var isLanguageEn = string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase);
 
             return list.OrderByDescending(i =>
@@ -155,6 +125,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     {
                         return 3;
                     }
+
                     if (!isLanguageEn)
                     {
                         if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
@@ -162,175 +133,16 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                             return 2;
                         }
                     }
+
                     if (string.IsNullOrEmpty(i.Language))
                     {
                         return isLanguageEn ? 3 : 2;
                     }
+
                     return 0;
                 })
                 .ThenByDescending(i => i.CommunityRating ?? 0)
                 .ThenByDescending(i => i.VoteCount ?? 0);
-        }
-
-        private static void AddImage(XmlReader reader, List<RemoteImageInfo> images, int seasonNumber)
-        {
-            reader.MoveToContent();
-
-            string bannerType = null;
-            string bannerType2 = null;
-            string url = null;
-            int? bannerSeason = null;
-            int? width = null;
-            int? height = null;
-            string language = null;
-            double? rating = null;
-            int? voteCount = null;
-            string thumbnailUrl = null;
-
-            reader.MoveToContent();
-            reader.Read();
-
-            // Loop through each element
-            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "Rating":
-                            {
-                                var val = reader.ReadElementContentAsString() ?? string.Empty;
-
-                                if (double.TryParse(val, NumberStyles.Any, UsCulture, out var rval))
-                                {
-                                    rating = rval;
-                                }
-
-                                break;
-                            }
-
-                        case "RatingCount":
-                            {
-                                var val = reader.ReadElementContentAsString() ?? string.Empty;
-
-                                if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var rval))
-                                {
-                                    voteCount = rval;
-                                }
-
-                                break;
-                            }
-
-                        case "Language":
-                            {
-                                language = reader.ReadElementContentAsString() ?? string.Empty;
-                                break;
-                            }
-
-                        case "ThumbnailPath":
-                            {
-                                thumbnailUrl = reader.ReadElementContentAsString() ?? string.Empty;
-                                break;
-                            }
-
-                        case "BannerType":
-                            {
-                                bannerType = reader.ReadElementContentAsString() ?? string.Empty;
-                                break;
-                            }
-
-                        case "BannerType2":
-                            {
-                                bannerType2 = reader.ReadElementContentAsString() ?? string.Empty;
-
-                                // Sometimes the resolution is stuffed in here
-                                var resolutionParts = bannerType2.Split('x');
-
-                                if (resolutionParts.Length == 2)
-                                {
-                                    if (int.TryParse(resolutionParts[0], NumberStyles.Integer, UsCulture, out var rval))
-                                    {
-                                        width = rval;
-                                    }
-
-                                    if (int.TryParse(resolutionParts[1], NumberStyles.Integer, UsCulture, out rval))
-                                    {
-                                        height = rval;
-                                    }
-
-                                }
-
-                                break;
-                            }
-
-                        case "BannerPath":
-                            {
-                                url = reader.ReadElementContentAsString() ?? string.Empty;
-                                break;
-                            }
-
-                        case "Season":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    bannerSeason = int.Parse(val);
-                                }
-                                break;
-                            }
-
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
-                {
-                    reader.Read();
-                }
-            }
-
-            if (!string.IsNullOrEmpty(url) && bannerSeason.HasValue && bannerSeason.Value == seasonNumber)
-            {
-                var imageInfo = new RemoteImageInfo
-                {
-                    RatingType = RatingType.Score,
-                    CommunityRating = rating,
-                    VoteCount = voteCount,
-                    Url = TVUtils.BannerUrl + url,
-                    ProviderName = ProviderName,
-                    Language = language,
-                    Width = width,
-                    Height = height
-                };
-
-                if (!string.IsNullOrEmpty(thumbnailUrl))
-                {
-                    imageInfo.ThumbnailUrl = TVUtils.BannerUrl + thumbnailUrl;
-                }
-
-                if (string.Equals(bannerType, "season", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (string.Equals(bannerType2, "season", StringComparison.OrdinalIgnoreCase))
-                    {
-                        imageInfo.Type = ImageType.Primary;
-                        images.Add(imageInfo);
-                    }
-                    else if (string.Equals(bannerType2, "seasonwide", StringComparison.OrdinalIgnoreCase))
-                    {
-                        imageInfo.Type = ImageType.Banner;
-                        images.Add(imageInfo);
-                    }
-                }
-                else if (string.Equals(bannerType, "fanart", StringComparison.OrdinalIgnoreCase))
-                {
-                    imageInfo.Type = ImageType.Backdrop;
-                    images.Add(imageInfo);
-                }
-            }
-
         }
 
         public int Order => 0;
