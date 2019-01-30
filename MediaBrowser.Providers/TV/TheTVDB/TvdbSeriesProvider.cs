@@ -31,23 +31,17 @@ namespace MediaBrowser.Providers.TV.TheTVDB
     {
         internal static TvdbSeriesProvider Current { get; private set; }
         private readonly IHttpClient _httpClient;
-        private readonly IFileSystem _fileSystem;
-        private readonly IXmlReaderSettingsFactory _xmlSettings;
-        private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;
         private readonly TvDbClient _tvDbClient;
 
-        public TvdbSeriesProvider(IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager, IXmlReaderSettingsFactory xmlSettings, ILocalizationManager localizationManager)
+        public TvdbSeriesProvider(IHttpClient httpClient, ILogger logger, ILibraryManager libraryManager, ILocalizationManager localizationManager)
         {
             _httpClient = httpClient;
-            _fileSystem = fileSystem;
-            _config = config;
             _logger = logger;
             _libraryManager = libraryManager;
-            _xmlSettings = xmlSettings;
             _localizationManager = localizationManager;
             Current = this;
             _tvDbClient = new TvDbClient();
@@ -179,45 +173,46 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         // TODO caching
         private bool IsCacheValid(string seriesDataPath, string preferredMetadataLanguage)
         {
-            try
-            {
-                var files = _fileSystem.GetFiles(seriesDataPath, new[] { ".xml" }, true, false)
-                    .ToList();
-
-                var seriesXmlFilename = preferredMetadataLanguage + ".xml";
-
-                const int cacheHours = 12;
-
-                var seriesFile = files.FirstOrDefault(i => string.Equals(seriesXmlFilename, i.Name, StringComparison.OrdinalIgnoreCase));
-                // No need to check age if automatic updates are enabled
-                if (seriesFile == null || !seriesFile.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(seriesFile)).TotalHours > cacheHours)
-                {
-                    return false;
-                }
-
-                var actorsXml = files.FirstOrDefault(i => string.Equals("actors.xml", i.Name, StringComparison.OrdinalIgnoreCase));
-                // No need to check age if automatic updates are enabled
-                if (actorsXml == null || !actorsXml.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(actorsXml)).TotalHours > cacheHours)
-                {
-                    return false;
-                }
-
-                var bannersXml = files.FirstOrDefault(i => string.Equals("banners.xml", i.Name, StringComparison.OrdinalIgnoreCase));
-                // No need to check age if automatic updates are enabled
-                if (bannersXml == null || !bannersXml.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(bannersXml)).TotalHours > cacheHours)
-                {
-                    return false;
-                }
-                return true;
-            }
-            catch (FileNotFoundException)
-            {
-                return false;
-            }
-            catch (IOException)
-            {
-                return false;
-            }
+            return true;
+//            try
+//            {
+//                var files = _fileSystem.GetFiles(seriesDataPath, new[] { ".xml" }, true, false)
+//                    .ToList();
+//
+//                var seriesXmlFilename = preferredMetadataLanguage + ".xml";
+//
+//                const int cacheHours = 12;
+//
+//                var seriesFile = files.FirstOrDefault(i => string.Equals(seriesXmlFilename, i.Name, StringComparison.OrdinalIgnoreCase));
+//                // No need to check age if automatic updates are enabled
+//                if (seriesFile == null || !seriesFile.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(seriesFile)).TotalHours > cacheHours)
+//                {
+//                    return false;
+//                }
+//
+//                var actorsXml = files.FirstOrDefault(i => string.Equals("actors.xml", i.Name, StringComparison.OrdinalIgnoreCase));
+//                // No need to check age if automatic updates are enabled
+//                if (actorsXml == null || !actorsXml.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(actorsXml)).TotalHours > cacheHours)
+//                {
+//                    return false;
+//                }
+//
+//                var bannersXml = files.FirstOrDefault(i => string.Equals("banners.xml", i.Name, StringComparison.OrdinalIgnoreCase));
+//                // No need to check age if automatic updates are enabled
+//                if (bannersXml == null || !bannersXml.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(bannersXml)).TotalHours > cacheHours)
+//                {
+//                    return false;
+//                }
+//                return true;
+//            }
+//            catch (FileNotFoundException)
+//            {
+//                return false;
+//            }
+//            catch (IOException)
+//            {
+//                return false;
+//            }
         }
 
         /// <summary>
