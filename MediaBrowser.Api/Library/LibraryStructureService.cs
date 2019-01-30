@@ -255,7 +255,7 @@ namespace MediaBrowser.Api.Library
             var currentPath = Path.Combine(rootFolderPath, request.Name);
             var newPath = Path.Combine(rootFolderPath, request.NewName);
 
-            if (Directory.Exists(currentPath))
+            if (!Directory.Exists(currentPath))
             {
                 throw new FileNotFoundException("The media collection does not exist");
             }

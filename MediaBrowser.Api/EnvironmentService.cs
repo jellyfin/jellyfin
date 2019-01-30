@@ -144,7 +144,7 @@ namespace MediaBrowser.Api
                 }
                 else
                 {
-                    if (Directory.Exists(request.Path))
+                    if (!Directory.Exists(request.Path))
                     {
                         throw new FileNotFoundException("File not found", request.Path);
                     }
@@ -153,7 +153,7 @@ namespace MediaBrowser.Api
 
             else
             {
-                if (!File.Exists(request.Path) && Directory.Exists(request.Path))
+                if (!File.Exists(request.Path) && !Directory.Exists(request.Path))
                 {
                     throw new FileNotFoundException("Path not found", request.Path);
                 }
