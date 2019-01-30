@@ -1,6 +1,5 @@
 using MediaBrowser.Common;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
@@ -10,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             progress.Report(0);
 
-            var packagesToInstall = (await _installationManager.GetAvailablePluginUpdates(_appHost.ApplicationVersion, true, cancellationToken).ConfigureAwait(false)).ToList();
+            var packagesToInstall = (await _installationManager.GetAvailablePluginUpdates(typeof(PluginUpdateTask).Assembly.GetName().Version, true, cancellationToken).ConfigureAwait(false)).ToList();
 
             progress.Report(10);
 
@@ -89,11 +89,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 }
                 catch (HttpException ex)
                 {
-                    _logger.ErrorException("Error downloading {0}", ex, package.name);
+                    _logger.LogError(ex, "Error downloading {0}", package.name);
                 }
                 catch (IOException ex)
                 {
-                    _logger.ErrorException("Error updating {0}", ex, package.name);
+                    _logger.LogError(ex, "Error updating {0}", package.name);
                 }
 
                 // Update progress
