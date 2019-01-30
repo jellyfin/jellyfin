@@ -86,7 +86,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             try
             {
-                lines = _fileSystem.ReadAllLines(path).Where(i => !string.IsNullOrWhiteSpace(i)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+                lines = File.ReadAllLines(path).Where(i => !string.IsNullOrWhiteSpace(i)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
                 foreach (var key in lines)
                 {

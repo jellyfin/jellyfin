@@ -255,12 +255,12 @@ namespace MediaBrowser.Api.Library
             var currentPath = Path.Combine(rootFolderPath, request.Name);
             var newPath = Path.Combine(rootFolderPath, request.NewName);
 
-            if (!_fileSystem.DirectoryExists(currentPath))
+            if (!Directory.Exists(currentPath))
             {
                 throw new FileNotFoundException("The media collection does not exist");
             }
 
-            if (!string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase) && _fileSystem.DirectoryExists(newPath))
+            if (!string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase) && Directory.Exists(newPath))
             {
                 throw new ArgumentException("Media library already exists at " + newPath + ".");
             }
@@ -273,11 +273,11 @@ namespace MediaBrowser.Api.Library
                 if (string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase))
                 {
                     var tempPath = Path.Combine(rootFolderPath, Guid.NewGuid().ToString("N"));
-                    _fileSystem.MoveDirectory(currentPath, tempPath);
+                    Directory.Move(currentPath, tempPath);
                     currentPath = tempPath;
                 }
 
-                _fileSystem.MoveDirectory(currentPath, newPath);
+                Directory.Move(currentPath, newPath);
             }
             finally
             {

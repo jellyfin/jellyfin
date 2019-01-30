@@ -379,7 +379,7 @@ namespace Emby.Dlna
 
                     if (!fileInfo.Exists || fileInfo.Length != stream.Length)
                     {
-                        _fileSystem.CreateDirectory(systemProfilesPath);
+                        Directory.CreateDirectory(systemProfilesPath);
 
                         using (var fileStream = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
                         {
@@ -390,7 +390,7 @@ namespace Emby.Dlna
             }
 
             // Not necessary, but just to make it easy to find
-            _fileSystem.CreateDirectory(UserProfilesPath);
+            Directory.CreateDirectory(UserProfilesPath);
         }
 
         public void DeleteProfile(string id)

@@ -141,12 +141,12 @@ namespace Emby.Server.Implementations.MediaEncoder
 
                             var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, protocol, null, Array.Empty<string>());
 
-                            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                             var container = video.Container;
 
                             var tempFile = await _encoder.ExtractVideoImage(inputPath, container, protocol, video.GetDefaultVideoStream(), video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
-                            _fileSystem.CopyFile(tempFile, path, true);
+                            File.Copy(tempFile, path, true);
 
                             try
                             {

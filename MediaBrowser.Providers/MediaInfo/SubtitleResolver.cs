@@ -98,7 +98,7 @@ namespace MediaBrowser.Providers.MediaInfo
             int startIndex,
             string[] files)
         {
-            var videoFileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(videoPath);
+            var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(videoPath);
             videoFileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(videoFileNameWithoutExtension);
 
             foreach (var fullName in files)
@@ -110,7 +110,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     continue;
                 }
 
-                var fileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(fullName);
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullName);
                 fileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(fileNameWithoutExtension);
 
                 if (!string.Equals(videoFileNameWithoutExtension, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase) &&

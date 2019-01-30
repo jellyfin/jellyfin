@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var uri = new Uri(mediaSource.Path);
             var localPort = _networkManager.GetRandomUnusedUdpPort();
 
-            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(TempFilePath));
+            Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
             Logger.LogInformation("Opening HDHR UDP Live stream from {host}", uri.Host);
 

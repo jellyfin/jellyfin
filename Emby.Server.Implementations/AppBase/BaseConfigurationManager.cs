@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.AppBase
             Logger.LogInformation("Saving system configuration");
             var path = CommonApplicationPaths.SystemConfigurationFilePath;
 
-            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_configurationSyncLock)
             {
@@ -197,7 +197,7 @@ namespace Emby.Server.Implementations.AppBase
                 && !string.Equals(CommonConfiguration.CachePath ?? string.Empty, newPath))
             {
                 // Validate
-                if (!FileSystem.DirectoryExists(newPath))
+                if (!Directory.Exists(newPath))
                 {
                     throw new FileNotFoundException(string.Format("{0} does not exist.", newPath));
                 }
@@ -209,8 +209,7 @@ namespace Emby.Server.Implementations.AppBase
         protected void EnsureWriteAccess(string path)
         {
             var file = Path.Combine(path, Guid.NewGuid().ToString());
-
-            FileSystem.WriteAllText(file, string.Empty);
+            File.WriteAllText(file, string.Empty);
             FileSystem.DeleteFile(file);
         }
 
@@ -246,13 +245,14 @@ namespace Emby.Server.Implementations.AppBase
 
         private object LoadConfiguration(string path, Type configurationType)
         {
+            if (!File.Exists(path))
+            {
+                return Activator.CreateInstance(configurationType);
+            }
+
             try
             {
                 return XmlSerializer.DeserializeFromFile(configurationType, path);
-            }
-            catch (FileNotFoundException)
-            {
-                return Activator.CreateInstance(configurationType);
             }
             catch (IOException)
             {
@@ -293,7 +293,7 @@ namespace Emby.Server.Implementations.AppBase
             _configurations.AddOrUpdate(key, configuration, (k, v) => configuration);
 
             var path = GetConfigurationFile(key);
-            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_configurationSyncLock)
             {

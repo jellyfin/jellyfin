@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
@@ -167,18 +168,18 @@ namespace MediaBrowser.Controller.Entities
                 var oldConfigurationDirectory = ConfigurationDirectoryPath;
 
                 // Exceptions will be thrown if these paths already exist
-                if (FileSystem.DirectoryExists(newConfigDirectory))
+                if (Directory.Exists(newConfigDirectory))
                 {
-                    FileSystem.DeleteDirectory(newConfigDirectory, true);
+                    Directory.Delete(newConfigDirectory, true);
                 }
 
-                if (FileSystem.DirectoryExists(oldConfigurationDirectory))
+                if (Directory.Exists(oldConfigurationDirectory))
                 {
-                    FileSystem.MoveDirectory(oldConfigurationDirectory, newConfigDirectory);
+                    Directory.Move(oldConfigurationDirectory, newConfigDirectory);
                 }
                 else
                 {
-                    FileSystem.CreateDirectory(newConfigDirectory);
+                    Directory.CreateDirectory(newConfigDirectory);
                 }
             }
 

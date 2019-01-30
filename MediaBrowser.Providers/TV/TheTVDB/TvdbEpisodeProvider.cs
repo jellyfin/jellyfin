@@ -197,7 +197,7 @@ namespace MediaBrowser.Providers.TV
 
             if (searchInfo.IndexNumber.HasValue)
             {
-                var files = GetEpisodeXmlFiles(searchInfo.SeriesDisplayOrder, searchInfo.ParentIndexNumber, searchInfo.IndexNumber, searchInfo.IndexNumberEnd, _fileSystem.GetDirectoryName(xmlFile));
+                var files = GetEpisodeXmlFiles(searchInfo.SeriesDisplayOrder, searchInfo.ParentIndexNumber, searchInfo.IndexNumber, searchInfo.IndexNumberEnd, Path.GetDirectoryName(xmlFile));
 
                 list = files.Select(GetXmlReader).ToList();
             }
@@ -296,7 +296,7 @@ namespace MediaBrowser.Providers.TV
 
         private XmlReader GetXmlReader(FileSystemMetadata xmlFile)
         {
-            return GetXmlReader(_fileSystem.ReadAllText(xmlFile.FullName, Encoding.UTF8));
+            return GetXmlReader(File.ReadAllText(xmlFile.FullName, Encoding.UTF8));
         }
 
         private XmlReader GetXmlReader(string xml)

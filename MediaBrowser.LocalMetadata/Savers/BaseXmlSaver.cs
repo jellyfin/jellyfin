@@ -94,7 +94,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
         private void SaveToFile(Stream stream, string path)
         {
-            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
             // On Windows, savint the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
 

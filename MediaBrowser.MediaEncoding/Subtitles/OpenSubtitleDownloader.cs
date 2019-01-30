@@ -269,7 +269,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var subLanguageId = NormalizeLanguage(request.Language);
             string hash;
 
-            using (var fileStream = _fileSystem.OpenRead(request.MediaPath))
+            using (var fileStream = File.OpenRead(request.MediaPath))
             {
                 hash = Utilities.ComputeHash(fileStream);
             }

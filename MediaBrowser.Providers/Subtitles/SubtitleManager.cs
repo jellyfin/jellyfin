@@ -30,9 +30,7 @@ namespace MediaBrowser.Providers.Subtitles
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _monitor;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly IServerConfigurationManager _config;
 
-        public event EventHandler<SubtitleDownloadEventArgs> SubtitlesDownloaded;
         public event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
 
         private ILocalizationManager _localization;
@@ -42,14 +40,12 @@ namespace MediaBrowser.Providers.Subtitles
             IFileSystem fileSystem,
             ILibraryMonitor monitor,
             IMediaSourceManager mediaSourceManager,
-            IServerConfigurationManager config,
             ILocalizationManager localizationManager)
         {
             _logger = loggerFactory.CreateLogger(nameof(SubtitleManager));
             _fileSystem = fileSystem;
             _monitor = monitor;
             _mediaSourceManager = mediaSourceManager;
-            _config = config;
             _localization = localizationManager;
         }
 
@@ -134,11 +130,6 @@ namespace MediaBrowser.Providers.Subtitles
             return results.SelectMany(i => i).ToArray();
         }
 
-        private SubtitleOptions GetOptions()
-        {
-            return _config.GetConfiguration<SubtitleOptions>("subtitles");
-        }
-
         public Task DownloadSubtitles(Video video, string subtitleId, CancellationToken cancellationToken)
         {
             var libraryOptions = BaseItem.LibraryManager.GetLibraryOptions(video);
@@ -168,7 +159,7 @@ namespace MediaBrowser.Providers.Subtitles
                         memoryStream.Position = 0;
 
                         var savePaths = new List<string>();
-                        var saveFileName = _fileSystem.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();
+                        var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();
 
                         if (response.IsForced)
                         {
@@ -217,7 +208,7 @@ namespace MediaBrowser.Providers.Subtitles
 
                 try
                 {
-                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(savePath));
+                    Directory.CreateDirectory(Path.GetDirectoryName(savePath));
 
                     using (var fs = _fileSystem.GetFileStream(savePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                     {

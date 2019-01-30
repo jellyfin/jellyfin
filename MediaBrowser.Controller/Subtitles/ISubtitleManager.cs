@@ -16,11 +16,6 @@ namespace MediaBrowser.Controller.Subtitles
         event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
 
         /// <summary>
-        /// Occurs when [subtitles downloaded].
-        /// </summary>
-        event EventHandler<SubtitleDownloadEventArgs> SubtitlesDownloaded;
-
-        /// <summary>
         /// Adds the parts.
         /// </summary>
         /// <param name="subtitleProviders">The subtitle providers.</param>

@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.FFMpeg
             var prebuiltFolder = _appPaths.ProgramSystemPath;
             var prebuiltffmpeg = Path.Combine(prebuiltFolder, downloadInfo.FFMpegFilename);
             var prebuiltffprobe = Path.Combine(prebuiltFolder, downloadInfo.FFProbeFilename);
-            if (_fileSystem.FileExists(prebuiltffmpeg) && _fileSystem.FileExists(prebuiltffprobe))
+            if (File.Exists(prebuiltffmpeg) && File.Exists(prebuiltffprobe))
             {
                 return new FFMpegInfo
                 {
@@ -75,11 +75,11 @@ namespace Emby.Server.Implementations.FFMpeg
                 Version = version
             };
 
-            _fileSystem.CreateDirectory(versionedDirectoryPath);
+            Directory.CreateDirectory(versionedDirectoryPath);
 
             var excludeFromDeletions = new List<string> { versionedDirectoryPath };
 
-            if (!_fileSystem.FileExists(info.ProbePath) || !_fileSystem.FileExists(info.EncoderPath))
+            if (!File.Exists(info.ProbePath) || !File.Exists(info.EncoderPath))
             {
                 // ffmpeg not present. See if there's an older version we can start with
                 var existingVersion = GetExistingVersion(info, rootEncoderPath);
@@ -92,7 +92,7 @@ namespace Emby.Server.Implementations.FFMpeg
                 else
                 {
                     info = existingVersion;
-                    versionedDirectoryPath = _fileSystem.GetDirectoryName(info.EncoderPath);
+                    versionedDirectoryPath = Path.GetDirectoryName(info.EncoderPath);
                     excludeFromDeletions.Add(versionedDirectoryPath);
                 }
             }
@@ -130,7 +130,7 @@ namespace Emby.Server.Implementations.FFMpeg
                     {
                         EncoderPath = encoder,
                         ProbePath = probe,
-                        Version = Path.GetFileName(_fileSystem.GetDirectoryName(probe))
+                        Version = Path.GetFileName(Path.GetDirectoryName(probe))
                     };
                 }
             }

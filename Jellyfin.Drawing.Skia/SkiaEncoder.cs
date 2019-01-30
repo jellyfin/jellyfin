@@ -219,8 +219,8 @@ namespace Jellyfin.Drawing.Skia
 
             var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path) ?? string.Empty);
 
-            fileSystem.CreateDirectory(fileSystem.GetDirectoryName(tempPath));
-            fileSystem.CopyFile(path, tempPath, true);
+            Directory.CreateDirectory(Path.GetDirectoryName(tempPath));
+            File.Copy(path, tempPath, true);
 
             return tempPath;
         }
@@ -257,7 +257,7 @@ namespace Jellyfin.Drawing.Skia
 
         internal static SKBitmap Decode(string path, bool forceCleanBitmap, IFileSystem fileSystem, ImageOrientation? orientation, out SKEncodedOrigin origin)
         {
-            if (!fileSystem.FileExists(path))
+            if (!File.Exists(path))
             {
                 throw new FileNotFoundException("File not found", path);
             }
@@ -532,7 +532,7 @@ namespace Jellyfin.Drawing.Skia
                     // If all we're doing is resizing then we can stop now
                     if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
                     {
-                        _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
+                        Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
                         using (var outputStream = new SKFileWStream(outputPath))
                         using (var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels()))
                         {
@@ -584,7 +584,7 @@ namespace Jellyfin.Drawing.Skia
                             DrawIndicator(canvas, width, height, options);
                         }
 
-                        _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(outputPath));
+                        Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
                         using (var outputStream = new SKFileWStream(outputPath))
                         {
                             using (var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels()))
