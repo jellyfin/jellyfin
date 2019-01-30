@@ -92,7 +92,7 @@ namespace BDInfo
             }
 
             DirectoryRoot =
-                _fileSystem.GetDirectoryInfo(_fileSystem.GetDirectoryName(DirectoryBDMV.FullName));
+                _fileSystem.GetDirectoryInfo(Path.GetDirectoryName(DirectoryBDMV.FullName));
             DirectoryBDJO =
                 GetDirectory("BDJO", DirectoryBDMV, 0);
             DirectoryCLIPINF =
@@ -150,7 +150,7 @@ namespace BDInfo
                 Is3D = true;
             }
 
-            if (_fileSystem.FileExists(Path.Combine(DirectoryRoot.FullName, "FilmIndex.xml")))
+            if (File.Exists(Path.Combine(DirectoryRoot.FullName, "FilmIndex.xml")))
             {
                 IsDBOX = true;
             }
@@ -345,7 +345,7 @@ namespace BDInfo
                 {
                     return dir;
                 }
-                var parentFolder = _fileSystem.GetDirectoryName(dir.FullName);
+                var parentFolder = Path.GetDirectoryName(dir.FullName);
                 if (string.IsNullOrEmpty(parentFolder))
                 {
                     dir = null;

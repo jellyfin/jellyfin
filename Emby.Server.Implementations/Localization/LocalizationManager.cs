@@ -70,7 +70,7 @@ namespace Emby.Server.Implementations.Localization
 
             var localizationPath = LocalizationPath;
 
-            _fileSystem.CreateDirectory(localizationPath);
+            Directory.CreateDirectory(localizationPath);
 
             var existingFiles = GetRatingsFiles(localizationPath)
                 .Select(Path.GetFileName)
@@ -316,7 +316,7 @@ namespace Emby.Server.Implementations.Localization
         /// <returns>Dictionary{System.StringParentalRating}.</returns>
         private void LoadRatings(string file)
         {
-            var dict = _fileSystem.ReadAllLines(file).Select(i =>
+            var dict = File.ReadAllLines(file).Select(i =>
             {
                 if (!string.IsNullOrWhiteSpace(i))
                 {
@@ -337,7 +337,7 @@ namespace Emby.Server.Implementations.Localization
             .Where(i => i != null)
             .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
-            var countryCode = _fileSystem.GetFileNameWithoutExtension(file)
+            var countryCode = Path.GetFileNameWithoutExtension(file)
                 .Split('-')
                 .Last();
 

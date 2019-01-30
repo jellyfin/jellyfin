@@ -277,7 +277,7 @@ namespace Emby.Server.Implementations.IO
         /// <param name="path">The path.</param>
         private void StartWatchingPath(string path)
         {
-            if (!_fileSystem.DirectoryExists(path))
+            if (!Directory.Exists(path))
             {
                 // Seeing a crash in the mono runtime due to an exception being thrown on a different thread
                 Logger.LogInformation("Skipping realtime monitor for {0} because the path does not exist", path);
@@ -483,7 +483,7 @@ namespace Emby.Server.Implementations.IO
                 }
 
                 // Go up a level
-                var parent = _fileSystem.GetDirectoryName(i);
+                var parent = Path.GetDirectoryName(i);
                 if (!string.IsNullOrEmpty(parent))
                 {
                     if (_fileSystem.AreEqual(parent, path))
@@ -509,7 +509,7 @@ namespace Emby.Server.Implementations.IO
 
         private void CreateRefresher(string path)
         {
-            var parentPath = _fileSystem.GetDirectoryName(path);
+            var parentPath = Path.GetDirectoryName(path);
 
             lock (_activeRefreshers)
             {
@@ -538,7 +538,7 @@ namespace Emby.Server.Implementations.IO
                     }
 
                     // They are siblings. Rebase the refresher to the parent folder.
-                    if (string.Equals(parentPath, _fileSystem.GetDirectoryName(refresher.Path), StringComparison.Ordinal))
+                    if (string.Equals(parentPath, Path.GetDirectoryName(refresher.Path), StringComparison.Ordinal))
                     {
                         refresher.ResetPath(parentPath, path);
                         return;

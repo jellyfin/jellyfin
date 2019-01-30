@@ -148,7 +148,7 @@ namespace Emby.Server.Implementations.Configuration
                 && !string.Equals(Configuration.CertificatePath ?? string.Empty, newPath))
             {
                 // Validate
-                if (!FileSystem.FileExists(newPath))
+                if (!File.Exists(newPath))
                 {
                     throw new FileNotFoundException(string.Format("Certificate file '{0}' does not exist.", newPath));
                 }
@@ -168,7 +168,7 @@ namespace Emby.Server.Implementations.Configuration
                 && !string.Equals(Configuration.MetadataPath ?? string.Empty, newPath))
             {
                 // Validate
-                if (!FileSystem.DirectoryExists(newPath))
+                if (!Directory.Exists(newPath))
                 {
                     throw new FileNotFoundException(string.Format("{0} does not exist.", newPath));
                 }

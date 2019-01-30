@@ -193,7 +193,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private void SaveToFile(Stream stream, string path)
         {
-            FileSystem.CreateDirectory(FileSystem.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
             // On Windows, savint the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
 
@@ -974,7 +974,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             settings.IgnoreProcessingInstructions = true;
             settings.IgnoreComments = true;
 
-            using (var fileStream = fileSystem.OpenRead(path))
+            using (var fileStream = File.OpenRead(path))
             {
                 using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
                 {

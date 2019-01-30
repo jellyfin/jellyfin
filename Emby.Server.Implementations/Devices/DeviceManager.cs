@@ -76,7 +76,7 @@ namespace Emby.Server.Implementations.Devices
         public void SaveCapabilities(string deviceId, ClientCapabilities capabilities)
         {
             var path = Path.Combine(GetDevicePath(deviceId), "capabilities.json");
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_capabilitiesSyncLock)
             {
@@ -239,7 +239,7 @@ namespace Emby.Server.Implementations.Devices
             path = Path.Combine(path, file.Name);
             path = Path.ChangeExtension(path, MimeTypes.ToExtension(file.MimeType) ?? "jpg");
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             await EnsureLibraryFolder(uploadPathInfo.Item2, uploadPathInfo.Item3).ConfigureAwait(false);
 
@@ -275,7 +275,7 @@ namespace Emby.Server.Implementations.Devices
         private void AddCameraUpload(string deviceId, LocalFileInfo file)
         {
             var path = Path.Combine(GetDevicePath(deviceId), "camerauploads.json");
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_cameraUploadSyncLock)
             {
@@ -317,7 +317,7 @@ namespace Emby.Server.Implementations.Devices
                 return Task.CompletedTask;
             }
 
-            _fileSystem.CreateDirectory(path);
+            Directory.CreateDirectory(path);
 
             var libraryOptions = new LibraryOptions
             {
@@ -431,7 +431,7 @@ namespace Emby.Server.Implementations.Devices
             {
                 var path = _deviceManager.GetUploadsPath();
 
-                if (_fileSystem.DirectoryExists(path))
+                if (Directory.Exists(path))
                 {
                     try
                     {

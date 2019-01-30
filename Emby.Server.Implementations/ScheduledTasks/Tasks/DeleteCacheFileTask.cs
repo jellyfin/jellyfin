@@ -128,7 +128,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
                 {
                     try
                     {
-                        _fileSystem.DeleteDirectory(directory, false);
+                        Directory.Delete(directory, false);
                     }
                     catch (UnauthorizedAccessException ex)
                     {

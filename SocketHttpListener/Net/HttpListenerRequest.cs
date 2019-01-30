@@ -8,7 +8,7 @@ using SocketHttpListener.Net.WebSockets;
 
 namespace SocketHttpListener.Net
 {
-    public sealed unsafe partial class HttpListenerRequest
+    public sealed partial class HttpListenerRequest
     {
         private CookieCollection _cookies;
         private bool? _keepAlive;

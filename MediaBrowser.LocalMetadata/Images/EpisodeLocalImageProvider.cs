@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -29,11 +30,11 @@ namespace MediaBrowser.LocalMetadata.Images
 
         public List<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
         {
-            var parentPath = _fileSystem.GetDirectoryName(item.Path);
+            var parentPath = Path.GetDirectoryName(item.Path);
 
             var parentPathFiles = directoryService.GetFiles(parentPath);
 
-            var nameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(item.Path);
+            var nameWithoutExtension = Path.GetFileNameWithoutExtension(item.Path);
 
             return GetFilesFromParentFolder(nameWithoutExtension, parentPathFiles);
         }

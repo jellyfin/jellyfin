@@ -43,7 +43,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                         var filename = Path.GetFileNameWithoutExtension(args.Path);
 
                         // Make sure the image doesn't belong to a video file
-                        var files = args.DirectoryService.GetFiles(_fileSystem.GetDirectoryName(args.Path));
+                        var files = args.DirectoryService.GetFiles(Path.GetDirectoryName(args.Path));
                         var libraryOptions = args.GetLibraryOptions();
 
                         foreach (var file in files)

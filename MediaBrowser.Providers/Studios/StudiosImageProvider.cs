@@ -151,11 +151,11 @@ namespace MediaBrowser.Providers.Studios
 
                 }).ConfigureAwait(false);
 
-                fileSystem.CreateDirectory(fileSystem.GetDirectoryName(file));
+                Directory.CreateDirectory(Path.GetDirectoryName(file));
 
                 try
                 {
-                    fileSystem.CopyFile(temp, file, true);
+                    File.Copy(temp, file, true);
                 }
                 catch
                 {

@@ -112,7 +112,6 @@ using ServiceStack;
 using ServiceStack.Text.Jsv;
 using StringExtensions = MediaBrowser.Controller.Extensions.StringExtensions;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
-using UtfUnknown;
 
 namespace Emby.Server.Implementations
 {
@@ -881,7 +880,7 @@ namespace Emby.Server.Implementations
             MediaSourceManager = new MediaSourceManager(ItemRepository, ApplicationPaths, LocalizationManager, UserManager, LibraryManager, LoggerFactory, JsonSerializer, FileSystemManager, UserDataManager, TimerFactory, () => MediaEncoder);
             RegisterSingleInstance(MediaSourceManager);
 
-            SubtitleManager = new SubtitleManager(LoggerFactory, FileSystemManager, LibraryMonitor, MediaSourceManager, ServerConfigurationManager, LocalizationManager);
+            SubtitleManager = new SubtitleManager(LoggerFactory, FileSystemManager, LibraryMonitor, MediaSourceManager, LocalizationManager);
             RegisterSingleInstance(SubtitleManager);
 
             ProviderManager = new ProviderManager(HttpClient, SubtitleManager, ServerConfigurationManager, LibraryMonitor, LoggerFactory, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer);
@@ -1008,7 +1007,7 @@ namespace Emby.Server.Implementations
 
             try
             {
-                if (!FileSystemManager.FileExists(certificateLocation))
+                if (!File.Exists(certificateLocation))
                 {
                     return null;
                 }
@@ -1434,7 +1433,7 @@ namespace Emby.Server.Implementations
 
             //if (generateCertificate)
             //{
-            //    if (!FileSystemManager.FileExists(certPath))
+            //    if (!File.Exists(certPath))
             //    {
             //        FileSystemManager.CreateDirectory(FileSystemManager.GetDirectoryName(certPath));
 
@@ -1564,7 +1563,7 @@ namespace Emby.Server.Implementations
         /// <returns>IEnumerable{Assembly}.</returns>
         protected List<Tuple<Assembly, string>> GetComposablePartAssemblies()
         {
-            var list = GetPluginAssemblies();
+            var list = GetPluginAssemblies(ApplicationPaths.PluginsPath);
 
             // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
             // This will prevent the .dll file from getting locked, and allow us to replace it when needed
@@ -1614,79 +1613,6 @@ namespace Emby.Server.Implementations
         }
 
         protected abstract IEnumerable<Assembly> GetAssembliesWithPartsInternal();
-
-        /// <summary>
-        /// Gets the plugin assemblies.
-        /// </summary>
-        /// <returns>IEnumerable{Assembly}.</returns>
-        private List<Tuple<Assembly, string>> GetPluginAssemblies()
-        {
-            // Copy pre-installed plugins
-            var sourcePath = Path.Combine(ApplicationPaths.ApplicationResourcesPath, "plugins");
-            CopyPlugins(sourcePath, ApplicationPaths.PluginsPath);
-
-            return GetPluginAssemblies(ApplicationPaths.PluginsPath);
-        }
-
-        private void CopyPlugins(string source, string target)
-        {
-            List<string> files;
-
-            try
-            {
-                files = Directory.EnumerateFiles(source, "*.dll", SearchOption.TopDirectoryOnly)
-                   .ToList();
-
-            }
-            catch (DirectoryNotFoundException)
-            {
-                return;
-            }
-
-            if (files.Count == 0)
-            {
-                return;
-            }
-
-            foreach (var sourceFile in files)
-            {
-                var filename = Path.GetFileName(sourceFile);
-                var targetFile = Path.Combine(target, filename);
-
-                var targetFileExists = File.Exists(targetFile);
-
-                if (!targetFileExists && ServerConfigurationManager.Configuration.UninstalledPlugins.Contains(filename, StringComparer.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                if (targetFileExists && GetDllVersion(targetFile) >= GetDllVersion(sourceFile))
-                {
-                    continue;
-                }
-
-                Directory.CreateDirectory(target);
-                File.Copy(sourceFile, targetFile, true);
-            }
-        }
-
-        private Version GetDllVersion(string path)
-        {
-            try
-            {
-                var result = Version.Parse(FileVersionInfo.GetVersionInfo(path).FileVersion);
-
-                Logger.LogInformation("File {Path} has version {Version}", path, result);
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error getting version number from {Path}", path);
-
-                return new Version(1, 0);
-            }
-        }
 
         private List<Tuple<Assembly, string>> GetPluginAssemblies(string path)
         {

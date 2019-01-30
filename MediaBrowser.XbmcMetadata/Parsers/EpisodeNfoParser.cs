@@ -28,7 +28,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
         protected override void Fetch(MetadataResult<Episode> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
-            using (var fileStream = FileSystem.OpenRead(metadataFile))
+            using (var fileStream = File.OpenRead(metadataFile))
             {
                 using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
                 {

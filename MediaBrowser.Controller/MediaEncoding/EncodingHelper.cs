@@ -434,7 +434,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (string.Equals(Path.GetExtension(subtitlePath), ".sub", StringComparison.OrdinalIgnoreCase))
                     {
                         var idxFile = Path.ChangeExtension(subtitlePath, ".idx");
-                        if (_fileSystem.FileExists(idxFile))
+                        if (File.Exists(idxFile))
                         {
                             subtitlePath = idxFile;
                         }
@@ -542,7 +542,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // var fallbackFontPath = Path.Combine(_appPaths.ProgramDataPath, "fonts", "DroidSansFallback.ttf");
             // string fallbackFontParam = string.Empty;
 
-            // if (!_fileSystem.FileExists(fallbackFontPath))
+            // if (!File.Exists(fallbackFontPath))
             // {
             //     _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(fallbackFontPath));
             //     using (var stream = _assemblyInfo.GetManifestResourceStream(GetType(), GetType().Namespace + ".DroidSansFallback.ttf"))
@@ -1438,6 +1438,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase) && outputSizeParam.Length == 0)
             {
                 outputSizeParam = ",format=nv12|vaapi,hwupload";
+
+                // Add parameters to use VAAPI with burn-in subttiles (GH issue #642)
+                if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode) {
+                    outputSizeParam += ",hwmap=mode=read+write+direct";
+                }
             }
 
             var videoSizeParam = string.Empty;
@@ -1741,6 +1746,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 filters.Add(subParam);
 
+                // Ensure proper filters are passed to ffmpeg in case of hardware acceleration via VA-API
+                // Reference: https://trac.ffmpeg.org/wiki/Hardware/VAAPI
+                if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+                {
+                    filters.Add("hwmap");
+                }
                 if (allowTimeStampCopy)
                 {
                     output += " -copyts";

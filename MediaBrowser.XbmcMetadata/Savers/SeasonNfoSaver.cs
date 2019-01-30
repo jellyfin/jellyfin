@@ -36,7 +36,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 return false;
             }
 
-            return updateType >= MinimumUpdateType || (updateType >= ItemUpdateType.MetadataImport && FileSystem.FileExists(GetSavePath(item)));
+            return updateType >= MinimumUpdateType || (updateType >= ItemUpdateType.MetadataImport && File.Exists(GetSavePath(item)));
         }
 
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)

@@ -102,7 +102,8 @@ namespace MediaBrowser.Api
             return new StartupUser
             {
                 Name = user.Name,
-                ConnectUserName = user.ConnectUserName
+                ConnectUserName = user.ConnectUserName,
+                Password = user.Password
             };
         }
 
@@ -111,7 +112,12 @@ namespace MediaBrowser.Api
             var user = _userManager.Users.First();
 
             user.Name = request.Name;
+
             _userManager.UpdateUser(user);
+
+            if (!string.IsNullOrEmpty(request.Password)) {
+                await _userManager.ChangePassword(user, request.Password).ConfigureAwait(false);
+            }
 
             var result = new UpdateStartupUserResult();
 
@@ -130,6 +136,7 @@ namespace MediaBrowser.Api
     {
         public string Name { get; set; }
         public string ConnectUserName { get; set; }
+        public string Password { get; set; }
     }
 
     public class UpdateStartupUserResult
