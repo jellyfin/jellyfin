@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Events;
@@ -222,20 +223,18 @@ namespace Emby.Server.Implementations.Library
 
         public bool IsValidUsername(string username)
         {
-            // Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)
-            foreach (var currentChar in username)
-            {
-                if (!IsValidUsernameCharacter(currentChar))
-                {
-                    return false;
-                }
-            }
-            return true;
+            //The old way was dumb, we should make it less dumb, lets do so.
+            //This is some regex that matches only on unicode "word" characters, as well as -, _ and @
+            //In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
+            string UserNameRegex = "^[\\w-'._@]*$";
+            // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)
+            return Regex.IsMatch(username, UserNameRegex);
         }
 
         private static bool IsValidUsernameCharacter(char i)
         {
-            return !char.Equals(i, '<') && !char.Equals(i, '>');
+            string UserNameRegex = "^[\\w-'._@]*$";
+            return Regex.IsMatch(i.ToString(), UserNameRegex);
         }
 
         public string MakeValidUsername(string username)
