@@ -36,12 +36,6 @@ namespace MediaBrowser.Providers.MediaInfo
             _json = json;
         }
 
-        public string Name => "Download missing subtitles";
-
-        public string Description => "Searches the internet for missing subtitles based on metadata configuration.";
-
-        public string Category => "Library";
-
         private SubtitleOptions GetOptions()
         {
             return _config.GetConfiguration<SubtitleOptions>("subtitles");
@@ -204,6 +198,18 @@ namespace MediaBrowser.Providers.MediaInfo
             };
         }
 
+        public string Name => "Download missing subtitles";
+
+        public string Description => "Searches the internet for missing subtitles based on metadata configuration.";
+
+        public string Category => "Library";
+
         public string Key => "DownloadSubtitles";
+
+        public bool IsHidden => false;
+
+        public bool IsEnabled => true;
+
+        public bool IsLogged => true;
     }
 }
