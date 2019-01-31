@@ -77,5 +77,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public string Category => "Library";
 
         public string Key => "RefreshLibrary";
+
+        public bool IsHidden => false;
+
+        public bool IsEnabled => true;
+
+        public bool IsLogged => true;
     }
 }

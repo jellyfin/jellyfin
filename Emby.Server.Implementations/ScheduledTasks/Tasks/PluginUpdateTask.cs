@@ -50,11 +50,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
             };
         }
 
-        public string Key
-        {
-            get { return "PluginUpdates"; }
-        }
-
         /// <summary>
         /// Update installed plugins
         /// </summary>
@@ -114,26 +109,19 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Gets the name of the task
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get { return "Check for plugin updates"; }
-        }
+        public string Name => "Check for plugin updates";
 
         /// <summary>
         /// Gets the description.
         /// </summary>
         /// <value>The description.</value>
-        public string Description
-        {
-            get { return "Downloads and installs updates for plugins that are configured to update automatically."; }
-        }
+        public string Description => "Downloads and installs updates for plugins that are configured to update automatically.";
 
-        public string Category
-        {
-            get { return "Application"; }
-        }
+        public string Category => "Application";
 
-        public bool IsHidden => true;
+        public string Key => "PluginUpdates";
+
+        public bool IsHidden => false;
 
         public bool IsEnabled => true;
 

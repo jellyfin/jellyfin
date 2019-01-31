@@ -81,8 +81,6 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             return Task.CompletedTask;
         }
 
-        public string Key => "CleanLogFiles";
-
         /// <summary>
         /// Gets the name of the task
         /// </summary>
@@ -101,11 +99,13 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <value>The category.</value>
         public string Category => "Maintenance";
 
+        public string Key => "CleanLogFiles";
+
         /// <summary>
         /// Gets a value indicating whether this instance is hidden.
         /// </summary>
         /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
-        public bool IsHidden => true;
+        public bool IsHidden => false;
 
         public bool IsEnabled => true;
 

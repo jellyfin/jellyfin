@@ -164,8 +164,6 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <value>The name.</value>
         public string Name => "Cache file cleanup";
 
-        public string Key => "DeleteCacheFiles";
-
         /// <summary>
         /// Gets the description.
         /// </summary>
@@ -178,11 +176,13 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <value>The category.</value>
         public string Category => "Maintenance";
 
+        public string Key => "DeleteCacheFiles";
+
         /// <summary>
         /// Gets a value indicating whether this instance is hidden.
         /// </summary>
         /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
-        public bool IsHidden => true;
+        public bool IsHidden => false;
 
         public bool IsEnabled => true;
 

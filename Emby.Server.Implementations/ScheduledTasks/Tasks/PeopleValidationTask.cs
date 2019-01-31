@@ -47,8 +47,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
             };
         }
 
-        public string Key => "RefreshPeople";
-
         /// <summary>
         /// Returns the task to be executed
         /// </summary>
@@ -77,5 +75,13 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <value>The category.</value>
         public string Category => "Library";
+
+        public string Key => "RefreshPeople";
+
+        public bool IsHidden => false;
+
+        public bool IsEnabled => true;
+
+        public bool IsLogged => true;
     }
 }
