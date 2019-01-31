@@ -105,16 +105,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
             progress.Report(100);
         }
 
-        /// <summary>
-        /// Gets the name of the task
-        /// </summary>
-        /// <value>The name.</value>
         public string Name => "Check for plugin updates";
 
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        /// <value>The description.</value>
         public string Description => "Downloads and installs updates for plugins that are configured to update automatically.";
 
         public string Category => "Application";

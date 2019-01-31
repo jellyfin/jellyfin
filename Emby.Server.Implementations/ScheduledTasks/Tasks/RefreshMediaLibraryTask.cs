@@ -58,22 +58,10 @@ namespace Emby.Server.Implementations.ScheduledTasks
             return ((LibraryManager)_libraryManager).ValidateMediaLibraryInternal(progress, cancellationToken);
         }
 
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
         public string Name => "Scan media library";
 
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        /// <value>The description.</value>
         public string Description => "Scans your media library and refreshes metatata based on configuration.";
 
-        /// <summary>
-        /// Gets the category.
-        /// </summary>
-        /// <value>The category.</value>
         public string Category => "Library";
 
         public string Key => "RefreshLibrary";

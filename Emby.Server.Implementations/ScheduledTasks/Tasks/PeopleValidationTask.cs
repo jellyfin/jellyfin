@@ -58,22 +58,10 @@ namespace Emby.Server.Implementations.ScheduledTasks
             return _libraryManager.ValidatePeople(cancellationToken, progress);
         }
 
-        /// <summary>
-        /// Gets the name of the task
-        /// </summary>
-        /// <value>The name.</value>
         public string Name => "Refresh people";
 
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        /// <value>The description.</value>
         public string Description => "Updates metadata for actors and directors in your media library.";
 
-        /// <summary>
-        /// Gets the category.
-        /// </summary>
-        /// <value>The category.</value>
         public string Category => "Library";
 
         public string Key => "RefreshPeople";
