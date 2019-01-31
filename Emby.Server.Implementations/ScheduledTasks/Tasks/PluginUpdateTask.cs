@@ -95,10 +95,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 lock (progress)
                 {
                     numComplete++;
-                    double percent = numComplete;
-                    percent /= packagesToInstall.Count;
-
-                    progress.Report(90 * percent + 10);
+                    progress.Report(90 * numComplete / packagesToInstall.Count + 10);
                 }
             }
 
