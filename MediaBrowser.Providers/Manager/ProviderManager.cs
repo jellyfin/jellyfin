@@ -703,7 +703,7 @@ namespace MediaBrowser.Providers.Manager
 
                                 // Manual edit occurred
                                 // Even if save local is off, save locally anyway if the metadata file already exists
-                                if (fileSaver == null || !_fileSystem.FileExists(fileSaver.GetSavePath(item)))
+                                if (fileSaver == null || !File.Exists(fileSaver.GetSavePath(item)))
                                 {
                                     return false;
                                 }

@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.IO
 
             if (string.Equals(Path.GetExtension(shortcutPath), ".mblink", StringComparison.OrdinalIgnoreCase))
             {
-                var path = _fileSystem.ReadAllText(shortcutPath);
+                var path = File.ReadAllText(shortcutPath);
 
                 return _fileSystem.NormalizePath(path);
             }
@@ -44,7 +44,7 @@ namespace Emby.Server.Implementations.IO
                 throw new ArgumentNullException(nameof(targetPath));
             }
 
-            _fileSystem.WriteAllText(shortcutPath, targetPath);
+            File.WriteAllText(shortcutPath, targetPath);
         }
     }
 }

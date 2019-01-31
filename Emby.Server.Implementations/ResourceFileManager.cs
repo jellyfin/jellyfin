@@ -37,16 +37,16 @@ namespace Emby.Server.Implementations
 
         public string ReadAllText(string basePath, string virtualPath)
         {
-            return _fileSystem.ReadAllText(GetResourcePath(basePath, virtualPath));
+            return File.ReadAllText(GetResourcePath(basePath, virtualPath));
         }
 
         private string GetResourcePath(string basePath, string virtualPath)
         {
-            var fullPath = Path.Combine(basePath, virtualPath.Replace('/', _fileSystem.DirectorySeparatorChar));
+            var fullPath = Path.Combine(basePath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
 
             try
             {
-                fullPath = _fileSystem.GetFullPath(fullPath);
+                fullPath = Path.GetFullPath(fullPath);
             }
             catch (Exception ex)
             {

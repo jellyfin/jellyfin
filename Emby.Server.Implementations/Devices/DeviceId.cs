@@ -53,11 +53,11 @@ namespace Emby.Server.Implementations.Devices
             {
                 var path = CachePath;
 
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                 lock (_syncLock)
                 {
-                    _fileSystem.WriteAllText(path, id, Encoding.UTF8);
+                    File.WriteAllText(path, id, Encoding.UTF8);
                 }
             }
             catch (Exception ex)

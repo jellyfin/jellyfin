@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.Localization
         {
             const string ratingsResource = "Emby.Server.Implementations.Ratings.";
 
-            Directory.CreateDirectory(LocalizationPath);
+            Directory.CreateDirectory(localizationPath);
 
             var existingFiles = GetRatingsFiles(LocalizationPath).Select(Path.GetFileName);
 
@@ -292,6 +292,7 @@ namespace Emby.Server.Implementations.Localization
         private async Task LoadRatings(string file)
         {
             Dictionary<string, ParentalRating> dict = new Dictionary<string, ParentalRating>(StringComparer.OrdinalIgnoreCase);
+
             using (var str = File.OpenRead(file))
             using (var reader = new StreamReader(str))
             {

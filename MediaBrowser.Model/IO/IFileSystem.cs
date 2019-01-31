@@ -36,32 +36,32 @@ namespace MediaBrowser.Model.IO
         string MakeAbsolutePath(string folderPath, string filePath);
 
         /// <summary>
-        /// Returns a <see cref="FileSystemMetadata"/> object for the specified file or directory path.
+        /// Returns a <see cref="FileSystemMetadata" /> object for the specified file or directory path.
         /// </summary>
         /// <param name="path">A path to a file or directory.</param>
-        /// <returns>A <see cref="FileSystemMetadata"/> object.</returns>
-        /// <remarks>If the specified path points to a directory, the returned <see cref="FileSystemMetadata"/> object's
-        /// <see cref="FileSystemMetadata.IsDirectory"/> property will be set to true and all other properties will reflect the properties of the directory.</remarks>
+        /// <returns>A <see cref="FileSystemMetadata" /> object.</returns>
+        /// <remarks>If the specified path points to a directory, the returned <see cref="FileSystemMetadata" /> object's
+        /// <see cref="FileSystemMetadata.IsDirectory" /> property will be set to true and all other properties will reflect the properties of the directory.</remarks>
         FileSystemMetadata GetFileSystemInfo(string path);
 
         /// <summary>
-        /// Returns a <see cref="FileSystemMetadata"/> object for the specified file path.
+        /// Returns a <see cref="FileSystemMetadata" /> object for the specified file path.
         /// </summary>
         /// <param name="path">A path to a file.</param>
-        /// <returns>A <see cref="FileSystemMetadata"/> object.</returns>
-        /// <remarks><para>If the specified path points to a directory, the returned <see cref="FileSystemMetadata"/> object's
-        /// <see cref="FileSystemMetadata.IsDirectory"/> property and the <see cref="FileSystemMetadata.Exists"/> property will both be set to false.</para>
-        /// <para>For automatic handling of files <b>and</b> directories, use <see cref="GetFileSystemInfo"/>.</para></remarks>
+        /// <returns>A <see cref="FileSystemMetadata" /> object.</returns>
+        /// <remarks><para>If the specified path points to a directory, the returned <see cref="FileSystemMetadata" /> object's
+        /// <see cref="FileSystemMetadata.IsDirectory" /> property and the <see cref="FileSystemMetadata.Exists" /> property will both be set to false.</para>
+        /// <para>For automatic handling of files <b>and</b> directories, use <see cref="M:IFileSystem.GetFileSystemInfo(System.String)" />.</para></remarks>
         FileSystemMetadata GetFileInfo(string path);
 
         /// <summary>
-        /// Returns a <see cref="FileSystemMetadata"/> object for the specified directory path.
+        /// Returns a <see cref="FileSystemMetadata" /> object for the specified directory path.
         /// </summary>
         /// <param name="path">A path to a directory.</param>
-        /// <returns>A <see cref="FileSystemMetadata"/> object.</returns>
-        /// <remarks><para>If the specified path points to a file, the returned <see cref="FileSystemMetadata"/> object's
-        /// <see cref="FileSystemMetadata.IsDirectory"/> property will be set to true and the <see cref="FileSystemMetadata.Exists"/> property will be set to false.</para>
-        /// <para>For automatic handling of files <b>and</b> directories, use <see cref="GetFileSystemInfo"/>.</para></remarks>
+        /// <returns>A <see cref="FileSystemMetadata" /> object.</returns>
+        /// <remarks><para>If the specified path points to a file, the returned <see cref="FileSystemMetadata" /> object's
+        /// <see cref="FileSystemMetadata.IsDirectory" /> property will be set to true and the <see cref="FileSystemMetadata.Exists" /> property will be set to false.</para>
+        /// <para>For automatic handling of files <b>and</b> directories, use <see cref="M:IFileSystem.GetFileSystemInfo(System.String)" />.</para></remarks>
         FileSystemMetadata GetDirectoryInfo(string path);
 
         /// <summary>
@@ -110,14 +110,8 @@ namespace MediaBrowser.Model.IO
         /// <returns>FileStream.</returns>
         Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, bool isAsync = false);
 
-        Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, FileOpenOptions fileOpenOptions);
-
-        /// <summary>
-        /// Opens the read.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>Stream.</returns>
-        Stream OpenRead(string path);
+        Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share,
+            FileOpenOptions fileOpenOptions);
 
         string DefaultDirectory { get; }
 
@@ -152,21 +146,12 @@ namespace MediaBrowser.Model.IO
         /// <returns>System.String.</returns>
         string NormalizePath(string path);
 
-        string GetDirectoryName(string path);
-
         /// <summary>
         /// Gets the file name without extension.
         /// </summary>
         /// <param name="info">The information.</param>
         /// <returns>System.String.</returns>
         string GetFileNameWithoutExtension(FileSystemMetadata info);
-
-        /// <summary>
-        /// Gets the file name without extension.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>System.String.</returns>
-        string GetFileNameWithoutExtension(string path);
 
         /// <summary>
         /// Determines whether [is path file] [the specified path].
@@ -180,13 +165,6 @@ namespace MediaBrowser.Model.IO
         /// </summary>
         /// <param name="path">The path.</param>
         void DeleteFile(string path);
-
-        /// <summary>
-        /// Deletes the directory.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
-        void DeleteDirectory(string path, bool recursive);
 
         /// <summary>
         /// Gets the directories.
@@ -212,86 +190,6 @@ namespace MediaBrowser.Model.IO
         IEnumerable<FileSystemMetadata> GetFileSystemEntries(string path, bool recursive = false);
 
         /// <summary>
-        /// Creates the directory.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        void CreateDirectory(string path);
-
-        /// <summary>
-        /// Copies the file.
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="target">The target.</param>
-        /// <param name="overwrite">if set to <c>true</c> [overwrite].</param>
-        void CopyFile(string source, string target, bool overwrite);
-
-        /// <summary>
-        /// Moves the file.
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="target">The target.</param>
-        void MoveFile(string source, string target);
-
-        /// <summary>
-        /// Moves the directory.
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="target">The target.</param>
-        void MoveDirectory(string source, string target);
-
-        /// <summary>
-        /// Directories the exists.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        bool DirectoryExists(string path);
-
-        /// <summary>
-        /// Files the exists.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        bool FileExists(string path);
-
-        /// <summary>
-        /// Reads all text.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>System.String.</returns>
-        string ReadAllText(string path);
-
-        byte[] ReadAllBytes(string path);
-
-        void WriteAllBytes(string path, byte[] bytes);
-
-        /// <summary>
-        /// Writes all text.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="text">The text.</param>
-        void WriteAllText(string path, string text);
-
-        /// <summary>
-        /// Writes all text.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="text">The text.</param>
-        /// <param name="encoding">The encoding.</param>
-        void WriteAllText(string path, string text, Encoding encoding);
-
-        /// <summary>
-        /// Reads all text.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="encoding">The encoding.</param>
-        /// <returns>System.String.</returns>
-        string ReadAllText(string path, Encoding encoding);
-
-        string[] ReadAllLines(string path);
-
-        void WriteAllLines(string path, IEnumerable<string> lines);
-
-        /// <summary>
         /// Gets the directory paths.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -306,6 +204,7 @@ namespace MediaBrowser.Model.IO
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <returns>IEnumerable&lt;System.String&gt;.</returns>
         IEnumerable<string> GetFilePaths(string path, bool recursive = false);
+
         IEnumerable<string> GetFilePaths(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive);
 
         /// <summary>
@@ -319,15 +218,10 @@ namespace MediaBrowser.Model.IO
         void SetHidden(string path, bool isHidden);
         void SetReadOnly(string path, bool readOnly);
         void SetAttributes(string path, bool isHidden, bool readOnly);
-
-        char DirectorySeparatorChar { get; }
-
-        string GetFullPath(string path);
-
         List<FileSystemMetadata> GetDrives();
-
         void SetExecutable(string path);
     }
+
     //TODO Investigate if can be replaced by the one from System.IO ?
     public enum FileOpenMode
     {

@@ -1427,7 +1427,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 timer.RetryCount++;
                 _timerProvider.AddOrUpdate(timer);
             }
-            else if (_fileSystem.FileExists(recordPath))
+            else if (File.Exists(recordPath))
             {
                 timer.RecordingPath = recordPath;
                 timer.Status = RecordingStatus.Completed;
@@ -1489,7 +1489,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             _logger.LogInformation("Triggering refresh on {path}", path);
 
-            var item = GetAffectedBaseItem(_fileSystem.GetDirectoryName(path));
+            var item = GetAffectedBaseItem(Path.GetDirectoryName(path));
 
             if (item != null)
             {
@@ -1500,8 +1500,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     RefreshPaths = new string[]
                     {
                         path,
-                        _fileSystem.GetDirectoryName(path),
-                        _fileSystem.GetDirectoryName(_fileSystem.GetDirectoryName(path))
+                        Path.GetDirectoryName(path),
+                        Path.GetDirectoryName(Path.GetDirectoryName(path))
                     }
 
                 }, RefreshPriority.High);
@@ -1512,13 +1512,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             BaseItem item = null;
 
-            var parentPath = _fileSystem.GetDirectoryName(path);
+            var parentPath = Path.GetDirectoryName(path);
 
             while (item == null && !string.IsNullOrEmpty(path))
             {
                 item = _libraryManager.FindByPath(path, null);
 
-                path = _fileSystem.GetDirectoryName(path);
+                path = Path.GetDirectoryName(path);
             }
 
             if (item != null)
@@ -1573,7 +1573,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     .Where(i => i.Status == RecordingStatus.Completed && !string.IsNullOrWhiteSpace(i.RecordingPath))
                     .Where(i => string.Equals(i.SeriesTimerId, seriesTimerId, StringComparison.OrdinalIgnoreCase))
                     .OrderByDescending(i => i.EndDate)
-                    .Where(i => _fileSystem.FileExists(i.RecordingPath))
+                    .Where(i => File.Exists(i.RecordingPath))
                     .Skip(seriesTimer.KeepUpTo - 1)
                     .ToList();
 
@@ -1595,7 +1595,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     DtoOptions = new DtoOptions(true)
 
                 }))
-                    .Where(i => i.IsFileProtocol && _fileSystem.FileExists(i.Path))
+                    .Where(i => i.IsFileProtocol && File.Exists(i.Path))
                     .Skip(seriesTimer.KeepUpTo - 1)
                     .ToList();
 
@@ -1676,7 +1676,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             while (FileExists(path, timerId))
             {
-                var parent = _fileSystem.GetDirectoryName(originalPath);
+                var parent = Path.GetDirectoryName(originalPath);
                 var name = Path.GetFileNameWithoutExtension(originalPath);
                 name += " - " + index.ToString(CultureInfo.InvariantCulture);
 
@@ -1689,7 +1689,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private bool FileExists(string path, string timerId)
         {
-            if (_fileSystem.FileExists(path))
+            if (File.Exists(path))
             {
                 return true;
             }
@@ -1822,12 +1822,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            var imageSavePath = Path.Combine(_fileSystem.GetDirectoryName(recordingPath), imageSaveFilenameWithoutExtension);
+            var imageSavePath = Path.Combine(Path.GetDirectoryName(recordingPath), imageSaveFilenameWithoutExtension);
 
             // preserve original image extension
             imageSavePath = Path.ChangeExtension(imageSavePath, Path.GetExtension(image.Path));
 
-            _fileSystem.CopyFile(image.Path, imageSavePath, true);
+            File.Copy(image.Path, imageSavePath, true);
         }
 
         private async Task SaveRecordingImages(string recordingPath, LiveTvProgram program)
@@ -1961,7 +1961,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             var nfoPath = Path.Combine(seriesPath, "tvshow.nfo");
 
-            if (_fileSystem.FileExists(nfoPath))
+            if (File.Exists(nfoPath))
             {
                 return;
             }
@@ -2023,7 +2023,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             var nfoPath = Path.ChangeExtension(recordingPath, ".nfo");
 
-            if (_fileSystem.FileExists(nfoPath))
+            if (File.Exists(nfoPath))
             {
                 return;
             }
@@ -2688,7 +2688,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var defaultFolder = RecordingPath;
             var defaultName = "Recordings";
 
-            if (_fileSystem.DirectoryExists(defaultFolder))
+            if (Directory.Exists(defaultFolder))
             {
                 list.Add(new VirtualFolderInfo
                 {
@@ -2698,7 +2698,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             var customPath = GetConfiguration().MovieRecordingPath;
-            if ((!string.IsNullOrWhiteSpace(customPath) && !string.Equals(customPath, defaultFolder, StringComparison.OrdinalIgnoreCase)) && _fileSystem.DirectoryExists(customPath))
+            if ((!string.IsNullOrWhiteSpace(customPath) && !string.Equals(customPath, defaultFolder, StringComparison.OrdinalIgnoreCase)) && Directory.Exists(customPath))
             {
                 list.Add(new VirtualFolderInfo
                 {
@@ -2709,7 +2709,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             customPath = GetConfiguration().SeriesRecordingPath;
-            if ((!string.IsNullOrWhiteSpace(customPath) && !string.Equals(customPath, defaultFolder, StringComparison.OrdinalIgnoreCase)) && _fileSystem.DirectoryExists(customPath))
+            if ((!string.IsNullOrWhiteSpace(customPath) && !string.Equals(customPath, defaultFolder, StringComparison.OrdinalIgnoreCase)) && Directory.Exists(customPath))
             {
                 list.Add(new VirtualFolderInfo
                 {

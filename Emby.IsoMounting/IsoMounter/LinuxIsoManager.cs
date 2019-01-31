@@ -39,7 +39,7 @@ namespace IsoMounter
             _logger = logger;
             ProcessFactory = processFactory;
 
-            MountPointRoot = FileSystem.DirectorySeparatorChar + "tmp" + FileSystem.DirectorySeparatorChar + "Emby";
+            MountPointRoot = Path.DirectorySeparatorChar + "tmp" + Path.DirectorySeparatorChar + "Emby";
 
             _logger.LogDebug(
                 "[{0}] System PATH is currently set to [{1}].",
@@ -214,9 +214,9 @@ namespace IsoMounter
             {
                 string path = test.Trim();
 
-                if (!string.IsNullOrEmpty(path) && FileSystem.FileExists(path = Path.Combine(path, name)))
+                if (!string.IsNullOrEmpty(path) && File.Exists(path = Path.Combine(path, name)))
                 {
-                    return FileSystem.GetFullPath(path);
+                    return Path.GetFullPath(path);
                 }
             }
 
@@ -327,7 +327,7 @@ namespace IsoMounter
 
             try
             {
-                FileSystem.CreateDirectory(mountPoint);
+                Directory.CreateDirectory(mountPoint);
             }
             catch (UnauthorizedAccessException)
             {
@@ -377,7 +377,7 @@ namespace IsoMounter
 
                 try
                 {
-                    FileSystem.DeleteDirectory(mountPoint, false);
+                    Directory.Delete(mountPoint, false);
                 }
                 catch (Exception ex)
                 {
@@ -455,7 +455,7 @@ namespace IsoMounter
 
             try
             {
-                FileSystem.DeleteDirectory(mount.MountedPath, false);
+                Directory.Delete(mount.MountedPath, false);
             }
             catch (Exception ex)
             {

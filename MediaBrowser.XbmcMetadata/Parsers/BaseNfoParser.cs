@@ -108,7 +108,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             if (!SupportsUrlAfterClosingXmlTag)
             {
-                using (var fileStream = FileSystem.OpenRead(metadataFile))
+                using (var fileStream = File.OpenRead(metadataFile))
                 {
                     using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
                     {
@@ -140,7 +140,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 return;
             }
 
-            using (var fileStream = FileSystem.OpenRead(metadataFile))
+            using (var fileStream = File.OpenRead(metadataFile))
             {
                 using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
                 {

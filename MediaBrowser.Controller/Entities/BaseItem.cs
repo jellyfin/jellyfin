@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -228,7 +229,7 @@ namespace MediaBrowser.Controller.Entities
                     return Path;
                 }
 
-                return FileSystem.GetDirectoryName(Path);
+                return System.IO.Path.GetDirectoryName(Path);
             }
         }
 
@@ -2208,7 +2209,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var allFiles = ImageInfos
                 .Where(i => i.IsLocalFile)
-                .Select(i => FileSystem.GetDirectoryName(i.Path))
+                .Select(i => System.IO.Path.GetDirectoryName(i.Path))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .SelectMany(i => directoryService.GetFilePaths(i))
                 .ToList();
@@ -2343,7 +2344,7 @@ namespace MediaBrowser.Controller.Entities
                 var newImagePaths = images.Select(i => i.FullName).ToList();
 
                 var deleted = existingImages
-                    .Where(i => i.IsLocalFile && !newImagePaths.Contains(i.Path, StringComparer.OrdinalIgnoreCase) && !FileSystem.FileExists(i.Path))
+                    .Where(i => i.IsLocalFile && !newImagePaths.Contains(i.Path, StringComparer.OrdinalIgnoreCase) && !File.Exists(i.Path))
                     .ToList();
 
                 if (deleted.Count > 0)
@@ -2396,7 +2397,7 @@ namespace MediaBrowser.Controller.Entities
             var extensions = new List<string> { ".nfo", ".xml", ".srt", ".vtt", ".sub", ".idx", ".txt", ".edl", ".bif", ".smi", ".ttml" };
             extensions.AddRange(SupportedImageExtensions);
 
-            return FileSystem.GetFiles(FileSystem.GetDirectoryName(Path), extensions.ToArray(), false, false)
+            return FileSystem.GetFiles(System.IO.Path.GetDirectoryName(Path), extensions.ToArray(), false, false)
                 .Where(i => System.IO.Path.GetFileNameWithoutExtension(i.FullName).StartsWith(filename, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
@@ -2508,7 +2509,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Path))
             {
-                Name = FileSystem.GetFileNameWithoutExtension(Path);
+                Name = System.IO.Path.GetFileNameWithoutExtension(Path);
                 hasChanges = true;
             }
 

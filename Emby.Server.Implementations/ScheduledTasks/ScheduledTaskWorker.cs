@@ -129,21 +129,16 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 {
                     if (_lastExecutionResult == null && !_readFromFile)
                     {
-                        try
+                        if (File.Exists(path))
                         {
-                            _lastExecutionResult = JsonSerializer.DeserializeFromFile<TaskResult>(path);
-                        }
-                        catch (DirectoryNotFoundException)
-                        {
-                            // File doesn't exist. No biggie
-                        }
-                        catch (FileNotFoundException)
-                        {
-                            // File doesn't exist. No biggie
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.LogError(ex, "Error deserializing {path}", path);
+                            try
+                            {
+                                _lastExecutionResult = JsonSerializer.DeserializeFromFile<TaskResult>(path);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.LogError(ex, "Error deserializing {File}", path);
+                            }
                         }
                         _readFromFile = true;
                     }
@@ -156,7 +151,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 _lastExecutionResult = value;
 
                 var path = GetHistoryFilePath();
-                _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                 lock (_lastExecutionResultSyncLock)
                 {
@@ -532,28 +527,15 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
         private TaskTriggerInfo[] LoadTriggerSettings()
         {
-            try
+            string path = GetConfigurationFilePath();
+            TaskTriggerInfo[] list = null;
+            if (File.Exists(path))
             {
-                var list = JsonSerializer.DeserializeFromFile<IEnumerable<TaskTriggerInfo>>(GetConfigurationFilePath());
+                list = JsonSerializer.DeserializeFromFile<TaskTriggerInfo[]>(path);
+            }
 
-                if (list != null)
-                {
-                    return list.ToArray();
-                }
-            }
-            catch (FileNotFoundException)
-            {
-                // File doesn't exist. No biggie. Return defaults.
-            }
-            catch (DirectoryNotFoundException)
-            {
-                // File doesn't exist. No biggie. Return defaults.
-            }
-            catch
-            {
-
-            }
-            return GetDefaultTriggers();
+            // Return defaults if file doesn't exist.
+            return list ?? GetDefaultTriggers();
         }
 
         private TaskTriggerInfo[] GetDefaultTriggers()
@@ -583,7 +565,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var path = GetConfigurationFilePath();
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             JsonSerializer.SerializeToFile(triggers, path);
         }

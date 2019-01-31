@@ -71,7 +71,7 @@ namespace SocketHttpListener.Net
                 }
             }
         }
-        internal static unsafe byte[] GetBytes(string myString)
+        internal static byte[] GetBytes(string myString)
         {
             byte[] bytes = new byte[myString.Length];
             if (myString.Length != 0)

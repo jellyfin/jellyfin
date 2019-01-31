@@ -188,7 +188,7 @@ namespace MediaBrowser.Providers.TV
 
             var dataFilePath = GetDataFilePath(id, seasonNumber, preferredMetadataLanguage);
 
-            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(dataFilePath));
+            Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
             _jsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
 

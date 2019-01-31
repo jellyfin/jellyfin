@@ -164,7 +164,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             TranscodingJob job = null;
 
-            if (FileSystem.FileExists(segmentPath))
+            if (File.Exists(segmentPath))
             {
                 job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                 return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, requestedIndex, job, cancellationToken).ConfigureAwait(false);
@@ -177,7 +177,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             try
             {
-                if (FileSystem.FileExists(segmentPath))
+                if (File.Exists(segmentPath))
                 {
                     job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                     transcodingLock.Release();
@@ -381,7 +381,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private static FileSystemMetadata GetLastTranscodingFile(string playlist, string segmentExtension, IFileSystem fileSystem)
         {
-            var folder = fileSystem.GetDirectoryName(playlist);
+            var folder = Path.GetDirectoryName(playlist);
 
             var filePrefix = Path.GetFileNameWithoutExtension(playlist) ?? string.Empty;
 
@@ -418,7 +418,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private string GetSegmentPath(StreamState state, string playlist, int index)
         {
-            var folder = FileSystem.GetDirectoryName(playlist);
+            var folder = Path.GetDirectoryName(playlist);
 
             var filename = Path.GetFileNameWithoutExtension(playlist);
 
@@ -433,7 +433,7 @@ namespace MediaBrowser.Api.Playback.Hls
             TranscodingJob transcodingJob,
             CancellationToken cancellationToken)
         {
-            var segmentFileExists = FileSystem.FileExists(segmentPath);
+            var segmentFileExists = File.Exists(segmentPath);
 
             // If all transcoding has completed, just return immediately
             if (transcodingJob != null && transcodingJob.HasExited && segmentFileExists)
@@ -458,14 +458,14 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 try
                 {
-                    var text = FileSystem.ReadAllText(playlistPath, Encoding.UTF8);
+                    var text = File.ReadAllText(playlistPath, Encoding.UTF8);
 
                     // If it appears in the playlist, it's done
                     if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
                     {
                         if (!segmentFileExists)
                         {
-                            segmentFileExists = FileSystem.FileExists(segmentPath);
+                            segmentFileExists = File.Exists(segmentPath);
                         }
                         if (segmentFileExists)
                         {
@@ -932,7 +932,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var mapArgs = state.IsOutputVideo ? EncodingHelper.GetMapArgs(state) : string.Empty;
 
-            var outputTsArg = Path.Combine(FileSystem.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request);
+            var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request);
 
             var timeDeltaParam = string.Empty;
 

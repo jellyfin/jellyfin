@@ -189,13 +189,13 @@ namespace Emby.Server.Implementations.IO
             {
                 item = LibraryManager.FindByPath(path, null);
 
-                path = _fileSystem.GetDirectoryName(path);
+                path = System.IO.Path.GetDirectoryName(path);
             }
 
             if (item != null)
             {
                 // If the item has been deleted find the first valid parent that still exists
-                while (!_fileSystem.DirectoryExists(item.Path) && !_fileSystem.FileExists(item.Path))
+                while (!Directory.Exists(item.Path) && !File.Exists(item.Path))
                 {
                     item = item.GetOwner() ?? item.GetParent();
 

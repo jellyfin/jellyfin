@@ -6,7 +6,7 @@ using SocketHttpListener.Net.WebSockets;
 
 namespace SocketHttpListener.Net
 {
-    public sealed unsafe partial class HttpListenerContext
+    public sealed partial class HttpListenerContext
     {
         private HttpListenerResponse _response;
         private IPrincipal _user;
