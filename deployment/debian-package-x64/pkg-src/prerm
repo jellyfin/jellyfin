@@ -12,7 +12,8 @@ fi
 # Data directories for program data (cache, db), configs, and logs
 PROGRAMDATA=${JELLYFIN_DATA_DIRECTORY-/var/lib/$NAME}
 CONFIGDATA=${JELLYFIN_CONFIG_DIRECTORY-/etc/$NAME}
-LOGDATA=${JELLYFIN_DATA_DIRECTORY-/var/log/$NAME}
+LOGDATA=${JELLYFIN_LOG_DIRECTORY-/var/log/$NAME}
+CACHEDATA=${JELLYFIN_CACHE_DIRECTORY-/var/cache/$NAME}
 
 case "$1" in
   remove|upgrade|deconfigure)

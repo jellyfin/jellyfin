@@ -12,7 +12,8 @@ fi
 # Data directories for program data (cache, db), configs, and logs
 PROGRAMDATA=${JELLYFIN_DATA_DIRECTORY-/var/lib/$NAME}
 CONFIGDATA=${JELLYFIN_CONFIG_DIRECTORY-/etc/$NAME}
-LOGDATA=${JELLYFIN_DATA_DIRECTORY-/var/log/$NAME}
+LOGDATA=${JELLYFIN_LOG_DIRECTORY-/var/log/$NAME}
+CACHEDATA=${JELLYFIN_CACHE_DIRECTORY-/var/cache/$NAME}
 
 # In case this system is running systemd, we make systemd reload the unit files
 # to pick up changes.
@@ -44,6 +45,10 @@ case "$1" in
     if [[ -d $LOGDATA ]]; then
       rm -rf $LOGDATA
     fi
+    # Remove cache dir
+    if [[ -d $CACHEDATA ]]; then
+      rm -rf $CACHEDATA
+    fi
     # Remove program data dir
     if [[ -d $PROGRAMDATA ]]; then
       rm -rf $PROGRAMDATA
@@ -55,6 +60,7 @@ case "$1" in
     # Remove anything at the default locations; catches situations where the user moved the defaults
     [[ -e /etc/jellyfin ]] && rm -rf /etc/jellyfin
     [[ -e /var/log/jellyfin ]] && rm -rf /var/log/jellyfin
+    [[ -e /var/cache/jellyfin ]] && rm -rf /var/cache/jellyfin
     [[ -e /var/lib/jellyfin ]] && rm -rf /var/lib/jellyfin
     ;;
   remove)
