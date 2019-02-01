@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
@@ -20,7 +19,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 using Rssdp;
 using Rssdp.Infrastructure;
@@ -48,7 +46,7 @@ namespace Emby.Dlna.Main
         private readonly IDeviceDiscovery _deviceDiscovery;
 
         private SsdpDevicePublisher _Publisher;
-        
+
         private readonly ISocketFactory _socketFactory;
         private readonly IEnvironmentInfo _environmentInfo;
         private readonly INetworkManager _networkManager;
@@ -79,7 +77,6 @@ namespace Emby.Dlna.Main
             IEnvironmentInfo environmentInfo,
             INetworkManager networkManager,
             IUserViewManager userViewManager,
-            IXmlReaderSettingsFactory xmlReaderSettingsFactory,
             ITVSeriesManager tvSeriesManager)
         {
             _config = config;
@@ -100,7 +97,8 @@ namespace Emby.Dlna.Main
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger("Dlna");
 
-            ContentDirectory = new ContentDirectory.ContentDirectory(dlnaManager,
+            ContentDirectory = new ContentDirectory.ContentDirectory(
+                dlnaManager,
                 userDataManager,
                 imageProcessor,
                 libraryManager,
@@ -112,12 +110,11 @@ namespace Emby.Dlna.Main
                 mediaSourceManager,
                 userViewManager,
                 mediaEncoder,
-                xmlReaderSettingsFactory,
                 tvSeriesManager);
 
-            ConnectionManager = new ConnectionManager.ConnectionManager(dlnaManager, config, _logger, httpClient, xmlReaderSettingsFactory);
+            ConnectionManager = new ConnectionManager.ConnectionManager(dlnaManager, config, _logger, httpClient);
 
-            MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrar(_logger, httpClient, config, xmlReaderSettingsFactory);
+            MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrar(_logger, httpClient, config);
             Current = this;
         }
 
@@ -260,7 +257,7 @@ namespace Emby.Dlna.Main
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
-                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
+                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address.ToString());
 
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
                 var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);

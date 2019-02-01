@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
@@ -10,13 +9,11 @@ namespace Emby.Dlna.MediaReceiverRegistrar
     public class MediaReceiverRegistrar : BaseService, IMediaReceiverRegistrar
     {
         private readonly IServerConfigurationManager _config;
-        protected readonly IXmlReaderSettingsFactory XmlReaderSettingsFactory;
 
-        public MediaReceiverRegistrar(ILogger logger, IHttpClient httpClient, IServerConfigurationManager config, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
+        public MediaReceiverRegistrar(ILogger logger, IHttpClient httpClient, IServerConfigurationManager config)
             : base(logger, httpClient)
         {
             _config = config;
-            XmlReaderSettingsFactory = xmlReaderSettingsFactory;
         }
 
         public string GetServiceXml(IDictionary<string, string> headers)
@@ -28,7 +25,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         {
             return new ControlHandler(
                 _config,
-                Logger, XmlReaderSettingsFactory)
+                Logger)
                 .ProcessControlRequest(request);
         }
     }

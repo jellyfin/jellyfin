@@ -13,17 +13,14 @@ using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
     public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>
     {
-        private readonly IXmlReaderSettingsFactory _xmlSettings;
-
-        public MusicBrainzArtistProvider(IXmlReaderSettingsFactory xmlSettings)
+        public MusicBrainzArtistProvider()
         {
-            _xmlSettings = xmlSettings;
+
         }
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
@@ -84,11 +81,13 @@ namespace MediaBrowser.Providers.Music
         {
             using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
-                var settings = _xmlSettings.Create(false);
-
-                settings.CheckCharacters = false;
-                settings.IgnoreProcessingInstructions = true;
-                settings.IgnoreComments = true;
+                var settings = new XmlReaderSettings()
+                {
+                    ValidationType = ValidationType.None,
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true
+                };
 
                 using (var reader = XmlReader.Create(oReader, settings))
                 {

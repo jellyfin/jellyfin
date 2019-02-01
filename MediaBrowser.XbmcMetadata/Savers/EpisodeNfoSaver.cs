@@ -7,7 +7,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using MediaBrowser.XbmcMetadata.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -109,7 +108,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
             return list;
         }
 
-        public EpisodeNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger, xmlReaderSettingsFactory)
+        public EpisodeNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
+            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
         }
     }

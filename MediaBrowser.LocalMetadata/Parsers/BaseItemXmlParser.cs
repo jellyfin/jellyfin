@@ -10,7 +10,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.LocalMetadata.Parsers
@@ -30,19 +29,14 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
         private Dictionary<string, string> _validProviderIds;
 
-        protected IXmlReaderSettingsFactory XmlReaderSettingsFactory { get; private set; }
-        protected IFileSystem FileSystem { get; private set; }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemXmlParser{T}" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public BaseItemXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem)
+        public BaseItemXmlParser(ILogger logger, IProviderManager providerManager)
         {
             Logger = logger;
             ProviderManager = providerManager;
-            XmlReaderSettingsFactory = xmlReaderSettingsFactory;
-            FileSystem = fileSystem;
         }
 
         /// <summary>
@@ -64,11 +58,13 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 throw new ArgumentException("The metadata file was empty or null.", nameof(metadataFile));
             }
 
-            var settings = XmlReaderSettingsFactory.Create(false);
-
-            settings.CheckCharacters = false;
-            settings.IgnoreProcessingInstructions = true;
-            settings.IgnoreComments = true;
+            var settings = new XmlReaderSettings()
+            {
+                ValidationType = ValidationType.None,
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true
+            };
 
             _validProviderIds = _validProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 

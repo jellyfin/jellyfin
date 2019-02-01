@@ -25,7 +25,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.ContentDirectory
@@ -51,8 +50,22 @@ namespace Emby.Dlna.ContentDirectory
 
         private readonly DeviceProfile _profile;
 
-        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, string accessToken, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IUserViewManager userViewManager, IMediaEncoder mediaEncoder, IXmlReaderSettingsFactory xmlReaderSettingsFactory, ITVSeriesManager tvSeriesManager)
-            : base(config, logger, xmlReaderSettingsFactory)
+        public ControlHandler(
+            ILogger logger,
+            ILibraryManager libraryManager,
+            DeviceProfile profile,
+            string serverAddress,
+            string accessToken,
+            IImageProcessor imageProcessor,
+            IUserDataManager userDataManager,
+            User user, int systemUpdateId,
+            IServerConfigurationManager config,
+            ILocalizationManager localization,
+            IMediaSourceManager mediaSourceManager,
+            IUserViewManager userViewManager,
+            IMediaEncoder mediaEncoder,
+            ITVSeriesManager tvSeriesManager)
+            : base(config, logger)
         {
             _libraryManager = libraryManager;
             _userDataManager = userDataManager;

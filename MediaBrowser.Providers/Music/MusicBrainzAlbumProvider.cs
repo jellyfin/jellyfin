@@ -15,7 +15,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Music
@@ -28,17 +27,15 @@ namespace MediaBrowser.Providers.Music
         private readonly IApplicationHost _appHost;
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
-        private readonly IXmlReaderSettingsFactory _xmlSettings;
 
         public static string MusicBrainzBaseUrl = "https://www.musicbrainz.org";
 
-        public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost, ILogger logger, IJsonSerializer json, IXmlReaderSettingsFactory xmlSettings)
+        public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost, ILogger logger, IJsonSerializer json)
         {
             _httpClient = httpClient;
             _appHost = appHost;
             _logger = logger;
             _json = json;
-            _xmlSettings = xmlSettings;
             Current = this;
         }
 
@@ -101,11 +98,13 @@ namespace MediaBrowser.Providers.Music
         {
             using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
-                var settings = _xmlSettings.Create(false);
-
-                settings.CheckCharacters = false;
-                settings.IgnoreProcessingInstructions = true;
-                settings.IgnoreComments = true;
+                var settings = new XmlReaderSettings()
+                {
+                    ValidationType = ValidationType.None,
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true
+                };
 
                 using (var reader = XmlReader.Create(oReader, settings))
                 {
@@ -240,22 +239,20 @@ namespace MediaBrowser.Providers.Music
                 artistId);
 
             using (var response = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+            using (var stream = response.Content)
+            using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
-                using (var stream = response.Content)
+                var settings = new XmlReaderSettings()
                 {
-                    using (var oReader = new StreamReader(stream, Encoding.UTF8))
-                    {
-                        var settings = _xmlSettings.Create(false);
+                    ValidationType = ValidationType.None,
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true
+                };
 
-                        settings.CheckCharacters = false;
-                        settings.IgnoreProcessingInstructions = true;
-                        settings.IgnoreComments = true;
-
-                        using (var reader = XmlReader.Create(oReader, settings))
-                        {
-                            return ReleaseResult.Parse(reader).FirstOrDefault();
-                        }
-                    }
+                using (var reader = XmlReader.Create(oReader, settings))
+                {
+                    return ReleaseResult.Parse(reader).FirstOrDefault();
                 }
             }
         }
@@ -267,22 +264,20 @@ namespace MediaBrowser.Providers.Music
                 WebUtility.UrlEncode(artistName));
 
             using (var response = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+            using (var stream = response.Content)
+            using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
-                using (var stream = response.Content)
+                var settings = new XmlReaderSettings()
                 {
-                    using (var oReader = new StreamReader(stream, Encoding.UTF8))
-                    {
-                        var settings = _xmlSettings.Create(false);
+                    ValidationType = ValidationType.None,
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true
+                };
 
-                        settings.CheckCharacters = false;
-                        settings.IgnoreProcessingInstructions = true;
-                        settings.IgnoreComments = true;
-
-                        using (var reader = XmlReader.Create(oReader, settings))
-                        {
-                            return ReleaseResult.Parse(reader).FirstOrDefault();
-                        }
-                    }
+                using (var reader = XmlReader.Create(oReader, settings))
+                {
+                    return ReleaseResult.Parse(reader).FirstOrDefault();
                 }
             }
         }
@@ -590,26 +585,24 @@ namespace MediaBrowser.Providers.Music
             var url = string.Format("/ws/2/release?release-group={0}", releaseGroupId);
 
             using (var response = await GetMusicBrainzResponse(url, true, true, cancellationToken).ConfigureAwait(false))
+            using (var stream = response.Content)
+            using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
-                using (var stream = response.Content)
+                var settings = new XmlReaderSettings()
                 {
-                    using (var oReader = new StreamReader(stream, Encoding.UTF8))
+                    ValidationType = ValidationType.None,
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true
+                };
+
+                using (var reader = XmlReader.Create(oReader, settings))
+                {
+                    var result = ReleaseResult.Parse(reader).FirstOrDefault();
+
+                    if (result != null)
                     {
-                        var settings = _xmlSettings.Create(false);
-
-                        settings.CheckCharacters = false;
-                        settings.IgnoreProcessingInstructions = true;
-                        settings.IgnoreComments = true;
-
-                        using (var reader = XmlReader.Create(oReader, settings))
-                        {
-                            var result = ReleaseResult.Parse(reader).FirstOrDefault();
-
-                            if (result != null)
-                            {
-                                return result.ReleaseId;
-                            }
-                        }
+                        return result.ReleaseId;
                     }
                 }
             }
@@ -628,56 +621,54 @@ namespace MediaBrowser.Providers.Music
             var url = string.Format("/ws/2/release-group/?query=reid:{0}", releaseEntryId);
 
             using (var response = await GetMusicBrainzResponse(url, false, cancellationToken).ConfigureAwait(false))
+            using (var stream = response.Content)
+            using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
-                using (var stream = response.Content)
+                var settings = new XmlReaderSettings()
                 {
-                    using (var oReader = new StreamReader(stream, Encoding.UTF8))
+                    ValidationType = ValidationType.None,
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true
+                };
+
+                using (var reader = XmlReader.Create(oReader, settings))
+                {
+                    reader.MoveToContent();
+                    reader.Read();
+
+                    // Loop through each element
+                    while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                     {
-                        var settings = _xmlSettings.Create(false);
-
-                        settings.CheckCharacters = false;
-                        settings.IgnoreProcessingInstructions = true;
-                        settings.IgnoreComments = true;
-
-                        using (var reader = XmlReader.Create(oReader, settings))
+                        if (reader.NodeType == XmlNodeType.Element)
                         {
-                            reader.MoveToContent();
-                            reader.Read();
-
-                            // Loop through each element
-                            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                            switch (reader.Name)
                             {
-                                if (reader.NodeType == XmlNodeType.Element)
-                                {
-                                    switch (reader.Name)
+                                case "release-group-list":
                                     {
-                                        case "release-group-list":
-                                            {
-                                                if (reader.IsEmptyElement)
-                                                {
-                                                    reader.Read();
-                                                    continue;
-                                                }
-                                                using (var subReader = reader.ReadSubtree())
-                                                {
-                                                    return GetFirstReleaseGroupId(subReader);
-                                                }
-                                            }
-                                        default:
-                                            {
-                                                reader.Skip();
-                                                break;
-                                            }
+                                        if (reader.IsEmptyElement)
+                                        {
+                                            reader.Read();
+                                            continue;
+                                        }
+                                        using (var subReader = reader.ReadSubtree())
+                                        {
+                                            return GetFirstReleaseGroupId(subReader);
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    reader.Read();
-                                }
+                                default:
+                                    {
+                                        reader.Skip();
+                                        break;
+                                    }
                             }
-                            return null;
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                     }
+                    return null;
                 }
             }
         }

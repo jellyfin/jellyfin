@@ -7,8 +7,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
@@ -124,14 +122,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             using (var stringReader = new StringReader("<set>" + xml + "</set>"))
             {
                 // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
+                var settings = new XmlReaderSettings()
+                {
+                    ValidationType = ValidationType.None,
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true
+                };
+
                 try
                 {
-                    var settings = XmlReaderSettingsFactory.Create(false);
-
-                    settings.CheckCharacters = false;
-                    settings.IgnoreProcessingInstructions = true;
-                    settings.IgnoreComments = true;
-
                     // Use XmlReader for best performance
                     using (var reader = XmlReader.Create(stringReader, settings))
                     {
@@ -167,7 +167,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
-        public MovieNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(logger, config, providerManager, fileSystem, xmlReaderSettingsFactory)
+        public MovieNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
+            : base(logger, config, providerManager)
         {
         }
     }

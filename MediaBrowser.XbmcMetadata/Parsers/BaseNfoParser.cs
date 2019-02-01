@@ -13,8 +13,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using MediaBrowser.XbmcMetadata.Configuration;
 using MediaBrowser.XbmcMetadata.Savers;
 using Microsoft.Extensions.Logging;
@@ -28,9 +26,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// The logger
         /// </summary>
         protected ILogger Logger { get; private set; }
-        protected IFileSystem FileSystem { get; private set; }
         protected IProviderManager ProviderManager { get; private set; }
-        protected IXmlReaderSettingsFactory XmlReaderSettingsFactory { get; private set; }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IConfigurationManager _config;
@@ -39,13 +35,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseNfoParser{T}" /> class.
         /// </summary>
-        public BaseNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
+        public BaseNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
         {
             Logger = logger;
             _config = config;
             ProviderManager = providerManager;
-            FileSystem = fileSystem;
-            XmlReaderSettingsFactory = xmlReaderSettingsFactory;
         }
 
         /// <summary>
@@ -68,11 +62,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 throw new ArgumentException("The metadata file was empty or null.", nameof(metadataFile));
             }
 
-            var settings = XmlReaderSettingsFactory.Create(false);
-
-            settings.CheckCharacters = false;
-            settings.IgnoreProcessingInstructions = true;
-            settings.IgnoreComments = true;
+            var settings = new XmlReaderSettings()
+            {
+                ValidationType = ValidationType.None,
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true
+            };
 
             _validProviderIds = _validProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -935,19 +931,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             value = value.Trim().Trim(separator);
 
-            return string.IsNullOrWhiteSpace(value) ? Array.Empty<string>() : Split(value, separator, StringSplitOptions.RemoveEmptyEntries);
-        }
-
-        /// <summary>
-        /// Provides an additional overload for string.split
-        /// </summary>
-        /// <param name="val">The val.</param>
-        /// <param name="separators">The separators.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String[][].</returns>
-        private string[] Split(string val, char[] separators, StringSplitOptions options)
-        {
-            return val.Split(separators, options);
+            return string.IsNullOrWhiteSpace(value) ? Array.Empty<string>() : value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
         }
     }
 }

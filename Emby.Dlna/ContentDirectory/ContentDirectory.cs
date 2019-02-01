@@ -11,7 +11,6 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.ContentDirectory
@@ -28,7 +27,6 @@ namespace Emby.Dlna.ContentDirectory
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IUserViewManager _userViewManager;
         private readonly IMediaEncoder _mediaEncoder;
-        protected readonly IXmlReaderSettingsFactory XmlReaderSettingsFactory;
         private readonly ITVSeriesManager _tvSeriesManager;
 
         public ContentDirectory(IDlnaManager dlna,
@@ -38,7 +36,12 @@ namespace Emby.Dlna.ContentDirectory
             IServerConfigurationManager config,
             IUserManager userManager,
             ILogger logger,
-            IHttpClient httpClient, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IUserViewManager userViewManager, IMediaEncoder mediaEncoder, IXmlReaderSettingsFactory xmlReaderSettingsFactory, ITVSeriesManager tvSeriesManager)
+            IHttpClient httpClient,
+            ILocalizationManager localization,
+            IMediaSourceManager mediaSourceManager,
+            IUserViewManager userViewManager,
+            IMediaEncoder mediaEncoder,
+            ITVSeriesManager tvSeriesManager)
             : base(logger, httpClient)
         {
             _dlna = dlna;
@@ -51,7 +54,6 @@ namespace Emby.Dlna.ContentDirectory
             _mediaSourceManager = mediaSourceManager;
             _userViewManager = userViewManager;
             _mediaEncoder = mediaEncoder;
-            XmlReaderSettingsFactory = xmlReaderSettingsFactory;
             _tvSeriesManager = tvSeriesManager;
         }
 
@@ -94,7 +96,6 @@ namespace Emby.Dlna.ContentDirectory
                 _mediaSourceManager,
                 _userViewManager,
                 _mediaEncoder,
-                XmlReaderSettingsFactory,
                 _tvSeriesManager)
                 .ProcessControlRequest(request);
         }

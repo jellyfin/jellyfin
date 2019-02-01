@@ -23,7 +23,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
     {
         internal static TvdbSeriesProvider Current { get; private set; }
         private readonly IHttpClient _httpClient;
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;

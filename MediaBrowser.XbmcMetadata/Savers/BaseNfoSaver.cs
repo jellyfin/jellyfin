@@ -18,7 +18,6 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using MediaBrowser.XbmcMetadata.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -97,10 +96,15 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-        protected BaseNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
+        protected BaseNfoSaver(
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager,
+            ILogger logger)
         {
             Logger = logger;
-            XmlReaderSettingsFactory = xmlReaderSettingsFactory;
             UserDataManager = userDataManager;
             UserManager = userManager;
             LibraryManager = libraryManager;
@@ -114,7 +118,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
         protected IUserManager UserManager { get; private set; }
         protected IUserDataManager UserDataManager { get; private set; }
         protected ILogger Logger { get; private set; }
-        protected IXmlReaderSettingsFactory XmlReaderSettingsFactory { get; private set; }
 
         protected ItemUpdateType MinimumUpdateType
         {
@@ -961,52 +964,50 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private void AddCustomTags(string path, List<string> xmlTagsUsed, XmlWriter writer, ILogger logger, IFileSystem fileSystem)
         {
-            var settings = XmlReaderSettingsFactory.Create(false);
-
-            settings.CheckCharacters = false;
-            settings.IgnoreProcessingInstructions = true;
-            settings.IgnoreComments = true;
+            // Use XmlReader for best performance
+            var settings = new XmlReaderSettings()
+            {
+                ValidationType = ValidationType.None,
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true
+            };
 
             using (var fileStream = File.OpenRead(path))
+            using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
+            using (var reader = XmlReader.Create(streamReader, settings))
             {
-                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
+                try
                 {
-                    // Use XmlReader for best performance
-                    using (var reader = XmlReader.Create(streamReader, settings))
+                    reader.MoveToContent();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error reading existing xml tags from {path}.", path);
+                    return;
+                }
+
+                reader.Read();
+
+                // Loop through each element
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                {
+                    if (reader.NodeType == XmlNodeType.Element)
                     {
-                        try
-                        {
-                            reader.MoveToContent();
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.LogError(ex, "Error reading existing xml tags from {path}.", path);
-                            return;
-                        }
+                        var name = reader.Name;
 
+                        if (!CommonTags.ContainsKey(name) && !xmlTagsUsed.Contains(name, StringComparer.OrdinalIgnoreCase))
+                        {
+                            writer.WriteNode(reader, false);
+                        }
+                        else
+                        {
+                            reader.Skip();
+                        }
+                    }
+                    else
+                    {
                         reader.Read();
-
-                        // Loop through each element
-                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                        {
-                            if (reader.NodeType == XmlNodeType.Element)
-                            {
-                                var name = reader.Name;
-
-                                if (!CommonTags.ContainsKey(name) && !xmlTagsUsed.Contains(name, StringComparer.OrdinalIgnoreCase))
-                                {
-                                    writer.WriteNode(reader, false);
-                                }
-                                else
-                                {
-                                    reader.Skip();
-                                }
-                            }
-                            else
-                            {
-                                reader.Read();
-                            }
-                        }
                     }
                 }
             }
