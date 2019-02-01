@@ -601,20 +601,26 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         public void Dispose()
         {
-            _disposed = true;
             Dispose(true);
         }
 
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
         {
-            if (dispose)
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
             {
                 Stop();
             }
+
+            _disposed = true;
         }
     }
 

@@ -35,7 +35,6 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.System;
 using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
@@ -275,7 +274,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             foreach (var timer in seriesTimers)
             {
-                await UpdateTimersForSeriesTimer(timer, false, true).ConfigureAwait(false);
+                UpdateTimersForSeriesTimer(timer, false, true);
             }
         }
 
@@ -763,12 +762,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 _timerProvider.AddOrUpdate(timer, false);
             }
 
-            await UpdateTimersForSeriesTimer(info, true, false).ConfigureAwait(false);
+            UpdateTimersForSeriesTimer(info, true, false);
 
             return info.Id;
         }
 
-        public async Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
+        public Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
             var instance = _seriesTimerProvider.GetAll().FirstOrDefault(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
 
@@ -792,8 +791,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 _seriesTimerProvider.Update(instance);
 
-                await UpdateTimersForSeriesTimer(instance, true, true).ConfigureAwait(false);
+                UpdateTimersForSeriesTimer(instance, true, true);
             }
+
+            return Task.CompletedTask;
         }
 
         public Task UpdateTimerAsync(TimerInfo updatedTimer, CancellationToken cancellationToken)
@@ -2346,10 +2347,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private async Task UpdateTimersForSeriesTimer(SeriesTimerInfo seriesTimer, bool updateTimerSettings, bool deleteInvalidTimers)
+        private void UpdateTimersForSeriesTimer(SeriesTimerInfo seriesTimer, bool updateTimerSettings, bool deleteInvalidTimers)
         {
-            var allTimers = GetTimersForSeries(seriesTimer)
-                .ToList();
+            var allTimers = GetTimersForSeries(seriesTimer).ToList();
 
 
             var enabledTimersForSeries = new List<TimerInfo>();
