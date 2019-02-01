@@ -205,9 +205,9 @@ namespace Jellyfin.Server
             string cacheDir = Environment.GetEnvironmentVariable("JELLYFIN_CACHE_DIR");
             if (string.IsNullOrEmpty(cacheDir))
             {
-                if (options.ContainsOption("-cachedir"))
+                if (options.CacheDir != null)
                 {
-                    cacheDir = options.GetOption("-cachedir");
+                    cacheDir = options.CacheDir;
                 }
                 else if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
