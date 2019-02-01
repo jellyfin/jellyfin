@@ -11,7 +11,7 @@ namespace Jellyfin.Server
         [Option('d', "datadir", Required = false, HelpText = "Path to use for the data folder (database files, etc.).")]
         public string DataDir { get; set; }
 
-        [Option('C', "configdir", Required = false, HelpText = "Path to use for caching.")]
+        [Option('C', "cachedir", Required = false, HelpText = "Path to use for caching.")]
         public string CacheDir { get; set; }
 
         [Option('c', "configdir", Required = false, HelpText = "Path to use for configuration data (user settings and pictures).")]
