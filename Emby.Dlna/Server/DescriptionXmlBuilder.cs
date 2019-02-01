@@ -107,19 +107,19 @@ namespace Emby.Dlna.Server
             '&'
         };
 
-        private static readonly string[] s_escapeStringPairs = new string[]
-{
-    "<",
-    "&lt;",
-    ">",
-    "&gt;",
-    "\"",
-    "&quot;",
-    "'",
-    "&apos;",
-    "&",
-    "&amp;"
-};
+        private static readonly string[] s_escapeStringPairs = new[]
+        {
+            "<",
+            "&lt;",
+            ">",
+            "&gt;",
+            "\"",
+            "&quot;",
+            "'",
+            "&apos;",
+            "&",
+            "&amp;"
+        };
 
         private static string GetEscapeSequence(char c)
         {
@@ -133,7 +133,7 @@ namespace Emby.Dlna.Server
                     return result;
                 }
             }
-            return c.ToString();
+            return c.ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>Replaces invalid XML characters in a string with their valid XML equivalent.</summary>
@@ -145,6 +145,7 @@ namespace Emby.Dlna.Server
             {
                 return null;
             }
+
             StringBuilder stringBuilder = null;
             int length = str.Length;
             int num = 0;
@@ -230,9 +231,9 @@ namespace Emby.Dlna.Server
 
             var serverName = new string(characters);
 
-            var name = (_profile.FriendlyName ?? string.Empty).Replace("${HostName}", serverName, StringComparison.OrdinalIgnoreCase);
+            var name = _profile.FriendlyName?.Replace("${HostName}", serverName, StringComparison.OrdinalIgnoreCase);
 
-            return name;
+            return name ?? string.Empty;
         }
 
         private void AppendIconList(StringBuilder builder)
@@ -295,65 +296,62 @@ namespace Emby.Dlna.Server
         }
 
         private IEnumerable<DeviceIcon> GetIcons()
-        {
-            var list = new List<DeviceIcon>();
-
-            list.Add(new DeviceIcon
+            => new[]
             {
-                MimeType = "image/png",
-                Depth = "24",
-                Width = 240,
-                Height = 240,
-                Url = "icons/logo240.png"
-            });
+                new DeviceIcon
+                {
+                    MimeType = "image/png",
+                    Depth = "24",
+                    Width = 240,
+                    Height = 240,
+                    Url = "icons/logo240.png"
+                },
 
-            list.Add(new DeviceIcon
-            {
-                MimeType = "image/jpeg",
-                Depth = "24",
-                Width = 240,
-                Height = 240,
-                Url = "icons/logo240.jpg"
-            });
+                new DeviceIcon
+                {
+                    MimeType = "image/jpeg",
+                    Depth = "24",
+                    Width = 240,
+                    Height = 240,
+                    Url = "icons/logo240.jpg"
+                },
 
-            list.Add(new DeviceIcon
-            {
-                MimeType = "image/png",
-                Depth = "24",
-                Width = 120,
-                Height = 120,
-                Url = "icons/logo120.png"
-            });
+                new DeviceIcon
+                {
+                    MimeType = "image/png",
+                    Depth = "24",
+                    Width = 120,
+                    Height = 120,
+                    Url = "icons/logo120.png"
+                },
 
-            list.Add(new DeviceIcon
-            {
-                MimeType = "image/jpeg",
-                Depth = "24",
-                Width = 120,
-                Height = 120,
-                Url = "icons/logo120.jpg"
-            });
+                new DeviceIcon
+                {
+                    MimeType = "image/jpeg",
+                    Depth = "24",
+                    Width = 120,
+                    Height = 120,
+                    Url = "icons/logo120.jpg"
+                },
 
-            list.Add(new DeviceIcon
-            {
-                MimeType = "image/png",
-                Depth = "24",
-                Width = 48,
-                Height = 48,
-                Url = "icons/logo48.png"
-            });
+                new DeviceIcon
+                {
+                    MimeType = "image/png",
+                    Depth = "24",
+                    Width = 48,
+                    Height = 48,
+                    Url = "icons/logo48.png"
+                },
 
-            list.Add(new DeviceIcon
-            {
-                MimeType = "image/jpeg",
-                Depth = "24",
-                Width = 48,
-                Height = 48,
-                Url = "icons/logo48.jpg"
-            });
-
-            return list;
-        }
+                new DeviceIcon
+                {
+                    MimeType = "image/jpeg",
+                    Depth = "24",
+                    Width = 48,
+                    Height = 48,
+                    Url = "icons/logo48.jpg"
+                }
+            };
 
         private IEnumerable<DeviceService> GetServices()
         {

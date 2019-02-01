@@ -144,7 +144,7 @@ namespace Emby.Drawing
 
         private static readonly string[] TransparentImageTypes = new string[] { ".png", ".webp", ".gif" };
         public bool SupportsTransparency(string path)
-            => TransparentImageTypes.Contains(Path.GetExtension(path).ToLower());
+            => TransparentImageTypes.Contains(Path.GetExtension(path).ToLowerInvariant());
 
         public async Task<(string path, string mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
         {
@@ -374,7 +374,7 @@ namespace Emby.Drawing
 
             filename += "v=" + Version;
 
-            return GetCachePath(ResizedImageCachePath, filename, "." + format.ToString().ToLower());
+            return GetCachePath(ResizedImageCachePath, filename, "." + format.ToString().ToLowerInvariant());
         }
 
         public ImageDimensions GetImageSize(BaseItem item, ItemImageInfo info)

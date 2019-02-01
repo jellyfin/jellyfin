@@ -492,11 +492,11 @@ namespace Emby.Server.Implementations.Localization
 
             if (parts.Length == 2)
             {
-                culture = parts[0].ToLower() + "-" + parts[1].ToUpper();
+                culture = parts[0].ToLowerInvariant() + "-" + parts[1].ToUpperInvariant();
             }
             else
             {
-                culture = culture.ToLower();
+                culture = culture.ToLowerInvariant();
             }
 
             return culture + ".json";

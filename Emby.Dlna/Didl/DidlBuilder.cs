@@ -265,7 +265,7 @@ namespace Emby.Dlna.Didl
                 // <sec:CaptionInfo sec:type="srt">http://192.168.1.3:9999/video.srt</sec:CaptionInfo>
 
                 writer.WriteStartElement("sec", "CaptionInfoEx", null);
-                writer.WriteAttributeString("sec", "type", null, info.Format.ToLower());
+                writer.WriteAttributeString("sec", "type", null, info.Format.ToLowerInvariant());
 
                 writer.WriteString(info.Url);
                 writer.WriteFullEndElement();
@@ -282,7 +282,7 @@ namespace Emby.Dlna.Didl
             else
             {
                 writer.WriteStartElement(string.Empty, "res", NS_DIDL);
-                var protocolInfo = string.Format("http-get:*:text/{0}:*", info.Format.ToLower());
+                var protocolInfo = string.Format("http-get:*:text/{0}:*", info.Format.ToLowerInvariant());
                 writer.WriteAttributeString("protocolInfo", protocolInfo);
 
                 writer.WriteString(info.Url);
@@ -844,7 +844,7 @@ namespace Emby.Dlna.Didl
             //    var type = types.FirstOrDefault(i => string.Equals(i, actor.Type, StringComparison.OrdinalIgnoreCase) || string.Equals(i, actor.Role, StringComparison.OrdinalIgnoreCase))
             //        ?? PersonType.Actor;
 
-            //    AddValue(writer, "upnp", type.ToLower(), actor.Name, NS_UPNP);
+            //    AddValue(writer, "upnp", type.ToLowerInvariant(), actor.Name, NS_UPNP);
 
             //    index++;
 
@@ -1147,7 +1147,7 @@ namespace Emby.Dlna.Didl
 
             if (stubType.HasValue)
             {
-                id = stubType.Value.ToString().ToLower() + "_" + id;
+                id = stubType.Value.ToString().ToLowerInvariant() + "_" + id;
             }
 
             return id;

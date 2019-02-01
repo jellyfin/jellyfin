@@ -486,7 +486,7 @@ namespace SocketHttpListener
             if (method == CompressionMethod.None)
                 return string.Empty;
 
-            var m = string.Format("permessage-{0}", method.ToString().ToLower());
+            var m = string.Format("permessage-{0}", method.ToString().ToLowerInvariant());
             if (parameters == null || parameters.Length == 0)
                 return m;
 

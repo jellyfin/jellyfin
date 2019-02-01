@@ -285,7 +285,7 @@ namespace MediaBrowser.Providers.Movies
 
                 if (parts.Length == 2)
                 {
-                    language = parts[0] + "-" + parts[1].ToUpper();
+                    language = parts[0] + "-" + parts[1].ToUpperInvariant();
                 }
             }
 

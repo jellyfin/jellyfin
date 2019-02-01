@@ -223,7 +223,7 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("DeviceProfileId", item.DeviceProfileId ?? string.Empty));
             list.Add(new NameValuePair("DeviceId", item.DeviceId ?? string.Empty));
             list.Add(new NameValuePair("MediaSourceId", item.MediaSourceId ?? string.Empty));
-            list.Add(new NameValuePair("Static", item.IsDirectStream.ToString().ToLower()));
+            list.Add(new NameValuePair("Static", item.IsDirectStream.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
             list.Add(new NameValuePair("VideoCodec", videoCodecs));
             list.Add(new NameValuePair("AudioCodec", audioCodecs));
             list.Add(new NameValuePair("AudioStreamIndex", item.AudioStreamIndex.HasValue ? item.AudioStreamIndex.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
@@ -251,7 +251,7 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("PlaySessionId", item.PlaySessionId ?? string.Empty));
             list.Add(new NameValuePair("api_key", accessToken ?? string.Empty));
 
-            string liveStreamId = item.MediaSource == null ? null : item.MediaSource.LiveStreamId;
+            string liveStreamId = item.MediaSource?.LiveStreamId;
             list.Add(new NameValuePair("LiveStreamId", liveStreamId ?? string.Empty));
 
             list.Add(new NameValuePair("SubtitleMethod", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleDeliveryMethod.ToString() : string.Empty));
@@ -261,37 +261,37 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (item.RequireNonAnamorphic)
                 {
-                    list.Add(new NameValuePair("RequireNonAnamorphic", item.RequireNonAnamorphic.ToString().ToLower()));
+                    list.Add(new NameValuePair("RequireNonAnamorphic", item.RequireNonAnamorphic.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
                 }
 
                 list.Add(new NameValuePair("TranscodingMaxAudioChannels", item.TranscodingMaxAudioChannels.HasValue ? item.TranscodingMaxAudioChannels.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
 
                 if (item.EnableSubtitlesInManifest)
                 {
-                    list.Add(new NameValuePair("EnableSubtitlesInManifest", item.EnableSubtitlesInManifest.ToString().ToLower()));
+                    list.Add(new NameValuePair("EnableSubtitlesInManifest", item.EnableSubtitlesInManifest.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
                 }
 
                 if (item.EnableMpegtsM2TsMode)
                 {
-                    list.Add(new NameValuePair("EnableMpegtsM2TsMode", item.EnableMpegtsM2TsMode.ToString().ToLower()));
+                    list.Add(new NameValuePair("EnableMpegtsM2TsMode", item.EnableMpegtsM2TsMode.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
                 }
 
                 if (item.EstimateContentLength)
                 {
-                    list.Add(new NameValuePair("EstimateContentLength", item.EstimateContentLength.ToString().ToLower()));
+                    list.Add(new NameValuePair("EstimateContentLength", item.EstimateContentLength.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
                 }
 
                 if (item.TranscodeSeekInfo != TranscodeSeekInfo.Auto)
                 {
-                    list.Add(new NameValuePair("TranscodeSeekInfo", item.TranscodeSeekInfo.ToString().ToLower()));
+                    list.Add(new NameValuePair("TranscodeSeekInfo", item.TranscodeSeekInfo.ToString().ToLowerInvariant()));
                 }
 
                 if (item.CopyTimestamps)
                 {
-                    list.Add(new NameValuePair("CopyTimestamps", item.CopyTimestamps.ToString().ToLower()));
+                    list.Add(new NameValuePair("CopyTimestamps", item.CopyTimestamps.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
                 }
 
-                list.Add(new NameValuePair("RequireAvc", item.RequireAvc.ToString().ToLower()));
+                list.Add(new NameValuePair("RequireAvc", item.RequireAvc.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
             }
 
             list.Add(new NameValuePair("Tag", item.MediaSource.ETag ?? string.Empty));
@@ -316,7 +316,7 @@ namespace MediaBrowser.Model.Dlna
                     list.Add(new NameValuePair("MinSegments", item.MinSegments.Value.ToString(CultureInfo.InvariantCulture)));
                 }
 
-                list.Add(new NameValuePair("BreakOnNonKeyFrames", item.BreakOnNonKeyFrames.ToString()));
+                list.Add(new NameValuePair("BreakOnNonKeyFrames", item.BreakOnNonKeyFrames.ToString(CultureInfo.InvariantCulture)));
             }
 
             foreach (var pair in item.StreamOptions)
@@ -332,7 +332,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (!item.IsDirectStream)
             {
-                list.Add(new NameValuePair("TranscodeReasons", string.Join(",", item.TranscodeReasons.Distinct().Select(i => i.ToString()).ToArray())));
+                list.Add(new NameValuePair("TranscodeReasons", string.Join(",", item.TranscodeReasons.Distinct().Select(i => i.ToString()))));
             }
 
             return list;

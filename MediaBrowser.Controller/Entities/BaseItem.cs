@@ -615,7 +615,7 @@ namespace MediaBrowser.Controller.Entities
                     if (!string.IsNullOrEmpty(ForcedSortName))
                     {
                         // Need the ToLower because that's what CreateSortName does
-                        _sortName = ModifySortChunks(ForcedSortName).ToLower();
+                        _sortName = ModifySortChunks(ForcedSortName).ToLowerInvariant();
                     }
                     else
                     {
@@ -661,7 +661,7 @@ namespace MediaBrowser.Controller.Entities
                 return Name.TrimStart();
             }
 
-            var sortable = Name.Trim().ToLower();
+            var sortable = Name.Trim().ToLowerInvariant();
 
             foreach (var removeChar in ConfigurationManager.Configuration.SortRemoveCharacters)
             {

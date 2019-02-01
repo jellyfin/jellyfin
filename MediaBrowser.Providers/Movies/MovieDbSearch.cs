@@ -72,7 +72,7 @@ namespace MediaBrowser.Providers.Movies
             }
 
             _logger.LogInformation("MovieDbProvider: Finding id for item: " + name);
-            var language = idInfo.MetadataLanguage.ToLower();
+            var language = idInfo.MetadataLanguage.ToLowerInvariant();
 
             //nope - search for it
             //var searchType = item is BoxSet ? "collection" : "movie";

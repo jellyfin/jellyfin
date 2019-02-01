@@ -2193,7 +2193,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     if (lockData)
                     {
-                        writer.WriteElementString("lockdata", true.ToString().ToLower());
+                        writer.WriteElementString("lockdata", true.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
                     }
 
                     if (item.CriticRating.HasValue)

@@ -60,7 +60,7 @@ namespace Emby.Server.Implementations.Services
 
         public static string[] GetPathPartsForMatching(string pathInfo)
         {
-            return pathInfo.ToLower().Split(new[] { PathSeperatorChar }, StringSplitOptions.RemoveEmptyEntries);
+            return pathInfo.ToLowerInvariant().Split(new[] { PathSeperatorChar }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public static List<string> GetFirstMatchHashKeys(string[] pathPartsForMatching)
@@ -104,7 +104,7 @@ namespace Emby.Server.Implementations.Services
             this.Description = description;
             this.restPath = path;
 
-            this.Verbs = string.IsNullOrWhiteSpace(verbs) ? ServiceExecExtensions.AllVerbs : verbs.ToUpper().Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            this.Verbs = string.IsNullOrWhiteSpace(verbs) ? ServiceExecExtensions.AllVerbs : verbs.ToUpperInvariant().Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
 
             var componentsList = new List<string>();
 
@@ -154,7 +154,7 @@ namespace Emby.Server.Implementations.Services
                 }
                 else
                 {
-                    this.literalsToMatch[i] = component.ToLower();
+                    this.literalsToMatch[i] = component.ToLowerInvariant();
 
                     if (firstLiteralMatch == null)
                     {
@@ -189,7 +189,7 @@ namespace Emby.Server.Implementations.Services
             foreach (var propertyInfo in GetSerializableProperties(RequestType))
             {
                 var propertyName = propertyInfo.Name;
-                propertyNamesMap.Add(propertyName.ToLower(), propertyName);
+                propertyNamesMap.Add(propertyName.ToLowerInvariant(), propertyName);
             }
         }
 
@@ -483,7 +483,7 @@ namespace Emby.Server.Implementations.Services
                     continue;
                 }
 
-                if (!this.propertyNamesMap.TryGetValue(variableName.ToLower(), out var propertyNameOnRequest))
+                if (!this.propertyNamesMap.TryGetValue(variableName.ToLowerInvariant(), out var propertyNameOnRequest))
                 {
                     if (string.Equals("ignore", variableName, StringComparison.OrdinalIgnoreCase))
                     {

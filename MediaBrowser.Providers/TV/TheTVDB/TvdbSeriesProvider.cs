@@ -66,7 +66,7 @@ namespace MediaBrowser.Providers.TV
             }
 
             // pt-br is just pt to tvdb
-            return language.Split('-')[0].ToLower();
+            return language.Split('-')[0].ToLowerInvariant();
         }
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
@@ -776,7 +776,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>System.String.</returns>
         private string GetComparableName(string name)
         {
-            name = name.ToLower();
+            name = name.ToLowerInvariant();
             name = _localizationManager.NormalizeFormKD(name);
             var sb = new StringBuilder();
             foreach (var c in name)
@@ -1620,7 +1620,7 @@ namespace MediaBrowser.Providers.TV
         {
             var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
 
-            var seriesXmlFilename = language.ToLower() + ".xml";
+            var seriesXmlFilename = language.ToLowerInvariant() + ".xml";
 
             return Path.Combine(seriesDataPath, seriesXmlFilename);
         }

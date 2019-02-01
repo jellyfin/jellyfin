@@ -25,7 +25,7 @@ namespace Jellyfin.Drawing.Skia
                 throw new ArgumentNullException(nameof(outputPath));
             }
 
-            var ext = Path.GetExtension(outputPath).ToLower();
+            var ext = Path.GetExtension(outputPath).ToLowerInvariant();
 
             if (ext == ".jpg" || ext == ".jpeg")
                 return SKEncodedImageFormat.Jpeg;

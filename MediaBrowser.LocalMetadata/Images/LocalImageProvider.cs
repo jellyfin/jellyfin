@@ -403,7 +403,7 @@ namespace MediaBrowser.LocalMetadata.Images
             var seriesFiles = GetFiles(series, false, directoryService).ToList();
 
             // Try using the season name
-            var prefix = season.Name.ToLower().Replace(" ", string.Empty);
+            var prefix = season.Name.ToLowerInvariant().Replace(" ", string.Empty);
 
             var filenamePrefixes = new List<string> { prefix };
 

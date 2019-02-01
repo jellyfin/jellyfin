@@ -158,7 +158,7 @@ namespace MediaBrowser.Model.Net
             // Catch-all for all video types that don't require specific mime types
             if (VideoFileExtensionsDictionary.ContainsKey(ext))
             {
-                return "video/" + ext.TrimStart('.').ToLower();
+                return "video/" + ext.TrimStart('.').ToLowerInvariant();
             }
 
             // Type text

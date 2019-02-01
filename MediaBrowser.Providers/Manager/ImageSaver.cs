@@ -420,7 +420,7 @@ namespace MediaBrowser.Providers.Manager
                     filename = GetBackdropSaveFilename(item.GetImages(type), "screenshot", "screenshot", imageIndex);
                     break;
                 default:
-                    filename = type.ToString().ToLower();
+                    filename = type.ToString().ToLowerInvariant();
                     break;
             }
 
@@ -429,7 +429,7 @@ namespace MediaBrowser.Providers.Manager
                 extension = ".jpg";
             }
 
-            extension = extension.ToLower();
+            extension = extension.ToLowerInvariant();
 
             string path = null;
 

@@ -104,7 +104,7 @@ namespace MediaBrowser.Model.Entities
                         attributes.Add("Default");
                     }
 
-                    return string.Join(" ", attributes.ToArray());
+                    return string.Join(" ", attributes);
                 }
 
                 if (Type == MediaStreamType.Video)
@@ -120,10 +120,10 @@ namespace MediaBrowser.Model.Entities
 
                     if (!string.IsNullOrEmpty(Codec))
                     {
-                        attributes.Add(Codec.ToUpper());
+                        attributes.Add(Codec.ToUpperInvariant());
                     }
 
-                    return string.Join(" ", attributes.ToArray());
+                    return string.Join(" ", attributes);
                 }
 
                 if (Type == MediaStreamType.Subtitle)
