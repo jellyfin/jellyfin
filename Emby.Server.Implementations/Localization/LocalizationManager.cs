@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.Localization
         {
             const string ratingsResource = "Emby.Server.Implementations.Ratings.";
 
-            Directory.CreateDirectory(localizationPath);
+            Directory.CreateDirectory(LocalizationPath);
 
             var existingFiles = GetRatingsFiles(LocalizationPath).Select(Path.GetFileName);
 
@@ -269,8 +269,6 @@ namespace Emby.Server.Implementations.Localization
             }
 
            return GetRatings(countryCode) ?? GetRatings("us");
-
-            return ratings;
         }
 
         /// <summary>
