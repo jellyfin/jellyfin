@@ -46,7 +46,4 @@
     <EmbeddedResource Include="Localization\Ratings\*.txt" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ScheduledTasks\Triggers\" />
-  </ItemGroup>
 </Project>
