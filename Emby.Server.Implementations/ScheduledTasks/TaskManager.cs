@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -72,38 +70,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
             _fileSystem = fileSystem;
 
             ScheduledTasks = new IScheduledTaskWorker[] { };
-        }
-
-        private void RunStartupTasks()
-        {
-            var path = Path.Combine(ApplicationPaths.CachePath, "startuptasks.txt");
-
-            // ToDo: Fix this shit
-            if (!File.Exists(path))
-                return;
-
-            List<string> lines;
-
-            try
-            {
-                lines = File.ReadAllLines(path).Where(i => !string.IsNullOrWhiteSpace(i)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-
-                foreach (var key in lines)
-                {
-                    var task = ScheduledTasks.FirstOrDefault(i => string.Equals(i.ScheduledTask.Key, key, StringComparison.OrdinalIgnoreCase));
-
-                    if (task != null)
-                    {
-                        QueueScheduledTask(task, new TaskOptions());
-                    }
-                }
-
-                _fileSystem.DeleteFile(path);
-            }
-            catch
-            {
-                return;
-            }
         }
 
         /// <summary>
@@ -247,14 +213,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="tasks">The tasks.</param>
         public void AddTasks(IEnumerable<IScheduledTask> tasks)
         {
-            var myTasks = ScheduledTasks.ToList();
+            var list = tasks.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger, _fileSystem));
 
-            var list = tasks.ToList();
-            myTasks.AddRange(list.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger, _fileSystem)));
-
-            ScheduledTasks = myTasks.ToArray();
-
-            RunStartupTasks();
+            ScheduledTasks = ScheduledTasks.Concat(list).ToArray();
         }
 
         /// <summary>
