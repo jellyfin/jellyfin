@@ -93,12 +93,12 @@ if($Quiet.IsPresent -or $Quiet -eq $true){
     Copy-Item -Path $PSScriptRoot/* -DestinationPath "$Script:DefaultJellyfinInstallDirectory/" -Force -Recurse
     if($Script:InstallAsService){
         if($Script:InstallServiceAsUser){
-            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyfinInstallDirectory\jellyfin.exe`" --programdata `"$Script:JellyfinDataDir`"
+            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyfinInstallDirectory\jellyfin.exe`" --datadir `"$Script:JellyfinDataDir`"
             Start-Sleep -Milliseconds 500
             &sc.exe config Jellyfin obj=".\$($Script:UserCredentials.UserName)" password="$($Script:UserCredentials.GetNetworkCredential().Password)"
             &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START 
         }else{
-            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyfinInstallDirectory\jellyfin.exe`" --programdata `"$Script:JellyfinDataDir`"
+            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyfinInstallDirectory\jellyfin.exe`" --datadir `"$Script:JellyfinDataDir`"
             Start-Sleep -Milliseconds 500
             #&"$Script:DefaultJellyfinInstallDirectory\nssm.exe" set Jellyfin ObjectName $Script:UserCredentials.UserName $Script:UserCredentials.GetNetworkCredential().Password
             #Set-Service -Name Jellyfin -Credential $Script:UserCredentials
@@ -171,13 +171,13 @@ function InstallJellyfin {
     if($Script:InstallAsService){
         if($Script:InstallServiceAsUser){
             Write-Host "Installing Service as user $($Script:UserCredentials.UserName)"
-            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyfinInstallDirectory\jellyfin.exe`" --programdata `"$Script:JellyfinDataDir`"
+            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyfinInstallDirectory\jellyfin.exe`" --datadir `"$Script:JellyfinDataDir`"
             Start-Sleep -Milliseconds 2000
             &sc.exe config Jellyfin obj=".\$($Script:UserCredentials.UserName)" password="$($Script:UserCredentials.GetNetworkCredential().Password)"
             &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START 
         }else{
             Write-Host "Installing Service as LocalSystem"
-            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyfinInstallDirectory\jellyfin.exe`" --programdata `"$Script:JellyfinDataDir`"
+            &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" install Jellyfin `"$Script:DefaultJellyfinInstallDirectory\jellyfin.exe`" --datadir `"$Script:JellyfinDataDir`"
             Start-Sleep -Milliseconds 2000
             &"$Script:DefaultJellyfinInstallDirectory\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START 
         }
