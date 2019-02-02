@@ -234,7 +234,7 @@ namespace MediaBrowser.Api.Playback.Hls
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
-                            ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.PlaySessionId, p => false);
+                            await ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.PlaySessionId, p => false);
 
                             if (currentTranscodingIndex.HasValue)
                             {
@@ -258,7 +258,7 @@ namespace MediaBrowser.Api.Playback.Hls
                         job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                         if (job.TranscodingThrottler != null)
                         {
-                            job.TranscodingThrottler.UnpauseTranscoding();
+                            await job.TranscodingThrottler.UnpauseTranscoding();
                         }
                     }
                 }
