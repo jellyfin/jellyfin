@@ -58,7 +58,7 @@ namespace MediaBrowser.Api
                 return Array.Empty<Guid>();
             }
 
-            return value.Split(new[] { ',', '|' }, StringSplitOptions.RemoveEmptyEntries)
+            return value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                         .Select(i => new Guid(i))
                         .ToArray();
         }
