@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
@@ -24,7 +23,6 @@ using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
@@ -48,7 +46,6 @@ namespace Emby.Server.Implementations.LiveTv
         private readonly ILibraryManager _libraryManager;
         private readonly ITaskManager _taskManager;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IProviderManager _providerManager;
         private readonly Func<IChannelManager> _channelManager;
 
         private readonly IDtoService _dtoService;
@@ -85,7 +82,6 @@ namespace Emby.Server.Implementations.LiveTv
             ITaskManager taskManager,
             ILocalizationManager localization,
             IJsonSerializer jsonSerializer,
-            IProviderManager providerManager,
             IFileSystem fileSystem,
             Func<IChannelManager> channelManager)
         {
@@ -97,7 +93,6 @@ namespace Emby.Server.Implementations.LiveTv
             _taskManager = taskManager;
             _localization = localization;
             _jsonSerializer = jsonSerializer;
-            _providerManager = providerManager;
             _fileSystem = fileSystem;
             _dtoService = dtoService;
             _userDataManager = userDataManager;
@@ -2469,7 +2464,8 @@ namespace Emby.Server.Implementations.LiveTv
                 .Where(i => i != null)
                 .Where(i => i.IsVisibleStandalone(user))
                 .SelectMany(i => _libraryManager.GetCollectionFolders(i))
-                .DistinctBy(i => i.Id)
+                .GroupBy(x => x.Id)
+                .Select(x => x.First())
                 .OrderBy(i => i.SortName)
                 .ToList();
 

@@ -13,7 +13,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 
@@ -64,7 +63,8 @@ namespace Emby.Server.Implementations.Playlists
                 })
                 .Where(i => i != null)
                 .OrderBy(i => Guid.NewGuid())
-                .DistinctBy(i => i.Id)
+                .GroupBy(x => x.Id)
+                .Select(x => x.First())
                 .ToList();
         }
     }

@@ -12,7 +12,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.UserViews
@@ -83,7 +82,8 @@ namespace Emby.Server.Implementations.UserViews
 
                 return i;
 
-            }).DistinctBy(i => i.Id);
+            }).GroupBy(x => x.Id)
+            .Select(x => x.First());
 
             if (isUsingCollectionStrip)
             {

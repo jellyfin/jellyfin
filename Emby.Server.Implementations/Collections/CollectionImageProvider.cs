@@ -70,7 +70,8 @@ namespace Emby.Server.Implementations.Collections
                     return null;
                 })
                 .Where(i => i != null)
-                .DistinctBy(i => i.Id)
+                .GroupBy(x => x.Id)
+                .Select(x => x.First())
                 .OrderBy(i => Guid.NewGuid())
                 .ToList();
         }

@@ -146,8 +146,8 @@ namespace Emby.Server.Implementations.IO
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(GetAffectedBaseItem)
                 .Where(item => item != null)
-                .DistinctBy(i => i.Id)
-                .ToList();
+                .GroupBy(x => x.Id)
+                .Select(x => x.First());
 
             foreach (var item in itemsToRefresh)
             {
