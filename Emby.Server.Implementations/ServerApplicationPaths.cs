@@ -18,8 +18,13 @@ namespace Emby.Server.Implementations
             string appFolderPath,
             string applicationResourcesPath,
             string logDirectoryPath = null,
-            string configurationDirectoryPath = null)
-            : base(programDataPath, appFolderPath, logDirectoryPath, configurationDirectoryPath)
+            string configurationDirectoryPath = null,
+            string cacheDirectoryPath = null)
+            : base(programDataPath,
+                appFolderPath,
+                logDirectoryPath,
+                configurationDirectoryPath,
+                cacheDirectoryPath)
         {
             ApplicationResourcesPath = applicationResourcesPath;
         }
