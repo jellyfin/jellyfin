@@ -1,7 +1,7 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using MediaBrowser.Controller.Extensions;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -14,13 +14,11 @@ namespace MediaBrowser.Controller.Library
                 return string.Empty;
             }
 
-            //return name;
             return name.RemoveDiacritics();
         }
 
         public static IEnumerable<string> DistinctNames(this IEnumerable<string> names)
-        {
-            return names.DistinctBy(RemoveDiacritics, StringComparer.OrdinalIgnoreCase);
-        }
+            => names.GroupBy(RemoveDiacritics, StringComparer.OrdinalIgnoreCase)
+                    .Select(x => x.First());
     }
 }

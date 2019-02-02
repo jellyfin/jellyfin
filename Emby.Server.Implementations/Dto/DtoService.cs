@@ -620,7 +620,8 @@ namespace Emby.Server.Implementations.Dto
                     }
 
                 }).Where(i => i != null)
-                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(x => x.First())
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < people.Count; i++)

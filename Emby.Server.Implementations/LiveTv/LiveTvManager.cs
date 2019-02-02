@@ -2464,7 +2464,8 @@ namespace Emby.Server.Implementations.LiveTv
                 .Where(i => i != null)
                 .Where(i => i.IsVisibleStandalone(user))
                 .SelectMany(i => _libraryManager.GetCollectionFolders(i))
-                .DistinctBy(i => i.Id)
+                .GroupBy(x => x.Id)
+                .Select(x => x.First())
                 .OrderBy(i => i.SortName)
                 .ToList();
 

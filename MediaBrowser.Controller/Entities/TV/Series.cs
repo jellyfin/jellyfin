@@ -270,7 +270,7 @@ namespace MediaBrowser.Controller.Entities.TV
             // This depends on settings for that series
             // When this happens, remove the duplicate from season 0
 
-            return allEpisodes.DistinctBy(i => i.Id).Reverse();
+            return allEpisodes.GroupBy(i => i.Id).Select(x => x.First()).Reverse();
         }
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)

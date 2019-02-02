@@ -277,14 +277,21 @@ namespace Emby.Server.Implementations.EntryPoints
             lock (_libraryChangedSyncLock)
             {
                 // Remove dupes in case some were saved multiple times
-                var foldersAddedTo = _foldersAddedTo.DistinctBy(i => i.Id).ToList();
+                var foldersAddedTo = _foldersAddedTo
+                                        .GroupBy(x => x.Id)
+                                        .Select(x => x.First())
+                                        .ToList();
 
-                var foldersRemovedFrom = _foldersRemovedFrom.DistinctBy(i => i.Id).ToList();
+                var foldersRemovedFrom = _foldersRemovedFrom
+                                            .GroupBy(x => x.Id)
+                                            .Select(x => x.First())
+                                            .ToList();
 
                 var itemsUpdated = _itemsUpdated
-                    .Where(i => !_itemsAdded.Contains(i))
-                    .DistinctBy(i => i.Id)
-                    .ToList();
+                                    .Where(i => !_itemsAdded.Contains(i))
+                                    .GroupBy(x => x.Id)
+                                    .Select(x => x.First())
+                                    .ToList();
 
                 SendChangeNotifications(_itemsAdded.ToList(), itemsUpdated, _itemsRemoved.ToList(), foldersAddedTo, foldersRemovedFrom, CancellationToken.None);
 
