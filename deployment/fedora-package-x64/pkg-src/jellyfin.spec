@@ -6,7 +6,6 @@
 %global         dotnet_runtime  centos-x64
 %endif
 
-AutoReq:        no
 Name:           jellyfin
 Version:        10.1.0
 Release:        1%{?dist}
@@ -32,13 +31,11 @@ BuildRequires:  dotnet-sdk-2.2
 # RPMfusion free
 Requires:       ffmpeg
 
-# For the update-db-paths.sh script to fix emby paths to jellyfin
-%{?fedora:Recommends: sqlite}
-
 # Fedora has openssl1.1 which is incompatible with dotnet 
 %{?fedora:Requires: compat-openssl10}
-# Disable Automatic Dependency Processing for Centos
-%{?el7:AutoReqProv: no}
+
+# Disable Automatic Dependency Processing
+AutoReqProv:    no
 
 %description
 Jellyfin is a free software media system that puts you in control of managing and streaming your media.
