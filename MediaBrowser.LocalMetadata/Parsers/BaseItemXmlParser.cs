@@ -99,29 +99,24 @@ namespace MediaBrowser.LocalMetadata.Parsers
             item.ResetPeople();
 
             using (var fileStream = File.OpenRead(metadataFile))
+            using (var streamReader = new StreamReader(fileStream, encoding))
+            using (var reader = XmlReader.Create(streamReader, settings))
             {
-                using (var streamReader = new StreamReader(fileStream, encoding))
+                reader.MoveToContent();
+                reader.Read();
+
+                // Loop through each element
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                 {
-                    // Use XmlReader for best performance
-                    using (var reader = XmlReader.Create(streamReader, settings))
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (reader.NodeType == XmlNodeType.Element)
                     {
-                        reader.MoveToContent();
+                        FetchDataFromXmlNode(reader, item);
+                    }
+                    else
+                    {
                         reader.Read();
-
-                        // Loop through each element
-                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            if (reader.NodeType == XmlNodeType.Element)
-                            {
-                                FetchDataFromXmlNode(reader, item);
-                            }
-                            else
-                            {
-                                reader.Read();
-                            }
-                        }
                     }
                 }
             }

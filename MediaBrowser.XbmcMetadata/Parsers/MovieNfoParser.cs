@@ -122,18 +122,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             using (var stringReader = new StringReader("<set>" + xml + "</set>"))
             {
                 // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
-                var settings = new XmlReaderSettings()
-                {
-                    ValidationType = ValidationType.None,
-                    CheckCharacters = false,
-                    IgnoreProcessingInstructions = true,
-                    IgnoreComments = true
-                };
-
                 try
                 {
-                    // Use XmlReader for best performance
-                    using (var reader = XmlReader.Create(stringReader, settings))
+                    using (var reader = XmlReader.Create(stringReader, GetXmlReaderSettings()))
                     {
                         reader.MoveToContent();
                         reader.Read();

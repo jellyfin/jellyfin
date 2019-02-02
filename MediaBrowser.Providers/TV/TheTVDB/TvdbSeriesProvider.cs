@@ -145,6 +145,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
         private async Task<string> GetSeriesByRemoteId(string id, string idType, string language, CancellationToken cancellationToken)
         {
+
             TvDbResponse<SeriesSearchResult[]> result = null;
 
             try
@@ -333,7 +334,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             result.ResultLanguage = metadataLanguage;
             series.AirDays = TVUtils.GetAirDays(tvdbSeries.AirsDayOfWeek);
             series.AirTime = tvdbSeries.AirsTime;
-
             series.CommunityRating = (float?)tvdbSeries.SiteRating;
             series.SetProviderId(MetadataProviders.Imdb, tvdbSeries.ImdbId);
             series.SetProviderId(MetadataProviders.Zap2It, tvdbSeries.Zap2itId);

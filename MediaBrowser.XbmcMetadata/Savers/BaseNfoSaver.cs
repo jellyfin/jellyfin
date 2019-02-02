@@ -964,7 +964,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private void AddCustomTags(string path, List<string> xmlTagsUsed, XmlWriter writer, ILogger logger, IFileSystem fileSystem)
         {
-            // Use XmlReader for best performance
             var settings = new XmlReaderSettings()
             {
                 ValidationType = ValidationType.None,

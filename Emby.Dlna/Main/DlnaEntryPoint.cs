@@ -257,7 +257,7 @@ namespace Emby.Dlna.Main
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
-                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address.ToString());
+                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
                 var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
