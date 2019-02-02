@@ -21,4 +21,4 @@ RUN apt-get update \
 COPY --from=builder /jellyfin /jellyfin
 EXPOSE 8096
 VOLUME /config /media
-ENTRYPOINT dotnet /jellyfin/jellyfin.dll -programdata /config
+ENTRYPOINT dotnet /jellyfin/jellyfin.dll --datadir /config
