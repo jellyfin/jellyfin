@@ -61,6 +61,7 @@ EOF
 %{__mkdir} -p %{buildroot}%{_sharedstatedir}/jellyfin
 %{__mkdir} -p %{buildroot}%{_sysconfdir}/%{name}
 %{__mkdir} -p %{buildroot}%{_var}/log/jellyfin
+%{__mkdir} -p %{buildroot}%{_var}/cache/jellyfin
 
 %{__install} -D -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.service
 %{__install} -D -m 0644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
@@ -88,8 +89,9 @@ EOF
 %config(noreplace) %attr(600,root,root) %{_sysconfdir}/sudoers.d/%{name}-sudoers
 %config(noreplace) %{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
 %config(noreplace) %attr(644,jellyfin,jellyfin) %{_sysconfdir}/%{name}/logging.json
-%attr(-,jellyfin,jellyfin) %dir %{_sharedstatedir}/jellyfin
+%attr(750,jellyfin,jellyfin) %dir %{_sharedstatedir}/jellyfin
 %attr(-,jellyfin,jellyfin) %dir %{_var}/log/jellyfin
+%attr(750,jellyfin,jellyfin) %dir %{_var}/cache/jellyfin
 %if 0%{?fedora}
 %license LICENSE
 %else
@@ -104,7 +106,7 @@ getent passwd jellyfin >/dev/null || \
 exit 0
 
 %post
-# Move existing configuration to /etc/jellyfin and symlink config to /etc/jellyfin
+# Move existing configuration cache and logs to their new locations and symlink them.
 if [ $1 -gt 1 ] ; then
     service_state=$(systemctl is-active jellyfin.service)
     if [ "${service_state}" = "active" ]; then
@@ -119,6 +121,11 @@ if [ $1 -gt 1 ] ; then
         mv %{_sharedstatedir}/%{name}/logs/* %{_var}/log/jellyfin
         rmdir %{_sharedstatedir}/%{name}/logs
         ln -sf %{_var}/log/jellyfin  %{_sharedstatedir}/%{name}/logs
+    fi
+    if [ ! -L %{_sharedstatedir}/%{name}/cache ]; then
+        mv %{_sharedstatedir}/%{name}/cache/* %{_var}/cache/jellyfin
+        rmdir %{_sharedstatedir}/%{name}/cache
+        ln -sf %{_var}/cache/jellyfin  %{_sharedstatedir}/%{name}/cache
     fi
     if [ "${service_state}" = "active" ]; then
         systemctl start jellyfin.service
