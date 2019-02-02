@@ -448,30 +448,30 @@ namespace Emby.Server.Implementations.Library
 
         private void UpdateInvalidLoginAttemptCount(User user, int newValue)
         {
-            if (user.Policy.InvalidLoginAttemptCount != newValue || newValue > 0)
+            if (user.Policy.InvalidLoginAttemptCount == newValue || newValue <= 0)
             {
-                user.Policy.InvalidLoginAttemptCount = newValue;
+                return;
+            }
 
-                var maxCount = user.Policy.IsAdministrator ? 3 : 5;
+            user.Policy.InvalidLoginAttemptCount = newValue;
 
-                // TODO: Fix
-                /*
-                var fireLockout = false;
+            var maxCount = user.Policy.IsAdministrator ? 3 : 5;
 
-                if (newValue >= maxCount)
-                {
-                    _logger.LogDebug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue.ToString(CultureInfo.InvariantCulture));
-                    user.Policy.IsDisabled = true;
+            var fireLockout = false;
 
-                    fireLockout = true;
-                }*/
+            if (newValue >= maxCount)
+            {
+                _logger.LogDebug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue);
+                user.Policy.IsDisabled = true;
 
-                UpdateUserPolicy(user, user.Policy, false);
+                fireLockout = true;
+            }
 
-                /* if (fireLockout)
-                {
-                    UserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
-                }*/
+            UpdateUserPolicy(user, user.Policy, false);
+
+            if (fireLockout)
+            {
+                UserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
             }
         }
 
