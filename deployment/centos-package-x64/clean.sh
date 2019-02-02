@@ -1,0 +1,1 @@
+../fedora-package-x64/clean.sh

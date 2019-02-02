@@ -1,9 +1,10 @@
 %global         debug_package %{nil}
-# jellyfin tag to package
-%global         gittag v10.1.0
-# Taglib-sharp commit of the submodule since github archive doesn't include submodules
-%global         taglib_commit ee5ab21742b71fd1b87ee24895582327e9e04776
-%global         taglib_shortcommit %(c=%{taglib_commit}; echo ${c:0:7})
+# Set the dotnet runtime
+%if 0%{?fedora}
+%global         dotnet_runtime  fedora-x64
+%else
+%global         dotnet_runtime  centos-x64
+%endif
 
 AutoReq:        no
 Name:           jellyfin
@@ -51,7 +52,7 @@ Jellyfin is a free software media system that puts you in control of managing an
 %install
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime fedora-x64 Jellyfin.Server
+dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime %{dotnet_runtime} Jellyfin.Server
 %{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/%{name}/LICENSE
 %{__install} -D -m 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
 %{__install} -D -m 0644 Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/%{name}/logging.json
