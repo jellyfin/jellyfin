@@ -62,7 +62,7 @@ namespace Jellyfin.Server
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
-            await createLogger(appPaths);
+            await CreateLogger(appPaths);
             _logger = _loggerFactory.CreateLogger("Main");
 
             AppDomain.CurrentDomain.UnhandledException += (sender, e)
@@ -95,7 +95,7 @@ namespace Jellyfin.Server
 
             _logger.LogInformation("Jellyfin version: {Version}", Assembly.GetEntryAssembly().GetName().Version);
 
-            EnvironmentInfo environmentInfo = new EnvironmentInfo(getOperatingSystem());
+            EnvironmentInfo environmentInfo = new EnvironmentInfo(GetOperatingSystem());
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths, environmentInfo);
 
             SQLitePCL.Batteries_V2.Init();
@@ -251,7 +251,7 @@ namespace Jellyfin.Server
             return new ServerApplicationPaths(programDataPath, appPath, appPath, logDir, configDir, cacheDir);
         }
 
-        private static async Task createLogger(IApplicationPaths appPaths)
+        private static async Task CreateLogger(IApplicationPaths appPaths)
         {
             try
             {
@@ -311,7 +311,7 @@ namespace Jellyfin.Server
             return new NullImageEncoder();
         }
 
-        private static MediaBrowser.Model.System.OperatingSystem getOperatingSystem()
+        private static MediaBrowser.Model.System.OperatingSystem GetOperatingSystem()
         {
             switch (Environment.OSVersion.Platform)
             {

@@ -247,14 +247,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async Task<object> Post(MarkPlayedItem request)
+        public object Post(MarkPlayedItem request)
         {
-            var result = await MarkPlayed(request).ConfigureAwait(false);
+            var result = MarkPlayed(request);
 
             return ToOptimizedResult(result);
         }
 
-        private async Task<UserItemDataDto> MarkPlayed(MarkPlayedItem request)
+        private UserItemDataDto MarkPlayed(MarkPlayedItem request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -403,10 +403,10 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var task = MarkUnplayed(request);
 
-            return ToOptimizedResult(task.Result);
+            return ToOptimizedResult(task);
         }
 
-        private async Task<UserItemDataDto> MarkUnplayed(MarkUnplayedItem request)
+        private UserItemDataDto MarkUnplayed(MarkUnplayedItem request)
         {
             var user = _userManager.GetUserById(request.UserId);
 

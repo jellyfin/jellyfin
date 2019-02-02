@@ -164,7 +164,7 @@ namespace Emby.Server.Implementations.Updates
         /// Gets all available packages.
         /// </summary>
         /// <returns>Task{List{PackageInfo}}.</returns>
-        public async Task<List<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken,
+        public Task<List<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken,
             bool withRegistration = true,
             string packageType = null,
             Version applicationVersion = null)
@@ -172,7 +172,7 @@ namespace Emby.Server.Implementations.Updates
             // TODO cvium: when plugins get back this would need to be fixed
             // var packages = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
-            return new List<PackageInfo>(); //FilterPackages(packages, packageType, applicationVersion);
+            return Task.FromResult(new List<PackageInfo>()); //FilterPackages(packages, packageType, applicationVersion);
         }
 
         /// <summary>
