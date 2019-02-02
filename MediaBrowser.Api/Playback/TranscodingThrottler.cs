@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
@@ -36,7 +37,7 @@ namespace MediaBrowser.Api.Playback
             _timer = _timerFactory.Create(TimerCallback, null, 5000, 5000);
         }
 
-        private void TimerCallback(object state)
+        private async void TimerCallback(object state)
         {
             if (_job.HasExited)
             {
@@ -48,15 +49,15 @@ namespace MediaBrowser.Api.Playback
 
             if (options.EnableThrottling && IsThrottleAllowed(_job, options.ThrottleDelaySeconds))
             {
-                PauseTranscoding();
+                await PauseTranscoding();
             }
             else
             {
-                UnpauseTranscoding();
+                await UnpauseTranscoding();
             }
         }
 
-        private void PauseTranscoding()
+        private async Task PauseTranscoding()
         {
             if (!_isPaused)
             {
@@ -64,7 +65,7 @@ namespace MediaBrowser.Api.Playback
 
                 try
                 {
-                    _job.Process.StandardInput.Write("c");
+                    await _job.Process.StandardInput.WriteAsync("c");
                     _isPaused = true;
                 }
                 catch (Exception ex)
@@ -74,7 +75,7 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        public void UnpauseTranscoding()
+        public async Task UnpauseTranscoding()
         {
             if (_isPaused)
             {
@@ -82,7 +83,7 @@ namespace MediaBrowser.Api.Playback
 
                 try
                 {
-                    _job.Process.StandardInput.WriteLine();
+                    await _job.Process.StandardInput.WriteLineAsync();
                     _isPaused = false;
                 }
                 catch (Exception ex)
@@ -153,10 +154,10 @@ namespace MediaBrowser.Api.Playback
             return false;
         }
 
-        public void Stop()
+        public async Task Stop()
         {
             DisposeTimer();
-            UnpauseTranscoding();
+            await UnpauseTranscoding();
         }
 
         public void Dispose()

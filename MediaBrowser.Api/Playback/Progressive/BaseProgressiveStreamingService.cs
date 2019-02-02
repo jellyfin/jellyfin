@@ -25,12 +25,35 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public abstract class BaseProgressiveStreamingService : BaseStreamingService
     {
-        protected readonly IImageProcessor ImageProcessor;
         protected readonly IEnvironmentInfo EnvironmentInfo;
 
-        public BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext, IImageProcessor imageProcessor, IEnvironmentInfo environmentInfo) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, jsonSerializer, authorizationContext)
+        public BaseProgressiveStreamingService(
+            IServerConfigurationManager serverConfig,
+            IUserManager userManager,
+            ILibraryManager libraryManager,
+            IIsoManager isoManager,
+            IMediaEncoder mediaEncoder,
+            IFileSystem fileSystem,
+            IDlnaManager dlnaManager,
+            ISubtitleEncoder subtitleEncoder,
+            IDeviceManager deviceManager,
+            IMediaSourceManager mediaSourceManager,
+            IJsonSerializer jsonSerializer,
+            IAuthorizationContext authorizationContext,
+            IEnvironmentInfo environmentInfo)
+            : base(serverConfig,
+                userManager,
+                libraryManager,
+                isoManager,
+                mediaEncoder,
+                fileSystem,
+                dlnaManager,
+                subtitleEncoder,
+                deviceManager,
+                mediaSourceManager,
+                jsonSerializer,
+                authorizationContext)
         {
-            ImageProcessor = imageProcessor;
             EnvironmentInfo = environmentInfo;
         }
 

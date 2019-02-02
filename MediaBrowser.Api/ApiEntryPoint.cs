@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -58,6 +59,8 @@ namespace MediaBrowser.Api
         private readonly Dictionary<string, SemaphoreSlim> _transcodingLocks =
             new Dictionary<string, SemaphoreSlim>();
 
+        private bool _disposed = false;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiEntryPoint" /> class.
         /// </summary>
@@ -66,7 +69,15 @@ namespace MediaBrowser.Api
         /// <param name="config">The configuration.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="mediaSourceManager">The media source manager.</param>
-        public ApiEntryPoint(ILogger logger, ISessionManager sessionManager, IServerConfigurationManager config, IFileSystem fileSystem, IMediaSourceManager mediaSourceManager, ITimerFactory timerFactory, IProcessFactory processFactory, IHttpResultFactory resultFactory)
+        public ApiEntryPoint(
+            ILogger logger,
+            ISessionManager sessionManager,
+            IServerConfigurationManager config,
+            IFileSystem fileSystem,
+            IMediaSourceManager mediaSourceManager,
+            ITimerFactory timerFactory,
+            IProcessFactory processFactory,
+            IHttpResultFactory resultFactory)
         {
             Logger = logger;
             _sessionManager = sessionManager;
@@ -77,9 +88,10 @@ namespace MediaBrowser.Api
             ProcessFactory = processFactory;
             ResultFactory = resultFactory;
 
-            Instance = this;
             _sessionManager.PlaybackProgress += _sessionManager_PlaybackProgress;
             _sessionManager.PlaybackStart += _sessionManager_PlaybackStart;
+
+            Instance = this;
         }
 
         public static string[] Split(string value, char separator, bool removeEmpty)
@@ -162,8 +174,7 @@ namespace MediaBrowser.Api
         {
             var path = _config.ApplicationPaths.TranscodingTempPath;
 
-            foreach (var file in _fileSystem.GetFilePaths(path, true)
-                .ToList())
+            foreach (var file in _fileSystem.GetFilePaths(path, true))
             {
                 _fileSystem.DeleteFile(file);
             }
@@ -184,17 +195,40 @@ namespace MediaBrowser.Api
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
-            var list = _activeTranscodingJobs.ToList();
-            var jobCount = list.Count;
+            if (_disposed)
+            {
+                return;
+            }
 
-            Parallel.ForEach(list, j => KillTranscodingJob(j, false, path => true));
+            if (dispose)
+            {
+                // TODO: dispose
+            }
 
-            // Try to allow for some time to kill the ffmpeg processes and delete the partial stream files
+            var jobs = _activeTranscodingJobs.ToList();
+            var jobCount = jobs.Count;
+
+            IEnumerable<Task> GetKillJobs()
+            {
+                foreach (var job in jobs)
+                {
+                    yield return KillTranscodingJob(job, false, path => true);
+                }
+            }
+
+            // Wait for all processes to be killed
             if (jobCount > 0)
             {
-                var task = Task.Delay(1000);
-                Task.WaitAll(task);
+                Task.WaitAll(GetKillJobs().ToArray());
             }
+
+            _activeTranscodingJobs.Clear();
+            _transcodingLocks.Clear();
+
+            _sessionManager.PlaybackProgress -= _sessionManager_PlaybackProgress;
+            _sessionManager.PlaybackStart -= _sessionManager_PlaybackStart;
+
+            _disposed = true;
         }
 
 
@@ -211,12 +245,13 @@ namespace MediaBrowser.Api
         /// <param name="state">The state.</param>
         /// <param name="cancellationTokenSource">The cancellation token source.</param>
         /// <returns>TranscodingJob.</returns>
-        public TranscodingJob OnTranscodeBeginning(string path,
+        public TranscodingJob OnTranscodeBeginning(
+            string path,
             string playSessionId,
             string liveStreamId,
             string transcodingJobId,
             TranscodingJobType type,
-            IProcess process,
+            Process process,
             string deviceId,
             StreamState state,
             CancellationTokenSource cancellationTokenSource)
@@ -445,7 +480,7 @@ namespace MediaBrowser.Api
         /// Called when [transcode kill timer stopped].
         /// </summary>
         /// <param name="state">The state.</param>
-        private void OnTranscodeKillTimerStopped(object state)
+        private async void OnTranscodeKillTimerStopped(object state)
         {
             var job = (TranscodingJob)state;
 
@@ -462,7 +497,7 @@ namespace MediaBrowser.Api
 
             Logger.LogInformation("Transcoding kill timer stopped for JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
 
-            KillTranscodingJob(job, true, path => true).GetAwaiter().GetResult();
+            await KillTranscodingJob(job, true, path => true);
         }
 
         /// <summary>
@@ -550,7 +585,7 @@ namespace MediaBrowser.Api
             {
                 if (job.TranscodingThrottler != null)
                 {
-                    job.TranscodingThrottler.Stop();
+                    job.TranscodingThrottler.Stop().GetAwaiter().GetResult();
                 }
 
                 var process = job.Process;
@@ -561,7 +596,7 @@ namespace MediaBrowser.Api
                 {
                     try
                     {
-                        Logger.LogInformation("Stopping ffmpeg process with q command for {path}", job.Path);
+                        Logger.LogInformation("Stopping ffmpeg process with q command for {Path}", job.Path);
 
                         //process.Kill();
                         process.StandardInput.WriteLine("q");
@@ -569,13 +604,13 @@ namespace MediaBrowser.Api
                         // Need to wait because killing is asynchronous
                         if (!process.WaitForExit(5000))
                         {
-                            Logger.LogInformation("Killing ffmpeg process for {path}", job.Path);
+                            Logger.LogInformation("Killing ffmpeg process for {Path}", job.Path);
                             process.Kill();
                         }
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, "Error killing transcoding job for {path}", job.Path);
+                        Logger.LogError(ex, "Error killing transcoding job for {Path}", job.Path);
                     }
                 }
             }
@@ -605,7 +640,7 @@ namespace MediaBrowser.Api
                 return;
             }
 
-            Logger.LogInformation("Deleting partial stream file(s) {0}", path);
+            Logger.LogInformation("Deleting partial stream file(s) {Path}", path);
 
             await Task.Delay(delayMs).ConfigureAwait(false);
 
@@ -626,13 +661,13 @@ namespace MediaBrowser.Api
             }
             catch (IOException ex)
             {
-                Logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
+                Logger.LogError(ex, "Error deleting partial stream file(s) {Path}", path);
 
                 await DeletePartialStreamFiles(path, jobType, retryCount + 1, 500).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
+                Logger.LogError(ex, "Error deleting partial stream file(s) {Path}", path);
             }
         }
 
@@ -673,7 +708,7 @@ namespace MediaBrowser.Api
                 catch (IOException ex)
                 {
                     e = ex;
-                    Logger.LogError(ex, "Error deleting HLS file {path}", file);
+                    Logger.LogError(ex, "Error deleting HLS file {Path}", file);
                 }
             }
 
@@ -717,7 +752,7 @@ namespace MediaBrowser.Api
         /// Gets or sets the process.
         /// </summary>
         /// <value>The process.</value>
-        public IProcess Process { get; set; }
+        public Process Process { get; set; }
         public ILogger Logger { get; private set; }
         /// <summary>
         /// Gets or sets the active request count.

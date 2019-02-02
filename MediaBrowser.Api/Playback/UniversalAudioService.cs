@@ -287,7 +287,6 @@ namespace MediaBrowser.Api.Playback
                   SubtitleEncoder,
                   DeviceManager,
                   MediaSourceManager,
-                  ZipClient,
                   JsonSerializer,
                   AuthorizationContext,
                   NetworkManager)
@@ -334,10 +333,8 @@ namespace MediaBrowser.Api.Playback
                     SubtitleEncoder,
                     DeviceManager,
                     MediaSourceManager,
-                    ZipClient,
                     JsonSerializer,
                     AuthorizationContext,
-                    ImageProcessor,
                     EnvironmentInfo)
                 {
                     Request = Request
