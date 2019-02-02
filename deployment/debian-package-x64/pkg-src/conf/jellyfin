@@ -22,7 +22,7 @@ JELLYFIN_CACHE_DIRECTORY="/var/cache/jellyfin"
 JELLYFIN_RESTART_OPT="--restartpath /usr/lib/jellyfin/restart.sh"
 
 # [OPTIONAL] ffmpeg binary paths
-#JELLYFIN_FFMPEG_OPTS="-ffmpeg /usr/bin/ffmpeg -ffprobe /usr/bin/ffprobe"
+#JELLYFIN_FFMPEG_OPTS="--ffmpeg /usr/bin/ffmpeg --ffprobe /usr/bin/ffprobe"
 
 # [OPTIONAL] Additional user-defined options for the binary
 #JELLYFIN_ADD_OPTS=""
