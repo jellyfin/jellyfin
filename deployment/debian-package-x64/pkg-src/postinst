@@ -43,7 +43,8 @@ case "$1" in
       mkdir $CACHEDATA
     fi
     # Ensure permissions are correct on all config directories
-    chown -R jellyfin:jellyfin $PROGRAMDATA $CONFIGDATA $LOGDATA $CACHEDATA
+    chown -R jellyfin $PROGRAMDATA $CONFIGDATA $LOGDATA $CACHEDATA
+    chgrp adm $PROGRAMDATA $CONFIGDATA $LOGDATA $CACHEDATA
     chmod 0750 $PROGRAMDATA $CONFIGDATA $LOGDATA $CACHEDATA
 
     chmod +x /usr/lib/jellyfin/restart.sh > /dev/null 2>&1 || true
