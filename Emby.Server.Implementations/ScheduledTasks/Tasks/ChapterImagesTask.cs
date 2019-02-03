@@ -68,8 +68,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
             };
         }
 
-        public string Key => "RefreshChapterImages";
-
         /// <summary>
         /// Returns the task to be executed
         /// </summary>
@@ -161,22 +159,18 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
         }
 
-        /// <summary>
-        /// Gets the name of the task
-        /// </summary>
-        /// <value>The name.</value>
         public string Name => "Chapter image extraction";
 
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        /// <value>The description.</value>
         public string Description => "Creates thumbnails for videos that have chapters.";
 
-        /// <summary>
-        /// Gets the category.
-        /// </summary>
-        /// <value>The category.</value>
         public string Category => "Library";
+
+        public string Key => "RefreshChapterImages";
+
+        public bool IsHidden => false;
+
+        public bool IsEnabled => true;
+
+        public bool IsLogged => true;
     }
 }
