@@ -164,7 +164,7 @@ namespace Emby.Server.Implementations.Updates
         /// Gets all available packages.
         /// </summary>
         /// <returns>Task{List{PackageInfo}}.</returns>
-        public Task<List<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken,
+        public async Task<List<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken,
             bool withRegistration = true,
             string packageType = null,
             Version applicationVersion = null)
