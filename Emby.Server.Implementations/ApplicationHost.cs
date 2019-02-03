@@ -105,6 +105,7 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
 using ServiceStack.Text.Jsv;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
@@ -202,7 +203,7 @@ namespace Emby.Server.Implementations
         /// Gets all concrete types.
         /// </summary>
         /// <value>All concrete types.</value>
-        public Tuple<Type, string>[] AllConcreteTypes { get; protected set; }
+        public Type[] AllConcreteTypes { get; protected set; }
 
         /// <summary>
         /// The disposable parts
@@ -219,8 +220,6 @@ namespace Emby.Server.Implementations
 
         protected IEnvironmentInfo EnvironmentInfo { get; set; }
 
-        private IBlurayExaminer BlurayExaminer { get; set; }
-
         public PackageVersionClass SystemUpdateLevel
         {
             get
@@ -232,12 +231,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public virtual string OperatingSystemDisplayName => EnvironmentInfo.OperatingSystemName;
-
-        /// <summary>
-        /// The container
-        /// </summary>
-        protected readonly SimpleInjector.Container Container = new SimpleInjector.Container();
+        protected IServiceProvider _serviceProvider;
 
         /// <summary>
         /// Gets the server configuration manager.
@@ -453,138 +447,58 @@ namespace Emby.Server.Implementations
         /// <value>The name.</value>
         public string Name => ApplicationProductName;
 
-        private static Tuple<Assembly, string> GetAssembly(Type type)
-        {
-            var assembly = type.GetTypeInfo().Assembly;
-
-            return new Tuple<Assembly, string>(assembly, null);
-        }
-
-        public virtual IStreamHelper CreateStreamHelper()
-        {
-            return new StreamHelper();
-        }
-
         /// <summary>
-        /// Creates an instance of type and resolves all constructor dependancies
+        /// Creates an instance of type and resolves all constructor dependencies
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
         public object CreateInstance(Type type)
-        {
-            return Container.GetInstance(type);
-        }
+            => ActivatorUtilities.CreateInstance(_serviceProvider, type);
+
+        /// <summary>
+        /// Creates an instance of type and resolves all constructor dependencies
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>System.Object.</returns>
+        public T CreateInstance<T>()
+            => ActivatorUtilities.CreateInstance<T>(_serviceProvider);
 
         /// <summary>
         /// Creates the instance safe.
         /// </summary>
         /// <param name="typeInfo">The type information.</param>
         /// <returns>System.Object.</returns>
-        protected object CreateInstanceSafe(Tuple<Type, string> typeInfo)
+        protected object CreateInstanceSafe(Type type)
         {
-            var type = typeInfo.Item1;
-
             try
             {
-                return Container.GetInstance(type);
+                return ActivatorUtilities.CreateInstance(_serviceProvider, type);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error creating {type}", type.FullName);
+                Logger.LogError(ex, "Error creating {Type}", type);
                 // Don't blow up in release mode
                 return null;
             }
         }
 
         /// <summary>
-        /// Registers the specified obj.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="obj">The obj.</param>
-        /// <param name="manageLifetime">if set to <c>true</c> [manage lifetime].</param>
-        protected void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
-            where T : class
-        {
-            Container.RegisterInstance<T>(obj);
-
-            if (manageLifetime)
-            {
-                var disposable = obj as IDisposable;
-
-                if (disposable != null)
-                {
-                    DisposableParts.Add(disposable);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Registers the single instance.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="func">The func.</param>
-        protected void RegisterSingleInstance<T>(Func<T> func)
-            where T : class
-        {
-            Container.RegisterSingleton(func);
-        }
-
-        /// <summary>
         /// Resolves this instance.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>``0.</returns>
-        public T Resolve<T>()
-        {
-            return (T)Container.GetRegistration(typeof(T), true).GetInstance();
-        }
-
-        /// <summary>
-        /// Resolves this instance.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>``0.</returns>
-        public T TryResolve<T>()
-        {
-            var result = Container.GetRegistration(typeof(T), false);
-
-            if (result == null)
-            {
-                return default(T);
-            }
-            return (T)result.GetInstance();
-        }
-
-        /// <summary>
-        /// Loads the assembly.
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <returns>Assembly.</returns>
-        protected Tuple<Assembly, string> LoadAssembly(string file)
-        {
-            try
-            {
-                var assembly = Assembly.Load(File.ReadAllBytes(file));
-
-                return new Tuple<Assembly, string>(assembly, file);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error loading assembly {File}", file);
-                return null;
-            }
-        }
+        public T Resolve<T>() => _serviceProvider.GetService<T>();
 
         /// <summary>
         /// Gets the export types.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>IEnumerable{Type}.</returns>
-        public IEnumerable<Tuple<Type, string>> GetExportTypes<T>()
+        public IEnumerable<Type> GetExportTypes<T>()
         {
             var currentType = typeof(T);
 
-            return AllConcreteTypes.Where(i => currentType.IsAssignableFrom(i.Item1));
+            return AllConcreteTypes.Where(i => currentType.IsAssignableFrom(i));
         }
 
         /// <summary>
@@ -596,7 +510,7 @@ namespace Emby.Server.Implementations
         public IEnumerable<T> GetExports<T>(bool manageLifetime = true)
         {
             var parts = GetExportTypes<T>()
-                .Select(CreateInstanceSafe)
+                .Select(x => CreateInstanceSafe(x))
                 .Where(i => i != null)
                 .Cast<T>();
 
@@ -611,20 +525,16 @@ namespace Emby.Server.Implementations
             return parts;
         }
 
-        public List<Tuple<T, string>> GetExportsWithInfo<T>(bool manageLifetime = true)
+        public List<(T, string)> GetExportsWithInfo<T>(bool manageLifetime = true)
         {
             var parts = GetExportTypes<T>()
                 .Select(i =>
                 {
                     var obj = CreateInstanceSafe(i);
 
-                    if (obj == null)
-                    {
-                        return null;
-                    }
-                    return new Tuple<T, string>((T)obj, i.Item2);
+                    return ((T)obj, i.Assembly.Location);
                 })
-                .Where(i => i != null)
+                .Where(i => i.Item1 != null)
                 .ToList();
 
             if (manageLifetime)
@@ -691,7 +601,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public async Task Init()
+        public async Task Init(IServiceCollection serviceCollection)
         {
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
@@ -721,7 +631,7 @@ namespace Emby.Server.Implementations
 
             SetHttpLimit();
 
-            await RegisterResources();
+            await RegisterResources(serviceCollection);
 
             FindParts();
         }
@@ -736,104 +646,104 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-        protected async Task RegisterResources()
+        protected async Task RegisterResources(IServiceCollection serviceCollection)
         {
-            RegisterSingleInstance(ConfigurationManager);
-            RegisterSingleInstance<IApplicationHost>(this);
+            serviceCollection.AddSingleton(ConfigurationManager);
+            serviceCollection.AddSingleton<IApplicationHost>(this);
 
-            RegisterSingleInstance<IApplicationPaths>(ApplicationPaths);
+            serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
 
-            RegisterSingleInstance(JsonSerializer);
 
-            RegisterSingleInstance(LoggerFactory, false);
-            RegisterSingleInstance(Logger);
+            serviceCollection.AddSingleton(JsonSerializer);
 
-            RegisterSingleInstance(EnvironmentInfo);
+            serviceCollection.AddSingleton(LoggerFactory);
+            serviceCollection.AddLogging();
+            serviceCollection.AddSingleton(Logger);
 
-            RegisterSingleInstance(FileSystemManager);
+            serviceCollection.AddSingleton(EnvironmentInfo);
+
+            serviceCollection.AddSingleton(FileSystemManager);
 
             HttpClient = CreateHttpClient();
-            RegisterSingleInstance(HttpClient);
+            serviceCollection.AddSingleton(HttpClient);
 
-            RegisterSingleInstance(NetworkManager);
+            serviceCollection.AddSingleton(NetworkManager);
 
             IsoManager = new IsoManager();
-            RegisterSingleInstance(IsoManager);
+            serviceCollection.AddSingleton(IsoManager);
 
             TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, LoggerFactory, FileSystemManager);
-            RegisterSingleInstance(TaskManager);
+            serviceCollection.AddSingleton(TaskManager);
 
-            RegisterSingleInstance(XmlSerializer);
+            serviceCollection.AddSingleton(XmlSerializer);
 
             ProcessFactory = new ProcessFactory();
-            RegisterSingleInstance(ProcessFactory);
+            serviceCollection.AddSingleton(ProcessFactory);
 
-            var streamHelper = CreateStreamHelper();
-            ApplicationHost.StreamHelper = streamHelper;
-            RegisterSingleInstance(streamHelper);
+            ApplicationHost.StreamHelper = new StreamHelper();
+            serviceCollection.AddSingleton(StreamHelper);
 
-            RegisterSingleInstance(CryptographyProvider);
+            serviceCollection.AddSingleton(CryptographyProvider);
 
             SocketFactory = new SocketFactory();
-            RegisterSingleInstance(SocketFactory);
+            serviceCollection.AddSingleton(SocketFactory);
 
             InstallationManager = new InstallationManager(LoggerFactory, this, ApplicationPaths, HttpClient, JsonSerializer, ServerConfigurationManager, FileSystemManager, CryptographyProvider, PackageRuntime);
-            RegisterSingleInstance(InstallationManager);
+            serviceCollection.AddSingleton(InstallationManager);
 
             ZipClient = new ZipClient(FileSystemManager);
-            RegisterSingleInstance(ZipClient);
+            serviceCollection.AddSingleton(ZipClient);
 
             HttpResultFactory = new HttpResultFactory(LoggerFactory, FileSystemManager, JsonSerializer, CreateBrotliCompressor());
-            RegisterSingleInstance(HttpResultFactory);
+            serviceCollection.AddSingleton(HttpResultFactory);
 
-            RegisterSingleInstance<IServerApplicationHost>(this);
-            RegisterSingleInstance<IServerApplicationPaths>(ApplicationPaths);
+            serviceCollection.AddSingleton<IServerApplicationHost>(this);
+            serviceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
 
-            RegisterSingleInstance(ServerConfigurationManager);
+            serviceCollection.AddSingleton(ServerConfigurationManager);
 
-            IAssemblyInfo assemblyInfo = new AssemblyInfo();
-            RegisterSingleInstance(assemblyInfo);
+            var assemblyInfo = new AssemblyInfo();
+            serviceCollection.AddSingleton<IAssemblyInfo>(assemblyInfo);
 
             LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer, LoggerFactory);
             await LocalizationManager.LoadAll();
-            RegisterSingleInstance<ILocalizationManager>(LocalizationManager);
+            serviceCollection.AddSingleton<ILocalizationManager>(LocalizationManager);
 
-            BlurayExaminer = new BdInfoExaminer(FileSystemManager);
-            RegisterSingleInstance(BlurayExaminer);
+            serviceCollection.AddSingleton<IBlurayExaminer>(new BdInfoExaminer(FileSystemManager));
 
-            RegisterSingleInstance<IXmlReaderSettingsFactory>(new XmlReaderSettingsFactory());
+            serviceCollection.AddSingleton<IXmlReaderSettingsFactory>(new XmlReaderSettingsFactory());
 
             UserDataManager = new UserDataManager(LoggerFactory, ServerConfigurationManager, () => UserManager);
-            RegisterSingleInstance(UserDataManager);
+            serviceCollection.AddSingleton(UserDataManager);
 
             UserRepository = GetUserRepository();
             // This is only needed for disposal purposes. If removing this, make sure to have the manager handle disposing it
-            RegisterSingleInstance(UserRepository);
+            serviceCollection.AddSingleton(UserRepository);
 
             var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LoggerFactory, JsonSerializer, ApplicationPaths, FileSystemManager);
             DisplayPreferencesRepository = displayPreferencesRepo;
-            RegisterSingleInstance(DisplayPreferencesRepository);
+            serviceCollection.AddSingleton(DisplayPreferencesRepository);
 
             ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, JsonSerializer, LoggerFactory, assemblyInfo);
-            RegisterSingleInstance<IItemRepository>(ItemRepository);
+            serviceCollection.AddSingleton<IItemRepository>(ItemRepository);
 
             AuthenticationRepository = GetAuthenticationRepository();
-            RegisterSingleInstance(AuthenticationRepository);
+            serviceCollection.AddSingleton(AuthenticationRepository);
 
             UserManager = new UserManager(LoggerFactory, ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, this, JsonSerializer, FileSystemManager, CryptographyProvider);
-            RegisterSingleInstance(UserManager);
+            serviceCollection.AddSingleton(UserManager);
 
             LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager);
-            RegisterSingleInstance(LibraryManager);
+            serviceCollection.AddSingleton(LibraryManager);
 
             // TODO wtaylor: investigate use of second music manager
             var musicManager = new MusicManager(LibraryManager);
-            RegisterSingleInstance<IMusicManager>(new MusicManager(LibraryManager));
+            serviceCollection.AddSingleton<IMusicManager>(new MusicManager(LibraryManager));
 
             LibraryMonitor = new LibraryMonitor(LoggerFactory, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager, EnvironmentInfo);
-            RegisterSingleInstance(LibraryMonitor);
+            serviceCollection.AddSingleton(LibraryMonitor);
 
-            RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LoggerFactory, LibraryManager, UserManager));
+            serviceCollection.AddSingleton<ISearchEngine>(new SearchEngine(LoggerFactory, LibraryManager, UserManager));
 
             CertificateInfo = GetCertificateInfo(true);
             Certificate = GetCertificate(CertificateInfo);
@@ -848,81 +758,80 @@ namespace Emby.Server.Implementations
                 GetParseFn);
 
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
-            RegisterSingleInstance(HttpServer);
+            serviceCollection.AddSingleton(HttpServer);
 
             ImageProcessor = GetImageProcessor();
-            RegisterSingleInstance(ImageProcessor);
+            serviceCollection.AddSingleton(ImageProcessor);
 
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager, ServerConfigurationManager);
-            RegisterSingleInstance(TVSeriesManager);
+            serviceCollection.AddSingleton(TVSeriesManager);
 
             var encryptionManager = new EncryptionManager();
-            RegisterSingleInstance<IEncryptionManager>(encryptionManager);
+            serviceCollection.AddSingleton<IEncryptionManager>(encryptionManager);
 
             DeviceManager = new DeviceManager(AuthenticationRepository, JsonSerializer, LibraryManager, LocalizationManager, UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager, LoggerFactory, NetworkManager);
-            RegisterSingleInstance(DeviceManager);
+            serviceCollection.AddSingleton(DeviceManager);
 
             MediaSourceManager = new MediaSourceManager(ItemRepository, ApplicationPaths, LocalizationManager, UserManager, LibraryManager, LoggerFactory, JsonSerializer, FileSystemManager, UserDataManager, () => MediaEncoder);
-            RegisterSingleInstance(MediaSourceManager);
+            serviceCollection.AddSingleton(MediaSourceManager);
 
             SubtitleManager = new SubtitleManager(LoggerFactory, FileSystemManager, LibraryMonitor, MediaSourceManager, LocalizationManager);
-            RegisterSingleInstance(SubtitleManager);
+            serviceCollection.AddSingleton(SubtitleManager);
 
             ProviderManager = new ProviderManager(HttpClient, SubtitleManager, ServerConfigurationManager, LibraryMonitor, LoggerFactory, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer);
-            RegisterSingleInstance(ProviderManager);
+            serviceCollection.AddSingleton(ProviderManager);
 
             DtoService = new DtoService(LoggerFactory, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, this, () => DeviceManager, () => MediaSourceManager, () => LiveTvManager);
-            RegisterSingleInstance(DtoService);
+            serviceCollection.AddSingleton(DtoService);
 
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager, HttpClient, ProviderManager);
-            RegisterSingleInstance(ChannelManager);
+            serviceCollection.AddSingleton(ChannelManager);
 
             SessionManager = new SessionManager(UserDataManager, LoggerFactory, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
-            RegisterSingleInstance(SessionManager);
+            serviceCollection.AddSingleton(SessionManager);
 
-            var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LoggerFactory, JsonSerializer, this, assemblyInfo);
-            RegisterSingleInstance<IDlnaManager>(dlnaManager);
+            serviceCollection.AddSingleton<IDlnaManager>(new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LoggerFactory, JsonSerializer, this, assemblyInfo));
 
             CollectionManager = new CollectionManager(LibraryManager, ApplicationPaths, LocalizationManager, FileSystemManager, LibraryMonitor, LoggerFactory, ProviderManager);
-            RegisterSingleInstance(CollectionManager);
+            serviceCollection.AddSingleton(CollectionManager);
 
             PlaylistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LoggerFactory, UserManager, ProviderManager);
-            RegisterSingleInstance(PlaylistManager);
+            serviceCollection.AddSingleton(PlaylistManager);
 
             LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, LoggerFactory, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, FileSystemManager, () => ChannelManager);
-            RegisterSingleInstance(LiveTvManager);
+            serviceCollection.AddSingleton(LiveTvManager);
 
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
-            RegisterSingleInstance(UserViewManager);
+            serviceCollection.AddSingleton(UserViewManager);
 
             NotificationManager = new NotificationManager(LoggerFactory, UserManager, ServerConfigurationManager);
-            RegisterSingleInstance(NotificationManager);
+            serviceCollection.AddSingleton(NotificationManager);
 
-            RegisterSingleInstance<IDeviceDiscovery>(new DeviceDiscovery(LoggerFactory, ServerConfigurationManager, SocketFactory));
+            serviceCollection.AddSingleton<IDeviceDiscovery>(new DeviceDiscovery(LoggerFactory, ServerConfigurationManager, SocketFactory));
 
             ChapterManager = new ChapterManager(LibraryManager, LoggerFactory, ServerConfigurationManager, ItemRepository);
-            RegisterSingleInstance(ChapterManager);
+            serviceCollection.AddSingleton(ChapterManager);
 
-            RegisterMediaEncoder(assemblyInfo);
+            RegisterMediaEncoder(serviceCollection);
 
             EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, LoggerFactory, MediaEncoder, ChapterManager, LibraryManager);
-            RegisterSingleInstance(EncodingManager);
+            serviceCollection.AddSingleton(EncodingManager);
 
             var activityLogRepo = GetActivityLogRepository();
-            RegisterSingleInstance(activityLogRepo);
-            RegisterSingleInstance<IActivityManager>(new ActivityManager(LoggerFactory, activityLogRepo, UserManager));
+            serviceCollection.AddSingleton(activityLogRepo);
+            serviceCollection.AddSingleton<IActivityManager>(new ActivityManager(LoggerFactory, activityLogRepo, UserManager));
 
             var authContext = new AuthorizationContext(AuthenticationRepository, UserManager);
-            RegisterSingleInstance<IAuthorizationContext>(authContext);
-            RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
+            serviceCollection.AddSingleton<IAuthorizationContext>(authContext);
+            serviceCollection.AddSingleton<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
 
             AuthService = new AuthService(UserManager, authContext, ServerConfigurationManager, SessionManager, NetworkManager);
-            RegisterSingleInstance(AuthService);
+            serviceCollection.AddSingleton(AuthService);
 
             SubtitleEncoder = new MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder(LibraryManager, LoggerFactory, ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, ProcessFactory);
-            RegisterSingleInstance(SubtitleEncoder);
+            serviceCollection.AddSingleton(SubtitleEncoder);
 
-            RegisterSingleInstance(CreateResourceFileManager());
+            serviceCollection.AddSingleton(CreateResourceFileManager());
 
             displayPreferencesRepo.Initialize();
 
@@ -935,6 +844,8 @@ namespace Emby.Server.Implementations
             ((UserDataManager)UserDataManager).Repository = userDataRepo;
             ItemRepository.Initialize(userDataRepo, UserManager);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
+
+            _serviceProvider = serviceCollection.BuildServiceProvider();
         }
 
         protected virtual IBrotliCompressor CreateBrotliCompressor()
@@ -1066,7 +977,7 @@ namespace Emby.Server.Implementations
         /// Registers the media encoder.
         /// </summary>
         /// <returns>Task.</returns>
-        private void RegisterMediaEncoder(IAssemblyInfo assemblyInfo)
+        private void RegisterMediaEncoder(IServiceCollection serviceCollection)
         {
             string encoderPath = null;
             string probePath = null;
@@ -1098,7 +1009,7 @@ namespace Emby.Server.Implementations
                 5000);
 
             MediaEncoder = mediaEncoder;
-            RegisterSingleInstance(MediaEncoder);
+            serviceCollection.AddSingleton(MediaEncoder);
         }
 
         /// <summary>
@@ -1208,7 +1119,7 @@ namespace Emby.Server.Implementations
             IsoManager.AddParts(GetExports<IIsoMounter>());
         }
 
-        private IPlugin LoadPlugin(Tuple<IPlugin, string> info)
+        private IPlugin LoadPlugin((IPlugin, string) info)
         {
             var plugin = info.Item1;
             var assemblyFilePath = info.Item2;
@@ -1264,76 +1175,13 @@ namespace Emby.Server.Implementations
         {
             Logger.LogInformation("Loading assemblies");
 
-            var assemblyInfos = GetComposablePartAssemblies();
-
-            foreach (var assemblyInfo in assemblyInfos)
-            {
-                var assembly = assemblyInfo.Item1;
-                var path = assemblyInfo.Item2;
-
-                if (path == null)
+            AllConcreteTypes = GetComposablePartAssemblies()
+                .SelectMany(x => x.ExportedTypes)
+                .Where(type =>
                 {
-                    Logger.LogInformation("Loading {assemblyName}", assembly.FullName);
-                }
-                else
-                {
-                    Logger.LogInformation("Loading {assemblyName} from {path}", assembly.FullName, path);
-                }
-            }
-
-            AllConcreteTypes = assemblyInfos
-                .SelectMany(GetTypes)
-                .Where(info =>
-                {
-                    var t = info.Item1;
-                    return t.IsClass && !t.IsAbstract && !t.IsInterface && !t.IsGenericType;
+                    return type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsGenericType;
                 })
                 .ToArray();
-        }
-
-        /// <summary>
-        /// Gets a list of types within an assembly
-        /// This will handle situations that would normally throw an exception - such as a type within the assembly that depends on some other non-existant reference
-        /// </summary>
-        protected List<Tuple<Type, string>> GetTypes(Tuple<Assembly, string> assemblyInfo)
-        {
-            if (assemblyInfo == null)
-            {
-                return new List<Tuple<Type, string>>();
-            }
-
-            var assembly = assemblyInfo.Item1;
-
-            try
-            {
-                // This null checking really shouldn't be needed but adding it due to some
-                // unhandled exceptions in mono 5.0 that are a little hard to hunt down
-                var types = assembly.GetTypes() ?? new Type[] { };
-                return types.Where(t => t != null).Select(i => new Tuple<Type, string>(i, assemblyInfo.Item2)).ToList();
-            }
-            catch (ReflectionTypeLoadException ex)
-            {
-                if (ex.LoaderExceptions != null)
-                {
-                    foreach (var loaderException in ex.LoaderExceptions)
-                    {
-                        if (loaderException != null)
-                        {
-                            Logger.LogError("LoaderException: " + loaderException.Message);
-                        }
-                    }
-                }
-
-                // If it fails we can still get a list of the Types it was able to resolve
-                var types = ex.Types ?? new Type[] { };
-                return types.Where(t => t != null).Select(i => new Tuple<Type, string>(i, assemblyInfo.Item2)).ToList();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error loading types from assembly");
-
-                return new List<Tuple<Type, string>>();
-            }
         }
 
         private CertificateInfo CertificateInfo { get; set; }
@@ -1546,150 +1394,66 @@ namespace Emby.Server.Implementations
         /// Gets the composable part assemblies.
         /// </summary>
         /// <returns>IEnumerable{Assembly}.</returns>
-        protected List<Tuple<Assembly, string>> GetComposablePartAssemblies()
+        protected IEnumerable<Assembly> GetComposablePartAssemblies()
         {
-            var list = GetPluginAssemblies(ApplicationPaths.PluginsPath);
+            if (Directory.Exists(ApplicationPaths.PluginsPath))
+            {
+                foreach (var file in Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly))
+                {
+                    Logger.LogInformation("Loading assembly {Path}", file);
+                    yield return Assembly.LoadFile(file);
+                }
+            }
 
             // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
             // This will prevent the .dll file from getting locked, and allow us to replace it when needed
 
             // Include composable parts in the Api assembly
-            list.Add(GetAssembly(typeof(ApiEntryPoint)));
+            yield return typeof(ApiEntryPoint).Assembly;
 
             // Include composable parts in the Dashboard assembly
-            list.Add(GetAssembly(typeof(DashboardService)));
+            yield return typeof(DashboardService).Assembly;
 
             // Include composable parts in the Model assembly
-            list.Add(GetAssembly(typeof(SystemInfo)));
+            yield return typeof(SystemInfo).Assembly;
 
             // Include composable parts in the Common assembly
-            list.Add(GetAssembly(typeof(IApplicationHost)));
+            yield return typeof(IApplicationHost).Assembly;
 
             // Include composable parts in the Controller assembly
-            list.Add(GetAssembly(typeof(IServerApplicationHost)));
+            yield return typeof(IServerApplicationHost).Assembly;
 
             // Include composable parts in the Providers assembly
-            list.Add(GetAssembly(typeof(ProviderUtils)));
+            yield return typeof(ProviderUtils).Assembly;
 
             // Include composable parts in the Photos assembly
-            list.Add(GetAssembly(typeof(PhotoProvider)));
+            yield return typeof(PhotoProvider).Assembly;
 
             // Emby.Server implementations
-            list.Add(GetAssembly(typeof(InstallationManager)));
+            yield return typeof(InstallationManager).Assembly;
 
             // MediaEncoding
-            list.Add(GetAssembly(typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder)));
+            yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
 
             // Dlna
-            list.Add(GetAssembly(typeof(DlnaEntryPoint)));
+            yield return typeof(DlnaEntryPoint).Assembly;
 
             // Local metadata
-            list.Add(GetAssembly(typeof(BoxSetXmlSaver)));
+            yield return typeof(BoxSetXmlSaver).Assembly;
 
             // Notifications
-            list.Add(GetAssembly(typeof(NotificationManager)));
+            yield return typeof(NotificationManager).Assembly;
 
             // Xbmc
-            list.Add(GetAssembly(typeof(ArtistNfoProvider)));
+            yield return typeof(ArtistNfoProvider).Assembly;
 
-            list.AddRange(GetAssembliesWithPartsInternal().Select(i => new Tuple<Assembly, string>(i, null)));
-
-            return list.ToList();
+            foreach (var i in GetAssembliesWithPartsInternal())
+            {
+                yield return i;
+            }
         }
 
         protected abstract IEnumerable<Assembly> GetAssembliesWithPartsInternal();
-
-        private List<Tuple<Assembly, string>> GetPluginAssemblies(string path)
-        {
-            try
-            {
-                return FilterAssembliesToLoad(Directory.EnumerateFiles(path, "*.dll", SearchOption.TopDirectoryOnly))
-                    .Select(LoadAssembly)
-                    .Where(a => a != null)
-                    .ToList();
-            }
-            catch (DirectoryNotFoundException)
-            {
-                return new List<Tuple<Assembly, string>>();
-            }
-        }
-
-        private IEnumerable<string> FilterAssembliesToLoad(IEnumerable<string> paths)
-        {
-
-            var exclude = new[]
-            {
-                "mbplus.dll",
-                "mbintros.dll",
-                "embytv.dll",
-                "Messenger.dll",
-                "Messages.dll",
-                "MediaBrowser.Plugins.TvMazeProvider.dll",
-                "MBBookshelf.dll",
-                "MediaBrowser.Channels.Adult.YouJizz.dll",
-                "MediaBrowser.Channels.Vine-co.dll",
-                "MediaBrowser.Plugins.Vimeo.dll",
-                "MediaBrowser.Channels.Vevo.dll",
-                "MediaBrowser.Plugins.Twitch.dll",
-                "MediaBrowser.Channels.SvtPlay.dll",
-                "MediaBrowser.Plugins.SoundCloud.dll",
-                "MediaBrowser.Plugins.SnesBox.dll",
-                "MediaBrowser.Plugins.RottenTomatoes.dll",
-                "MediaBrowser.Plugins.Revision3.dll",
-                "MediaBrowser.Plugins.NesBox.dll",
-                "MBChapters.dll",
-                "MediaBrowser.Channels.LeagueOfLegends.dll",
-                "MediaBrowser.Plugins.ADEProvider.dll",
-                "MediaBrowser.Channels.BallStreams.dll",
-                "MediaBrowser.Channels.Adult.Beeg.dll",
-                "ChannelDownloader.dll",
-                "Hamstercat.Emby.EmbyBands.dll",
-                "EmbyTV.dll",
-                "MediaBrowser.Channels.HitboxTV.dll",
-                "MediaBrowser.Channels.HockeyStreams.dll",
-                "MediaBrowser.Plugins.ITV.dll",
-                "MediaBrowser.Plugins.Lastfm.dll",
-                "ServerRestart.dll",
-                "MediaBrowser.Plugins.NotifyMyAndroidNotifications.dll",
-                "MetadataViewer.dll"
-            };
-
-            var minRequiredVersions = new Dictionary<string, Version>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "moviethemesongs.dll", new Version(1, 6) },
-                { "themesongs.dll", new Version(1, 2) }
-            };
-
-            return paths.Where(path =>
-            {
-                var filename = Path.GetFileName(path);
-                if (exclude.Contains(filename ?? string.Empty, StringComparer.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                if (minRequiredVersions.TryGetValue(filename, out Version minRequiredVersion))
-                {
-                    try
-                    {
-                        var version = Version.Parse(FileVersionInfo.GetVersionInfo(path).FileVersion);
-
-                        if (version < minRequiredVersion)
-                        {
-                            Logger.LogInformation("Not loading {filename} {version} because the minimum supported version is {minRequiredVersion}. Please update to the newer version", filename, version, minRequiredVersion);
-                            return false;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Error getting version number from {path}", path);
-
-                        return false;
-                    }
-                }
-                return true;
-            });
-        }
 
         /// <summary>
         /// Gets the system status.
@@ -1718,7 +1482,7 @@ namespace Emby.Server.Implementations
                 SupportsHttps = SupportsHttps,
                 HttpsPortNumber = HttpsPort,
                 OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
-                OperatingSystemDisplayName = OperatingSystemDisplayName,
+                OperatingSystemDisplayName = EnvironmentInfo.OperatingSystemName,
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
@@ -1788,7 +1552,7 @@ namespace Emby.Server.Implementations
 
         public async Task<string> GetWanApiUrl(CancellationToken cancellationToken)
         {
-            var url = "http://ipv4.icanhazip.com";
+            const string url = "http://ipv4.icanhazip.com";
             try
             {
                 using (var response = await HttpClient.Get(new HttpRequestOptions
