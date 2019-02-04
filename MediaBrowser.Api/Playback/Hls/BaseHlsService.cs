@@ -55,17 +55,6 @@ namespace MediaBrowser.Api.Playback.Hls
         protected override TranscodingJobType TranscodingJobType => TranscodingJobType.Hls;
 
         /// <summary>
-        /// Processes the request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="isLive">if set to <c>true</c> [is live].</param>
-        /// <returns>System.Object.</returns>
-        protected async Task<object> ProcessRequest(StreamRequest request, bool isLive)
-        {
-            return await ProcessRequestAsync(request, isLive).ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Processes the request async.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -74,7 +63,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <exception cref="ArgumentException">A video bitrate is required
         /// or
         /// An audio bitrate is required</exception>
-        private async Task<object> ProcessRequestAsync(StreamRequest request, bool isLive)
+        protected async Task<object> ProcessRequestAsync(StreamRequest request, bool isLive)
         {
             var cancellationTokenSource = new CancellationTokenSource();
 
@@ -324,7 +313,31 @@ namespace MediaBrowser.Api.Playback.Hls
             return 0;
         }
 
-        public BaseHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, jsonSerializer, authorizationContext)
+        public BaseHlsService(
+            IServerConfigurationManager serverConfig,
+            IUserManager userManager,
+            ILibraryManager libraryManager,
+            IIsoManager isoManager,
+            IMediaEncoder mediaEncoder,
+            IFileSystem fileSystem,
+            IDlnaManager dlnaManager,
+            ISubtitleEncoder subtitleEncoder,
+            IDeviceManager deviceManager,
+            IMediaSourceManager mediaSourceManager,
+            IJsonSerializer jsonSerializer,
+            IAuthorizationContext authorizationContext)
+                : base(serverConfig,
+                    userManager,
+                    libraryManager,
+                    isoManager,
+                    mediaEncoder,
+                    fileSystem,
+                    dlnaManager,
+                    subtitleEncoder,
+                    deviceManager,
+                    mediaSourceManager,
+                    jsonSerializer,
+                    authorizationContext)
         {
         }
     }

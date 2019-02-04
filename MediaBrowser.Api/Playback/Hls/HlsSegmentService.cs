@@ -102,9 +102,9 @@ namespace MediaBrowser.Api.Playback.Hls
             return GetFileResult(file, file);
         }
 
-        public void Delete(StopEncodingProcess request)
+        public Task Delete(StopEncodingProcess request)
         {
-            ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.PlaySessionId, path => true);
+            return ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.PlaySessionId, path => true);
         }
 
         /// <summary>
