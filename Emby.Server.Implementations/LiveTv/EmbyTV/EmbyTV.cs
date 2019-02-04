@@ -64,7 +64,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public static EmbyTV Current;
 
-        public event EventHandler DataSourceChanged;
         public event EventHandler<GenericEventArgs<TimerInfo>> TimerCreated;
         public event EventHandler<GenericEventArgs<string>> TimerCancelled;
 

@@ -261,15 +261,6 @@ namespace Emby.Drawing
 
                 return (cacheFilePath, GetMimeType(outputFormat, cacheFilePath), _fileSystem.GetLastWriteTimeUtc(cacheFilePath));
             }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                // Decoder failed to decode it
-#if DEBUG
-                _logger.LogError(ex, "Error encoding image");
-#endif
-                // Just spit out the original file if all the options are default
-                return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
-            }
             catch (Exception ex)
             {
                 // If it fails for whatever reason, return the original image

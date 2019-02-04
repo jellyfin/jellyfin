@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.LiveTv
 
         private readonly LiveTvDtoService _tvDtoService;
 
-        private ILiveTvService[] _services = new ILiveTvService[] { };
+        private ILiveTvService[] _services = Array.Empty<ILiveTvService>();
 
         private ITunerHost[] _tunerHosts = Array.Empty<ITunerHost>();
         private IListingsProvider[] _listingProviders = Array.Empty<IListingsProvider>();
@@ -127,8 +127,6 @@ namespace Emby.Server.Implementations.LiveTv
 
             foreach (var service in _services)
             {
-                service.DataSourceChanged += service_DataSourceChanged;
-
                 if (service is EmbyTV.EmbyTV embyTv)
                 {
                     embyTv.TimerCreated += EmbyTv_TimerCreated;
@@ -182,14 +180,6 @@ namespace Emby.Server.Implementations.LiveTv
         public Task<List<TunerHostInfo>> DiscoverTuners(bool newDevicesOnly, CancellationToken cancellationToken)
         {
             return EmbyTV.EmbyTV.Current.DiscoverTuners(newDevicesOnly, cancellationToken);
-        }
-
-        void service_DataSourceChanged(object sender, EventArgs e)
-        {
-            if (!_isDisposed)
-            {
-                _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
-            }
         }
 
         public QueryResult<BaseItem> GetInternalChannels(LiveTvChannelQuery query, DtoOptions dtoOptions, CancellationToken cancellationToken)
@@ -2153,17 +2143,28 @@ namespace Emby.Server.Implementations.LiveTv
             Dispose(true);
         }
 
-        private bool _isDisposed = false;
+        private bool _disposed = false;
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             if (dispose)
             {
-                _isDisposed = true;
+                // TODO: Dispose stuff
             }
+
+            _services = null;
+            _listingProviders = null;
+            _tunerHosts = null;
+
+            _disposed = true;
         }
 
         private LiveTvServiceInfo[] GetServiceInfos()
