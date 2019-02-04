@@ -60,29 +60,35 @@ namespace Emby.Server.Implementations.Localization
 
         public async Task LoadAll()
         {
-            const string ratingsResource = "Emby.Server.Implementations.Ratings.";
+            const string ratingsResource = "Emby.Server.Implementations.Localization.Ratings.";
 
             Directory.CreateDirectory(LocalizationPath);
 
             var existingFiles = GetRatingsFiles(LocalizationPath).Select(Path.GetFileName);
 
             // Extract from the assembly
-            foreach (var resource in _assembly.GetManifestResourceNames()
-                .Where(i => i.StartsWith(ratingsResource)))
+            foreach (var resource in _assembly.GetManifestResourceNames())
             {
+                if (!resource.StartsWith(ratingsResource))
+                {
+                    continue;
+                }
+
                 string filename = "ratings-" + resource.Substring(ratingsResource.Length);
 
-                if (!existingFiles.Contains(filename))
+                if (existingFiles.Contains(filename))
                 {
-                    using (var stream = _assembly.GetManifestResourceStream(resource))
-                    {
-                        string target = Path.Combine(LocalizationPath, filename);
-                        _logger.LogInformation("Extracting ratings to {0}", target);
+                    continue;
+                }
 
-                        using (var fs = _fileSystem.GetFileStream(target, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
-                        {
-                            await stream.CopyToAsync(fs);
-                        }
+                using (var stream = _assembly.GetManifestResourceStream(resource))
+                {
+                    string target = Path.Combine(LocalizationPath, filename);
+                    _logger.LogInformation("Extracting ratings to {0}", target);
+
+                    using (var fs = _fileSystem.GetFileStream(target, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+                    {
+                        await stream.CopyToAsync(fs);
                     }
                 }
             }
@@ -289,7 +295,8 @@ namespace Emby.Server.Implementations.Localization
         /// <returns>Dictionary{System.StringParentalRating}.</returns>
         private async Task LoadRatings(string file)
         {
-            Dictionary<string, ParentalRating> dict = new Dictionary<string, ParentalRating>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, ParentalRating> dict
+                = new Dictionary<string, ParentalRating>(StringComparer.OrdinalIgnoreCase);
 
             using (var str = File.OpenRead(file))
             using (var reader = new StreamReader(str))
@@ -309,7 +316,10 @@ namespace Emby.Server.Implementations.Localization
                         dict.Add(parts[0], (new ParentalRating { Name = parts[0], Value = value }));
                     }
 #if DEBUG
-                    _logger.LogWarning("Misformed line in {Path}", file);
+                    else
+                    {
+                        _logger.LogWarning("Misformed line in {Path}", file);
+                    }
 #endif
                 }
             }
