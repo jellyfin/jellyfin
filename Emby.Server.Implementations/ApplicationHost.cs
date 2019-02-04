@@ -110,7 +110,6 @@ using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.Extensions.Logging;
 using ServiceStack;
 using ServiceStack.Text.Jsv;
-using StringExtensions = MediaBrowser.Controller.Extensions.StringExtensions;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 
 namespace Emby.Server.Implementations
@@ -302,7 +301,7 @@ namespace Emby.Server.Implementations
 
         private ILiveTvManager LiveTvManager { get; set; }
 
-        public ILocalizationManager LocalizationManager { get; set; }
+        public LocalizationManager LocalizationManager { get; set; }
 
         private IEncodingManager EncodingManager { get; set; }
         private IChannelManager ChannelManager { get; set; }
@@ -703,7 +702,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public void Init()
+        public async Task Init()
         {
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
@@ -733,7 +732,7 @@ namespace Emby.Server.Implementations
 
             SetHttpLimit();
 
-            RegisterResources();
+            await RegisterResources();
 
             FindParts();
         }
@@ -748,7 +747,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-        protected void RegisterResources()
+        protected async Task RegisterResources()
         {
             RegisterSingleInstance(ConfigurationManager);
             RegisterSingleInstance<IApplicationHost>(this);
@@ -809,9 +808,9 @@ namespace Emby.Server.Implementations
             IAssemblyInfo assemblyInfo = new AssemblyInfo();
             RegisterSingleInstance(assemblyInfo);
 
-            LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer, LoggerFactory, assemblyInfo, new TextLocalizer());
-            StringExtensions.LocalizationManager = LocalizationManager;
-            RegisterSingleInstance(LocalizationManager);
+            LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer, LoggerFactory);
+            await LocalizationManager.LoadAll();
+            RegisterSingleInstance<ILocalizationManager>(LocalizationManager);
 
             BlurayExaminer = new BdInfoExaminer(FileSystemManager);
             RegisterSingleInstance(BlurayExaminer);
