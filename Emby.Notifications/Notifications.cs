@@ -71,12 +71,14 @@ namespace Emby.Notifications
             _coreNotificationTypes = new CoreNotificationTypes(localization, appHost).GetNotificationTypes().Select(i => i.Type).ToArray();
         }
 
-        public void Run()
+        public Task RunAsync()
         {
             _libraryManager.ItemAdded += _libraryManager_ItemAdded;
             _appHost.HasPendingRestartChanged += _appHost_HasPendingRestartChanged;
             _appHost.HasUpdateAvailableChanged += _appHost_HasUpdateAvailableChanged;
             _activityManager.EntryCreated += _activityManager_EntryCreated;
+
+            return Task.CompletedTask;
         }
 
         private async void _appHost_HasPendingRestartChanged(object sender, EventArgs e)

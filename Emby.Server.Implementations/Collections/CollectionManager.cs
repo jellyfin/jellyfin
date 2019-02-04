@@ -353,7 +353,7 @@ namespace Emby.Server.Implementations.Collections
             _logger = logger;
         }
 
-        public async void Run()
+        public async Task RunAsync()
         {
             if (!_config.Configuration.CollectionsUpgraded && _config.Configuration.IsStartupWizardCompleted)
             {

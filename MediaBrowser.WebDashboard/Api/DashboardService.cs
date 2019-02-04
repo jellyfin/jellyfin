@@ -425,11 +425,9 @@ namespace MediaBrowser.WebDashboard.Api
         private async Task DumpFile(PackageCreator packageCreator, string resourceVirtualPath, string destinationFilePath, string mode, string appVersion)
         {
             using (var stream = await packageCreator.GetResource(resourceVirtualPath, mode, null, appVersion).ConfigureAwait(false))
+            using (var fs = _fileSystem.GetFileStream(destinationFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
             {
-                using (var fs = _fileSystem.GetFileStream(destinationFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
-                {
-                    stream.CopyTo(fs);
-                }
+                await stream.CopyToAsync(fs);
             }
         }
 
