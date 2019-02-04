@@ -10,15 +10,15 @@ Cmnd_Alias STARTSERVER_INITD = /etc/init.d/jellyfin start
 Cmnd_Alias STOPSERVER_INITD = /etc/init.d/jellyfin stop
 
 
-%jellyfin ALL=(ALL) NOPASSWD: RESTARTSERVER_SYSV
-%jellyfin ALL=(ALL) NOPASSWD: STARTSERVER_SYSV
-%jellyfin ALL=(ALL) NOPASSWD: STOPSERVER_SYSV
-%jellyfin ALL=(ALL) NOPASSWD: RESTARTSERVER_SYSTEMD
-%jellyfin ALL=(ALL) NOPASSWD: STARTSERVER_SYSTEMD
-%jellyfin ALL=(ALL) NOPASSWD: STOPSERVER_SYSTEMD
-%jellyfin ALL=(ALL) NOPASSWD: RESTARTSERVER_INITD
-%jellyfin ALL=(ALL) NOPASSWD: STARTSERVER_INITD
-%jellyfin ALL=(ALL) NOPASSWD: STOPSERVER_INITD
+jellyfin ALL=(ALL) NOPASSWD: RESTARTSERVER_SYSV
+jellyfin ALL=(ALL) NOPASSWD: STARTSERVER_SYSV
+jellyfin ALL=(ALL) NOPASSWD: STOPSERVER_SYSV
+jellyfin ALL=(ALL) NOPASSWD: RESTARTSERVER_SYSTEMD
+jellyfin ALL=(ALL) NOPASSWD: STARTSERVER_SYSTEMD
+jellyfin ALL=(ALL) NOPASSWD: STOPSERVER_SYSTEMD
+jellyfin ALL=(ALL) NOPASSWD: RESTARTSERVER_INITD
+jellyfin ALL=(ALL) NOPASSWD: STARTSERVER_INITD
+jellyfin ALL=(ALL) NOPASSWD: STOPSERVER_INITD
 
 Defaults!RESTARTSERVER_SYSV !requiretty
 Defaults!STARTSERVER_SYSV !requiretty
@@ -31,7 +31,7 @@ Defaults!STARTSERVER_INITD !requiretty
 Defaults!STOPSERVER_INITD !requiretty
 
 #Allow the server to mount iso images
-%jellyfin ALL=(ALL) NOPASSWD: /bin/mount
-%jellyfin ALL=(ALL) NOPASSWD: /bin/umount
+jellyfin ALL=(ALL) NOPASSWD: /bin/mount
+jellyfin ALL=(ALL) NOPASSWD: /bin/umount
 
-Defaults:%jellyfin !requiretty
+Defaults:jellyfin !requiretty
