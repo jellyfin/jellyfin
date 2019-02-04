@@ -1182,9 +1182,11 @@ namespace Emby.Server.Implementations.Library
             _sessionManager = sessionManager;
         }
 
-        public void Run()
+        public Task RunAsync()
         {
             _userManager.UserPolicyUpdated += _userManager_UserPolicyUpdated;
+
+            return Task.CompletedTask;
         }
 
         private void _userManager_UserPolicyUpdated(object sender, GenericEventArgs<User> e)

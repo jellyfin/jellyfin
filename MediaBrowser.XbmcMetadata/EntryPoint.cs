@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -28,9 +29,11 @@ namespace MediaBrowser.XbmcMetadata
             _config = config;
         }
 
-        public void Run()
+        public Task RunAsync()
         {
             _userDataManager.UserDataSaved += _userDataManager_UserDataSaved;
+
+            return Task.CompletedTask;
         }
 
         void _userDataManager_UserDataSaved(object sender, UserDataSaveEventArgs e)

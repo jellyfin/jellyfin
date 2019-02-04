@@ -15,6 +15,7 @@
  - [cvium](https://github.com/cvium)
  - [wtayl0r](https://github.com/wtayl0r)
  - [TtheCreator](https://github.com/Tthecreator)
+ - [dkanada](https://github.com/dkanada)
  - [LogicalPhallacy](https://github.com/LogicalPhallacy/)
  - [RazeLighter777](https://github.com/RazeLighter777)
 

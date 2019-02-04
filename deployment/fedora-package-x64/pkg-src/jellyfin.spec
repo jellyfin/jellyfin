@@ -1,11 +1,11 @@
 %global         debug_package %{nil}
-# jellyfin tag to package
-%global         gittag v10.1.0
-# Taglib-sharp commit of the submodule since github archive doesn't include submodules
-%global         taglib_commit ee5ab21742b71fd1b87ee24895582327e9e04776
-%global         taglib_shortcommit %(c=%{taglib_commit}; echo ${c:0:7})
+# Set the dotnet runtime
+%if 0%{?fedora}
+%global         dotnet_runtime  fedora-x64
+%else
+%global         dotnet_runtime  centos-x64
+%endif
 
-AutoReq:        no
 Name:           jellyfin
 Version:        10.1.0
 Release:        1%{?dist}
@@ -31,13 +31,11 @@ BuildRequires:  dotnet-sdk-2.2
 # RPMfusion free
 Requires:       ffmpeg
 
-# For the update-db-paths.sh script to fix emby paths to jellyfin
-%{?fedora:Recommends: sqlite}
-
 # Fedora has openssl1.1 which is incompatible with dotnet 
 %{?fedora:Requires: compat-openssl10}
-# Disable Automatic Dependency Processing for Centos
-%{?el7:AutoReqProv: no}
+
+# Disable Automatic Dependency Processing
+AutoReqProv:    no
 
 %description
 Jellyfin is a free software media system that puts you in control of managing and streaming your media.
@@ -51,7 +49,7 @@ Jellyfin is a free software media system that puts you in control of managing an
 %install
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime fedora-x64 Jellyfin.Server
+dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime %{dotnet_runtime} Jellyfin.Server
 %{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/%{name}/LICENSE
 %{__install} -D -m 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
 %{__install} -D -m 0644 Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/%{name}/logging.json
@@ -63,6 +61,7 @@ EOF
 %{__mkdir} -p %{buildroot}%{_sharedstatedir}/jellyfin
 %{__mkdir} -p %{buildroot}%{_sysconfdir}/%{name}
 %{__mkdir} -p %{buildroot}%{_var}/log/jellyfin
+%{__mkdir} -p %{buildroot}%{_var}/cache/jellyfin
 
 %{__install} -D -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.service
 %{__install} -D -m 0644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
@@ -90,8 +89,9 @@ EOF
 %config(noreplace) %attr(600,root,root) %{_sysconfdir}/sudoers.d/%{name}-sudoers
 %config(noreplace) %{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
 %config(noreplace) %attr(644,jellyfin,jellyfin) %{_sysconfdir}/%{name}/logging.json
-%attr(-,jellyfin,jellyfin) %dir %{_sharedstatedir}/jellyfin
+%attr(750,jellyfin,jellyfin) %dir %{_sharedstatedir}/jellyfin
 %attr(-,jellyfin,jellyfin) %dir %{_var}/log/jellyfin
+%attr(750,jellyfin,jellyfin) %dir %{_var}/cache/jellyfin
 %if 0%{?fedora}
 %license LICENSE
 %else
@@ -106,7 +106,7 @@ getent passwd jellyfin >/dev/null || \
 exit 0
 
 %post
-# Move existing configuration to /etc/jellyfin and symlink config to /etc/jellyfin
+# Move existing configuration cache and logs to their new locations and symlink them.
 if [ $1 -gt 1 ] ; then
     service_state=$(systemctl is-active jellyfin.service)
     if [ "${service_state}" = "active" ]; then
@@ -121,6 +121,11 @@ if [ $1 -gt 1 ] ; then
         mv %{_sharedstatedir}/%{name}/logs/* %{_var}/log/jellyfin
         rmdir %{_sharedstatedir}/%{name}/logs
         ln -sf %{_var}/log/jellyfin  %{_sharedstatedir}/%{name}/logs
+    fi
+    if [ ! -L %{_sharedstatedir}/%{name}/cache ]; then
+        mv %{_sharedstatedir}/%{name}/cache/* %{_var}/cache/jellyfin
+        rmdir %{_sharedstatedir}/%{name}/cache
+        ln -sf %{_var}/cache/jellyfin  %{_sharedstatedir}/%{name}/cache
     fi
     if [ "${service_state}" = "active" ]; then
         systemctl start jellyfin.service

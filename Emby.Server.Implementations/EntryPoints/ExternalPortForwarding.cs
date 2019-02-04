@@ -61,17 +61,17 @@ namespace Emby.Server.Implementations.EntryPoints
             return string.Join("|", values.ToArray());
         }
 
-        void _config_ConfigurationUpdated(object sender, EventArgs e)
+        private async void _config_ConfigurationUpdated(object sender, EventArgs e)
         {
             if (!string.Equals(_lastConfigIdentifier, GetConfigIdentifier(), StringComparison.OrdinalIgnoreCase))
             {
                 DisposeNat();
 
-                Run();
+                await RunAsync();
             }
         }
 
-        public void Run()
+        public Task RunAsync()
         {
             if (_config.Configuration.EnableUPnP && _config.Configuration.EnableRemoteAccess)
             {
@@ -80,6 +80,8 @@ namespace Emby.Server.Implementations.EntryPoints
 
             _config.ConfigurationUpdated -= _config_ConfigurationUpdated;
             _config.ConfigurationUpdated += _config_ConfigurationUpdated;
+
+            return Task.CompletedTask;
         }
 
         private void Start()

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Plugins;
@@ -24,12 +25,14 @@ namespace Emby.Server.Implementations.EntryPoints
             _liveTvManager = liveTvManager;
         }
 
-        public void Run()
+        public Task RunAsync()
         {
             _liveTvManager.TimerCancelled += _liveTvManager_TimerCancelled;
             _liveTvManager.SeriesTimerCancelled += _liveTvManager_SeriesTimerCancelled;
             _liveTvManager.TimerCreated += _liveTvManager_TimerCreated;
             _liveTvManager.SeriesTimerCreated += _liveTvManager_SeriesTimerCreated;
+
+            return Task.CompletedTask;
         }
 
         private void _liveTvManager_SeriesTimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)

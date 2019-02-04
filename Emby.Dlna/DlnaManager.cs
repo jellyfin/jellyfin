@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Emby.Dlna.Profiles;
 using Emby.Dlna.Server;
 using MediaBrowser.Common.Configuration;
@@ -48,11 +49,11 @@ namespace Emby.Dlna
             _assemblyInfo = assemblyInfo;
         }
 
-        public void InitProfiles()
+        public async Task InitProfilesAsync()
         {
             try
             {
-                ExtractSystemProfiles();
+                await ExtractSystemProfilesAsync();
                 LoadProfiles();
             }
             catch (Exception ex)
@@ -359,7 +360,7 @@ namespace Emby.Dlna
             };
         }
 
-        private void ExtractSystemProfiles()
+        private async Task ExtractSystemProfilesAsync()
         {
             var namespaceName = GetType().Namespace + ".Profiles.Xml.";
 
@@ -383,7 +384,7 @@ namespace Emby.Dlna
 
                         using (var fileStream = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
                         {
-                            stream.CopyTo(fileStream);
+                            await stream.CopyToAsync(fileStream);
                         }
                     }
                 }

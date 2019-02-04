@@ -37,12 +37,14 @@ namespace Emby.Server.Implementations.EntryPoints
             _timerFactory = timerFactory;
         }
 
-        public void Run()
+        public Task RunAsync()
         {
             if (_appHost.CanSelfRestart)
             {
                 _appHost.HasPendingRestartChanged += _appHost_HasPendingRestartChanged;
             }
+
+            return Task.CompletedTask;
         }
 
         void _appHost_HasPendingRestartChanged(object sender, EventArgs e)

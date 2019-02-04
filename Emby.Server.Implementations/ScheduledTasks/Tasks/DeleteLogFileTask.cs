@@ -81,31 +81,15 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             return Task.CompletedTask;
         }
 
-        public string Key => "CleanLogFiles";
-
-        /// <summary>
-        /// Gets the name of the task
-        /// </summary>
-        /// <value>The name.</value>
         public string Name => "Log file cleanup";
 
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        /// <value>The description.</value>
         public string Description => string.Format("Deletes log files that are more than {0} days old.", ConfigurationManager.CommonConfiguration.LogFileRetentionDays);
 
-        /// <summary>
-        /// Gets the category.
-        /// </summary>
-        /// <value>The category.</value>
         public string Category => "Maintenance";
 
-        /// <summary>
-        /// Gets a value indicating whether this instance is hidden.
-        /// </summary>
-        /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
-        public bool IsHidden => true;
+        public string Key => "CleanLogFiles";
+
+        public bool IsHidden => false;
 
         public bool IsEnabled => true;
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -58,7 +59,7 @@ namespace Emby.Server.Implementations.Activity
             _deviceManager = deviceManager;
         }
 
-        public void Run()
+        public Task RunAsync()
         {
             _taskManager.TaskCompleted += _taskManager_TaskCompleted;
 
@@ -90,6 +91,8 @@ namespace Emby.Server.Implementations.Activity
             _deviceManager.CameraImageUploaded += _deviceManager_CameraImageUploaded;
 
             _appHost.ApplicationUpdated += _appHost_ApplicationUpdated;
+
+            return Task.CompletedTask;
         }
 
         void _deviceManager_CameraImageUploaded(object sender, GenericEventArgs<CameraImageUploadInfo> e)

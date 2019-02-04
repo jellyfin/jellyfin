@@ -38,9 +38,11 @@ namespace Emby.Server.Implementations.EntryPoints
             _timerFactory = timerFactory;
         }
 
-        public void Run()
+        public Task RunAsync()
         {
             _userDataManager.UserDataSaved += _userDataManager_UserDataSaved;
+
+            return Task.CompletedTask;
         }
 
         void _userDataManager_UserDataSaved(object sender, UserDataSaveEventArgs e)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
@@ -49,7 +50,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _sessionManager = sessionManager;
         }
 
-        public void Run()
+        public Task RunAsync()
         {
             _userManager.UserDeleted += userManager_UserDeleted;
             _userManager.UserUpdated += userManager_UserUpdated;
@@ -65,6 +66,8 @@ namespace Emby.Server.Implementations.EntryPoints
             _installationManager.PackageInstallationFailed += _installationManager_PackageInstallationFailed;
 
             _taskManager.TaskCompleted += _taskManager_TaskCompleted;
+
+            return Task.CompletedTask;
         }
 
         void _installationManager_PackageInstalling(object sender, InstallationEventArgs e)

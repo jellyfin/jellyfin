@@ -164,15 +164,13 @@ namespace Emby.Server.Implementations.Updates
         /// Gets all available packages.
         /// </summary>
         /// <returns>Task{List{PackageInfo}}.</returns>
-        public Task<List<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken,
+        public async Task<List<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken,
             bool withRegistration = true,
             string packageType = null,
             Version applicationVersion = null)
         {
-            // TODO cvium: when plugins get back this would need to be fixed
-            // var packages = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
-
-            return Task.FromResult(new List<PackageInfo>()); //FilterPackages(packages, packageType, applicationVersion);
+            var packages = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
+            return FilterPackages(packages, packageType, applicationVersion);
         }
 
         /// <summary>
@@ -184,12 +182,10 @@ namespace Emby.Server.Implementations.Updates
         {
             using (var response = await _httpClient.SendAsync(new HttpRequestOptions
             {
-                Url = "https://www.mb3admin.local/admin/service/EmbyPackages.json",
+                Url = "https://repo.jellyfin.org/releases/plugin/manifest.json",
                 CancellationToken = cancellationToken,
                 Progress = new SimpleProgress<double>(),
-                CacheLength = GetCacheLength(),
-                CacheMode = CacheMode.Unconditional
-
+                CacheLength = GetCacheLength()
             }, "GET").ConfigureAwait(false))
             {
                 using (var stream = response.Content)

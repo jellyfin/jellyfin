@@ -114,11 +114,9 @@ namespace Jellyfin.Server
                 new NullImageEncoder(),
                 new NetworkManager(_loggerFactory, environmentInfo)))
             {
-                appHost.Init();
+                await appHost.Init();
 
                 appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
-
-                _logger.LogInformation("Running startup tasks");
 
                 await appHost.RunStartupTasks();
 
@@ -133,8 +131,6 @@ namespace Jellyfin.Server
                 {
                     // Don't throw on cancellation
                 }
-
-                _logger.LogInformation("Disposing app host");
             }
 
             if (_restartOnShutdown)
