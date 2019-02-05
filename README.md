@@ -25,13 +25,13 @@ For more information about the project, please see our [about page](https://jell
 
 <p align="center">
 <strong>Want to get started?</strong>
-<em>Choose from <a href="https://jellyfin.readthedocs.io/en/latest/user-docs/installing/">Prebuilt Packages</a> or <a href="https://jellyfin.readthedocs.io/en/latest/user-docs/building/">Build from Source</a>, then see our <a href="https://jellyfin.readthedocs.io/en/latest/user-docs/quick-start/">Quickstart guide</a>.</em>
+<em>Choose from <a href="https://jellyfin.readthedocs.io/en/latest/administrator-docs/installing/">Prebuilt Packages</a> or <a href="https://jellyfin.readthedocs.io/en/latest/administrator-docs/building/">Build from Source</a>, then see our <a href="https://jellyfin.readthedocs.io/en/latest/administrator-docs/first-time/">first-time setup guide</a>.</em>
 </p>
 <p align="center">
 <strong>Want to contribute?</strong>
-<em>Check out <a href="https://jellyfin.readthedocs.io/en/latest/developer-docs/contributing/">our documentation for guidelines</a>.</em>
+<em>Check out <a href="https://jellyfin.readthedocs.io/en/latest/contributor-docs/contributing/">our documentation for guidelines</a>.</em>
 </p>
 <p align="center">
 <strong>New idea or improvement? Something not working right?</strong>
-<em>Open an <a href="https://jellyfin.readthedocs.io/en/latest/developer-docs/issues/">Issue</a>.</em>
+<em>Open an <a href="https://jellyfin.readthedocs.io/en/latest/contributor-docs/issues/">Issue</a>.</em>
 </p>
