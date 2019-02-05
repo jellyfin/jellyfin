@@ -2,29 +2,27 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
     public class TimerManager : ItemDataProvider<TimerInfo>
     {
-        private readonly ConcurrentDictionary<string, ITimer> _timers = new ConcurrentDictionary<string, ITimer>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, Timer> _timers = new ConcurrentDictionary<string, Timer>(StringComparer.OrdinalIgnoreCase);
         private readonly ILogger _logger;
 
         public event EventHandler<GenericEventArgs<TimerInfo>> TimerFired;
-        private readonly ITimerFactory _timerFactory;
 
-        public TimerManager(IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, string dataPath, ILogger logger1, ITimerFactory timerFactory)
+        public TimerManager(IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, string dataPath, ILogger logger1)
             : base(fileSystem, jsonSerializer, logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
             _logger = logger1;
-            _timerFactory = timerFactory;
         }
 
         public void RestartTimers()
@@ -125,7 +123,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private void StartTimer(TimerInfo item, TimeSpan dueTime)
         {
-            var timer = _timerFactory.Create(TimerCallback, item.Id, dueTime, TimeSpan.Zero);
+            var timer = new Timer(TimerCallback, item.Id, dueTime, TimeSpan.Zero);
 
             if (_timers.TryAdd(item.Id, timer))
             {

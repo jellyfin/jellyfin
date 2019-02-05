@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Threading;
 using Rssdp;
 
 namespace Rssdp.Infrastructure
@@ -27,8 +26,7 @@ namespace Rssdp.Infrastructure
         private IList<SsdpRootDevice> _Devices;
         private IReadOnlyList<SsdpRootDevice> _ReadOnlyDevices;
 
-        private ITimer _RebroadcastAliveNotificationsTimer;
-        private ITimerFactory _timerFactory;
+        private Timer _RebroadcastAliveNotificationsTimer;
 
         private IDictionary<string, SearchRequest> _RecentSearchRequests;
 
@@ -39,7 +37,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, ITimerFactory timerFactory, string osName, string osVersion)
+        public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, string osName, string osVersion)
         {
             if (communicationsServer == null) throw new ArgumentNullException(nameof(communicationsServer));
             if (osName == null) throw new ArgumentNullException(nameof(osName));
@@ -48,7 +46,6 @@ namespace Rssdp.Infrastructure
             if (osVersion.Length == 0) throw new ArgumentException("osVersion cannot be an empty string.", nameof(osName));
 
             _SupportPnpRootDevice = true;
-            _timerFactory = timerFactory;
             _Devices = new List<SsdpRootDevice>();
             _ReadOnlyDevices = new ReadOnlyCollection<SsdpRootDevice>(_Devices);
             _RecentSearchRequests = new Dictionary<string, SearchRequest>(StringComparer.OrdinalIgnoreCase);
@@ -64,7 +61,7 @@ namespace Rssdp.Infrastructure
 
         public void StartBroadcastingAliveMessages(TimeSpan interval)
         {
-            _RebroadcastAliveNotificationsTimer = _timerFactory.Create(SendAllAliveNotifications, null, TimeSpan.FromSeconds(5), interval);
+            _RebroadcastAliveNotificationsTimer = new Timer(SendAllAliveNotifications, null, TimeSpan.FromSeconds(5), interval);
         }
 
         /// <summary>

@@ -10,7 +10,6 @@ using Emby.Dlna.Server;
 using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
@@ -19,7 +18,7 @@ namespace Emby.Dlna.PlayTo
     {
         #region Fields & Properties
 
-        private ITimer _timer;
+        private Timer _timer;
 
         public DeviceInfo Properties { get; set; }
 
@@ -64,21 +63,18 @@ namespace Emby.Dlna.PlayTo
         public DateTime DateLastActivity { get; private set; }
         public Action OnDeviceUnavailable { get; set; }
 
-        private readonly ITimerFactory _timerFactory;
-
-        public Device(DeviceInfo deviceProperties, IHttpClient httpClient, ILogger logger, IServerConfigurationManager config, ITimerFactory timerFactory)
+        public Device(DeviceInfo deviceProperties, IHttpClient httpClient, ILogger logger, IServerConfigurationManager config)
         {
             Properties = deviceProperties;
             _httpClient = httpClient;
             _logger = logger;
             _config = config;
-            _timerFactory = timerFactory;
         }
 
         public void Start()
         {
             _logger.LogDebug("Dlna Device.Start");
-            _timer = _timerFactory.Create(TimerCallback, null, 1000, Timeout.Infinite);
+            _timer = new Timer(TimerCallback, null, 1000, Timeout.Infinite);
         }
 
         private DateTime _lastVolumeRefresh;
@@ -890,7 +886,7 @@ namespace Emby.Dlna.PlayTo
             set;
         }
 
-        public static async Task<Device> CreateuPnpDeviceAsync(Uri url, IHttpClient httpClient, IServerConfigurationManager config, ILogger logger, ITimerFactory timerFactory, CancellationToken cancellationToken)
+        public static async Task<Device> CreateuPnpDeviceAsync(Uri url, IHttpClient httpClient, IServerConfigurationManager config, ILogger logger, CancellationToken cancellationToken)
         {
             var ssdpHttpClient = new SsdpHttpClient(httpClient, config);
 
@@ -1001,7 +997,7 @@ namespace Emby.Dlna.PlayTo
                 }
             }
 
-            var device = new Device(deviceProperties, httpClient, logger, config, timerFactory);
+            var device = new Device(deviceProperties, httpClient, logger, config);
 
             return device;
         }

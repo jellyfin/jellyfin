@@ -336,7 +336,7 @@ namespace MediaBrowser.Api.Playback
         {
             if (EnableThrottling(state))
             {
-                transcodingJob.TranscodingThrottler = state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, Logger, ServerConfigurationManager, ApiEntryPoint.Instance.TimerFactory, FileSystem);
+                transcodingJob.TranscodingThrottler = state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, Logger, ServerConfigurationManager, FileSystem);
                 state.TranscodingThrottler.Start();
             }
         }

@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 using Rssdp;
 using Rssdp.Infrastructure;
@@ -48,20 +47,17 @@ namespace Emby.Dlna.Ssdp
 
         private SsdpDeviceLocator _deviceLocator;
 
-        private readonly ITimerFactory _timerFactory;
         private readonly ISocketFactory _socketFactory;
         private ISsdpCommunicationsServer _commsServer;
 
         public DeviceDiscovery(
             ILoggerFactory loggerFactory,
             IServerConfigurationManager config,
-            ISocketFactory socketFactory,
-            ITimerFactory timerFactory)
+            ISocketFactory socketFactory)
         {
             _logger = loggerFactory.CreateLogger(nameof(DeviceDiscovery));
             _config = config;
             _socketFactory = socketFactory;
-            _timerFactory = timerFactory;
         }
 
         // Call this method from somewhere in your code to start the search.
@@ -78,7 +74,7 @@ namespace Emby.Dlna.Ssdp
             {
                 if (_listenerCount > 0 && _deviceLocator == null)
                 {
-                    _deviceLocator = new SsdpDeviceLocator(_commsServer, _timerFactory);
+                    _deviceLocator = new SsdpDeviceLocator(_commsServer);
 
                     // (Optional) Set the filter so we only see notifications for devices we care about
                     // (can be any search target value i.e device type, uuid value etc - any value that appears in the

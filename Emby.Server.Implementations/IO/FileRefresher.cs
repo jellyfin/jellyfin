@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -9,7 +10,6 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
@@ -22,8 +22,7 @@ namespace Emby.Server.Implementations.IO
         private IServerConfigurationManager ConfigurationManager { get; set; }
         private readonly IFileSystem _fileSystem;
         private readonly List<string> _affectedPaths = new List<string>();
-        private ITimer _timer;
-        private readonly ITimerFactory _timerFactory;
+        private Timer _timer;
         private readonly object _timerLock = new object();
         public string Path { get; private set; }
 
@@ -31,7 +30,7 @@ namespace Emby.Server.Implementations.IO
         private readonly IEnvironmentInfo _environmentInfo;
         private readonly ILibraryManager _libraryManager;
 
-        public FileRefresher(string path, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ITaskManager taskManager, ILogger logger, ITimerFactory timerFactory, IEnvironmentInfo environmentInfo, ILibraryManager libraryManager1)
+        public FileRefresher(string path, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ITaskManager taskManager, ILogger logger, IEnvironmentInfo environmentInfo, ILibraryManager libraryManager1)
         {
             logger.LogDebug("New file refresher created for {0}", path);
             Path = path;
@@ -41,7 +40,6 @@ namespace Emby.Server.Implementations.IO
             LibraryManager = libraryManager;
             TaskManager = taskManager;
             Logger = logger;
-            _timerFactory = timerFactory;
             _environmentInfo = environmentInfo;
             _libraryManager = libraryManager1;
             AddPath(path);
@@ -90,7 +88,7 @@ namespace Emby.Server.Implementations.IO
 
                 if (_timer == null)
                 {
-                    _timer = _timerFactory.Create(OnTimerCallback, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
+                    _timer = new Timer(OnTimerCallback, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
                 else
                 {

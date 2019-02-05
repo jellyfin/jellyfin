@@ -27,7 +27,6 @@ using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Session
@@ -60,7 +59,6 @@ namespace Emby.Server.Implementations.Session
 
         private readonly IAuthenticationRepository _authRepo;
         private readonly IDeviceManager _deviceManager;
-        private readonly ITimerFactory _timerFactory;
 
         /// <summary>
         /// The _active connections
@@ -103,8 +101,7 @@ namespace Emby.Server.Implementations.Session
             IHttpClient httpClient,
             IAuthenticationRepository authRepo,
             IDeviceManager deviceManager,
-            IMediaSourceManager mediaSourceManager,
-            ITimerFactory timerFactory)
+            IMediaSourceManager mediaSourceManager)
         {
             _userDataManager = userDataManager;
             _logger = loggerFactory.CreateLogger(nameof(SessionManager));
@@ -119,7 +116,6 @@ namespace Emby.Server.Implementations.Session
             _authRepo = authRepo;
             _deviceManager = deviceManager;
             _mediaSourceManager = mediaSourceManager;
-            _timerFactory = timerFactory;
             _deviceManager.DeviceOptionsUpdated += _deviceManager_DeviceOptionsUpdated;
         }
 
@@ -503,13 +499,13 @@ namespace Emby.Server.Implementations.Session
             return users;
         }
 
-        private ITimer _idleTimer;
+        private Timer _idleTimer;
 
         private void StartIdleCheckTimer()
         {
             if (_idleTimer == null)
             {
-                _idleTimer = _timerFactory.Create(CheckForIdlePlayback, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+                _idleTimer = new Timer(CheckForIdlePlayback, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
             }
         }
         private void StopIdleCheckTimer()
@@ -606,7 +602,7 @@ namespace Emby.Server.Implementations.Session
                 ClearTranscodingInfo(session.DeviceId);
             }
 
-            session.StartAutomaticProgress(_timerFactory, info);
+            session.StartAutomaticProgress(info);
 
             var users = GetUsers(session);
 
@@ -717,7 +713,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!isAutomated)
             {
-                session.StartAutomaticProgress(_timerFactory, info);
+                session.StartAutomaticProgress(info);
             }
 
             StartIdleCheckTimer();

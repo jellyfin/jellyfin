@@ -10,7 +10,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
 
@@ -24,19 +23,17 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IServerConfigurationManager _config;
         private readonly IDeviceDiscovery _deviceDiscovery;
 
-        private ITimer _timer;
-        private readonly ITimerFactory _timerFactory;
+        private Timer _timer;
 
         private NatManager _natManager;
 
-        public ExternalPortForwarding(ILoggerFactory loggerFactory, IServerApplicationHost appHost, IServerConfigurationManager config, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, ITimerFactory timerFactory)
+        public ExternalPortForwarding(ILoggerFactory loggerFactory, IServerApplicationHost appHost, IServerConfigurationManager config, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient)
         {
             _logger = loggerFactory.CreateLogger("PortMapper");
             _appHost = appHost;
             _config = config;
             _deviceDiscovery = deviceDiscovery;
             _httpClient = httpClient;
-            _timerFactory = timerFactory;
             _config.ConfigurationUpdated += _config_ConfigurationUpdated1;
         }
 
@@ -94,7 +91,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 _natManager.StartDiscovery();
             }
 
-            _timer = _timerFactory.Create(ClearCreatedRules, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+            _timer = new Timer(ClearCreatedRules, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
 
             _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
 

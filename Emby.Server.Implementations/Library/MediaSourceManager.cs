@@ -20,7 +20,6 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library
@@ -36,7 +35,6 @@ namespace Emby.Server.Implementations.Library
         private IMediaSourceProvider[] _providers;
         private readonly ILogger _logger;
         private readonly IUserDataManager _userDataManager;
-        private readonly ITimerFactory _timerFactory;
         private readonly Func<IMediaEncoder> _mediaEncoder;
         private ILocalizationManager _localizationManager;
         private IApplicationPaths _appPaths;
@@ -51,7 +49,6 @@ namespace Emby.Server.Implementations.Library
             IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
             IUserDataManager userDataManager,
-            ITimerFactory timerFactory,
             Func<IMediaEncoder> mediaEncoder)
         {
             _itemRepo = itemRepo;
@@ -61,7 +58,6 @@ namespace Emby.Server.Implementations.Library
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
             _userDataManager = userDataManager;
-            _timerFactory = timerFactory;
             _mediaEncoder = mediaEncoder;
             _localizationManager = localizationManager;
             _appPaths = applicationPaths;

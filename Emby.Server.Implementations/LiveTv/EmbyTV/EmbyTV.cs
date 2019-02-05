@@ -35,7 +35,6 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
@@ -86,7 +85,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             ILibraryMonitor libraryMonitor,
             IProviderManager providerManager,
             IMediaEncoder mediaEncoder,
-            ITimerFactory timerFactory,
             IProcessFactory processFactory)
         {
             Current = this;
@@ -108,7 +106,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _streamHelper = streamHelper;
 
             _seriesTimerProvider = new SeriesTimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers"));
-            _timerProvider = new TimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "timers"), _logger, timerFactory);
+            _timerProvider = new TimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "timers"), _logger);
             _timerProvider.TimerFired += _timerProvider_TimerFired;
 
             _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
