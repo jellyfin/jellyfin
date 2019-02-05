@@ -14,7 +14,6 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -29,7 +28,6 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly ISessionManager _sessionManager;
         private readonly IUserManager _userManager;
         private readonly ILogger _logger;
-        private readonly ITimerFactory _timerFactory;
 
         /// <summary>
         /// The _library changed sync lock
@@ -47,7 +45,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// Gets or sets the library update timer.
         /// </summary>
         /// <value>The library update timer.</value>
-        private ITimer LibraryUpdateTimer { get; set; }
+        private Timer LibraryUpdateTimer { get; set; }
 
         /// <summary>
         /// The library update duration
@@ -56,13 +54,12 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private readonly IProviderManager _providerManager;
 
-        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IUserManager userManager, ILogger logger, ITimerFactory timerFactory, IProviderManager providerManager)
+        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IUserManager userManager, ILogger logger, IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;
             _userManager = userManager;
             _logger = logger;
-            _timerFactory = timerFactory;
             _providerManager = providerManager;
         }
 
@@ -191,7 +188,7 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = _timerFactory.Create(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
                                                    Timeout.Infinite);
                 }
                 else
@@ -225,7 +222,7 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = _timerFactory.Create(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
                                                    Timeout.Infinite);
                 }
                 else
@@ -253,7 +250,7 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = _timerFactory.Create(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
                                                    Timeout.Infinite);
                 }
                 else

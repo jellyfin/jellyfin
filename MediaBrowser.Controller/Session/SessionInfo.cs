@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
+using System.Threading;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Session
@@ -268,10 +268,10 @@ namespace MediaBrowser.Controller.Session
         }
 
         private readonly object _progressLock = new object();
-        private ITimer _progressTimer;
+        private Timer _progressTimer;
         private PlaybackProgressInfo _lastProgressInfo;
 
-        public void StartAutomaticProgress(ITimerFactory timerFactory, PlaybackProgressInfo progressInfo)
+        public void StartAutomaticProgress(PlaybackProgressInfo progressInfo)
         {
             if (_disposed)
             {
@@ -284,7 +284,7 @@ namespace MediaBrowser.Controller.Session
 
                 if (_progressTimer == null)
                 {
-                    _progressTimer = timerFactory.Create(OnProgressTimerCallback, null, 1000, 1000);
+                    _progressTimer = new Timer(OnProgressTimerCallback, null, 1000, 1000);
                 }
                 else
                 {

@@ -20,7 +20,6 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Notifications
@@ -40,9 +39,8 @@ namespace Emby.Notifications
         private readonly ILibraryManager _libraryManager;
         private readonly ISessionManager _sessionManager;
         private readonly IServerApplicationHost _appHost;
-        private readonly ITimerFactory _timerFactory;
 
-        private ITimer LibraryUpdateTimer { get; set; }
+        private Timer LibraryUpdateTimer { get; set; }
         private readonly object _libraryChangedSyncLock = new object();
 
         private readonly IConfigurationManager _config;
@@ -52,7 +50,7 @@ namespace Emby.Notifications
 
         private string[] _coreNotificationTypes;
 
-        public Notifications(IInstallationManager installationManager, IActivityManager activityManager, ILocalizationManager localization, IUserManager userManager, ILogger logger, ITaskManager taskManager, INotificationManager notificationManager, ILibraryManager libraryManager, ISessionManager sessionManager, IServerApplicationHost appHost, IConfigurationManager config, IDeviceManager deviceManager, ITimerFactory timerFactory)
+        public Notifications(IInstallationManager installationManager, IActivityManager activityManager, ILocalizationManager localization, IUserManager userManager, ILogger logger, ITaskManager taskManager, INotificationManager notificationManager, ILibraryManager libraryManager, ISessionManager sessionManager, IServerApplicationHost appHost, IConfigurationManager config, IDeviceManager deviceManager)
         {
             _installationManager = installationManager;
             _userManager = userManager;
@@ -64,7 +62,6 @@ namespace Emby.Notifications
             _appHost = appHost;
             _config = config;
             _deviceManager = deviceManager;
-            _timerFactory = timerFactory;
             _localization = localization;
             _activityManager = activityManager;
 
@@ -159,7 +156,7 @@ namespace Emby.Notifications
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = _timerFactory.Create(LibraryUpdateTimerCallback, null, 5000,
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, 5000,
                                                    Timeout.Infinite);
                 }
                 else

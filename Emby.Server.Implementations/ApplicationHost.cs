@@ -43,7 +43,6 @@ using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
-using Emby.Server.Implementations.Threading;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Emby.Server.Implementations.Xml;
@@ -99,7 +98,6 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Threading;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Model.Xml;
 using MediaBrowser.Providers.Chapters;
@@ -347,7 +345,6 @@ namespace Emby.Server.Implementations
         internal IImageEncoder ImageEncoder { get; private set; }
 
         protected IProcessFactory ProcessFactory { get; private set; }
-        protected ITimerFactory TimerFactory { get; private set; }
         protected ICryptoProvider CryptographyProvider = new CryptographyProvider();
         protected readonly IXmlSerializer XmlSerializer;
 
@@ -772,9 +769,6 @@ namespace Emby.Server.Implementations
             ProcessFactory = new ProcessFactory();
             RegisterSingleInstance(ProcessFactory);
 
-            TimerFactory = new TimerFactory();
-            RegisterSingleInstance(TimerFactory);
-
             var streamHelper = CreateStreamHelper();
             ApplicationHost.StreamHelper = streamHelper;
             RegisterSingleInstance(streamHelper);
@@ -837,7 +831,7 @@ namespace Emby.Server.Implementations
             var musicManager = new MusicManager(LibraryManager);
             RegisterSingleInstance<IMusicManager>(new MusicManager(LibraryManager));
 
-            LibraryMonitor = new LibraryMonitor(LoggerFactory, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager, TimerFactory, EnvironmentInfo);
+            LibraryMonitor = new LibraryMonitor(LoggerFactory, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager, EnvironmentInfo);
             RegisterSingleInstance(LibraryMonitor);
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LoggerFactory, LibraryManager, UserManager));
@@ -869,7 +863,7 @@ namespace Emby.Server.Implementations
             DeviceManager = new DeviceManager(AuthenticationRepository, JsonSerializer, LibraryManager, LocalizationManager, UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager, LoggerFactory, NetworkManager);
             RegisterSingleInstance(DeviceManager);
 
-            MediaSourceManager = new MediaSourceManager(ItemRepository, ApplicationPaths, LocalizationManager, UserManager, LibraryManager, LoggerFactory, JsonSerializer, FileSystemManager, UserDataManager, TimerFactory, () => MediaEncoder);
+            MediaSourceManager = new MediaSourceManager(ItemRepository, ApplicationPaths, LocalizationManager, UserManager, LibraryManager, LoggerFactory, JsonSerializer, FileSystemManager, UserDataManager, () => MediaEncoder);
             RegisterSingleInstance(MediaSourceManager);
 
             SubtitleManager = new SubtitleManager(LoggerFactory, FileSystemManager, LibraryMonitor, MediaSourceManager, LocalizationManager);
@@ -884,7 +878,7 @@ namespace Emby.Server.Implementations
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager, HttpClient, ProviderManager);
             RegisterSingleInstance(ChannelManager);
 
-            SessionManager = new SessionManager(UserDataManager, LoggerFactory, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager, TimerFactory);
+            SessionManager = new SessionManager(UserDataManager, LoggerFactory, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
             RegisterSingleInstance(SessionManager);
 
             var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LoggerFactory, JsonSerializer, this, assemblyInfo);
@@ -905,7 +899,7 @@ namespace Emby.Server.Implementations
             NotificationManager = new NotificationManager(LoggerFactory, UserManager, ServerConfigurationManager);
             RegisterSingleInstance(NotificationManager);
 
-            RegisterSingleInstance<IDeviceDiscovery>(new DeviceDiscovery(LoggerFactory, ServerConfigurationManager, SocketFactory, TimerFactory));
+            RegisterSingleInstance<IDeviceDiscovery>(new DeviceDiscovery(LoggerFactory, ServerConfigurationManager, SocketFactory));
 
             ChapterManager = new ChapterManager(LibraryManager, LoggerFactory, ServerConfigurationManager, ItemRepository);
             RegisterSingleInstance(ChapterManager);

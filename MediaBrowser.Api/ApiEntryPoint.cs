@@ -18,7 +18,6 @@ using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
@@ -48,7 +47,6 @@ namespace MediaBrowser.Api
         private readonly ISessionManager _sessionManager;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaSourceManager _mediaSourceManager;
-        public readonly ITimerFactory TimerFactory;
         public readonly IProcessFactory ProcessFactory;
 
         /// <summary>
@@ -75,7 +73,6 @@ namespace MediaBrowser.Api
             IServerConfigurationManager config,
             IFileSystem fileSystem,
             IMediaSourceManager mediaSourceManager,
-            ITimerFactory timerFactory,
             IProcessFactory processFactory,
             IHttpResultFactory resultFactory)
         {
@@ -84,7 +81,6 @@ namespace MediaBrowser.Api
             _config = config;
             _fileSystem = fileSystem;
             _mediaSourceManager = mediaSourceManager;
-            TimerFactory = timerFactory;
             ProcessFactory = processFactory;
             ResultFactory = resultFactory;
 
@@ -260,7 +256,7 @@ namespace MediaBrowser.Api
         {
             lock (_activeTranscodingJobs)
             {
-                var job = new TranscodingJob(Logger, TimerFactory)
+                var job = new TranscodingJob(Logger)
                 {
                     Type = type,
                     Path = path,
@@ -765,9 +761,7 @@ namespace MediaBrowser.Api
         /// Gets or sets the kill timer.
         /// </summary>
         /// <value>The kill timer.</value>
-        private ITimer KillTimer { get; set; }
-
-        private readonly ITimerFactory _timerFactory;
+        private Timer KillTimer { get; set; }
 
         public string DeviceId { get; set; }
 
@@ -797,10 +791,9 @@ namespace MediaBrowser.Api
         public DateTime LastPingDate { get; set; }
         public int PingTimeout { get; set; }
 
-        public TranscodingJob(ILogger logger, ITimerFactory timerFactory)
+        public TranscodingJob(ILogger logger)
         {
             Logger = logger;
-            _timerFactory = timerFactory;
         }
 
         public void StopKillTimer()
@@ -843,7 +836,7 @@ namespace MediaBrowser.Api
                 if (KillTimer == null)
                 {
                     //Logger.LogDebug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
-                    KillTimer = _timerFactory.Create(callback, this, intervalMs, Timeout.Infinite);
+                    KillTimer = new Timer(new TimerCallback(callback), this, intervalMs, Timeout.Infinite);
                 }
                 else
                 {

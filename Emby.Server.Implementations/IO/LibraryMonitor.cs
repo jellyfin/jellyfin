@@ -11,7 +11,6 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
@@ -134,7 +133,6 @@ namespace Emby.Server.Implementations.IO
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
         private readonly IFileSystem _fileSystem;
-        private readonly ITimerFactory _timerFactory;
         private readonly IEnvironmentInfo _environmentInfo;
 
         /// <summary>
@@ -146,7 +144,6 @@ namespace Emby.Server.Implementations.IO
             ILibraryManager libraryManager,
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
-            ITimerFactory timerFactory,
             IEnvironmentInfo environmentInfo)
         {
             if (taskManager == null)
@@ -159,7 +156,6 @@ namespace Emby.Server.Implementations.IO
             Logger = loggerFactory.CreateLogger(GetType().Name);
             ConfigurationManager = configurationManager;
             _fileSystem = fileSystem;
-            _timerFactory = timerFactory;
             _environmentInfo = environmentInfo;
         }
 
@@ -545,7 +541,7 @@ namespace Emby.Server.Implementations.IO
                     }
                 }
 
-                var newRefresher = new FileRefresher(path, _fileSystem, ConfigurationManager, LibraryManager, TaskManager, Logger, _timerFactory, _environmentInfo, LibraryManager);
+                var newRefresher = new FileRefresher(path, _fileSystem, ConfigurationManager, LibraryManager, TaskManager, Logger, _environmentInfo, LibraryManager);
                 newRefresher.Completed += NewRefresher_Completed;
                 _activeRefreshers.Add(newRefresher);
             }

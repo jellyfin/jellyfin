@@ -1,9 +1,9 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
@@ -12,18 +12,16 @@ namespace MediaBrowser.Api.Playback
     {
         private readonly TranscodingJob _job;
         private readonly ILogger _logger;
-        private ITimer _timer;
+        private Timer _timer;
         private bool _isPaused;
         private readonly IConfigurationManager _config;
-        private readonly ITimerFactory _timerFactory;
         private readonly IFileSystem _fileSystem;
 
-        public TranscodingThrottler(TranscodingJob job, ILogger logger, IConfigurationManager config, ITimerFactory timerFactory, IFileSystem fileSystem)
+        public TranscodingThrottler(TranscodingJob job, ILogger logger, IConfigurationManager config, IFileSystem fileSystem)
         {
             _job = job;
             _logger = logger;
             _config = config;
-            _timerFactory = timerFactory;
             _fileSystem = fileSystem;
         }
 
@@ -34,7 +32,7 @@ namespace MediaBrowser.Api.Playback
 
         public void Start()
         {
-            _timer = _timerFactory.Create(TimerCallback, null, 5000, 5000);
+            _timer = new Timer(TimerCallback, null, 5000, 5000);
         }
 
         private async void TimerCallback(object state)
