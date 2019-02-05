@@ -641,7 +641,7 @@ namespace Emby.Dlna.PlayTo
                     case GeneralCommandType.Mute:
                         return _device.Mute(cancellationToken);
                     case GeneralCommandType.Unmute:
-                        return _device.UnMute(cancellationToken);
+                        return _device.Unmute(cancellationToken);
                     case GeneralCommandType.ToggleMute:
                         return _device.ToggleMute(cancellationToken);
                     case GeneralCommandType.SetAudioStreamIndex:

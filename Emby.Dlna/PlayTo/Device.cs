@@ -158,7 +158,7 @@ namespace Emby.Dlna.PlayTo
         {
             if (IsMuted)
             {
-                return UnMute(cancellationToken);
+                return Unmute(cancellationToken);
             }
 
             return Mute(cancellationToken);
@@ -174,7 +174,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        public async Task UnMute(CancellationToken cancellationToken)
+        public async Task Unmute(CancellationToken cancellationToken)
         {
             var success = await SetMute(false, cancellationToken).ConfigureAwait(true);
 
