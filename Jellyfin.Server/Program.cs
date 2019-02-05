@@ -273,7 +273,7 @@ namespace Jellyfin.Server
                 }
             }
 
-            // Ensure the three main folders exist before we continue
+            // Ensure the main folders exist before we continue
             try
             {
                 Directory.CreateDirectory(dataDir);
