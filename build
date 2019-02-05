@@ -23,7 +23,7 @@ usage() {
     echo -e "Usage:"
     echo -e " $ build --list-platforms"
     echo -e " $ build --list-actions <platform>"
-    echo -e " $ build [-b/--web-branch <web_branch>] <platform> <action>"
+    echo -e " $ build [-k/--keep-artifacts] [-b/--web-branch <web_branch>] <platform> <action>"
     echo -e ""
     echo -e "The web_branch defaults to the same branch name as the current main branch."
     echo -e "To build all platforms, use 'all'."
@@ -65,6 +65,14 @@ if [[ $1 == '--list-actions' ]]; then
         fi
     done
     exit 0
+fi
+
+# Parse keep-artifacts option
+if [[ $1 == '-k' || $1 == '--keep-artifacts' ]]; then
+    keep_artifacts="y"
+    shift 1
+else
+    keep_artifacts="n"
 fi
 
 # Parse branch option
@@ -193,6 +201,13 @@ for target_platform in ${platform[@]}; do
     echo -e "> Processing platform ${target_platform}"
     date_start=$( date +%s )
     pushd ${target_platform}
+    cleanup() {
+        echo -e ">> Processing action clean"
+        if [[ -f clean.sh && -x clean.sh ]]; then
+            ./clean.sh ${keep_artifacts}
+        fi
+    }
+    trap cleanup EXIT INT
     for target_action in ${action[@]}; do
         echo -e ">> Processing action ${target_action}"
         if [[ -f ${target_action}.sh && -x ${target_action}.sh ]]; then
@@ -204,12 +219,8 @@ for target_platform in ${platform[@]}; do
         target_dir="../../../jellyfin-build/${target_platform}"
         mkdir -p ${target_dir}
         mv pkg-dist/* ${target_dir}/
-
-        echo -e ">> Processing action clean"
-        if [[ -f clean.sh && -x clean.sh ]]; then
-            ./clean.sh 
-        fi
     fi
+    cleanup
     date_end=$( date +%s )
     echo -e "> Completed platform ${target_platform} in $( expr ${date_end} - ${date_start} ) seconds."
     popd
