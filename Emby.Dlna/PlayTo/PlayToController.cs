@@ -42,30 +42,43 @@ namespace Emby.Dlna.PlayTo
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly string _serverAddress;
         private readonly string _accessToken;
-        private readonly DateTime _creationTime;
 
         public bool IsSessionActive => !_disposed && _device != null;
 
         public bool SupportsMediaControl => IsSessionActive;
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, string accessToken, IDeviceDiscovery deviceDiscovery, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IConfigurationManager config, IMediaEncoder mediaEncoder)
+        public PlayToController(
+            SessionInfo session,
+            ISessionManager sessionManager,
+            ILibraryManager libraryManager,
+            ILogger logger,
+            IDlnaManager dlnaManager,
+            IUserManager userManager,
+            IImageProcessor imageProcessor,
+            string serverAddress,
+            string accessToken,
+            IDeviceDiscovery deviceDiscovery,
+            IUserDataManager userDataManager,
+            ILocalizationManager localization,
+            IMediaSourceManager mediaSourceManager,
+            IConfigurationManager config,
+            IMediaEncoder mediaEncoder)
         {
             _session = session;
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
+            _logger = logger;
             _dlnaManager = dlnaManager;
             _userManager = userManager;
             _imageProcessor = imageProcessor;
             _serverAddress = serverAddress;
+            _accessToken = accessToken;
             _deviceDiscovery = deviceDiscovery;
             _userDataManager = userDataManager;
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
             _config = config;
             _mediaEncoder = mediaEncoder;
-            _accessToken = accessToken;
-            _logger = logger;
-            _creationTime = DateTime.UtcNow;
         }
 
         public void Init(Device device)
@@ -374,9 +387,7 @@ namespace Emby.Dlna.PlayTo
                     return _device.IsPaused ? _device.SetPlay(CancellationToken.None) : _device.SetPause(CancellationToken.None);
 
                 case PlaystateCommand.Seek:
-                    {
-                        return Seek(command.SeekPositionTicks ?? 0);
-                    }
+                    return Seek(command.SeekPositionTicks ?? 0);
 
                 case PlaystateCommand.NextTrack:
                     return SetPlaylistIndex(_currentPlaylistIndex + 1);
@@ -442,8 +453,7 @@ namespace Emby.Dlna.PlayTo
             var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
                 _dlnaManager.GetDefaultProfile();
 
-            var hasMediaSources = item as IHasMediaSources;
-            var mediaSources = hasMediaSources != null
+            var mediaSources = item is IHasMediaSources
                 ? (_mediaSourceManager.GetStaticMediaSources(item, true, user))
                 : new List<MediaSourceInfo>();
 
@@ -452,7 +462,7 @@ namespace Emby.Dlna.PlayTo
 
             playlistItem.StreamUrl = DidlBuilder.NormalizeDlnaMediaUrl(playlistItem.StreamInfo.ToUrl(_serverAddress, _accessToken));
 
-            var itemXml = new DidlBuilder(profile, user, _imageProcessor, _serverAddress, _accessToken, _userDataManager, _localization, _mediaSourceManager, _logger, _libraryManager, _mediaEncoder)
+            var itemXml = new DidlBuilder(profile, user, _imageProcessor, _serverAddress, _accessToken, _userDataManager, _localization, _mediaSourceManager, _logger, _mediaEncoder)
                 .GetItemDidl(_config.GetDlnaConfiguration(), item, user, null, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
 
             playlistItem.Didl = itemXml;
@@ -631,7 +641,7 @@ namespace Emby.Dlna.PlayTo
                     case GeneralCommandType.Mute:
                         return _device.Mute(cancellationToken);
                     case GeneralCommandType.Unmute:
-                        return _device.Unmute(cancellationToken);
+                        return _device.UnMute(cancellationToken);
                     case GeneralCommandType.ToggleMute:
                         return _device.ToggleMute(cancellationToken);
                     case GeneralCommandType.SetAudioStreamIndex:

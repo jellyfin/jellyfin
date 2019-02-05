@@ -39,12 +39,7 @@ namespace Emby.Dlna.PlayTo
 
         public TimeSpan? Duration { get; set; }
 
-        private TimeSpan _position = TimeSpan.FromSeconds(0);
-        public TimeSpan Position
-        {
-            get => _position;
-            set => _position = value;
-        }
+        public TimeSpan Position { get; set; } = TimeSpan.FromSeconds(0);
 
         public TRANSPORTSTATE TransportState { get; private set; }
 
@@ -60,7 +55,6 @@ namespace Emby.Dlna.PlayTo
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
 
-        public DateTime DateLastActivity { get; private set; }
         public Action OnDeviceUnavailable { get; set; }
 
         public Device(DeviceInfo deviceProperties, IHttpClient httpClient, ILogger logger, IServerConfigurationManager config)
@@ -115,7 +109,9 @@ namespace Emby.Dlna.PlayTo
             lock (_timerLock)
             {
                 if (_disposed)
+                {
                     return;
+                }
 
                 _volumeRefreshActive = true;
 
@@ -132,17 +128,14 @@ namespace Emby.Dlna.PlayTo
             lock (_timerLock)
             {
                 if (_disposed)
+                {
                     return;
+                }
 
                 _volumeRefreshActive = false;
 
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
             }
-        }
-
-        public void OnPlaybackStartedExternally()
-        {
-            RestartTimer(true);
         }
 
         #region Commanding
@@ -165,7 +158,7 @@ namespace Emby.Dlna.PlayTo
         {
             if (IsMuted)
             {
-                return Unmute(cancellationToken);
+                return UnMute(cancellationToken);
             }
 
             return Mute(cancellationToken);
@@ -181,7 +174,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        public async Task Unmute(CancellationToken cancellationToken)
+        public async Task UnMute(CancellationToken cancellationToken)
         {
             var success = await SetMute(false, cancellationToken).ConfigureAwait(true);
 
@@ -329,7 +322,9 @@ namespace Emby.Dlna.PlayTo
         private string CreateDidlMeta(string value)
         {
             if (string.IsNullOrEmpty(value))
+            {
                 return string.Empty;
+            }
 
             return DescriptionXmlBuilder.Escape(value);
         }
@@ -338,10 +333,11 @@ namespace Emby.Dlna.PlayTo
         {
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "Play");
             if (command == null)
+            {
                 return Task.CompletedTask;
+            }
 
             var service = GetAvTransportService();
-
             if (service == null)
             {
                 throw new InvalidOperationException("Unable to find service");
@@ -365,7 +361,9 @@ namespace Emby.Dlna.PlayTo
 
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "Stop");
             if (command == null)
+            {
                 return;
+            }
 
             var service = GetAvTransportService();
 
@@ -381,7 +379,9 @@ namespace Emby.Dlna.PlayTo
 
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "Pause");
             if (command == null)
+            {
                 return;
+            }
 
             var service = GetAvTransportService();
 
@@ -401,7 +401,9 @@ namespace Emby.Dlna.PlayTo
         private async void TimerCallback(object sender)
         {
             if (_disposed)
+            {
                 return;
+            }
 
             try
             {
@@ -420,8 +422,6 @@ namespace Emby.Dlna.PlayTo
                 {
                     return;
                 }
-
-                DateLastActivity = DateTime.UtcNow;
 
                 if (transportState.HasValue)
                 {
@@ -501,7 +501,9 @@ namespace Emby.Dlna.PlayTo
 
             var command = rendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetVolume");
             if (command == null)
+            {
                 return;
+            }
 
             var service = GetServiceRenderingControl();
 
@@ -514,13 +516,17 @@ namespace Emby.Dlna.PlayTo
                 .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
+            {
                 return;
+            }
 
             var volume = result.Document.Descendants(uPnpNamespaces.RenderingControl + "GetVolumeResponse").Select(i => i.Element("CurrentVolume")).FirstOrDefault(i => i != null);
-            var volumeValue = volume == null ? null : volume.Value;
+            var volumeValue = volume?.Value;
 
             if (string.IsNullOrWhiteSpace(volumeValue))
+            {
                 return;
+            }
 
             Volume = int.Parse(volumeValue, UsCulture);
 
@@ -541,7 +547,9 @@ namespace Emby.Dlna.PlayTo
 
             var command = rendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetMute");
             if (command == null)
+            {
                 return;
+            }
 
             var service = GetServiceRenderingControl();
 
@@ -556,39 +564,44 @@ namespace Emby.Dlna.PlayTo
             if (result == null || result.Document == null)
                 return;
 
-            var valueNode = result.Document.Descendants(uPnpNamespaces.RenderingControl + "GetMuteResponse").Select(i => i.Element("CurrentMute")).FirstOrDefault(i => i != null);
-            var value = valueNode == null ? null : valueNode.Value;
+            var valueNode = result.Document.Descendants(uPnpNamespaces.RenderingControl + "GetMuteResponse")
+                                            .Select(i => i.Element("CurrentMute"))
+                                            .FirstOrDefault(i => i != null);
 
-            IsMuted = string.Equals(value, "1", StringComparison.OrdinalIgnoreCase);
+            IsMuted = string.Equals(valueNode?.Value, "1", StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task<TRANSPORTSTATE?> GetTransportInfo(TransportCommands avCommands, CancellationToken cancellationToken)
         {
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetTransportInfo");
             if (command == null)
+            {
                 return null;
+            }
 
             var service = GetAvTransportService();
             if (service == null)
+            {
                 return null;
+            }
 
             var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, avCommands.BuildPost(command, service.ServiceType), false)
                 .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
+            {
                 return null;
+            }
 
             var transportState =
                 result.Document.Descendants(uPnpNamespaces.AvTransport + "GetTransportInfoResponse").Select(i => i.Element("CurrentTransportState")).FirstOrDefault(i => i != null);
 
             var transportStateValue = transportState == null ? null : transportState.Value;
 
-            if (transportStateValue != null)
+            if (transportStateValue != null
+                && Enum.TryParse(transportStateValue, true, out TRANSPORTSTATE state))
             {
-                if (Enum.TryParse(transportStateValue, true, out TRANSPORTSTATE state))
-                {
-                    return state;
-                }
+                return state;
             }
 
             return null;
@@ -598,10 +611,11 @@ namespace Emby.Dlna.PlayTo
         {
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetMediaInfo");
             if (command == null)
+            {
                 return null;
+            }
 
             var service = GetAvTransportService();
-
             if (service == null)
             {
                 throw new InvalidOperationException("Unable to find service");
@@ -613,7 +627,9 @@ namespace Emby.Dlna.PlayTo
                 .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
+            {
                 return null;
+            }
 
             var track = result.Document.Descendants("CurrentURIMetaData").FirstOrDefault();
 
@@ -653,11 +669,13 @@ namespace Emby.Dlna.PlayTo
             return null;
         }
 
-        private async Task<Tuple<bool, uBaseObject>> GetPositionInfo(TransportCommands avCommands, CancellationToken cancellationToken)
+        private async Task<(bool, uBaseObject)> GetPositionInfo(TransportCommands avCommands, CancellationToken cancellationToken)
         {
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetPositionInfo");
             if (command == null)
-                return new Tuple<bool, uBaseObject>(false, null);
+            {
+                return (false, null);
+            }
 
             var service = GetAvTransportService();
 
@@ -672,7 +690,9 @@ namespace Emby.Dlna.PlayTo
                 .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
-                return new Tuple<bool, uBaseObject>(false, null);
+            {
+                return (false, null);
+            }
 
             var trackUriElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackURI")).FirstOrDefault(i => i != null);
             var trackUri = trackUriElem == null ? null : trackUriElem.Value;
@@ -680,8 +700,8 @@ namespace Emby.Dlna.PlayTo
             var durationElem = result.Document.Descendants(uPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackDuration")).FirstOrDefault(i => i != null);
             var duration = durationElem == null ? null : durationElem.Value;
 
-            if (!string.IsNullOrWhiteSpace(duration) &&
-                !string.Equals(duration, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(duration)
+                && !string.Equals(duration, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
             {
                 Duration = TimeSpan.Parse(duration, UsCulture);
             }
@@ -703,14 +723,14 @@ namespace Emby.Dlna.PlayTo
             if (track == null)
             {
                 //If track is null, some vendors do this, use GetMediaInfo instead
-                return new Tuple<bool, uBaseObject>(true, null);
+                return (true, null);
             }
 
             var trackString = (string)track;
 
             if (string.IsNullOrWhiteSpace(trackString) || string.Equals(trackString, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
             {
-                return new Tuple<bool, uBaseObject>(true, null);
+                return (true, null);
             }
 
             XElement uPnpResponse;
@@ -731,7 +751,7 @@ namespace Emby.Dlna.PlayTo
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Unable to parse xml {0}", trackString);
-                    return new Tuple<bool, uBaseObject>(true, null);
+                    return (true, null);
                 }
             }
 
@@ -739,7 +759,7 @@ namespace Emby.Dlna.PlayTo
 
             var uTrack = CreateUBaseObject(e, trackUri);
 
-            return new Tuple<bool, uBaseObject>(true, uTrack);
+            return (true, uTrack);
         }
 
         private static uBaseObject CreateUBaseObject(XElement container, string trackUri)
@@ -797,11 +817,9 @@ namespace Emby.Dlna.PlayTo
 
         private async Task<TransportCommands> GetAVProtocolAsync(CancellationToken cancellationToken)
         {
-            var avCommands = AvCommands;
-
-            if (avCommands != null)
+            if (AvCommands != null)
             {
-                return avCommands;
+                return AvCommands;
             }
 
             if (_disposed)
@@ -821,18 +839,15 @@ namespace Emby.Dlna.PlayTo
 
             var document = await httpClient.GetDataAsync(url, cancellationToken).ConfigureAwait(false);
 
-            avCommands = TransportCommands.Create(document);
-            AvCommands = avCommands;
-            return avCommands;
+            AvCommands = TransportCommands.Create(document);
+            return AvCommands;
         }
 
         private async Task<TransportCommands> GetRenderingProtocolAsync(CancellationToken cancellationToken)
         {
-            var rendererCommands = RendererCommands;
-
-            if (rendererCommands != null)
+            if (RendererCommands != null)
             {
-                return rendererCommands;
+                return RendererCommands;
             }
 
             if (_disposed)
@@ -841,7 +856,6 @@ namespace Emby.Dlna.PlayTo
             }
 
             var avService = GetServiceRenderingControl();
-
             if (avService == null)
             {
                 throw new ArgumentException("Device AvService is null");
@@ -853,9 +867,8 @@ namespace Emby.Dlna.PlayTo
             _logger.LogDebug("Dlna Device.GetRenderingProtocolAsync");
             var document = await httpClient.GetDataAsync(url, cancellationToken).ConfigureAwait(false);
 
-            rendererCommands = TransportCommands.Create(document);
-            RendererCommands = rendererCommands;
-            return rendererCommands;
+            RendererCommands = TransportCommands.Create(document);
+            return RendererCommands;
         }
 
         private string NormalizeUrl(string baseUrl, string url)
@@ -867,32 +880,27 @@ namespace Emby.Dlna.PlayTo
             }
 
             if (!url.Contains("/"))
+            {
                 url = "/dmr/" + url;
+            }
+
             if (!url.StartsWith("/"))
+            {
                 url = "/" + url;
+            }
 
             return baseUrl + url;
         }
 
-        private TransportCommands AvCommands
-        {
-            get;
-            set;
-        }
+        private TransportCommands AvCommands { get; set; }
 
-        private TransportCommands RendererCommands
-        {
-            get;
-            set;
-        }
+        private TransportCommands RendererCommands { get; set; }
 
         public static async Task<Device> CreateuPnpDeviceAsync(Uri url, IHttpClient httpClient, IServerConfigurationManager config, ILogger logger, CancellationToken cancellationToken)
         {
             var ssdpHttpClient = new SsdpHttpClient(httpClient, config);
 
             var document = await ssdpHttpClient.GetDataAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
-
-            var deviceProperties = new DeviceInfo();
 
             var friendlyNames = new List<string>();
 
@@ -908,7 +916,11 @@ namespace Emby.Dlna.PlayTo
                 friendlyNames.Add(room.Value);
             }
 
-            deviceProperties.Name = string.Join(" ", friendlyNames);
+            var deviceProperties = new DeviceInfo()
+            {
+                Name = string.Join(" ", friendlyNames),
+                BaseUrl = string.Format("http://{0}:{1}", url.Host, url.Port)
+            };
 
             var model = document.Descendants(uPnpNamespaces.ud.GetName("modelName")).FirstOrDefault();
             if (model != null)
@@ -964,8 +976,6 @@ namespace Emby.Dlna.PlayTo
                 deviceProperties.ModelDescription = modelDescription.Value;
             }
 
-            deviceProperties.BaseUrl = string.Format("http://{0}:{1}", url.Host, url.Port);
-
             var icon = document.Descendants(uPnpNamespaces.ud.GetName("icon")).FirstOrDefault();
             if (icon != null)
             {
@@ -980,7 +990,6 @@ namespace Emby.Dlna.PlayTo
                 }
 
                 var servicesList = services.Descendants(uPnpNamespaces.ud.GetName("service"));
-
                 if (servicesList == null)
                 {
                     continue;
@@ -997,9 +1006,7 @@ namespace Emby.Dlna.PlayTo
                 }
             }
 
-            var device = new Device(deviceProperties, httpClient, logger, config);
-
-            return device;
+            return new Device(deviceProperties, httpClient, logger, config);
         }
 
         #endregion
@@ -1127,23 +1134,29 @@ namespace Emby.Dlna.PlayTo
         #region IDisposable
 
         bool _disposed;
+
         public void Dispose()
         {
-            if (!_disposed)
-            {
-                _disposed = true;
-
-                DisposeTimer();
-            }
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        private void DisposeTimer()
+        protected virtual void Dispose(bool disposing)
         {
-            if (_timer != null)
+            if (_disposed)
             {
-                _timer.Dispose();
-                _timer = null;
+                return;
             }
+
+            if (disposing)
+            {
+                _timer?.Dispose();
+            }
+
+            _timer = null;
+            Properties = null;
+
+            _disposed = true;
         }
 
         #endregion

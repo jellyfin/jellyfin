@@ -43,22 +43,30 @@ namespace Emby.Dlna.Didl
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILogger _logger;
-        private readonly ILibraryManager _libraryManager;
         private readonly IMediaEncoder _mediaEncoder;
 
-        public DidlBuilder(DeviceProfile profile, User user, IImageProcessor imageProcessor, string serverAddress, string accessToken, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, ILogger logger, ILibraryManager libraryManager, IMediaEncoder mediaEncoder)
+        public DidlBuilder(
+            DeviceProfile profile,
+            User user,
+            IImageProcessor imageProcessor,
+            string serverAddress,
+            string accessToken,
+            IUserDataManager userDataManager,
+            ILocalizationManager localization,
+            IMediaSourceManager mediaSourceManager,
+            ILogger logger,
+            IMediaEncoder mediaEncoder)
         {
             _profile = profile;
+            _user = user;
             _imageProcessor = imageProcessor;
             _serverAddress = serverAddress;
+            _accessToken = accessToken;
             _userDataManager = userDataManager;
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
             _logger = logger;
-            _libraryManager = libraryManager;
             _mediaEncoder = mediaEncoder;
-            _accessToken = accessToken;
-            _user = user;
         }
 
         public static string NormalizeDlnaMediaUrl(string url)
@@ -117,7 +125,8 @@ namespace Emby.Dlna.Didl
             }
         }
 
-        public void WriteItemElement(DlnaOptions options,
+        public void WriteItemElement(
+            DlnaOptions options,
             XmlWriter writer,
             BaseItem item,
             User user,
@@ -232,12 +241,15 @@ namespace Emby.Dlna.Didl
                 AddVideoResource(writer, video, deviceId, filter, contentFeature, streamInfo);
             }
 
-            var subtitleProfiles = streamInfo.GetSubtitleProfiles(_mediaEncoder, false, _serverAddress, _accessToken)
-                .Where(subtitle => subtitle.DeliveryMethod == SubtitleDeliveryMethod.External)
-                .ToList();
+            var subtitleProfiles = streamInfo.GetSubtitleProfiles(_mediaEncoder, false, _serverAddress, _accessToken);
 
             foreach (var subtitle in subtitleProfiles)
             {
+                if (subtitle.DeliveryMethod != SubtitleDeliveryMethod.External)
+                {
+                    continue;
+                }
+
                 var subtitleAdded = AddSubtitleElement(writer, subtitle);
 
                 if (subtitleAdded && _profile.EnableSingleSubtitleLimit)
@@ -250,7 +262,8 @@ namespace Emby.Dlna.Didl
         private bool AddSubtitleElement(XmlWriter writer, SubtitleStreamInfo info)
         {
             var subtitleProfile = _profile.SubtitleProfiles
-                .FirstOrDefault(i => string.Equals(info.Format, i.Format, StringComparison.OrdinalIgnoreCase) && i.Method == SubtitleDeliveryMethod.External);
+                .FirstOrDefault(i => string.Equals(info.Format, i.Format, StringComparison.OrdinalIgnoreCase)
+                                    && i.Method == SubtitleDeliveryMethod.External);
 
             if (subtitleProfile == null)
             {
@@ -387,91 +400,39 @@ namespace Emby.Dlna.Didl
 
         private string GetDisplayName(BaseItem item, StubType? itemStubType, BaseItem context)
         {
-            if (itemStubType.HasValue && itemStubType.Value == StubType.Latest)
+            if (itemStubType.HasValue)
             {
-                return _localization.GetLocalizedString("Latest");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.Playlists)
-            {
-                return _localization.GetLocalizedString("Playlists");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.AlbumArtists)
-            {
-                return _localization.GetLocalizedString("HeaderAlbumArtists");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.Albums)
-            {
-                return _localization.GetLocalizedString("Albums");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.Artists)
-            {
-                return _localization.GetLocalizedString("Artists");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.Songs)
-            {
-                return _localization.GetLocalizedString("Songs");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.Genres)
-            {
-                return _localization.GetLocalizedString("Genres");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteAlbums)
-            {
-                return _localization.GetLocalizedString("HeaderFavoriteAlbums");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteArtists)
-            {
-                return _localization.GetLocalizedString("HeaderFavoriteArtists");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteSongs)
-            {
-                return _localization.GetLocalizedString("HeaderFavoriteSongs");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.ContinueWatching)
-            {
-                return _localization.GetLocalizedString("HeaderContinueWatching");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.Movies)
-            {
-                return _localization.GetLocalizedString("Movies");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.Collections)
-            {
-                return _localization.GetLocalizedString("Collections");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.Favorites)
-            {
-                return _localization.GetLocalizedString("Favorites");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.NextUp)
-            {
-                return _localization.GetLocalizedString("HeaderNextUp");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteSeries)
-            {
-                return _localization.GetLocalizedString("HeaderFavoriteShows");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.FavoriteEpisodes)
-            {
-                return _localization.GetLocalizedString("HeaderFavoriteEpisodes");
-            }
-            if (itemStubType.HasValue && itemStubType.Value == StubType.Series)
-            {
-                return _localization.GetLocalizedString("Shows");
+                switch (itemStubType.Value)
+                {
+                    case StubType.Latest:           return _localization.GetLocalizedString("Latest");
+                    case StubType.Playlists:        return _localization.GetLocalizedString("Playlists");
+                    case StubType.AlbumArtists:     return _localization.GetLocalizedString("HeaderAlbumArtists");
+                    case StubType.Albums:           return _localization.GetLocalizedString("Albums");
+                    case StubType.Artists:          return _localization.GetLocalizedString("Artists");
+                    case StubType.Songs:            return _localization.GetLocalizedString("Songs");
+                    case StubType.Genres:           return _localization.GetLocalizedString("Genres");
+                    case StubType.FavoriteAlbums:   return _localization.GetLocalizedString("HeaderFavoriteAlbums");
+                    case StubType.FavoriteArtists:  return _localization.GetLocalizedString("HeaderFavoriteArtists");
+                    case StubType.FavoriteSongs:    return _localization.GetLocalizedString("HeaderFavoriteSongs");
+                    case StubType.ContinueWatching: return _localization.GetLocalizedString("HeaderContinueWatching");
+                    case StubType.Movies:           return _localization.GetLocalizedString("Movies");
+                    case StubType.Collections:      return _localization.GetLocalizedString("Collections");
+                    case StubType.Favorites:        return _localization.GetLocalizedString("Favorites");
+                    case StubType.NextUp:           return _localization.GetLocalizedString("HeaderNextUp");
+                    case StubType.FavoriteSeries:   return _localization.GetLocalizedString("HeaderFavoriteShows");
+                    case StubType.FavoriteEpisodes: return _localization.GetLocalizedString("HeaderFavoriteEpisodes");
+                    case StubType.Series:           return _localization.GetLocalizedString("Shows");
+                    default: break;
+                }
             }
 
-            var episode = item as Episode;
-            var season = context as Season;
-
-            if (episode != null && season != null)
+            if (item is Episode episode && context is Season season)
             {
                 // This is a special embedded within a season
-                if (item.ParentIndexNumber.HasValue && item.ParentIndexNumber.Value == 0)
+                if (item.ParentIndexNumber.HasValue && item.ParentIndexNumber.Value == 0
+                    && season.IndexNumber.HasValue && season.IndexNumber.Value != 0)
                 {
-                    if (season.IndexNumber.HasValue && season.IndexNumber.Value != 0)
-                    {
-                        return string.Format(_localization.GetLocalizedString("ValueSpecialEpisodeName"), item.Name);
-                    }
+                    return string.Format(_localization.GetLocalizedString("ValueSpecialEpisodeName"), item.Name);
                 }
 
                 if (item.IndexNumber.HasValue)
@@ -585,10 +546,8 @@ namespace Emby.Dlna.Didl
 
         public static bool IsIdRoot(string id)
         {
-            if (string.IsNullOrWhiteSpace(id) ||
-
-                string.Equals(id, "0", StringComparison.OrdinalIgnoreCase)
-
+            if (string.IsNullOrWhiteSpace(id)
+                || string.Equals(id, "0", StringComparison.OrdinalIgnoreCase)
                 // Samsung sometimes uses 1 as root
                 || string.Equals(id, "1", StringComparison.OrdinalIgnoreCase))
             {
@@ -1112,7 +1071,7 @@ namespace Emby.Dlna.Didl
             };
         }
 
-        class ImageDownloadInfo
+        private class ImageDownloadInfo
         {
             internal Guid ItemId;
             internal string ImageTag;
@@ -1128,7 +1087,7 @@ namespace Emby.Dlna.Didl
             internal ItemImageInfo ItemImageInfo;
         }
 
-        class ImageUrlInfo
+        private class ImageUrlInfo
         {
             internal string Url;
 
