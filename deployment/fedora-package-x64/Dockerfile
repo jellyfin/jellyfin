@@ -1,15 +1,36 @@
 FROM fedora:29
-ARG HOME=/build
-RUN mkdir /build && \
-    dnf install -y @buildsys-build rpmdevtools dnf-plugins-core && \
-    dnf copr enable -y @dotnet-sig/dotnet && \
-    rpmdev-setuptree
+# Docker build arguments
+ARG SOURCE_DIR=/jellyfin
+ARG PLATFORM_DIR=/jellyfin/deployment/fedora-package-x64
+ARG ARTIFACT_DIR=/dist
+ARG SDK_VERSION=2.2
+# Docker run environment
+ENV SOURCE_DIR=/jellyfin
+ENV ARTIFACT_DIR=/dist
 
-WORKDIR /build/rpmbuild
-COPY ./deployment/fedora-package-x64/pkg-src/jellyfin.spec SPECS
-COPY ./deployment/fedora-package-x64/pkg-src/ SOURCES
+# Prepare Fedora build environment
+RUN dnf update -y \
+ && dnf install -y @buildsys-build rpmdevtools dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel \
+ && dnf copr enable -y @dotnet-sig/dotnet \
+ && rpmdev-setuptree \
+ && dnf install -y dotnet-sdk-${SDK_VERSION}
 
-RUN spectool -g -R SPECS/jellyfin.spec && \
-    rpmbuild -bs SPECS/jellyfin.spec && \
-    dnf build-dep -y SRPMS/jellyfin-*.src.rpm && \
-    rpmbuild -bb SPECS/jellyfin.spec;
+# Link to docker-build script
+RUN ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh
+
+# Link to RPM spec; mkdir needed or it fails, can't force dest
+RUN mkdir -p ${SOURCE_DIR}/SPECS \
+ && ln -s ${PLATFORM_DIR}/pkg-src/jellyfin.spec ${SOURCE_DIR}/SPECS/jellyfin.spec
+
+# Link to RPM sources; mkdir needed or it fails, can't force dest
+RUN mkdir -p ${SOURCE_DIR}/SOURCES \
+ && ln -s ${PLATFORM_DIR}/pkg-src ${SOURCE_DIR}/SOURCES
+
+# Prepare artifact volume
+VOLUME ${ARTIFACT_DIR}/
+
+# Copy repository
+COPY . ${SOURCE_DIR}/
+
+# Set docker-build entrypoint
+ENTRYPOINT ["/docker-build.sh"]
