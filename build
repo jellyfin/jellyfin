@@ -25,6 +25,7 @@ usage() {
     echo -e " $ build --list-actions <platform>"
     echo -e " $ build [-k/--keep-artifacts] [-b/--web-branch <web_branch>] <platform> <action>"
     echo -e ""
+    echo -e "The 'keep-artifacts' option preserves build artifacts, e.g. Docker images for system package builds."
     echo -e "The web_branch defaults to the same branch name as the current main branch."
     echo -e "To build all platforms, use 'all'."
     echo -e "To perform all build actions, use 'all'."
