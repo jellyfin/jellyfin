@@ -1,8 +1,8 @@
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Services;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
