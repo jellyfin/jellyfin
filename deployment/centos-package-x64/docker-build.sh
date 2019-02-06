@@ -1,0 +1,1 @@
+../fedora-package-x64/docker-build.sh
