@@ -512,7 +512,8 @@ namespace Emby.Server.Implementations
             var parts = GetExportTypes<T>()
                 .Select(x => CreateInstanceSafe(x))
                 .Where(i => i != null)
-                .Cast<T>();
+                .Cast<T>()
+                .ToList(); // Convert to list so this isn't executed for each iteration
 
             if (manageLifetime)
             {
