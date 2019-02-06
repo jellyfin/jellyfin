@@ -23,8 +23,6 @@ namespace Emby.Server.Implementations.Services
             "POLL",  "SUBSCRIBE", "UNSUBSCRIBE"
         };
 
-        public static HashSet<string> AllVerbsSet = new HashSet<string>(AllVerbs);
-
         public static List<MethodInfo> GetActions(this Type serviceType)
         {
             var list = new List<MethodInfo>();

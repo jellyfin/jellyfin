@@ -83,8 +83,8 @@ namespace Emby.Drawing
             }
         }
 
-        public string[] SupportedInputFormats =>
-            new string[]
+        public IReadOnlyCollection<string> SupportedInputFormats =>
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "tiff",
                 "tif",
@@ -137,14 +137,14 @@ namespace Emby.Drawing
             }
         }
 
-        public ImageFormat[] GetSupportedImageOutputFormats()
-        {
-            return _imageEncoder.SupportedOutputFormats;
-        }
+        public IReadOnlyCollection<ImageFormat> GetSupportedImageOutputFormats()
+            => _imageEncoder.SupportedOutputFormats;
 
-        private static readonly string[] TransparentImageTypes = new string[] { ".png", ".webp", ".gif" };
+        private static readonly HashSet<string> TransparentImageTypes
+            = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif" };
+
         public bool SupportsTransparency(string path)
-            => TransparentImageTypes.Contains(Path.GetExtension(path).ToLowerInvariant());
+            => TransparentImageTypes.Contains(Path.GetExtension(path));
 
         public async Task<(string path, string mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
         {
@@ -472,7 +472,7 @@ namespace Emby.Drawing
                 return (originalImagePath, dateModified);
             }
 
-            if (!_imageEncoder.SupportedInputFormats.Contains(inputFormat, StringComparer.OrdinalIgnoreCase))
+            if (!_imageEncoder.SupportedInputFormats.Contains(inputFormat))
             {
                 try
                 {

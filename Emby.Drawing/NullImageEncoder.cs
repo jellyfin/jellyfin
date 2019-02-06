@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
 
@@ -6,15 +7,11 @@ namespace Emby.Drawing
 {
     public class NullImageEncoder : IImageEncoder
     {
-        public string[] SupportedInputFormats =>
-            new[]
-            {
-                "png",
-                "jpeg",
-                "jpg"
-            };
+        public IReadOnlyCollection<string> SupportedInputFormats
+            => new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "png", "jpeg", "jpg" };
 
-        public ImageFormat[] SupportedOutputFormats => new[] { ImageFormat.Jpg, ImageFormat.Png };
+        public IReadOnlyCollection<ImageFormat> SupportedOutputFormats
+        => new HashSet<ImageFormat>() { ImageFormat.Jpg, ImageFormat.Png };
 
         public void CropWhiteSpace(string inputPath, string outputPath)
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -35,8 +36,8 @@ namespace Jellyfin.Drawing.Skia
             LogVersion();
         }
 
-        public string[] SupportedInputFormats =>
-            new[]
+        public IReadOnlyCollection<string> SupportedInputFormats =>
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "jpeg",
                 "jpg",
@@ -62,7 +63,8 @@ namespace Jellyfin.Drawing.Skia
                 "arw"
             };
 
-        public ImageFormat[] SupportedOutputFormats => new[] { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png };
+        public IReadOnlyCollection<ImageFormat> SupportedOutputFormats
+            => new HashSet<ImageFormat>() { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png };
 
         private void LogVersion()
         {
@@ -253,7 +255,8 @@ namespace Jellyfin.Drawing.Skia
             }
         }
 
-        private static string[] TransparentImageTypes = new string[] { ".png", ".gif", ".webp" };
+        private static readonly HashSet<string> TransparentImageTypes
+            = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
 
         internal static SKBitmap Decode(string path, bool forceCleanBitmap, IFileSystem fileSystem, ImageOrientation? orientation, out SKEncodedOrigin origin)
         {
@@ -262,7 +265,7 @@ namespace Jellyfin.Drawing.Skia
                 throw new FileNotFoundException("File not found", path);
             }
 
-            var requiresTransparencyHack = TransparentImageTypes.Contains(Path.GetExtension(path) ?? string.Empty);
+            var requiresTransparencyHack = TransparentImageTypes.Contains(Path.GetExtension(path));
 
             if (requiresTransparencyHack || forceCleanBitmap)
             {
