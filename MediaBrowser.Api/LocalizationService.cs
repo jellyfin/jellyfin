@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -81,9 +82,9 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetCountries request)
+        public async Task<object> Get(GetCountries request)
         {
-            var result = _localization.GetCountries();
+            var result = await _localization.GetCountries();
 
             return ToOptimizedResult(result);
         }
