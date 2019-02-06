@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -17,7 +16,6 @@ using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
@@ -27,7 +25,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
     {
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
-        private readonly IHttpClient _httpClient;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerApplicationPaths _appPaths;
         private bool _hasExited;
@@ -38,19 +35,23 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly IJsonSerializer _json;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private readonly IServerConfigurationManager _config;
-        private readonly IAssemblyInfo _assemblyInfo;
 
-        public EncodedRecorder(ILogger logger, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IServerApplicationPaths appPaths, IJsonSerializer json, IHttpClient httpClient, IProcessFactory processFactory, IServerConfigurationManager config, IAssemblyInfo assemblyInfo)
+        public EncodedRecorder(
+            ILogger logger,
+            IFileSystem fileSystem,
+            IMediaEncoder mediaEncoder,
+            IServerApplicationPaths appPaths,
+            IJsonSerializer json,
+            IProcessFactory processFactory,
+            IServerConfigurationManager config)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
             _json = json;
-            _httpClient = httpClient;
             _processFactory = processFactory;
             _config = config;
-            _assemblyInfo = assemblyInfo;
         }
 
         private static bool CopySubtitles => false;

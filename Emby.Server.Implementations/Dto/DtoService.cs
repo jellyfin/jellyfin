@@ -36,13 +36,9 @@ namespace Emby.Server.Implementations.Dto
         private readonly IItemRepository _itemRepo;
 
         private readonly IImageProcessor _imageProcessor;
-        private readonly IServerConfigurationManager _config;
-        private readonly IFileSystem _fileSystem;
         private readonly IProviderManager _providerManager;
 
-        private readonly Func<IChannelManager> _channelManagerFactory;
         private readonly IApplicationHost _appHost;
-        private readonly Func<IDeviceManager> _deviceManager;
         private readonly Func<IMediaSourceManager> _mediaSourceManager;
         private readonly Func<ILiveTvManager> _livetvManager;
 
@@ -52,12 +48,8 @@ namespace Emby.Server.Implementations.Dto
             IUserDataManager userDataRepository,
             IItemRepository itemRepo,
             IImageProcessor imageProcessor,
-            IServerConfigurationManager config,
-            IFileSystem fileSystem,
             IProviderManager providerManager,
-            Func<IChannelManager> channelManagerFactory,
             IApplicationHost appHost,
-            Func<IDeviceManager> deviceManager,
             Func<IMediaSourceManager> mediaSourceManager,
             Func<ILiveTvManager> livetvManager)
         {
@@ -66,12 +58,8 @@ namespace Emby.Server.Implementations.Dto
             _userDataRepository = userDataRepository;
             _itemRepo = itemRepo;
             _imageProcessor = imageProcessor;
-            _config = config;
-            _fileSystem = fileSystem;
             _providerManager = providerManager;
-            _channelManagerFactory = channelManagerFactory;
             _appHost = appHost;
-            _deviceManager = deviceManager;
             _mediaSourceManager = mediaSourceManager;
             _livetvManager = livetvManager;
         }

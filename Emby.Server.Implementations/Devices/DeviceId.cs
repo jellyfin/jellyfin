@@ -11,7 +11,6 @@ namespace Emby.Server.Implementations.Devices
     {
         private readonly IApplicationPaths _appPaths;
         private readonly ILogger _logger;
-        private readonly IFileSystem _fileSystem;
 
         private readonly object _syncLock = new object();
 
@@ -86,19 +85,10 @@ namespace Emby.Server.Implementations.Devices
 
         private string _id;
 
-        public DeviceId(
-            IApplicationPaths appPaths,
-            ILoggerFactory loggerFactory,
-            IFileSystem fileSystem)
+        public DeviceId(IApplicationPaths appPaths, ILoggerFactory loggerFactory)
         {
-            if (fileSystem == null)
-            {
-                throw new ArgumentNullException(nameof(fileSystem));
-            }
-
             _appPaths = appPaths;
             _logger = loggerFactory.CreateLogger("SystemId");
-            _fileSystem = fileSystem;
         }
 
         public string Value => _id ?? (_id = GetDeviceId());

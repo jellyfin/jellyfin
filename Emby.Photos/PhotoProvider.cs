@@ -9,7 +9,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using TagLib;
 using TagLib.IFD;
@@ -21,13 +20,11 @@ namespace Emby.Photos
     public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IHasItemChangeMonitor
     {
         private readonly ILogger _logger;
-        private readonly IFileSystem _fileSystem;
         private IImageProcessor _imageProcessor;
 
-        public PhotoProvider(ILogger logger, IFileSystem fileSystem, IImageProcessor imageProcessor)
+        public PhotoProvider(ILogger logger, IImageProcessor imageProcessor)
         {
             _logger = logger;
-            _fileSystem = fileSystem;
             _imageProcessor = imageProcessor;
         }
 
