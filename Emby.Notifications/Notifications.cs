@@ -5,21 +5,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
-using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Notifications
@@ -29,39 +25,36 @@ namespace Emby.Notifications
     /// </summary>
     public class Notifications : IServerEntryPoint
     {
-        private readonly IInstallationManager _installationManager;
-        private readonly IUserManager _userManager;
         private readonly ILogger _logger;
 
-        private readonly ITaskManager _taskManager;
         private readonly INotificationManager _notificationManager;
 
         private readonly ILibraryManager _libraryManager;
-        private readonly ISessionManager _sessionManager;
         private readonly IServerApplicationHost _appHost;
 
         private Timer LibraryUpdateTimer { get; set; }
         private readonly object _libraryChangedSyncLock = new object();
 
         private readonly IConfigurationManager _config;
-        private readonly IDeviceManager _deviceManager;
         private readonly ILocalizationManager _localization;
         private readonly IActivityManager _activityManager;
 
         private string[] _coreNotificationTypes;
 
-        public Notifications(IInstallationManager installationManager, IActivityManager activityManager, ILocalizationManager localization, IUserManager userManager, ILogger logger, ITaskManager taskManager, INotificationManager notificationManager, ILibraryManager libraryManager, ISessionManager sessionManager, IServerApplicationHost appHost, IConfigurationManager config, IDeviceManager deviceManager)
+        public Notifications(
+            IActivityManager activityManager,
+            ILocalizationManager localization,
+            ILogger logger,
+            INotificationManager notificationManager,
+            ILibraryManager libraryManager,
+            IServerApplicationHost appHost,
+            IConfigurationManager config)
         {
-            _installationManager = installationManager;
-            _userManager = userManager;
             _logger = logger;
-            _taskManager = taskManager;
             _notificationManager = notificationManager;
             _libraryManager = libraryManager;
-            _sessionManager = sessionManager;
             _appHost = appHost;
             _config = config;
-            _deviceManager = deviceManager;
             _localization = localization;
             _activityManager = activityManager;
 
@@ -124,7 +117,7 @@ namespace Emby.Notifications
             return _config.GetConfiguration<NotificationOptions>("notifications");
         }
 
-        async void _appHost_HasUpdateAvailableChanged(object sender, EventArgs e)
+        private async void _appHost_HasUpdateAvailableChanged(object sender, EventArgs e)
         {
             // This notification is for users who can't auto-update (aka running as service)
             if (!_appHost.HasUpdateAvailable)
@@ -145,7 +138,7 @@ namespace Emby.Notifications
         }
 
         private readonly List<BaseItem> _itemsAdded = new List<BaseItem>();
-        void _libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
+        private void _libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
         {
             if (!FilterItem(e.Item))
             {
