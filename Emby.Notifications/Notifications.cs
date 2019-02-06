@@ -65,7 +65,7 @@ namespace Emby.Notifications
             _localization = localization;
             _activityManager = activityManager;
 
-            _coreNotificationTypes = new CoreNotificationTypes(localization, appHost).GetNotificationTypes().Select(i => i.Type).ToArray();
+            _coreNotificationTypes = new CoreNotificationTypes(localization).GetNotificationTypes().Select(i => i.Type).ToArray();
         }
 
         public Task RunAsync()
@@ -127,7 +127,7 @@ namespace Emby.Notifications
         async void _appHost_HasUpdateAvailableChanged(object sender, EventArgs e)
         {
             // This notification is for users who can't auto-update (aka running as service)
-            if (!_appHost.HasUpdateAvailable || _appHost.CanSelfUpdate)
+            if (!_appHost.HasUpdateAvailable)
             {
                 return;
             }
