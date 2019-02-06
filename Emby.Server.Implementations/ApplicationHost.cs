@@ -303,7 +303,6 @@ namespace Emby.Server.Implementations
         /// <value>The user data repository.</value>
         private IUserDataManager UserDataManager { get; set; }
         private IUserRepository UserRepository { get; set; }
-        internal IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
         internal SqliteItemRepository ItemRepository { get; set; }
 
         private INotificationManager NotificationManager { get; set; }
@@ -472,6 +471,7 @@ namespace Emby.Server.Implementations
         {
             try
             {
+                Logger.LogWarning("Creating instance of {Type}", type);
                 return ActivatorUtilities.CreateInstance(_serviceProvider, type);
             }
             catch (Exception ex)
@@ -519,29 +519,6 @@ namespace Emby.Server.Implementations
                 lock (DisposableParts)
                 {
                     DisposableParts.AddRange(parts.OfType<IDisposable>());
-                }
-            }
-
-            return parts;
-        }
-
-        public List<(T, string)> GetExportsWithInfo<T>(bool manageLifetime = true)
-        {
-            var parts = GetExportTypes<T>()
-                .Select(i =>
-                {
-                    var obj = CreateInstanceSafe(i);
-
-                    return ((T)obj, i.Assembly.Location);
-                })
-                .Where(i => i.Item1 != null)
-                .ToList();
-
-            if (manageLifetime)
-            {
-                lock (DisposableParts)
-                {
-                    DisposableParts.AddRange(parts.Select(i => i.Item1).OfType<IDisposable>());
                 }
             }
 
@@ -721,8 +698,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(UserRepository);
 
             var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LoggerFactory, JsonSerializer, ApplicationPaths, FileSystemManager);
-            DisplayPreferencesRepository = displayPreferencesRepo;
-            serviceCollection.AddSingleton(DisplayPreferencesRepository);
+            serviceCollection.AddSingleton<IDisplayPreferencesRepository>(displayPreferencesRepo);
 
             ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, JsonSerializer, LoggerFactory, assemblyInfo);
             serviceCollection.AddSingleton<IItemRepository>(ItemRepository);
@@ -1085,7 +1061,10 @@ namespace Emby.Server.Implementations
             }
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
-            Plugins = GetExportsWithInfo<IPlugin>().Select(LoadPlugin).Where(i => i != null).ToArray();
+            Plugins = GetExports<IPlugin>()
+                        .Select(LoadPlugin)
+                        .Where(i => i != null)
+                        .ToArray();
 
             HttpServer.Init(GetExports<IService>(false), GetExports<IWebSocketListener>());
 
@@ -1119,19 +1098,15 @@ namespace Emby.Server.Implementations
             IsoManager.AddParts(GetExports<IIsoMounter>());
         }
 
-        private IPlugin LoadPlugin((IPlugin, string) info)
+        private IPlugin LoadPlugin(IPlugin plugin)
         {
-            var plugin = info.Item1;
-            var assemblyFilePath = info.Item2;
-
             try
             {
-                var assemblyPlugin = plugin as IPluginAssembly;
-
-                if (assemblyPlugin != null)
+                if (plugin is IPluginAssembly assemblyPlugin)
                 {
                     var assembly = plugin.GetType().Assembly;
                     var assemblyName = assembly.GetName();
+                    var assemblyFilePath = assembly.Location;
 
                     var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
 
@@ -1401,7 +1376,7 @@ namespace Emby.Server.Implementations
                 foreach (var file in Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly))
                 {
                     Logger.LogInformation("Loading assembly {Path}", file);
-                    yield return Assembly.LoadFile(file);
+                    yield return Assembly.LoadFrom(file);
                 }
             }
 
