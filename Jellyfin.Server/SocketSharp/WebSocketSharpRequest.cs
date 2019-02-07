@@ -86,9 +86,7 @@ namespace Jellyfin.SocketSharp
 
         private static readonly char[] HttpTrimCharacters = new char[] { (char)0x09, (char)0xA, (char)0xB, (char)0xC, (char)0xD, (char)0x20 };
 
-        //
         // CheckBadChars - throws on invalid chars to be not found in header name/value
-        //
         internal static string CheckBadChars(string name)
         {
             if (name == null || name.Length == 0)
@@ -97,11 +95,11 @@ namespace Jellyfin.SocketSharp
             }
 
             // VALUE check
-            //Trim spaces from both ends
+            // Trim spaces from both ends
             name = name.Trim(HttpTrimCharacters);
 
-            //First, check for correctly formed multi-line value
-            //Second, check for absenece of CTL characters
+            // First, check for correctly formed multi-line value
+            // Second, check for absenece of CTL characters
             int crlf = 0;
             for (int i = 0; i < name.Length; ++i)
             {
@@ -198,7 +196,10 @@ namespace Jellyfin.SocketSharp
         public static string GetResponseContentType(IRequest httpReq)
         {
             var specifiedContentType = GetQueryStringContentType(httpReq);
-            if (!string.IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
+            if (!string.IsNullOrEmpty(specifiedContentType))
+            {
+                return specifiedContentType;
+            }
 
             var serverDefaultContentType = "application/json";
 
@@ -237,7 +238,7 @@ namespace Jellyfin.SocketSharp
                 return Soap11;
             }
 
-            //We could also send a '406 Not Acceptable', but this is allowed also
+            // We could also send a '406 Not Acceptable', but this is allowed also
             return serverDefaultContentType;
         }
 
@@ -252,7 +253,10 @@ namespace Jellyfin.SocketSharp
 
             foreach (var contentType in contentTypes)
             {
-                if (IsContentType(request, contentType)) return true;
+                if (IsContentType(request, contentType))
+                {
+                    return true;
+                }
             }
 
             return false;
@@ -274,10 +278,12 @@ namespace Jellyfin.SocketSharp
                 {
                     return null;
                 }
+
                 if (pi[0] == '/')
                 {
                     pi = pi.Substring(1);
                 }
+
                 format = LeftPart(pi, '/');
                 if (format.Length > formatMaxLength)
                 {
@@ -285,7 +291,7 @@ namespace Jellyfin.SocketSharp
                 }
             }
 
-            format = LeftPart(format, '.').ToLowerInvariant();
+            format = LeftPart(format, '.');
             if (format.Contains("json", StringComparison.OrdinalIgnoreCase))
             {
                 return "application/json";
@@ -349,7 +355,7 @@ namespace Jellyfin.SocketSharp
                 return pathInfo;
             }
 
-            //Wildcard mode relies on this to work out the handlerPath
+            // Wildcard mode relies on this to work out the handlerPath
             pathInfo = ResolvePathInfoFromMappedPath(fullPath, appPath);
             if (!string.IsNullOrEmpty(pathInfo))
             {
