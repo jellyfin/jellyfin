@@ -52,7 +52,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             {
                 var tvdbId = episode.GetProviderId(MetadataProviders.Tvdb);
                 // Process images
-                var episodeResult = await _tvDbClientManager.TvDbClient.Episodes.GetAsync(Convert.ToInt32(tvdbId), cancellationToken);
+                var episodeResult = await _tvDbClientManager.GetEpisodesAsync(Convert.ToInt32(tvdbId), cancellationToken);
 
                 var image = GetImageInfo(episodeResult.Data);
                 if (image != null)

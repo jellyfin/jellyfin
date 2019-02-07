@@ -9,6 +9,7 @@ using TvDbSharper.Dto;
 
 namespace MediaBrowser.Providers.TV
 {
+    // TODO add to DI once Bond's PR is merged
     public sealed class TvDbClientManager
     {
         private static volatile TvDbClientManager instance;
@@ -72,22 +73,45 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        public async Task<SeriesSearchResult[]> GetSeriesByName(string name, CancellationToken cancellationToken)
+        public Task<TvDbResponse<SeriesSearchResult[]>> GetSeriesByNameAsync(string name, CancellationToken cancellationToken)
         {
-            return await TryGetValue(name,
-                async () => (await TvDbClient.Search.SearchSeriesByNameAsync(name, cancellationToken)).Data);
+            return TryGetValue(name,() => TvDbClient.Search.SearchSeriesByNameAsync(name, cancellationToken));
         }
 
-        public async Task<Series> GetSeriesById(int tvdbId, CancellationToken cancellationToken)
+        public Task<TvDbResponse<Series>> GetSeriesByIdAsync(int tvdbId, CancellationToken cancellationToken)
         {
-            return await TryGetValue(tvdbId,
-                async () => (await TvDbClient.Series.GetAsync(tvdbId, cancellationToken)).Data);
+            return TryGetValue(tvdbId,() => TvDbClient.Series.GetAsync(tvdbId, cancellationToken));
+        }
+
+        public Task<TvDbResponse<EpisodeRecord>> GetEpisodesAsync(int tvdbId, CancellationToken cancellationToken)
+        {
+            return TryGetValue(tvdbId,() => TvDbClient.Episodes.GetAsync(tvdbId, cancellationToken));
+        }
+
+        public Task<TvDbResponse<SeriesSearchResult[]>> GetSeriesByImdbIdAsync(string imdbId, CancellationToken cancellationToken)
+        {
+            return TryGetValue(imdbId,() => TvDbClient.Search.SearchSeriesByImdbIdAsync(imdbId, cancellationToken));
+        }
+
+        public Task<TvDbResponse<SeriesSearchResult[]>> GetSeriesByZap2ItIdAsync(string zap2ItId, CancellationToken cancellationToken)
+        {
+            return TryGetValue(zap2ItId,() => TvDbClient.Search.SearchSeriesByImdbIdAsync(zap2ItId, cancellationToken));
+        }
+        public Task<TvDbResponse<Actor[]>> GetActorsAsync(int tvdbId, CancellationToken cancellationToken)
+        {
+            return TryGetValue(tvdbId,() => TvDbClient.Series.GetActorsAsync(tvdbId, cancellationToken));
+        }
+
+        public Task<TvDbResponse<Image[]>> GetImagesAsync(int tvdbId, ImagesQuery imageQuery, CancellationToken cancellationToken)
+        {
+            return TryGetValue(tvdbId,() => TvDbClient.Series.GetImagesAsync(tvdbId, imageQuery, cancellationToken));
         }
 
         private async Task<T> TryGetValue<T>(object key, Func<Task<T>> resultFactory)
         {
             if (_cache.TryGetValue(key, out T cachedValue))
             {
+                Console.WriteLine("Cache hit!!!");
                 return cachedValue;
             }
 

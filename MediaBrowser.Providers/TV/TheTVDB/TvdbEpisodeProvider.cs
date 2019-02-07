@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers.TV
             if (TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds))
             {
                 var episodeResult =
-                    await _tvDbClientManager.TvDbClient.Episodes.GetAsync((int)searchInfo.IndexNumber, cancellationToken);
+                    await _tvDbClientManager.GetEpisodesAsync((int)searchInfo.IndexNumber, cancellationToken);
                 var metadataResult = MapEpisodeToResult(searchInfo, episodeResult.Data);
 
                 if (metadataResult.HasMetadata)
@@ -82,7 +82,7 @@ namespace MediaBrowser.Providers.TV
             if (TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds) &&
                 (searchInfo.IndexNumber.HasValue || searchInfo.PremiereDate.HasValue))
             {
-                var episodeResult = await _tvDbClientManager.TvDbClient.Episodes.GetAsync(Convert.ToInt32(searchInfo.GetProviderId(MetadataProviders.Tvdb)),
+                var episodeResult = await _tvDbClientManager.GetEpisodesAsync(Convert.ToInt32(searchInfo.GetProviderId(MetadataProviders.Tvdb)),
                     cancellationToken);
 
                 result = MapEpisodeToResult(searchInfo, episodeResult.Data);

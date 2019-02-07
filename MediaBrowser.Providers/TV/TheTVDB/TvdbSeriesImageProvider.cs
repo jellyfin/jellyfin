@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     KeyType = keyType
                 };
                 var imageResults =
-                    await _tvDbClientManager.TvDbClient.Series.GetImagesAsync(Convert.ToInt32(item.GetProviderId(MetadataProviders.Tvdb)), imageQuery, cancellationToken);
+                    await _tvDbClientManager.GetImagesAsync(Convert.ToInt32(item.GetProviderId(MetadataProviders.Tvdb)), imageQuery, cancellationToken);
 
                 remoteImages.AddRange(GetImages(imageResults.Data, language));
             }

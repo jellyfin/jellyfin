@@ -123,17 +123,15 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 tvdbId = await GetSeriesByRemoteId(zap2It, MetadataProviders.Zap2It.ToString(), metadataLanguage, cancellationToken);
             }
 
-            // TODO call this function elsewhere?
-            var seriesResult = await _tvDbClientManager.GetSeriesById(Convert.ToInt32(tvdbId), cancellationToken);
+            var seriesResult = await _tvDbClientManager.GetSeriesByIdAsync(Convert.ToInt32(tvdbId), cancellationToken);
 
-            // TODO error handling
-            MapSeriesToResult(result, seriesResult);
+            MapSeriesToResult(result, seriesResult.Data);
 
             cancellationToken.ThrowIfCancellationRequested();
 
             result.ResetPeople();
 
-            var actorsResult = await _tvDbClientManager.TvDbClient.Series.GetActorsAsync(Convert.ToInt32(tvdbId), cancellationToken);
+            var actorsResult = await _tvDbClientManager.GetActorsAsync(Convert.ToInt32(tvdbId), cancellationToken);
             MapActorsToResult(result, actorsResult.Data);
         }
 
@@ -144,11 +142,11 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             if (string.Equals(idType, MetadataProviders.Zap2It.ToString(), StringComparison.OrdinalIgnoreCase))
             {
-                result = await _tvDbClientManager.TvDbClient.Search.SearchSeriesByZap2ItIdAsync(id, cancellationToken);
+                result = await _tvDbClientManager.GetSeriesByZap2ItIdAsync(id, cancellationToken);
             }
             else
             {
-                result = await _tvDbClientManager.TvDbClient.Search.SearchSeriesByImdbIdAsync(id, cancellationToken);
+                result = await _tvDbClientManager.GetSeriesByImdbIdAsync(id, cancellationToken);
             }
 
             return result.Data.First().Id.ToString();
@@ -201,10 +199,10 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             _tvDbClientManager.TvDbClient.AcceptedLanguage = NormalizeLanguage(language);
             var comparableName = GetComparableName(name);
             var list = new List<Tuple<List<string>, RemoteSearchResult>>();
-            SeriesSearchResult[] result;
+            TvDbResponse<SeriesSearchResult[]> result;
             try
             {
-                result = await _tvDbClientManager.GetSeriesByName(comparableName, cancellationToken);
+                result = await _tvDbClientManager.GetSeriesByNameAsync(comparableName, cancellationToken);
             }
             catch (TvDbServerException e)
             {
@@ -212,7 +210,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 return new List<RemoteSearchResult>();
             }
 
-            foreach (var seriesSearchResult in result)
+            foreach (var seriesSearchResult in result.Data)
             {
                 var tvdbTitles = new List<string>
                 {
@@ -232,9 +230,9 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 try
                 {
                     var seriesSesult =
-                        await _tvDbClientManager.GetSeriesById(seriesSearchResult.Id, cancellationToken);
-                    remoteSearchResult.SetProviderId(MetadataProviders.Imdb, seriesSesult.ImdbId);
-                    remoteSearchResult.SetProviderId(MetadataProviders.Zap2It, seriesSesult.Zap2itId);
+                        await _tvDbClientManager.GetSeriesByIdAsync(seriesSearchResult.Id, cancellationToken);
+                    remoteSearchResult.SetProviderId(MetadataProviders.Imdb, seriesSesult.Data.ImdbId);
+                    remoteSearchResult.SetProviderId(MetadataProviders.Zap2It, seriesSesult.Data.Zap2itId);
                 }
                 catch (TvDbServerException e)
                 {
