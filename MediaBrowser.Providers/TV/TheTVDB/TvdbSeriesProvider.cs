@@ -329,7 +329,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             return name.Trim();
         }
 
-        private static void MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries)
+        private void MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries)
         {
             Series series = result.Item;
             series.SetProviderId(MetadataProviders.Tvdb, tvdbSeries.Id.ToString());
@@ -363,11 +363,30 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             series.AddStudio(tvdbSeries.Network);
 
-            // TODO is this necessary?
-            // if (result.Item.Status.HasValue && result.Item.Status.Value == SeriesStatus.Ended && episodeAirDates.Count > 0)
-            // {
-            //     result.Item.EndDate = episodeAirDates.Max();
-            // }
+            if (result.Item.Status.HasValue && result.Item.Status.Value == SeriesStatus.Ended)
+            {
+                try
+                {
+                    var episodeSummary = _tvDbClientManager
+                        .GetSeriesEpisodeSummaryAsync(tvdbSeries.Id, CancellationToken.None).Result.Data;
+                    var maxSeasonNumber = episodeSummary.AiredSeasons.Select(s => Convert.ToInt32(s)).Max();
+                    var episodeQuery = new EpisodeQuery
+                    {
+                        AiredSeason = maxSeasonNumber
+                    };
+                    var episodesPage =
+                        _tvDbClientManager.GetEpisodesPageAsync(tvdbSeries.Id, episodeQuery, CancellationToken.None).Result.Data;
+                    result.Item.EndDate = episodesPage.Select(e =>
+                        {
+                            DateTime.TryParse(e.FirstAired, out var firstAired);
+                            return firstAired;
+                        }).Max();
+                }
+                catch (TvDbServerException e)
+                {
+                    _logger.LogError(e, "Failed to find series end date for series {TvdbId}", tvdbSeries.Id);
+                }
+            }
         }
 
         private static void MapActorsToResult(MetadataResult<Series> result, IEnumerable<Actor> actors)
