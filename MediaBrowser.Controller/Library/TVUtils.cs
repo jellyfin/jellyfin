@@ -28,24 +28,24 @@ namespace MediaBrowser.Controller.Library
             {
                 if (string.Equals(day, "Daily", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new DayOfWeek[]
-                               {
-                                   DayOfWeek.Sunday,
-                                   DayOfWeek.Monday,
-                                   DayOfWeek.Tuesday,
-                                   DayOfWeek.Wednesday,
-                                   DayOfWeek.Thursday,
-                                   DayOfWeek.Friday,
-                                   DayOfWeek.Saturday
-                               };
+                    return new[]
+                    {
+                        DayOfWeek.Sunday,
+                        DayOfWeek.Monday,
+                        DayOfWeek.Tuesday,
+                        DayOfWeek.Wednesday,
+                        DayOfWeek.Thursday,
+                        DayOfWeek.Friday,
+                        DayOfWeek.Saturday
+                    };
                 }
 
                 if (Enum.TryParse(day, true, out DayOfWeek value))
                 {
-                    return new DayOfWeek[]
-                               {
-                                   value
-                               };
+                    return new[]
+                    {
+                        value
+                    };
                 }
 
                 return new DayOfWeek[] { };

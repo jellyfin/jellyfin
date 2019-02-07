@@ -18,7 +18,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 {
     public class TvdbEpisodeImageProvider : IRemoteImageProvider
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IHttpClient _httpClient;
         private readonly TvDbClientManager _tvDbClientManager;
 
@@ -47,6 +46,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         {
             var episode = (Episode)item;
             var series = episode.Series;
+            var imageResult = new List<RemoteImageInfo>();
 
             if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
             {
@@ -55,21 +55,17 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 var episodeResult = await _tvDbClientManager.TvDbClient.Episodes.GetAsync(Convert.ToInt32(tvdbId), cancellationToken);
 
                 var image = GetImageInfo(episodeResult.Data);
-                return new List<RemoteImageInfo>
+                if (image != null)
                 {
-                    image
-                };
+                    imageResult.Add(image);
+                }
             }
 
-            return new RemoteImageInfo[] { };
+            return imageResult;
         }
 
         private RemoteImageInfo GetImageInfo(EpisodeRecord episode)
         {
-            var height = 225;
-            var width = 400;
-            var url = string.Empty;
-
             if (string.IsNullOrEmpty(episode.Filename))
             {
                 return null;

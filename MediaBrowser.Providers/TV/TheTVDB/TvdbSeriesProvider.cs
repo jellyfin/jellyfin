@@ -95,7 +95,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 result.Item = new Series();
                 result.HasMetadata = true;
 
-                FetchSeriesData(result, itemId.MetadataLanguage, itemId.ProviderIds, cancellationToken);
+                await FetchSeriesData(result, itemId.MetadataLanguage, itemId.ProviderIds, cancellationToken);
             }
 
             return result;
@@ -127,7 +127,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             var seriesResult = await _tvDbClientManager.TvDbClient.Series.GetAsync(Convert.ToInt32(tvdbId), cancellationToken);
 
             // TODO error handling
-            MapSeriesToResult(result, seriesResult.Data, cancellationToken);
+            MapSeriesToResult(result, seriesResult.Data);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -159,51 +159,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             return seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out _) ||
                    seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out _) ||
                    seriesProviderIds.TryGetValue(MetadataProviders.Zap2It.ToString(), out _);
-        }
-
-        // TODO caching
-        private bool IsCacheValid(string seriesDataPath, string preferredMetadataLanguage)
-        {
-            return true;
-//            try
-//            {
-//                var files = _fileSystem.GetFiles(seriesDataPath, new[] { ".xml" }, true, false)
-//                    .ToList();
-//
-//                var seriesXmlFilename = preferredMetadataLanguage + ".xml";
-//
-//                const int cacheHours = 12;
-//
-//                var seriesFile = files.FirstOrDefault(i => string.Equals(seriesXmlFilename, i.Name, StringComparison.OrdinalIgnoreCase));
-//                // No need to check age if automatic updates are enabled
-//                if (seriesFile == null || !seriesFile.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(seriesFile)).TotalHours > cacheHours)
-//                {
-//                    return false;
-//                }
-//
-//                var actorsXml = files.FirstOrDefault(i => string.Equals("actors.xml", i.Name, StringComparison.OrdinalIgnoreCase));
-//                // No need to check age if automatic updates are enabled
-//                if (actorsXml == null || !actorsXml.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(actorsXml)).TotalHours > cacheHours)
-//                {
-//                    return false;
-//                }
-//
-//                var bannersXml = files.FirstOrDefault(i => string.Equals("banners.xml", i.Name, StringComparison.OrdinalIgnoreCase));
-//                // No need to check age if automatic updates are enabled
-//                if (bannersXml == null || !bannersXml.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(bannersXml)).TotalHours > cacheHours)
-//                {
-//                    return false;
-//                }
-//                return true;
-//            }
-//            catch (FileNotFoundException)
-//            {
-//                return false;
-//            }
-//            catch (IOException)
-//            {
-//                return false;
-//            }
         }
 
         /// <summary>
@@ -246,7 +201,16 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             _tvDbClientManager.TvDbClient.AcceptedLanguage = NormalizeLanguage(language);
             var comparableName = GetComparableName(name);
             var list = new List<Tuple<List<string>, RemoteSearchResult>>();
-            TvDbResponse<SeriesSearchResult[]> result = await _tvDbClientManager.TvDbClient.Search.SearchSeriesByNameAsync(comparableName, cancellationToken);
+            TvDbResponse<SeriesSearchResult[]> result;
+            try
+            {
+                result = await _tvDbClientManager.TvDbClient.Search.SearchSeriesByNameAsync(comparableName, cancellationToken);
+            }
+            catch (TvDbServerException e)
+            {
+                _logger.LogError(e, "No series results found for {Name}", comparableName);
+                return new List<RemoteSearchResult>();
+            }
 
             foreach (var seriesSearchResult in result.Data)
             {
@@ -265,8 +229,18 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     ImageUrl = TVUtils.BannerUrl + seriesSearchResult.Banner
 
                 };
-                // TODO requires another query, is it worth it?
-                // remoteSearchResult.SetProviderId(MetadataProviders.Imdb, seriesSearchResult.Id);
+                try
+                {
+                    var seriesSesult =
+                        await _tvDbClientManager.TvDbClient.Series.GetAsync(seriesSearchResult.Id, cancellationToken);
+                    remoteSearchResult.SetProviderId(MetadataProviders.Imdb, seriesSesult.Data.ImdbId);
+                    remoteSearchResult.SetProviderId(MetadataProviders.Zap2It, seriesSesult.Data.Zap2itId);
+                }
+                catch (TvDbServerException e)
+                {
+                    _logger.LogError(e, "Unable to retrieve series with id {TvdbId}", seriesSearchResult.Id);
+                }
+
                 remoteSearchResult.SetProviderId(MetadataProviders.Tvdb, seriesSearchResult.Id.ToString());
                 list.Add(new Tuple<List<string>, RemoteSearchResult>(tvdbTitles, remoteSearchResult));
             }
@@ -335,14 +309,13 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             return name.Trim();
         }
 
-        private static void MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries, CancellationToken cancellationToken)
+        private static void MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries)
         {
-            var episodeAirDates = new List<DateTime>();
             Series series = result.Item;
             series.SetProviderId(MetadataProviders.Tvdb, tvdbSeries.Id.ToString());
             series.Name = tvdbSeries.SeriesName;
             series.Overview = (tvdbSeries.Overview ?? string.Empty).Trim();
-            // TODO result.ResultLanguage = (seriesResponse.Data. ?? string.Empty).Trim();
+            result.ResultLanguage = TvDbClientManager.Instance.TvDbClient.AcceptedLanguage;
             series.AirDays = TVUtils.GetAirDays(tvdbSeries.AirsDayOfWeek);
             series.AirTime = tvdbSeries.AirsTime;
 
@@ -368,14 +341,13 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 series.AddGenre(genre);
             }
 
-            // TODO is network == studio?
             series.AddStudio(tvdbSeries.Network);
 
             // TODO is this necessary?
-            if (result.Item.Status.HasValue && result.Item.Status.Value == SeriesStatus.Ended && episodeAirDates.Count > 0)
-            {
-                result.Item.EndDate = episodeAirDates.Max();
-            }
+            // if (result.Item.Status.HasValue && result.Item.Status.Value == SeriesStatus.Ended && episodeAirDates.Count > 0)
+            // {
+            //     result.Item.EndDate = episodeAirDates.Max();
+            // }
         }
 
         private static void MapActorsToResult(MetadataResult<Series> result, IEnumerable<Actor> actors)
