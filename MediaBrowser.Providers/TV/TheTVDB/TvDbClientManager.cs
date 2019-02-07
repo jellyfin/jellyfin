@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
@@ -87,6 +88,24 @@ namespace MediaBrowser.Providers.TV
             return TryGetValue("episode" + episodeTvdbId,() => TvDbClient.Episodes.GetAsync(episodeTvdbId, cancellationToken));
         }
 
+        public async Task<List<EpisodeRecord>> GetAllEpisodesAsync(int tvdbId, CancellationToken cancellationToken)
+        {
+            // Traverse all episode pages and join them together
+            var episodes = new List<EpisodeRecord>();
+            var episodePage = await GetEpisodesPageAsync(tvdbId, new EpisodeQuery(), cancellationToken);
+            episodes.AddRange(episodePage.Data);
+            int next = episodePage.Links.Next.GetValueOrDefault(0);
+            int last = episodePage.Links.Last.GetValueOrDefault(0);
+
+            for (var page = next; page <= last; ++page)
+            {
+                episodePage = await GetEpisodesPageAsync(tvdbId, page, new EpisodeQuery(), cancellationToken);
+                episodes.AddRange(episodePage.Data);
+            }
+
+            return episodes;
+        }
+
         public Task<TvDbResponse<SeriesSearchResult[]>> GetSeriesByImdbIdAsync(string imdbId, CancellationToken cancellationToken)
         {
             return TryGetValue("series" + imdbId,() => TvDbClient.Search.SearchSeriesByImdbIdAsync(imdbId, cancellationToken));
@@ -117,10 +136,21 @@ namespace MediaBrowser.Providers.TV
                 () => TvDbClient.Series.GetEpisodesSummaryAsync(tvdbId, cancellationToken));
         }
 
+        public Task<TvDbResponse<EpisodeRecord[]>> GetEpisodesPageAsync(int tvdbId, int page, EpisodeQuery episodeQuery, CancellationToken cancellationToken)
+        {
+            // Not quite as dynamic as it could be
+            var cacheKey = "episodespage" + tvdbId + "page" + page;
+            if (episodeQuery.AiredSeason.HasValue)
+            {
+                cacheKey += "airedseason" + episodeQuery.AiredSeason.Value;
+            }
+            return TryGetValue(cacheKey,
+                () => TvDbClient.Series.GetEpisodesAsync(tvdbId, page, episodeQuery, cancellationToken));
+        }
+
         public Task<TvDbResponse<EpisodeRecord[]>> GetEpisodesPageAsync(int tvdbId, EpisodeQuery episodeQuery, CancellationToken cancellationToken)
         {
-            return TryGetValue("episodespage" + tvdbId + episodeQuery.AiredSeason,
-                () => TvDbClient.Series.GetEpisodesAsync(tvdbId, 1, episodeQuery, cancellationToken));
+            return GetEpisodesPageAsync(tvdbId, 1, episodeQuery, cancellationToken);
         }
 
         private async Task<T> TryGetValue<T>(object key, Func<Task<T>> resultFactory)

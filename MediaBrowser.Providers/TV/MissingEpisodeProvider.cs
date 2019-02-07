@@ -30,63 +30,46 @@ namespace MediaBrowser.Providers.TV
         private readonly IFileSystem _fileSystem;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private readonly IXmlReaderSettingsFactory _xmlSettings;
 
-        public MissingEpisodeProvider(ILogger logger, IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlSettings)
+        public MissingEpisodeProvider(ILogger logger, IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization, IFileSystem fileSystem)
         {
             _logger = logger;
             _config = config;
             _libraryManager = libraryManager;
             _localization = localization;
             _fileSystem = fileSystem;
-            _xmlSettings = xmlSettings;
         }
 
         public async Task<bool> Run(Series series, bool addNewItems, CancellationToken cancellationToken)
         {
-            // TODO cvium fixme wtfisthisandwhydoesitrunwhenoptionisdisabled
-            return true;
             var tvdbId = series.GetProviderId(MetadataProviders.Tvdb);
 
             // Todo: Support series by imdb id
-            var seriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            seriesProviderIds[MetadataProviders.Tvdb.ToString()] = tvdbId;
+            var seriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [MetadataProviders.Tvdb.ToString()] = tvdbId
+            };
 
-            var episodeFiles = _fileSystem.GetFilePaths("")
-                .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
-                .Select(Path.GetFileNameWithoutExtension)
-                .Where(i => i.StartsWith("episode-", StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            var episodes = await TvDbClientManager.Instance.GetAllEpisodesAsync(Convert.ToInt32(tvdbId), cancellationToken);
 
-            var episodeLookup = episodeFiles
+            var episodeLookup = episodes
                 .Select(i =>
                 {
-                    var parts = i.Split('-');
-
-                    if (parts.Length == 3)
-                    {
-                        if (int.TryParse(parts[1], NumberStyles.Integer, _usCulture, out var seasonNumber))
-                        {
-                            if (int.TryParse(parts[2], NumberStyles.Integer, _usCulture, out var episodeNumber))
-                            {
-                                return new ValueTuple<int, int>(seasonNumber, episodeNumber);
-                            }
-                        }
-                    }
-
-                    return new ValueTuple<int, int>(-1, -1);
+                    DateTime.TryParse(i.FirstAired, out var firstAired);
+                    return new ValueTuple<int, int, DateTime>(
+                        i.AiredSeason.GetValueOrDefault(-1), i.AiredEpisodeNumber.GetValueOrDefault(-1), firstAired);
                 })
-                .Where(i => i.Item1 != -1 && i.Item2 != -1)
+                .Where(i => i.Item2 != -1 && i.Item2 != -1)
                 .ToList();
 
             var allRecursiveChildren = series.GetRecursiveChildren();
 
-            var hasBadData = HasInvalidContent(series, allRecursiveChildren);
+            var hasBadData = HasInvalidContent(allRecursiveChildren);
 
             // Be conservative here to avoid creating missing episodes for ones they already have
             var addMissingEpisodes = !hasBadData && _libraryManager.GetLibraryOptions(series).ImportMissingEpisodes;
 
-            var anySeasonsRemoved = RemoveObsoleteOrMissingSeasons(series, allRecursiveChildren, episodeLookup);
+            var anySeasonsRemoved = RemoveObsoleteOrMissingSeasons(allRecursiveChildren, episodeLookup);
 
             if (anySeasonsRemoved)
             {
@@ -94,7 +77,7 @@ namespace MediaBrowser.Providers.TV
                 allRecursiveChildren = series.GetRecursiveChildren();
             }
 
-            var anyEpisodesRemoved = RemoveObsoleteOrMissingEpisodes(series, allRecursiveChildren, episodeLookup, addMissingEpisodes);
+            var anyEpisodesRemoved = RemoveObsoleteOrMissingEpisodes(allRecursiveChildren, episodeLookup, addMissingEpisodes);
 
             if (anyEpisodesRemoved)
             {
@@ -106,7 +89,7 @@ namespace MediaBrowser.Providers.TV
 
             if (addNewItems && series.IsMetadataFetcherEnabled(_libraryManager.GetLibraryOptions(series), TvdbSeriesProvider.Current.Name))
             {
-                hasNewEpisodes = await AddMissingEpisodes(series, allRecursiveChildren, addMissingEpisodes, "", episodeLookup, cancellationToken)
+                hasNewEpisodes = await AddMissingEpisodes(series, allRecursiveChildren, addMissingEpisodes, episodeLookup, cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -122,7 +105,7 @@ namespace MediaBrowser.Providers.TV
         /// Returns true if a series has any seasons or episodes without season or episode numbers
         /// If this data is missing no virtual items will be added in order to prevent possible duplicates
         /// </summary>
-        private bool HasInvalidContent(Series series, IList<BaseItem> allItems)
+        private bool HasInvalidContent(IList<BaseItem> allItems)
         {
             return allItems.OfType<Season>().Any(i => !i.IndexNumber.HasValue) ||
                    allItems.OfType<Episode>().Any(i =>
@@ -139,31 +122,25 @@ namespace MediaBrowser.Providers.TV
 
         private const double UnairedEpisodeThresholdDays = 2;
 
-        /// <summary>
-        /// Adds the missing episodes.
-        /// </summary>
-        /// <param name="series">The series.</param>
-        /// <returns>Task.</returns>
-        private async Task<bool> AddMissingEpisodes(Series series,
+
+        private async Task<bool> AddMissingEpisodes(
+            Series series,
             IList<BaseItem> allItems,
             bool addMissingEpisodes,
-            string seriesDataPath,
-            IEnumerable<ValueTuple<int, int>> episodeLookup,
+            List<ValueTuple<int, int, DateTime>> episodeLookup,
             CancellationToken cancellationToken)
         {
             var existingEpisodes = allItems.OfType<Episode>()
                                    .ToList();
 
-            var lookup = episodeLookup as IList<ValueTuple<int, int>> ?? episodeLookup.ToList();
-
-            var seasonCounts = (from e in lookup
+            var seasonCounts = (from e in episodeLookup
                                 group e by e.Item1 into g
                                 select g)
                                .ToDictionary(g => g.Key, g => g.Count());
 
             var hasChanges = false;
 
-            foreach (var tuple in lookup)
+            foreach (var tuple in episodeLookup)
             {
                 if (tuple.Item1 <= 0)
                 {
@@ -184,32 +161,14 @@ namespace MediaBrowser.Providers.TV
                     continue;
                 }
 
-                var airDate = GetAirDate(seriesDataPath, tuple.Item1, tuple.Item2);
+                var airDate = tuple.Item3;
 
-                if (!airDate.HasValue)
-                {
-                    continue;
-                }
+                var now = DateTime.UtcNow.AddDays(0 - UnairedEpisodeThresholdDays);
 
-                var now = DateTime.UtcNow;
-
-                now = now.AddDays(0 - UnairedEpisodeThresholdDays);
-
-                if (airDate.Value < now)
-                {
-                    if (addMissingEpisodes)
-                    {
-                        // tvdb has a lot of nearly blank episodes
-                        _logger.LogInformation("Creating virtual missing episode {0} {1}x{2}", series.Name, tuple.Item1, tuple.Item2);
-                        await AddEpisode(series, tuple.Item1, tuple.Item2, cancellationToken).ConfigureAwait(false);
-
-                        hasChanges = true;
-                    }
-                }
-                else if (airDate.Value > now)
+                if (airDate < now && addMissingEpisodes || airDate > now)
                 {
                     // tvdb has a lot of nearly blank episodes
-                    _logger.LogInformation("Creating virtual unaired episode {0} {1}x{2}", series.Name, tuple.Item1, tuple.Item2);
+                    _logger.LogInformation("Creating virtual missing/unaired episode {0} {1}x{2}", series.Name, tuple.Item1, tuple.Item2);
                     await AddEpisode(series, tuple.Item1, tuple.Item2, cancellationToken).ConfigureAwait(false);
 
                     hasChanges = true;
@@ -222,9 +181,9 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Removes the virtual entry after a corresponding physical version has been added
         /// </summary>
-        private bool RemoveObsoleteOrMissingEpisodes(Series series,
+        private bool RemoveObsoleteOrMissingEpisodes(
             IList<BaseItem> allRecursiveChildren,
-            IEnumerable<ValueTuple<int, int>> episodeLookup,
+            IEnumerable<ValueTuple<int, int, DateTime>> episodeLookup,
             bool allowMissingEpisodes)
         {
             var existingEpisodes = allRecursiveChildren.OfType<Episode>()
@@ -295,12 +254,11 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Removes the obsolete or missing seasons.
         /// </summary>
-        /// <param name="series">The series.</param>
+        /// <param name="allRecursiveChildren"></param>
         /// <param name="episodeLookup">The episode lookup.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private bool RemoveObsoleteOrMissingSeasons(Series series,
-            IList<BaseItem> allRecursiveChildren,
-            IEnumerable<ValueTuple<int, int>> episodeLookup)
+        private bool RemoveObsoleteOrMissingSeasons(IList<BaseItem> allRecursiveChildren,
+            IEnumerable<(int, int, DateTime)> episodeLookup)
         {
             var existingSeasons = allRecursiveChildren.OfType<Season>().ToList();
 
@@ -380,7 +338,7 @@ namespace MediaBrowser.Providers.TV
                 season = await provider.AddSeason(series, seasonNumber, true, cancellationToken).ConfigureAwait(false);
             }
 
-            var name = string.Format("Episode {0}", episodeNumber.ToString(_usCulture));
+            var name = $"Episode {episodeNumber.ToString(_usCulture)}";
 
             var episode = new Episode
             {
@@ -389,7 +347,7 @@ namespace MediaBrowser.Providers.TV
                 ParentIndexNumber = seasonNumber,
                 Id = _libraryManager.GetNewItemId((series.Id + seasonNumber.ToString(_usCulture) + name), typeof(Episode)),
                 IsVirtualItem = true,
-                SeasonId = season == null ? Guid.Empty : season.Id,
+                SeasonId = season?.Id ?? Guid.Empty,
                 SeriesId = series.Id
             };
 
@@ -407,7 +365,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seasonCounts"></param>
         /// <param name="tuple">The tuple.</param>
         /// <returns>Episode.</returns>
-        private Episode GetExistingEpisode(IList<Episode> existingEpisodes, Dictionary<int, int> seasonCounts, ValueTuple<int, int> tuple)
+        private Episode GetExistingEpisode(IList<Episode> existingEpisodes, Dictionary<int, int> seasonCounts, ValueTuple<int, int, DateTime> tuple)
         {
             var s = tuple.Item1;
             var e = tuple.Item2;
@@ -433,89 +391,6 @@ namespace MediaBrowser.Providers.TV
         {
             return existingEpisodes
                 .FirstOrDefault(i => i.ParentIndexNumber == season && i.ContainsEpisodeNumber(episode));
-        }
-
-        /// <summary>
-        /// Gets the air date.
-        /// </summary>
-        /// <param name="seriesDataPath">The series data path.</param>
-        /// <param name="seasonNumber">The season number.</param>
-        /// <param name="episodeNumber">The episode number.</param>
-        /// <returns>System.Nullable{DateTime}.</returns>
-        private DateTime? GetAirDate(string seriesDataPath, int seasonNumber, int episodeNumber)
-        {
-            // First open up the tvdb xml file and make sure it has valid data
-            var filename = string.Format("episode-{0}-{1}.xml", seasonNumber.ToString(_usCulture), episodeNumber.ToString(_usCulture));
-
-            var xmlPath = Path.Combine(seriesDataPath, filename);
-
-            DateTime? airDate = null;
-
-            using (var fileStream = _fileSystem.GetFileStream(xmlPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
-            {
-                // It appears the best way to filter out invalid entries is to only include those with valid air dates
-                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
-                {
-                    var settings = _xmlSettings.Create(false);
-
-                    settings.CheckCharacters = false;
-                    settings.IgnoreProcessingInstructions = true;
-                    settings.IgnoreComments = true;
-
-                    // Use XmlReader for best performance
-                    using (var reader = XmlReader.Create(streamReader, settings))
-                    {
-                        reader.MoveToContent();
-                        reader.Read();
-
-                        // Loop through each element
-                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                        {
-                            if (reader.NodeType == XmlNodeType.Element)
-                            {
-                                switch (reader.Name)
-                                {
-                                    case "EpisodeName":
-                                        {
-                                            var val = reader.ReadElementContentAsString();
-                                            if (string.IsNullOrWhiteSpace(val))
-                                            {
-                                                // Not valid, ignore these
-                                                return null;
-                                            }
-                                            break;
-                                        }
-                                    case "FirstAired":
-                                        {
-                                            var val = reader.ReadElementContentAsString();
-
-                                            if (!string.IsNullOrWhiteSpace(val))
-                                            {
-                                                if (DateTime.TryParse(val, out var date))
-                                                {
-                                                    airDate = date.ToUniversalTime();
-                                                }
-                                            }
-
-                                            break;
-                                        }
-                                    default:
-                                        {
-                                            reader.Skip();
-                                            break;
-                                        }
-                                }
-                            }
-                            else
-                            {
-                                reader.Read();
-                            }
-                        }
-                    }
-                }
-            }
-
-            return airDate;
         }
     }
 }

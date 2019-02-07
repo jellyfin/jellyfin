@@ -36,8 +36,7 @@ namespace MediaBrowser.Providers.TV
                 ServerConfigurationManager,
                 LibraryManager,
                 _localization,
-                FileSystem,
-                _xmlSettings);
+                FileSystem);
 
             try
             {
