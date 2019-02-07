@@ -90,15 +90,22 @@ namespace MediaBrowser.Providers.TV
             {
                 return cachedValue;
             }
-            using (_cacheWriteLock)
+
+            await _cacheWriteLock.WaitAsync().ConfigureAwait(false);
+            try
             {
                 if (_cache.TryGetValue(key, out cachedValue))
                 {
                     return cachedValue;
                 }
+
                 var result = await resultFactory.Invoke();
-                _cache.Set(key, result, DateTimeOffset.UtcNow.AddHours(1));
+                _cache.Set(key, result, TimeSpan.FromHours(1));
                 return result;
+            }
+            finally
+            {
+                _cacheWriteLock.Release();
             }
         }
     }
