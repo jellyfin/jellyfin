@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
+using TvDbSharper;
 using TvDbSharper.Dto;
 
 namespace MediaBrowser.Providers.TV
@@ -37,7 +38,7 @@ namespace MediaBrowser.Providers.TV
             var list = new List<RemoteSearchResult>();
 
             // The search query must either provide an episode number or date
-            // TODO premieredate functionality is ded
+            // TODO premieredate functionality is ded, could grab all episodes and search for it
             if (!searchInfo.IndexNumber.HasValue || !searchInfo.PremiereDate.HasValue)
             {
                 return list;
@@ -45,25 +46,32 @@ namespace MediaBrowser.Providers.TV
 
             if (TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds))
             {
-                var episodeResult =
-                    await _tvDbClientManager.GetEpisodesAsync((int)searchInfo.IndexNumber, cancellationToken);
-                var metadataResult = MapEpisodeToResult(searchInfo, episodeResult.Data);
-
-                if (metadataResult.HasMetadata)
+                try
                 {
-                    var item = metadataResult.Item;
+                    var episodeResult =
+                        await _tvDbClientManager.GetEpisodesAsync((int)searchInfo.IndexNumber, cancellationToken);
+                    var metadataResult = MapEpisodeToResult(searchInfo, episodeResult.Data);
 
-                    list.Add(new RemoteSearchResult
+                    if (metadataResult.HasMetadata)
                     {
-                        IndexNumber = item.IndexNumber,
-                        Name = item.Name,
-                        ParentIndexNumber = item.ParentIndexNumber,
-                        PremiereDate = item.PremiereDate,
-                        ProductionYear = item.ProductionYear,
-                        ProviderIds = item.ProviderIds,
-                        SearchProviderName = Name,
-                        IndexNumberEnd = item.IndexNumberEnd
-                    });
+                        var item = metadataResult.Item;
+
+                        list.Add(new RemoteSearchResult
+                        {
+                            IndexNumber = item.IndexNumber,
+                            Name = item.Name,
+                            ParentIndexNumber = item.ParentIndexNumber,
+                            PremiereDate = item.PremiereDate,
+                            ProductionYear = item.ProductionYear,
+                            ProviderIds = item.ProviderIds,
+                            SearchProviderName = Name,
+                            IndexNumberEnd = item.IndexNumberEnd
+                        });
+                    }
+                }
+                catch (TvDbServerException e)
+                {
+                    _logger.LogError(e, "Failed to retrieve episode with id {TvDbId}", searchInfo.IndexNumber);
                 }
             }
 
@@ -82,10 +90,19 @@ namespace MediaBrowser.Providers.TV
             if (TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds) &&
                 (searchInfo.IndexNumber.HasValue || searchInfo.PremiereDate.HasValue))
             {
-                var episodeResult = await _tvDbClientManager.GetEpisodesAsync(Convert.ToInt32(searchInfo.GetProviderId(MetadataProviders.Tvdb)),
-                    cancellationToken);
+                var tvdbId = searchInfo.GetProviderId(MetadataProviders.Tvdb);
+                try
+                {
+                    var episodeResult = await _tvDbClientManager.GetEpisodesAsync(
+                        Convert.ToInt32(tvdbId),
+                        cancellationToken);
 
-                result = MapEpisodeToResult(searchInfo, episodeResult.Data);
+                    result = MapEpisodeToResult(searchInfo, episodeResult.Data);
+                }
+                catch (TvDbServerException e)
+                {
+                    _logger.LogError(e, "Failed to retrieve episode with id {TvDbId}", tvdbId);
+                }
             }
             else
             {
@@ -178,14 +195,8 @@ namespace MediaBrowser.Providers.TV
                     Type = PersonType.Writer
                 });
             }
-            // TODO result.ResultLanguage = episode.
 
-            // TODO wtf is additional part info?
-//            foreach (var node in xmlNodes.Skip(1))
-//            {
-//                FetchAdditionalPartInfo(result, node, cancellationToken);
-//            }
-
+            result.ResultLanguage = episode.Language.EpisodeName;
             return result;
         }
 

@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using Microsoft.Extensions.Logging;
 using TvDbSharper;
 using TvDbSharper.Dto;
 using RatingType = MediaBrowser.Model.Dto.RatingType;
@@ -20,12 +21,13 @@ namespace MediaBrowser.Providers.TV.TheTVDB
     public class TvdbSeriesImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClient _httpClient;
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private readonly ILogger _logger;
         private readonly TvDbClientManager _tvDbClientManager;
 
-        public TvdbSeriesImageProvider(IHttpClient httpClient)
+        public TvdbSeriesImageProvider(IHttpClient httpClient, ILogger logger)
         {
             _httpClient = httpClient;
+            _logger = logger;
             _tvDbClientManager = TvDbClientManager.Instance;
         }
 
@@ -59,17 +61,25 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             _tvDbClientManager.TvDbClient.AcceptedLanguage = language;
             var remoteImages = new List<RemoteImageInfo>();
             var keyTypes = new[] {KeyType.Poster, KeyType.Series, KeyType.Fanart};
-            // TODO error handling
+            var tvdbId = Convert.ToInt32(item.GetProviderId(MetadataProviders.Tvdb));
             foreach (KeyType keyType in keyTypes)
             {
                 var imageQuery = new ImagesQuery
                 {
                     KeyType = keyType
                 };
-                var imageResults =
-                    await _tvDbClientManager.GetImagesAsync(Convert.ToInt32(item.GetProviderId(MetadataProviders.Tvdb)), imageQuery, cancellationToken);
+                try
+                {
+                    var imageResults =
+                        await _tvDbClientManager.GetImagesAsync(tvdbId, imageQuery, cancellationToken);
 
-                remoteImages.AddRange(GetImages(imageResults.Data, language));
+                    remoteImages.AddRange(GetImages(imageResults.Data, language));
+                }
+                catch (TvDbServerException e)
+                {
+                    _logger.LogError(e, "Failed to retrieve images of type {KeyType} for series {TvDbId}", keyType,
+                        tvdbId);
+                }
             }
             return remoteImages;
         }
@@ -77,6 +87,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private IEnumerable<RemoteImageInfo> GetImages(Image[] images, string preferredLanguage)
         {
             var list = new List<RemoteImageInfo>();
+            var languages = TvDbClientManager.Instance.GetLanguagesAsync(CancellationToken.None).Result.Data;
 
             foreach (Image image in images)
             {
@@ -87,7 +98,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     VoteCount = image.RatingsInfo.Count,
                     Url = TVUtils.BannerUrl + image.FileName,
                     ProviderName = Name,
-                    // TODO Language = image.LanguageId,
+                    Language = languages.FirstOrDefault(l => l.Id == image.LanguageId)?.Abbreviation,
                     ThumbnailUrl = TVUtils.BannerUrl + image.Thumbnail
                 };
 

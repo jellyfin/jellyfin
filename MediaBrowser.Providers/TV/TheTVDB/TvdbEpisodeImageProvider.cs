@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using Microsoft.Extensions.Logging;
 using TvDbSharper;
 using TvDbSharper.Dto;
 
@@ -19,11 +20,13 @@ namespace MediaBrowser.Providers.TV.TheTVDB
     public class TvdbEpisodeImageProvider : IRemoteImageProvider
     {
         private readonly IHttpClient _httpClient;
+        private readonly ILogger _logger;
         private readonly TvDbClientManager _tvDbClientManager;
 
-        public TvdbEpisodeImageProvider(IHttpClient httpClient)
+        public TvdbEpisodeImageProvider(IHttpClient httpClient, ILogger logger)
         {
             _httpClient = httpClient;
+            _logger = logger;
             _tvDbClientManager = TvDbClientManager.Instance;
         }
 
@@ -51,13 +54,22 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
             {
                 var tvdbId = episode.GetProviderId(MetadataProviders.Tvdb);
-                // Process images
-                var episodeResult = await _tvDbClientManager.GetEpisodesAsync(Convert.ToInt32(tvdbId), cancellationToken);
 
-                var image = GetImageInfo(episodeResult.Data);
-                if (image != null)
+                // Process images
+                try
                 {
-                    imageResult.Add(image);
+                    var episodeResult =
+                        await _tvDbClientManager.GetEpisodesAsync(Convert.ToInt32(tvdbId), cancellationToken);
+
+                    var image = GetImageInfo(episodeResult.Data);
+                    if (image != null)
+                    {
+                        imageResult.Add(image);
+                    }
+                }
+                catch (TvDbServerException e)
+                {
+                    _logger.LogError(e, "Failed to retrieve episode images for {TvDbId}", tvdbId);
                 }
             }
 

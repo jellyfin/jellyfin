@@ -93,7 +93,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private static IEnumerable<RemoteImageInfo> GetImages(Image[] images, string preferredLanguage)
         {
             var list = new List<RemoteImageInfo>();
-
+            var languages = TvDbClientManager.Instance.GetLanguagesAsync(CancellationToken.None).Result.Data;
             foreach (Image image in images)
             {
                 var imageInfo = new RemoteImageInfo
@@ -103,7 +103,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     VoteCount = image.RatingsInfo.Count,
                     Url = TVUtils.BannerUrl + image.FileName,
                     ProviderName = ProviderName,
-                    // TODO Language = image.LanguageId,
+                    Language = languages.FirstOrDefault(l => l.Id == image.LanguageId)?.Abbreviation,
                     ThumbnailUrl = TVUtils.BannerUrl + image.Thumbnail
                 };
 

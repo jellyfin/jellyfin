@@ -123,33 +123,55 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 tvdbId = await GetSeriesByRemoteId(zap2It, MetadataProviders.Zap2It.ToString(), metadataLanguage, cancellationToken);
             }
 
-            var seriesResult = await _tvDbClientManager.GetSeriesByIdAsync(Convert.ToInt32(tvdbId), cancellationToken);
-
-            MapSeriesToResult(result, seriesResult.Data);
+            try
+            {
+                var seriesResult =
+                    await _tvDbClientManager.GetSeriesByIdAsync(Convert.ToInt32(tvdbId), cancellationToken);
+                MapSeriesToResult(result, seriesResult.Data);
+            }
+            catch (TvDbServerException e)
+            {
+                _logger.LogError(e, "Failed to retrieve series with id {TvdbId}", tvdbId);
+                return;
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
             result.ResetPeople();
 
-            var actorsResult = await _tvDbClientManager.GetActorsAsync(Convert.ToInt32(tvdbId), cancellationToken);
-            MapActorsToResult(result, actorsResult.Data);
+            try
+            {
+                var actorsResult = await _tvDbClientManager.GetActorsAsync(Convert.ToInt32(tvdbId), cancellationToken);
+                MapActorsToResult(result, actorsResult.Data);
+            }
+            catch (TvDbServerException e)
+            {
+                _logger.LogError(e, "Failed to retrieve actors for series {TvdbId}", tvdbId);
+            }
         }
 
         private async Task<string> GetSeriesByRemoteId(string id, string idType, string language, CancellationToken cancellationToken)
         {
             _tvDbClientManager.TvDbClient.AcceptedLanguage = NormalizeLanguage(language);
-            TvDbResponse<SeriesSearchResult[]> result;
+            TvDbResponse<SeriesSearchResult[]> result = null;
 
-            if (string.Equals(idType, MetadataProviders.Zap2It.ToString(), StringComparison.OrdinalIgnoreCase))
+            try
             {
-                result = await _tvDbClientManager.GetSeriesByZap2ItIdAsync(id, cancellationToken);
+                if (string.Equals(idType, MetadataProviders.Zap2It.ToString(), StringComparison.OrdinalIgnoreCase))
+                {
+                    result = await _tvDbClientManager.GetSeriesByZap2ItIdAsync(id, cancellationToken);
+                }
+                else
+                {
+                    result = await _tvDbClientManager.GetSeriesByImdbIdAsync(id, cancellationToken);
+                }
             }
-            else
+            catch (TvDbServerException e)
             {
-                result = await _tvDbClientManager.GetSeriesByImdbIdAsync(id, cancellationToken);
+                _logger.LogError(e, "Failed to retrieve series with remote id {RemoteId}", id);
             }
 
-            return result.Data.First().Id.ToString();
+            return result?.Data.First().Id.ToString();
         }
 
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
