@@ -13,6 +13,7 @@ namespace MediaBrowser.Providers.TV
     {
         private static volatile TvDbClientManager instance;
         // TODO add to DI once Bond's PR is merged
+        private readonly SemaphoreSlim _cacheWriteLock = new SemaphoreSlim(1, 1);
         private static MemoryCache _cache;
         private static readonly object syncRoot = new object();
         private static TvDbClient tvDbClient;
@@ -73,24 +74,32 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<SeriesSearchResult[]> GetSeriesByName(string name, CancellationToken cancellationToken)
         {
-            if (_cache.TryGetValue(name, out SeriesSearchResult[] series))
-            {
-                return series;
-            }
-            var result = await TvDbClient.Search.SearchSeriesByNameAsync(name, cancellationToken);
-            _cache.Set(name, result.Data, DateTimeOffset.UtcNow.AddHours(1));
-            return result.Data;
+            return await TryGetValue(name,
+                async () => (await TvDbClient.Search.SearchSeriesByNameAsync(name, cancellationToken)).Data);
         }
 
         public async Task<Series> GetSeriesById(int tvdbId, CancellationToken cancellationToken)
         {
-            if (_cache.TryGetValue(tvdbId, out Series series))
+            return await TryGetValue(tvdbId,
+                async () => (await TvDbClient.Series.GetAsync(tvdbId, cancellationToken)).Data);
+        }
+
+        private async Task<T> TryGetValue<T>(object key, Func<Task<T>> resultFactory)
+        {
+            if (_cache.TryGetValue(key, out T cachedValue))
             {
-                return series;
+                return cachedValue;
             }
-            var result = await TvDbClient.Series.GetAsync(tvdbId, cancellationToken);
-            _cache.Set(tvdbId, result.Data, DateTimeOffset.UtcNow.AddHours(1));
-            return result.Data;
+            using (_cacheWriteLock)
+            {
+                if (_cache.TryGetValue(key, out cachedValue))
+                {
+                    return cachedValue;
+                }
+                var result = await resultFactory.Invoke();
+                _cache.Set(key, result, DateTimeOffset.UtcNow.AddHours(1));
+                return result;
+            }
         }
     }
 }
