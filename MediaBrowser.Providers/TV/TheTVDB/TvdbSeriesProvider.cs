@@ -124,10 +124,10 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             }
 
             // TODO call this function elsewhere?
-            var seriesResult = await _tvDbClientManager.TvDbClient.Series.GetAsync(Convert.ToInt32(tvdbId), cancellationToken);
+            var seriesResult = await _tvDbClientManager.GetSeriesById(Convert.ToInt32(tvdbId), cancellationToken);
 
             // TODO error handling
-            MapSeriesToResult(result, seriesResult.Data);
+            MapSeriesToResult(result, seriesResult);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -201,10 +201,10 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             _tvDbClientManager.TvDbClient.AcceptedLanguage = NormalizeLanguage(language);
             var comparableName = GetComparableName(name);
             var list = new List<Tuple<List<string>, RemoteSearchResult>>();
-            TvDbResponse<SeriesSearchResult[]> result;
+            SeriesSearchResult[] result;
             try
             {
-                result = await _tvDbClientManager.TvDbClient.Search.SearchSeriesByNameAsync(comparableName, cancellationToken);
+                result = await _tvDbClientManager.GetSeriesByName(comparableName, cancellationToken);
             }
             catch (TvDbServerException e)
             {
@@ -212,7 +212,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 return new List<RemoteSearchResult>();
             }
 
-            foreach (var seriesSearchResult in result.Data)
+            foreach (var seriesSearchResult in result)
             {
                 var tvdbTitles = new List<string>
                 {
@@ -232,9 +232,9 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 try
                 {
                     var seriesSesult =
-                        await _tvDbClientManager.TvDbClient.Series.GetAsync(seriesSearchResult.Id, cancellationToken);
-                    remoteSearchResult.SetProviderId(MetadataProviders.Imdb, seriesSesult.Data.ImdbId);
-                    remoteSearchResult.SetProviderId(MetadataProviders.Zap2It, seriesSesult.Data.Zap2itId);
+                        await _tvDbClientManager.GetSeriesById(seriesSearchResult.Id, cancellationToken);
+                    remoteSearchResult.SetProviderId(MetadataProviders.Imdb, seriesSesult.ImdbId);
+                    remoteSearchResult.SetProviderId(MetadataProviders.Zap2It, seriesSesult.Zap2itId);
                 }
                 catch (TvDbServerException e)
                 {
