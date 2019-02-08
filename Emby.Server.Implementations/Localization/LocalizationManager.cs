@@ -470,6 +470,10 @@ namespace Emby.Server.Implementations.Localization
                         dictionary[key] = dict[key];
                     }
                 }
+                else
+                {
+                    _logger.LogError("Missing translation/culture resource: {ResourcePath}", resourcePath);
+                }
             }
         }
 
