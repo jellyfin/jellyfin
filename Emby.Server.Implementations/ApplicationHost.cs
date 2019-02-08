@@ -28,7 +28,6 @@ using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Devices;
 using Emby.Server.Implementations.Diagnostics;
 using Emby.Server.Implementations.Dto;
-using Emby.Server.Implementations.FFMpeg;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.IO;
@@ -792,7 +791,8 @@ namespace Emby.Server.Implementations
             ChapterManager = new ChapterManager(LibraryManager, LoggerFactory, ServerConfigurationManager, ItemRepository);
             serviceCollection.AddSingleton(ChapterManager);
 
-            RegisterMediaEncoder(serviceCollection);
+            MediaEncoder = new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(LoggerFactory, JsonSerializer, StartupOptions.FFmpegPath, StartupOptions.FFprobePath, ServerConfigurationManager, FileSystemManager, () => SubtitleEncoder, () => MediaSourceManager, ProcessFactory, 5000);
+            serviceCollection.AddSingleton(MediaEncoder);
 
             EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, LoggerFactory, MediaEncoder, ChapterManager, LibraryManager);
             serviceCollection.AddSingleton(EncodingManager);
@@ -908,83 +908,25 @@ namespace Emby.Server.Implementations
             return new ImageProcessor(LoggerFactory, ServerConfigurationManager.ApplicationPaths, FileSystemManager, ImageEncoder, () => LibraryManager, () => MediaEncoder);
         }
 
-        protected virtual FFMpegInstallInfo GetFfmpegInstallInfo()
-        {
-            var info = new FFMpegInstallInfo();
-
-            // Windows builds: http://ffmpeg.zeranoe.com/builds/
-            // Linux builds: http://johnvansickle.com/ffmpeg/
-            // OS X builds: http://ffmpegmac.net/
-            // OS X x64: http://www.evermeet.cx/ffmpeg/
-
-            if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Linux)
-            {
-                info.FFMpegFilename = "ffmpeg";
-                info.FFProbeFilename = "ffprobe";
-                info.ArchiveType = "7z";
-                info.Version = "20170308";
-            }
-            else if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
-            {
-                info.FFMpegFilename = "ffmpeg.exe";
-                info.FFProbeFilename = "ffprobe.exe";
-                info.Version = "20170308";
-                info.ArchiveType = "7z";
-            }
-            else if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.OSX)
-            {
-                info.FFMpegFilename = "ffmpeg";
-                info.FFProbeFilename = "ffprobe";
-                info.ArchiveType = "7z";
-                info.Version = "20170308";
-            }
-
-            return info;
-        }
-
-        protected virtual FFMpegInfo GetFFMpegInfo()
-        {
-            return new FFMpegLoader(ApplicationPaths, FileSystemManager, GetFfmpegInstallInfo())
-                .GetFFMpegInfo(StartupOptions);
-        }
-
         /// <summary>
         /// Registers the media encoder.
         /// </summary>
         /// <returns>Task.</returns>
-        private void RegisterMediaEncoder(IServiceCollection serviceCollection)
+        private void RegisterMediaEncoder(IAssemblyInfo assemblyInfo)
         {
-            string encoderPath = null;
-            string probePath = null;
-
-            var info = GetFFMpegInfo();
-
-            encoderPath = info.EncoderPath;
-            probePath = info.ProbePath;
-            var hasExternalEncoder = string.Equals(info.Version, "external", StringComparison.OrdinalIgnoreCase);
-
-            var mediaEncoder = new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
+            MediaEncoder = new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
                 LoggerFactory,
                 JsonSerializer,
-                encoderPath,
-                probePath,
-                hasExternalEncoder,
+                StartupOptions.FFmpegPath,
+                StartupOptions.FFprobePath,
                 ServerConfigurationManager,
                 FileSystemManager,
-                LiveTvManager,
-                IsoManager,
-                LibraryManager,
-                ChannelManager,
-                SessionManager,
                 () => SubtitleEncoder,
                 () => MediaSourceManager,
-                HttpClient,
-                ZipClient,
                 ProcessFactory,
                 5000);
 
-            MediaEncoder = mediaEncoder;
-            serviceCollection.AddSingleton(MediaEncoder);
+            RegisterSingleInstance(MediaEncoder);
         }
 
         /// <summary>

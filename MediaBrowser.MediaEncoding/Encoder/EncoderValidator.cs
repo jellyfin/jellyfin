@@ -19,7 +19,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _processFactory = processFactory;
         }
 
-        public (IEnumerable<string> decoders, IEnumerable<string> encoders) Validate(string encoderPath)
+        public (IEnumerable<string> decoders, IEnumerable<string> encoders) GetAvailableCoders(string encoderPath)
         {
             _logger.LogInformation("Validating media encoder at {EncoderPath}", encoderPath);
 
