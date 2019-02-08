@@ -1183,9 +1183,9 @@ namespace Emby.Server.Implementations.Data
         /// <exception cref="ArgumentException"></exception>
         public BaseItem RetrieveItem(Guid id)
         {
-            if (id.Equals(Guid.Empty))
+            if (id == Guid.Empty)
             {
-                throw new ArgumentNullException(nameof(id));
+                throw new ArgumentException(nameof(id), "Guid can't be empty");
             }
 
             CheckDisposed();
@@ -2079,14 +2079,14 @@ namespace Emby.Server.Implementations.Data
                 return false;
             }
 
-            var sortingFields = query.OrderBy.Select(i => i.Item1);
+            var sortingFields = new HashSet<string>(query.OrderBy.Select(i => i.Item1), StringComparer.OrdinalIgnoreCase);
 
-            return sortingFields.Contains(ItemSortBy.IsFavoriteOrLiked, StringComparer.OrdinalIgnoreCase)
-                    || sortingFields.Contains(ItemSortBy.IsPlayed, StringComparer.OrdinalIgnoreCase)
-                    || sortingFields.Contains(ItemSortBy.IsUnplayed, StringComparer.OrdinalIgnoreCase)
-                    || sortingFields.Contains(ItemSortBy.PlayCount, StringComparer.OrdinalIgnoreCase)
-                    || sortingFields.Contains(ItemSortBy.DatePlayed, StringComparer.OrdinalIgnoreCase)
-                    || sortingFields.Contains(ItemSortBy.SeriesDatePlayed, StringComparer.OrdinalIgnoreCase)
+            return sortingFields.Contains(ItemSortBy.IsFavoriteOrLiked)
+                    || sortingFields.Contains(ItemSortBy.IsPlayed)
+                    || sortingFields.Contains(ItemSortBy.IsUnplayed)
+                    || sortingFields.Contains(ItemSortBy.PlayCount)
+                    || sortingFields.Contains(ItemSortBy.DatePlayed)
+                    || sortingFields.Contains(ItemSortBy.SeriesDatePlayed)
                     || query.IsFavoriteOrLiked.HasValue
                     || query.IsFavorite.HasValue
                     || query.IsResumable.HasValue
@@ -2151,18 +2151,26 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
+        private static readonly HashSet<string> _programExcludeParentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Series",
+            "Season",
+            "MusicAlbum",
+            "MusicArtist",
+            "PhotoAlbum"
+        };
+
+        private static readonly HashSet<string> _programTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Program",
+            "TvChannel",
+            "LiveTvProgram",
+            "LiveTvTvChannel"
+        };
+
         private bool HasProgramAttributes(InternalItemsQuery query)
         {
-            var excludeParentTypes = new string[]
-            {
-                "Series",
-                "Season",
-                "MusicAlbum",
-                "MusicArtist",
-                "PhotoAlbum"
-            };
-
-            if (excludeParentTypes.Contains(query.ParentType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (_programExcludeParentTypes.Contains(query.ParentType))
             {
                 return false;
             }
@@ -2172,29 +2180,18 @@ namespace Emby.Server.Implementations.Data
                 return true;
             }
 
-            var types = new string[]
-            {
-                "Program",
-                "TvChannel",
-                "LiveTvProgram",
-                "LiveTvTvChannel"
-            };
-
-            return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
+            return query.IncludeItemTypes.Any(x => _programTypes.Contains(x));
         }
+
+        private static readonly HashSet<string> _serviceTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "TvChannel",
+            "LiveTvTvChannel"
+        };
 
         private bool HasServiceName(InternalItemsQuery query)
         {
-            var excludeParentTypes = new string[]
-            {
-                "Series",
-                "Season",
-                "MusicAlbum",
-                "MusicArtist",
-                "PhotoAlbum"
-            };
-
-            if (excludeParentTypes.Contains(query.ParentType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (_programExcludeParentTypes.Contains(query.ParentType))
             {
                 return false;
             }
@@ -2204,27 +2201,18 @@ namespace Emby.Server.Implementations.Data
                 return true;
             }
 
-            var types = new string[]
-            {
-                "TvChannel",
-                "LiveTvTvChannel"
-            };
-
-            return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
+            return query.IncludeItemTypes.Any(x => _serviceTypes.Contains(x));
         }
+
+        private static readonly HashSet<string> _startDateTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Program",
+            "LiveTvProgram"
+        };
 
         private bool HasStartDate(InternalItemsQuery query)
         {
-            var excludeParentTypes = new string[]
-            {
-                "Series",
-                "Season",
-                "MusicAlbum",
-                "MusicArtist",
-                "PhotoAlbum"
-            };
-
-            if (excludeParentTypes.Contains(query.ParentType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (_programExcludeParentTypes.Contains(query.ParentType))
             {
                 return false;
             }
@@ -2234,13 +2222,7 @@ namespace Emby.Server.Implementations.Data
                 return true;
             }
 
-            var types = new string[]
-            {
-                "Program",
-                "LiveTvProgram"
-            };
-
-            return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
+            return query.IncludeItemTypes.Any(x => _startDateTypes.Contains(x));
         }
 
         private bool HasEpisodeAttributes(InternalItemsQuery query)
@@ -2263,16 +2245,26 @@ namespace Emby.Server.Implementations.Data
             return query.IncludeItemTypes.Contains("Trailer", StringComparer.OrdinalIgnoreCase);
         }
 
+
+        private static readonly HashSet<string> _artistExcludeParentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Series",
+            "Season",
+            "PhotoAlbum"
+        };
+
+        private static readonly HashSet<string> _artistsTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Audio",
+            "MusicAlbum",
+            "MusicVideo",
+            "AudioBook",
+            "AudioPodcast"
+        };
+
         private bool HasArtistFields(InternalItemsQuery query)
         {
-            var excludeParentTypes = new string[]
-            {
-                "Series",
-                "Season",
-                "PhotoAlbum"
-            };
-
-            if (excludeParentTypes.Contains(query.ParentType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (_artistExcludeParentTypes.Contains(query.ParentType))
             {
                 return false;
             }
@@ -2282,17 +2274,17 @@ namespace Emby.Server.Implementations.Data
                 return true;
             }
 
-            var types = new string[]
-            {
-                "Audio",
-                "MusicAlbum",
-                "MusicVideo",
-                "AudioBook",
-                "AudioPodcast"
-            };
-
-            return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
+            return query.IncludeItemTypes.Any(x => _artistsTypes.Contains(x));
         }
+
+        private static readonly HashSet<string> _seriesTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Audio",
+            "MusicAlbum",
+            "MusicVideo",
+            "AudioBook",
+            "AudioPodcast"
+        };
 
         private bool HasSeriesFields(InternalItemsQuery query)
         {
@@ -2306,15 +2298,7 @@ namespace Emby.Server.Implementations.Data
                 return true;
             }
 
-            var types = new string[]
-            {
-                "Book",
-                "AudioBook",
-                "Episode",
-                "Season"
-            };
-
-            return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
+            return query.IncludeItemTypes.Any(x => _seriesTypes.Contains(x));
         }
 
         private string[] GetFinalColumnsToSelect(InternalItemsQuery query, string[] startColumns)
@@ -2325,7 +2309,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!HasField(query, field))
                 {
-                    foreach (var fieldToRemove in GetColumnNamesFromField(field).ToList())
+                    foreach (var fieldToRemove in GetColumnNamesFromField(field))
                     {
                         list.Remove(fieldToRemove);
                     }
@@ -2419,11 +2403,14 @@ namespace Emby.Server.Implementations.Data
 
                 list.Add(builder.ToString());
 
-                var excludeIds = query.ExcludeItemIds.ToList();
-                excludeIds.Add(item.Id);
-                excludeIds.AddRange(item.ExtraIds);
+                var oldLen = query.ExcludeItemIds.Length;
+                var newLen = oldLen + item.ExtraIds.Length + 1;
+                var excludeIds = new Guid[newLen];
+                query.ExcludeItemIds.CopyTo(excludeIds, 0);
+                excludeIds[oldLen] = item.Id;
+                item.ExtraIds.CopyTo(excludeIds, oldLen + 1);
 
-                query.ExcludeItemIds = excludeIds.ToArray();
+                query.ExcludeItemIds = excludeIds;
                 query.ExcludeProviderIds = item.ProviderIds;
             }
 
@@ -2735,6 +2722,7 @@ namespace Emby.Server.Implementations.Data
                     {
                         continue;
                     }
+
                     if (item.GetProviderId(providerId.Key) == providerId.Value)
                     {
                         if (newItem.SourceType == SourceType.Library)
@@ -4952,7 +4940,12 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 return result;
             }
 
-            return new[] { value }.Where(IsValidType);
+            if (IsValidType(value))
+            {
+                return new[] { value };
+            }
+
+            return Array.Empty<string>();
         }
 
         public void DeleteItem(Guid id, CancellationToken cancellationToken)

@@ -155,7 +155,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         private QueryResult<BaseItemDto> GetItems(GetItems request)
         {
-            var user = !request.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(request.UserId) : null;
+            var user = request.UserId == Guid.Empty ? null : _userManager.GetUserById(request.UserId);
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
@@ -190,11 +190,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         private QueryResult<BaseItem> GetQueryResult(GetItems request, DtoOptions dtoOptions, User user)
         {
-            if (string.Equals(request.IncludeItemTypes, "Playlist", StringComparison.OrdinalIgnoreCase))
-            {
-                request.ParentId = null;
-            }
-            else if (string.Equals(request.IncludeItemTypes, "BoxSet", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(request.IncludeItemTypes, "Playlist", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(request.IncludeItemTypes, "BoxSet", StringComparison.OrdinalIgnoreCase))
             {
                 request.ParentId = null;
             }

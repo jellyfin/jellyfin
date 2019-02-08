@@ -375,21 +375,15 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        public class DummyToken : IDisposable
-        {
-            public void Dispose()
-            {
-            }
-        }
-
         public static IDisposable Read(this ReaderWriterLockSlim obj)
         {
             //if (BaseSqliteRepository.ThreadSafeMode > 0)
             //{
             //    return new DummyToken();
             //}
-            return new WriteLockToken(obj);
+            return new ReadLockToken(obj);
         }
+
         public static IDisposable Write(this ReaderWriterLockSlim obj)
         {
             //if (BaseSqliteRepository.ThreadSafeMode > 0)

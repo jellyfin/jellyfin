@@ -1225,9 +1225,9 @@ namespace Emby.Server.Implementations.Library
         /// <exception cref="ArgumentNullException">id</exception>
         public BaseItem GetItemById(Guid id)
         {
-            if (id.Equals(Guid.Empty))
+            if (id == Guid.Empty)
             {
-                throw new ArgumentNullException(nameof(id));
+                throw new ArgumentException(nameof(id), "Guid can't be empty");
             }
 
             if (LibraryItemsCache.TryGetValue(id, out BaseItem item))
@@ -1236,8 +1236,6 @@ namespace Emby.Server.Implementations.Library
             }
 
             item = RetrieveItem(id);
-
-            //_logger.LogDebug("GetitemById {0}", id);
 
             if (item != null)
             {
@@ -2005,9 +2003,7 @@ namespace Emby.Server.Implementations.Library
                    .FirstOrDefault();
             }
 
-            var options = collectionFolder == null ? new LibraryOptions() : collectionFolder.GetLibraryOptions();
-
-            return options;
+            return collectionFolder == null ? new LibraryOptions() : collectionFolder.GetLibraryOptions();
         }
 
         public string GetContentType(BaseItem item)
@@ -2017,11 +2013,13 @@ namespace Emby.Server.Implementations.Library
             {
                 return configuredContentType;
             }
+
             configuredContentType = GetConfiguredContentType(item, true);
             if (!string.IsNullOrEmpty(configuredContentType))
             {
                 return configuredContentType;
             }
+
             return GetInheritedContentType(item);
         }
 
@@ -2056,6 +2054,7 @@ namespace Emby.Server.Implementations.Library
             {
                 return collectionFolder.CollectionType;
             }
+
             return GetContentTypeOverride(item.ContainingFolderPath, inheritConfiguredPath);
         }
 
@@ -2066,6 +2065,7 @@ namespace Emby.Server.Implementations.Library
             {
                 return nameValuePair.Value;
             }
+
             return null;
         }
 
@@ -2108,9 +2108,9 @@ namespace Emby.Server.Implementations.Library
             string viewType,
             string sortName)
         {
-            var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views");
-
-            path = Path.Combine(path, _fileSystem.GetValidFilename(viewType));
+            var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath,
+                                    "views",
+                                    _fileSystem.GetValidFilename(viewType));
 
             var id = GetNewItemId(path + "_namedview_" + name, typeof(UserView));
 
