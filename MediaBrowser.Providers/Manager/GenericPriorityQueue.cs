@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace MediaBrowser.Providers.Manager
+//TODO Fix namespace or replace
+namespace Priority_Queue
 {
     /// <summary>
     /// Credit: https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
