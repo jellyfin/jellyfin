@@ -1331,7 +1331,7 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.GetItemIdsList(query);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetStudios(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1342,7 +1342,7 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.GetStudios(query);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetGenres(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1353,7 +1353,7 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.GetGenres(query);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1364,7 +1364,7 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.GetMusicGenres(query);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetAllArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1375,7 +1375,7 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.GetAllArtists(query);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1419,7 +1419,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetAlbumArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
         {
             if (query.User != null)
             {

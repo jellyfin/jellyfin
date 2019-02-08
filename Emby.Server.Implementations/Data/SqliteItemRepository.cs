@@ -2301,7 +2301,7 @@ namespace Emby.Server.Implementations.Data
             return query.IncludeItemTypes.Any(x => _seriesTypes.Contains(x));
         }
 
-        private string[] GetFinalColumnsToSelect(InternalItemsQuery query, string[] startColumns)
+        private List<string> GetFinalColumnsToSelect(InternalItemsQuery query, IEnumerable<string> startColumns)
         {
             var list = startColumns.ToList();
 
@@ -2431,7 +2431,7 @@ namespace Emby.Server.Implementations.Data
                 list.Add(builder.ToString());
             }
 
-            return list.ToArray();
+            return list;
         }
 
         private void BindSearchParams(InternalItemsQuery query, IStatement statement)
@@ -5208,32 +5208,32 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetAllArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 0, 1 }, typeof(MusicArtist).FullName);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 0 }, typeof(MusicArtist).FullName);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetAlbumArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 1 }, typeof(MusicArtist).FullName);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetStudios(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 3 }, typeof(Studio).FullName);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetGenres(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 2 }, typeof(Genre).FullName);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 2 }, typeof(MusicGenre).FullName);
         }
@@ -5310,7 +5310,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
         }
 
-        private QueryResult<Tuple<BaseItem, ItemCounts>> GetItemValues(InternalItemsQuery query, int[] itemValueTypes, string returnType)
+        private QueryResult<(BaseItem, ItemCounts)> GetItemValues(InternalItemsQuery query, int[] itemValueTypes, string returnType)
         {
             if (query == null)
             {
@@ -5328,7 +5328,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             var typeClause = itemValueTypes.Length == 1 ?
                 ("Type=" + itemValueTypes[0].ToString(CultureInfo.InvariantCulture)) :
-                ("Type in (" + string.Join(",", itemValueTypes.Select(i => i.ToString(CultureInfo.InvariantCulture)).ToArray()) + ")");
+                ("Type in (" + string.Join(",", itemValueTypes.Select(i => i.ToString(CultureInfo.InvariantCulture))) + ")");
 
             InternalItemsQuery typeSubQuery = null;
 
@@ -5356,11 +5356,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                 whereClauses.Add("guid in (select ItemId from ItemValues where ItemValues.CleanValue=A.CleanName AND " + typeClause + ")");
 
-                var typeWhereText = whereClauses.Count == 0 ?
-                    string.Empty :
-                    " where " + string.Join(" AND ", whereClauses);
-
-                itemCountColumnQuery += typeWhereText;
+                itemCountColumnQuery += " where " + string.Join(" AND ", whereClauses);
 
                 itemCountColumns = new Dictionary<string, string>()
                 {
@@ -5393,7 +5389,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 IsSeries = query.IsSeries
             };
 
-            columns = GetFinalColumnsToSelect(query, columns.ToArray()).ToList();
+            columns = GetFinalColumnsToSelect(query, columns);
 
             var commandText = "select "
                             + string.Join(",", columns)
@@ -5485,8 +5481,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 {
                     return connection.RunInTransaction(db =>
                     {
-                        var list = new List<Tuple<BaseItem, ItemCounts>>();
-                        var result = new QueryResult<Tuple<BaseItem, ItemCounts>>();
+                        var list = new List<(BaseItem, ItemCounts)>();
+                        var result = new QueryResult<(BaseItem, ItemCounts)>();
 
                         var statements = PrepareAllSafe(db, statementTexts);
 
@@ -5524,7 +5520,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                                     {
                                         var countStartColumn = columns.Count - 1;
 
-                                        list.Add(new Tuple<BaseItem, ItemCounts>(item, GetItemCounts(row, countStartColumn, typesToCount)));
+                                        list.Add((item, GetItemCounts(row, countStartColumn, typesToCount)));
                                     }
                                 }
 
@@ -6191,6 +6187,5 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             return item;
         }
-
     }
 }
