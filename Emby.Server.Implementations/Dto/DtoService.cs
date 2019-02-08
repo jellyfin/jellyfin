@@ -1418,7 +1418,7 @@ namespace Emby.Server.Implementations.Dto
 
                 try
                 {
-                    size = _imageProcessor.GetImageSize(item, imageInfo);
+                    size = _imageProcessor.GetImageDimensions(item, imageInfo);
 
                     if (size.Width <= 0 || size.Height <= 0)
                     {

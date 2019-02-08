@@ -368,10 +368,10 @@ namespace Emby.Drawing
             return GetCachePath(ResizedImageCachePath, filename, "." + format.ToString().ToLowerInvariant());
         }
 
-        public ImageDimensions GetImageSize(BaseItem item, ItemImageInfo info)
-            => GetImageSize(item, info, true);
+        public ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info)
+            => GetImageDimensions(item, info, true);
 
-        public ImageDimensions GetImageSize(BaseItem item, ItemImageInfo info, bool updateItem)
+        public ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info, bool updateItem)
         {
             int width = info.Width;
             int height = info.Height;
@@ -384,7 +384,7 @@ namespace Emby.Drawing
             string path = info.Path;
             _logger.LogInformation("Getting image size for item {ItemType} {Path}", item.GetType().Name, path);
 
-            ImageDimensions size = GetImageSize(path);
+            ImageDimensions size = GetImageDimensions(path);
             info.Width = size.Width;
             info.Height = size.Height;
 
@@ -399,7 +399,7 @@ namespace Emby.Drawing
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
-        public ImageDimensions GetImageSize(string path)
+        public ImageDimensions GetImageDimensions(string path)
             => _imageEncoder.GetImageSize(path);
 
         /// <summary>

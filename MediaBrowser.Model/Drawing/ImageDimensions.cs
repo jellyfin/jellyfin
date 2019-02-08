@@ -1,7 +1,7 @@
 namespace MediaBrowser.Model.Drawing
 {
     /// <summary>
-    /// Struct ImageSize
+    /// Struct ImageDimensions
     /// </summary>
     public struct ImageDimensions
     {
