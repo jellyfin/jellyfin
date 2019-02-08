@@ -43,12 +43,10 @@ namespace MediaBrowser.Providers.TV
         public async Task<bool> Run(Series series, bool addNewItems, CancellationToken cancellationToken)
         {
             var tvdbId = series.GetProviderId(MetadataProviders.Tvdb);
-
-            // Todo: Support series by imdb id
-            var seriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            if (string.IsNullOrEmpty(tvdbId))
             {
-                [MetadataProviders.Tvdb.ToString()] = tvdbId
-            };
+                return false;
+            }
 
             var episodes = await TvDbClientManager.Instance.GetAllEpisodesAsync(Convert.ToInt32(tvdbId), cancellationToken);
 
@@ -59,7 +57,7 @@ namespace MediaBrowser.Providers.TV
                     return new ValueTuple<int, int, DateTime>(
                         i.AiredSeason.GetValueOrDefault(-1), i.AiredEpisodeNumber.GetValueOrDefault(-1), firstAired);
                 })
-                .Where(i => i.Item2 != -1 && i.Item2 != -1)
+                .Where(i => i.Item1 != -1 && i.Item2 != -1)
                 .ToList();
 
             var allRecursiveChildren = series.GetRecursiveChildren();
