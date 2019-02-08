@@ -35,6 +35,7 @@ namespace Jellyfin.Server
         private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
         private static ILogger _logger;
         private static bool _restartOnShutdown;
+        private static IConfiguration appConfig;
 
         public static async Task Main(string[] args)
         {
@@ -78,7 +79,11 @@ namespace Jellyfin.Server
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
-            await CreateLogger(appPaths).ConfigureAwait(false);
+
+            appConfig = await CreateConfiguration(appPaths).ConfigureAwait(false);
+
+            await CreateLogger(appConfig, appPaths).ConfigureAwait(false);
+
             _logger = _loggerFactory.CreateLogger("Main");
 
             AppDomain.CurrentDomain.UnhandledException += (sender, e)
@@ -121,7 +126,7 @@ namespace Jellyfin.Server
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; } );
 
-            var fileSystem = new ManagedFileSystem(_loggerFactory, environmentInfo, null, appPaths.TempDirectory, true);
+            var fileSystem = new ManagedFileSystem(_loggerFactory, environmentInfo, appPaths, appConfig);
 
             using (var appHost = new CoreAppHost(
                 appPaths,
@@ -309,29 +314,33 @@ namespace Jellyfin.Server
             return new ServerApplicationPaths(dataDir, logDir, configDir, cacheDir);
         }
 
-        private static async Task CreateLogger(IApplicationPaths appPaths)
+        private static async Task<IConfiguration> CreateConfiguration(IApplicationPaths appPaths)
+        {
+            string configPath = Path.Combine(appPaths.ConfigurationDirectoryPath, "logging.json");
+
+            if (!File.Exists(configPath))
+            {
+                // For some reason the csproj name is used instead of the assembly name
+                using (Stream rscstr = typeof(Program).Assembly
+                    .GetManifestResourceStream("Jellyfin.Server.Resources.Configuration.logging.json"))
+                using (Stream fstr = File.Open(configPath, FileMode.CreateNew))
+                {
+                    await rscstr.CopyToAsync(fstr).ConfigureAwait(false);
+                }
+            }
+
+            return new ConfigurationBuilder()
+                .SetBasePath(appPaths.ConfigurationDirectoryPath)
+                .AddJsonFile("logging.json")
+                .AddEnvironmentVariables("JELLYFIN_")
+                .AddInMemoryCollection(ConfigurationOptions.Configuration)
+                .Build();
+        }
+
+        private static async Task CreateLogger(IConfiguration configuration, IApplicationPaths appPaths)
         {
             try
             {
-                string configPath = Path.Combine(appPaths.ConfigurationDirectoryPath, "logging.json");
-
-                if (!File.Exists(configPath))
-                {
-                    // For some reason the csproj name is used instead of the assembly name
-                    using (Stream rscstr = typeof(Program).Assembly
-                        .GetManifestResourceStream("Jellyfin.Server.Resources.Configuration.logging.json"))
-                    using (Stream fstr = File.Open(configPath, FileMode.CreateNew))
-                    {
-                        await rscstr.CopyToAsync(fstr).ConfigureAwait(false);
-                    }
-                }
-
-                var configuration = new ConfigurationBuilder()
-                    .SetBasePath(appPaths.ConfigurationDirectoryPath)
-                    .AddJsonFile("logging.json")
-                    .AddEnvironmentVariables("JELLYFIN_")
-                    .Build();
-
                 // Serilog.Log is used by SerilogLoggerFactory when no logger is specified
                 Serilog.Log.Logger = new LoggerConfiguration()
                     .ReadFrom.Configuration(configuration)
