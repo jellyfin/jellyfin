@@ -536,7 +536,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(item));
             }
 
-            SaveItems(new List<BaseItem> { item }, cancellationToken);
+            SaveItems(new [] { item }, cancellationToken);
         }
 
         public void SaveImages(BaseItem item)
@@ -576,7 +576,7 @@ namespace Emby.Server.Implementations.Data
         /// or
         /// cancellationToken
         /// </exception>
-        public void SaveItems(List<BaseItem> items, CancellationToken cancellationToken)
+        public void SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken)
         {
             if (items == null)
             {

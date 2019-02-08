@@ -1806,18 +1806,16 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task.</returns>
         public void CreateItems(IEnumerable<BaseItem> items, BaseItem parent, CancellationToken cancellationToken)
         {
-            var list = items.ToList();
+            ItemRepository.SaveItems(items, cancellationToken);
 
-            ItemRepository.SaveItems(list, cancellationToken);
-
-            foreach (var item in list)
+            foreach (var item in items)
             {
                 RegisterItem(item);
             }
 
             if (ItemAdded != null)
             {
-                foreach (var item in list)
+                foreach (var item in items)
                 {
                     // With the live tv guide this just creates too much noise
                     if (item.SourceType != SourceType.Library)
@@ -1851,7 +1849,7 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// Updates the item.
         /// </summary>
-        public void UpdateItems(List<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
+        public void UpdateItems(IEnumerable<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
             foreach (var item in items)
             {
@@ -1906,7 +1904,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task.</returns>
         public void UpdateItem(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            UpdateItems(new List<BaseItem> { item }, parent, updateReason, cancellationToken);
+            UpdateItems(new [] { item }, parent, updateReason, cancellationToken);
         }
 
         /// <summary>

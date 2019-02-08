@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="items">The items.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void SaveItems(List<BaseItem> items, CancellationToken cancellationToken);
+        void SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken);
 
         void SaveImages(BaseItem item);
 
