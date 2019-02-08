@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.IO
         /// <summary>
         /// Any file name ending in any of these will be ignored by the watchers
         /// </summary>
-        private readonly string[] _alwaysIgnoreFiles = new string[]
+        private readonly HashSet<string> _alwaysIgnoreFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "small.jpg",
             "albumart.jpg",
@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.IO
             ".actors"
         };
 
-        private readonly string[] _alwaysIgnoreExtensions = new string[]
+        private readonly HashSet<string> _alwaysIgnoreExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             // thumbs.db
             ".db",
@@ -456,8 +456,8 @@ namespace Emby.Server.Implementations.IO
             var filename = Path.GetFileName(path);
 
             var monitorPath = !string.IsNullOrEmpty(filename) &&
-                !_alwaysIgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase) &&
-                !_alwaysIgnoreExtensions.Contains(Path.GetExtension(path) ?? string.Empty, StringComparer.OrdinalIgnoreCase) &&
+                !_alwaysIgnoreFiles.Contains(filename) &&
+                !_alwaysIgnoreExtensions.Contains(Path.GetExtension(path)) &&
                 _alwaysIgnoreSubstrings.All(i => path.IndexOf(i, StringComparison.OrdinalIgnoreCase) == -1);
 
             // Ignore certain files

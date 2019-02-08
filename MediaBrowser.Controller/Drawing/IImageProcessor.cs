@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets the supported input formats.
         /// </summary>
         /// <value>The supported input formats.</value>
-        string[] SupportedInputFormats { get; }
+        IReadOnlyCollection<string> SupportedInputFormats { get; }
 
         /// <summary>
         /// Gets the image enhancers.
@@ -96,8 +96,8 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Gets the supported image output formats.
         /// </summary>
-        /// <returns>ImageOutputFormat[].</returns>
-        ImageFormat[] GetSupportedImageOutputFormats();
+        /// <returns>IReadOnlyCollection{ImageOutput}.</returns>
+        IReadOnlyCollection<ImageFormat> GetSupportedImageOutputFormats();
 
         /// <summary>
         /// Creates the image collage.
