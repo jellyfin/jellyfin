@@ -30,6 +30,7 @@ namespace MediaBrowser.Providers.TV
         private readonly IFileSystem _fileSystem;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private const double UnairedEpisodeThresholdDays = 2;
 
         public MissingEpisodeProvider(ILogger logger, IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization, IFileSystem fileSystem)
         {
@@ -54,10 +55,13 @@ namespace MediaBrowser.Providers.TV
                 .Select(i =>
                 {
                     DateTime.TryParse(i.FirstAired, out var firstAired);
-                    return new ValueTuple<int, int, DateTime>(
-                        i.AiredSeason.GetValueOrDefault(-1), i.AiredEpisodeNumber.GetValueOrDefault(-1), firstAired);
+                    var seasonNumber = i.AiredSeason.GetValueOrDefault(-1);
+                    var episodeNumber = i.AiredEpisodeNumber.GetValueOrDefault(-1);
+                    return (SeasonNumber: seasonNumber, EpisodeNumber: episodeNumber, firstAired: firstAired);
                 })
-                .Where(i => i.Item1 != -1 && i.Item2 != -1)
+                .Where(i => i.SeasonNumber != -1 && i.EpisodeNumber != -1)
+                .OrderBy(i => i.SeasonNumber)
+                .ThenBy(i => i.EpisodeNumber)
                 .ToList();
 
             var allRecursiveChildren = series.GetRecursiveChildren();
@@ -118,37 +122,25 @@ namespace MediaBrowser.Providers.TV
                    });
         }
 
-        private const double UnairedEpisodeThresholdDays = 2;
-
-
         private async Task<bool> AddMissingEpisodes(
             Series series,
-            IList<BaseItem> allItems,
+            IEnumerable<BaseItem> allItems,
             bool addMissingEpisodes,
-            List<ValueTuple<int, int, DateTime>> episodeLookup,
+            IReadOnlyCollection<(int SeasonNumber, int Episodenumber, DateTime FirstAired)> episodeLookup,
             CancellationToken cancellationToken)
         {
             var existingEpisodes = allItems.OfType<Episode>()
                                    .ToList();
 
-            var seasonCounts = (from e in episodeLookup
-                                group e by e.Item1 into g
-                                select g)
-                               .ToDictionary(g => g.Key, g => g.Count());
+            var seasonCounts = episodeLookup.GroupBy(e => e.SeasonNumber).ToDictionary(g => g.Key, g => g.Count());
 
             var hasChanges = false;
 
             foreach (var tuple in episodeLookup)
             {
-                if (tuple.Item1 <= 0)
+                if (tuple.SeasonNumber <= 0 || tuple.Episodenumber <= 0)
                 {
-                    // Ignore season zeros
-                    continue;
-                }
-
-                if (tuple.Item2 <= 0)
-                {
-                    // Ignore episode zeros
+                    // Ignore episode/season zeros
                     continue;
                 }
 
@@ -159,15 +151,15 @@ namespace MediaBrowser.Providers.TV
                     continue;
                 }
 
-                var airDate = tuple.Item3;
+                var airDate = tuple.FirstAired;
 
                 var now = DateTime.UtcNow.AddDays(0 - UnairedEpisodeThresholdDays);
 
                 if (airDate < now && addMissingEpisodes || airDate > now)
                 {
                     // tvdb has a lot of nearly blank episodes
-                    _logger.LogInformation("Creating virtual missing/unaired episode {0} {1}x{2}", series.Name, tuple.Item1, tuple.Item2);
-                    await AddEpisode(series, tuple.Item1, tuple.Item2, cancellationToken).ConfigureAwait(false);
+                    _logger.LogInformation("Creating virtual missing/unaired episode {0} {1}x{2}", series.Name, tuple.SeasonNumber, tuple.Episodenumber);
+                    await AddEpisode(series, tuple.SeasonNumber, tuple.Episodenumber, cancellationToken).ConfigureAwait(false);
 
                     hasChanges = true;
                 }
@@ -180,58 +172,57 @@ namespace MediaBrowser.Providers.TV
         /// Removes the virtual entry after a corresponding physical version has been added
         /// </summary>
         private bool RemoveObsoleteOrMissingEpisodes(
-            IList<BaseItem> allRecursiveChildren,
-            IEnumerable<ValueTuple<int, int, DateTime>> episodeLookup,
+            IEnumerable<BaseItem> allRecursiveChildren,
+            IEnumerable<(int SeasonNumber, int EpisodeNumber, DateTime FirstAired)> episodeLookup,
             bool allowMissingEpisodes)
         {
-            var existingEpisodes = allRecursiveChildren.OfType<Episode>()
-                                   .ToList();
+            var existingEpisodes = allRecursiveChildren.OfType<Episode>();
 
-            var physicalEpisodes = existingEpisodes
-                .Where(i => i.LocationType != LocationType.Virtual)
-                .ToList();
-
-            var virtualEpisodes = existingEpisodes
-                .Where(i => i.LocationType == LocationType.Virtual)
-                .ToList();
+            var physicalEpisodes = new List<Episode>();
+            var virtualEpisodes = new List<Episode>();
+            foreach (var episode in existingEpisodes)
+            {
+                if (episode.LocationType == LocationType.Virtual)
+                {
+                    virtualEpisodes.Add(episode);
+                }
+                else
+                {
+                    physicalEpisodes.Add(episode);
+                }
+            }
 
             var episodesToRemove = virtualEpisodes
                 .Where(i =>
                 {
-                    if (i.IndexNumber.HasValue && i.ParentIndexNumber.HasValue)
+                    if (!i.IndexNumber.HasValue || !i.ParentIndexNumber.HasValue)
                     {
-                        var seasonNumber = i.ParentIndexNumber.Value;
-                        var episodeNumber = i.IndexNumber.Value;
-
-                        // If there's a physical episode with the same season and episode number, delete it
-                        if (physicalEpisodes.Any(p =>
-                                p.ParentIndexNumber.HasValue && (p.ParentIndexNumber.Value) == seasonNumber &&
-                                p.ContainsEpisodeNumber(episodeNumber)))
-                        {
-                            return true;
-                        }
-
-                        // If the episode no longer exists in the remote lookup, delete it
-                        if (!episodeLookup.Any(e => e.Item1 == seasonNumber && e.Item2 == episodeNumber))
-                        {
-                            return true;
-                        }
-
-                        if (!allowMissingEpisodes && i.IsMissingEpisode)
-                        {
-                            // If it's missing, but not unaired, remove it
-                            if (!i.PremiereDate.HasValue || i.PremiereDate.Value.ToLocalTime().Date.AddDays(UnairedEpisodeThresholdDays) < DateTime.Now.Date)
-                            {
-                                return true;
-                            }
-                        }
-
-                        return false;
+                        return true;
                     }
 
-                    return true;
-                })
-                .ToList();
+                    var seasonNumber = i.ParentIndexNumber.Value;
+                    var episodeNumber = i.IndexNumber.Value;
+
+                    // If there's a physical episode with the same season and episode number, delete it
+                    if (physicalEpisodes.Any(p =>
+                        p.ParentIndexNumber.HasValue && p.ParentIndexNumber.Value == seasonNumber &&
+                        p.ContainsEpisodeNumber(episodeNumber)))
+                    {
+                        return true;
+                    }
+
+                    // If the episode no longer exists in the remote lookup, delete it
+                    if (!episodeLookup.Any(e => e.SeasonNumber == seasonNumber && e.EpisodeNumber == episodeNumber))
+                    {
+                        return true;
+                    }
+
+                    // If it's missing, but not unaired, remove it
+                    return !allowMissingEpisodes && i.IsMissingEpisode &&
+                           (!i.PremiereDate.HasValue ||
+                            i.PremiereDate.Value.ToLocalTime().Date.AddDays(UnairedEpisodeThresholdDays) <
+                            DateTime.Now.Date);
+                });
 
             var hasChanges = false;
 
@@ -240,7 +231,6 @@ namespace MediaBrowser.Providers.TV
                 _libraryManager.DeleteItem(episodeToRemove, new DeleteOptions
                 {
                     DeleteFileLocation = true
-
                 }, false);
 
                 hasChanges = true;
@@ -256,17 +246,23 @@ namespace MediaBrowser.Providers.TV
         /// <param name="episodeLookup">The episode lookup.</param>
         /// <returns>Task{System.Boolean}.</returns>
         private bool RemoveObsoleteOrMissingSeasons(IList<BaseItem> allRecursiveChildren,
-            IEnumerable<(int, int, DateTime)> episodeLookup)
+            IEnumerable<(int SeasonNumber, int EpisodeNumber, DateTime FirstAired)> episodeLookup)
         {
             var existingSeasons = allRecursiveChildren.OfType<Season>().ToList();
 
-            var physicalSeasons = existingSeasons
-                .Where(i => i.LocationType != LocationType.Virtual)
-                .ToList();
-
-            var virtualSeasons = existingSeasons
-                .Where(i => i.LocationType == LocationType.Virtual)
-                .ToList();
+            var physicalSeasons = new List<Season>();
+            var virtualSeasons = new List<Season>();
+            foreach (var season in existingSeasons)
+            {
+                if (season.LocationType == LocationType.Virtual)
+                {
+                    virtualSeasons.Add(season);
+                }
+                else
+                {
+                    physicalSeasons.Add(season);
+                }
+            }
 
             var allEpisodes = allRecursiveChildren.OfType<Episode>().ToList();
 
@@ -278,13 +274,13 @@ namespace MediaBrowser.Providers.TV
                         var seasonNumber = i.IndexNumber.Value;
 
                         // If there's a physical season with the same number, delete it
-                        if (physicalSeasons.Any(p => p.IndexNumber.HasValue && (p.IndexNumber.Value) == seasonNumber && string.Equals(p.Series.PresentationUniqueKey, i.Series.PresentationUniqueKey, StringComparison.Ordinal)))
+                        if (physicalSeasons.Any(p => p.IndexNumber.HasValue && p.IndexNumber.Value == seasonNumber && string.Equals(p.Series.PresentationUniqueKey, i.Series.PresentationUniqueKey, StringComparison.Ordinal)))
                         {
                             return true;
                         }
 
                         // If the season no longer exists in the remote lookup, delete it, but only if an existing episode doesn't require it
-                        if (episodeLookup.All(e => e.Item1 != seasonNumber))
+                        if (episodeLookup.All(e => e.SeasonNumber != seasonNumber))
                         {
                             if (allEpisodes.All(s => s.ParentIndexNumber != seasonNumber || s.IsInSeasonFolder))
                             {
@@ -298,8 +294,7 @@ namespace MediaBrowser.Providers.TV
                     // Season does not have a number
                     // Remove if there are no episodes directly in series without a season number
                     return allEpisodes.All(s => s.ParentIndexNumber.HasValue || s.IsInSeasonFolder);
-                })
-                .ToList();
+                });
 
             var hasChanges = false;
 
@@ -343,13 +338,11 @@ namespace MediaBrowser.Providers.TV
                 Name = name,
                 IndexNumber = episodeNumber,
                 ParentIndexNumber = seasonNumber,
-                Id = _libraryManager.GetNewItemId((series.Id + seasonNumber.ToString(_usCulture) + name), typeof(Episode)),
+                Id = _libraryManager.GetNewItemId(series.Id + seasonNumber.ToString(_usCulture) + name, typeof(Episode)),
                 IsVirtualItem = true,
                 SeasonId = season?.Id ?? Guid.Empty,
                 SeriesId = series.Id
             };
-
-            episode.SetParent(season);
 
             season.AddChild(episode, cancellationToken);
 
@@ -363,21 +356,21 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seasonCounts"></param>
         /// <param name="tuple">The tuple.</param>
         /// <returns>Episode.</returns>
-        private Episode GetExistingEpisode(IList<Episode> existingEpisodes, Dictionary<int, int> seasonCounts, ValueTuple<int, int, DateTime> tuple)
+        private Episode GetExistingEpisode(IList<Episode> existingEpisodes, Dictionary<int, int> seasonCounts, (int SeasonNumber, int EpisodeNumber, DateTime FirstAired) episodeTuple)
         {
-            var s = tuple.Item1;
-            var e = tuple.Item2;
+            var seasonNumber = episodeTuple.SeasonNumber;
+            var episodeNumber = episodeTuple.EpisodeNumber;
 
             while (true)
             {
-                var episode = GetExistingEpisode(existingEpisodes, s, e);
+                var episode = GetExistingEpisode(existingEpisodes, seasonNumber, episodeNumber);
                 if (episode != null)
                     return episode;
 
-                s--;
+                seasonNumber--;
 
-                if (seasonCounts.ContainsKey(s))
-                    e += seasonCounts[s];
+                if (seasonCounts.ContainsKey(seasonNumber))
+                    episodeNumber += seasonCounts[seasonNumber];
                 else
                     break;
             }
