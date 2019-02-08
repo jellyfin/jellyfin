@@ -460,11 +460,15 @@ namespace Emby.Server.Implementations.Localization
         {
             using (var stream = _assembly.GetManifestResourceStream(resourcePath))
             {
-                var dict = await _jsonSerializer.DeserializeFromStreamAsync<Dictionary<string, string>>(stream);
-
-                foreach (var key in dict.Keys)
+                // If a Culture doesn't have a translation the stream will be null and it defaults to en-us further up the chain
+                if (stream != null)
                 {
-                    dictionary[key] = dict[key];
+                    var dict = await _jsonSerializer.DeserializeFromStreamAsync<Dictionary<string, string>>(stream);
+
+                    foreach (var key in dict.Keys)
+                    {
+                        dictionary[key] = dict[key];
+                    }
                 }
             }
         }
