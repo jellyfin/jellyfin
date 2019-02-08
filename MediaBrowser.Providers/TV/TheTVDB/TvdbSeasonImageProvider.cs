@@ -81,9 +81,9 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     var imageResults = await _tvDbClientManager.GetImagesAsync(tvdbId, imageQuery, cancellationToken);
                     remoteImages.AddRange(GetImages(imageResults.Data, language));
                 }
-                catch (TvDbServerException e)
+                catch (TvDbServerException)
                 {
-                    _logger.LogInformation(e, "No images of type {KeyType} found for series {TvdbId}", keyType, tvdbId);
+                    _logger.LogDebug("No images of type {KeyType} found for series {TvdbId}", keyType, tvdbId);
                 }
             }
 

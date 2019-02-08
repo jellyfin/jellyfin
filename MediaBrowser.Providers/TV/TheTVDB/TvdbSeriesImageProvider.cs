@@ -75,9 +75,9 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
                     remoteImages.AddRange(GetImages(imageResults.Data, language));
                 }
-                catch (TvDbServerException e)
+                catch (TvDbServerException)
                 {
-                    _logger.LogError(e, "Failed to retrieve images of type {KeyType} for series {TvDbId}", keyType,
+                    _logger.LogDebug("No images of type {KeyType} exist for series {TvDbId}", keyType,
                         tvdbId);
                 }
             }

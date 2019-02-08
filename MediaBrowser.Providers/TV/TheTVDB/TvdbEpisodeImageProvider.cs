@@ -53,13 +53,28 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
             {
-                var tvdbId = episode.GetProviderId(MetadataProviders.Tvdb);
+                var episodeTvdbId = episode.GetProviderId(MetadataProviders.Tvdb);
 
                 // Process images
                 try
                 {
+                    if (string.IsNullOrEmpty(episodeTvdbId))
+                    {
+                        var episodeNumber = episode.IndexNumber.Value;
+                        var seasonNumber = episode.ParentIndexNumber.Value;
+                        episodeTvdbId = await _tvDbClientManager.GetEpisodeTvdbId(
+                            Convert.ToInt32(series.GetProviderId(MetadataProviders.Tvdb)), episodeNumber, seasonNumber,
+                            cancellationToken);
+                        if (string.IsNullOrEmpty(episodeTvdbId))
+                        {
+                            _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber}found for series {SeriesTvdbId}",
+                                seasonNumber, episodeNumber);
+                            return imageResult;
+                        }
+                    }
+
                     var episodeResult =
-                        await _tvDbClientManager.GetEpisodesAsync(Convert.ToInt32(tvdbId), cancellationToken);
+                        await _tvDbClientManager.GetEpisodesAsync(Convert.ToInt32(episodeTvdbId), cancellationToken);
 
                     var image = GetImageInfo(episodeResult.Data);
                     if (image != null)
@@ -69,7 +84,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 }
                 catch (TvDbServerException e)
                 {
-                    _logger.LogError(e, "Failed to retrieve episode images for {TvDbId}", tvdbId);
+                    _logger.LogError(e, "Failed to retrieve episode images for {TvDbId}", episodeTvdbId);
                 }
             }
 

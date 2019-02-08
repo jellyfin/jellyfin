@@ -20,7 +20,6 @@ namespace MediaBrowser.Providers.TV
     /// </summary>
     class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasOrder
     {
-        internal static TvdbEpisodeProvider Current;
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly TvDbClientManager _tvDbClientManager;
@@ -29,7 +28,6 @@ namespace MediaBrowser.Providers.TV
         {
             _httpClient = httpClient;
             _logger = logger;
-            Current = this;
             _tvDbClientManager = TvDbClientManager.Instance;
         }
 
@@ -48,8 +46,18 @@ namespace MediaBrowser.Providers.TV
             {
                 try
                 {
-                    var episodeResult =
-                        await _tvDbClientManager.GetEpisodesAsync((int)searchInfo.IndexNumber, cancellationToken);
+                    var episodeTvdbId = searchInfo.GetProviderId(MetadataProviders.Tvdb);
+                    if (string.IsNullOrEmpty(episodeTvdbId))
+                    {
+                        episodeTvdbId = await _tvDbClientManager.GetEpisodeTvdbId(searchInfo, cancellationToken);
+                        if (string.IsNullOrEmpty(episodeTvdbId))
+                        {
+                            _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} found for series {SeriesTvdbId}",
+                                searchInfo.ParentIndexNumber, searchInfo.IndexNumber);
+                            return list;
+                        }
+                    }
+                    var episodeResult = await _tvDbClientManager.GetEpisodesAsync(Convert.ToInt32(episodeTvdbId), cancellationToken);
                     var metadataResult = MapEpisodeToResult(searchInfo, episodeResult.Data);
 
                     if (metadataResult.HasMetadata)
@@ -93,6 +101,17 @@ namespace MediaBrowser.Providers.TV
                 var tvdbId = searchInfo.GetProviderId(MetadataProviders.Tvdb);
                 try
                 {
+                    if (string.IsNullOrEmpty(tvdbId))
+                    {
+                        tvdbId = await _tvDbClientManager.GetEpisodeTvdbId(searchInfo, cancellationToken);
+                        if (string.IsNullOrEmpty(tvdbId))
+                        {
+                            _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber}found for series {SeriesTvdbId}",
+                                 searchInfo.ParentIndexNumber, searchInfo.IndexNumber, tvdbId);
+                            return result;
+                        }
+                    }
+
                     var episodeResult = await _tvDbClientManager.GetEpisodesAsync(
                         Convert.ToInt32(tvdbId),
                         cancellationToken);
