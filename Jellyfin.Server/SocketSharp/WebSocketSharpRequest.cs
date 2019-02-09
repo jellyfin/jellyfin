@@ -27,30 +27,6 @@ namespace Jellyfin.Server.SocketSharp
             //HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
         }
 
-        private static string GetHandlerPathIfAny(string listenerUrl)
-        {
-            if (listenerUrl == null)
-            {
-                return null;
-            }
-
-            var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
-            if (pos == -1)
-            {
-                return null;
-            }
-
-            var startHostUrl = listenerUrl.Substring(pos + "://".Length);
-            var endPos = startHostUrl.IndexOf('/');
-            if (endPos == -1)
-            {
-                return null;
-            }
-
-            var endHostUrl = startHostUrl.Substring(endPos + 1);
-            return string.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
-        }
-
         public HttpListenerRequest HttpRequest => request;
 
         public object OriginalRequest => request;
@@ -216,6 +192,8 @@ namespace Jellyfin.Server.SocketSharp
             {
                 foreach (var acceptsType in acceptContentTypes)
                 {
+                    // TODO: @bond move to Span when Span.Split lands
+                    // https://github.com/dotnet/corefx/issues/26528
                     var contentType = acceptsType?.Split(';')[0];
                     acceptsAnything = contentType.IndexOf("*/*", StringComparison.Ordinal) != -1;
 
@@ -342,7 +320,7 @@ namespace Jellyfin.Server.SocketSharp
                 {
                     var mode = HandlerFactoryPath;
 
-                    var pos = request.RawUrl.IndexOf("?", StringComparison.Ordinal);
+                    var pos = request.RawUrl.IndexOf('?', StringComparison.Ordinal);
                     if (pos != -1)
                     {
                         var path = request.RawUrl.Substring(0, pos);
@@ -524,10 +502,13 @@ namespace Jellyfin.Server.SocketSharp
 
         public static string NormalizePathInfo(string pathInfo, string handlerPath)
         {
-            var trimmed = pathInfo.TrimStart('/');
-            if (handlerPath != null && trimmed.StartsWith(handlerPath, StringComparison.OrdinalIgnoreCase))
+            if (handlerPath != null)
             {
-                return trimmed.Substring(handlerPath.Length);
+                var trimmed = pathInfo.TrimStart('/');
+                if (trimmed.StartsWith(handlerPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    return trimmed.Substring(handlerPath.Length);
+                }
             }
 
             return pathInfo;
