@@ -5,7 +5,6 @@ source ../common.build.sh
 keep_artifacts="${1}"
 
 WORKDIR="$( pwd )"
-VERSION="$( grep '^jellyfin' ${WORKDIR}/pkg-src/changelog | head -1 | awk -F '[()]' '{ print $2 }' )"
 
 package_temporary_dir="${WORKDIR}/pkg-dist-tmp"
 output_dir="${WORKDIR}/pkg-dist"
