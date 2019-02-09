@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace SocketHttpListener
 {
@@ -177,7 +178,7 @@ namespace SocketHttpListener
             return opcode == Opcode.Text || opcode == Opcode.Binary;
         }
 
-        private static WebSocketFrame read(byte[] header, Stream stream, bool unmask)
+        private static async Task<WebSocketFrame> ReadAsync(byte[] header, Stream stream, bool unmask)
         {
             /* Header */
 
@@ -229,7 +230,7 @@ namespace SocketHttpListener
                          ? 2
                          : 8;
 
-            var extPayloadLen = size > 0 ? stream.ReadBytes(size) : new byte[0];
+            var extPayloadLen = size > 0 ? await stream.ReadBytesAsync(size).ConfigureAwait(false) : Array.Empty<byte>();
             if (size > 0 && extPayloadLen.Length != size)
                 throw new WebSocketException(
                   "The 'Extended Payload Length' of a frame cannot be read from the data source.");
@@ -239,7 +240,7 @@ namespace SocketHttpListener
             /* Masking Key */
 
             var masked = mask == Mask.Mask;
-            var maskingKey = masked ? stream.ReadBytes(4) : new byte[0];
+            var maskingKey = masked ? await stream.ReadBytesAsync(4).ConfigureAwait(false) : Array.Empty<byte>();
             if (masked && maskingKey.Length != 4)
                 throw new WebSocketException(
                   "The 'Masking Key' of a frame cannot be read from the data source.");
@@ -264,8 +265,8 @@ namespace SocketHttpListener
                       "The length of 'Payload Data' of a frame is greater than the allowable length.");
 
                 data = payloadLen > 126
-                       ? stream.ReadBytes((long)len, 1024)
-                       : stream.ReadBytes((int)len);
+                       ? await stream.ReadBytesAsync((long)len, 1024).ConfigureAwait(false)
+                       : await stream.ReadBytesAsync((int)len).ConfigureAwait(false);
 
                 //if (data.LongLength != (long)len)
                 //    throw new WebSocketException(
@@ -273,7 +274,7 @@ namespace SocketHttpListener
             }
             else
             {
-                data = new byte[0];
+                data = Array.Empty<byte>();
             }
 
             var payload = new PayloadData(data, masked);
@@ -281,7 +282,7 @@ namespace SocketHttpListener
             {
                 payload.Mask(maskingKey);
                 frame._mask = Mask.Unmask;
-                frame._maskingKey = new byte[0];
+                frame._maskingKey = Array.Empty<byte>();
             }
 
             frame._payloadData = payload;
@@ -329,41 +330,39 @@ namespace SocketHttpListener
             return new WebSocketFrame(fin, opcode, mask, new PayloadData(data), compressed);
         }
 
-        internal static WebSocketFrame Read(Stream stream)
-        {
-            return Read(stream, true);
-        }
+        internal static Task<WebSocketFrame> ReadAsync(Stream stream)
+            => ReadAsync(stream, true);
 
-        internal static WebSocketFrame Read(Stream stream, bool unmask)
+        internal static async Task<WebSocketFrame> ReadAsync(Stream stream, bool unmask)
         {
-            var header = stream.ReadBytes(2);
+            var header = await stream.ReadBytesAsync(2).ConfigureAwait(false);
             if (header.Length != 2)
+            {
                 throw new WebSocketException(
                   "The header part of a frame cannot be read from the data source.");
+            }
 
-            return read(header, stream, unmask);
+            return await ReadAsync(header, stream, unmask).ConfigureAwait(false);
         }
 
-        internal static async void ReadAsync(
+        internal static async Task ReadAsync(
           Stream stream, bool unmask, Action<WebSocketFrame> completed, Action<Exception> error)
         {
             try
             {
                 var header = await stream.ReadBytesAsync(2).ConfigureAwait(false);
                 if (header.Length != 2)
+                {
                     throw new WebSocketException(
                       "The header part of a frame cannot be read from the data source.");
+                }
 
-                var frame = read(header, stream, unmask);
-                if (completed != null)
-                    completed(frame);
+                var frame = await ReadAsync(header, stream, unmask).ConfigureAwait(false);
+                completed?.Invoke(frame);
             }
             catch (Exception ex)
             {
-                if (error != null)
-                {
-                    error(ex);
-                }
+                error.Invoke(ex);
             }
         }
 

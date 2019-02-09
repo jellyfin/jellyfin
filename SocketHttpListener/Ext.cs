@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 using HttpStatusCode = SocketHttpListener.Net.HttpStatusCode;
@@ -95,10 +96,41 @@ namespace SocketHttpListener
                    : buffer;
         }
 
-        private static bool readBytes(
-          this Stream stream, byte[] buffer, int offset, int length, Stream dest)
+        private static async Task<byte[]> ReadBytesAsync(this Stream stream, byte[] buffer, int offset, int length)
+        {
+            var len = await stream.ReadAsync(buffer, offset, length).ConfigureAwait(false);
+            if (len < 1)
+                return buffer.SubArray(0, offset);
+
+            var tmp = 0;
+            while (len < length)
+            {
+                tmp = await stream.ReadAsync(buffer, offset + len, length - len).ConfigureAwait(false);
+                if (tmp < 1)
+                {
+                    break;
+                }
+
+                len += tmp;
+            }
+
+            return len < length
+                   ? buffer.SubArray(0, offset + len)
+                   : buffer;
+        }
+
+        private static bool readBytes(this Stream stream, byte[] buffer, int offset, int length, Stream dest)
         {
             var bytes = stream.readBytes(buffer, offset, length);
+            var len = bytes.Length;
+            dest.Write(bytes, 0, len);
+
+            return len == offset + length;
+        }
+
+        private static async Task<bool> ReadBytesAsync(this Stream stream, byte[] buffer, int offset, int length, Stream dest)
+        {
+            var bytes = await stream.ReadBytesAsync(buffer, offset, length).ConfigureAwait(false);
             var len = bytes.Length;
             dest.Write(bytes, 0, len);
 
@@ -331,12 +363,10 @@ namespace SocketHttpListener
                    : string.Format("\"{0}\"", value.Replace("\"", "\\\""));
         }
 
-        internal static byte[] ReadBytes(this Stream stream, int length)
-        {
-            return stream.readBytes(new byte[length], 0, length);
-        }
+        internal static Task<byte[]> ReadBytesAsync(this Stream stream, int length)
+            => stream.ReadBytesAsync(new byte[length], 0, length);
 
-        internal static byte[] ReadBytes(this Stream stream, long length, int bufferLength)
+        internal static async Task<byte[]> ReadBytesAsync(this Stream stream, long length, int bufferLength)
         {
             using (var result = new MemoryStream())
             {
@@ -347,7 +377,7 @@ namespace SocketHttpListener
                 var end = false;
                 for (long i = 0; i < count; i++)
                 {
-                    if (!stream.readBytes(buffer, 0, bufferLength, result))
+                    if (!await stream.ReadBytesAsync(buffer, 0, bufferLength, result).ConfigureAwait(false))
                     {
                         end = true;
                         break;
@@ -355,24 +385,12 @@ namespace SocketHttpListener
                 }
 
                 if (!end && rem > 0)
-                    stream.readBytes(new byte[rem], 0, rem, result);
+                {
+                    await stream.ReadBytesAsync(new byte[rem], 0, rem, result).ConfigureAwait(false);
+                }
 
                 return result.ToArray();
             }
-        }
-
-        internal static async Task<byte[]> ReadBytesAsync(this Stream stream, int length)
-        {
-            var buffer = new byte[length];
-
-            var len = await stream.ReadAsync(buffer, 0, length).ConfigureAwait(false);
-            var bytes = len < 1
-                ? new byte[0]
-                : len < length
-                  ? stream.readBytes(buffer, len, length - len)
-                  : buffer;
-
-            return bytes;
         }
 
         internal static string RemovePrefix(this string value, params string[] prefixes)
@@ -493,19 +511,16 @@ namespace SocketHttpListener
             return string.Format("{0}; {1}", m, parameters.ToString("; "));
         }
 
-        internal static List<TSource> ToList<TSource>(this IEnumerable<TSource> source)
-        {
-            return new List<TSource>(source);
-        }
-
         internal static ushort ToUInt16(this byte[] src, ByteOrder srcOrder)
         {
-            return BitConverter.ToUInt16(src.ToHostOrder(srcOrder), 0);
+            src.ToHostOrder(srcOrder);
+            return BitConverter.ToUInt16(src, 0);
         }
 
         internal static ulong ToUInt64(this byte[] src, ByteOrder srcOrder)
         {
-            return BitConverter.ToUInt64(src.ToHostOrder(srcOrder), 0);
+            src.ToHostOrder(srcOrder);
+            return BitConverter.ToUInt64(src, 0);
         }
 
         internal static string TrimEndSlash(this string value)
@@ -852,14 +867,17 @@ namespace SocketHttpListener
         /// <exception cref="ArgumentNullException">
         /// <paramref name="src"/> is <see langword="null"/>.
         /// </exception>
-        public static byte[] ToHostOrder(this byte[] src, ByteOrder srcOrder)
+        public static void ToHostOrder(this byte[] src, ByteOrder srcOrder)
         {
             if (src == null)
+            {
                 throw new ArgumentNullException(nameof(src));
+            }
 
-            return src.Length > 1 && !srcOrder.IsHostOrder()
-                   ? src.Reverse()
-                   : src;
+            if (src.Length > 1 && !srcOrder.IsHostOrder())
+            {
+                Array.Reverse(src);
+            }
         }
 
         /// <summary>
