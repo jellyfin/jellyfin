@@ -171,16 +171,29 @@ namespace Emby.Server.Implementations.AppBase
         private void UpdateCachePath()
         {
             string cachePath;
-
+            // If the configuration file has no entry (i.e. not set in UI)
             if (string.IsNullOrWhiteSpace(CommonConfiguration.CachePath))
             {
-                cachePath = null;
+                // If the current live configuration has no entry (i.e. not set on CLI/envvars, during startup)
+                if (string.IsNullOrWhiteSpace(((BaseApplicationPaths)CommonApplicationPaths).CachePath))
+                {
+                    // Set cachePath to a default value under ProgramDataPath
+                    cachePath = (((BaseApplicationPaths)CommonApplicationPaths).ProgramDataPath + "/cache");
+                }
+                else
+                {
+                    // Set cachePath to the existing live value; will require restart if UI value is removed (but not replaced)
+                    // TODO: Figure out how to re-grab this from the CLI/envvars while running
+                    cachePath = ((BaseApplicationPaths)CommonApplicationPaths).CachePath;
+                }
             }
             else
             {
-                cachePath = Path.Combine(CommonConfiguration.CachePath, "cache");
+                // Set cachePath to the new UI-set value
+                cachePath = CommonConfiguration.CachePath;
             }
 
+            Logger.LogInformation("Setting cache path to " + cachePath);
             ((BaseApplicationPaths)CommonApplicationPaths).CachePath = cachePath;
         }
 
