@@ -90,7 +90,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var options = GetDtoOptions(_authContext, request);
 
-            var ancestorIds = new List<Guid>();
+            var ancestorIds = Array.Empty<Guid>();
 
             var excludeFolderIds = user.Configuration.LatestItemsExcludes;
             if (parentIdGuid.Equals(Guid.Empty) && excludeFolderIds.Length > 0)
@@ -99,12 +99,12 @@ namespace MediaBrowser.Api.UserLibrary
                     .Where(i => i is Folder)
                     .Where(i => !excludeFolderIds.Contains(i.Id.ToString("N")))
                     .Select(i => i.Id)
-                    .ToList();
+                    .ToArray();
             }
 
             var itemsResult = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
-                OrderBy = new[] { ItemSortBy.DatePlayed }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
+                OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending) },
                 IsResumable = true,
                 StartIndex = request.StartIndex,
                 Limit = request.Limit,
@@ -115,7 +115,7 @@ namespace MediaBrowser.Api.UserLibrary
                 IsVirtualItem = false,
                 CollapseBoxSetItems = false,
                 EnableTotalRecordCount = request.EnableTotalRecordCount,
-                AncestorIds = ancestorIds.ToArray(),
+                AncestorIds = ancestorIds,
                 IncludeItemTypes = request.GetIncludeItemTypes(),
                 ExcludeItemTypes = request.GetExcludeItemTypes(),
                 SearchTerm = request.SearchTerm

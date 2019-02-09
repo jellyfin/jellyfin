@@ -99,7 +99,7 @@ namespace Jellyfin.Server.SocketSharp
             name = name.Trim(HttpTrimCharacters);
 
             // First, check for correctly formed multi-line value
-            // Second, check for absenece of CTL characters
+            // Second, check for absence of CTL characters
             int crlf = 0;
             for (int i = 0; i < name.Length; ++i)
             {
@@ -216,8 +216,13 @@ namespace Jellyfin.Server.SocketSharp
             {
                 foreach (var acceptsType in acceptContentTypes)
                 {
-                    var contentType = HttpResultFactory.GetRealContentType(acceptsType);
-                    acceptsAnything = acceptsAnything || contentType == "*/*";
+                    var contentType = acceptsType?.Split(';')[0];
+                    acceptsAnything = contentType.IndexOf("*/*", StringComparison.Ordinal) != -1;
+
+                    if (acceptsAnything)
+                    {
+                        break;
+                    }
                 }
 
                 if (acceptsAnything)
@@ -226,7 +231,7 @@ namespace Jellyfin.Server.SocketSharp
                     {
                         return defaultContentType;
                     }
-                    else if (serverDefaultContentType != null)
+                    else
                     {
                         return serverDefaultContentType;
                     }
@@ -269,11 +274,11 @@ namespace Jellyfin.Server.SocketSharp
 
         private static string GetQueryStringContentType(IRequest httpReq)
         {
-            var format = httpReq.QueryString["format"];
+            ReadOnlySpan<char> format = httpReq.QueryString["format"];
             if (format == null)
             {
                 const int formatMaxLength = 4;
-                var pi = httpReq.PathInfo;
+                ReadOnlySpan<char> pi = httpReq.PathInfo;
                 if (pi == null || pi.Length <= formatMaxLength)
                 {
                     return null;
@@ -281,7 +286,7 @@ namespace Jellyfin.Server.SocketSharp
 
                 if (pi[0] == '/')
                 {
-                    pi = pi.Substring(1);
+                    pi = pi.Slice(1);
                 }
 
                 format = LeftPart(pi, '/');
@@ -313,6 +318,17 @@ namespace Jellyfin.Server.SocketSharp
 
             var pos = strVal.IndexOf(needle, StringComparison.Ordinal);
             return pos == -1 ? strVal : strVal.Substring(0, pos);
+        }
+
+        public static ReadOnlySpan<char> LeftPart(ReadOnlySpan<char> strVal, char needle)
+        {
+            if (strVal == null)
+            {
+                return null;
+            }
+
+            var pos = strVal.IndexOf(needle);
+            return pos == -1 ? strVal : strVal.Slice(0, pos);
         }
 
         public static string HandlerFactoryPath;

@@ -15,6 +15,14 @@ namespace MediaBrowser.Model.Serialization
         void SerializeToStream(object obj, Stream stream);
 
         /// <summary>
+        /// Serializes to stream.
+        /// </summary>
+        /// <param name="obj">The obj.</param>
+        /// <param name="stream">The stream.</param>
+        /// <exception cref="ArgumentNullException">obj</exception>
+        void SerializeToStream<T>(T obj, Stream stream);
+
+        /// <summary>
         /// Serializes to file.
         /// </summary>
         /// <param name="obj">The obj.</param>

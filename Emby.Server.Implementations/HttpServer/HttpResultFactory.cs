@@ -90,7 +90,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         private IHasHeaders GetHttpResult(IRequest requestContext, Stream content, string contentType, bool addCachePrevention, IDictionary<string, string> responseHeaders = null)
         {
-            var result = new StreamWriter(content, contentType, _logger);
+            var result = new StreamWriter(content, contentType);
 
             if (responseHeaders == null)
             {
@@ -131,7 +131,7 @@ namespace Emby.Server.Implementations.HttpServer
                     content = Array.Empty<byte>();
                 }
 
-                result = new StreamWriter(content, contentType, contentLength, _logger);
+                result = new StreamWriter(content, contentType, contentLength);
             }
             else
             {
@@ -143,7 +143,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string _))
             {
                 responseHeaders["Expires"] = "-1";
             }
@@ -175,7 +175,7 @@ namespace Emby.Server.Implementations.HttpServer
                     bytes = Array.Empty<byte>();
                 }
 
-                result = new StreamWriter(bytes, contentType, contentLength, _logger);
+                result = new StreamWriter(bytes, contentType, contentLength);
             }
             else
             {
@@ -187,7 +187,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string _))
             {
                 responseHeaders["Expires"] = "-1";
             }
@@ -277,9 +277,9 @@ namespace Emby.Server.Implementations.HttpServer
 
         private object ToOptimizedResultInternal<T>(IRequest request, T dto, IDictionary<string, string> responseHeaders = null)
         {
-            var contentType = request.ResponseContentType;
+            var contentType = request.ResponseContentType?.Split(';')[0];
 
-            switch (GetRealContentType(contentType))
+            switch (contentType)
             {
                 case "application/xml":
                 case "text/xml":
@@ -333,13 +333,13 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (isHeadRequest)
             {
-                var result = new StreamWriter(Array.Empty<byte>(), contentType, contentLength, _logger);
+                var result = new StreamWriter(Array.Empty<byte>(), contentType, contentLength);
                 AddResponseHeaders(result, responseHeaders);
                 return result;
             }
             else
             {
-                var result = new StreamWriter(content, contentType, contentLength, _logger);
+                var result = new StreamWriter(content, contentType, contentLength);
                 AddResponseHeaders(result, responseHeaders);
                 return result;
             }
@@ -348,13 +348,19 @@ namespace Emby.Server.Implementations.HttpServer
         private byte[] Compress(byte[] bytes, string compressionType)
         {
             if (string.Equals(compressionType, "br", StringComparison.OrdinalIgnoreCase))
+            {
                 return CompressBrotli(bytes);
+            }
 
             if (string.Equals(compressionType, "deflate", StringComparison.OrdinalIgnoreCase))
+            {
                 return Deflate(bytes);
+            }
 
             if (string.Equals(compressionType, "gzip", StringComparison.OrdinalIgnoreCase))
+            {
                 return GZip(bytes);
+            }
 
             throw new NotSupportedException(compressionType);
         }
@@ -388,13 +394,6 @@ namespace Emby.Server.Implementations.HttpServer
 
                 return ms.ToArray();
             }
-        }
-
-        public static string GetRealContentType(string contentType)
-        {
-            return contentType == null
-                       ? null
-                       : contentType.Split(';')[0].ToLowerInvariant().Trim();
         }
 
         private static string SerializeToXmlString(object from)
@@ -621,7 +620,7 @@ namespace Emby.Server.Implementations.HttpServer
                     }
                 }
 
-                var hasHeaders = new StreamWriter(stream, contentType, _logger)
+                var hasHeaders = new StreamWriter(stream, contentType)
                 {
                     OnComplete = options.OnComplete,
                     OnError = options.OnError
