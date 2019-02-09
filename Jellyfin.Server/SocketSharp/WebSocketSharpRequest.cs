@@ -80,8 +80,8 @@ namespace Jellyfin.SocketSharp
         private string remoteIp;
         public string RemoteIp =>
             remoteIp ??
-            (remoteIp = (CheckBadChars(XForwardedFor)) ??
-                        (NormalizeIp(CheckBadChars(XRealIp)) ??
+            (remoteIp = CheckBadChars(XForwardedFor) ??
+                        NormalizeIp(CheckBadChars(XRealIp) ??
                          (request.RemoteEndPoint != null ? NormalizeIp(request.RemoteEndPoint.Address.ToString()) : null)));
 
         private static readonly char[] HttpTrimCharacters = new char[] { (char)0x09, (char)0xA, (char)0xB, (char)0xC, (char)0xD, (char)0x20 };
@@ -201,7 +201,7 @@ namespace Jellyfin.SocketSharp
                 return specifiedContentType;
             }
 
-            var serverDefaultContentType = "application/json";
+            const string serverDefaultContentType = "application/json";
 
             var acceptContentTypes = httpReq.AcceptTypes;
             string defaultContentType = null;
@@ -211,7 +211,7 @@ namespace Jellyfin.SocketSharp
             }
 
             var acceptsAnything = false;
-            var hasDefaultContentType = !string.IsNullOrEmpty(defaultContentType);
+            var hasDefaultContentType = defaultContentType != null;
             if (acceptContentTypes != null)
             {
                 foreach (var acceptsType in acceptContentTypes)
@@ -311,7 +311,7 @@ namespace Jellyfin.SocketSharp
                 return null;
             }
 
-            var pos = strVal.IndexOf(needle);
+            var pos = strVal.IndexOf(needle, StringComparison.Ordinal);
             return pos == -1 ? strVal : strVal.Substring(0, pos);
         }
 
@@ -397,6 +397,7 @@ namespace Jellyfin.SocketSharp
                     }
                 }
             }
+
             if (!pathRootFound)
             {
                 return null;
@@ -507,10 +508,10 @@ namespace Jellyfin.SocketSharp
 
         public static string NormalizePathInfo(string pathInfo, string handlerPath)
         {
-            if (handlerPath != null && pathInfo.TrimStart('/').StartsWith(
-                handlerPath, StringComparison.OrdinalIgnoreCase))
+            var trimmed = pathInfo.TrimStart('/');
+            if (handlerPath != null && trimmed.StartsWith(handlerPath, StringComparison.OrdinalIgnoreCase))
             {
-                return pathInfo.TrimStart('/').Substring(handlerPath.Length);
+                return trimmed.Substring(handlerPath.Length);
             }
 
             return pathInfo;

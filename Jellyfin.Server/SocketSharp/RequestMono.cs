@@ -11,7 +11,7 @@ namespace Jellyfin.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {
-        static internal string GetParameter(string header, string attr)
+        internal static string GetParameter(string header, string attr)
         {
             int ap = header.IndexOf(attr);
             if (ap == -1)
@@ -40,7 +40,7 @@ namespace Jellyfin.SocketSharp
             return header.Substring(ap + 1, end - ap - 1);
         }
 
-        async Task LoadMultiPart(WebROCollection form)
+        private async Task LoadMultiPart(WebROCollection form)
         {
             string boundary = GetParameter(ContentType, "; boundary=");
             if (boundary == null)
@@ -50,8 +50,8 @@ namespace Jellyfin.SocketSharp
 
             using (var requestStream = InputStream)
             {
-                //DB: 30/01/11 - Hack to get around non-seekable stream and received HTTP request
-                //Not ending with \r\n?
+                // DB: 30/01/11 - Hack to get around non-seekable stream and received HTTP request
+                // Not ending with \r\n?
                 var ms = new MemoryStream(32 * 1024);
                 await requestStream.CopyToAsync(ms).ConfigureAwait(false);
 
@@ -62,9 +62,9 @@ namespace Jellyfin.SocketSharp
                 input.Position = 0;
 
                 // Uncomment to debug
-                //var content = new StreamReader(ms).ReadToEnd();
-                //Console.WriteLine(boundary + "::" + content);
-                //input.Position = 0;
+                // var content = new StreamReader(ms).ReadToEnd();
+                // Console.WriteLine(boundary + "::" + content);
+                // input.Position = 0;
 
                 var multi_part = new HttpMultipart(input, boundary, ContentEncoding);
 
@@ -111,7 +111,7 @@ namespace Jellyfin.SocketSharp
                 // Setting this before calling the validator prevents
                 // possible endless recursion
                 checked_form = true;
-                ValidateNameValueCollection ("Form", query_string_nvc, RequestValidationSource.Form);
+                ValidateNameValueCollection("Form", query_string_nvc, RequestValidationSource.Form);
             } else
 #endif
             if (validate_form && !checked_form)
@@ -130,7 +130,7 @@ namespace Jellyfin.SocketSharp
         protected bool validate_cookies, validate_query_string, validate_form;
         protected bool checked_cookies, checked_query_string, checked_form;
 
-        static void ThrowValidationException(string name, string key, string value)
+        private static void ThrowValidationException(string name, string key, string value)
         {
             string v = "\"" + value + "\"";
             if (v.Length > 20)
@@ -144,7 +144,7 @@ namespace Jellyfin.SocketSharp
             throw new Exception(msg);
         }
 
-        static void ValidateNameValueCollection(string name, QueryParamCollection coll)
+        private static void ValidateNameValueCollection(string name, QueryParamCollection coll)
         {
             if (coll == null)
             {
@@ -209,7 +209,7 @@ namespace Jellyfin.SocketSharp
             validate_form = true;
         }
 
-        bool IsContentType(string ct, bool starts_with)
+        private bool IsContentType(string ct, bool starts_with)
         {
             if (ct == null || ContentType == null)
             {
@@ -224,7 +224,7 @@ namespace Jellyfin.SocketSharp
             return string.Equals(ContentType, ct, StringComparison.OrdinalIgnoreCase);
         }
 
-        async Task LoadWwwForm(WebROCollection form)
+        private async Task LoadWwwForm(WebROCollection form)
         {
             using (var input = InputStream)
             {
@@ -280,7 +280,7 @@ namespace Jellyfin.SocketSharp
             }
         }
 
-        static void AddRawKeyValue(WebROCollection form, StringBuilder key, StringBuilder value)
+        private static void AddRawKeyValue(WebROCollection form, StringBuilder key, StringBuilder value)
         {
             form.Add(WebUtility.UrlDecode(key.ToString()), WebUtility.UrlDecode(value.ToString()));
 
@@ -288,9 +288,9 @@ namespace Jellyfin.SocketSharp
             value.Length = 0;
         }
 
-        Dictionary<string, HttpPostedFile> files;
+        private Dictionary<string, HttpPostedFile> files;
 
-        class WebROCollection : QueryParamCollection
+        private class WebROCollection : QueryParamCollection
         {
             public override string ToString()
             {
@@ -317,16 +317,16 @@ namespace Jellyfin.SocketSharp
 
         public sealed class HttpPostedFile
         {
-            string name;
-            string content_type;
-            Stream stream;
+            private string name;
+            private string content_type;
+            private Stream stream;
 
-            class ReadSubStream : Stream
+            private class ReadSubStream : Stream
             {
-                Stream s;
-                long offset;
-                long end;
-                long position;
+                private Stream s;
+                private long offset;
+                private long end;
+                private long position;
 
                 public ReadSubStream(Stream s, long offset, long length)
                 {
@@ -429,7 +429,7 @@ namespace Jellyfin.SocketSharp
                             real = position + d;
                             break;
                         default:
-                            throw new ArgumentException();
+                            throw new ArgumentException(nameof(origin));
                     }
 
                     long virt = real - offset;
@@ -491,7 +491,7 @@ namespace Jellyfin.SocketSharp
             public Stream InputStream => stream;
         }
 
-        class Helpers
+        private class Helpers
         {
             public static readonly CultureInfo InvariantCulture = CultureInfo.InvariantCulture;
         }
@@ -614,7 +614,7 @@ namespace Jellyfin.SocketSharp
 
             private static string GetContentDispositionAttribute(string l, string name)
             {
-                int idx = l.IndexOf(name + "=\"");
+                int idx = l.IndexOf(name + "=\"", StringComparison.Ordinal);
                 if (idx < 0)
                 {
                     return null;
@@ -637,7 +637,7 @@ namespace Jellyfin.SocketSharp
 
             private string GetContentDispositionAttributeWithEncoding(string l, string name)
             {
-                int idx = l.IndexOf(name + "=\"");
+                int idx = l.IndexOf(name + "=\"", StringComparison.Ordinal);
                 if (idx < 0)
                 {
                     return null;
@@ -669,11 +669,12 @@ namespace Jellyfin.SocketSharp
             {
                 try
                 {
-                    string line = ReadLine();
-                    while (line == string.Empty)
+                    string line;
+                    do
                     {
                         line = ReadLine();
                     }
+                    while (line.Length == 0);
 
                     if (line[0] != '-' || line[1] != '-')
                     {
