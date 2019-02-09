@@ -966,7 +966,7 @@ namespace Emby.Server.Implementations.Data
 
             if (item.ExtraIds.Length > 0)
             {
-                saveItemStatement.TryBind("@ExtraIds", string.Join("|", item.ExtraIds.ToArray()));
+                saveItemStatement.TryBind("@ExtraIds", string.Join("|", item.ExtraIds));
             }
             else
             {
@@ -2792,7 +2792,7 @@ namespace Emby.Server.Implementations.Data
 
             var whereText = whereClauses.Count == 0 ?
                 string.Empty :
-                " where " + string.Join(" AND ", whereClauses.ToArray());
+                " where " + string.Join(" AND ", whereClauses);
 
             commandText += whereText
                         + GetGroupBy(query)
@@ -2916,25 +2916,31 @@ namespace Emby.Server.Implementations.Data
 
         private string GetOrderByText(InternalItemsQuery query)
         {
-            var orderBy = query.OrderBy.ToList();
-            var enableOrderInversion = false;
-
-            if (query.SimilarTo != null && orderBy.Count == 0)
+            if (string.IsNullOrEmpty(query.SearchTerm))
             {
-                orderBy.Add(new ValueTuple<string, SortOrder>("SimilarityScore", SortOrder.Descending));
-                orderBy.Add(new ValueTuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
+                int oldLen = query.OrderBy.Length;
+
+                if (query.SimilarTo != null && oldLen == 0)
+                {
+                    var arr = new (string, SortOrder)[oldLen + 2];
+                    query.OrderBy.CopyTo(arr, 0);
+                    arr[oldLen] = ("SimilarityScore", SortOrder.Descending);
+                    arr[oldLen + 1] = (ItemSortBy.Random, SortOrder.Ascending);
+                    query.OrderBy = arr;
+                }
+            }
+            else
+            {
+                query.OrderBy = new []
+                {
+                    ("SearchScore", SortOrder.Descending),
+                    (ItemSortBy.SortName, SortOrder.Ascending)
+                };
             }
 
-            if (!string.IsNullOrEmpty(query.SearchTerm))
-            {
-                orderBy = new List<(string, SortOrder)>();
-                orderBy.Add(new ValueTuple<string, SortOrder>("SearchScore", SortOrder.Descending));
-                orderBy.Add(new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending));
-            }
+            var orderBy = query.OrderBy;
 
-            query.OrderBy = orderBy.ToArray();
-
-            if (orderBy.Count == 0)
+            if (orderBy.Length == 0)
             {
                 return string.Empty;
             }
@@ -2943,6 +2949,7 @@ namespace Emby.Server.Implementations.Data
             {
                 var columnMap = MapOrderByField(i.Item1, query);
                 var columnAscending = i.Item2 == SortOrder.Ascending;
+                const bool enableOrderInversion = false;
                 if (columnMap.Item2 && enableOrderInversion)
                 {
                     columnAscending = !columnAscending;
@@ -2954,7 +2961,7 @@ namespace Emby.Server.Implementations.Data
             }));
         }
 
-        private ValueTuple<string, bool> MapOrderByField(string name, InternalItemsQuery query)
+        private (string, bool) MapOrderByField(string name, InternalItemsQuery query)
         {
             if (string.Equals(name, ItemSortBy.AirTime, StringComparison.OrdinalIgnoreCase))
             {
@@ -3204,7 +3211,7 @@ namespace Emby.Server.Implementations.Data
 
             var whereText = whereClauses.Count == 0 ?
                 string.Empty :
-                " where " + string.Join(" AND ", whereClauses.ToArray());
+                " where " + string.Join(" AND ", whereClauses);
 
             commandText += whereText
                         + GetGroupBy(query)
@@ -4364,7 +4371,7 @@ namespace Emby.Server.Implementations.Data
             }
             else if (query.Years.Length > 1)
             {
-                var val = string.Join(",", query.Years.ToArray());
+                var val = string.Join(",", query.Years);
 
                 whereClauses.Add("ProductionYear in (" + val + ")");
             }
