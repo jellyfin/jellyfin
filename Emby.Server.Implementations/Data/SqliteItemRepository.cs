@@ -2710,13 +2710,11 @@ namespace Emby.Server.Implementations.Data
 
         private void AddItem(List<BaseItem> items, BaseItem newItem)
         {
-            var providerIds = newItem.ProviderIds.ToList();
-
             for (var i = 0; i < items.Count; i++)
             {
                 var item = items[i];
 
-                foreach (var providerId in providerIds)
+                foreach (var providerId in newItem.ProviderIds)
                 {
                     if (providerId.Key == MetadataProviders.TmdbCollection.ToString())
                     {
@@ -2741,10 +2739,10 @@ namespace Emby.Server.Implementations.Data
         {
             var elapsed = (DateTime.UtcNow - startDate).TotalMilliseconds;
 
-            int slowThreshold = 1000;
+            int slowThreshold = 100;
 
 #if DEBUG
-            slowThreshold = 250;
+            slowThreshold = 10;
 #endif
 
             if (elapsed >= slowThreshold)
