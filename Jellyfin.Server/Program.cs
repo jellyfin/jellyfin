@@ -181,25 +181,12 @@ namespace Jellyfin.Server
 
                 if (string.IsNullOrEmpty(dataDir))
                 {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        dataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    }
-                    else
-                    {
-                        // $XDG_DATA_HOME defines the base directory relative to which user specific data files should be stored.
-                        dataDir = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
-
-                        // If $XDG_DATA_HOME is either not set or empty, a default equal to $HOME/.local/share should be used.
-                        if (string.IsNullOrEmpty(dataDir))
-                        {
-                            dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
-                        }
-                    }
-
-                    dataDir = Path.Combine(dataDir, "jellyfin");
+                    // LocalApplicationData follows the XDG spec on unix machines
+                    dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "jellyfin");
                 }
             }
+
+            Directory.CreateDirectory(dataDir);
 
             // configDir
             // IF      --configdir
@@ -210,7 +197,6 @@ namespace Jellyfin.Server
             // ELSE IF $XDG_CONFIG_HOME use $XDG_CONFIG_HOME/jellyfin
             // ELSE    $HOME/.config/jellyfin
             var configDir = options.ConfigDir;
-
             if (string.IsNullOrEmpty(configDir))
             {
                 configDir = Environment.GetEnvironmentVariable("JELLYFIN_CONFIG_DIR");
