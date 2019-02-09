@@ -197,16 +197,6 @@ namespace MediaBrowser.Api.ScheduledTasks
                 throw new ResourceNotFoundException("Task not found");
             }
 
-            if (string.Equals(task.ScheduledTask.Key, "SystemUpdateTask", StringComparison.OrdinalIgnoreCase))
-            {
-                // This is a hack for now just to get the update application function to work when auto-update is disabled
-                if (!_config.Configuration.EnableAutoUpdate)
-                {
-                    _config.Configuration.EnableAutoUpdate = true;
-                    _config.SaveConfiguration();
-                }
-            }
-
             TaskManager.Execute(task, new TaskOptions());
         }
 
@@ -238,16 +228,14 @@ namespace MediaBrowser.Api.ScheduledTasks
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
             var id = GetPathValue(1);
 
-            var task = TaskManager.ScheduledTasks.FirstOrDefault(i => string.Equals(i.Id, id));
+            var task = TaskManager.ScheduledTasks.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.Ordinal));
 
             if (task == null)
             {
                 throw new ResourceNotFoundException("Task not found");
             }
 
-            var triggerInfos = request;
-
-            task.Triggers = triggerInfos.ToArray();
+            task.Triggers = request.ToArray();
         }
     }
 }

@@ -119,7 +119,6 @@ namespace Emby.Notifications
 
         private async void _appHost_HasUpdateAvailableChanged(object sender, EventArgs e)
         {
-            // This notification is for users who can't auto-update (aka running as service)
             if (!_appHost.HasUpdateAvailable)
             {
                 return;
