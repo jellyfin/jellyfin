@@ -587,7 +587,7 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            var tuples = new List<Tuple<BaseItem, List<Guid>, BaseItem, string, List<string>>>();
+            var tuples = new List<(BaseItem, List<Guid>, BaseItem, string, List<string>)>();
             foreach (var item in items)
             {
                 var ancestorIds = item.SupportsAncestors ?
@@ -599,7 +599,7 @@ namespace Emby.Server.Implementations.Data
                 var userdataKey = item.GetUserDataKeys().FirstOrDefault();
                 var inheritedTags = item.GetInheritedTags();
 
-                tuples.Add(new Tuple<BaseItem, List<Guid>, BaseItem, string, List<string>>(item, ancestorIds, topParent, userdataKey, inheritedTags));
+                tuples.Add((item, ancestorIds, topParent, userdataKey, inheritedTags));
             }
 
             using (WriteLock.Write())
@@ -615,7 +615,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void SaveItemsInTranscation(IDatabaseConnection db, List<Tuple<BaseItem, List<Guid>, BaseItem, string, List<string>>> tuples)
+        private void SaveItemsInTranscation(IDatabaseConnection db, IEnumerable<(BaseItem, List<Guid>, BaseItem, string, List<string>)> tuples)
         {
             var statements = PrepareAllSafe(db, new string[]
             {
@@ -2094,9 +2094,9 @@ namespace Emby.Server.Implementations.Data
                     || query.IsLiked.HasValue;
         }
 
-        private readonly List<ItemFields> allFields = Enum.GetNames(typeof(ItemFields))
+        private readonly ItemFields[] _allFields = Enum.GetNames(typeof(ItemFields))
             .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-            .ToList();
+            .ToArray();
 
         private string[] GetColumnNamesFromField(ItemFields field)
         {
@@ -2305,7 +2305,7 @@ namespace Emby.Server.Implementations.Data
         {
             var list = startColumns.ToList();
 
-            foreach (var field in allFields)
+            foreach (var field in _allFields)
             {
                 if (!HasField(query, field))
                 {
