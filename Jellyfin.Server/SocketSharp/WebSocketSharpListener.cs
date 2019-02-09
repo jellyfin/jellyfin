@@ -69,7 +69,7 @@ namespace Jellyfin.Server.SocketSharp
         {
             if (_listener == null)
             {
-                _listener = new HttpListener(_logger, _cryptoProvider, _socketFactory, _networkManager, _streamHelper, _fileSystem, _environment);
+                _listener = new HttpListener(_logger, _cryptoProvider, _socketFactory, _streamHelper, _fileSystem, _environment);
             }
 
             _listener.EnableDualMode = _enableDualMode;

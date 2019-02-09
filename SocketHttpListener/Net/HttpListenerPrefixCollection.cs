@@ -7,18 +7,18 @@ namespace SocketHttpListener.Net
 {
     public class HttpListenerPrefixCollection : ICollection<string>, IEnumerable<string>, IEnumerable
     {
-        List<string> prefixes = new List<string>();
-        HttpListener listener;
+        private List<string> _prefixes = new List<string>();
+        private HttpListener _listener;
 
         private ILogger _logger;
 
         internal HttpListenerPrefixCollection(ILogger logger, HttpListener listener)
         {
             _logger = logger;
-            this.listener = listener;
+            _listener = listener;
         }
 
-        public int Count => prefixes.Count;
+        public int Count => _prefixes.Count;
 
         public bool IsReadOnly => false;
 
@@ -26,80 +26,90 @@ namespace SocketHttpListener.Net
 
         public void Add(string uriPrefix)
         {
-            listener.CheckDisposed();
+            _listener.CheckDisposed();
             //ListenerPrefix.CheckUri(uriPrefix);
-            if (prefixes.Contains(uriPrefix))
+            if (_prefixes.Contains(uriPrefix))
+            {
                 return;
+            }
 
-            prefixes.Add(uriPrefix);
-            if (listener.IsListening)
-                HttpEndPointManager.AddPrefix(_logger, uriPrefix, listener);
+            _prefixes.Add(uriPrefix);
+            if (_listener.IsListening)
+            {
+                HttpEndPointManager.AddPrefix(_logger, uriPrefix, _listener);
+            }
         }
 
         public void AddRange(IEnumerable<string> uriPrefixes)
         {
-            listener.CheckDisposed();
-            //ListenerPrefix.CheckUri(uriPrefix);
+            _listener.CheckDisposed();
+
             foreach (var uriPrefix in uriPrefixes)
             {
-                if (prefixes.Contains(uriPrefix))
+                if (_prefixes.Contains(uriPrefix))
                 {
                     continue;
                 }
 
-                prefixes.Add(uriPrefix);
-                if (listener.IsListening)
+                _prefixes.Add(uriPrefix);
+                if (_listener.IsListening)
                 {
-                    HttpEndPointManager.AddPrefix(_logger, uriPrefix, listener);
+                    HttpEndPointManager.AddPrefix(_logger, uriPrefix, _listener);
                 }
             }
         }
 
         public void Clear()
         {
-            listener.CheckDisposed();
-            prefixes.Clear();
-            if (listener.IsListening)
-                HttpEndPointManager.RemoveListener(_logger, listener);
+            _listener.CheckDisposed();
+            _prefixes.Clear();
+            if (_listener.IsListening)
+            {
+                HttpEndPointManager.RemoveListener(_logger, _listener);
+            }
         }
 
         public bool Contains(string uriPrefix)
         {
-            listener.CheckDisposed();
-            return prefixes.Contains(uriPrefix);
+            _listener.CheckDisposed();
+            return _prefixes.Contains(uriPrefix);
         }
 
         public void CopyTo(string[] array, int offset)
         {
-            listener.CheckDisposed();
-            prefixes.CopyTo(array, offset);
+            _listener.CheckDisposed();
+            _prefixes.CopyTo(array, offset);
         }
 
         public void CopyTo(Array array, int offset)
         {
-            listener.CheckDisposed();
-            ((ICollection)prefixes).CopyTo(array, offset);
+            _listener.CheckDisposed();
+            ((ICollection)_prefixes).CopyTo(array, offset);
         }
 
         public IEnumerator<string> GetEnumerator()
         {
-            return prefixes.GetEnumerator();
+            return _prefixes.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return prefixes.GetEnumerator();
+            return _prefixes.GetEnumerator();
         }
 
         public bool Remove(string uriPrefix)
         {
-            listener.CheckDisposed();
+            _listener.CheckDisposed();
             if (uriPrefix == null)
+            {
                 throw new ArgumentNullException(nameof(uriPrefix));
+            }
 
-            bool result = prefixes.Remove(uriPrefix);
-            if (result && listener.IsListening)
-                HttpEndPointManager.RemovePrefix(_logger, uriPrefix, listener);
+            bool result = _prefixes.Remove(uriPrefix);
+            if (result && _listener.IsListening)
+            {
+                HttpEndPointManager.RemovePrefix(_logger, uriPrefix, _listener);
+            }
 
             return result;
         }
