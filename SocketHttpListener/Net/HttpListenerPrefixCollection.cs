@@ -36,6 +36,25 @@ namespace SocketHttpListener.Net
                 HttpEndPointManager.AddPrefix(_logger, uriPrefix, listener);
         }
 
+        public void AddRange(IEnumerable<string> uriPrefixes)
+        {
+            listener.CheckDisposed();
+            //ListenerPrefix.CheckUri(uriPrefix);
+            foreach (var uriPrefix in uriPrefixes)
+            {
+                if (prefixes.Contains(uriPrefix))
+                {
+                    continue;
+                }
+
+                prefixes.Add(uriPrefix);
+                if (listener.IsListening)
+                {
+                    HttpEndPointManager.AddPrefix(_logger, uriPrefix, listener);
+                }
+            }
+        }
+
         public void Clear()
         {
             listener.CheckDisposed();

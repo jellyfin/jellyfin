@@ -303,10 +303,10 @@ namespace SocketHttpListener
             return new WebSocketFrame(Opcode.Close, mask, payload);
         }
 
-        internal static WebSocketFrame CreateCloseFrame(Mask mask, CloseStatusCode code, string reason)
+        internal static async Task<WebSocketFrame> CreateCloseFrameAsync(Mask mask, CloseStatusCode code, string reason)
         {
             return new WebSocketFrame(
-              Opcode.Close, mask, new PayloadData(((ushort)code).Append(reason)));
+              Opcode.Close, mask, new PayloadData(await ((ushort)code).AppendAsync(reason).ConfigureAwait(false)));
         }
 
         internal static WebSocketFrame CreatePingFrame(Mask mask)

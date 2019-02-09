@@ -4,7 +4,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 using HttpStatusCode = SocketHttpListener.Net.HttpStatusCode;
@@ -75,27 +74,6 @@ namespace SocketHttpListener
             }
         }
 
-        private static byte[] readBytes(this Stream stream, byte[] buffer, int offset, int length)
-        {
-            var len = stream.Read(buffer, offset, length);
-            if (len < 1)
-                return buffer.SubArray(0, offset);
-
-            var tmp = 0;
-            while (len < length)
-            {
-                tmp = stream.Read(buffer, offset + len, length - len);
-                if (tmp < 1)
-                    break;
-
-                len += tmp;
-            }
-
-            return len < length
-                   ? buffer.SubArray(0, offset + len)
-                   : buffer;
-        }
-
         private static async Task<byte[]> ReadBytesAsync(this Stream stream, byte[] buffer, int offset, int length)
         {
             var len = await stream.ReadAsync(buffer, offset, length).ConfigureAwait(false);
@@ -119,15 +97,6 @@ namespace SocketHttpListener
                    : buffer;
         }
 
-        private static bool readBytes(this Stream stream, byte[] buffer, int offset, int length, Stream dest)
-        {
-            var bytes = stream.readBytes(buffer, offset, length);
-            var len = bytes.Length;
-            dest.Write(bytes, 0, len);
-
-            return len == offset + length;
-        }
-
         private static async Task<bool> ReadBytesAsync(this Stream stream, byte[] buffer, int offset, int length, Stream dest)
         {
             var bytes = await stream.ReadBytesAsync(buffer, offset, length).ConfigureAwait(false);
@@ -141,16 +110,16 @@ namespace SocketHttpListener
 
         #region Internal Methods
 
-        internal static byte[] Append(this ushort code, string reason)
+        internal static async Task<byte[]> AppendAsync(this ushort code, string reason)
         {
             using (var buffer = new MemoryStream())
             {
                 var tmp = code.ToByteArrayInternally(ByteOrder.Big);
-                buffer.Write(tmp, 0, 2);
+                await buffer.WriteAsync(tmp, 0, 2).ConfigureAwait(false);
                 if (reason != null && reason.Length > 0)
                 {
                     tmp = Encoding.UTF8.GetBytes(reason);
-                    buffer.Write(tmp, 0, tmp.Length);
+                    await buffer.WriteAsync(tmp, 0, tmp.Length).ConfigureAwait(false);
                 }
 
                 return buffer.ToArray();
