@@ -18,7 +18,7 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Movies;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.TV
+namespace MediaBrowser.Providers.TV.TheMovieDb
 {
     public class MovieDbSeasonProvider : IRemoteMetadataProvider<Season, SeasonInfo>
     {

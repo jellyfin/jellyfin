@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Net;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.SocketSharp
+namespace Jellyfin.Server.SocketSharp
 {
     public class SharpWebSocket : IWebSocket
     {

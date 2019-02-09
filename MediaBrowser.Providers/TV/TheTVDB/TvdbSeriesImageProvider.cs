@@ -19,7 +19,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Xml;
 
-namespace MediaBrowser.Providers.TV
+namespace MediaBrowser.Providers.TV.TheTVDB
 {
     public class TvdbSeriesImageProvider : IRemoteImageProvider, IHasOrder
     {

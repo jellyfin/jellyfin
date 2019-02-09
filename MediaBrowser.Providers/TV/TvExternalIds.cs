@@ -1,6 +1,7 @@
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Providers.TV.TheTVDB;
 
 namespace MediaBrowser.Providers.TV
 {

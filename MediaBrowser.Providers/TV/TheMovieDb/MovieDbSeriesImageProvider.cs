@@ -14,7 +14,7 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Movies;
 
-namespace MediaBrowser.Providers.TV
+namespace MediaBrowser.Providers.TV.TheMovieDb
 {
     public class MovieDbSeriesImageProvider : IRemoteImageProvider, IHasOrder
     {

@@ -14,7 +14,7 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Omdb;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.TV
+namespace MediaBrowser.Providers.TV.Omdb
 {
     class OmdbEpisodeProvider :
             IRemoteMetadataProvider<Episode, EpisodeInfo>,

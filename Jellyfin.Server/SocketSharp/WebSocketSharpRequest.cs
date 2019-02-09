@@ -11,7 +11,7 @@ using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
 using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
 using IResponse = MediaBrowser.Model.Services.IResponse;
 
-namespace Jellyfin.SocketSharp
+namespace Jellyfin.Server.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {

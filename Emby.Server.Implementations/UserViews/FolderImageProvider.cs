@@ -11,7 +11,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 
-namespace Emby.Server.Implementations.Photos
+namespace Emby.Server.Implementations.UserViews
 {
     public abstract class BaseFolderImageProvider<T> : BaseDynamicImageProvider<T>
         where T : Folder, new()

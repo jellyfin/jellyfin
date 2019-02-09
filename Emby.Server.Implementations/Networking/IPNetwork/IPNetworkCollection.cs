@@ -1,8 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace System.Net
+namespace Emby.Server.Implementations.Networking.IPNetwork
 {
     public class IPNetworkCollection : IEnumerable<IPNetwork>, IEnumerator<IPNetwork>
     {
@@ -25,7 +26,7 @@ namespace System.Net
         IPNetworkCollection(IPNetwork ipnetwork, byte cidrSubnet)
         {
 
-            int maxCidr = ipnetwork.AddressFamily == Sockets.AddressFamily.InterNetwork ? 32 : 128;
+            int maxCidr = ipnetwork.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? 32 : 128;
             if (cidrSubnet > maxCidr)
             {
                 throw new ArgumentOutOfRangeException(nameof(cidrSubnet));
@@ -61,7 +62,7 @@ namespace System.Net
                     throw new ArgumentOutOfRangeException(nameof(i));
                 }
 
-                var last = this._ipnetwork.AddressFamily == Sockets.AddressFamily.InterNetworkV6
+                var last = this._ipnetwork.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6
                     ? this._lastUsable : this._broadcast;
                 var increment = (last - this._network) / this.Count;
                 var uintNetwork = this._network + ((increment + 1) * i);

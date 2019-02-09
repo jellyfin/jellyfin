@@ -18,7 +18,7 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.TV
+namespace MediaBrowser.Providers.TV.TheMovieDb
 {
     class MovieDbEpisodeProvider :
             MovieDbProviderBase,

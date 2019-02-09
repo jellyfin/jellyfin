@@ -19,7 +19,7 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.TV
+namespace MediaBrowser.Providers.TV.TheTVDB
 {
     /// <summary>
     /// Class TvdbPrescanTask
