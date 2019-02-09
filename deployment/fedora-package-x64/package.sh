@@ -9,7 +9,7 @@ package_temporary_dir="${WORKDIR}/pkg-dist-tmp"
 output_dir="${WORKDIR}/pkg-dist"
 pkg_src_dir="${WORKDIR}/pkg-src"
 current_user="$( whoami )"
-image_name="jellyfin-rpm-build"
+image_name="jellyfin-fedora-build"
 
 # Determine if sudo should be used for Docker
 if [[ ! -z $(id -Gn | grep -q 'docker') ]] \

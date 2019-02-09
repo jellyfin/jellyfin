@@ -11,7 +11,7 @@ package_temporary_dir="${WORKDIR}/pkg-dist-tmp"
 package_source_dir="${WORKDIR}/pkg-src"
 output_dir="${WORKDIR}/pkg-dist"
 current_user="$( whoami )"
-image_name="jellyfin-rpm-build"
+image_name="jellyfin-fedora-build"
 
 rm -f "${package_source_dir}/jellyfin-${VERSION}.tar.gz" &>/dev/null \
   || sudo rm -f "${package_source_dir}/jellyfin-${VERSION}.tar.gz" &>/dev/null
