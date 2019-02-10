@@ -77,32 +77,36 @@ steps:
 
 - name: run-dotnet-compat-common
   image: microsoft/dotnet:2-runtime
+  err_ignore: true
   commands:
-  - dotnet /tools/CompatibilityCheckerCoreCLI /current-release/Jellyfin.Common.dll /release/Jellyfin.Common.dll
+  - dotnet /tools/CompatibilityCheckerCoreCLI.dll /current-release/Jellyfin.Common.dll /release/Jellyfin.Common.dll
   when:
     event:
     - pull_request
 
 - name: run-dotnet-compat-model
   image: microsoft/dotnet:2-runtime
+  err_ignore: true
   commands:
-  - dotnet /tools/CompatibilityCheckerCoreCLI /current-release/Jellyfin.Model.dll /release/Jellyfin.Model.dll
+  - dotnet /tools/CompatibilityCheckerCoreCLI.dll /current-release/Jellyfin.Model.dll /release/Jellyfin.Model.dll
   when:
     event:
     - pull_request
 
 - name: run-dotnet-compat-controller
   image: microsoft/dotnet:2-runtime
+  err_ignore: true
   commands:
-  - dotnet /tools/CompatibilityCheckerCoreCLI /current-release/Jellyfin.Controller.dll /release/Jellyfin.Controller.dll
+  - dotnet /tools/CompatibilityCheckerCoreCLI.dll /current-release/Jellyfin.Controller.dll /release/Jellyfin.Controller.dll
   when:
     event:
     - pull_request
 
 - name: run-dotnet-compat-naming
   image: microsoft/dotnet:2-runtime
+  err_ignore: true
   commands:
-  - dotnet /tools/CompatibilityCheckerCoreCLI /current-release/Jellyfin.Naming.dll /release/Jellyfin.Naming.dll
+  - dotnet /tools/CompatibilityCheckerCoreCLI.dll /current-release/Jellyfin.Naming.dll /release/Jellyfin.Naming.dll
   when:
     event:
     - pull_request
