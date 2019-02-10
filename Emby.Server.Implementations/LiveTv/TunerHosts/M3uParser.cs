@@ -204,6 +204,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
             }
 
+            if (!IsValidChannelNumber(numberString))
+            {
+                if (attributes.TryGetValue("tvg-chno", out string value))
+                {
+                    numberString = value;
+                }
+            }
+
             if (!string.IsNullOrWhiteSpace(numberString))
             {
                 numberString = numberString.Trim();
