@@ -116,6 +116,7 @@ namespace Emby.Server.Implementations.Updates
         private readonly IApplicationHost _applicationHost;
 
         private readonly ICryptoProvider _cryptographyProvider;
+        private readonly IZipClient _zipClient;
 
         // netframework or netcore
         private readonly string _packageRuntime;
@@ -129,6 +130,7 @@ namespace Emby.Server.Implementations.Updates
             IServerConfigurationManager config,
             IFileSystem fileSystem,
             ICryptoProvider cryptographyProvider,
+            IZipClient zipClient,
             string packageRuntime)
         {
             if (loggerFactory == null)
@@ -146,6 +148,7 @@ namespace Emby.Server.Implementations.Updates
             _config = config;
             _fileSystem = fileSystem;
             _cryptographyProvider = cryptographyProvider;
+            _zipClient = zipClient;
             _packageRuntime = packageRuntime;
             _logger = loggerFactory.CreateLogger(nameof(InstallationManager));
         }
@@ -527,13 +530,19 @@ namespace Emby.Server.Implementations.Updates
         private async Task PerformPackageInstallation(IProgress<double> progress, string target, PackageVersionInfo package, CancellationToken cancellationToken)
         {
             // Target based on if it is an archive or single assembly
-            //  zip archives are assumed to contain directory structures relative to our ProgramDataPath
             var extension = Path.GetExtension(package.targetFilename);
-            var isArchive = string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase) || string.Equals(extension, ".rar", StringComparison.OrdinalIgnoreCase) || string.Equals(extension, ".7z", StringComparison.OrdinalIgnoreCase);
+            var isArchive = string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase);
 
             if (target == null)
             {
-                target = Path.Combine(isArchive ? _appPaths.TempUpdatePath : _appPaths.PluginsPath, package.targetFilename);
+                if (isArchive)
+                {
+                    target = Path.Combine(_appPaths.PluginsPath, Path.GetFileNameWithoutExtension(package.targetFilename));
+                }
+                else
+                {
+                    target = Path.Combine(_appPaths.PluginsPath, package.targetFilename);
+                }
             }
 
             // Download to temporary file so that, if interrupted, it won't destroy the existing installation
@@ -547,31 +556,22 @@ namespace Emby.Server.Implementations.Updates
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Validate with a checksum
-            var packageChecksum = string.IsNullOrWhiteSpace(package.checksum) ? Guid.Empty : new Guid(package.checksum);
-            if (!packageChecksum.Equals(Guid.Empty)) // support for legacy uploads for now
-            {
-                using (var stream = File.OpenRead(tempFile))
-                {
-                    var check = Guid.Parse(BitConverter.ToString(_cryptographyProvider.ComputeMD5(stream)).Replace("-", string.Empty));
-                    if (check != packageChecksum)
-                    {
-                        throw new Exception(string.Format("Download validation failed for {0}.  Probably corrupted during transfer.", package.name));
-                    }
-                }
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
+            // TODO: Validate with a checksum, *properly*
 
             // Success - move it to the real target
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(target));
-                File.Copy(tempFile, target, true);
-                //If it is an archive - write out a version file so we know what it is
                 if (isArchive)
                 {
-                    File.WriteAllText(target + ".ver", package.versionStr);
+                    using (var stream = File.OpenRead(tempFile))
+                    {
+                        _zipClient.ExtractAllFromZip(stream, target, true);
+                    }
+                }
+                else
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(target));
+                    File.Copy(tempFile, target, true);
                 }
             }
             catch (IOException ex)
