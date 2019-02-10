@@ -15,6 +15,10 @@ insert_final_newline = true
 end_of_line = lf
 max_line_length = null
 
+# YAML indentation
+[*.{yml,yaml}]
+indent_size = 2
+
 # XML indentation
 [*.{csproj,xml}]
 indent_size = 2
