@@ -178,7 +178,7 @@ namespace Emby.Server.Implementations.AppBase
                 if (string.IsNullOrWhiteSpace(((BaseApplicationPaths)CommonApplicationPaths).CachePath))
                 {
                     // Set cachePath to a default value under ProgramDataPath
-                    cachePath = (((BaseApplicationPaths)CommonApplicationPaths).ProgramDataPath + "/cache");
+                    cachePath = Path.Combine(((BaseApplicationPaths)CommonApplicationPaths).ProgramDataPath, "cache");
                 }
                 else
                 {
