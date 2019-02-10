@@ -13,17 +13,11 @@ RUN yum update -y \
  && yum install -y @buildsys-build rpmdevtools yum-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel \
  && rpm -Uvh https://packages.microsoft.com/config/rhel/7/packages-microsoft-prod.rpm \
  && rpmdev-setuptree \
- && yum install -y dotnet-sdk-${SDK_VERSION}
-
-# Link to docker-build script
-RUN ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh
-
-# Link to RPM spec; mkdir needed or it fails, can't force dest
-RUN mkdir -p ${SOURCE_DIR}/SPECS \
- && ln -s ${PLATFORM_DIR}/pkg-src/jellyfin.spec ${SOURCE_DIR}/SPECS/jellyfin.spec
-
-# Link to RPM sources; mkdir needed or it fails, can't force dest
-RUN mkdir -p ${SOURCE_DIR}/SOURCES \
+ && yum install -y dotnet-sdk-${SDK_VERSION} \
+ && ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh \
+ && mkdir -p ${SOURCE_DIR}/SPECS \
+ && ln -s ${PLATFORM_DIR}/pkg-src/jellyfin.spec ${SOURCE_DIR}/SPECS/jellyfin.spec \
+ && mkdir -p ${SOURCE_DIR}/SOURCES \
  && ln -s ${PLATFORM_DIR}/pkg-src ${SOURCE_DIR}/SOURCES
 
 # Prepare artifact volume
