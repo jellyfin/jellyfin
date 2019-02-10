@@ -20,11 +20,8 @@ RUN dnf update -y \
  && mkdir -p ${SOURCE_DIR}/SOURCES \
  && ln -s ${PLATFORM_DIR}/pkg-src ${SOURCE_DIR}/SOURCES
 
-# Prepare artifact volume
 VOLUME ${ARTIFACT_DIR}/
 
-# Copy repository
 COPY . ${SOURCE_DIR}/
 
-# Set docker-build entrypoint
 ENTRYPOINT ["/docker-build.sh"]

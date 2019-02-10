@@ -14,11 +14,8 @@ RUN apt-get update \
  && ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh \
  && mkdir -p ${SOURCE_DIR} && ln -sf ${PLATFORM_DIR}/pkg-src ${SOURCE_DIR}/debian
 
-# Prepare artifact volume
 VOLUME ${ARTIFACT_DIR}/
 
-# Copy repository
 COPY . ${SOURCE_DIR}/
 
-# Set docker-build entrypoint
 ENTRYPOINT ["/docker-build.sh"]
