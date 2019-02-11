@@ -60,15 +60,17 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 {
                     if (string.IsNullOrEmpty(episodeTvdbId))
                     {
-                        var episodeNumber = episode.IndexNumber.Value;
-                        var seasonNumber = episode.ParentIndexNumber.Value;
-                        episodeTvdbId = await _tvDbClientManager.GetEpisodeTvdbId(
-                            Convert.ToInt32(series.GetProviderId(MetadataProviders.Tvdb)), episodeNumber, seasonNumber,
-                            cancellationToken);
+                        var episodeInfo = new EpisodeInfo
+                        {
+                            IndexNumber = episode.IndexNumber.Value,
+                            ParentIndexNumber = episode.ParentIndexNumber.Value,
+                            SeriesProviderIds = series.ProviderIds
+                        };
+                        episodeTvdbId = await _tvDbClientManager.GetEpisodeTvdbId(episodeInfo, cancellationToken);
                         if (string.IsNullOrEmpty(episodeTvdbId))
                         {
                             _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
-                                seasonNumber, episodeNumber);
+                                episodeInfo.ParentIndexNumber, episodeInfo.IndexNumber);
                             return imageResult;
                         }
                     }

@@ -349,8 +349,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             if (DateTime.TryParse(tvdbSeries.FirstAired, out var date))
             {
-                date = date.ToUniversalTime();
-
+                // dates from tvdb are UTC but without offset or Z
                 series.PremiereDate = date;
                 series.ProductionYear = date.Year;
             }

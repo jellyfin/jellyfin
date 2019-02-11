@@ -165,21 +165,27 @@ namespace MediaBrowser.Providers.TV
         {
             searchInfo.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(),
                 out var seriesTvdbId);
-            var episodeNumber = searchInfo.IndexNumber.Value;
-            var seasonNumber = searchInfo.ParentIndexNumber.Value;
 
-            return GetEpisodeTvdbId(Convert.ToInt32(seriesTvdbId), episodeNumber, seasonNumber, cancellationToken);
+            var episodeQuery = new EpisodeQuery();
+
+            // Prefer SxE over premiere date as it is more robust
+            if (searchInfo.IndexNumber.HasValue && searchInfo.ParentIndexNumber.HasValue)
+            {
+                episodeQuery.AiredEpisode = searchInfo.IndexNumber.Value;
+                episodeQuery.AiredSeason = searchInfo.ParentIndexNumber.Value;
+            }
+            else if (searchInfo.PremiereDate.HasValue)
+            {
+                // tvdb expects yyyy-mm-dd format
+                episodeQuery.FirstAired = searchInfo.PremiereDate.Value.ToString("yyyy-MM-dd");
+            }
+
+            return GetEpisodeTvdbId(Convert.ToInt32(seriesTvdbId), episodeQuery, cancellationToken);
         }
 
-        public async Task<string> GetEpisodeTvdbId(int seriesTvdbId, int episodeNumber, int seasonNumber, CancellationToken cancellationToken)
+        public async Task<string> GetEpisodeTvdbId(int seriesTvdbId, EpisodeQuery episodeQuery, CancellationToken cancellationToken)
         {
-            var episodeQuery = new EpisodeQuery
-            {
-                AiredSeason = seasonNumber,
-                AiredEpisode = episodeNumber
-            };
-            var episodePage = await GetEpisodesPageAsync(Convert.ToInt32(seriesTvdbId),
-                episodeQuery, cancellationToken);
+            var episodePage = await GetEpisodesPageAsync(Convert.ToInt32(seriesTvdbId), episodeQuery, cancellationToken);
             return episodePage.Data.FirstOrDefault()?.Id.ToString();
         }
 

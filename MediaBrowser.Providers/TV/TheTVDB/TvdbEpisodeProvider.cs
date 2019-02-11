@@ -36,7 +36,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             var list = new List<RemoteSearchResult>();
 
             // The search query must either provide an episode number or date
-            // TODO premieredate functionality is dead, could grab all episodes and search for it
             if (!searchInfo.IndexNumber.HasValue || !searchInfo.PremiereDate.HasValue)
             {
                 return list;
@@ -172,8 +171,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             if (DateTime.TryParse(episode.FirstAired, out var date))
             {
-                date = date.ToUniversalTime();
-
+                // dates from tvdb are UTC but without offset or Z
                 item.PremiereDate = date;
                 item.ProductionYear = date.Year;
             }
