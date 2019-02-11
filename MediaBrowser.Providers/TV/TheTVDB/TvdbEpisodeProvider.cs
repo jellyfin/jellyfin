@@ -36,7 +36,7 @@ namespace MediaBrowser.Providers.TV
             var list = new List<RemoteSearchResult>();
 
             // The search query must either provide an episode number or date
-            // TODO premieredate functionality is ded, could grab all episodes and search for it
+            // TODO premieredate functionality is dead, could grab all episodes and search for it
             if (!searchInfo.IndexNumber.HasValue || !searchInfo.PremiereDate.HasValue)
             {
                 return list;
@@ -52,7 +52,7 @@ namespace MediaBrowser.Providers.TV
                         episodeTvdbId = await _tvDbClientManager.GetEpisodeTvdbId(searchInfo, cancellationToken);
                         if (string.IsNullOrEmpty(episodeTvdbId))
                         {
-                            _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} found for series {SeriesTvdbId}",
+                            _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
                                 searchInfo.ParentIndexNumber, searchInfo.IndexNumber);
                             return list;
                         }
@@ -106,7 +106,7 @@ namespace MediaBrowser.Providers.TV
                         tvdbId = await _tvDbClientManager.GetEpisodeTvdbId(searchInfo, cancellationToken);
                         if (string.IsNullOrEmpty(tvdbId))
                         {
-                            _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber}found for series {SeriesTvdbId}",
+                            _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
                                  searchInfo.ParentIndexNumber, searchInfo.IndexNumber, tvdbId);
                             return result;
                         }

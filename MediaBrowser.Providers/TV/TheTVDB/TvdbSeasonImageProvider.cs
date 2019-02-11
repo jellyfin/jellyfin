@@ -103,7 +103,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     VoteCount = image.RatingsInfo.Count,
                     Url = TVUtils.BannerUrl + image.FileName,
                     ProviderName = ProviderName,
-                    Language = languages.FirstOrDefault(l => l.Id == image.LanguageId)?.Abbreviation,
+                    Language = languages.FirstOrDefault(lang => lang.Id == image.LanguageId)?.Abbreviation,
                     ThumbnailUrl = TVUtils.BannerUrl + image.Thumbnail
                 };
 

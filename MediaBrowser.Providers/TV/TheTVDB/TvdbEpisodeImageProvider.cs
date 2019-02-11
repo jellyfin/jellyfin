@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                             cancellationToken);
                         if (string.IsNullOrEmpty(episodeTvdbId))
                         {
-                            _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber}found for series {SeriesTvdbId}",
+                            _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
                                 seasonNumber, episodeNumber);
                             return imageResult;
                         }
