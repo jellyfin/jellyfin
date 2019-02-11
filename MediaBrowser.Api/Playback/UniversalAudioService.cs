@@ -280,7 +280,8 @@ namespace MediaBrowser.Api.Playback
 
             if (!isStatic && string.Equals(mediaSource.TranscodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
             {
-                var service = new DynamicHlsService(ServerConfigurationManager,
+                var service = new DynamicHlsService(HttpClient,
+                  ServerConfigurationManager,
                   UserManager,
                   LibraryManager,
                   IsoManager,

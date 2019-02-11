@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -132,6 +133,7 @@ namespace MediaBrowser.Api.Playback.Hls
         }
 
         public VideoHlsService(
+            IHttpClient httpClient,
             IServerConfigurationManager serverConfig,
             IUserManager userManager,
             ILibraryManager libraryManager,
@@ -144,7 +146,8 @@ namespace MediaBrowser.Api.Playback.Hls
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext)
-                : base(serverConfig,
+                : base(httpClient,
+                    serverConfig,
                     userManager,
                     libraryManager,
                     isoManager,
