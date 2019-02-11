@@ -157,64 +157,56 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
 
             string numberString = null;
+            string attributeValue;
+            double doubleValue;
 
-            // Check for channel number with the format from SatIp
-            // #EXTINF:0,84. VOX Schweiz
-            // #EXTINF:0,84.0 - VOX Schweiz
-            if (!string.IsNullOrWhiteSpace(nameInExtInf))
+            if (attributes.TryGetValue("tvg-chno", out attributeValue))
             {
-                var numberIndex = nameInExtInf.IndexOf(' ');
-                if (numberIndex > 0)
+                if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out doubleValue))
                 {
-                    var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
+                    numberString = attributeValue;
+                }
+            }
 
-                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
+            if (!IsValidChannelNumber(numberString))
+            {
+                if (attributes.TryGetValue("tvg-id", out attributeValue))
+                {
+                    if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out doubleValue))
                     {
-                        numberString = numberPart;
+                        numberString = attributeValue;
+                    }
+                    else if (attributes.TryGetValue("channel-id", out attributeValue))
+                    {
+                        if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out doubleValue))
+                        {
+                            numberString = attributeValue;
+                        }
                     }
                 }
-            }
 
-            if (!string.IsNullOrWhiteSpace(numberString))
-            {
-                numberString = numberString.Trim();
-            }
-
-            if (!IsValidChannelNumber(numberString))
-            {
-                if (attributes.TryGetValue("tvg-id", out string value))
+                if (String.IsNullOrWhiteSpace(numberString))
                 {
-                    if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var doubleValue))
+                    // Using this as a fallback now as this leads to Problems with channels like "5 USA"
+                    // where 5 isnt ment to be the channel number
+                    // Check for channel number with the format from SatIp
+                    // #EXTINF:0,84. VOX Schweiz
+                    // #EXTINF:0,84.0 - VOX Schweiz
+                    if (!string.IsNullOrWhiteSpace(nameInExtInf))
                     {
-                        numberString = value;
+                        var numberIndex = nameInExtInf.IndexOf(' ');
+                        if (numberIndex > 0)
+                        {
+                            var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
+
+                            if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
+                            {
+                                numberString = numberPart;
+                            }
+                        }
                     }
                 }
-            }
 
-            if (!string.IsNullOrWhiteSpace(numberString))
-            {
-                numberString = numberString.Trim();
-            }
-
-            if (!IsValidChannelNumber(numberString))
-            {
-                if (attributes.TryGetValue("channel-id", out string value))
-                {
-                    numberString = value;
-                }
-            }
-
-            if (!IsValidChannelNumber(numberString))
-            {
-                if (attributes.TryGetValue("tvg-chno", out string value))
-                {
-                    numberString = value;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(numberString))
-            {
-                numberString = numberString.Trim();
             }
 
             if (!IsValidChannelNumber(numberString))
@@ -222,7 +214,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 numberString = null;
             }
 
-            if (string.IsNullOrWhiteSpace(numberString))
+            if (!string.IsNullOrWhiteSpace(numberString))
+            {
+                numberString = numberString.Trim();
+            }
+            else
             {
                 if (string.IsNullOrWhiteSpace(mediaUrl))
                 {
