@@ -26,6 +26,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     public abstract class BaseProgressiveStreamingService : BaseStreamingService
     {
         protected readonly IEnvironmentInfo EnvironmentInfo;
+        protected IHttpClient HttpClient { get; private set; }
 
         public BaseProgressiveStreamingService(
             IHttpClient httpClient,
@@ -42,8 +43,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext,
             IEnvironmentInfo environmentInfo)
-            : base(httpClient,
-                serverConfig,
+            : base(serverConfig,
                 userManager,
                 libraryManager,
                 isoManager,
@@ -57,6 +57,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 authorizationContext)
         {
             EnvironmentInfo = environmentInfo;
+            HttpClient = httpClient;
         }
 
         /// <summary>

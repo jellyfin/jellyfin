@@ -4,7 +4,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -315,7 +314,6 @@ namespace MediaBrowser.Api.Playback.Hls
         }
 
         public BaseHlsService(
-            IHttpClient httpClient,
             IServerConfigurationManager serverConfig,
             IUserManager userManager,
             ILibraryManager libraryManager,
@@ -328,8 +326,7 @@ namespace MediaBrowser.Api.Playback.Hls
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext)
-                : base(httpClient,
-                    serverConfig,
+                : base(serverConfig,
                     userManager,
                     libraryManager,
                     isoManager,

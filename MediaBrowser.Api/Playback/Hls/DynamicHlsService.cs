@@ -96,7 +96,6 @@ namespace MediaBrowser.Api.Playback.Hls
     {
 
         public DynamicHlsService(
-            IHttpClient httpClient,
             IServerConfigurationManager serverConfig,
             IUserManager userManager,
             ILibraryManager libraryManager,
@@ -110,8 +109,7 @@ namespace MediaBrowser.Api.Playback.Hls
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext,
             INetworkManager networkManager)
-            : base(httpClient,
-                serverConfig,
+            : base(serverConfig,
                 userManager,
                 libraryManager,
                 isoManager,
