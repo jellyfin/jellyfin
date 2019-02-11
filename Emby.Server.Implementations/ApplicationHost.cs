@@ -564,7 +564,7 @@ namespace Emby.Server.Implementations
         {
             try
             {
-                var assembly = Assembly.Load(File.ReadAllBytes(file));
+                var assembly = Assembly.LoadFrom(file);
 
                 return new Tuple<Assembly, string>(assembly, file);
             }
@@ -777,11 +777,11 @@ namespace Emby.Server.Implementations
             SocketFactory = new SocketFactory();
             RegisterSingleInstance(SocketFactory);
 
-            InstallationManager = new InstallationManager(LoggerFactory, this, ApplicationPaths, HttpClient, JsonSerializer, ServerConfigurationManager, FileSystemManager, CryptographyProvider, PackageRuntime);
-            RegisterSingleInstance(InstallationManager);
-
             ZipClient = new ZipClient(FileSystemManager);
             RegisterSingleInstance(ZipClient);
+
+            InstallationManager = new InstallationManager(LoggerFactory, this, ApplicationPaths, HttpClient, JsonSerializer, ServerConfigurationManager, FileSystemManager, CryptographyProvider, ZipClient, PackageRuntime);
+            RegisterSingleInstance(InstallationManager);
 
             HttpResultFactory = new HttpResultFactory(LoggerFactory, FileSystemManager, JsonSerializer, CreateBrotliCompressor());
             RegisterSingleInstance(HttpResultFactory);
@@ -1603,7 +1603,7 @@ namespace Emby.Server.Implementations
         {
             try
             {
-                return FilterAssembliesToLoad(Directory.EnumerateFiles(path, "*.dll", SearchOption.TopDirectoryOnly))
+                return FilterAssembliesToLoad(Directory.EnumerateFiles(path, "*.dll", SearchOption.AllDirectories))
                     .Select(LoadAssembly)
                     .Where(a => a != null)
                     .ToList();
