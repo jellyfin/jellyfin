@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using TvDbSharper;
 using TvDbSharper.Dto;
 
-namespace MediaBrowser.Providers.TV
+namespace MediaBrowser.Providers.TV.TheTVDB
 {
 
     /// <summary>

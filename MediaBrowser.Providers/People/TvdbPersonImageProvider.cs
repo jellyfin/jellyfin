@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Providers.TV;
+using MediaBrowser.Providers.TV.TheTVDB;
 using Microsoft.Extensions.Logging;
 using TvDbSharper;
 
