@@ -279,7 +279,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         /// <summary>
         /// The spacers
         /// </summary>
-        const string spacers = "/,.:;\\(){}[]+-_=–*";  // (there are not actually two - in the they are different char codes)
+        const string spacers = "/,.:;\\(){}[]+-_=–*";  // (there are two types of dashes, short and long)
 
         /// <summary>
         /// Gets the name of the comparable.
@@ -293,7 +293,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             var sb = new StringBuilder();
             foreach (var c in name)
             {
-                if ((int)c >= 0x2B0 && (int)c <= 0x0333)
+                if (c >= 0x2B0 && c <= 0x0333)
                 {
                     // skip char modifier and diacritics
                 }
@@ -398,7 +398,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     Type = PersonType.Actor,
                     Name = (actor.Name ?? string.Empty).Trim(),
                     Role = actor.Role,
-                    ImageUrl = actor.Image,
+                    ImageUrl = TVUtils.BannerUrl + actor.Image,
                     SortOrder = actor.SortOrder
                 };
 
