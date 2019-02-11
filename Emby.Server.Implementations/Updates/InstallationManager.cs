@@ -566,7 +566,7 @@ namespace Emby.Server.Implementations.Updates
             }
             catch (IOException ex)
             {
-                _logger.LogError(ex, "Error attempting to move file from {TempFile} to {TargetFile}", tempFile, target);
+                _logger.LogError(ex, "Error attempting to extract {TempFile} to {TargetFile}", tempFile, target);
                 throw;
             }
 
