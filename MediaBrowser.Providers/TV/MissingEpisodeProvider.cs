@@ -129,8 +129,7 @@ namespace MediaBrowser.Providers.TV
             IReadOnlyCollection<(int SeasonNumber, int Episodenumber, DateTime FirstAired)> episodeLookup,
             CancellationToken cancellationToken)
         {
-            var existingEpisodes = allItems.OfType<Episode>()
-                                   .ToList();
+            var existingEpisodes = allItems.OfType<Episode>().ToList();
 
             var seasonCounts = episodeLookup.GroupBy(e => e.SeasonNumber).ToDictionary(g => g.Key, g => g.Count());
 
@@ -280,15 +279,7 @@ namespace MediaBrowser.Providers.TV
                         }
 
                         // If the season no longer exists in the remote lookup, delete it, but only if an existing episode doesn't require it
-                        if (episodeLookup.All(e => e.SeasonNumber != seasonNumber))
-                        {
-                            if (allEpisodes.All(s => s.ParentIndexNumber != seasonNumber || s.IsInSeasonFolder))
-                            {
-                                return true;
-                            }
-                        }
-
-                        return false;
+                        return episodeLookup.All(e => e.SeasonNumber != seasonNumber) && allEpisodes.All(s => s.ParentIndexNumber != seasonNumber || s.IsInSeasonFolder);
                     }
 
                     // Season does not have a number
@@ -354,9 +345,9 @@ namespace MediaBrowser.Providers.TV
         /// </summary>
         /// <param name="existingEpisodes">The existing episodes.</param>
         /// <param name="seasonCounts"></param>
-        /// <param name="tuple">The tuple.</param>
+        /// <param name="episodeTuple"></param>
         /// <returns>Episode.</returns>
-        private Episode GetExistingEpisode(IList<Episode> existingEpisodes, Dictionary<int, int> seasonCounts, (int SeasonNumber, int EpisodeNumber, DateTime FirstAired) episodeTuple)
+        private Episode GetExistingEpisode(IList<Episode> existingEpisodes, IReadOnlyDictionary<int, int> seasonCounts, (int SeasonNumber, int EpisodeNumber, DateTime FirstAired) episodeTuple)
         {
             var seasonNumber = episodeTuple.SeasonNumber;
             var episodeNumber = episodeTuple.EpisodeNumber;
@@ -365,14 +356,20 @@ namespace MediaBrowser.Providers.TV
             {
                 var episode = GetExistingEpisode(existingEpisodes, seasonNumber, episodeNumber);
                 if (episode != null)
+                {
                     return episode;
+                }
 
                 seasonNumber--;
 
                 if (seasonCounts.ContainsKey(seasonNumber))
+                {
                     episodeNumber += seasonCounts[seasonNumber];
+                }
                 else
+                {
                     break;
+                }
             }
 
             return null;
