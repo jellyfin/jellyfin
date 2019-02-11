@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -69,6 +70,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     public class VideoService : BaseProgressiveStreamingService
     {
         public VideoService(
+            IHttpClient httpClient,
             IServerConfigurationManager serverConfig,
             IUserManager userManager,
             ILibraryManager libraryManager,
@@ -82,7 +84,8 @@ namespace MediaBrowser.Api.Playback.Progressive
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext,
             IEnvironmentInfo environmentInfo)
-            : base(serverConfig,
+            : base(httpClient,
+                serverConfig,
                 userManager,
                 libraryManager,
                 isoManager,

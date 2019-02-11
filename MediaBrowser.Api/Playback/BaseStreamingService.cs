@@ -71,7 +71,7 @@ namespace MediaBrowser.Api.Playback
         protected IMediaSourceManager MediaSourceManager { get; private set; }
         protected IJsonSerializer JsonSerializer { get; private set; }
 
-        public static IHttpClient HttpClient;
+        public static IHttpClient HttpClient { get; private set; }
         protected IAuthorizationContext AuthorizationContext { get; private set; }
 
         protected EncodingHelper EncodingHelper { get; set; }
@@ -80,6 +80,7 @@ namespace MediaBrowser.Api.Playback
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
         protected BaseStreamingService(
+            IHttpClient httpClient,
             IServerConfigurationManager serverConfig,
             IUserManager userManager,
             ILibraryManager libraryManager,
@@ -93,6 +94,7 @@ namespace MediaBrowser.Api.Playback
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext)
         {
+            HttpClient = httpClient;
             ServerConfigurationManager = serverConfig;
             UserManager = userManager;
             LibraryManager = libraryManager;

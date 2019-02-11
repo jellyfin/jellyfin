@@ -77,6 +77,7 @@ namespace MediaBrowser.Api.Playback
     public class UniversalAudioService : BaseApiService
     {
         public UniversalAudioService(
+            IHttpClient httpClient,
             IServerConfigurationManager serverConfigurationManager,
             IUserManager userManager,
             ILibraryManager libraryManager,
@@ -95,6 +96,7 @@ namespace MediaBrowser.Api.Playback
             IEnvironmentInfo environmentInfo,
             ILoggerFactory loggerFactory)
         {
+            HttpClient = httpClient;
             ServerConfigurationManager = serverConfigurationManager;
             UserManager = userManager;
             LibraryManager = libraryManager;
@@ -115,6 +117,7 @@ namespace MediaBrowser.Api.Playback
             _logger = loggerFactory.CreateLogger(nameof(UniversalAudioService));
         }
 
+        protected IHttpClient HttpClient { get; private set; }
         protected IServerConfigurationManager ServerConfigurationManager { get; private set; }
         protected IUserManager UserManager { get; private set; }
         protected ILibraryManager LibraryManager { get; private set; }
@@ -323,7 +326,8 @@ namespace MediaBrowser.Api.Playback
             }
             else
             {
-                var service = new AudioService(ServerConfigurationManager,
+                var service = new AudioService(HttpClient,
+                    ServerConfigurationManager,
                     UserManager,
                     LibraryManager,
                     IsoManager,
