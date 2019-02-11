@@ -537,6 +537,7 @@ namespace Emby.Server.Implementations.Updates
                 _logger.LogError("Only zip packages are supported. {Filename} is not a zip archive.", package.targetFilename);
                 return;
             }
+
             if (target == null)
             {
                 target = Path.Combine(_appPaths.PluginsPath, Path.GetFileNameWithoutExtension(package.targetFilename));
