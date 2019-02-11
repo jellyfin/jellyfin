@@ -10,7 +10,7 @@ using Microsoft.Extensions.Caching.Memory;
 using TvDbSharper;
 using TvDbSharper.Dto;
 
-namespace MediaBrowser.Providers.TV
+namespace MediaBrowser.Providers.TV.TheTVDB
 {
     // TODO add to DI once Bond's PR is merged
     public sealed class TvDbClientManager
