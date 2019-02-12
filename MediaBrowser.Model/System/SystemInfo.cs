@@ -5,6 +5,21 @@ using MediaBrowser.Model.Updates;
 namespace MediaBrowser.Model.System
 {
     /// <summary>
+    /// Enum describing the location of the FFmpeg tool.
+    /// </summary>
+    public enum FFmpegLocation
+    {
+        /// <summary>No path to FFmpeg found.</summary>
+        NotFound,
+        /// <summary>Path supplied via command line using switch --ffmpeg.</summary>
+        SetByArgument,
+        /// <summary>User has supplied path via Transcoding UI page.</summary>
+        Custom,
+        /// <summary>FFmpeg tool found on system $PATH.</summary>
+        System
+    };
+
+    /// <summary>
     /// Class SystemInfo
     /// </summary>
     public class SystemInfo : PublicSystemInfo
@@ -122,7 +137,7 @@ namespace MediaBrowser.Model.System
         /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
         public bool HasUpdateAvailable { get; set; }
 
-        public string EncoderLocationType { get; set; }
+        public FFmpegLocation EncoderLocation { get; set; }
 
         public Architecture SystemArchitecture { get; set; }
 

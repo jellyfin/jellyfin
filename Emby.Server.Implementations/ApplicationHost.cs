@@ -791,7 +791,17 @@ namespace Emby.Server.Implementations
             ChapterManager = new ChapterManager(LibraryManager, LoggerFactory, ServerConfigurationManager, ItemRepository);
             serviceCollection.AddSingleton(ChapterManager);
 
-            MediaEncoder = new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(LoggerFactory, JsonSerializer, StartupOptions.FFmpegPath, StartupOptions.FFprobePath, ServerConfigurationManager, FileSystemManager, () => SubtitleEncoder, () => MediaSourceManager, ProcessFactory, 5000);
+            MediaEncoder = new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
+                LoggerFactory,
+                JsonSerializer,
+                StartupOptions.FFmpegPath,
+                StartupOptions.FFprobePath,
+                ServerConfigurationManager,
+                FileSystemManager,
+                () => SubtitleEncoder,
+                () => MediaSourceManager,
+                ProcessFactory,
+                5000);
             serviceCollection.AddSingleton(MediaEncoder);
 
             EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, LoggerFactory, MediaEncoder, ChapterManager, LibraryManager);
@@ -906,27 +916,6 @@ namespace Emby.Server.Implementations
         private IImageProcessor GetImageProcessor()
         {
             return new ImageProcessor(LoggerFactory, ServerConfigurationManager.ApplicationPaths, FileSystemManager, ImageEncoder, () => LibraryManager, () => MediaEncoder);
-        }
-
-        /// <summary>
-        /// Registers the media encoder.
-        /// </summary>
-        /// <returns>Task.</returns>
-        private void RegisterMediaEncoder(IAssemblyInfo assemblyInfo)
-        {
-            MediaEncoder = new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
-                LoggerFactory,
-                JsonSerializer,
-                StartupOptions.FFmpegPath,
-                StartupOptions.FFprobePath,
-                ServerConfigurationManager,
-                FileSystemManager,
-                () => SubtitleEncoder,
-                () => MediaSourceManager,
-                ProcessFactory,
-                5000);
-
-            RegisterSingleInstance(MediaEncoder);
         }
 
         /// <summary>
@@ -1404,7 +1393,7 @@ namespace Emby.Server.Implementations
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,
                 SupportsLibraryMonitor = true,
-                EncoderLocationType = MediaEncoder.EncoderLocationType,
+                EncoderLocation = MediaEncoder.EncoderLocation,
                 SystemArchitecture = EnvironmentInfo.SystemArchitecture,
                 SystemUpdateLevel = SystemUpdateLevel,
                 PackageName = StartupOptions.PackageName
