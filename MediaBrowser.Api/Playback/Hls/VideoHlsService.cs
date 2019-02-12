@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -24,9 +25,9 @@ namespace MediaBrowser.Api.Playback.Hls
     [Authenticated]
     public class VideoHlsService : BaseHlsService
     {
-        public object Get(GetLiveHlsStream request)
+        public Task<object> Get(GetLiveHlsStream request)
         {
-            return ProcessRequest(request, true);
+            return ProcessRequestAsync(request, true);
         }
 
         /// <summary>
@@ -130,7 +131,31 @@ namespace MediaBrowser.Api.Playback.Hls
             return args;
         }
 
-        public VideoHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, jsonSerializer, authorizationContext)
+        public VideoHlsService(
+            IServerConfigurationManager serverConfig,
+            IUserManager userManager,
+            ILibraryManager libraryManager,
+            IIsoManager isoManager,
+            IMediaEncoder mediaEncoder,
+            IFileSystem fileSystem,
+            IDlnaManager dlnaManager,
+            ISubtitleEncoder subtitleEncoder,
+            IDeviceManager deviceManager,
+            IMediaSourceManager mediaSourceManager,
+            IJsonSerializer jsonSerializer,
+            IAuthorizationContext authorizationContext)
+                : base(serverConfig,
+                    userManager,
+                    libraryManager,
+                    isoManager,
+                    mediaEncoder,
+                    fileSystem,
+                    dlnaManager,
+                    subtitleEncoder,
+                    deviceManager,
+                    mediaSourceManager,
+                    jsonSerializer,
+                    authorizationContext)
         {
         }
     }

@@ -215,7 +215,7 @@ namespace Emby.Server.Implementations.Images
                 {
                     return CreateSquareCollage(item, itemsWithImages, outputPath);
                 }
-                if (item is Playlist || item is MusicGenre || item is Genre || item is GameGenre || item is PhotoAlbum)
+                if (item is Playlist || item is MusicGenre || item is Genre || item is PhotoAlbum)
                 {
                     return CreateSquareCollage(item, itemsWithImages, outputPath);
                 }

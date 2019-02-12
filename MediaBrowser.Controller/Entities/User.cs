@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
@@ -32,11 +31,6 @@ namespace MediaBrowser.Controller.Entities
         public string Password { get; set; }
         public string EasyPassword { get; set; }
         public string Salt { get; set; }
-
-        public string ConnectUserName { get; set; }
-        public string ConnectUserId { get; set; }
-        public UserLinkType? ConnectLinkType { get; set; }
-        public string ConnectAccessKey { get; set; }
 
         // Strictly to remove IgnoreDataMember
         public override ItemImageInfo[] ImageInfos

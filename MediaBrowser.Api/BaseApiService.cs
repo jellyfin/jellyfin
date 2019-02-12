@@ -43,7 +43,7 @@ namespace MediaBrowser.Api
 
         public static string[] SplitValue(string value, char delim)
         {
-            if (string.IsNullOrWhiteSpace(value))
+            if (value == null)
             {
                 return Array.Empty<string>();
             }
@@ -53,8 +53,14 @@ namespace MediaBrowser.Api
 
         public static Guid[] GetGuids(string value)
         {
-            // Unfortunately filtermenu.js was using |. This can be deprecated after a while.
-            return (value ?? string.Empty).Split(new[] { ',', '|' }, StringSplitOptions.RemoveEmptyEntries).Select(i => new Guid(i)).ToArray();
+            if (value == null)
+            {
+                return Array.Empty<Guid>();
+            }
+
+            return value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(i => new Guid(i))
+                        .ToArray();
         }
 
         /// <summary>
@@ -118,7 +124,8 @@ namespace MediaBrowser.Api
                 options.Fields = hasFields.GetItemFields();
             }
 
-            if (!options.ContainsField(Model.Querying.ItemFields.RecursiveItemCount) || !options.ContainsField(Model.Querying.ItemFields.ChildCount))
+            if (!options.ContainsField(Model.Querying.ItemFields.RecursiveItemCount)
+                || !options.ContainsField(Model.Querying.ItemFields.ChildCount))
             {
                 var client = authContext.GetAuthorizationInfo(Request).Client ?? string.Empty;
                 if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
@@ -145,8 +152,7 @@ namespace MediaBrowser.Api
                 }
             }
 
-            var hasDtoOptions = request as IHasDtoOptions;
-            if (hasDtoOptions != null)
+            if (request is IHasDtoOptions hasDtoOptions)
             {
                 options.EnableImages = hasDtoOptions.EnableImages ?? true;
 
@@ -228,21 +234,6 @@ namespace MediaBrowser.Api
             return libraryManager.GetMusicGenre(name);
         }
 
-        protected GameGenre GetGameGenre(string name, ILibraryManager libraryManager, DtoOptions dtoOptions)
-        {
-            if (name.IndexOf(BaseItem.SlugChar) != -1)
-            {
-                var result = GetItemFromSlugName<GameGenre>(libraryManager, name, dtoOptions);
-
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-
-            return libraryManager.GetGameGenre(name);
-        }
-
         protected Person GetPerson(string name, ILibraryManager libraryManager, DtoOptions dtoOptions)
         {
             if (name.IndexOf(BaseItem.SlugChar) != -1)
@@ -309,7 +300,7 @@ namespace MediaBrowser.Api
             return pathInfo[index];
         }
 
-        private List<string> Parse(string pathUri)
+        private string[] Parse(string pathUri)
         {
             var actionParts = pathUri.Split(new[] { "://" }, StringSplitOptions.None);
 
@@ -323,7 +314,7 @@ namespace MediaBrowser.Api
 
             var args = pathInfo.Split('/');
 
-            return args.Skip(1).ToList();
+            return args.Skip(1).ToArray();
         }
 
         /// <summary>
@@ -348,10 +339,6 @@ namespace MediaBrowser.Api
             else if (type.IndexOf("MusicGenre", StringComparison.OrdinalIgnoreCase) == 0)
             {
                 item = GetMusicGenre(name, libraryManager, dtoOptions);
-            }
-            else if (type.IndexOf("GameGenre", StringComparison.OrdinalIgnoreCase) == 0)
-            {
-                item = GetGameGenre(name, libraryManager, dtoOptions);
             }
             else if (type.IndexOf("Studio", StringComparison.OrdinalIgnoreCase) == 0)
             {

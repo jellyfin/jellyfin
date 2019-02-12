@@ -14,10 +14,6 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public const string Audio = "Audio";
         /// <summary>
-        /// The game
-        /// </summary>
-        public const string Game = "Game";
-        /// <summary>
         /// The photo
         /// </summary>
         public const string Photo = "Photo";

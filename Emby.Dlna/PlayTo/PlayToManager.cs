@@ -16,7 +16,6 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
@@ -39,13 +38,12 @@ namespace Emby.Dlna.PlayTo
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly ITimerFactory _timerFactory;
 
         private bool _disposed;
         private SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
         private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
 
-        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, ITimerFactory timerFactory)
+        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
         {
             _logger = logger;
             _sessionManager = sessionManager;
@@ -61,7 +59,6 @@ namespace Emby.Dlna.PlayTo
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
-            _timerFactory = timerFactory;
         }
 
         public void Start()
@@ -168,7 +165,7 @@ namespace Emby.Dlna.PlayTo
 
             if (controller == null)
             {
-                var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger, _timerFactory, cancellationToken).ConfigureAwait(false);
+                var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger, cancellationToken).ConfigureAwait(false);
 
                 string deviceName = device.Properties.Name;
 

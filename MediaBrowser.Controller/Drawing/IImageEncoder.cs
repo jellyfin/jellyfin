@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Drawing;
 
 namespace MediaBrowser.Controller.Drawing
@@ -9,12 +10,12 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets the supported input formats.
         /// </summary>
         /// <value>The supported input formats.</value>
-        string[] SupportedInputFormats { get; }
+        IReadOnlyCollection<string> SupportedInputFormats { get; }
         /// <summary>
         /// Gets the supported output formats.
         /// </summary>
         /// <value>The supported output formats.</value>
-        ImageFormat[] SupportedOutputFormats { get; }
+        IReadOnlyCollection<ImageFormat> SupportedOutputFormats { get; }
 
         /// <summary>
         /// Encodes the image.

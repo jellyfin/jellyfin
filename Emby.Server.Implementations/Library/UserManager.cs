@@ -24,7 +24,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -212,11 +211,8 @@ namespace Emby.Server.Implementations.Library
             {
                 foreach (var user in users)
                 {
-                    if (!user.ConnectLinkType.HasValue || user.ConnectLinkType.Value == UserLinkType.LinkedUser)
-                    {
-                        user.Policy.IsAdministrator = true;
-                        UpdateUserPolicy(user, user.Policy, false);
-                    }
+                    user.Policy.IsAdministrator = true;
+                    UpdateUserPolicy(user, user.Policy, false);
                 }
             }
         }
@@ -272,13 +268,9 @@ namespace Emby.Server.Implementations.Library
 
             if (user != null)
             {
-                // Authenticate using local credentials if not a guest
-                if (!user.ConnectLinkType.HasValue || user.ConnectLinkType.Value != UserLinkType.Guest)
-                {
-                    var authResult = await AuthenticateLocalUser(username, password, hashedPassword, user, remoteEndPoint).ConfigureAwait(false);
-                    authenticationProvider = authResult.Item1;
-                    success = authResult.Item2;
-                }
+                var authResult = await AuthenticateLocalUser(username, password, hashedPassword, user, remoteEndPoint).ConfigureAwait(false);
+                authenticationProvider = authResult.Item1;
+                success = authResult.Item2;
             }
             else
             {
@@ -455,30 +447,30 @@ namespace Emby.Server.Implementations.Library
 
         private void UpdateInvalidLoginAttemptCount(User user, int newValue)
         {
-            if (user.Policy.InvalidLoginAttemptCount != newValue || newValue > 0)
+            if (user.Policy.InvalidLoginAttemptCount == newValue || newValue <= 0)
             {
-                user.Policy.InvalidLoginAttemptCount = newValue;
+                return;
+            }
 
-                var maxCount = user.Policy.IsAdministrator ? 3 : 5;
+            user.Policy.InvalidLoginAttemptCount = newValue;
 
-                // TODO: Fix
-                /*
-                var fireLockout = false;
+            var maxCount = user.Policy.IsAdministrator ? 3 : 5;
 
-                if (newValue >= maxCount)
-                {
-                    _logger.LogDebug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue.ToString(CultureInfo.InvariantCulture));
-                    user.Policy.IsDisabled = true;
+            var fireLockout = false;
 
-                    fireLockout = true;
-                }*/
+            if (newValue >= maxCount)
+            {
+                _logger.LogDebug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue);
+                user.Policy.IsDisabled = true;
 
-                UpdateUserPolicy(user, user.Policy, false);
+                fireLockout = true;
+            }
 
-                /* if (fireLockout)
-                {
-                    UserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
-                }*/
+            UpdateUserPolicy(user, user.Policy, false);
+
+            if (fireLockout)
+            {
+                UserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
             }
         }
 
@@ -553,9 +545,6 @@ namespace Emby.Server.Implementations.Library
                 LastActivityDate = user.LastActivityDate,
                 LastLoginDate = user.LastLoginDate,
                 Configuration = user.Configuration,
-                ConnectLinkType = user.ConnectLinkType,
-                ConnectUserId = user.ConnectUserId,
-                ConnectUserName = user.ConnectUserName,
                 ServerId = _appHost.SystemId,
                 Policy = user.Policy
             };
@@ -814,11 +803,6 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(user));
             }
 
-            if (user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest)
-            {
-                throw new ArgumentException("Passwords for guests cannot be changed.");
-            }
-
             await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
 
             UpdateUser(user);
@@ -925,11 +909,6 @@ namespace Emby.Server.Implementations.Library
                 null :
                 GetUserByName(enteredUsername);
 
-            if (user != null && user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest)
-            {
-                throw new ArgumentException("Unable to process forgot password request for guests.");
-            }
-
             var action = ForgotPasswordAction.InNetworkRequired;
             string pinFile = null;
             DateTime? expirationDate = null;
@@ -974,10 +953,7 @@ namespace Emby.Server.Implementations.Library
                 _lastPin = null;
                 _lastPasswordPinCreationResult = null;
 
-                var users = Users.Where(i => !i.ConnectLinkType.HasValue || i.ConnectLinkType.Value != UserLinkType.Guest)
-                        .ToList();
-
-                foreach (var user in users)
+                foreach (var user in Users)
                 {
                     await ResetPassword(user).ConfigureAwait(false);
 
@@ -1205,9 +1181,11 @@ namespace Emby.Server.Implementations.Library
             _sessionManager = sessionManager;
         }
 
-        public void Run()
+        public Task RunAsync()
         {
             _userManager.UserPolicyUpdated += _userManager_UserPolicyUpdated;
+
+            return Task.CompletedTask;
         }
 
         private void _userManager_UserPolicyUpdated(object sender, GenericEventArgs<User> e)

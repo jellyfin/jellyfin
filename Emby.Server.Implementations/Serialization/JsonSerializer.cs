@@ -3,9 +3,8 @@ using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
-using Microsoft.Extensions.Logging;
 
-namespace Emby.Common.Implementations.Serialization
+namespace Emby.Server.Implementations.Serialization
 {
     /// <summary>
     /// Provides a wrapper around third party json serialization.

@@ -74,17 +74,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (item.SupportsLocalMetadata)
+            if (item.SupportsLocalMetadata && video != null && !video.IsPlaceHolder
+                && !video.SubtitleFiles.SequenceEqual(
+                        _subtitleResolver.GetExternalSubtitleFiles(video, directoryService, false), StringComparer.Ordinal))
             {
-                if (video != null && !video.IsPlaceHolder)
-                {
-                    if (!video.SubtitleFiles
-                        .SequenceEqual(_subtitleResolver.GetExternalSubtitleFiles(video, directoryService, false), StringComparer.Ordinal))
-                    {
-                        _logger.LogDebug("Refreshing {0} due to external subtitles change.", item.Path);
-                        return true;
-                    }
-                }
+                _logger.LogDebug("Refreshing {0} due to external subtitles change.", item.Path);
+                return true;
             }
 
             return false;

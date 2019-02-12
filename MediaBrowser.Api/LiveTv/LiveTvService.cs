@@ -875,7 +875,9 @@ namespace MediaBrowser.Api.LiveTv
         private string GetHashedString(string str)
         {
             // legacy
-            return BitConverter.ToString(_cryptographyProvider.ComputeSHA1(Encoding.UTF8.GetBytes(str))).Replace("-", string.Empty).ToLower();
+            return BitConverter.ToString(
+                _cryptographyProvider.ComputeSHA1(Encoding.UTF8.GetBytes(str)))
+                    .Replace("-", string.Empty).ToLowerInvariant();
         }
 
         public void Delete(DeleteListingProvider request)

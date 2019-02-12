@@ -101,11 +101,6 @@ namespace MediaBrowser.Api.UserLibrary
                 return LibraryManager.GetMusicGenres(query);
             }
 
-            if (string.Equals(viewType, CollectionType.Games))
-            {
-                return LibraryManager.GetGameGenres(query);
-            }
-
             return LibraryManager.GetGenres(query);
         }
 

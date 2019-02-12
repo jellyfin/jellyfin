@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -68,10 +69,8 @@ namespace MediaBrowser.Api.Playback
         protected IDeviceManager DeviceManager { get; private set; }
         protected ISubtitleEncoder SubtitleEncoder { get; private set; }
         protected IMediaSourceManager MediaSourceManager { get; private set; }
-        protected IZipClient ZipClient { get; private set; }
         protected IJsonSerializer JsonSerializer { get; private set; }
 
-        public static IServerApplicationHost AppHost;
         public static IHttpClient HttpClient;
         protected IAuthorizationContext AuthorizationContext { get; private set; }
 
@@ -80,21 +79,33 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
-        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext)
+        protected BaseStreamingService(
+            IServerConfigurationManager serverConfig,
+            IUserManager userManager,
+            ILibraryManager libraryManager,
+            IIsoManager isoManager,
+            IMediaEncoder mediaEncoder,
+            IFileSystem fileSystem,
+            IDlnaManager dlnaManager,
+            ISubtitleEncoder subtitleEncoder,
+            IDeviceManager deviceManager,
+            IMediaSourceManager mediaSourceManager,
+            IJsonSerializer jsonSerializer,
+            IAuthorizationContext authorizationContext)
         {
-            JsonSerializer = jsonSerializer;
-            AuthorizationContext = authorizationContext;
-            ZipClient = zipClient;
-            MediaSourceManager = mediaSourceManager;
-            DeviceManager = deviceManager;
-            SubtitleEncoder = subtitleEncoder;
-            DlnaManager = dlnaManager;
-            FileSystem = fileSystem;
             ServerConfigurationManager = serverConfig;
             UserManager = userManager;
             LibraryManager = libraryManager;
             IsoManager = isoManager;
             MediaEncoder = mediaEncoder;
+            FileSystem = fileSystem;
+            DlnaManager = dlnaManager;
+            SubtitleEncoder = subtitleEncoder;
+            DeviceManager = deviceManager;
+            MediaSourceManager = mediaSourceManager;
+            JsonSerializer = jsonSerializer;
+            AuthorizationContext = authorizationContext;
+
             EncodingHelper = new EncodingHelper(MediaEncoder, FileSystem, SubtitleEncoder);
         }
 
@@ -135,10 +146,10 @@ namespace MediaBrowser.Api.Playback
 
             if (EnableOutputInSubFolder)
             {
-                return Path.Combine(folder, dataHash, dataHash + (outputFileExtension ?? string.Empty).ToLower());
+                return Path.Combine(folder, dataHash, dataHash + (outputFileExtension ?? string.Empty).ToLowerInvariant());
             }
 
-            return Path.Combine(folder, dataHash + (outputFileExtension ?? string.Empty).ToLower());
+            return Path.Combine(folder, dataHash + (outputFileExtension ?? string.Empty).ToLowerInvariant());
         }
 
         protected virtual bool EnableOutputInSubFolder => false;
@@ -187,7 +198,8 @@ namespace MediaBrowser.Api.Playback
         /// <param name="cancellationTokenSource">The cancellation token source.</param>
         /// <param name="workingDirectory">The working directory.</param>
         /// <returns>Task.</returns>
-        protected async Task<TranscodingJob> StartFfMpeg(StreamState state,
+        protected async Task<TranscodingJob> StartFfMpeg(
+            StreamState state,
             string outputPath,
             CancellationTokenSource cancellationTokenSource,
             string workingDirectory = null)
@@ -215,24 +227,27 @@ namespace MediaBrowser.Api.Playback
             var transcodingId = Guid.NewGuid().ToString("N");
             var commandLineArgs = GetCommandLineArguments(outputPath, encodingOptions, state, true);
 
-            var process = ApiEntryPoint.Instance.ProcessFactory.Create(new ProcessOptions
+            var process = new Process()
             {
-                CreateNoWindow = true,
-                UseShellExecute = false,
+                StartInfo = new ProcessStartInfo()
+                {
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
 
-                // Must consume both stdout and stderr or deadlocks may occur
-                //RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
+                    // Must consume both stdout and stderr or deadlocks may occur
+                    //RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
 
-                FileName = MediaEncoder.EncoderPath,
-                Arguments = commandLineArgs,
+                    FileName = MediaEncoder.EncoderPath,
+                    Arguments = commandLineArgs,
+                    WorkingDirectory = string.IsNullOrWhiteSpace(workingDirectory) ? null : workingDirectory,
 
-                IsHidden = true,
-                ErrorDialog = false,
-                EnableRaisingEvents = true,
-                WorkingDirectory = !string.IsNullOrWhiteSpace(workingDirectory) ? workingDirectory : null
-            });
+                    ErrorDialog = false
+                },
+                EnableRaisingEvents = true
+            };
 
             var transcodingJob = ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath,
                 state.Request.PlaySessionId,
@@ -248,13 +263,17 @@ namespace MediaBrowser.Api.Playback
             Logger.LogInformation(commandLineLogMessage);
 
             var logFilePrefix = "ffmpeg-transcode";
-            if (state.VideoRequest != null && string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) && string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (state.VideoRequest != null)
             {
-                logFilePrefix = "ffmpeg-directstream";
-            }
-            else if (state.VideoRequest != null && string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
-            {
-                logFilePrefix = "ffmpeg-remux";
+                if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                {
+                    logFilePrefix = "ffmpeg-directstream";
+                }
+                else if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                {
+                    logFilePrefix = "ffmpeg-remux";
+                }
             }
 
             var logFilePath = Path.Combine(ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, logFilePrefix + "-" + Guid.NewGuid() + ".txt");
@@ -317,7 +336,7 @@ namespace MediaBrowser.Api.Playback
         {
             if (EnableThrottling(state))
             {
-                transcodingJob.TranscodingThrottler = state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, Logger, ServerConfigurationManager, ApiEntryPoint.Instance.TimerFactory, FileSystem);
+                transcodingJob.TranscodingThrottler = state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, Logger, ServerConfigurationManager, FileSystem);
                 state.TranscodingThrottler.Start();
             }
         }
@@ -341,7 +360,7 @@ namespace MediaBrowser.Api.Playback
         /// <param name="process">The process.</param>
         /// <param name="job">The job.</param>
         /// <param name="state">The state.</param>
-        private void OnFfMpegProcessExited(IProcess process, TranscodingJob job, StreamState state)
+        private void OnFfMpegProcessExited(Process process, TranscodingJob job, StreamState state)
         {
             if (job != null)
             {

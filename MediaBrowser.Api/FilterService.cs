@@ -143,16 +143,6 @@ namespace MediaBrowser.Api
 
                 }).ToArray();
             }
-            else if (string.Equals(request.IncludeItemTypes, "Game", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(request.IncludeItemTypes, "GameSystem", StringComparison.OrdinalIgnoreCase))
-            {
-                filters.Genres = _libraryManager.GetGameGenres(genreQuery).Items.Select(i => new NameGuidPair
-                {
-                    Name = i.Item1.Name,
-                    Id = i.Item1.Id
-
-                }).ToArray();
-            }
             else
             {
                 filters.Genres = _libraryManager.GetGenres(genreQuery).Items.Select(i => new NameGuidPair

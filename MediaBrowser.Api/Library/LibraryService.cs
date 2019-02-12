@@ -265,7 +265,6 @@ namespace MediaBrowser.Api.Library
         public string Id { get; set; }
     }
 
-    [Route("/Games/{Id}/Similar", "GET", Summary = "Finds games similar to a given game.")]
     [Route("/Artists/{Id}/Similar", "GET", Summary = "Finds albums similar to a given album.")]
     [Route("/Items/{Id}/Similar", "GET", Summary = "Gets similar items")]
     [Route("/Albums/{Id}/Similar", "GET", Summary = "Finds albums similar to a given album.")]
@@ -369,8 +368,6 @@ namespace MediaBrowser.Api.Library
                     return new string[] { "Series", "Season", "Episode" };
                 case CollectionType.Books:
                     return new string[] { "Book" };
-                case CollectionType.Games:
-                    return new string[] { "Game", "GameSystem" };
                 case CollectionType.Music:
                     return new string[] { "MusicAlbum", "MusicArtist", "Audio", "MusicVideo" };
                 case CollectionType.HomeVideos:
@@ -554,7 +551,8 @@ namespace MediaBrowser.Api.Library
                     Name = i.Name,
                     DefaultEnabled = IsSaverEnabledByDefault(i.Name, types, isNewLibrary)
                 })
-                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(x => x.First())
                 .ToArray();
 
             result.MetadataReaders = plugins
@@ -564,7 +562,8 @@ namespace MediaBrowser.Api.Library
                     Name = i.Name,
                     DefaultEnabled = true
                 })
-                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(x => x.First())
                 .ToArray();
 
             result.SubtitleFetchers = plugins
@@ -574,7 +573,8 @@ namespace MediaBrowser.Api.Library
                     Name = i.Name,
                     DefaultEnabled = true
                 })
-                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(x => x.First())
                 .ToArray();
 
             var typeOptions = new List<LibraryTypeOptions>();
@@ -596,7 +596,8 @@ namespace MediaBrowser.Api.Library
                         Name = i.Name,
                         DefaultEnabled = IsMetadataFetcherEnabledByDefault(i.Name, type, isNewLibrary)
                     })
-                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .Select(x => x.First())
                     .ToArray(),
 
                     ImageFetchers = plugins
@@ -607,7 +608,8 @@ namespace MediaBrowser.Api.Library
                         Name = i.Name,
                         DefaultEnabled = IsImageFetcherEnabledByDefault(i.Name, type, isNewLibrary)
                     })
-                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .Select(x => x.First())
                     .ToArray(),
 
                     SupportedImageTypes = plugins
@@ -952,8 +954,6 @@ namespace MediaBrowser.Api.Library
             {
                 AlbumCount = GetCount(typeof(MusicAlbum), user, request),
                 EpisodeCount = GetCount(typeof(Episode), user, request),
-                GameCount = GetCount(typeof(Game), user, request),
-                GameSystemCount = GetCount(typeof(GameSystem), user, request),
                 MovieCount = GetCount(typeof(Movie), user, request),
                 SeriesCount = GetCount(typeof(Series), user, request),
                 SongCount = GetCount(typeof(Audio), user, request),

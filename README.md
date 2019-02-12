@@ -5,13 +5,17 @@
 
 <p align="center">
 <img alt="Logo banner" src="https://raw.githubusercontent.com/jellyfin/jellyfin-ux/master/branding/SVG/banner-logo-solid.svg?sanitize=true"/>
-<br/></br>
-<a href="https://github.com/jellyfin/jellyfin"><img alt="GPL 2.0 License" src="https://img.shields.io/github/license/jellyfin/jellyfin.svg"></a>
-<a href="https://cloud.drone.io/jellyfin/jellyfin"><img alt="Build Status" src="https://cloud.drone.io/api/badges/jellyfin/jellyfin/status.svg"></a>
-<a href="https://hub.docker.com/r/jellyfin/jellyfin"><img alt="Docker Pull Count" src="https://img.shields.io/docker/pulls/jellyfin/jellyfin.svg"></a>
-<a href="https://jellyfin.readthedocs.io"><img alt="Documentation" src="https://img.shields.io/readthedocs/jellyfin.svg"></a>
-<a href="https://matrix.to/#/+jellyfin:matrix.org"><img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfin:matrix.org.svg?logo=matrix"></a>
-<a href="https://www.reddit.com/r/jellyfin/"><img alt="Join our Subreddit" src="https://img.shields.io/badge/reddit-r%2Fjellyfin-%23FF5700.svg"></a>
+<br/><br/>
+<a href="https://github.com/jellyfin/jellyfin"><img alt="GPL 2.0 License" src="https://img.shields.io/github/license/jellyfin/jellyfin.svg"/></a>
+<a href="https://github.com/jellyfin/jellyfin/releases"><img alt="Current Release" src="https://img.shields.io/github/release/jellyfin/jellyfin.svg"/></a>
+<a href="https://translate.jellyfin.org/engage/jellyfin/?utm_source=widget"><img alt="Translations" src="https://translate.jellyfin.org/widgets/jellyfin/-/svg-badge.svg"/></a>
+<a href="https://cloud.drone.io/jellyfin/jellyfin"><img alt="Build Status" src="https://cloud.drone.io/api/badges/jellyfin/jellyfin/status.svg"/></a>
+<a href="https://hub.docker.com/r/jellyfin/jellyfin"><img alt="Docker Pull Count" src="https://img.shields.io/docker/pulls/jellyfin/jellyfin.svg"/></a>
+</br>
+<a href="https://opencollective.com/jellyfin"><img alt="Donate" src="https://img.shields.io/opencollective/all/jellyfin.svg?label=backers"/></a>
+<a href="https://forum.jellyfin.org"/><img alt="Discuss on our Forum" src="https://img.shields.io/discourse/https/forum.jellyfin.org/users.svg"/></a>
+<a href="https://matrix.to/#/+jellyfin:matrix.org"><img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfin:matrix.org.svg?logo=matrix"/></a>
+<a href="https://www.reddit.com/r/jellyfin/"><img alt="Join our Subreddit" src="https://img.shields.io/badge/reddit-r%2Fjellyfin-%23FF5700.svg"/></a>
 </p>
 
 ---
@@ -24,13 +28,13 @@ For more information about the project, please see our [about page](https://jell
 
 <p align="center">
 <strong>Want to get started?</strong>
-<em>Choose from <a href="https://jellyfin.readthedocs.io/en/latest/user-docs/installing/">Prebuilt Packages</a> or <a href="https://jellyfin.readthedocs.io/en/latest/user-docs/building/">Build from Source</a>, then see our <a href="https://jellyfin.readthedocs.io/en/latest/user-docs/quick-start/">Quickstart guide</a>.</em>
+<em>Choose from <a href="https://jellyfin.readthedocs.io/en/latest/administrator-docs/installing/">Prebuilt Packages</a> or <a href="https://jellyfin.readthedocs.io/en/latest/administrator-docs/building/">Build from Source</a>, then see our <a href="https://jellyfin.readthedocs.io/en/latest/administrator-docs/first-time/">first-time setup guide</a>.</em>
 </p>
 <p align="center">
 <strong>Want to contribute?</strong>
-<em>Check out <a href="https://jellyfin.readthedocs.io/en/latest/developer-docs/contributing/">our documentation for guidelines</a>.</em>
+<em>Check out <a href="https://jellyfin.readthedocs.io/en/latest/contributor-docs/contributing/">our documentation for guidelines</a>.</em>
 </p>
 <p align="center">
 <strong>New idea or improvement? Something not working right?</strong>
-<em>Open an <a href="https://jellyfin.readthedocs.io/en/latest/developer-docs/issues/">Issue</a>.</em>
+<em>Open an <a href="https://jellyfin.readthedocs.io/en/latest/contributor-docs/issues/">Issue</a>.</em>
 </p>

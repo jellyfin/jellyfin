@@ -95,8 +95,6 @@ namespace MediaBrowser.Api.Images
     [Route("/Artists/{Name}/Images/{Type}/{Index}", "GET")]
     [Route("/Genres/{Name}/Images/{Type}", "GET")]
     [Route("/Genres/{Name}/Images/{Type}/{Index}", "GET")]
-    [Route("/GameGenres/{Name}/Images/{Type}", "GET")]
-    [Route("/GameGenres/{Name}/Images/{Type}/{Index}", "GET")]
     [Route("/MusicGenres/{Name}/Images/{Type}", "GET")]
     [Route("/MusicGenres/{Name}/Images/{Type}/{Index}", "GET")]
     [Route("/Persons/{Name}/Images/{Type}", "GET")]
@@ -109,8 +107,6 @@ namespace MediaBrowser.Api.Images
     [Route("/Artists/{Name}/Images/{Type}/{Index}", "HEAD")]
     [Route("/Genres/{Name}/Images/{Type}", "HEAD")]
     [Route("/Genres/{Name}/Images/{Type}/{Index}", "HEAD")]
-    [Route("/GameGenres/{Name}/Images/{Type}", "HEAD")]
-    [Route("/GameGenres/{Name}/Images/{Type}/{Index}", "HEAD")]
     [Route("/MusicGenres/{Name}/Images/{Type}", "HEAD")]
     [Route("/MusicGenres/{Name}/Images/{Type}/{Index}", "HEAD")]
     [Route("/Persons/{Name}/Images/{Type}", "HEAD")]
@@ -328,7 +324,7 @@ namespace MediaBrowser.Api.Images
                         var fileInfo = _fileSystem.GetFileInfo(info.Path);
                         length = fileInfo.Length;
 
-                        ImageDimensions size = _imageProcessor.GetImageSize(item, info, true);
+                        ImageDimensions size = _imageProcessor.GetImageDimensions(item, info, true);
                         width = size.Width;
                         height = size.Height;
 

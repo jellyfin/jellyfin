@@ -111,7 +111,8 @@ namespace Emby.Server.Implementations.Networking
                 .OrderBy(i => i.AddressFamily == AddressFamily.InterNetwork ? 0 : 1)
                 .ThenBy(i => listClone.IndexOf(i))
                 .Where(FilterIpAddress)
-                .DistinctBy(i => i.ToString())
+                .GroupBy(i => i.ToString())
+                .Select(x => x.First())
                 .ToList();
         }
 
@@ -280,7 +281,7 @@ namespace Emby.Server.Implementations.Networking
 
                 if (normalizedSubnet.IndexOf('/') != -1)
                 {
-                    var ipnetwork = IPNetwork.Parse(normalizedSubnet);
+                    var ipnetwork = IPNetwork.IPNetwork.Parse(normalizedSubnet);
                     if (ipnetwork.Contains(address))
                     {
                         return true;
@@ -429,7 +430,8 @@ namespace Emby.Server.Implementations.Networking
                     return new List<IPAddress>();
                 }
 
-            }).DistinctBy(i => i.ToString())
+            }).GroupBy(i => i.ToString())
+                .Select(x => x.First())
                 .ToList();
         }
 

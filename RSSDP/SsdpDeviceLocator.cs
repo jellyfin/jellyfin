@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Threading;
 
 namespace Rssdp.Infrastructure
 {
@@ -23,8 +22,7 @@ namespace Rssdp.Infrastructure
         private List<DiscoveredSsdpDevice> _Devices;
         private ISsdpCommunicationsServer _CommunicationsServer;
 
-        private ITimer _BroadcastTimer;
-        private ITimerFactory _timerFactory;
+        private Timer _BroadcastTimer;
         private object _timerLock = new object();
 
         private readonly TimeSpan DefaultSearchWaitTime = TimeSpan.FromSeconds(4);
@@ -37,12 +35,11 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer, ITimerFactory timerFactory)
+        public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer)
         {
             if (communicationsServer == null) throw new ArgumentNullException(nameof(communicationsServer));
 
             _CommunicationsServer = communicationsServer;
-            _timerFactory = timerFactory;
             _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
 
             _Devices = new List<DiscoveredSsdpDevice>();
@@ -94,7 +91,7 @@ namespace Rssdp.Infrastructure
             {
                 if (_BroadcastTimer == null)
                 {
-                    _BroadcastTimer = _timerFactory.Create(OnBroadcastTimerCallback, null, dueTime, period);
+                    _BroadcastTimer = new Timer(OnBroadcastTimerCallback, null, dueTime, period);
                 }
                 else
                 {

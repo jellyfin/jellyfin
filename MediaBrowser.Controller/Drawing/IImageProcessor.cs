@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets the supported input formats.
         /// </summary>
         /// <value>The supported input formats.</value>
-        string[] SupportedInputFormats { get; }
+        IReadOnlyCollection<string> SupportedInputFormats { get; }
 
         /// <summary>
         /// Gets the image enhancers.
@@ -26,16 +26,29 @@ namespace MediaBrowser.Controller.Drawing
         /// <value>The image enhancers.</value>
         IImageEnhancer[] ImageEnhancers { get; }
 
-        ImageDimensions GetImageSize(string path);
+        /// <summary>
+        /// Gets the dimensions of the image.
+        /// </summary>
+        /// <param name="path">Path to the image file.</param>
+        /// <returns>ImageDimensions</returns>
+        ImageDimensions GetImageDimensions(string path);
 
         /// <summary>
-        /// Gets the size of the image.
+        /// Gets the dimensions of the image.
         /// </summary>
+        /// <param name="item">The base item.</param>
         /// <param name="info">The information.</param>
-        /// <returns>ImageSize.</returns>
-        ImageDimensions GetImageSize(BaseItem item, ItemImageInfo info);
+        /// <returns>ImageDimensions</returns>
+        ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info);
 
-        ImageDimensions GetImageSize(BaseItem item, ItemImageInfo info, bool updateItem);
+        /// <summary>
+        /// Gets the dimensions of the image.
+        /// </summary>
+        /// <param name="item">The base item.</param>
+        /// <param name="info">The information.</param>
+        /// <param name="updateItem">Whether or not the item info should be updated.</param>
+        /// <returns>ImageDimensions</returns>
+        ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info, bool updateItem);
 
         /// <summary>
         /// Adds the parts.
@@ -96,8 +109,8 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Gets the supported image output formats.
         /// </summary>
-        /// <returns>ImageOutputFormat[].</returns>
-        ImageFormat[] GetSupportedImageOutputFormats();
+        /// <returns>IReadOnlyCollection{ImageOutput}.</returns>
+        IReadOnlyCollection<ImageFormat> GetSupportedImageOutputFormats();
 
         /// <summary>
         /// Creates the image collage.

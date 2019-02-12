@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Emby.Dlna.Profiles;
 using Emby.Dlna.Server;
 using MediaBrowser.Common.Configuration;
@@ -48,11 +49,11 @@ namespace Emby.Dlna
             _assemblyInfo = assemblyInfo;
         }
 
-        public void InitProfiles()
+        public async Task InitProfilesAsync()
         {
             try
             {
-                ExtractSystemProfiles();
+                await ExtractSystemProfilesAsync();
                 LoadProfiles();
             }
             catch (Exception ex)
@@ -300,7 +301,7 @@ namespace Emby.Dlna
 
                     profile = ReserializeProfile(tempProfile);
 
-                    profile.Id = path.ToLower().GetMD5().ToString("N");
+                    profile.Id = path.ToLowerInvariant().GetMD5().ToString("N");
 
                     _profiles[path] = new Tuple<InternalProfileInfo, DeviceProfile>(GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
 
@@ -352,14 +353,14 @@ namespace Emby.Dlna
 
                 Info = new DeviceProfileInfo
                 {
-                    Id = file.FullName.ToLower().GetMD5().ToString("N"),
+                    Id = file.FullName.ToLowerInvariant().GetMD5().ToString("N"),
                     Name = _fileSystem.GetFileNameWithoutExtension(file),
                     Type = type
                 }
             };
         }
 
-        private void ExtractSystemProfiles()
+        private async Task ExtractSystemProfilesAsync()
         {
             var namespaceName = GetType().Namespace + ".Profiles.Xml.";
 
@@ -383,7 +384,7 @@ namespace Emby.Dlna
 
                         using (var fileStream = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
                         {
-                            stream.CopyTo(fileStream);
+                            await stream.CopyToAsync(fileStream);
                         }
                     }
                 }
@@ -506,7 +507,7 @@ namespace Emby.Dlna
                 ? ImageFormat.Png
                 : ImageFormat.Jpg;
 
-            var resource = GetType().Namespace + ".Images." + filename.ToLower();
+            var resource = GetType().Namespace + ".Images." + filename.ToLowerInvariant();
 
             return new ImageStream
             {

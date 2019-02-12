@@ -82,7 +82,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "lockedfields",
                     "zap2itid",
                     "tvrageid",
-                    "gamesdbid",
 
                     "musicbrainzartistid",
                     "musicbrainzalbumartistid",
@@ -290,7 +289,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             foreach (var stream in mediaStreams)
             {
-                writer.WriteStartElement(stream.Type.ToString().ToLower());
+                writer.WriteStartElement(stream.Type.ToString().ToLowerInvariant());
 
                 if (!string.IsNullOrEmpty(stream.Codec))
                 {
@@ -471,7 +470,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("customrating", item.CustomRating);
             }
 
-            writer.WriteElementString("lockdata", item.IsLocked.ToString().ToLower());
+            writer.WriteElementString("lockdata", item.IsLocked.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
 
             if (item.LockedFields.Length > 0)
             {
@@ -737,13 +736,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writtenProviderIds.Add(MetadataProviders.MusicBrainzReleaseGroup.ToString());
             }
 
-            externalId = item.GetProviderId(MetadataProviders.Gamesdb);
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                writer.WriteElementString("gamesdbid", externalId);
-                writtenProviderIds.Add(MetadataProviders.Gamesdb.ToString());
-            }
-
             externalId = item.GetProviderId(MetadataProviders.TvRage);
             if (!string.IsNullOrEmpty(externalId))
             {
@@ -871,21 +863,21 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             var userdata = userDataRepo.GetUserData(user, item);
 
-            writer.WriteElementString("isuserfavorite", userdata.IsFavorite.ToString().ToLower());
+            writer.WriteElementString("isuserfavorite", userdata.IsFavorite.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
 
             if (userdata.Rating.HasValue)
             {
-                writer.WriteElementString("userrating", userdata.Rating.Value.ToString(CultureInfo.InvariantCulture).ToLower());
+                writer.WriteElementString("userrating", userdata.Rating.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
             }
 
             if (!item.IsFolder)
             {
                 writer.WriteElementString("playcount", userdata.PlayCount.ToString(UsCulture));
-                writer.WriteElementString("watched", userdata.Played.ToString().ToLower());
+                writer.WriteElementString("watched", userdata.Played.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
 
                 if (userdata.LastPlayedDate.HasValue)
                 {
-                    writer.WriteElementString("lastplayed", userdata.LastPlayedDate.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss").ToLower());
+                    writer.WriteElementString("lastplayed", userdata.LastPlayedDate.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss").ToLowerInvariant());
                 }
 
                 writer.WriteStartElement("resume");
@@ -901,12 +893,13 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private void AddActors(List<PersonInfo> people, XmlWriter writer, ILibraryManager libraryManager, IFileSystem fileSystem, IServerConfigurationManager config, bool saveImagePath)
         {
-            var actors = people
-                .Where(i => !IsPersonType(i, PersonType.Director) && !IsPersonType(i, PersonType.Writer))
-                .ToList();
-
-            foreach (var person in actors)
+            foreach (var person in people)
             {
+                if (IsPersonType(person, PersonType.Director) || IsPersonType(person, PersonType.Writer))
+                {
+                    continue;
+                }
+
                 writer.WriteStartElement("actor");
 
                 if (!string.IsNullOrWhiteSpace(person.Name))
@@ -1021,7 +1014,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private string GetTagForProviderKey(string providerKey)
         {
-            return providerKey.ToLower() + "id";
+            return providerKey.ToLowerInvariant() + "id";
         }
     }
 }

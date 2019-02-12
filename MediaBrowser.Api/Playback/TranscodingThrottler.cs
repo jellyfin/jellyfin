@@ -1,8 +1,9 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
@@ -11,18 +12,16 @@ namespace MediaBrowser.Api.Playback
     {
         private readonly TranscodingJob _job;
         private readonly ILogger _logger;
-        private ITimer _timer;
+        private Timer _timer;
         private bool _isPaused;
         private readonly IConfigurationManager _config;
-        private readonly ITimerFactory _timerFactory;
         private readonly IFileSystem _fileSystem;
 
-        public TranscodingThrottler(TranscodingJob job, ILogger logger, IConfigurationManager config, ITimerFactory timerFactory, IFileSystem fileSystem)
+        public TranscodingThrottler(TranscodingJob job, ILogger logger, IConfigurationManager config, IFileSystem fileSystem)
         {
             _job = job;
             _logger = logger;
             _config = config;
-            _timerFactory = timerFactory;
             _fileSystem = fileSystem;
         }
 
@@ -33,10 +32,10 @@ namespace MediaBrowser.Api.Playback
 
         public void Start()
         {
-            _timer = _timerFactory.Create(TimerCallback, null, 5000, 5000);
+            _timer = new Timer(TimerCallback, null, 5000, 5000);
         }
 
-        private void TimerCallback(object state)
+        private async void TimerCallback(object state)
         {
             if (_job.HasExited)
             {
@@ -48,15 +47,15 @@ namespace MediaBrowser.Api.Playback
 
             if (options.EnableThrottling && IsThrottleAllowed(_job, options.ThrottleDelaySeconds))
             {
-                PauseTranscoding();
+                await PauseTranscoding();
             }
             else
             {
-                UnpauseTranscoding();
+                await UnpauseTranscoding();
             }
         }
 
-        private void PauseTranscoding()
+        private async Task PauseTranscoding()
         {
             if (!_isPaused)
             {
@@ -64,7 +63,7 @@ namespace MediaBrowser.Api.Playback
 
                 try
                 {
-                    _job.Process.StandardInput.Write("c");
+                    await _job.Process.StandardInput.WriteAsync("c");
                     _isPaused = true;
                 }
                 catch (Exception ex)
@@ -74,7 +73,7 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        public void UnpauseTranscoding()
+        public async Task UnpauseTranscoding()
         {
             if (_isPaused)
             {
@@ -82,7 +81,7 @@ namespace MediaBrowser.Api.Playback
 
                 try
                 {
-                    _job.Process.StandardInput.WriteLine();
+                    await _job.Process.StandardInput.WriteLineAsync();
                     _isPaused = false;
                 }
                 catch (Exception ex)
@@ -153,10 +152,10 @@ namespace MediaBrowser.Api.Playback
             return false;
         }
 
-        public void Stop()
+        public async Task Stop()
         {
             DisposeTimer();
-            UnpauseTranscoding();
+            await UnpauseTranscoding();
         }
 
         public void Dispose()

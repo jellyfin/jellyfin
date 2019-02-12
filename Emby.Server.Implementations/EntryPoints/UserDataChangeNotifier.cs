@@ -10,7 +10,6 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -23,24 +22,24 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IUserManager _userManager;
 
         private readonly object _syncLock = new object();
-        private ITimer UpdateTimer { get; set; }
-        private readonly ITimerFactory _timerFactory;
+        private Timer UpdateTimer { get; set; }
         private const int UpdateDuration = 500;
 
         private readonly Dictionary<Guid, List<BaseItem>> _changedItems = new Dictionary<Guid, List<BaseItem>>();
 
-        public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, ILogger logger, IUserManager userManager, ITimerFactory timerFactory)
+        public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, ILogger logger, IUserManager userManager)
         {
             _userDataManager = userDataManager;
             _sessionManager = sessionManager;
             _logger = logger;
             _userManager = userManager;
-            _timerFactory = timerFactory;
         }
 
-        public void Run()
+        public Task RunAsync()
         {
             _userDataManager.UserDataSaved += _userDataManager_UserDataSaved;
+
+            return Task.CompletedTask;
         }
 
         void _userDataManager_UserDataSaved(object sender, UserDataSaveEventArgs e)
@@ -54,7 +53,7 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 if (UpdateTimer == null)
                 {
-                    UpdateTimer = _timerFactory.Create(UpdateTimerCallback, null, UpdateDuration,
+                    UpdateTimer = new Timer(UpdateTimerCallback, null, UpdateDuration,
                                                    Timeout.Infinite);
                 }
                 else
@@ -121,7 +120,8 @@ namespace Emby.Server.Implementations.EntryPoints
             var user = _userManager.GetUserById(userId);
 
             var dtoList = changedItems
-                .DistinctBy(i => i.Id)
+                .GroupBy(x => x.Id)
+                .Select(x => x.First())
                 .Select(i =>
                 {
                     var dto = _userDataManager.GetUserDataDto(i, user);

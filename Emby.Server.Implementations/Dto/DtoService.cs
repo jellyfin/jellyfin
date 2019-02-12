@@ -374,10 +374,6 @@ namespace Emby.Server.Implementations.Dto
                 dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
                 dto.SongCount = taggedItems.Count(i => i is Audio);
             }
-            else if (item is GameGenre)
-            {
-                dto.GameCount = taggedItems.Count(i => i is Game);
-            }
             else
             {
                 // This populates them all and covers Genre, Person, Studio, Year
@@ -385,7 +381,6 @@ namespace Emby.Server.Implementations.Dto
                 dto.ArtistCount = taggedItems.Count(i => i is MusicArtist);
                 dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
                 dto.EpisodeCount = taggedItems.Count(i => i is Episode);
-                dto.GameCount = taggedItems.Count(i => i is Game);
                 dto.MovieCount = taggedItems.Count(i => i is Movie);
                 dto.TrailerCount = taggedItems.Count(i => i is Trailer);
                 dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
@@ -532,17 +527,6 @@ namespace Emby.Server.Implementations.Dto
             dto.Album = item.Album;
         }
 
-        private static void SetGameProperties(BaseItemDto dto, Game item)
-        {
-            dto.GameSystem = item.GameSystem;
-            dto.MultiPartGameFiles = item.MultiPartGameFiles;
-        }
-
-        private static void SetGameSystemProperties(BaseItemDto dto, GameSystem item)
-        {
-            dto.GameSystem = item.GameSystemName;
-        }
-
         private string[] GetImageTags(BaseItem item, List<ItemImageInfo> images)
         {
             return images
@@ -636,7 +620,8 @@ namespace Emby.Server.Implementations.Dto
                     }
 
                 }).Where(i => i != null)
-                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(x => x.First())
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < people.Count; i++)
@@ -696,11 +681,6 @@ namespace Emby.Server.Implementations.Dto
             if (owner is IHasMusicGenres)
             {
                 return _libraryManager.GetMusicGenreId(name);
-            }
-
-            if (owner is Game || owner is GameSystem)
-            {
-                return _libraryManager.GetGameGenreId(name);
             }
 
             return _libraryManager.GetGenreId(name);
@@ -1206,20 +1186,6 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            var game = item as Game;
-
-            if (game != null)
-            {
-                SetGameProperties(dto, game);
-            }
-
-            var gameSystem = item as GameSystem;
-
-            if (gameSystem != null)
-            {
-                SetGameSystemProperties(dto, gameSystem);
-            }
-
             var musicVideo = item as MusicVideo;
             if (musicVideo != null)
             {
@@ -1452,7 +1418,7 @@ namespace Emby.Server.Implementations.Dto
 
                 try
                 {
-                    size = _imageProcessor.GetImageSize(item, imageInfo);
+                    size = _imageProcessor.GetImageDimensions(item, imageInfo);
 
                     if (size.Width <= 0 || size.Height <= 0)
                     {

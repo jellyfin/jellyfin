@@ -128,7 +128,6 @@ namespace MediaBrowser.LocalMetadata.Images
             var added = false;
             var isEpisode = item is Episode;
             var isSong = item.GetType() == typeof(Audio);
-            var isGame = item is Game;
             var isPerson = item is Person;
 
             // Logo
@@ -157,7 +156,7 @@ namespace MediaBrowser.LocalMetadata.Images
                     added = AddImage(files, images, "disc", imagePrefix, isInMixedFolder, ImageType.Disc);
                 }
             }
-            else if (isGame || item is Video || item is BoxSet)
+            else if (item is Video || item is BoxSet)
             {
                 added = AddImage(files, images, "disc", imagePrefix, isInMixedFolder, ImageType.Disc);
 
@@ -169,19 +168,6 @@ namespace MediaBrowser.LocalMetadata.Images
                 if (!added)
                 {
                     added = AddImage(files, images, "discart", imagePrefix, isInMixedFolder, ImageType.Disc);
-                }
-            }
-
-            if (isGame)
-            {
-                AddImage(files, images, "box", imagePrefix, isInMixedFolder, ImageType.Box);
-                AddImage(files, images, "menu", imagePrefix, isInMixedFolder, ImageType.Menu);
-
-                added = AddImage(files, images, "back", imagePrefix, isInMixedFolder, ImageType.BoxRear);
-
-                if (!added)
-                {
-                    added = AddImage(files, images, "boxrear", imagePrefix, isInMixedFolder, ImageType.BoxRear);
                 }
             }
 
@@ -417,7 +403,7 @@ namespace MediaBrowser.LocalMetadata.Images
             var seriesFiles = GetFiles(series, false, directoryService).ToList();
 
             // Try using the season name
-            var prefix = season.Name.ToLower().Replace(" ", string.Empty);
+            var prefix = season.Name.ToLowerInvariant().Replace(" ", string.Empty);
 
             var filenamePrefixes = new List<string> { prefix };
 

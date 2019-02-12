@@ -47,12 +47,6 @@ namespace MediaBrowser.Controller
         string MusicGenrePath { get; }
 
         /// <summary>
-        /// Gets the game genre path.
-        /// </summary>
-        /// <value>The game genre path.</value>
-        string GameGenrePath { get; }
-
-        /// <summary>
         /// Gets the path to the Studio directory
         /// </summary>
         /// <value>The studio path.</value>

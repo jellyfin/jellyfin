@@ -2,30 +2,30 @@
 
 source ../common.build.sh
 
-VERSION=`get_version ../..`
+WORKDIR="$( pwd )"
 
-# TODO get the version in the package automatically. And using the changelog to decide the debian package suffix version.
+package_temporary_dir="${WORKDIR}/pkg-dist-tmp"
+output_dir="${WORKDIR}/pkg-dist"
+current_user="$( whoami )"
+image_name="jellyfin-debian-build"
 
-# Build a Jellyfin .deb file with Docker on Linux
-# Places the output .deb file in the parent directory
+# Determine if sudo should be used for Docker
+if [[ ! -z $(id -Gn | grep -q 'docker') ]] \
+  && [[ ! ${EUID:-1000} -eq 0 ]] \
+  && [[ ! ${USER} == "root" ]] \
+  && [[ ! -z $( echo "${OSTYPE}" | grep -q "darwin" ) ]]; then
+    docker_sudo="sudo"
+else
+    docker_sudo=""
+fi
 
-package_temporary_dir="`pwd`/pkg-dist-tmp"
-output_dir="`pwd`/pkg-dist"
-current_user="`whoami`"
-image_name="jellyfin-debuild"
-
-cleanup() {
-    set +o errexit
-    docker image rm $image_name --force
-    rm -rf "$package_temporary_dir"
-}
-trap cleanup EXIT INT
-
-docker build ../.. -t "$image_name" -f ./Dockerfile --build-arg SOURCEDIR="/jellyfin-${VERSION}"
-mkdir -p "$package_temporary_dir"
-mkdir -p "$output_dir"
-docker run --rm -v "$package_temporary_dir:/temp" "$image_name" sh -c 'find / -maxdepth 1 -type f -name "jellyfin*" -exec mv {} /temp \;'
-chown -R "$current_user" "$package_temporary_dir" \
-|| sudo chown -R "$current_user" "$package_temporary_dir"
-
-mv "$package_temporary_dir"/* "$output_dir"
+# Set up the build environment Docker image
+${docker_sudo} docker build ../.. -t "${image_name}" -f ./Dockerfile
+# Build the DEBs and copy out to ${package_temporary_dir}
+${docker_sudo} docker run --rm -v "${package_temporary_dir}:/dist" "${image_name}"
+# Correct ownership on the DEBs (as current user, then as root if that fails)
+chown -R "${current_user}" "${package_temporary_dir}" &>/dev/null \
+  || sudo chown -R "${current_user}" "${package_temporary_dir}" &>/dev/null
+# Move the DEBs to the output directory
+mkdir -p "${output_dir}"
+mv "${package_temporary_dir}"/deb/* "${output_dir}"

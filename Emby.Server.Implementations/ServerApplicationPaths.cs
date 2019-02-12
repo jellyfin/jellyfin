@@ -18,8 +18,13 @@ namespace Emby.Server.Implementations
             string appFolderPath,
             string applicationResourcesPath,
             string logDirectoryPath = null,
-            string configurationDirectoryPath = null)
-            : base(programDataPath, appFolderPath, logDirectoryPath, configurationDirectoryPath)
+            string configurationDirectoryPath = null,
+            string cacheDirectoryPath = null)
+            : base(programDataPath,
+                appFolderPath,
+                logDirectoryPath,
+                configurationDirectoryPath,
+                cacheDirectoryPath)
         {
             ApplicationResourcesPath = applicationResourcesPath;
         }
@@ -135,12 +140,6 @@ namespace Emby.Server.Implementations
             Directory.CreateDirectory(path);
             return path;
         }
-
-        /// <summary>
-        /// Gets the game genre path.
-        /// </summary>
-        /// <value>The game genre path.</value>
-        public string GameGenrePath => Path.Combine(InternalMetadataPath, "GameGenre");
 
         private string _internalMetadataPath;
         public string InternalMetadataPath

@@ -28,10 +28,10 @@ namespace Emby.Server.Implementations.FFMpeg
             _ffmpegInstallInfo = ffmpegInstallInfo;
         }
 
-        public FFMpegInfo GetFFMpegInfo(StartupOptions options)
+        public FFMpegInfo GetFFMpegInfo(IStartupOptions options)
         {
-            var customffMpegPath = options.GetOption("-ffmpeg");
-            var customffProbePath = options.GetOption("-ffprobe");
+            var customffMpegPath = options.FFmpegPath;
+            var customffProbePath = options.FFprobePath;
 
             if (!string.IsNullOrWhiteSpace(customffMpegPath) && !string.IsNullOrWhiteSpace(customffProbePath))
             {

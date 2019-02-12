@@ -6,8 +6,10 @@ using System.Net;
 using System.Net.Security;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using CommandLine;
 using Emby.Drawing;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.EnvironmentInfo;
@@ -35,19 +37,32 @@ namespace Jellyfin.Server
 
         public static async Task Main(string[] args)
         {
-            StartupOptions options = new StartupOptions(args);
-            Version version = Assembly.GetEntryAssembly().GetName().Version;
+            // For backwards compatibility.
+            // Modify any input arguments now which start with single-hyphen to POSIX standard
+            // double-hyphen to allow parsing by CommandLineParser package.
+            const string pattern = @"^(-[^-\s]{2})"; // Match -xx, not -x, not --xx, not xx
+            const string substitution = @"-$1"; // Prepend with additional single-hyphen
+            var regex = new Regex(pattern);
 
-            if (options.ContainsOption("-v") || options.ContainsOption("--version"))
+            for (var i = 0; i < args.Length; i++)
             {
-                Console.WriteLine(version.ToString());
+                args[i] = regex.Replace(args[i], substitution);
             }
 
+            // Parse the command line arguments and either start the app or exit indicating error
+            await Parser.Default.ParseArguments<StartupOptions>(args)
+                .MapResult(
+                    options => StartApp(options),
+                    errs => Task.FromResult(0)).ConfigureAwait(false);
+        }
+
+        private static async Task StartApp(StartupOptions options)
+        {
             ServerApplicationPaths appPaths = CreateApplicationPaths(options);
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
-            await createLogger(appPaths);
+            await CreateLogger(appPaths);
             _logger = _loggerFactory.CreateLogger("Main");
 
             AppDomain.CurrentDomain.UnhandledException += (sender, e)
@@ -78,9 +93,9 @@ namespace Jellyfin.Server
                 Shutdown();
             };
 
-            _logger.LogInformation("Jellyfin version: {Version}", version);
+            _logger.LogInformation("Jellyfin version: {Version}", Assembly.GetEntryAssembly().GetName().Version);
 
-            EnvironmentInfo environmentInfo = new EnvironmentInfo(getOperatingSystem());
+            EnvironmentInfo environmentInfo = new EnvironmentInfo(GetOperatingSystem());
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths, environmentInfo);
 
             SQLitePCL.Batteries_V2.Init();
@@ -99,11 +114,9 @@ namespace Jellyfin.Server
                 new NullImageEncoder(),
                 new NetworkManager(_loggerFactory, environmentInfo)))
             {
-                appHost.Init();
+                await appHost.Init();
 
                 appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
-
-                _logger.LogInformation("Running startup tasks");
 
                 await appHost.RunStartupTasks();
 
@@ -118,8 +131,6 @@ namespace Jellyfin.Server
                 {
                     // Don't throw on cancellation
                 }
-
-                _logger.LogInformation("Disposing app host");
             }
 
             if (_restartOnShutdown)
@@ -133,9 +144,9 @@ namespace Jellyfin.Server
             string programDataPath = Environment.GetEnvironmentVariable("JELLYFIN_DATA_PATH");
             if (string.IsNullOrEmpty(programDataPath))
             {
-                if (options.ContainsOption("-programdata"))
+                if (options.DataDir != null)
                 {
-                    programDataPath = options.GetOption("-programdata");
+                    programDataPath = options.DataDir;
                 }
                 else
                 {
@@ -171,9 +182,9 @@ namespace Jellyfin.Server
             string configDir = Environment.GetEnvironmentVariable("JELLYFIN_CONFIG_DIR");
             if (string.IsNullOrEmpty(configDir))
             {
-                if (options.ContainsOption("-configdir"))
+                if (options.ConfigDir != null)
                 {
-                    configDir = options.GetOption("-configdir");
+                    configDir = options.ConfigDir;
                 }
                 else
                 {
@@ -187,12 +198,37 @@ namespace Jellyfin.Server
                 Directory.CreateDirectory(configDir);
             }
 
+            string cacheDir = Environment.GetEnvironmentVariable("JELLYFIN_CACHE_DIR");
+            if (string.IsNullOrEmpty(cacheDir))
+            {
+                if (options.CacheDir != null)
+                {
+                    cacheDir = options.CacheDir;
+                }
+                else if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // $XDG_CACHE_HOME defines the base directory relative to which user specific non-essential data files should be stored.
+                    cacheDir = Environment.GetEnvironmentVariable("XDG_CACHE_HOME");
+                    // If $XDG_CACHE_HOME is either not set or empty, $HOME/.cache should be used.
+                    if (string.IsNullOrEmpty(cacheDir))
+                    {
+                        cacheDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".cache");
+                    }
+                    cacheDir = Path.Combine(cacheDir, "jellyfin");
+                }
+            }
+
+            if (cacheDir != null)
+            {
+                Directory.CreateDirectory(cacheDir);
+            }
+
             string logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
             if (string.IsNullOrEmpty(logDir))
             {
-                if (options.ContainsOption("-logdir"))
+                if (options.LogDir != null)
                 {
-                    logDir = options.GetOption("-logdir");
+                    logDir = options.LogDir;
                 }
                 else
                 {
@@ -208,10 +244,10 @@ namespace Jellyfin.Server
 
             string appPath = AppContext.BaseDirectory;
 
-            return new ServerApplicationPaths(programDataPath, appPath, appPath, logDir, configDir);
+            return new ServerApplicationPaths(programDataPath, appPath, appPath, logDir, configDir, cacheDir);
         }
 
-        private static async Task createLogger(IApplicationPaths appPaths)
+        private static async Task CreateLogger(IApplicationPaths appPaths)
         {
             try
             {
@@ -271,7 +307,7 @@ namespace Jellyfin.Server
             return new NullImageEncoder();
         }
 
-        private static MediaBrowser.Model.System.OperatingSystem getOperatingSystem()
+        private static MediaBrowser.Model.System.OperatingSystem GetOperatingSystem()
         {
             switch (Environment.OSVersion.Platform)
             {
@@ -315,11 +351,11 @@ namespace Jellyfin.Server
             Shutdown();
         }
 
-        private static void StartNewInstance(StartupOptions startupOptions)
+        private static void StartNewInstance(StartupOptions options)
         {
             _logger.LogInformation("Starting new instance");
 
-            string module = startupOptions.GetOption("-restartpath");
+            string module = options.RestartPath;
 
             if (string.IsNullOrWhiteSpace(module))
             {
@@ -328,9 +364,9 @@ namespace Jellyfin.Server
 
             string commandLineArgsString;
 
-            if (startupOptions.ContainsOption("-restartargs"))
+            if (options.RestartArgs != null)
             {
-                commandLineArgsString = startupOptions.GetOption("-restartargs") ?? string.Empty;
+                commandLineArgsString = options.RestartArgs ?? string.Empty;
             }
             else
             {

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
@@ -24,7 +23,6 @@ using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
@@ -48,7 +46,6 @@ namespace Emby.Server.Implementations.LiveTv
         private readonly ILibraryManager _libraryManager;
         private readonly ITaskManager _taskManager;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IProviderManager _providerManager;
         private readonly Func<IChannelManager> _channelManager;
 
         private readonly IDtoService _dtoService;
@@ -56,7 +53,7 @@ namespace Emby.Server.Implementations.LiveTv
 
         private readonly LiveTvDtoService _tvDtoService;
 
-        private ILiveTvService[] _services = new ILiveTvService[] { };
+        private ILiveTvService[] _services = Array.Empty<ILiveTvService>();
 
         private ITunerHost[] _tunerHosts = Array.Empty<ITunerHost>();
         private IListingsProvider[] _listingProviders = Array.Empty<IListingsProvider>();
@@ -85,7 +82,6 @@ namespace Emby.Server.Implementations.LiveTv
             ITaskManager taskManager,
             ILocalizationManager localization,
             IJsonSerializer jsonSerializer,
-            IProviderManager providerManager,
             IFileSystem fileSystem,
             Func<IChannelManager> channelManager)
         {
@@ -97,7 +93,6 @@ namespace Emby.Server.Implementations.LiveTv
             _taskManager = taskManager;
             _localization = localization;
             _jsonSerializer = jsonSerializer;
-            _providerManager = providerManager;
             _fileSystem = fileSystem;
             _dtoService = dtoService;
             _userDataManager = userDataManager;
@@ -132,8 +127,6 @@ namespace Emby.Server.Implementations.LiveTv
 
             foreach (var service in _services)
             {
-                service.DataSourceChanged += service_DataSourceChanged;
-
                 if (service is EmbyTV.EmbyTV embyTv)
                 {
                     embyTv.TimerCreated += EmbyTv_TimerCreated;
@@ -187,14 +180,6 @@ namespace Emby.Server.Implementations.LiveTv
         public Task<List<TunerHostInfo>> DiscoverTuners(bool newDevicesOnly, CancellationToken cancellationToken)
         {
             return EmbyTV.EmbyTV.Current.DiscoverTuners(newDevicesOnly, cancellationToken);
-        }
-
-        void service_DataSourceChanged(object sender, EventArgs e)
-        {
-            if (!_isDisposed)
-            {
-                _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
-            }
         }
 
         public QueryResult<BaseItem> GetInternalChannels(LiveTvChannelQuery query, DtoOptions dtoOptions, CancellationToken cancellationToken)
@@ -2158,17 +2143,28 @@ namespace Emby.Server.Implementations.LiveTv
             Dispose(true);
         }
 
-        private bool _isDisposed = false;
+        private bool _disposed = false;
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             if (dispose)
             {
-                _isDisposed = true;
+                // TODO: Dispose stuff
             }
+
+            _services = null;
+            _listingProviders = null;
+            _tunerHosts = null;
+
+            _disposed = true;
         }
 
         private LiveTvServiceInfo[] GetServiceInfos()
@@ -2469,7 +2465,8 @@ namespace Emby.Server.Implementations.LiveTv
                 .Where(i => i != null)
                 .Where(i => i.IsVisibleStandalone(user))
                 .SelectMany(i => _libraryManager.GetCollectionFolders(i))
-                .DistinctBy(i => i.Id)
+                .GroupBy(x => x.Id)
+                .Select(x => x.First())
                 .OrderBy(i => i.SortName)
                 .ToList();
 

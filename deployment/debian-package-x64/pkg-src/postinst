@@ -13,6 +13,7 @@ fi
 PROGRAMDATA=${JELLYFIN_DATA_DIRECTORY-/var/lib/$NAME}
 CONFIGDATA=${JELLYFIN_CONFIG_DIRECTORY-/etc/$NAME}
 LOGDATA=${JELLYFIN_LOG_DIRECTORY-/var/log/$NAME}
+CACHEDATA=${JELLYFIN_CACHE_DIRECTORY-/var/cache/$NAME}
 
 case "$1" in
   configure)
@@ -37,10 +38,14 @@ case "$1" in
     if [[ ! -d $LOGDATA ]]; then
       mkdir $LOGDATA
     fi
+    # ensure $CACHEDATA exists
+    if [[ ! -d $CACHEDATA ]]; then
+      mkdir $CACHEDATA
+    fi
     # Ensure permissions are correct on all config directories
-    chown -R jellyfin:jellyfin $PROGRAMDATA
-    chown -R jellyfin:jellyfin $CONFIGDATA
-    chown -R jellyfin:jellyfin $LOGDATA
+    chown -R jellyfin $PROGRAMDATA $CONFIGDATA $LOGDATA $CACHEDATA
+    chgrp adm $PROGRAMDATA $CONFIGDATA $LOGDATA $CACHEDATA
+    chmod 0750 $PROGRAMDATA $CONFIGDATA $LOGDATA $CACHEDATA
 
     chmod +x /usr/lib/jellyfin/restart.sh > /dev/null 2>&1 || true
 

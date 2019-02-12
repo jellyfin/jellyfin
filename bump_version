@@ -68,8 +68,7 @@ new_version="$1"
 # Parse the version from the AssemblyVersion
 old_version="$(
     grep "AssemblyVersion" ${shared_version_file} \
-        | sed -E 's/\[assembly: ?AssemblyVersion\("([0-9\.]+)"\)\]/\1/' \
-        | sed -E 's/.0$//'
+        | sed -E 's/\[assembly: ?AssemblyVersion\("([0-9\.]+)"\)\]/\1/'
 )"
 
 # Set the shared version to the specified new_version

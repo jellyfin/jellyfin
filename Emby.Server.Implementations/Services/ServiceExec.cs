@@ -23,8 +23,6 @@ namespace Emby.Server.Implementations.Services
             "POLL",  "SUBSCRIBE", "UNSUBSCRIBE"
         };
 
-        public static HashSet<string> AllVerbsSet = new HashSet<string>(AllVerbs);
-
         public static List<MethodInfo> GetActions(this Type serviceType)
         {
             var list = new List<MethodInfo>();
@@ -98,7 +96,7 @@ namespace Emby.Server.Implementations.Services
                 return Task.FromResult(response);
             }
 
-            var expectedMethodName = actionName.Substring(0, 1) + actionName.Substring(1).ToLower();
+            var expectedMethodName = actionName.Substring(0, 1) + actionName.Substring(1).ToLowerInvariant();
             throw new NotImplementedException(string.Format("Could not find method named {1}({0}) or Any({0}) on Service {2}", requestDto.GetType().GetMethodName(), expectedMethodName, serviceType.GetMethodName()));
         }
 

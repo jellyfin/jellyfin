@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Emby.Naming\Emby.Naming.csproj" />
@@ -25,8 +25,7 @@
     <PackageReference Include="ServiceStack.Text.Core" Version="5.4.0" />
     <PackageReference Include="sharpcompress" Version="0.22.0" />
     <PackageReference Include="SimpleInjector" Version="4.4.2" />
-    <PackageReference Include="SQLitePCL.pretty.core" Version="1.1.8" />
-    <PackageReference Include="SQLitePCLRaw.core" Version="1.1.11" />
+    <PackageReference Include="SQLitePCL.pretty.netstandard" Version="1.0.0" />
     <PackageReference Include="UTF.Unknown" Version="1.0.0-beta1" />
   </ItemGroup>
 
@@ -43,7 +42,7 @@
     <EmbeddedResource Include="Localization\iso6392.txt" />
     <EmbeddedResource Include="Localization\countries.json" />
     <EmbeddedResource Include="Localization\Core\*.json" />
-    <EmbeddedResource Include="Localization\Ratings\*.txt" />
+    <EmbeddedResource Include="Localization\Ratings\*.csv" />
   </ItemGroup>
 
 </Project>

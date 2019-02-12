@@ -11,7 +11,7 @@ using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
 using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
 using IResponse = MediaBrowser.Model.Services.IResponse;
 
-namespace Jellyfin.SocketSharp
+namespace Jellyfin.Server.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {
@@ -29,12 +29,24 @@ namespace Jellyfin.SocketSharp
 
         private static string GetHandlerPathIfAny(string listenerUrl)
         {
-            if (listenerUrl == null) return null;
+            if (listenerUrl == null)
+            {
+                return null;
+            }
+
             var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
-            if (pos == -1) return null;
+            if (pos == -1)
+            {
+                return null;
+            }
+
             var startHostUrl = listenerUrl.Substring(pos + "://".Length);
             var endPos = startHostUrl.IndexOf('/');
-            if (endPos == -1) return null;
+            if (endPos == -1)
+            {
+                return null;
+            }
+
             var endHostUrl = startHostUrl.Substring(endPos + 1);
             return string.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
         }
@@ -68,15 +80,13 @@ namespace Jellyfin.SocketSharp
         private string remoteIp;
         public string RemoteIp =>
             remoteIp ??
-            (remoteIp = (CheckBadChars(XForwardedFor)) ??
-                        (NormalizeIp(CheckBadChars(XRealIp)) ??
+            (remoteIp = CheckBadChars(XForwardedFor) ??
+                        NormalizeIp(CheckBadChars(XRealIp) ??
                          (request.RemoteEndPoint != null ? NormalizeIp(request.RemoteEndPoint.Address.ToString()) : null)));
 
         private static readonly char[] HttpTrimCharacters = new char[] { (char)0x09, (char)0xA, (char)0xB, (char)0xC, (char)0xD, (char)0x20 };
 
-        //
         // CheckBadChars - throws on invalid chars to be not found in header name/value
-        //
         internal static string CheckBadChars(string name)
         {
             if (name == null || name.Length == 0)
@@ -85,11 +95,11 @@ namespace Jellyfin.SocketSharp
             }
 
             // VALUE check
-            //Trim spaces from both ends
+            // Trim spaces from both ends
             name = name.Trim(HttpTrimCharacters);
 
-            //First, check for correctly formed multi-line value
-            //Second, check for absenece of CTL characters
+            // First, check for correctly formed multi-line value
+            // Second, check for absenece of CTL characters
             int crlf = 0;
             for (int i = 0; i < name.Length; ++i)
             {
@@ -186,9 +196,12 @@ namespace Jellyfin.SocketSharp
         public static string GetResponseContentType(IRequest httpReq)
         {
             var specifiedContentType = GetQueryStringContentType(httpReq);
-            if (!string.IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
+            if (!string.IsNullOrEmpty(specifiedContentType))
+            {
+                return specifiedContentType;
+            }
 
-            var serverDefaultContentType = "application/json";
+            const string serverDefaultContentType = "application/json";
 
             var acceptContentTypes = httpReq.AcceptTypes;
             string defaultContentType = null;
@@ -198,7 +211,7 @@ namespace Jellyfin.SocketSharp
             }
 
             var acceptsAnything = false;
-            var hasDefaultContentType = !string.IsNullOrEmpty(defaultContentType);
+            var hasDefaultContentType = defaultContentType != null;
             if (acceptContentTypes != null)
             {
                 foreach (var acceptsType in acceptContentTypes)
@@ -210,9 +223,13 @@ namespace Jellyfin.SocketSharp
                 if (acceptsAnything)
                 {
                     if (hasDefaultContentType)
+                    {
                         return defaultContentType;
-                    if (serverDefaultContentType != null)
+                    }
+                    else if (serverDefaultContentType != null)
+                    {
                         return serverDefaultContentType;
+                    }
                 }
             }
 
@@ -221,7 +238,7 @@ namespace Jellyfin.SocketSharp
                 return Soap11;
             }
 
-            //We could also send a '406 Not Acceptable', but this is allowed also
+            // We could also send a '406 Not Acceptable', but this is allowed also
             return serverDefaultContentType;
         }
 
@@ -229,11 +246,19 @@ namespace Jellyfin.SocketSharp
 
         public static bool HasAnyOfContentTypes(IRequest request, params string[] contentTypes)
         {
-            if (contentTypes == null || request.ContentType == null) return false;
+            if (contentTypes == null || request.ContentType == null)
+            {
+                return false;
+            }
+
             foreach (var contentType in contentTypes)
             {
-                if (IsContentType(request, contentType)) return true;
+                if (IsContentType(request, contentType))
+                {
+                    return true;
+                }
             }
+
             return false;
         }
 
@@ -253,10 +278,12 @@ namespace Jellyfin.SocketSharp
                 {
                     return null;
                 }
+
                 if (pi[0] == '/')
                 {
                     pi = pi.Substring(1);
                 }
+
                 format = LeftPart(pi, '/');
                 if (format.Length > formatMaxLength)
                 {
@@ -264,12 +291,12 @@ namespace Jellyfin.SocketSharp
                 }
             }
 
-            format = LeftPart(format, '.').ToLower();
+            format = LeftPart(format, '.');
             if (format.Contains("json", StringComparison.OrdinalIgnoreCase))
             {
                 return "application/json";
             }
-            if (format.Contains("xml", StringComparison.OrdinalIgnoreCase))
+            else if (format.Contains("xml", StringComparison.OrdinalIgnoreCase))
             {
                 return "application/xml";
             }
@@ -283,10 +310,9 @@ namespace Jellyfin.SocketSharp
             {
                 return null;
             }
-            var pos = strVal.IndexOf(needle);
-            return pos == -1
-                ? strVal
-                : strVal.Substring(0, pos);
+
+            var pos = strVal.IndexOf(needle, StringComparison.Ordinal);
+            return pos == -1 ? strVal : strVal.Substring(0, pos);
         }
 
         public static string HandlerFactoryPath;
@@ -329,7 +355,7 @@ namespace Jellyfin.SocketSharp
                 return pathInfo;
             }
 
-            //Wildcard mode relies on this to work out the handlerPath
+            // Wildcard mode relies on this to work out the handlerPath
             pathInfo = ResolvePathInfoFromMappedPath(fullPath, appPath);
             if (!string.IsNullOrEmpty(pathInfo))
             {
@@ -371,6 +397,7 @@ namespace Jellyfin.SocketSharp
                     }
                 }
             }
+
             if (!pathRootFound)
             {
                 return null;
@@ -433,6 +460,7 @@ namespace Jellyfin.SocketSharp
             {
                 return null;
             }
+
             try
             {
                 return Encoding.GetEncoding(param);
@@ -480,10 +508,10 @@ namespace Jellyfin.SocketSharp
 
         public static string NormalizePathInfo(string pathInfo, string handlerPath)
         {
-            if (handlerPath != null && pathInfo.TrimStart('/').StartsWith(
-                handlerPath, StringComparison.OrdinalIgnoreCase))
+            var trimmed = pathInfo.TrimStart('/');
+            if (handlerPath != null && trimmed.StartsWith(handlerPath, StringComparison.OrdinalIgnoreCase))
             {
-                return pathInfo.TrimStart('/').Substring(handlerPath.Length);
+                return trimmed.Substring(handlerPath.Length);
             }
 
             return pathInfo;

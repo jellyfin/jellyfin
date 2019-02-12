@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Plugins
 {
@@ -10,7 +11,7 @@ namespace MediaBrowser.Controller.Plugins
         /// <summary>
         /// Runs this instance.
         /// </summary>
-        void Run();
+        Task RunAsync();
     }
 
     public interface IRunBeforeStartup

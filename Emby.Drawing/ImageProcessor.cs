@@ -83,8 +83,8 @@ namespace Emby.Drawing
             }
         }
 
-        public string[] SupportedInputFormats =>
-            new string[]
+        public IReadOnlyCollection<string> SupportedInputFormats =>
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "tiff",
                 "tif",
@@ -137,14 +137,14 @@ namespace Emby.Drawing
             }
         }
 
-        public ImageFormat[] GetSupportedImageOutputFormats()
-        {
-            return _imageEncoder.SupportedOutputFormats;
-        }
+        public IReadOnlyCollection<ImageFormat> GetSupportedImageOutputFormats()
+            => _imageEncoder.SupportedOutputFormats;
 
-        private static readonly string[] TransparentImageTypes = new string[] { ".png", ".webp", ".gif" };
+        private static readonly HashSet<string> TransparentImageTypes
+            = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif" };
+
         public bool SupportsTransparency(string path)
-            => TransparentImageTypes.Contains(Path.GetExtension(path).ToLower());
+            => TransparentImageTypes.Contains(Path.GetExtension(path));
 
         public async Task<(string path, string mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
         {
@@ -261,15 +261,6 @@ namespace Emby.Drawing
 
                 return (cacheFilePath, GetMimeType(outputFormat, cacheFilePath), _fileSystem.GetLastWriteTimeUtc(cacheFilePath));
             }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                // Decoder failed to decode it
-#if DEBUG
-                _logger.LogError(ex, "Error encoding image");
-#endif
-                // Just spit out the original file if all the options are default
-                return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
-            }
             catch (Exception ex)
             {
                 // If it fails for whatever reason, return the original image
@@ -374,13 +365,13 @@ namespace Emby.Drawing
 
             filename += "v=" + Version;
 
-            return GetCachePath(ResizedImageCachePath, filename, "." + format.ToString().ToLower());
+            return GetCachePath(ResizedImageCachePath, filename, "." + format.ToString().ToLowerInvariant());
         }
 
-        public ImageDimensions GetImageSize(BaseItem item, ItemImageInfo info)
-            => GetImageSize(item, info, true);
+        public ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info)
+            => GetImageDimensions(item, info, true);
 
-        public ImageDimensions GetImageSize(BaseItem item, ItemImageInfo info, bool updateItem)
+        public ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info, bool updateItem)
         {
             int width = info.Width;
             int height = info.Height;
@@ -393,7 +384,7 @@ namespace Emby.Drawing
             string path = info.Path;
             _logger.LogInformation("Getting image size for item {ItemType} {Path}", item.GetType().Name, path);
 
-            ImageDimensions size = GetImageSize(path);
+            ImageDimensions size = GetImageDimensions(path);
             info.Width = size.Width;
             info.Height = size.Height;
 
@@ -408,7 +399,7 @@ namespace Emby.Drawing
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
-        public ImageDimensions GetImageSize(string path)
+        public ImageDimensions GetImageDimensions(string path)
             => _imageEncoder.GetImageSize(path);
 
         /// <summary>
@@ -481,7 +472,7 @@ namespace Emby.Drawing
                 return (originalImagePath, dateModified);
             }
 
-            if (!_imageEncoder.SupportedInputFormats.Contains(inputFormat, StringComparer.OrdinalIgnoreCase))
+            if (!_imageEncoder.SupportedInputFormats.Contains(inputFormat))
             {
                 try
                 {

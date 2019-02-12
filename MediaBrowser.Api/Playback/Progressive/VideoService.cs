@@ -68,7 +68,33 @@ namespace MediaBrowser.Api.Playback.Progressive
     //[Authenticated]
     public class VideoService : BaseProgressiveStreamingService
     {
-        public VideoService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext, IImageProcessor imageProcessor, IEnvironmentInfo environmentInfo) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, jsonSerializer, authorizationContext, imageProcessor, environmentInfo)
+        public VideoService(
+            IServerConfigurationManager serverConfig,
+            IUserManager userManager,
+            ILibraryManager libraryManager,
+            IIsoManager isoManager,
+            IMediaEncoder mediaEncoder,
+            IFileSystem fileSystem,
+            IDlnaManager dlnaManager,
+            ISubtitleEncoder subtitleEncoder,
+            IDeviceManager deviceManager,
+            IMediaSourceManager mediaSourceManager,
+            IJsonSerializer jsonSerializer,
+            IAuthorizationContext authorizationContext,
+            IEnvironmentInfo environmentInfo)
+            : base(serverConfig,
+                userManager,
+                libraryManager,
+                isoManager,
+                mediaEncoder,
+                fileSystem,
+                dlnaManager,
+                subtitleEncoder,
+                deviceManager,
+                mediaSourceManager,
+                jsonSerializer,
+                authorizationContext,
+                environmentInfo)
         {
         }
 

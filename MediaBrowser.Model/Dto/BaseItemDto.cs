@@ -116,15 +116,7 @@ namespace MediaBrowser.Model.Dto
         /// <value>The critic rating.</value>
         public float? CriticRating { get; set; }
 
-        /// <summary>
-        /// Gets or sets the game system.
-        /// </summary>
-        /// <value>The game system.</value>
-        public string GameSystem { get; set; }
-
         public string[] ProductionLocations { get; set; }
-
-        public string[] MultiPartGameFiles { get; set; }
 
         /// <summary>
         /// Gets or sets the path.
@@ -603,11 +595,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The episode count.</value>
         public int? EpisodeCount { get; set; }
-        /// <summary>
-        /// Gets or sets the game count.
-        /// </summary>
-        /// <value>The game count.</value>
-        public int? GameCount { get; set; }
         /// <summary>
         /// Gets or sets the song count.
         /// </summary>

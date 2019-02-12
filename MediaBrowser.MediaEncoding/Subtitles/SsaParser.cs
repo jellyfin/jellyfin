@@ -44,7 +44,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     if (!eventsStarted)
                         header.AppendLine(line);
 
-                    if (line.Trim().ToLower() == "[events]")
+                    if (line.Trim().ToLowerInvariant() == "[events]")
                     {
                         eventsStarted = true;
                     }
@@ -54,25 +54,25 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
                     else if (eventsStarted && line.Trim().Length > 0)
                     {
-                        string s = line.Trim().ToLower();
+                        string s = line.Trim().ToLowerInvariant();
                         if (s.StartsWith("format:"))
                         {
                             if (line.Length > 10)
                             {
-                                format = line.ToLower().Substring(8).Split(',');
+                                format = line.ToLowerInvariant().Substring(8).Split(',');
                                 for (int i = 0; i < format.Length; i++)
                                 {
-                                    if (format[i].Trim().ToLower() == "layer")
+                                    if (format[i].Trim().ToLowerInvariant() == "layer")
                                         indexLayer = i;
-                                    else if (format[i].Trim().ToLower() == "start")
+                                    else if (format[i].Trim().ToLowerInvariant() == "start")
                                         indexStart = i;
-                                    else if (format[i].Trim().ToLower() == "end")
+                                    else if (format[i].Trim().ToLowerInvariant() == "end")
                                         indexEnd = i;
-                                    else if (format[i].Trim().ToLower() == "text")
+                                    else if (format[i].Trim().ToLowerInvariant() == "text")
                                         indexText = i;
-                                    else if (format[i].Trim().ToLower() == "effect")
+                                    else if (format[i].Trim().ToLowerInvariant() == "effect")
                                         indexEffect = i;
-                                    else if (format[i].Trim().ToLower() == "style")
+                                    else if (format[i].Trim().ToLowerInvariant() == "style")
                                         indexStyle = i;
                                 }
                             }
@@ -222,7 +222,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                         // switch to rrggbb from bbggrr
                         color = "#" + color.Remove(color.Length - 6) + color.Substring(color.Length - 2, 2) + color.Substring(color.Length - 4, 2) + color.Substring(color.Length - 6, 2);
-                        color = color.ToLower();
+                        color = color.ToLowerInvariant();
 
                         text = text.Remove(start, end - start + 1);
                         if (italic)
@@ -252,7 +252,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                         // switch to rrggbb from bbggrr
                         color = "#" + color.Remove(color.Length - 6) + color.Substring(color.Length - 2, 2) + color.Substring(color.Length - 4, 2) + color.Substring(color.Length - 6, 2);
-                        color = color.ToLower();
+                        color = color.ToLowerInvariant();
 
                         text = text.Remove(start, end - start + 1);
                         if (italic)
@@ -367,7 +367,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         color = color.PadLeft(6, '0');
                         // switch to rrggbb from bbggrr
                         color = "#" + color.Remove(color.Length - 6) + color.Substring(color.Length - 2, 2) + color.Substring(color.Length - 4, 2) + color.Substring(color.Length - 6, 2);
-                        color = color.ToLower();
+                        color = color.ToLowerInvariant();
 
                         extraTags += " color=\"" + color + "\"";
                     }

@@ -216,40 +216,28 @@ namespace Emby.Server.Implementations.Services
             {
                 var responses = new Dictionary<string, SwaggerResponse>
                 {
+                    { "200", new SwaggerResponse { description = "OK" } }
                 };
 
-                responses["200"] = new SwaggerResponse
+                var apiKeySecurity = new Dictionary<string, string[]>
                 {
-                    description = "OK"
+                    { "api_key",  Array.Empty<string>() }
                 };
 
-                var security = new List<Dictionary<string, string[]>>();
-
-                var apiKeySecurity = new Dictionary<string, string[]>();
-                apiKeySecurity["api_key"] = Array.Empty<string>();
-
-                security.Add(apiKeySecurity);
-
-                result[verb.ToLower()] = new SwaggerMethod
+                result[verb.ToLowerInvariant()] = new SwaggerMethod
                 {
                     summary = info.Summary,
                     description = info.Description,
-                    produces = new[]
-                    {
-                        "application/json"
-                    },
-                    consumes = new[]
-                    {
-                        "application/json"
-                    },
+                    produces = new[] { "application/json" },
+                    consumes = new[] { "application/json" },
                     operationId = info.RequestType.Name,
                     tags = Array.Empty<string>(),
 
-                    parameters = new SwaggerParam[] { },
+                    parameters = Array.Empty<SwaggerParam>(),
 
                     responses = responses,
 
-                    security = security.ToArray()
+                    security = new [] { apiKeySecurity }
                 };
             }
 

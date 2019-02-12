@@ -308,9 +308,6 @@ namespace Emby.Server.Implementations.Library
                             mediaTypes.Add(MediaType.Book);
                             mediaTypes.Add(MediaType.Audio);
                             break;
-                        case CollectionType.Games:
-                            mediaTypes.Add(MediaType.Game);
-                            break;
                         case CollectionType.Music:
                             mediaTypes.Add(MediaType.Audio);
                             break;
@@ -336,7 +333,6 @@ namespace Emby.Server.Implementations.Library
                 typeof(Person).Name,
                 typeof(Studio).Name,
                 typeof(Year).Name,
-                typeof(GameGenre).Name,
                 typeof(MusicGenre).Name,
                 typeof(Genre).Name
 

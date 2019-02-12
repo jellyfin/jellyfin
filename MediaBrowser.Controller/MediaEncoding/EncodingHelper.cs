@@ -136,7 +136,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return "libtheora";
                 }
 
-                return codec.ToLower();
+                return codec.ToLowerInvariant();
             }
 
             return "copy";
@@ -405,7 +405,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return "libopus";
             }
 
-            return codec.ToLower();
+            return codec.ToLowerInvariant();
         }
 
         /// <summary>
@@ -762,7 +762,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // vaapi does not support Baseline profile, force Constrained Baseline in this case,
             // which is compatible (and ugly)
             if (string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase) &&
-                profile != null && profile.ToLower().Contains("baseline"))
+                profile != null && profile.ToLowerInvariant().Contains("baseline"))
             {
                     profile = "constrained_baseline";
             }
@@ -2175,7 +2175,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (string.Equals(encodingOptions.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
                 {
-                    switch (videoStream.Codec.ToLower())
+                    switch (videoStream.Codec.ToLowerInvariant())
                     {
                         case "avc":
                         case "h264":
@@ -2215,7 +2215,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 else if (string.Equals(encodingOptions.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase))
                 {
-                    switch (videoStream.Codec.ToLower())
+                    switch (videoStream.Codec.ToLowerInvariant())
                     {
                         case "avc":
                         case "h264":
@@ -2254,7 +2254,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 else if (string.Equals(encodingOptions.HardwareAccelerationType, "mediacodec", StringComparison.OrdinalIgnoreCase))
                 {
-                    switch (videoStream.Codec.ToLower())
+                    switch (videoStream.Codec.ToLowerInvariant())
                     {
                         case "avc":
                         case "h264":
@@ -2299,7 +2299,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 else if (string.Equals(encodingOptions.HardwareAccelerationType, "omx", StringComparison.OrdinalIgnoreCase))
                 {
-                    switch (videoStream.Codec.ToLower())
+                    switch (videoStream.Codec.ToLowerInvariant())
                     {
                         case "avc":
                         case "h264":
@@ -2324,7 +2324,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         return "-hwaccel dxva2";
                     }
 
-                    switch (videoStream.Codec.ToLower())
+                    switch (videoStream.Codec.ToLowerInvariant())
                     {
                         case "avc":
                         case "h264":

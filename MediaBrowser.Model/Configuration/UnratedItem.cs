@@ -6,7 +6,6 @@ namespace MediaBrowser.Model.Configuration
         Trailer,
         Series,
         Music,
-        Game,
         Book,
         LiveTvChannel,
         LiveTvProgram,

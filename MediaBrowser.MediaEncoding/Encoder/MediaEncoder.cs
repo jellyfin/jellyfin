@@ -878,49 +878,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        public async Task<string> EncodeAudio(EncodingJobOptions options,
-            IProgress<double> progress,
-            CancellationToken cancellationToken)
-        {
-            var job = await new AudioEncoder(this,
-                _logger,
-                ConfigurationManager,
-                FileSystem,
-                IsoManager,
-                LibraryManager,
-                SessionManager,
-                SubtitleEncoder(),
-                MediaSourceManager(),
-                _processFactory)
-                .Start(options, progress, cancellationToken).ConfigureAwait(false);
-
-            await job.TaskCompletionSource.Task.ConfigureAwait(false);
-
-            return job.OutputFilePath;
-        }
-
-        public async Task<string> EncodeVideo(EncodingJobOptions options,
-            IProgress<double> progress,
-            CancellationToken cancellationToken)
-        {
-            _logger.LogError("EncodeVideo");
-            var job = await new VideoEncoder(this,
-                _logger,
-                ConfigurationManager,
-                FileSystem,
-                IsoManager,
-                LibraryManager,
-                SessionManager,
-                SubtitleEncoder(),
-                MediaSourceManager(),
-                _processFactory)
-                .Start(options, progress, cancellationToken).ConfigureAwait(false);
-
-            await job.TaskCompletionSource.Task.ConfigureAwait(false);
-
-            return job.OutputFilePath;
-        }
-
         private void StartProcess(ProcessWrapper process)
         {
             process.Process.Start();

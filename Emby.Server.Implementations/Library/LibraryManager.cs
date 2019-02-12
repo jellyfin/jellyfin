@@ -512,7 +512,7 @@ namespace Emby.Server.Implementations.Library
 
             if (forceCaseInsensitive || !ConfigurationManager.Configuration.EnableCaseSensitiveItemIds)
             {
-                key = key.ToLower();
+                key = key.ToLowerInvariant();
             }
 
             key = type.FullName + key;
@@ -869,11 +869,6 @@ namespace Emby.Server.Implementations.Library
             return GetItemByNameId<MusicGenre>(MusicGenre.GetPath, name);
         }
 
-        public Guid GetGameGenreId(string name)
-        {
-            return GetItemByNameId<GameGenre>(GameGenre.GetPath, name);
-        }
-
         /// <summary>
         /// Gets a Genre
         /// </summary>
@@ -892,16 +887,6 @@ namespace Emby.Server.Implementations.Library
         public MusicGenre GetMusicGenre(string name)
         {
             return CreateItemByName<MusicGenre>(MusicGenre.GetPath, name, new DtoOptions(true));
-        }
-
-        /// <summary>
-        /// Gets the game genre.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>Task{GameGenre}.</returns>
-        public GameGenre GetGameGenre(string name)
-        {
-            return CreateItemByName<GameGenre>(GameGenre.GetPath, name, new DtoOptions(true));
         }
 
         /// <summary>
@@ -1368,17 +1353,6 @@ namespace Emby.Server.Implementations.Library
 
             SetTopParentOrAncestorIds(query);
             return ItemRepository.GetGenres(query);
-        }
-
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetGameGenres(InternalItemsQuery query)
-        {
-            if (query.User != null)
-            {
-                AddUserToQuery(query, query.User);
-            }
-
-            SetTopParentOrAncestorIds(query);
-            return ItemRepository.GetGameGenres(query);
         }
 
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query)

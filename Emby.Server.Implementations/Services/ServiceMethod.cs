@@ -11,7 +11,7 @@ namespace Emby.Server.Implementations.Services
 
         public static string Key(Type serviceType, string method, string requestDtoName)
         {
-            return serviceType.FullName + " " + method.ToUpper() + " " + requestDtoName;
+            return serviceType.FullName + " " + method.ToUpperInvariant() + " " + requestDtoName;
         }
     }
 }

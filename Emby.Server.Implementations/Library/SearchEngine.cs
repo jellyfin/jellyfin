@@ -99,14 +99,12 @@ namespace Emby.Server.Implementations.Library
                 if (!query.IncludeMedia)
                 {
                     AddIfMissing(includeItemTypes, typeof(Genre).Name);
-                    AddIfMissing(includeItemTypes, typeof(GameGenre).Name);
                     AddIfMissing(includeItemTypes, typeof(MusicGenre).Name);
                 }
             }
             else
             {
                 AddIfMissing(excludeItemTypes, typeof(Genre).Name);
-                AddIfMissing(excludeItemTypes, typeof(GameGenre).Name);
                 AddIfMissing(excludeItemTypes, typeof(MusicGenre).Name);
             }
 

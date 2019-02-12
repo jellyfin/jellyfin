@@ -247,14 +247,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async Task<object> Post(MarkPlayedItem request)
+        public object Post(MarkPlayedItem request)
         {
-            var result = await MarkPlayed(request).ConfigureAwait(false);
+            var result = MarkPlayed(request);
 
             return ToOptimizedResult(result);
         }
 
-        private async Task<UserItemDataDto> MarkPlayed(MarkPlayedItem request)
+        private UserItemDataDto MarkPlayed(MarkPlayedItem request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -366,9 +366,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Delete(OnPlaybackStopped request)
+        public Task Delete(OnPlaybackStopped request)
         {
-            Post(new ReportPlaybackStopped
+            return Post(new ReportPlaybackStopped
             {
                 ItemId = new Guid(request.Id),
                 PositionTicks = request.PositionTicks,
@@ -379,20 +379,18 @@ namespace MediaBrowser.Api.UserLibrary
             });
         }
 
-        public void Post(ReportPlaybackStopped request)
+        public async Task Post(ReportPlaybackStopped request)
         {
             Logger.LogDebug("ReportPlaybackStopped PlaySessionId: {0}", request.PlaySessionId ?? string.Empty);
 
             if (!string.IsNullOrWhiteSpace(request.PlaySessionId))
             {
-                ApiEntryPoint.Instance.KillTranscodingJobs(_authContext.GetAuthorizationInfo(Request).DeviceId, request.PlaySessionId, s => true);
+                await ApiEntryPoint.Instance.KillTranscodingJobs(_authContext.GetAuthorizationInfo(Request).DeviceId, request.PlaySessionId, s => true);
             }
 
             request.SessionId = GetSession(_sessionContext).Id;
 
-            var task = _sessionManager.OnPlaybackStopped(request);
-
-            Task.WaitAll(task);
+            await _sessionManager.OnPlaybackStopped(request);
         }
 
         /// <summary>
@@ -403,10 +401,10 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var task = MarkUnplayed(request);
 
-            return ToOptimizedResult(task.Result);
+            return ToOptimizedResult(task);
         }
 
-        private async Task<UserItemDataDto> MarkUnplayed(MarkUnplayedItem request)
+        private UserItemDataDto MarkUnplayed(MarkUnplayedItem request)
         {
             var user = _userManager.GetUserById(request.UserId);
 

@@ -335,7 +335,11 @@ namespace MediaBrowser.Controller.Entities
                 .OfType<Folder>()
                 .ToList();
 
-            return PhysicalLocations.Where(i => !FileSystem.AreEqual(i, Path)).SelectMany(i => GetPhysicalParents(i, rootChildren)).DistinctBy(i => i.Id);
+            return PhysicalLocations
+                    .Where(i => !FileSystem.AreEqual(i, Path))
+                    .SelectMany(i => GetPhysicalParents(i, rootChildren))
+                    .GroupBy(x => x.Id)
+                    .Select(x => x.First());
         }
 
         private IEnumerable<Folder> GetPhysicalParents(string path, List<Folder> rootChildren)

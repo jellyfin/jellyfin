@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.Drawing;
@@ -85,7 +86,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
             return false;
         }
 
-        private static readonly string[] IgnoreFiles =
+        private static readonly HashSet<string> IgnoreFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "folder",
             "thumb",
@@ -102,7 +103,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             var filename = Path.GetFileNameWithoutExtension(path) ?? string.Empty;
 
-            if (IgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase))
+            if (IgnoreFiles.Contains(filename))
             {
                 return false;
             }
@@ -112,7 +113,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 return false;
             }
 
-            return imageProcessor.SupportedInputFormats.Contains((Path.GetExtension(path) ?? string.Empty).TrimStart('.'), StringComparer.OrdinalIgnoreCase);
+            return imageProcessor.SupportedInputFormats.Contains((Path.GetExtension(path) ?? string.Empty).TrimStart('.'));
         }
 
     }

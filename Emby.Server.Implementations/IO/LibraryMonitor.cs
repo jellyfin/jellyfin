@@ -11,7 +11,6 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
@@ -35,7 +34,7 @@ namespace Emby.Server.Implementations.IO
         /// <summary>
         /// Any file name ending in any of these will be ignored by the watchers
         /// </summary>
-        private readonly string[] _alwaysIgnoreFiles = new string[]
+        private readonly HashSet<string> _alwaysIgnoreFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "small.jpg",
             "albumart.jpg",
@@ -54,7 +53,7 @@ namespace Emby.Server.Implementations.IO
             ".actors"
         };
 
-        private readonly string[] _alwaysIgnoreExtensions = new string[]
+        private readonly HashSet<string> _alwaysIgnoreExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             // thumbs.db
             ".db",
@@ -134,7 +133,6 @@ namespace Emby.Server.Implementations.IO
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
         private readonly IFileSystem _fileSystem;
-        private readonly ITimerFactory _timerFactory;
         private readonly IEnvironmentInfo _environmentInfo;
 
         /// <summary>
@@ -146,7 +144,6 @@ namespace Emby.Server.Implementations.IO
             ILibraryManager libraryManager,
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
-            ITimerFactory timerFactory,
             IEnvironmentInfo environmentInfo)
         {
             if (taskManager == null)
@@ -159,7 +156,6 @@ namespace Emby.Server.Implementations.IO
             Logger = loggerFactory.CreateLogger(GetType().Name);
             ConfigurationManager = configurationManager;
             _fileSystem = fileSystem;
-            _timerFactory = timerFactory;
             _environmentInfo = environmentInfo;
         }
 
@@ -460,8 +456,8 @@ namespace Emby.Server.Implementations.IO
             var filename = Path.GetFileName(path);
 
             var monitorPath = !string.IsNullOrEmpty(filename) &&
-                !_alwaysIgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase) &&
-                !_alwaysIgnoreExtensions.Contains(Path.GetExtension(path) ?? string.Empty, StringComparer.OrdinalIgnoreCase) &&
+                !_alwaysIgnoreFiles.Contains(filename) &&
+                !_alwaysIgnoreExtensions.Contains(Path.GetExtension(path)) &&
                 _alwaysIgnoreSubstrings.All(i => path.IndexOf(i, StringComparison.OrdinalIgnoreCase) == -1);
 
             // Ignore certain files
@@ -545,7 +541,7 @@ namespace Emby.Server.Implementations.IO
                     }
                 }
 
-                var newRefresher = new FileRefresher(path, _fileSystem, ConfigurationManager, LibraryManager, TaskManager, Logger, _timerFactory, _environmentInfo, LibraryManager);
+                var newRefresher = new FileRefresher(path, _fileSystem, ConfigurationManager, LibraryManager, TaskManager, Logger, _environmentInfo, LibraryManager);
                 newRefresher.Completed += NewRefresher_Completed;
                 _activeRefreshers.Add(newRefresher);
             }
@@ -601,20 +597,26 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         public void Dispose()
         {
-            _disposed = true;
             Dispose(true);
         }
 
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
         {
-            if (dispose)
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
             {
                 Stop();
             }
+
+            _disposed = true;
         }
     }
 
@@ -627,9 +629,10 @@ namespace Emby.Server.Implementations.IO
             _monitor = monitor;
         }
 
-        public void Run()
+        public Task RunAsync()
         {
             _monitor.Start();
+            return Task.CompletedTask;
         }
 
         public void Dispose()

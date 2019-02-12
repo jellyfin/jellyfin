@@ -20,7 +20,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
-using MediaBrowser.Model.Threading;
 using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 using Rssdp;
@@ -49,8 +48,7 @@ namespace Emby.Dlna.Main
         private readonly IDeviceDiscovery _deviceDiscovery;
 
         private SsdpDevicePublisher _Publisher;
-
-        private readonly ITimerFactory _timerFactory;
+        
         private readonly ISocketFactory _socketFactory;
         private readonly IEnvironmentInfo _environmentInfo;
         private readonly INetworkManager _networkManager;
@@ -78,7 +76,6 @@ namespace Emby.Dlna.Main
             IDeviceDiscovery deviceDiscovery,
             IMediaEncoder mediaEncoder,
             ISocketFactory socketFactory,
-            ITimerFactory timerFactory,
             IEnvironmentInfo environmentInfo,
             INetworkManager networkManager,
             IUserViewManager userViewManager,
@@ -99,7 +96,6 @@ namespace Emby.Dlna.Main
             _deviceDiscovery = deviceDiscovery;
             _mediaEncoder = mediaEncoder;
             _socketFactory = socketFactory;
-            _timerFactory = timerFactory;
             _environmentInfo = environmentInfo;
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger("Dlna");
@@ -125,9 +121,9 @@ namespace Emby.Dlna.Main
             Current = this;
         }
 
-        public void Run()
+        public async Task RunAsync()
         {
-            ((DlnaManager)_dlnaManager).InitProfiles();
+            await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
 
             ReloadComponents();
 
@@ -233,7 +229,7 @@ namespace Emby.Dlna.Main
 
             try
             {
-                _Publisher = new SsdpDevicePublisher(_communicationsServer, _timerFactory, _environmentInfo.OperatingSystemName, _environmentInfo.OperatingSystemVersion);
+                _Publisher = new SsdpDevicePublisher(_communicationsServer, _environmentInfo.OperatingSystemName, _environmentInfo.OperatingSystemVersion);
                 _Publisher.LogFunction = LogMessage;
                 _Publisher.SupportPnpRootDevice = false;
 
@@ -263,7 +259,7 @@ namespace Emby.Dlna.Main
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
-                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address.ToString());
+                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
                 var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
@@ -353,8 +349,7 @@ namespace Emby.Dlna.Main
                         _userDataManager,
                         _localization,
                         _mediaSourceManager,
-                        _mediaEncoder,
-                        _timerFactory);
+                        _mediaEncoder);
 
                     _manager.Start();
                 }

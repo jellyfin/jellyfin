@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Emby.Server.Implementations.Udp;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
@@ -43,7 +44,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// Runs this instance.
         /// </summary>
-        public void Run()
+        public Task RunAsync()
         {
             var udpServer = new UdpServer(_logger, _appHost, _json, _socketFactory);
 
@@ -57,6 +58,8 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 _logger.LogError(ex, "Failed to start UDP Server");
             }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>

@@ -35,8 +35,6 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.System;
-using MediaBrowser.Model.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
@@ -65,7 +63,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public static EmbyTV Current;
 
-        public event EventHandler DataSourceChanged;
         public event EventHandler<GenericEventArgs<TimerInfo>> TimerCreated;
         public event EventHandler<GenericEventArgs<string>> TimerCancelled;
 
@@ -88,7 +85,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             ILibraryMonitor libraryMonitor,
             IProviderManager providerManager,
             IMediaEncoder mediaEncoder,
-            ITimerFactory timerFactory,
             IProcessFactory processFactory)
         {
             Current = this;
@@ -110,7 +106,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _streamHelper = streamHelper;
 
             _seriesTimerProvider = new SeriesTimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers"));
-            _timerProvider = new TimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "timers"), _logger, timerFactory);
+            _timerProvider = new TimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "timers"), _logger);
             _timerProvider.TimerFired += _timerProvider_TimerFired;
 
             _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
@@ -124,7 +120,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        public async void Start()
+        public async Task Start()
         {
             _timerProvider.RestartTimers();
 
@@ -275,7 +271,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             foreach (var timer in seriesTimers)
             {
-                await UpdateTimersForSeriesTimer(timer, false, true).ConfigureAwait(false);
+                UpdateTimersForSeriesTimer(timer, false, true);
             }
         }
 
@@ -763,12 +759,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 _timerProvider.AddOrUpdate(timer, false);
             }
 
-            await UpdateTimersForSeriesTimer(info, true, false).ConfigureAwait(false);
+            UpdateTimersForSeriesTimer(info, true, false);
 
             return info.Id;
         }
 
-        public async Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
+        public Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
             var instance = _seriesTimerProvider.GetAll().FirstOrDefault(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
 
@@ -792,8 +788,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 _seriesTimerProvider.Update(instance);
 
-                await UpdateTimersForSeriesTimer(instance, true, true).ConfigureAwait(false);
+                UpdateTimersForSeriesTimer(instance, true, true);
             }
+
+            return Task.CompletedTask;
         }
 
         public Task UpdateTimerAsync(TimerInfo updatedTimer, CancellationToken cancellationToken)
@@ -2193,7 +2191,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     if (lockData)
                     {
-                        writer.WriteElementString("lockdata", true.ToString().ToLower());
+                        writer.WriteElementString("lockdata", true.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
                     }
 
                     if (item.CriticRating.HasValue)
@@ -2346,10 +2344,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private async Task UpdateTimersForSeriesTimer(SeriesTimerInfo seriesTimer, bool updateTimerSettings, bool deleteInvalidTimers)
+        private void UpdateTimersForSeriesTimer(SeriesTimerInfo seriesTimer, bool updateTimerSettings, bool deleteInvalidTimers)
         {
-            var allTimers = GetTimersForSeries(seriesTimer)
-                .ToList();
+            var allTimers = GetTimersForSeries(seriesTimer).ToList();
 
 
             var enabledTimersForSeries = new List<TimerInfo>();

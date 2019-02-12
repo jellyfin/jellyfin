@@ -121,7 +121,7 @@ namespace IsoMounter
                 path,
                 Path.GetExtension(path),
                 EnvironmentInfo.OperatingSystem,
-                ExecutablesAvailable.ToString()
+                ExecutablesAvailable
             );
 
             if (ExecutablesAvailable)
@@ -183,7 +183,7 @@ namespace IsoMounter
             _logger.LogInformation(
                 "[{0}] Disposing [{1}].",
                 Name,
-                disposing.ToString()
+                disposing
             );
 
             if (disposing)
@@ -229,9 +229,8 @@ namespace IsoMounter
             var uid = getuid();
 
             _logger.LogDebug(
-                "[{0}] Our current UID is [{1}], GetUserId() returned [{2}].",
+                "[{0}] GetUserId() returned [{2}].",
                 Name,
-                uid.ToString(),
                 uid
             );
 

@@ -70,7 +70,7 @@ namespace Emby.Server.Implementations.Services
                 response.ContentType = defaultContentType;
             }
 
-            if (new HashSet<string> { "application/json", }.Contains(response.ContentType))
+            if (response.ContentType == "application/json")
             {
                 response.ContentType += "; charset=utf-8";
             }

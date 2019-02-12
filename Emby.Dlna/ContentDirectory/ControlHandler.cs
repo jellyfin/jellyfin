@@ -63,7 +63,7 @@ namespace Emby.Dlna.ContentDirectory
             _profile = profile;
             _config = config;
 
-            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, _logger, libraryManager, mediaEncoder);
+            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, _logger, mediaEncoder);
         }
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, IDictionary<string, string> methodParams)
@@ -454,7 +454,7 @@ namespace Emby.Dlna.ContentDirectory
                 User = user,
                 Recursive = true,
                 IsMissing = false,
-                ExcludeItemTypes = new[] { typeof(Game).Name, typeof(Book).Name },
+                ExcludeItemTypes = new[] { typeof(Book).Name },
                 IsFolder = isFolder,
                 MediaTypes = mediaTypes.ToArray(),
                 DtoOptions = GetDtoOptions()
@@ -523,7 +523,7 @@ namespace Emby.Dlna.ContentDirectory
                 Limit = limit,
                 StartIndex = startIndex,
                 IsVirtualItem = false,
-                ExcludeItemTypes = new[] { typeof(Game).Name, typeof(Book).Name },
+                ExcludeItemTypes = new[] { typeof(Book).Name },
                 IsPlaceHolder = false,
                 DtoOptions = GetDtoOptions()
             };

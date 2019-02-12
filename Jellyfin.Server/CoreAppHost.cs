@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.HttpServer;
-using Jellyfin.SocketSharp;
+using Jellyfin.Server.SocketSharp;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
@@ -16,7 +16,7 @@ namespace Jellyfin.Server
         {
         }
 
-        public override bool CanSelfRestart => StartupOptions.ContainsOption("-restartpath");
+        public override bool CanSelfRestart => StartupOptions.RestartPath != null;
 
         protected override void RestartInternal() => Program.Restart();
 
