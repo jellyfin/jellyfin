@@ -10,7 +10,7 @@ namespace Emby.Server.Implementations.Cryptography
     public class CryptographyProvider : ICryptoProvider
     {
         private List<string> SupportedHashMethods = new List<string>();
-        private string DefaultHashMethod = "SHA256";
+        public string DefaultHashMethod => "SHA256";
         private RandomNumberGenerator rng;
         private int defaultiterations = 1000;
         public CryptographyProvider()

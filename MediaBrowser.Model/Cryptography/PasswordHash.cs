@@ -33,15 +33,15 @@ namespace MediaBrowser.Model.Cryptography
                 if (a.Length == 4)
                 {
                     Salt = a[2];
-                    SaltBytes = Convert.FromBase64CharArray(Salt.ToCharArray(), 0, Salt.Length);
+                    SaltBytes = FromByteString(Salt);
                     Hash = a[3];
-                    HashBytes = Convert.FromBase64CharArray(Hash.ToCharArray(), 0, Hash.Length);
+                    HashBytes = FromByteString(Hash);
                 }
                 else
                 {
                     Salt = string.Empty;
                     Hash = a[3];
-                    HashBytes = Convert.FromBase64CharArray(Hash.ToCharArray(), 0, Hash.Length);
+                    HashBytes = FromByteString(Hash);
                 }
             }
             else
@@ -49,15 +49,15 @@ namespace MediaBrowser.Model.Cryptography
                 if (a.Length == 4)
                 {
                     Salt = a[2];
-                    SaltBytes = Convert.FromBase64CharArray(Salt.ToCharArray(), 0, Salt.Length);
+                    SaltBytes = FromByteString(Salt);
                     Hash = a[3];
-                    HashBytes = Convert.FromBase64CharArray(Hash.ToCharArray(), 0, Hash.Length);
+                    HashBytes = FromByteString(Hash);
                 }
                 else
                 {
                     Salt = string.Empty;
                     Hash = a[2];
-                    HashBytes = Convert.FromBase64CharArray(Hash.ToCharArray(), 0, Hash.Length);
+                    HashBytes = FromByteString(Hash);
                 }
 
             }
@@ -68,7 +68,17 @@ namespace MediaBrowser.Model.Cryptography
         {
             Id = "SHA256";
             SaltBytes = cryptoProvider2.GenerateSalt();
-            Salt = Convert.ToBase64String(SaltBytes);
+            Salt = BitConverter.ToString(SaltBytes).Replace("-", "");
+        }
+
+        private byte[] FromByteString(string ByteString)
+        {
+            List<byte> Bytes = new List<byte>();
+            for (int i = 0; i < ByteString.Length; i += 2)
+            {
+                Bytes.Add(Convert.ToByte(ByteString.Substring(i, 2),16));
+            }
+            return Bytes.ToArray();
         }
         private string SerializeParameters()
         {
@@ -77,7 +87,7 @@ namespace MediaBrowser.Model.Cryptography
             {
                 ReturnString += String.Format(",{0}={1}", KVP.Key, KVP.Value);
             }
-            if (ReturnString[0] == ',')
+            if ((!string.IsNullOrEmpty(ReturnString)) && ReturnString[0] == ',')
             {
                 ReturnString = ReturnString.Remove(0, 1);
             }
@@ -86,7 +96,14 @@ namespace MediaBrowser.Model.Cryptography
 
         public override string ToString()
         {
-            return String.Format("${0}${1}${2}${3}", Id, SerializeParameters(), Salt, Hash);
+            string OutString = "$";
+            OutString += Id;
+            if (!string.IsNullOrEmpty(SerializeParameters()))
+                OutString += $"${SerializeParameters()}";
+            if (!string.IsNullOrEmpty(Salt))
+                OutString += $"${Salt}";
+            OutString += $"${Hash}";
+            return OutString;
         }
     }
 

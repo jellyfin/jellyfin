@@ -17,5 +17,6 @@ namespace MediaBrowser.Model.Cryptography
         byte[] ComputeHashWithDefaultMethod(byte[] bytes, byte[] salt);
         byte[] ComputeHash(PasswordHash hash);
         byte[] GenerateSalt();
+        string DefaultHashMethod { get; }
     }
 }
