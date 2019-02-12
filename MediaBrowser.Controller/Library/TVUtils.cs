@@ -17,6 +17,16 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         public static readonly string BannerUrl = TvdbBaseUrl + "banners/";
 
+        public static string NormalizeLanguage(string language)
+        {
+            if (string.IsNullOrWhiteSpace(language))
+            {
+                return null;
+            }
+
+            // pt-br is just pt to tvdb
+            return language.Split('-')[0].ToLowerInvariant();
+        }
         /// <summary>
         /// Gets the air days.
         /// </summary>

@@ -58,7 +58,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             }
 
             var language = item.GetPreferredMetadataLanguage();
-            _tvDbClientManager.TvDbClient.AcceptedLanguage = language;
             var remoteImages = new List<RemoteImageInfo>();
             var keyTypes = new[] {KeyType.Poster, KeyType.Series, KeyType.Fanart};
             var tvdbId = Convert.ToInt32(item.GetProviderId(MetadataProviders.Tvdb));
@@ -71,7 +70,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 try
                 {
                     var imageResults =
-                        await _tvDbClientManager.GetImagesAsync(tvdbId, imageQuery, cancellationToken);
+                        await _tvDbClientManager.GetImagesAsync(tvdbId, imageQuery, language, cancellationToken);
 
                     remoteImages.AddRange(GetImages(imageResults.Data, language));
                 }

@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             var episode = (Episode)item;
             var series = episode.Series;
             var imageResult = new List<RemoteImageInfo>();
-
+            var language = item.GetPreferredMetadataLanguage();
             if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
             {
                 var episodeTvdbId = episode.GetProviderId(MetadataProviders.Tvdb);
@@ -66,7 +66,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                             ParentIndexNumber = episode.ParentIndexNumber.Value,
                             SeriesProviderIds = series.ProviderIds
                         };
-                        episodeTvdbId = await _tvDbClientManager.GetEpisodeTvdbId(episodeInfo, cancellationToken);
+                        episodeTvdbId = await _tvDbClientManager.GetEpisodeTvdbId(episodeInfo, language, cancellationToken);
                         if (string.IsNullOrEmpty(episodeTvdbId))
                         {
                             _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
@@ -76,7 +76,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     }
 
                     var episodeResult =
-                        await _tvDbClientManager.GetEpisodesAsync(Convert.ToInt32(episodeTvdbId), cancellationToken);
+                        await _tvDbClientManager.GetEpisodesAsync(Convert.ToInt32(episodeTvdbId), language, cancellationToken);
 
                     var image = GetImageInfo(episodeResult.Data);
                     if (image != null)

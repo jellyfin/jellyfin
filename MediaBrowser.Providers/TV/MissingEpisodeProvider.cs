@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.TV
                 return false;
             }
 
-            var episodes = await TvDbClientManager.Instance.GetAllEpisodesAsync(Convert.ToInt32(tvdbId), cancellationToken);
+            var episodes = await TvDbClientManager.Instance.GetAllEpisodesAsync(Convert.ToInt32(tvdbId), series.GetPreferredMetadataLanguage(), cancellationToken);
 
             var episodeLookup = episodes
                 .Select(i =>

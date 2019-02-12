@@ -39,17 +39,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             _tvDbClientManager = TvDbClientManager.Instance;
         }
 
-        private string NormalizeLanguage(string language)
-        {
-            if (string.IsNullOrWhiteSpace(language))
-            {
-                return language;
-            }
-
-            // pt-br is just pt to tvdb
-            return language.Split('-')[0].ToLowerInvariant();
-        }
-
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
             if (IsValidSeries(searchInfo.ProviderIds))
@@ -103,7 +92,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
         private async Task FetchSeriesData(MetadataResult<Series> result, string metadataLanguage, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
         {
-            _tvDbClientManager.TvDbClient.AcceptedLanguage = NormalizeLanguage(metadataLanguage);
             var series = result.Item;
 
             if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out var tvdbId) && !string.IsNullOrEmpty(tvdbId))
@@ -126,8 +114,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             try
             {
                 var seriesResult =
-                    await _tvDbClientManager.GetSeriesByIdAsync(Convert.ToInt32(tvdbId), cancellationToken);
-                MapSeriesToResult(result, seriesResult.Data);
+                    await _tvDbClientManager.GetSeriesByIdAsync(Convert.ToInt32(tvdbId), metadataLanguage, cancellationToken);
+                MapSeriesToResult(result, seriesResult.Data, metadataLanguage);
             }
             catch (TvDbServerException e)
             {
@@ -141,7 +129,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             try
             {
-                var actorsResult = await _tvDbClientManager.GetActorsAsync(Convert.ToInt32(tvdbId), cancellationToken);
+                var actorsResult = await _tvDbClientManager.GetActorsAsync(Convert.ToInt32(tvdbId), metadataLanguage, cancellationToken);
                 MapActorsToResult(result, actorsResult.Data);
             }
             catch (TvDbServerException e)
@@ -152,18 +140,17 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
         private async Task<string> GetSeriesByRemoteId(string id, string idType, string language, CancellationToken cancellationToken)
         {
-            _tvDbClientManager.TvDbClient.AcceptedLanguage = NormalizeLanguage(language);
             TvDbResponse<SeriesSearchResult[]> result = null;
 
             try
             {
                 if (string.Equals(idType, MetadataProviders.Zap2It.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
-                    result = await _tvDbClientManager.GetSeriesByZap2ItIdAsync(id, cancellationToken);
+                    result = await _tvDbClientManager.GetSeriesByZap2ItIdAsync(id, language, cancellationToken);
                 }
                 else
                 {
-                    result = await _tvDbClientManager.GetSeriesByImdbIdAsync(id, cancellationToken);
+                    result = await _tvDbClientManager.GetSeriesByImdbIdAsync(id, language, cancellationToken);
                 }
             }
             catch (TvDbServerException e)
@@ -218,13 +205,12 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
         private async Task<List<RemoteSearchResult>> FindSeriesInternal(string name, string language, CancellationToken cancellationToken)
         {
-            _tvDbClientManager.TvDbClient.AcceptedLanguage = NormalizeLanguage(language);
             var comparableName = GetComparableName(name);
             var list = new List<Tuple<List<string>, RemoteSearchResult>>();
             TvDbResponse<SeriesSearchResult[]> result;
             try
             {
-                result = await _tvDbClientManager.GetSeriesByNameAsync(comparableName, cancellationToken);
+                result = await _tvDbClientManager.GetSeriesByNameAsync(comparableName, language, cancellationToken);
             }
             catch (TvDbServerException e)
             {
@@ -252,7 +238,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 try
                 {
                     var seriesSesult =
-                        await _tvDbClientManager.GetSeriesByIdAsync(seriesSearchResult.Id, cancellationToken);
+                        await _tvDbClientManager.GetSeriesByIdAsync(seriesSearchResult.Id, language, cancellationToken);
                     remoteSearchResult.SetProviderId(MetadataProviders.Imdb, seriesSesult.Data.ImdbId);
                     remoteSearchResult.SetProviderId(MetadataProviders.Zap2It, seriesSesult.Data.Zap2itId);
                 }
@@ -329,7 +315,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             return name.Trim();
         }
 
-        private void MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries)
+        private void MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries, string metadataLanguage)
         {
             Series series = result.Item;
             series.SetProviderId(MetadataProviders.Tvdb, tvdbSeries.Id.ToString());
@@ -367,14 +353,14 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 try
                 {
                     var episodeSummary = _tvDbClientManager
-                        .GetSeriesEpisodeSummaryAsync(tvdbSeries.Id, CancellationToken.None).Result.Data;
+                        .GetSeriesEpisodeSummaryAsync(tvdbSeries.Id, metadataLanguage, CancellationToken.None).Result.Data;
                     var maxSeasonNumber = episodeSummary.AiredSeasons.Select(s => Convert.ToInt32(s)).Max();
                     var episodeQuery = new EpisodeQuery
                     {
                         AiredSeason = maxSeasonNumber
                     };
                     var episodesPage =
-                        _tvDbClientManager.GetEpisodesPageAsync(tvdbSeries.Id, episodeQuery, CancellationToken.None).Result.Data;
+                        _tvDbClientManager.GetEpisodesPageAsync(tvdbSeries.Id, episodeQuery, metadataLanguage, CancellationToken.None).Result.Data;
                     result.Item.EndDate = episodesPage.Select(e =>
                         {
                             DateTime.TryParse(e.FirstAired, out var firstAired);

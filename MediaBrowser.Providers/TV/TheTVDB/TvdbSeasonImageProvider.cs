@@ -65,7 +65,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             var tvdbId = Convert.ToInt32(series.GetProviderId(MetadataProviders.Tvdb));
             var seasonNumber = season.IndexNumber.Value;
             var language = item.GetPreferredMetadataLanguage();
-            _tvDbClientManager.TvDbClient.AcceptedLanguage = language;
             var remoteImages = new List<RemoteImageInfo>();
 
             var keyTypes = new[] {KeyType.Season, KeyType.Seasonwide, KeyType.Fanart};
@@ -78,7 +77,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 };
                 try
                 {
-                    var imageResults = await _tvDbClientManager.GetImagesAsync(tvdbId, imageQuery, cancellationToken);
+                    var imageResults = await _tvDbClientManager.GetImagesAsync(tvdbId, imageQuery, language, cancellationToken);
                     remoteImages.AddRange(GetImages(imageResults.Data, language));
                 }
                 catch (TvDbServerException)

@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.People
 
             try
             {
-                var actorsResult = await _tvDbClientManager.GetActorsAsync(tvdbId, cancellationToken);
+                var actorsResult = await _tvDbClientManager.GetActorsAsync(tvdbId, series.GetPreferredMetadataLanguage(), cancellationToken);
                 var actor = actorsResult.Data.FirstOrDefault(a =>
                     string.Equals(a.Name, personName, StringComparison.OrdinalIgnoreCase) &&
                     !string.IsNullOrEmpty(a.Image));
