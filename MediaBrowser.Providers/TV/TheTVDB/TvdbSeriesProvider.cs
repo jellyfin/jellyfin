@@ -321,7 +321,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             series.SetProviderId(MetadataProviders.Tvdb, tvdbSeries.Id.ToString());
             series.Name = tvdbSeries.SeriesName;
             series.Overview = (tvdbSeries.Overview ?? string.Empty).Trim();
-            result.ResultLanguage = TvDbClientManager.Instance.TvDbClient.AcceptedLanguage;
+            result.ResultLanguage = metadataLanguage;
             series.AirDays = TVUtils.GetAirDays(tvdbSeries.AirsDayOfWeek);
             series.AirTime = tvdbSeries.AirsTime;
 
