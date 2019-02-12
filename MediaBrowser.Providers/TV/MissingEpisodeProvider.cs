@@ -151,7 +151,7 @@ namespace MediaBrowser.Providers.TV
 
                 var airDate = tuple.FirstAired;
 
-                var now = DateTime.UtcNow.AddDays(0 - UnairedEpisodeThresholdDays);
+                var now = DateTime.UtcNow.AddDays(-UnairedEpisodeThresholdDays);
 
                 if (airDate < now && addMissingEpisodes || airDate > now)
                 {
