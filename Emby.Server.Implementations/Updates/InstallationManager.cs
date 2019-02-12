@@ -529,20 +529,18 @@ namespace Emby.Server.Implementations.Updates
 
         private async Task PerformPackageInstallation(IProgress<double> progress, string target, PackageVersionInfo package, CancellationToken cancellationToken)
         {
-            // Target based on if it is an archive or single assembly
             var extension = Path.GetExtension(package.targetFilename);
             var isArchive = string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase);
 
+            if (!isArchive)
+            {
+                _logger.LogError("Only zip packages are supported. {Filename} is not a zip archive.", package.targetFilename);
+                return;
+            }
+
             if (target == null)
             {
-                if (isArchive)
-                {
-                    target = Path.Combine(_appPaths.PluginsPath, Path.GetFileNameWithoutExtension(package.targetFilename));
-                }
-                else
-                {
-                    target = Path.Combine(_appPaths.PluginsPath, package.targetFilename);
-                }
+                target = Path.Combine(_appPaths.PluginsPath, Path.GetFileNameWithoutExtension(package.targetFilename));
             }
 
             // Download to temporary file so that, if interrupted, it won't destroy the existing installation
@@ -561,22 +559,14 @@ namespace Emby.Server.Implementations.Updates
             // Success - move it to the real target
             try
             {
-                if (isArchive)
+                using (var stream = File.OpenRead(tempFile))
                 {
-                    using (var stream = File.OpenRead(tempFile))
-                    {
-                        _zipClient.ExtractAllFromZip(stream, target, true);
-                    }
-                }
-                else
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(target));
-                    File.Copy(tempFile, target, true);
+                    _zipClient.ExtractAllFromZip(stream, target, true);
                 }
             }
             catch (IOException ex)
             {
-                _logger.LogError(ex, "Error attempting to move file from {TempFile} to {TargetFile}", tempFile, target);
+                _logger.LogError(ex, "Error attempting to extract {TempFile} to {TargetFile}", tempFile, target);
                 throw;
             }
 
