@@ -194,8 +194,8 @@ namespace Jellyfin.Server.SocketSharp
                 {
                     // TODO: @bond move to Span when Span.Split lands
                     // https://github.com/dotnet/corefx/issues/26528
-                    var contentType = acceptsType?.Split(';')[0];
-                    acceptsAnything = contentType.IndexOf("*/*", StringComparison.Ordinal) != -1;
+                    var contentType = acceptsType?.Split(';')[0].Trim();
+                    acceptsAnything = contentType.Equals("*/*", StringComparison.OrdinalIgnoreCase);
 
                     if (acceptsAnything)
                     {

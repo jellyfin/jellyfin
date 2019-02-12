@@ -277,7 +277,8 @@ namespace Emby.Server.Implementations.HttpServer
 
         private object ToOptimizedResultInternal<T>(IRequest request, T dto, IDictionary<string, string> responseHeaders = null)
         {
-            var contentType = request.ResponseContentType?.Split(';')[0];
+            // TODO: @bond use Span and .Equals
+            var contentType = request.ResponseContentType?.Split(';')[0].Trim().ToLowerInvariant();
 
             switch (contentType)
             {
