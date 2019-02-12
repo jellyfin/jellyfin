@@ -477,7 +477,6 @@ namespace Emby.Server.Implementations
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error creating {Type}", type);
-                // Don't blow up in release mode
                 return null;
             }
         }
@@ -767,7 +766,8 @@ namespace Emby.Server.Implementations
             SessionManager = new SessionManager(UserDataManager, LoggerFactory, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
             serviceCollection.AddSingleton(SessionManager);
 
-            serviceCollection.AddSingleton<IDlnaManager>(new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LoggerFactory, JsonSerializer, this, assemblyInfo));
+            serviceCollection.AddSingleton<IDlnaManager>(
+                new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LoggerFactory, JsonSerializer, this, assemblyInfo));
 
             CollectionManager = new CollectionManager(LibraryManager, ApplicationPaths, LocalizationManager, FileSystemManager, LibraryMonitor, LoggerFactory, ProviderManager);
             serviceCollection.AddSingleton(CollectionManager);
@@ -784,7 +784,8 @@ namespace Emby.Server.Implementations
             NotificationManager = new NotificationManager(LoggerFactory, UserManager, ServerConfigurationManager);
             serviceCollection.AddSingleton(NotificationManager);
 
-            serviceCollection.AddSingleton<IDeviceDiscovery>(new DeviceDiscovery(LoggerFactory, ServerConfigurationManager, SocketFactory));
+            serviceCollection.AddSingleton<IDeviceDiscovery>(
+                new DeviceDiscovery(LoggerFactory, ServerConfigurationManager, SocketFactory));
 
             ChapterManager = new ChapterManager(LibraryManager, LoggerFactory, ServerConfigurationManager, ItemRepository);
             serviceCollection.AddSingleton(ChapterManager);
@@ -1380,9 +1381,6 @@ namespace Emby.Server.Implementations
                     yield return Assembly.LoadFrom(file);
                 }
             }
-
-            // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
-            // This will prevent the .dll file from getting locked, and allow us to replace it when needed
 
             // Include composable parts in the Api assembly
             yield return typeof(ApiEntryPoint).Assembly;
