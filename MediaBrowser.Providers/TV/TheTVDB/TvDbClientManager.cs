@@ -80,19 +80,22 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         public Task<TvDbResponse<SeriesSearchResult[]>> GetSeriesByNameAsync(string name, string language,
             CancellationToken cancellationToken)
         {
-            return TryGetValue("series" + name, language,() => TvDbClient.Search.SearchSeriesByNameAsync(name, cancellationToken));
+            var cacheKey = GenerateKey("series", name, language);
+            return TryGetValue(cacheKey, language,() => TvDbClient.Search.SearchSeriesByNameAsync(name, cancellationToken));
         }
 
         public Task<TvDbResponse<Series>> GetSeriesByIdAsync(int tvdbId, string language,
             CancellationToken cancellationToken)
         {
-            return TryGetValue("series" + tvdbId, language,() => TvDbClient.Series.GetAsync(tvdbId, cancellationToken));
+            var cacheKey = GenerateKey("series", tvdbId, language);
+            return TryGetValue(cacheKey, language,() => TvDbClient.Series.GetAsync(tvdbId, cancellationToken));
         }
 
         public Task<TvDbResponse<EpisodeRecord>> GetEpisodesAsync(int episodeTvdbId, string language,
             CancellationToken cancellationToken)
         {
-            return TryGetValue("episode" + episodeTvdbId, language,() => TvDbClient.Episodes.GetAsync(episodeTvdbId, cancellationToken));
+            var cacheKey = GenerateKey("episode", episodeTvdbId, language);
+            return TryGetValue(cacheKey, language,() => TvDbClient.Episodes.GetAsync(episodeTvdbId, cancellationToken));
         }
 
         public async Task<List<EpisodeRecord>> GetAllEpisodesAsync(int tvdbId, string language,
@@ -122,24 +125,27 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         public Task<TvDbResponse<SeriesSearchResult[]>> GetSeriesByImdbIdAsync(string imdbId, string language,
             CancellationToken cancellationToken)
         {
-            return TryGetValue("series" + imdbId, language,() => TvDbClient.Search.SearchSeriesByImdbIdAsync(imdbId, cancellationToken));
+            var cacheKey = GenerateKey("series", imdbId, language);
+            return TryGetValue(cacheKey, language,() => TvDbClient.Search.SearchSeriesByImdbIdAsync(imdbId, cancellationToken));
         }
 
         public Task<TvDbResponse<SeriesSearchResult[]>> GetSeriesByZap2ItIdAsync(string zap2ItId, string language,
             CancellationToken cancellationToken)
         {
-            return TryGetValue("series" + zap2ItId, language,() => TvDbClient.Search.SearchSeriesByZap2ItIdAsync(zap2ItId, cancellationToken));
+            var cacheKey = GenerateKey("series", zap2ItId, language);
+            return TryGetValue( cacheKey, language,() => TvDbClient.Search.SearchSeriesByZap2ItIdAsync(zap2ItId, cancellationToken));
         }
         public Task<TvDbResponse<Actor[]>> GetActorsAsync(int tvdbId, string language,
             CancellationToken cancellationToken)
         {
-            return TryGetValue("actors" + tvdbId, language,() => TvDbClient.Series.GetActorsAsync(tvdbId, cancellationToken));
+            var cacheKey = GenerateKey("actors", tvdbId, language);
+            return TryGetValue(cacheKey, language,() => TvDbClient.Series.GetActorsAsync(tvdbId, cancellationToken));
         }
 
         public Task<TvDbResponse<Image[]>> GetImagesAsync(int tvdbId, ImagesQuery imageQuery, string language,
             CancellationToken cancellationToken)
         {
-            var cacheKey = "images" + tvdbId + "keytype" + imageQuery.KeyType + "subkey" + imageQuery.SubKey;
+            var cacheKey = GenerateKey("images", tvdbId, language, imageQuery);
             return TryGetValue(cacheKey, language,() => TvDbClient.Series.GetImagesAsync(tvdbId, imageQuery, cancellationToken));
         }
 
@@ -151,23 +157,15 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         public Task<TvDbResponse<EpisodesSummary>> GetSeriesEpisodeSummaryAsync(int tvdbId, string language,
             CancellationToken cancellationToken)
         {
-            return TryGetValue("seriesepisodesummary" + tvdbId, language,
+            var cacheKey = GenerateKey("seriesepisodesummary", tvdbId, language);
+            return TryGetValue(cacheKey, language,
                 () => TvDbClient.Series.GetEpisodesSummaryAsync(tvdbId, cancellationToken));
         }
 
         public Task<TvDbResponse<EpisodeRecord[]>> GetEpisodesPageAsync(int tvdbId, int page, EpisodeQuery episodeQuery,
             string language, CancellationToken cancellationToken)
         {
-            // Not quite as dynamic as it could be
-            var cacheKey = "episodespage" + tvdbId + "page" + page;
-            if (episodeQuery.AiredSeason.HasValue)
-            {
-                cacheKey += "airedseason" + episodeQuery.AiredSeason.Value;
-            }
-            if (episodeQuery.AiredEpisode.HasValue)
-            {
-                cacheKey += "airedepisode" + episodeQuery.AiredEpisode.Value;
-            }
+            var cacheKey = GenerateKey(language, tvdbId, episodeQuery);
 
             return TryGetValue(cacheKey, language,
                 () => TvDbClient.Series.GetEpisodesAsync(tvdbId, page, episodeQuery, cancellationToken));
@@ -235,13 +233,12 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             }
         }
 
-        private static string GenerateKey(object[] objects)
+        private static string GenerateKey(params object[] objects)
         {
             var key = string.Empty;
 
             foreach (var obj in objects)
             {
-                key += nameof(obj);
                 var objType = obj.GetType();
                 if (objType.IsPrimitive || objType == typeof(string))
                 {
