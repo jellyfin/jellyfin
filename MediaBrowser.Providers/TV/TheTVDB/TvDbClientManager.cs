@@ -242,7 +242,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 var objType = obj.GetType();
                 if (objType.IsPrimitive || objType == typeof(string))
                 {
-                    key += obj.ToString();
+                    key += obj + ";";
                 }
                 else
                 {
@@ -254,7 +254,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                             continue;
                         }
 
-                        key += propertyInfo.Name + currentValue;
+                        key += propertyInfo.Name + currentValue + ";";
                     }
                 }
             }
