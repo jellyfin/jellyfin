@@ -65,9 +65,9 @@ namespace MediaBrowser.Providers.People
                 .Where(i => TvdbSeriesProvider.IsValidSeries(i.ProviderIds))
                 .ToList();
 
-            var infos = await Task.WhenAll(seriesWithPerson.Select(async i => await GetImageFromSeriesData(i, item.Name, cancellationToken))
+            var infos = (await Task.WhenAll(seriesWithPerson.Select(async i => await GetImageFromSeriesData(i, item.Name, cancellationToken))))
                 .Where(i => i != null)
-                .Take(1));
+                .Take(1);
 
             return infos;
         }
