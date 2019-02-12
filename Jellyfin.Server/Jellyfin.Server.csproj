@@ -20,6 +20,10 @@
     <EmbeddedResource Include="Resources/Configuration/*" />
   </ItemGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
   <!-- Code analysers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.3" />
