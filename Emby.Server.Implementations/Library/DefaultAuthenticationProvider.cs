@@ -52,7 +52,7 @@ namespace Emby.Server.Implementations.Library
 
         private bool IsPasswordEmpty(User user, string passwordHash)
         {
-            return string.Equals(passwordHash, GetEmptyHashedString(user), StringComparison.OrdinalIgnoreCase);
+            return string.IsNullOrEmpty(passwordHash);
         }
 
         public Task ChangePassword(User user, string newPassword)
@@ -76,14 +76,7 @@ namespace Emby.Server.Implementations.Library
 
         public string GetPasswordHash(User user)
         {
-            return string.IsNullOrEmpty(user.Password)
-                ? GetEmptyHashedString(user)
-                : user.Password;
-        }
-
-        public string GetEmptyHashedString(User user)
-        {
-            return GetHashedString(user, string.Empty);
+            return user.Password;
         }
 
         /// <summary>

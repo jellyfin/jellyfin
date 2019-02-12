@@ -402,16 +402,16 @@ namespace Emby.Server.Implementations.Library
             bool success = false;
             IAuthenticationProvider authenticationProvider = null;
 
-            if (password != null && user != null)
+            if (!string.IsNullOrEmpty(password) && user != null)
             {
                 // Doesn't look like this is even possible to be used, because of password == null checks below
                 hashedPassword = _defaultAuthenticationProvider.GetHashedString(user, password);
             }
 
-            if (password == null)
+            if (string.IsNullOrEmpty(password))
             {
                 // legacy
-                success = string.Equals(_defaultAuthenticationProvider.GetPasswordHash(user), hashedPassword.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+                success = string.Equals(_defaultAuthenticationProvider.GetPasswordHash(user), hashedPassword?.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
             }
             else
             {
@@ -478,13 +478,8 @@ namespace Emby.Server.Implementations.Library
         private string GetLocalPasswordHash(User user)
         {
             return string.IsNullOrEmpty(user.EasyPassword)
-                ? _defaultAuthenticationProvider.GetEmptyHashedString(user)
+                ? null
                 : user.EasyPassword;
-        }
-
-        private bool IsPasswordEmpty(User user, string passwordHash)
-        {
-            return string.Equals(passwordHash, _defaultAuthenticationProvider.GetEmptyHashedString(user), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -530,7 +525,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user).Result;
-            var hasConfiguredEasyPassword = !IsPasswordEmpty(user, GetLocalPasswordHash(user));
+            var hasConfiguredEasyPassword = !string.IsNullOrEmpty(GetLocalPasswordHash(user));
 
             var hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
                 hasConfiguredEasyPassword :
