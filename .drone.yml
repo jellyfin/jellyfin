@@ -10,103 +10,70 @@ steps:
 - name: build
   image: microsoft/dotnet:2-sdk
   commands:
-    - dotnet publish --configuration release --output /release Jellyfin.Server
+    - dotnet publish "Jellyfin.Server" --configuration Release --output "../ci/ci-release"
 
 - name: clone-dotnet-compat
   image: docker:git
   commands:
-    - git clone --depth 1 https://github.com/EraYaN/dotnet-compatibility
-  when:
-    event:
-    - pull_request
+    - git clone --depth 1 https://github.com/EraYaN/dotnet-compatibility ci/dotnet-compatibility
 
 - name: build-dotnet-compat
   image: microsoft/dotnet:2-sdk
   commands:
-    - dotnet publish --runtime debian.9-x64 --configuration release --output /tools dotnet-compatibility/CompatibilityCheckerCoreCLI
-  when:
-    event:
-    - pull_request
+    - dotnet publish "ci/dotnet-compatibility/CompatibilityCheckerCoreCLI" --configuration Release --output "../../ci-tools"
 
 - name: download-last-nuget-release-common
   image: plugins/download
   settings:
     source: https://www.nuget.org/api/v2/package/Jellyfin.Common
-    destination: Jellyfin.Common.nupkg
-  when:
-    event:
-    - pull_request
+    destination: ci/Jellyfin.Common.nupkg
 
 - name: download-last-nuget-release-model
   image: plugins/download
   settings:
     source: https://www.nuget.org/api/v2/package/Jellyfin.Model
-    destination: Jellyfin.Model.nupkg
-  when:
-    event:
-    - pull_request
+    destination: ci/Jellyfin.Model.nupkg
 
 - name: download-last-nuget-release-controller
   image: plugins/download
   settings:
     source: https://www.nuget.org/api/v2/package/Jellyfin.Controller
-    destination: Jellyfin.Controller.nupkg
-  when:
-    event:
-    - pull_request
+    destination: ci/Jellyfin.Controller.nupkg
 
 - name: download-last-nuget-release-naming
   image: plugins/download
   settings:
     source: https://www.nuget.org/api/v2/package/Jellyfin.Naming
-    destination: Jellyfin.Naming.nupkg
-  when:
-    event:
-    - pull_request
+    destination: ci/Jellyfin.Naming.nupkg
 
 - name: extract-downloaded-nuget-packages
   image: garthk/unzip
   commands:
-  - unzip -j Jellyfin.Common.nupkg  "*.dll" -d /current-release
-  - unzip -j Jellyfin.Model.nupkg  "*.dll" -d /current-release
-  - unzip -j Jellyfin.Controller.nupkg  "*.dll" -d /current-release
-  - unzip -j Jellyfin.Naming.nupkg  "*.dll" -d /current-release
-  when:
-    event:
-    - pull_request
+  - unzip -j ci/Jellyfin.Common.nupkg  "*.dll" -d ci/nuget-packages
+  - unzip -j ci/Jellyfin.Model.nupkg  "*.dll" -d ci/nuget-packages
+  - unzip -j ci/Jellyfin.Controller.nupkg  "*.dll" -d ci/nuget-packages
+  - unzip -j ci/Jellyfin.Naming.nupkg  "*.dll" -d ci/nuget-packages
 
 - name: run-dotnet-compat-common
-  image: debian:stretch
+  image: microsoft/dotnet:2-runtime
   err_ignore: true
   commands:
-  - /tools/CompatibilityCheckerCoreCLI /current-release/Jellyfin.Common.dll /release/Jellyfin.Common.dll
-  when:
-    event:
-    - pull_request
+  - dotnet ci/ci-tools/CompatibilityCheckerCoreCLI.dll ci/nuget-packages/Jellyfin.Common.dll ci/ci-release/Jellyfin.Common.dll
 
 - name: run-dotnet-compat-model
-  image: debian:stretch
+  image: microsoft/dotnet:2-runtime
   err_ignore: true
   commands:
-  - /tools/CompatibilityCheckerCoreCLI /current-release/Jellyfin.Model.dll /release/Jellyfin.Model.dll
-  when:
-    event:
-    - pull_request
+  - dotnet ci/ci-tools/CompatibilityCheckerCoreCLI.dll ci/nuget-packages/Jellyfin.Model.dll ci/ci-release/Jellyfin.Model.dll
 
 - name: run-dotnet-compat-controller
-  image: debian:stretch
+  image: microsoft/dotnet:2-runtime
   err_ignore: true
   commands:
-  - /tools/CompatibilityCheckerCoreCLI /current-release/Jellyfin.Controller.dll /release/Jellyfin.Controller.dll
-  when:
-    event:
-    - pull_request
+  - dotnet ci/ci-tools/CompatibilityCheckerCoreCLI.dll ci/nuget-packages/Jellyfin.Controller.dll ci/ci-release/Jellyfin.Controller.dll
 
 - name: run-dotnet-compat-naming
-  image: debian:stretch
+  image: microsoft/dotnet:2-runtime
   err_ignore: true
   commands:
-  - /tools/CompatibilityCheckerCoreCLI /current-release/Jellyfin.Naming.dll /release/Jellyfin.Naming.dll
-  when:
-    event:
-    - pull_request
+  - dotnet ci/ci-tools/CompatibilityCheckerCoreCLI.dll ci/nuget-packages/Jellyfin.Naming.dll ci/ci-release/Jellyfin.Naming.dll
