@@ -181,19 +181,6 @@ namespace Emby.Dlna.Didl
             writer.WriteFullEndElement();
         }
 
-        private string GetMimeType(string input)
-        {
-            var mime = MimeTypes.GetMimeType(input);
-
-            // TODO: Instead of being hard-coded here, this should probably be moved into all of the existing profiles
-            if (string.Equals(mime, "video/mp2t", StringComparison.OrdinalIgnoreCase))
-            {
-                mime = "video/mpeg";
-            }
-
-            return mime;
-        }
-
         private void AddVideoResource(DlnaOptions options, XmlWriter writer, BaseItem video, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             if (streamInfo == null)
@@ -384,7 +371,7 @@ namespace Emby.Dlna.Didl
             var filename = url.Substring(0, url.IndexOf('?'));
 
             var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
-               ? GetMimeType(filename)
+               ? MimeTypes.GetMimeType(filename)
                : mediaProfile.MimeType;
 
             writer.WriteAttributeString("protocolInfo", string.Format(
@@ -520,7 +507,7 @@ namespace Emby.Dlna.Didl
             var filename = url.Substring(0, url.IndexOf('?'));
 
             var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
-                ? GetMimeType(filename)
+                ? MimeTypes.GetMimeType(filename)
                 : mediaProfile.MimeType;
 
             var contentFeatures = new ContentFeatureBuilder(_profile).BuildAudioHeader(streamInfo.Container,
@@ -545,17 +532,10 @@ namespace Emby.Dlna.Didl
         }
 
         public static bool IsIdRoot(string id)
-        {
-            if (string.IsNullOrWhiteSpace(id)
+            => string.IsNullOrWhiteSpace(id)
                 || string.Equals(id, "0", StringComparison.OrdinalIgnoreCase)
                 // Samsung sometimes uses 1 as root
-                || string.Equals(id, "1", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
-        }
+                || string.Equals(id, "1", StringComparison.OrdinalIgnoreCase);
 
         public void WriteFolderElement(XmlWriter writer, BaseItem folder, StubType? stubType, BaseItem context, int childCount, Filter filter, string requestedId = null)
         {
@@ -971,7 +951,7 @@ namespace Emby.Dlna.Didl
 
             writer.WriteAttributeString("protocolInfo", string.Format(
                 "http-get:*:{0}:{1}",
-                GetMimeType("file." + format),
+                MimeTypes.GetMimeType("file." + format),
                 contentFeatures
                 ));
 
