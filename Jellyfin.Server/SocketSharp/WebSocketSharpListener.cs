@@ -223,38 +223,39 @@ namespace Jellyfin.Server.SocketSharp
         public Task Stop()
         {
             _disposeCancellationTokenSource.Cancel();
-
-            if (_listener != null)
-            {
-                _listener.Close();
-            }
+            _listener?.Close();
 
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Releases the unmanaged resources and disposes of the managed resources used.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private bool _disposed;
-        private readonly object _disposeLock = new object();
+
+        /// <summary>
+        /// Releases the unmanaged resources and disposes of the managed resources used.
+        /// </summary>
+        /// <param name="disposing">Whether or not the managed resources should be disposed</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposed) return;
-
-            lock (_disposeLock)
+            if (_disposed)
             {
-                if (_disposed) return;
-
-                if (disposing)
-                {
-                    Stop();
-                }
-
-                // release unmanaged resources here...
-                _disposed = true;
+                return;
             }
+
+            if (disposing)
+            {
+                Stop().GetAwaiter().GetResult();
+            }
+
+            _disposed = true;
         }
     }
 }
