@@ -140,10 +140,12 @@ namespace Jellyfin.Server.SocketSharp
                         throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
                 }
             }
+
             if (crlf != 0)
             {
                 throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
             }
+
             return name;
         }
 
@@ -156,6 +158,7 @@ namespace Jellyfin.Server.SocketSharp
                     return true;
                 }
             }
+
             return false;
         }
 

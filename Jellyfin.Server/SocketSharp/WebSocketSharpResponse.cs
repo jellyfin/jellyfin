@@ -151,6 +151,7 @@ namespace Jellyfin.Server.SocketSharp
             {
                 sb.Append(";Secure");
             }
+
             if (cookie.HttpOnly)
             {
                 sb.Append(";HttpOnly");
