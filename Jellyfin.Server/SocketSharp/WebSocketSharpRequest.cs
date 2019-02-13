@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Emby.Server.Implementations.HttpServer;
@@ -69,9 +70,11 @@ namespace Jellyfin.Server.SocketSharp
 
         public string UserHostAddress => request.UserHostAddress;
 
-        public string XForwardedFor => string.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"];
+        public string XForwardedFor
+            => string.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"];
 
-        public int? XForwardedPort => string.IsNullOrEmpty(request.Headers["X-Forwarded-Port"]) ? (int?)null : int.Parse(request.Headers["X-Forwarded-Port"]);
+        public int? XForwardedPort
+            => string.IsNullOrEmpty(request.Headers["X-Forwarded-Port"]) ? (int?)null : int.Parse(request.Headers["X-Forwarded-Port"], CultureInfo.InvariantCulture);
 
         public string XForwardedProtocol => string.IsNullOrEmpty(request.Headers["X-Forwarded-Proto"]) ? null : request.Headers["X-Forwarded-Proto"];
 
