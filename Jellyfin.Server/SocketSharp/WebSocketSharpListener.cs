@@ -201,7 +201,7 @@ namespace Jellyfin.Server.SocketSharp
             }
             catch (ObjectDisposedException)
             {
-                //TODO Investigate and properly fix.
+                // TODO: Investigate and properly fix.
             }
             catch (Exception ex)
             {
@@ -252,7 +252,7 @@ namespace Jellyfin.Server.SocketSharp
                     Stop();
                 }
 
-                //release unmanaged resources here...
+                // release unmanaged resources here...
                 _disposed = true;
             }
         }

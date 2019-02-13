@@ -55,7 +55,7 @@ namespace Jellyfin.Server.SocketSharp
         void socket_OnError(object sender, SocketHttpListener.ErrorEventArgs e)
         {
             _logger.LogError("Error in SharpWebSocket: {Message}", e.Message ?? string.Empty);
-            //Closed?.Invoke(this, EventArgs.Empty);
+            // Closed?.Invoke(this, EventArgs.Empty);
         }
 
         void socket_OnClose(object sender, SocketHttpListener.CloseEventArgs e)
@@ -67,14 +67,6 @@ namespace Jellyfin.Server.SocketSharp
 
         void socket_OnMessage(object sender, SocketHttpListener.MessageEventArgs e)
         {
-            //if (!string.IsNullOrEmpty(e.Data))
-            //{
-            //    if (OnReceive != null)
-            //    {
-            //        OnReceive(e.Data);
-            //    }
-            //    return;
-            //}
             if (OnReceiveBytes != null)
             {
                 OnReceiveBytes(e.RawData);
@@ -142,11 +134,5 @@ namespace Jellyfin.Server.SocketSharp
         /// </summary>
         /// <value>The receive action.</value>
         public Action<byte[]> OnReceiveBytes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the on receive.
-        /// </summary>
-        /// <value>The on receive.</value>
-        public Action<string> OnReceive { get; set; }
     }
 }

@@ -24,7 +24,7 @@ namespace Jellyfin.Server.SocketSharp
             this.request = httpContext.Request;
             this.response = new WebSocketSharpResponse(logger, httpContext.Response, this);
 
-            //HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
+            // HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
         }
 
         private static string GetHandlerPathIfAny(string listenerUrl)

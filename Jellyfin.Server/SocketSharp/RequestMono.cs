@@ -570,10 +570,10 @@ namespace Jellyfin.Server.SocketSharp
             public HttpMultipart(Stream data, string b, Encoding encoding)
             {
                 this.data = data;
-                //DB: 30/01/11: cannot set or read the Position in HttpListener in Win.NET
-                //var ms = new MemoryStream(32 * 1024);
-                //data.CopyTo(ms);
-                //this.data = ms;
+                // DB: 30/01/11: cannot set or read the Position in HttpListener in Win.NET
+                // var ms = new MemoryStream(32 * 1024);
+                // data.CopyTo(ms);
+                // this.data = ms;
 
                 boundary = b;
                 boundary_bytes = encoding.GetBytes(b);
