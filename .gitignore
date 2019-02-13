@@ -264,4 +264,3 @@ deployment/**/pkg-dist-tmp/
 deployment/collect-dist/
 
 jellyfin_version.ini
-MediaBrowser.WebDashboard/jellyfin-web
