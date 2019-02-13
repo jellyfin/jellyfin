@@ -115,7 +115,7 @@ namespace Emby.Server.Implementations.Library
             //string newPasswordHash = null;
             ConvertPasswordFormat(user);
             PasswordHash passwordHash = new PasswordHash(user.Password);
-            if(passwordHash.Id == "SHA1" && string.IsNullOrEmpty(passwordHash.Salt))
+            if (passwordHash.Id == "SHA1" && string.IsNullOrEmpty(passwordHash.Salt))
             {
                 passwordHash.SaltBytes = _cryptographyProvider.GenerateSalt();
                 passwordHash.Salt = PasswordHash.ConvertToByteString(passwordHash.SaltBytes);
