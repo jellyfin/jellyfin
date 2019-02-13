@@ -634,7 +634,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (cacheDuration.HasValue)
             {
-                responseHeaders["Cache-Control"] = "public, max-age=" + Convert.ToInt32(cacheDuration.Value.TotalSeconds);
+                responseHeaders["Cache-Control"] = "public, max-age=" + cacheDuration.Value.TotalSeconds;
             }
             else
             {
