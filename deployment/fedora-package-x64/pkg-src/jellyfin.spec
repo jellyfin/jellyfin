@@ -8,7 +8,7 @@
 
 Name:           jellyfin
 Version:        10.2.0
-Release:        rc1%{?dist}
+Release:        rc2%{?dist}
 Summary:        The Free Software Media Browser
 License:        GPLv2
 URL:            https://jellyfin.media
@@ -140,7 +140,7 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
-* Sun Feb 10 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
+* Wed Feb 13 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
 - jellyfin:
 - PR452 Use EF Core for Activity database
 - PR535 Clean up streambuilder
@@ -211,7 +211,10 @@ fi
 - PR842 Use VAAPI-enabled ffmpeg
 - PR852 Use SQLitePCL.pretty.netstandard on NuGet
 - PR853 Fix poor handling of cache directories
-- PR8 rebase to latest master
+- PR864: Add support for ZIP plugin archives
+- PR868: Fix audio streaming via BaseProgressiveStreamingService
+- PR869: Remove DLL support and require all packages/plugins to be zip archives
+- PR872: Fix potential NullReferenceException
 - jellyfin-web:
 - PR24 Add Master codeowners
 - PR34 Revert "Add Master codeowners"
@@ -232,6 +235,7 @@ fi
 - PR95 add display language option back
 - PR112 Removed seasonal theme support
 - PR116 Consolidate all strings into a single file per language
+- PR117 Fix volume slider behavior
 - PR118 Enable and fix PiP for Safari
 - PR119 Make the toggle track visible on all themes
 - PR121 Fix syntax error in site.js

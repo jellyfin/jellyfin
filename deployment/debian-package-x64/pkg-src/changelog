@@ -1,4 +1,4 @@
-jellyfin (10.2.0~rc1) unstable; urgency=medium
+jellyfin (10.2.0~rc2) unstable; urgency=medium
 
   * jellyfin:
   * PR452 Use EF Core for Activity database
@@ -70,7 +70,10 @@ jellyfin (10.2.0~rc1) unstable; urgency=medium
   * PR842 Use VAAPI-enabled ffmpeg
   * PR852 Use SQLitePCL.pretty.netstandard on NuGet
   * PR853 Fix poor handling of cache directories
-  * PR8 rebase to latest master
+  * PR864: Add support for ZIP plugin archives
+  * PR868: Fix audio streaming via BaseProgressiveStreamingService
+  * PR869: Remove DLL support and require all packages/plugins to be zip archives
+  * PR872: Fix potential NullReferenceException
   * jellyfin-web:
   * PR24 Add Master codeowners
   * PR34 Revert "Add Master codeowners"
@@ -91,12 +94,13 @@ jellyfin (10.2.0~rc1) unstable; urgency=medium
   * PR95 add display language option back
   * PR112 Removed seasonal theme support
   * PR116 Consolidate all strings into a single file per language
+  * PR117 Fix volume slider behavior
   * PR118 Enable and fix PiP for Safari
   * PR119 Make the toggle track visible on all themes
   * PR121 Fix syntax error in site.js
   * PR127 Change sharedcomponents module to core
 
- -- Jellyfin Packaging Team <packaging@jellyfin.org>  Sun, 10 Feb 2019 01:18:23 -0500
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  Sun, 13 Feb 2019 01:03:20 -0500
 
 jellyfin (10.1.0-1) unstable; urgency=medium
 
