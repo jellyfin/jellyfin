@@ -33,14 +33,15 @@ namespace Emby.Server.Implementations.Library
         //This is the verson that we need to use for local users. Because reasons.
         public Task<ProviderAuthenticationResult> Authenticate(string username, string password, User resolvedUser)
         {
-            ConvertPasswordFormat(resolvedUser);
-            byte[] passwordbytes = Encoding.UTF8.GetBytes(password);
             bool success = false;
             if (resolvedUser == null)
             {
                 success = false;
                 throw new Exception("Invalid username or password");
             }
+            ConvertPasswordFormat(resolvedUser);
+            byte[] passwordbytes = Encoding.UTF8.GetBytes(password);
+           
             if (!resolvedUser.Password.Contains("$"))
             {
                 ConvertPasswordFormat(resolvedUser);
