@@ -13,7 +13,6 @@ using HttpListenerResponse = SocketHttpListener.Net.HttpListenerResponse;
 using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
 using IRequest = MediaBrowser.Model.Services.IRequest;
 
-
 namespace Jellyfin.Server.SocketSharp
 {
     public class WebSocketSharpResponse : IHttpResponse
@@ -159,7 +158,6 @@ namespace Jellyfin.Server.SocketSharp
 
             return sb.ToString();
         }
-
 
         public bool SendChunked
         {
