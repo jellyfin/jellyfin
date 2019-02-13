@@ -63,7 +63,7 @@ namespace Jellyfin.Server
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
-            await CreateLogger(appPaths);
+            await CreateLogger(appPaths).ConfigureAwait(false);
             _logger = _loggerFactory.CreateLogger("Main");
 
             AppDomain.CurrentDomain.UnhandledException += (sender, e)
@@ -115,18 +115,18 @@ namespace Jellyfin.Server
                 new NullImageEncoder(),
                 new NetworkManager(_loggerFactory, environmentInfo)))
             {
-                await appHost.Init(new ServiceCollection());
+                await appHost.Init(new ServiceCollection()).ConfigureAwait(false);
 
                 appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
 
-                await appHost.RunStartupTasks();
+                await appHost.RunStartupTasks().ConfigureAwait(false);
 
                 // TODO: read input for a stop command
 
                 try
                 {
                     // Block main thread until shutdown
-                    await Task.Delay(-1, _tokenSource.Token);
+                    await Task.Delay(-1, _tokenSource.Token).ConfigureAwait(false);
                 }
                 catch (TaskCanceledException)
                 {

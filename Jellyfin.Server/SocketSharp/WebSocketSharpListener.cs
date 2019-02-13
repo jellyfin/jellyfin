@@ -83,7 +83,7 @@ namespace Jellyfin.Server.SocketSharp
 
         private void ProcessContext(HttpListenerContext context)
         {
-            _ = Task.Run(async () => await InitTask(context, _disposeCancellationToken));
+            _ = Task.Run(async () => await InitTask(context, _disposeCancellationToken).ConfigureAwait(false));
         }
 
         private static void LogRequest(ILogger logger, HttpListenerRequest request)
