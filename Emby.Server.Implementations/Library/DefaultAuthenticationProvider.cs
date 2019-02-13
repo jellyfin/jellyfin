@@ -36,32 +36,27 @@ namespace Emby.Server.Implementations.Library
             bool success = false;
             if (resolvedUser == null)
             {
-                success = false;
                 throw new Exception("Invalid username or password");
             }
             ConvertPasswordFormat(resolvedUser);
             byte[] passwordbytes = Encoding.UTF8.GetBytes(password);
-           
-            if (!resolvedUser.Password.Contains("$"))
-            {
-                ConvertPasswordFormat(resolvedUser);
-            }
-            PasswordHash ReadyHash = new PasswordHash(resolvedUser.Password);
+
+            PasswordHash readyHash = new PasswordHash(resolvedUser.Password);
             byte[] CalculatedHash;
             string CalculatedHashString;
-            if (_cryptographyProvider.GetSupportedHashMethods().Any(i => i == ReadyHash.Id))
+            if (_cryptographyProvider.GetSupportedHashMethods().Any(i => i == readyHash.Id))
             {
-                if (String.IsNullOrEmpty(ReadyHash.Salt))
+                if (String.IsNullOrEmpty(readyHash.Salt))
                 {
-                    CalculatedHash = _cryptographyProvider.ComputeHash(ReadyHash.Id, passwordbytes);
+                    CalculatedHash = _cryptographyProvider.ComputeHash(readyHash.Id, passwordbytes);
                     CalculatedHashString = BitConverter.ToString(CalculatedHash).Replace("-", string.Empty);
                 }
                 else
                 {
-                    CalculatedHash = _cryptographyProvider.ComputeHash(ReadyHash.Id, passwordbytes, ReadyHash.SaltBytes);
+                    CalculatedHash = _cryptographyProvider.ComputeHash(readyHash.Id, passwordbytes, readyHash.SaltBytes);
                     CalculatedHashString = BitConverter.ToString(CalculatedHash).Replace("-", string.Empty);
                 }
-                if (CalculatedHashString == ReadyHash.Hash)
+                if (CalculatedHashString == readyHash.Hash)
                 {
                     success = true;
                     //throw new Exception("Invalid username or password");
@@ -69,8 +64,7 @@ namespace Emby.Server.Implementations.Library
             }
             else
             {
-                success = false;
-                throw new Exception(String.Format("Requested crypto method not available in provider: {0}", ReadyHash.Id));
+                throw new Exception(String.Format("Requested crypto method not available in provider: {0}", readyHash.Id));
             }
 
             //var success = string.Equals(GetPasswordHash(resolvedUser), GetHashedString(resolvedUser, password), StringComparison.OrdinalIgnoreCase);
@@ -105,26 +99,6 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        // OLD VERSION //public Task<ProviderAuthenticationResult> Authenticate(string username, string password, User resolvedUser)
-        // OLD VERSION //{
-        // OLD VERSION //    if (resolvedUser == null)
-        // OLD VERSION //    {
-        // OLD VERSION //        throw new Exception("Invalid username or password");
-        // OLD VERSION //    }
-        // OLD VERSION //
-        // OLD VERSION //    var success = string.Equals(GetPasswordHash(resolvedUser), GetHashedString(resolvedUser, password), StringComparison.OrdinalIgnoreCase);
-        // OLD VERSION //
-        // OLD VERSION //    if (!success)
-        // OLD VERSION //    {
-        // OLD VERSION //        throw new Exception("Invalid username or password");
-        // OLD VERSION //    }
-        // OLD VERSION //
-        // OLD VERSION //    return Task.FromResult(new ProviderAuthenticationResult
-        // OLD VERSION //    {
-        // OLD VERSION //        Username = username
-        // OLD VERSION //    });
-        // OLD VERSION //}
-
         public Task<bool> HasPassword(User user)
         {
             var hasConfiguredPassword = !IsPasswordEmpty(user, GetPasswordHash(user));
@@ -133,7 +107,7 @@ namespace Emby.Server.Implementations.Library
 
         private bool IsPasswordEmpty(User user, string passwordHash)
         {
-            return string.Equals(passwordHash, GetEmptyHashedString(user), StringComparison.OrdinalIgnoreCase);
+            return string.IsNullOrEmpty(passwordHash);
         }
 
         public Task ChangePassword(User user, string newPassword)
@@ -144,7 +118,7 @@ namespace Emby.Server.Implementations.Library
             if(passwordHash.Id == "SHA1" && string.IsNullOrEmpty(passwordHash.Salt))
             {
                 passwordHash.SaltBytes = _cryptographyProvider.GenerateSalt();
-                passwordHash.Salt = BitConverter.ToString(passwordHash.SaltBytes).Replace("-","");
+                passwordHash.Salt = PasswordHash.ConvertToByteString(passwordHash.SaltBytes);
                 passwordHash.Id = _cryptographyProvider.DefaultHashMethod;
                 passwordHash.Hash = GetHashedStringChangeAuth(newPassword, passwordHash);
             }else if (newPassword != null)
@@ -164,19 +138,18 @@ namespace Emby.Server.Implementations.Library
 
         public string GetPasswordHash(User user)
         {
-            return string.IsNullOrEmpty(user.Password)
-                ? GetEmptyHashedString(user)
-                : user.Password;
+            return user.Password;
         }
 
         public string GetEmptyHashedString(User user)
         {
-            return GetHashedString(user, string.Empty);
+            return null;
         }
 
-        public string GetHashedStringChangeAuth(string NewPassword, PasswordHash passwordHash)
+        public string GetHashedStringChangeAuth(string newPassword, PasswordHash passwordHash)
         {
-            return BitConverter.ToString(_cryptographyProvider.ComputeHash(passwordHash.Id, Encoding.UTF8.GetBytes(NewPassword), passwordHash.SaltBytes)).Replace("-", string.Empty);
+            passwordHash.HashBytes = Encoding.UTF8.GetBytes(newPassword);
+            return PasswordHash.ConvertToByteString(_cryptographyProvider.ComputeHash(passwordHash));
         }
 
         /// <summary>
@@ -184,8 +157,6 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         public string GetHashedString(User user, string str)
         {
-            //This is legacy. Deprecated in the auth method.
-            //return BitConverter.ToString(_cryptoProvider2.ComputeSHA1(Encoding.UTF8.GetBytes(str))).Replace("-", string.Empty);
             PasswordHash passwordHash;
             if (String.IsNullOrEmpty(user.Password))
             {
@@ -198,12 +169,14 @@ namespace Emby.Server.Implementations.Library
             }
             if (passwordHash.SaltBytes != null)
             {
-                return BitConverter.ToString(_cryptographyProvider.ComputeHash(passwordHash.Id, Encoding.UTF8.GetBytes(str), passwordHash.SaltBytes)).Replace("-",string.Empty);
+                //the password is modern format with PBKDF and we should take advantage of that
+                passwordHash.HashBytes = Encoding.UTF8.GetBytes(str);
+                return PasswordHash.ConvertToByteString(_cryptographyProvider.ComputeHash(passwordHash));
             }
             else
             {
-                return BitConverter.ToString(_cryptographyProvider.ComputeHash(passwordHash.Id, Encoding.UTF8.GetBytes(str))).Replace("-", string.Empty);
-                //throw new Exception("User does not have a hash, this should not be possible");
+                //the password has no salt and should be called with the older method for safety
+                return PasswordHash.ConvertToByteString(_cryptographyProvider.ComputeHash(passwordHash.Id, Encoding.UTF8.GetBytes(str)));
             }
 
 

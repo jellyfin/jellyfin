@@ -9,7 +9,7 @@ namespace Emby.Server.Implementations.Cryptography
 {
     public class CryptographyProvider : ICryptoProvider
     {
-        private List<string> SupportedHashMethods = new List<string>();
+        private HashSet<string> SupportedHashMethods;
         public string DefaultHashMethod => "SHA256";
         private RandomNumberGenerator rng;
         private int defaultiterations = 1000;
@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.Cryptography
         {
             //Currently supported hash methods from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptoconfig?view=netcore-2.1
             //there might be a better way to autogenerate this list as dotnet updates, but I couldn't find one
-            SupportedHashMethods = new List<string>
+            SupportedHashMethods = new HashSet<string>()
             {
                "MD5"
                 ,"System.Security.Cryptography.MD5"
@@ -71,9 +71,9 @@ namespace Emby.Server.Implementations.Cryptography
             return SupportedHashMethods;
         }
 
-        private byte[] PBKDF2(string method, byte[] bytes, byte[] salt)
+        private byte[] PBKDF2(string method, byte[] bytes, byte[] salt, int iterations)
         {
-            using (var r = new Rfc2898DeriveBytes(bytes, salt, defaultiterations, new HashAlgorithmName(method)))
+            using (var r = new Rfc2898DeriveBytes(bytes, salt, iterations, new HashAlgorithmName(method)))
             {
                 return r.GetBytes(32);
             }
@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.Cryptography
                 }
                 else
                 {
-                    return PBKDF2(HashMethod, bytes, salt);
+                    return PBKDF2(HashMethod, bytes, salt,defaultiterations);
                 }
             }
             else
@@ -113,17 +113,27 @@ namespace Emby.Server.Implementations.Cryptography
 
         public byte[] ComputeHashWithDefaultMethod(byte[] bytes, byte[] salt)
         {
-            return PBKDF2(DefaultHashMethod, bytes, salt);
+            return PBKDF2(DefaultHashMethod, bytes, salt, defaultiterations);
         }
         
         public byte[] ComputeHash(PasswordHash hash)
         {
-            return ComputeHash(hash.Id, hash.HashBytes, hash.SaltBytes);
+            int iterations = defaultiterations;
+            if (!hash.Parameters.ContainsKey("iterations"))
+            {
+                hash.Parameters.Add("iterations", defaultiterations.ToString());
+            }
+            else
+            {
+                try { iterations = int.Parse(hash.Parameters["iterations"]); }
+                catch (Exception e) { iterations = defaultiterations; throw new Exception($"Couldn't successfully parse iterations value from string:{hash.Parameters["iterations"]}", e); }
+            }
+            return PBKDF2(hash.Id, hash.HashBytes, hash.SaltBytes,iterations);
         }
-        
+
         public byte[] GenerateSalt()
         {
-            byte[] salt = new byte[8];
+            byte[] salt = new byte[64];
             rng.GetBytes(salt);
             return salt;
         }

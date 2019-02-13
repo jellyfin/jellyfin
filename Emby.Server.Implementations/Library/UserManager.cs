@@ -217,9 +217,8 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public bool IsValidUsername(string username)
+        public static bool IsValidUsername(string username)
         {
-            //The old way was dumb, we should make it less dumb, lets do so.
             //This is some regex that matches only on unicode "word" characters, as well as -, _ and @
             //In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
             string UserNameRegex = "^[\\w-'._@]*$";
@@ -229,8 +228,7 @@ namespace Emby.Server.Implementations.Library
 
         private static bool IsValidUsernameCharacter(char i)
         {
-            string UserNameRegex = "^[\\w-'._@]*$";
-            return Regex.IsMatch(i.ToString(), UserNameRegex);
+            return IsValidUsername(i.ToString());
         }
 
         public string MakeValidUsername(string username)
