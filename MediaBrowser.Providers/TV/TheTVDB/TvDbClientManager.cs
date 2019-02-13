@@ -191,11 +191,12 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 episodeQuery.FirstAired = searchInfo.PremiereDate.Value.ToString("yyyy-MM-dd");
             }
 
-            return GetEpisodeTvdbId(Convert.ToInt32(seriesTvdbId), episodeQuery, cancellationToken, language);
+            return GetEpisodeTvdbId(Convert.ToInt32(seriesTvdbId), episodeQuery, language, cancellationToken);
         }
 
         public async Task<string> GetEpisodeTvdbId(int seriesTvdbId, EpisodeQuery episodeQuery,
-            CancellationToken cancellationToken, string language)
+            string language,
+            CancellationToken cancellationToken)
         {
             var episodePage = await GetEpisodesPageAsync(Convert.ToInt32(seriesTvdbId), episodeQuery, language, cancellationToken);
             return episodePage.Data.FirstOrDefault()?.Id.ToString();
@@ -254,7 +255,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                             continue;
                         }
 
-                        key += propertyInfo.Name + currentValue + ";";
+                        key += propertyInfo.Name + "=" + currentValue + ";";
                     }
                 }
             }
