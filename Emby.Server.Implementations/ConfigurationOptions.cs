@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Emby.Server.Implementations.IO;
 
 namespace Emby.Server.Implementations
 {
