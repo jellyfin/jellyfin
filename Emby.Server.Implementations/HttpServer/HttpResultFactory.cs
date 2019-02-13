@@ -566,7 +566,7 @@ namespace Emby.Server.Implementations.HttpServer
                 };
 
                 AddResponseHeaders(hasHeaders, options.ResponseHeaders);
-                // Generate an ETag based on identifying information - TODO read contents from filesystem instead?
+                // Generate an ETag based on identifying information
                 var responseId = $"{hasHeaders.ContentType}{options.Path}{hasHeaders.TotalContentLength}";
                 var hashedId = MD5.Create().ComputeHash(Encoding.Default.GetBytes(responseId));
                 hasHeaders.Headers["ETag"] = new Guid(hashedId).ToString("N");
@@ -575,12 +575,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             var stream = await factoryFn().ConfigureAwait(false);
-            // Generate an etag based on stream content
-            var streamHash = MD5.Create().ComputeHash(stream);
-            var newEtag = new Guid(streamHash).ToString("N");
-
-            // reset position so the response can re-use it -- TODO is this ok?
-            stream.Position = 0;
 
             var totalContentLength = options.ContentLength;
             if (!totalContentLength.HasValue)
@@ -594,6 +588,27 @@ namespace Emby.Server.Implementations.HttpServer
 
                 }
             }
+
+            byte[] hash;
+            // Don't md5 the stream if it's over 10 MB, it's just not worth it
+            if (totalContentLength.HasValue && totalContentLength.Value < 10000000)
+            {
+                // Generate an etag based on stream content
+                hash = MD5.Create().ComputeHash(stream);
+                // reset position so the response can re-use it
+                stream.Position = 0;
+            }
+            else
+            {
+                var hashId = options.Path + totalContentLength + options.ContentType;
+                if (options.DateLastModified.HasValue)
+                {
+                    hashId += options.DateLastModified;
+                }
+                hash = MD5.Create().ComputeHash(Encoding.Default.GetBytes(hashId));
+            }
+
+            var newEtag = new Guid(hash).ToString("N");
 
             if (!string.IsNullOrWhiteSpace(rangeHeader) && totalContentLength.HasValue)
             {
