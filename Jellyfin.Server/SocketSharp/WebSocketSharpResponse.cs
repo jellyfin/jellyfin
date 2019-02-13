@@ -18,6 +18,7 @@ namespace Jellyfin.Server.SocketSharp
     public class WebSocketSharpResponse : IHttpResponse
     {
         private readonly ILogger _logger;
+
         private readonly HttpListenerResponse _response;
 
         public WebSocketSharpResponse(ILogger logger, HttpListenerResponse response, IRequest request)
@@ -29,7 +30,9 @@ namespace Jellyfin.Server.SocketSharp
         }
 
         public IRequest Request { get; private set; }
+
         public Dictionary<string, object> Items { get; private set; }
+
         public object OriginalResponse => _response;
 
         public int StatusCode
@@ -50,7 +53,7 @@ namespace Jellyfin.Server.SocketSharp
             set => _response.ContentType = value;
         }
 
-        // public ICookies Cookies { get; set; }
+        public QueryParamCollection Headers => _response.Headers;
 
         public void AddHeader(string name, string value)
         {
@@ -62,8 +65,6 @@ namespace Jellyfin.Server.SocketSharp
 
             _response.AddHeader(name, value);
         }
-
-        public QueryParamCollection Headers => _response.Headers;
 
         public string GetHeader(string name)
         {

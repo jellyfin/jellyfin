@@ -185,6 +185,7 @@ namespace Jellyfin.Server.SocketSharp
             for (int idx = 1; idx < len; idx++)
             {
                 char next = val[idx];
+
                 // See http://secunia.com/advisories/14325
                 if (current == '<' || current == '\xff1c')
                 {
@@ -556,15 +557,23 @@ namespace Jellyfin.Server.SocketSharp
                 }
             }
 
-            private Stream data;
-            private string boundary;
-            private byte[] boundary_bytes;
-            private byte[] buffer;
-            private bool at_eof;
-            private Encoding encoding;
-            private StringBuilder sb;
+            private const byte LF = (byte)'\n';
 
-            private const byte LF = (byte)'\n', CR = (byte)'\r';
+            private const byte CR = (byte)'\r';
+
+            private Stream data;
+
+            private string boundary;
+
+            private byte[] boundaryBytes;
+
+            private byte[] buffer;
+
+            private bool atEof;
+
+            private Encoding encoding;
+
+            private StringBuilder sb;
 
             // See RFC 2046
             // In the case of multipart entities, in which one or more different
@@ -580,10 +589,46 @@ namespace Jellyfin.Server.SocketSharp
             {
                 this.data = data;
                 boundary = b;
-                boundary_bytes = encoding.GetBytes(b);
-                buffer = new byte[boundary_bytes.Length + 2]; // CRLF or '--'
+                boundaryBytes = encoding.GetBytes(b);
+                buffer = new byte[boundaryBytes.Length + 2]; // CRLF or '--'
                 this.encoding = encoding;
                 sb = new StringBuilder();
+            }
+
+            public Element ReadNextElement()
+            {
+                if (atEof || ReadBoundary())
+                {
+                    return null;
+                }
+
+                var elem = new Element();
+                string header;
+                while ((header = ReadHeaders()) != null)
+                {
+                    if (StrUtils.StartsWith(header, "Content-Disposition:", true))
+                    {
+                        elem.Name = GetContentDispositionAttribute(header, "name");
+                        elem.Filename = StripPath(GetContentDispositionAttributeWithEncoding(header, "filename"));
+                    }
+                    else if (StrUtils.StartsWith(header, "Content-Type:", true))
+                    {
+                        elem.ContentType = header.Substring("Content-Type:".Length).Trim();
+                        elem.Encoding = GetEncoding(elem.ContentType);
+                    }
+                }
+
+                long start = 0;
+                start = data.Position;
+                elem.Start = start;
+                long pos = MoveToNextBoundary();
+                if (pos == -1)
+                {
+                    return null;
+                }
+
+                elem.Length = pos - start;
+                return elem;
             }
 
             private string ReadLine()
@@ -774,7 +819,7 @@ namespace Jellyfin.Server.SocketSharp
                             return -1;
                         }
 
-                        if (!CompareBytes(boundary_bytes, buffer))
+                        if (!CompareBytes(boundaryBytes, buffer))
                         {
                             state = 0;
                             data.Position = retval + 2;
@@ -790,7 +835,7 @@ namespace Jellyfin.Server.SocketSharp
 
                         if (buffer[bl - 2] == '-' && buffer[bl - 1] == '-')
                         {
-                            at_eof = true;
+                            atEof = true;
                         }
                         else if (buffer[bl - 2] != CR || buffer[bl - 1] != LF)
                         {
@@ -822,42 +867,6 @@ namespace Jellyfin.Server.SocketSharp
                 }
 
                 return retval;
-            }
-
-            public Element ReadNextElement()
-            {
-                if (at_eof || ReadBoundary())
-                {
-                    return null;
-                }
-
-                var elem = new Element();
-                string header;
-                while ((header = ReadHeaders()) != null)
-                {
-                    if (StrUtils.StartsWith(header, "Content-Disposition:", true))
-                    {
-                        elem.Name = GetContentDispositionAttribute(header, "name");
-                        elem.Filename = StripPath(GetContentDispositionAttributeWithEncoding(header, "filename"));
-                    }
-                    else if (StrUtils.StartsWith(header, "Content-Type:", true))
-                    {
-                        elem.ContentType = header.Substring("Content-Type:".Length).Trim();
-                        elem.Encoding = GetEncoding(elem.ContentType);
-                    }
-                }
-
-                long start = 0;
-                start = data.Position;
-                elem.Start = start;
-                long pos = MoveToNextBoundary();
-                if (pos == -1)
-                {
-                    return null;
-                }
-
-                elem.Length = pos - start;
-                return elem;
             }
 
             private static string StripPath(string path)
