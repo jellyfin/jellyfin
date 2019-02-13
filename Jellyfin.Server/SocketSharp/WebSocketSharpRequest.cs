@@ -447,7 +447,7 @@ namespace Jellyfin.Server.SocketSharp
 
         public string ContentType => request.ContentType;
 
-        public Encoding contentEncoding;
+        private Encoding contentEncoding;
         public Encoding ContentEncoding
         {
             get => contentEncoding ?? request.ContentEncoding;

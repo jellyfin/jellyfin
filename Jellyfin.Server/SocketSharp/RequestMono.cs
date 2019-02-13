@@ -127,8 +127,12 @@ namespace Jellyfin.Server.SocketSharp
 
         public string Authorization => string.IsNullOrEmpty(request.Headers["Authorization"]) ? null : request.Headers["Authorization"];
 
-        protected bool validate_cookies, validate_query_string, validate_form;
-        protected bool checked_cookies, checked_query_string, checked_form;
+        protected bool validate_cookies { get; set; }
+        protected bool validate_query_string { get; set; }
+        protected bool validate_form { get; set; }
+        protected bool checked_cookies { get; set; }
+        protected bool checked_query_string { get; set; }
+        protected bool checked_form { get; set; }
 
         private static void ThrowValidationException(string name, string key, string value)
         {
