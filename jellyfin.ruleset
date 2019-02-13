@@ -14,4 +14,8 @@
     <!-- disable warning SA1633: The file header is missing or not located at the top of the file -->
     <Rule Id="SA1633" Action="None" />
   </Rules>
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.FxCopAnalyzers" RuleNamespace="Microsoft.Design">
+    <!-- disable warning CA1054: Change the type of parameter url from string to System.Uri -->
+    <Rule Id="CA1054" Action="None" />
+  </Rules>
 </RuleSet>
