@@ -364,7 +364,7 @@ namespace Emby.Server.Implementations.Data
             //{
             //    return new DummyToken();
             //}
-            return new WriteLockToken(obj); // TODO: fix segfault
+            return new WriteLockToken(obj);
         }
 
         public static IDisposable Write(this ReaderWriterLockSlim obj)
