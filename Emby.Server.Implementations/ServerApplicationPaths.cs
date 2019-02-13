@@ -15,21 +15,17 @@ namespace Emby.Server.Implementations
         /// </summary>
         public ServerApplicationPaths(
             string programDataPath,
-            string appFolderPath,
-            string applicationResourcesPath,
-            string logDirectoryPath = null,
-            string configurationDirectoryPath = null,
-            string cacheDirectoryPath = null)
+            string logDirectoryPath,
+            string configurationDirectoryPath,
+            string cacheDirectoryPath)
             : base(programDataPath,
-                appFolderPath,
                 logDirectoryPath,
                 configurationDirectoryPath,
                 cacheDirectoryPath)
         {
-            ApplicationResourcesPath = applicationResourcesPath;
         }
 
-        public string ApplicationResourcesPath { get; private set; }
+        public string ApplicationResourcesPath { get; } = AppContext.BaseDirectory;
 
         /// <summary>
         /// Gets the path to the base root media directory
@@ -148,7 +144,6 @@ namespace Emby.Server.Implementations
             set => _internalMetadataPath = value;
         }
 
-        private const string _virtualInternalMetadataPath = "%MetadataPath%";
-        public string VirtualInternalMetadataPath => _virtualInternalMetadataPath;
+        public string VirtualInternalMetadataPath { get; } = "%MetadataPath%";
     }
 }
