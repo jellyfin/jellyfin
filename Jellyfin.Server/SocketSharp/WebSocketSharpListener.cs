@@ -34,9 +34,16 @@ namespace Jellyfin.Server.SocketSharp
         private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
         private CancellationToken _disposeCancellationToken;
 
-        public WebSocketSharpListener(ILogger logger, X509Certificate certificate, IStreamHelper streamHelper,
-            INetworkManager networkManager, ISocketFactory socketFactory, ICryptoProvider cryptoProvider,
-            bool enableDualMode, IFileSystem fileSystem, IEnvironmentInfo environment)
+        public WebSocketSharpListener(
+            ILogger logger,
+            X509Certificate certificate,
+            IStreamHelper streamHelper,
+            INetworkManager networkManager,
+            ISocketFactory socketFactory,
+            ICryptoProvider cryptoProvider,
+            bool enableDualMode,
+            IFileSystem fileSystem,
+            IEnvironmentInfo environment)
         {
             _logger = logger;
             _certificate = certificate;
@@ -61,7 +68,9 @@ namespace Jellyfin.Server.SocketSharp
         public void Start(IEnumerable<string> urlPrefixes)
         {
             if (_listener == null)
+            {
                 _listener = new HttpListener(_logger, _cryptoProvider, _socketFactory, _networkManager, _streamHelper, _fileSystem, _environment);
+            }
 
             _listener.EnableDualMode = _enableDualMode;
 
@@ -90,8 +99,11 @@ namespace Jellyfin.Server.SocketSharp
         {
             var url = request.Url.ToString();
 
-            logger.LogInformation("{0} {1}. UserAgent: {2}",
-                request.IsWebSocketRequest ? "WS" : "HTTP " + request.HttpMethod, url, request.UserAgent ?? string.Empty);
+            logger.LogInformation(
+                "{0} {1}. UserAgent: {2}",
+                request.IsWebSocketRequest ? "WS" : "HTTP " + request.HttpMethod,
+                url,
+                request.UserAgent ?? string.Empty);
         }
 
         private Task InitTask(HttpListenerContext context, CancellationToken cancellationToken)

@@ -42,7 +42,7 @@ namespace Jellyfin.Server.SocketSharp
             }
 
             var startHostUrl = listenerUrl.Substring(pos + "://".Length);
-            var endPos = startHostUrl.IndexOf('/');
+            var endPos = startHostUrl.IndexOf('/', StringComparison.Ordinal);
             if (endPos == -1)
             {
                 return null;
@@ -110,6 +110,7 @@ namespace Jellyfin.Server.SocketSharp
                 switch (crlf)
                 {
                     case 0:
+                    {
                         if (c == '\r')
                         {
                             crlf = 1;
@@ -124,23 +125,31 @@ namespace Jellyfin.Server.SocketSharp
                         {
                             throw new ArgumentException("net_WebHeaderInvalidControlChars");
                         }
+
                         break;
+                    }
 
                     case 1:
+                    {
                         if (c == '\n')
                         {
                             crlf = 2;
                             break;
                         }
+
                         throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
+                    }
 
                     case 2:
+                    {
                         if (c == ' ' || c == '\t')
                         {
                             crlf = 0;
                             break;
                         }
+
                         throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
+                    }
                 }
             }
 
@@ -349,6 +358,7 @@ namespace Jellyfin.Server.SocketSharp
                     this.pathInfo = System.Net.WebUtility.UrlDecode(pathInfo);
                     this.pathInfo = NormalizePathInfo(pathInfo, mode);
                 }
+
                 return this.pathInfo;
             }
         }
@@ -508,6 +518,7 @@ namespace Jellyfin.Server.SocketSharp
                         i++;
                     }
                 }
+
                 return httpFiles;
             }
         }

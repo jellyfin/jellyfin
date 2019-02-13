@@ -13,7 +13,7 @@ namespace Jellyfin.Server.SocketSharp
     {
         internal static string GetParameter(string header, string attr)
         {
-            int ap = header.IndexOf(attr);
+            int ap = header.IndexOf(attr, StringComparison.Ordinal);
             if (ap == -1)
             {
                 return null;
@@ -140,8 +140,12 @@ namespace Jellyfin.Server.SocketSharp
                 v = v.Substring(0, 16) + "...\"";
             }
 
-            string msg = string.Format("A potentially dangerous Request.{0} value was " +
-                            "detected from the client ({1}={2}).", name, key, v);
+            string msg = string.Format(
+                CultureInfo.InvariantCulture,
+                "A potentially dangerous Request.{0} value was detected from the client ({1}={2}).",
+                name,
+                key,
+                v);
 
             throw new Exception(msg);
         }
@@ -258,6 +262,7 @@ namespace Jellyfin.Server.SocketSharp
                                         value.Append((char)c);
                                     }
                                 }
+
                                 if (c == -1)
                                 {
                                     AddRawKeyValue(form, key, value);
@@ -273,6 +278,7 @@ namespace Jellyfin.Server.SocketSharp
                                 key.Append((char)c);
                             }
                         }
+
                         if (c == -1)
                         {
                             AddRawKeyValue(form, key, value);
@@ -310,6 +316,7 @@ namespace Jellyfin.Server.SocketSharp
                         result.Append(key);
                         result.Append('=');
                     }
+
                     result.Append(pair.Value);
                 }
 
@@ -493,11 +500,6 @@ namespace Jellyfin.Server.SocketSharp
             public Stream InputStream => stream;
         }
 
-        private class Helpers
-        {
-            public static readonly CultureInfo InvariantCulture = CultureInfo.InvariantCulture;
-        }
-
         internal static class StrUtils
         {
             public static bool StartsWith(string str1, string str2, bool ignore_case)
@@ -535,12 +537,17 @@ namespace Jellyfin.Server.SocketSharp
 
             public class Element
             {
-                public string ContentType;
-                public string Name;
-                public string Filename;
-                public Encoding Encoding;
-                public long Start;
-                public long Length;
+                public string ContentType { get; set; }
+
+                public string Name { get; set; }
+
+                public string Filename { get; set; }
+
+                public Encoding Encoding { get; set; }
+
+                public long Start { get; set; }
+
+                public long Length { get; set; }
 
                 public override string ToString()
                 {
@@ -597,6 +604,7 @@ namespace Jellyfin.Server.SocketSharp
                     {
                         break;
                     }
+
                     got_cr = b == CR;
                     sb.Append((char)b);
                 }
@@ -797,6 +805,7 @@ namespace Jellyfin.Server.SocketSharp
                             c = data.ReadByte();
                             continue;
                         }
+
                         data.Position = retval + 2;
                         if (got_cr)
                         {
