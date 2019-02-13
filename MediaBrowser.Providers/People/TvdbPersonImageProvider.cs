@@ -11,7 +11,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Providers.TV;
 using MediaBrowser.Providers.TV.TheTVDB;
 using Microsoft.Extensions.Logging;
 using TvDbSharper;
@@ -89,7 +88,7 @@ namespace MediaBrowser.Providers.People
 
                 return new RemoteImageInfo
                 {
-                    Url = TVUtils.BannerUrl + actor.Image,
+                    Url = TvdbUtils.BannerUrl + actor.Image,
                     Type = ImageType.Primary,
                     ProviderName = Name
                 };

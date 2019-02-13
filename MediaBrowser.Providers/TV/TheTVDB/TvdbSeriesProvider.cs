@@ -232,7 +232,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     Name = tvdbTitles.FirstOrDefault(),
                     ProductionYear = firstAired.Year,
                     SearchProviderName = Name,
-                    ImageUrl = TVUtils.BannerUrl + seriesSearchResult.Banner
+                    ImageUrl = TvdbUtils.BannerUrl + seriesSearchResult.Banner
 
                 };
                 try
@@ -383,7 +383,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     Type = PersonType.Actor,
                     Name = (actor.Name ?? string.Empty).Trim(),
                     Role = actor.Role,
-                    ImageUrl = TVUtils.BannerUrl + actor.Image,
+                    ImageUrl = TvdbUtils.BannerUrl + actor.Image,
                     SortOrder = actor.SortOrder
                 };
 

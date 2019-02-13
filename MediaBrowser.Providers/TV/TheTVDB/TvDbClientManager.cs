@@ -28,7 +28,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private TvDbClientManager()
         {
             tvDbClient = new TvDbClient();
-            tvDbClient.Authentication.AuthenticateAsync(TVUtils.TvdbApiKey);
+            tvDbClient.Authentication.AuthenticateAsync(TvdbUtils.TvdbApiKey);
             tokenCreatedAt = DateTime.Now;
         }
 
@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     }
                     catch
                     {
-                        tvDbClient.Authentication.AuthenticateAsync(TVUtils.TvdbApiKey);
+                        tvDbClient.Authentication.AuthenticateAsync(TvdbUtils.TvdbApiKey);
                     }
 
                     tokenCreatedAt = DateTime.Now;
@@ -222,7 +222,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     return cachedValue;
                 }
 
-                tvDbClient.AcceptedLanguage = TVUtils.NormalizeLanguage(language) ?? DefaultLanguage;
+                tvDbClient.AcceptedLanguage = TvdbUtils.NormalizeLanguage(language) ?? DefaultLanguage;
                 var result = await resultFactory.Invoke();
                 _cache.Set(key, result, TimeSpan.FromHours(1));
                 return result;

@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -95,10 +93,10 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     RatingType = RatingType.Score,
                     CommunityRating = (double?)image.RatingsInfo.Average,
                     VoteCount = image.RatingsInfo.Count,
-                    Url = TVUtils.BannerUrl + image.FileName,
+                    Url = TvdbUtils.BannerUrl + image.FileName,
                     ProviderName = Name,
                     Language = languages.FirstOrDefault(lang => lang.Id == image.LanguageId)?.Abbreviation,
-                    ThumbnailUrl = TVUtils.BannerUrl + image.Thumbnail
+                    ThumbnailUrl = TvdbUtils.BannerUrl + image.Thumbnail
                 };
 
                 var resolution = image.Resolution.Split('x');
@@ -108,20 +106,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     imageInfo.Height = Convert.ToInt32(resolution[1]);
                 }
 
-
-                if (string.Equals(image.KeyType, "poster", StringComparison.OrdinalIgnoreCase))
-                {
-                    imageInfo.Type = ImageType.Primary;
-                }
-                else if (string.Equals(image.KeyType, "series", StringComparison.OrdinalIgnoreCase))
-                {
-                    imageInfo.Type = ImageType.Banner;
-                }
-                else if (string.Equals(image.KeyType, "fanart", StringComparison.OrdinalIgnoreCase))
-                {
-                    imageInfo.Type = ImageType.Backdrop;
-                }
-
+                imageInfo.Type = TvdbUtils.GetImageTypeFromKeyType(image.KeyType);
                 list.Add(imageInfo);
             }
             var isLanguageEn = string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase);

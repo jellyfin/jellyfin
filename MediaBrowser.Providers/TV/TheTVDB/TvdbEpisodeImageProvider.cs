@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -105,7 +102,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 Width = Convert.ToInt32(episode.ThumbWidth),
                 Height = Convert.ToInt32(episode.ThumbHeight),
                 ProviderName = Name,
-                Url = TVUtils.BannerUrl + episode.Filename,
+                Url = TvdbUtils.BannerUrl + episode.Filename,
                 Type = ImageType.Primary
             };
         }
