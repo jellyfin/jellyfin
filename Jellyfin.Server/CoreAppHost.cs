@@ -18,6 +18,8 @@ namespace Jellyfin.Server
 
         public override bool CanSelfRestart => StartupOptions.RestartPath != null;
 
+        protected override bool SupportsDualModeSockets => true;
+
         protected override void RestartInternal() => Program.Restart();
 
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()
@@ -26,8 +28,6 @@ namespace Jellyfin.Server
         }
 
         protected override void ShutdownInternal() => Program.Shutdown();
-
-        protected override bool SupportsDualModeSockets => true;
 
         protected override IHttpListener CreateHttpListener()
             => new WebSocketSharpListener(
@@ -39,7 +39,6 @@ namespace Jellyfin.Server
                 CryptographyProvider,
                 SupportsDualModeSockets,
                 FileSystemManager,
-                EnvironmentInfo
-            );
+                EnvironmentInfo);
     }
 }
