@@ -55,6 +55,7 @@ namespace Jellyfin.Server.SocketSharp
         void socket_OnError(object sender, SocketHttpListener.ErrorEventArgs e)
         {
             _logger.LogError("Error in SharpWebSocket: {Message}", e.Message ?? string.Empty);
+
             // Closed?.Invoke(this, EventArgs.Empty);
         }
 

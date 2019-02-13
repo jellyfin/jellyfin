@@ -82,9 +82,7 @@ namespace Jellyfin.Server.SocketSharp
                     }
                     else
                     {
-                        //
                         // We use a substream, as in 2.x we will support large uploads streamed to disk,
-                        //
                         var sub = new HttpPostedFile(e.Filename, e.ContentType, input, e.Start, e.Length);
                         files[e.Name] = sub;
                     }
