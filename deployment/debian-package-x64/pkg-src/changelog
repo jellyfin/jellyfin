@@ -74,6 +74,7 @@ jellyfin (10.2.0~rc2) unstable; urgency=medium
   * PR868: Fix audio streaming via BaseProgressiveStreamingService
   * PR869: Remove DLL support and require all packages/plugins to be zip archives
   * PR872: Fix potential NullReferenceException
+  * PR890: Drop ETag and use Last-Modified header
   * jellyfin-web:
   * PR24 Add Master codeowners
   * PR34 Revert "Add Master codeowners"
@@ -99,6 +100,7 @@ jellyfin (10.2.0~rc2) unstable; urgency=medium
   * PR119 Make the toggle track visible on all themes
   * PR121 Fix syntax error in site.js
   * PR127 Change sharedcomponents module to core
+  * PR135 Make sure fallback culture is always available
 
  -- Jellyfin Packaging Team <packaging@jellyfin.org>  Sun, 13 Feb 2019 01:03:20 -0500
 

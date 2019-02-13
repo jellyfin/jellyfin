@@ -211,10 +211,11 @@ fi
 - PR842 Use VAAPI-enabled ffmpeg
 - PR852 Use SQLitePCL.pretty.netstandard on NuGet
 - PR853 Fix poor handling of cache directories
-- PR864: Add support for ZIP plugin archives
-- PR868: Fix audio streaming via BaseProgressiveStreamingService
-- PR869: Remove DLL support and require all packages/plugins to be zip archives
-- PR872: Fix potential NullReferenceException
+- PR864 Add support for ZIP plugin archives
+- PR868 Fix audio streaming via BaseProgressiveStreamingService
+- PR869 Remove DLL support and require all packages/plugins to be zip archives
+- PR872 Fix potential NullReferenceException
+- PR890 Drop ETag and use Last-Modified header
 - jellyfin-web:
 - PR24 Add Master codeowners
 - PR34 Revert "Add Master codeowners"
@@ -240,6 +241,7 @@ fi
 - PR119 Make the toggle track visible on all themes
 - PR121 Fix syntax error in site.js
 - PR127 Change sharedcomponents module to core
+- PR135 Make sure fallback culture is always available
 * Sun Jan 20 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
 - jellyfin:
 - PR335 Build scripts and build system consolidation.
