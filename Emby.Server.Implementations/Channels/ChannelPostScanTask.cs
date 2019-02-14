@@ -44,17 +44,17 @@ namespace Emby.Server.Implementations.Channels
         {
             var installedChannelIds = ((ChannelManager)_channelManager).GetInstalledChannelIds();
 
-            var databaseIds = _libraryManager.GetItemList(new InternalItemsQuery
+            var uninstalledChannels = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Channel).Name },
                 ExcludeItemIds = installedChannelIds.ToArray()
             });
 
-            foreach (var channel in databaseIds.Cast<Channel>())
+            foreach (var channel in uninstalledChannels)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                CleanChannel(channel, cancellationToken);
+                CleanChannel((Channel)channel, cancellationToken);
             }
         }
 
