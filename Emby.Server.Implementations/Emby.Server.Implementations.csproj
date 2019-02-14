@@ -24,6 +24,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
     <PackageReference Include="ServiceStack.Text.Core" Version="5.4.0" />
     <PackageReference Include="sharpcompress" Version="0.22.0" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" Version="1.0.0" />
@@ -44,12 +45,6 @@
     <EmbeddedResource Include="Localization\countries.json" />
     <EmbeddedResource Include="Localization\Core\*.json" />
     <EmbeddedResource Include="Localization\Ratings\*.csv" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\..\..\.nuget\packages\microsoft.extensions.configuration.abstractions\2.2.0\lib\netstandard2.0\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>
