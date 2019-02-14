@@ -89,9 +89,9 @@
     "UserOnlineFromDevice": "{0} - {1} arqyly qosylǵan",
     "UserPasswordChangedWithName": "Paıdalanýshy {0} úshin paról ózgertildi",
     "UserPolicyUpdatedWithName": "Paıdalanýshy {0} úshin saıasattary jańartyldy",
-    "UserStartedPlayingItemWithValues": "{0} - {1} oınatýyn  {2} bastady",
-    "UserStoppedPlayingItemWithValues": "{0} - {1} oınatýyn  {2} toqtatty",
+    "UserStartedPlayingItemWithValues": "{0} - {1} oınatýyn {2} bastady",
+    "UserStoppedPlayingItemWithValues": "{0} - {1} oınatýyn {2} toqtatty",
     "ValueHasBeenAddedToLibrary": "{0} (tasyǵyshhanaǵa ústelindi)",
     "ValueSpecialEpisodeName": "Arnaıy - {0}",
-    "VersionNumber": "Nusqasy: {0}"
+    "VersionNumber": "Nusqasy {0}"
 }
