@@ -1,7 +1,6 @@
 srpm:
 	dnf -y install git
-	git submodule init
-	git submodule update
+	git submodule update --init --recursive
 	cd deployment/fedora-package-x64;                    \
 	./create_tarball.sh;                                 \
 	rpmbuild -bs pkg-src/jellyfin.spec                   \
