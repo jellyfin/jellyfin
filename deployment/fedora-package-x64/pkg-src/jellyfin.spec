@@ -143,6 +143,7 @@ fi
 * Thu Feb 21 2019 Brian J. Murrell <brian@interlinx.bc.ca>
 - jellyfin:
 - dotnet seems to have moved to dotnet-runtime
+- COPR auto-build
 * Wed Feb 20 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
 - jellyfin:
 - PR920 Fix cachedir missing from Docker container
