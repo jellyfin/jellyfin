@@ -105,7 +105,6 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.Providers.TV.TheTVDB;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
@@ -627,7 +626,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         protected async Task RegisterResources(IServiceCollection serviceCollection)
         {
-            serviceCollection.AddMemoryCache(options => options.SizeLimit = 1024);
+            serviceCollection.AddMemoryCache();
 
             serviceCollection.AddSingleton(ConfigurationManager);
             serviceCollection.AddSingleton<IApplicationHost>(this);
