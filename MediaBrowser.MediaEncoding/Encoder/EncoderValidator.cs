@@ -10,15 +10,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 {
     public class FFmpegVersion
     {
-        private int _version;
-        private int _multi => 100;
-        private const int _unknown = 0;
-        private const int _experimental = -1;
+        private readonly int _major;
+        private readonly int _minor;
 
-        public FFmpegVersion(int p1)
-        {
-            _version = p1;
-        }
+        private const int _unknown = 0;
 
         public FFmpegVersion(string p1)
         {
@@ -26,50 +21,50 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (match.Groups["major"].Success && match.Groups["minor"].Success)
             {
-                int major = int.Parse(match.Groups["major"].Value);
-                int minor = int.Parse(match.Groups["minor"].Value);
-                _version = (major * _multi) + minor;
+                _major = int.Parse(match.Groups["major"].Value);
+                _minor = int.Parse(match.Groups["minor"].Value);
+            }
+            else
+            {
+                _major = _unknown;
+                _minor = _unknown;
             }
         }
 
         public override string ToString()
         {
-            switch (_version)
+            switch (_major)
             {
                 case _unknown:
                     return "Unknown";
-                case _experimental:
-                    return "Experimental";
                 default:
-                    string major = Convert.ToString(_version / _multi);
-                    string minor = Convert.ToString(_version % _multi);
-                    return string.Concat(major, ".", minor);
+                    return string.Format("{0}.{1}",_major,_minor);
             }
         }
 
         public bool Unknown()
         {
-            return _version == _unknown;
-        }
-
-        public int Version()
-        {
-            return _version;
-        }
-
-        public bool Experimental()
-        {
-            return _version == _experimental;
+            return _major == _unknown;
         }
 
         public bool Below(FFmpegVersion checkAgainst)
         {
-            return (_version > 0) && (_version < checkAgainst._version);
+            return ToScalar() < checkAgainst.ToScalar();
         }
 
-        public bool Suitable(FFmpegVersion checkAgainst)
+        public bool Above(FFmpegVersion checkAgainst)
         {
-            return (_version > 0) && (_version >= checkAgainst._version);
+            return ToScalar() > checkAgainst.ToScalar();
+        }
+
+        public bool Same(FFmpegVersion checkAgainst)
+        {
+            return ToScalar() == checkAgainst.ToScalar();
+        }
+
+        private int ToScalar()
+        {
+            return (_major * 1000) + _minor;
         }
     }
 
@@ -123,34 +118,43 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return false;
             }
 
-            // The minimum FFmpeg version required to run jellyfin successfully
-            FFmpegVersion required = new FFmpegVersion("4.0");
+            // The min and max FFmpeg versions required to run jellyfin successfully
+            FFmpegVersion minRequired = new FFmpegVersion("4.0");
+            FFmpegVersion maxRequired = new FFmpegVersion("4.0");
 
             // Work out what the version under test is
             FFmpegVersion underTest = GetFFmpegVersion(output);
 
             if (logOutput)
             {
+                _logger.LogInformation("FFmpeg validation: Found ffmpeg version {0}", underTest.ToString());
+
                 if (underTest.Unknown())
                 {
-                    _logger.LogWarning("FFmpeg validation: Unknown version");
+                    if (minRequired.Same(maxRequired))
+                    {
+                        _logger.LogWarning("FFmpeg validation: We recommend ffmpeg version {0}", minRequired.ToString());
+                    }
+                    else
+                    {
+                        _logger.LogWarning("FFmpeg validation: We recommend a minimum of {0} and maximum of {1}", minRequired.ToString(), maxRequired.ToString());
+                    }
                 }
-                else if (underTest.Below(required))
+                else if (underTest.Below(minRequired))
                 {
-                    _logger.LogWarning("FFmpeg validation: Found version {0} which is below the minimum recommended of {1}",
-                        underTest.ToString(), required.ToString());
+                    _logger.LogWarning("FFmpeg validation: The minimum recommended ffmpeg version is {0}", minRequired.ToString());
                 }
-                else if (underTest.Experimental())
+                else if (underTest.Above(maxRequired))
                 {
-                    _logger.LogWarning("FFmpeg validation: Unknown version: {0}?", underTest.ToString());
+                    _logger.LogWarning("FFmpeg validation: The maximum recommended ffmpeg version is {0}", maxRequired.ToString());
                 }
                 else
                 {
-                    _logger.LogInformation("FFmpeg validation: Detected version {0}", underTest.ToString());
+                    // Version is ok so no warning required
                 }
             }
 
-            return underTest.Suitable(required);
+            return !underTest.Below(minRequired) && !underTest.Above(maxRequired);
         }
 
         /// <summary>
@@ -176,7 +180,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 // Try and use the individual library versions to determine a FFmpeg version
                 // This lookup table is to be maintained with the following command line:
                 // $ ./ffmpeg.exe -version | perl -ne ' print "$1=$2.$3," if /^(lib\w+)\s+(\d+)\.\s*(\d+)/'
-                ReadOnlyDictionary<FFmpegVersion, string> lut = new ReadOnlyDictionary<FFmpegVersion, string>
+                var lut = new ReadOnlyDictionary<FFmpegVersion, string>
                     (new Dictionary<FFmpegVersion, string>
                     {
                         { new FFmpegVersion("4.1"), "libavutil=56.22,libavcodec=58.35,libavformat=58.20,libavdevice=58.5,libavfilter=7.40,libswscale=5.3,libswresample=3.3,libpostproc=55.3," },
@@ -191,38 +195,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 var reducedVersion = GetVersionString(output);
                 var found = lut.FirstOrDefault(x => x.Value == reducedVersion).Key;
 
-                if (found != null)
-                {
-                    return found;
-                }
-                else
-                {
-                    // Unknown version.  Test the main libavcoder version in the candidate with the
-                    // latest from the dictionary.  If candidate is greater than dictionary chances are
-                    // the user if running HEAD/master ffmpeg build (which is probably ok)
-                    var firstElement = lut.FirstOrDefault();
-
-                    var reqVer = Regex.Match(firstElement.Value, @"libavcodec=(\d+\.\d+)");
-                    var gotVer = Regex.Match(reducedVersion, @"libavcodec=(\d+\.\d+)");
-
-                    if (reqVer.Success && gotVer.Success)
-                    {
-                        var req = new FFmpegVersion(reqVer.Groups[1].Value);
-                        var got = new FFmpegVersion(gotVer.Groups[1].Value);
-
-                        // The library versions are not comparable with the FFmpeg version so must check
-                        // candidate (got) against value from dictionary (req).  Return Experimental if suitable
-                        if( got.Suitable(req) )
-                        {
-                            return new FFmpegVersion(-1);
-
-                        }
-                    }
-                }
+                return found ?? new FFmpegVersion("Unknown");
             }
-
-            // Default to return Unknown
-            return new FFmpegVersion(0);
         }
 
         /// <summary>
