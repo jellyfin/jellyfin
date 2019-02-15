@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
-    class UserDataChangeNotifier : IServerEntryPoint
+    public class UserDataChangeNotifier : IServerEntryPoint
     {
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;

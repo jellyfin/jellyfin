@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Music
 {
-    class MusicVideoMetadataService : MetadataService<MusicVideo, MusicVideoInfo>
+    public class MusicVideoMetadataService : MetadataService<MusicVideo, MusicVideoInfo>
     {
         protected override void MergeData(MetadataResult<MusicVideo> source, MetadataResult<MusicVideo> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
