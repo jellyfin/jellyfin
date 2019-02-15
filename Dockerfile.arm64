@@ -10,7 +10,7 @@ RUN tar -xzvf qemu-aarch64-static.tar.gz && ls
 
 
 FROM microsoft/dotnet:${DOTNET_VERSION}-sdk-stretch-arm64v8 as builder
-COPY qemu-aarch64-static /usr/bin
+COPY --from=qemu_extract qemu-aarch64-static /usr/bin
 WORKDIR /repo
 COPY . .
 #TODO Remove or update the sed line when we update dotnet version.
