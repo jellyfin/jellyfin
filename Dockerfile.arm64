@@ -3,14 +3,8 @@
 ARG DOTNET_VERSION=3.0
 
 
-FROM multiarch/qemu-user-static:x86_64-aarch64 as qemu
-FROM alpine as qemu_extract
-COPY --from=qemu /usr/bin qemu_user_static.tgz
-RUN tar -xzvf qemu_user_static.tgz
-
-
 FROM microsoft/dotnet:${DOTNET_VERSION}-sdk-stretch-arm64v8 as builder
-COPY --from=qemu_extract qemu-* /usr/bin
+COPY qemu-* /usr/bin
 WORKDIR /repo
 COPY . .
 #TODO Remove or update the sed line when we update dotnet version.
