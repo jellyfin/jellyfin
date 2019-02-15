@@ -6,7 +6,7 @@ ARG DOTNET_VERSION=3.0
 FROM multiarch/qemu-user-static:x86_64-aarch64 as qemu
 FROM alpine as qemu_extract
 COPY --from=qemu /usr/bin qemu-aarch64-static.tar.gz
-RUN tar -xzvf qemu-aarch64-static.tar.gz
+RUN tar -xzvf qemu-aarch64-static.tar.gz && ls
 
 
 FROM microsoft/dotnet:${DOTNET_VERSION}-sdk-stretch-arm64v8 as builder
