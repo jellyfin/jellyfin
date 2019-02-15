@@ -9,7 +9,6 @@ COPY --from=qemu /usr/bin qemu-arm-static.tar.gz
 RUN tar -xzvf qemu-arm-static.tar.gz
 
 FROM microsoft/dotnet:${DOTNET_VERSION}-sdk-stretch as builder
-COPY --from=qemu_extract qemu-arm-static /usr/bin
 WORKDIR /repo
 COPY . .
 #TODO Remove or update the sed line when we update dotnet version.
