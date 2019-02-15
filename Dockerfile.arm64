@@ -9,8 +9,7 @@ COPY --from=qemu /usr/bin qemu-aarch64-static.tar.gz
 RUN tar -xzvf qemu-aarch64-static.tar.gz && ls
 
 
-FROM microsoft/dotnet:${DOTNET_VERSION}-sdk-stretch-arm64v8 as builder
-COPY --from=qemu_extract qemu-aarch64-static /usr/bin
+FROM microsoft/dotnet:${DOTNET_VERSION}-sdk-stretch as builder
 WORKDIR /repo
 COPY . .
 #TODO Remove or update the sed line when we update dotnet version.
@@ -18,6 +17,7 @@ RUN export DOTNET_CLI_TELEMETRY_OPTOUT=1 \
  && find . -type f -exec sed -i 's/netcoreapp2.1/netcoreapp3.0/g' {} \; \
  && dotnet clean \
  && dotnet publish \
+    -r linux-arm64 \
     --configuration release \
     --output /jellyfin \
     Jellyfin.Server
