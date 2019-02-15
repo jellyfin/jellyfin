@@ -445,7 +445,7 @@ namespace Jellyfin.Server.SocketSharp
                     long virt = real - offset;
                     if (virt < 0 || virt > Length)
                     {
-                        throw new ArgumentException("Invalid position", nameof(origin));
+                        throw new ArgumentException("Invalid position", nameof(d));
                     }
 
                     position = s.Seek(real, SeekOrigin.Begin);
@@ -618,8 +618,7 @@ namespace Jellyfin.Server.SocketSharp
                     }
                 }
 
-                long start = 0;
-                start = data.Position;
+                long start = data.Position;
                 elem.Start = start;
                 long pos = MoveToNextBoundary();
                 if (pos == -1)
