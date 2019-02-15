@@ -20,11 +20,11 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private readonly ILogger _logger;
         private readonly TvDbClientManager _tvDbClientManager;
 
-        public TvdbEpisodeImageProvider(IHttpClient httpClient, ILogger logger)
+        public TvdbEpisodeImageProvider(IHttpClient httpClient, ILogger logger, TvDbClientManager tvDbClientManager)
         {
             _httpClient = httpClient;
             _logger = logger;
-            _tvDbClientManager = TvDbClientManager.Instance;
+            _tvDbClientManager = tvDbClientManager;
         }
 
         public string Name => "TheTVDB";

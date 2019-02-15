@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Caching.Memory;
@@ -13,45 +12,20 @@ using TvDbSharper.Dto;
 
 namespace MediaBrowser.Providers.TV.TheTVDB
 {
-    // TODO add to DI once Bond's PR is merged
-    public sealed class TvDbClientManager
+    public class TvDbClientManager
     {
-        private static volatile TvDbClientManager instance;
-        // TODO add to DI once Bond's PR is merged
         private readonly SemaphoreSlim _cacheWriteLock = new SemaphoreSlim(1, 1);
-        private static MemoryCache _cache;
-        private static readonly object syncRoot = new object();
-        private static TvDbClient tvDbClient;
-        private static DateTime tokenCreatedAt;
+        private readonly IMemoryCache _cache;
+        private readonly TvDbClient tvDbClient;
+        private DateTime tokenCreatedAt;
         private const string DefaultLanguage =  "en";
 
-        private TvDbClientManager()
+        public TvDbClientManager(IMemoryCache memoryCache)
         {
+            _cache = memoryCache;
             tvDbClient = new TvDbClient();
             tvDbClient.Authentication.AuthenticateAsync(TvdbUtils.TvdbApiKey);
             tokenCreatedAt = DateTime.Now;
-        }
-
-        public static TvDbClientManager Instance
-        {
-            get
-            {
-                if (instance != null)
-                {
-                    return instance;
-                }
-
-                lock (syncRoot)
-                {
-                    if (instance == null)
-                    {
-                        instance = new TvDbClientManager();
-                        _cache = new MemoryCache(new MemoryCacheOptions());
-                    }
-                }
-
-                return instance;
-            }
         }
 
         public TvDbClient TvDbClient

@@ -24,12 +24,12 @@ namespace MediaBrowser.Providers.People
         private readonly ILibraryManager _libraryManager;
         private readonly TvDbClientManager _tvDbClientManager;
 
-        public TvdbPersonImageProvider(ILibraryManager libraryManager, IHttpClient httpClient, ILogger logger)
+        public TvdbPersonImageProvider(ILibraryManager libraryManager, IHttpClient httpClient, ILogger logger, TvDbClientManager tvDbClientManager)
         {
             _libraryManager = libraryManager;
             _httpClient = httpClient;
             _logger = logger;
-            _tvDbClientManager = TvDbClientManager.Instance;
+            _tvDbClientManager = tvDbClientManager;
         }
 
         public string Name => ProviderName;

@@ -29,14 +29,14 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private readonly ILocalizationManager _localizationManager;
         private readonly TvDbClientManager _tvDbClientManager;
 
-        public TvdbSeriesProvider(IHttpClient httpClient, ILogger logger, ILibraryManager libraryManager, ILocalizationManager localizationManager)
+        public TvdbSeriesProvider(IHttpClient httpClient, ILogger logger, ILibraryManager libraryManager, ILocalizationManager localizationManager, TvDbClientManager tvDbClientManager)
         {
             _httpClient = httpClient;
             _logger = logger;
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
             Current = this;
-            _tvDbClientManager = TvDbClientManager.Instance;
+            _tvDbClientManager = tvDbClientManager;
         }
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)

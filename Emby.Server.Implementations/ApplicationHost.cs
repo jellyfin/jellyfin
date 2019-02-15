@@ -102,8 +102,10 @@ using MediaBrowser.Model.Xml;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Subtitles;
+using MediaBrowser.Providers.TV.TheTVDB;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
@@ -625,11 +627,12 @@ namespace Emby.Server.Implementations
         /// </summary>
         protected async Task RegisterResources(IServiceCollection serviceCollection)
         {
+            serviceCollection.AddMemoryCache(options => options.SizeLimit = 1024);
+
             serviceCollection.AddSingleton(ConfigurationManager);
             serviceCollection.AddSingleton<IApplicationHost>(this);
 
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
-
 
             serviceCollection.AddSingleton(JsonSerializer);
 
@@ -640,6 +643,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(EnvironmentInfo);
 
             serviceCollection.AddSingleton(FileSystemManager);
+            serviceCollection.AddSingleton<TvDbClientManager>();
 
             HttpClient = CreateHttpClient();
             serviceCollection.AddSingleton(HttpClient);

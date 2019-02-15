@@ -27,17 +27,25 @@ namespace MediaBrowser.Providers.TV
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
         private readonly IFileSystem _fileSystem;
+        private readonly TvDbClientManager _tvDbClientManager;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private const double UnairedEpisodeThresholdDays = 2;
 
-        public MissingEpisodeProvider(ILogger logger, IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization, IFileSystem fileSystem)
+        public MissingEpisodeProvider(
+            ILogger logger,
+            IServerConfigurationManager config,
+            ILibraryManager libraryManager,
+            ILocalizationManager localization,
+            IFileSystem fileSystem,
+            TvDbClientManager tvDbClientManager)
         {
             _logger = logger;
             _config = config;
             _libraryManager = libraryManager;
             _localization = localization;
             _fileSystem = fileSystem;
+            _tvDbClientManager = tvDbClientManager;
         }
 
         public async Task<bool> Run(Series series, bool addNewItems, CancellationToken cancellationToken)
@@ -48,7 +56,7 @@ namespace MediaBrowser.Providers.TV
                 return false;
             }
 
-            var episodes = await TvDbClientManager.Instance.GetAllEpisodesAsync(Convert.ToInt32(tvdbId), series.GetPreferredMetadataLanguage(), cancellationToken);
+            var episodes = await _tvDbClientManager.GetAllEpisodesAsync(Convert.ToInt32(tvdbId), series.GetPreferredMetadataLanguage(), cancellationToken);
 
             var episodeLookup = episodes
                 .Select(i =>

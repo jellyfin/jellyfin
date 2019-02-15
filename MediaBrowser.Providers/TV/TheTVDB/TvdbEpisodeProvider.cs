@@ -24,11 +24,11 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private readonly ILogger _logger;
         private readonly TvDbClientManager _tvDbClientManager;
 
-        public TvdbEpisodeProvider(IHttpClient httpClient, ILogger logger)
+        public TvdbEpisodeProvider(IHttpClient httpClient, ILogger logger, TvDbClientManager tvDbClientManager)
         {
             _httpClient = httpClient;
             _logger = logger;
-            _tvDbClientManager = TvDbClientManager.Instance;
+            _tvDbClientManager = tvDbClientManager;
         }
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)

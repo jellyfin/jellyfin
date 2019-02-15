@@ -10,6 +10,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Xml;
 using MediaBrowser.Providers.Manager;
+using MediaBrowser.Providers.TV.TheTVDB;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV
@@ -18,11 +19,24 @@ namespace MediaBrowser.Providers.TV
     {
         private readonly ILocalizationManager _localization;
         private readonly IXmlReaderSettingsFactory _xmlSettings;
+        private readonly TvDbClientManager _tvDbClientManager;
 
-        public SeriesMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager, ILocalizationManager localization, IXmlReaderSettingsFactory xmlSettings) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+        public SeriesMetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            IUserDataManager userDataManager,
+            ILibraryManager libraryManager,
+            ILocalizationManager localization,
+            IXmlReaderSettingsFactory xmlSettings,
+            TvDbClientManager tvDbClientManager
+            )
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
         {
             _localization = localization;
             _xmlSettings = xmlSettings;
+            _tvDbClientManager = tvDbClientManager;
         }
 
         protected override async Task AfterMetadataRefresh(Series item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
@@ -32,11 +46,13 @@ namespace MediaBrowser.Providers.TV
             var seasonProvider = new DummySeasonProvider(ServerConfigurationManager, Logger, _localization, LibraryManager, FileSystem);
             await seasonProvider.Run(item, cancellationToken).ConfigureAwait(false);
 
+            // TODO why does it not register this itself omg
             var provider = new MissingEpisodeProvider(Logger,
                 ServerConfigurationManager,
                 LibraryManager,
                 _localization,
-                FileSystem);
+                FileSystem,
+                _tvDbClientManager);
 
             try
             {

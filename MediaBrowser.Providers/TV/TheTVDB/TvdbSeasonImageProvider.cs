@@ -25,11 +25,11 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private readonly ILogger _logger;
         private readonly TvDbClientManager _tvDbClientManager;
 
-        public TvdbSeasonImageProvider(IHttpClient httpClient, ILogger logger)
+        public TvdbSeasonImageProvider(IHttpClient httpClient, ILogger logger, TvDbClientManager tvDbClientManager)
         {
             _httpClient = httpClient;
             _logger = logger;
-            _tvDbClientManager = TvDbClientManager.Instance;
+            _tvDbClientManager = tvDbClientManager;
         }
 
         public string Name => ProviderName;
@@ -88,10 +88,10 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             return remoteImages;
         }
 
-        private static IEnumerable<RemoteImageInfo> GetImages(Image[] images, string preferredLanguage)
+        private IEnumerable<RemoteImageInfo> GetImages(Image[] images, string preferredLanguage)
         {
             var list = new List<RemoteImageInfo>();
-            var languages = TvDbClientManager.Instance.GetLanguagesAsync(CancellationToken.None).Result.Data;
+            var languages = _tvDbClientManager.GetLanguagesAsync(CancellationToken.None).Result.Data;
             foreach (Image image in images)
             {
                 var imageInfo = new RemoteImageInfo
