@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Updates;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common
 {
@@ -13,12 +14,6 @@ namespace MediaBrowser.Common
     /// </summary>
     public interface IApplicationHost
     {
-        /// <summary>
-        /// Gets the display name of the operating system.
-        /// </summary>
-        /// <value>The display name of the operating system.</value>
-        string OperatingSystemDisplayName { get; }
-
         /// <summary>
         /// Gets the name.
         /// </summary>
@@ -105,13 +100,6 @@ namespace MediaBrowser.Common
         T Resolve<T>();
 
         /// <summary>
-        /// Resolves this instance.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>``0.</returns>
-        T TryResolve<T>();
-
-        /// <summary>
         /// Shuts down.
         /// </summary>
         Task Shutdown();
@@ -131,7 +119,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Inits this instance.
         /// </summary>
-        Task Init();
+        Task Init(IServiceCollection serviceCollection);
 
         /// <summary>
         /// Creates the instance.

@@ -21,6 +21,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.AspNetCore;
@@ -114,7 +115,7 @@ namespace Jellyfin.Server
                 new NullImageEncoder(),
                 new NetworkManager(_loggerFactory, environmentInfo)))
             {
-                await appHost.Init();
+                await appHost.Init(new ServiceCollection());
 
                 appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
 
