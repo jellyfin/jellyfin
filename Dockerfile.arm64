@@ -4,7 +4,7 @@ ARG DOTNET_VERSION=3.0
 
 
 FROM microsoft/dotnet:${DOTNET_VERSION}-sdk-stretch-arm64v8 as builder
-COPY qemu-* /usr/bin
+COPY qemu-aarch64.static /usr/bin
 WORKDIR /repo
 COPY . .
 #TODO Remove or update the sed line when we update dotnet version.
