@@ -15,8 +15,8 @@ WORKDIR /repo
 COPY . .
 #TODO Remove or update the sed line when we update dotnet version.
 RUN export DOTNET_CLI_TELEMETRY_OPTOUT=1 \
- && find . -type f -exec sed -i 's/netcoreapp2.1/netcoreapp3.0/g' {} \; \
- && dotnet clean \
+ && find . -type f -exec sed -i 's/netcoreapp2.1/netcoreapp3.0/g' {} \;
+RUN dotnet clean \
  && dotnet publish \
     --configuration release \
     --output /jellyfin \
