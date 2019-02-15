@@ -11,7 +11,7 @@
   <PropertyGroup>
     <!-- We need C# 7.1 for async main-->
     <LangVersion>latest</LangVersion>
-    <!-- Disable ducumentation warnings (for now) -->
+    <!-- Disable documentation warnings (for now) -->
     <NoWarn>SA1600;CS1591</NoWarn>
   </PropertyGroup>
 
