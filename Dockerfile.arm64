@@ -8,8 +8,6 @@ COPY qemu-* /usr/bin
 WORKDIR /repo
 COPY . .
 #TODO Remove or update the sed line when we update dotnet version.
-RUN apt-get update \
- && apt-get install -y sed
 RUN export DOTNET_CLI_TELEMETRY_OPTOUT=1 \
  && find . -type f -exec sed -i 's/netcoreapp2.1/netcoreapp3.0/g' {} \; \
  && dotnet clean \
