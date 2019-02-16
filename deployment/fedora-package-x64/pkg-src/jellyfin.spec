@@ -8,7 +8,7 @@
 
 Name:           jellyfin
 Version:        10.2.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        The Free Software Media Browser
 License:        GPLv2
 URL:            https://jellyfin.media
@@ -214,9 +214,13 @@ fi
 - PR868 Fix audio streaming via BaseProgressiveStreamingService
 - PR869 Remove DLL support and require all packages/plugins to be zip archives
 - PR872 Fix potential NullReferenceException
+- PR899: DLNA: Fix race condition leading to missing device names
 - PR890 Drop ETag and use Last-Modified header
 - PR892: Add jellyfin-ffmpeg and versioning to package deps
 - PR901: Properly dispose HttpWebResponse when the request failed to avoid 'too many open files'
+- PR909: Fix docker arm builds
+- PR910: Enhance Dockerfiles
+- PR911: Checkout submodules in Docker Hub hook
 - jellyfin-web:
 - PR51 remove more code for sync and camera roll
 - PR56 Use English for fallback translations and clean up language files

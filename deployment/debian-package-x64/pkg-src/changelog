@@ -1,9 +1,8 @@
-jellyfin (10.2.0-1) unstable; urgency=medium
+jellyfin (10.2.0-2) unstable; urgency=medium
 
   * jellyfin:
   * PR452 Use EF Core for Activity database
   * PR535 Clean up streambuilder
-  * PR651 Release 10.1.0
   * PR655 Support trying local branches in submodule
   * PR656 Do some logging in MediaInfoService
   * PR657 Remove conditions that are always true/false
@@ -76,7 +75,11 @@ jellyfin (10.2.0-1) unstable; urgency=medium
   * PR872: Fix potential NullReferenceException
   * PR890: Drop ETag and use Last-Modified header
   * PR892: Add jellyfin-ffmpeg and versioning to package deps
+  * PR899: DLNA: Fix race condition leading to missing device names
   * PR901: Properly dispose HttpWebResponse when the request failed to avoid 'too many open files'
+  * PR909: Fix docker arm builds
+  * PR910: Enhance Dockerfiles
+  * PR911: Checkout submodules in Docker Hub hook
   * jellyfin-web:
   * PR51 remove more code for sync and camera roll
   * PR56 Use English for fallback translations and clean up language files
