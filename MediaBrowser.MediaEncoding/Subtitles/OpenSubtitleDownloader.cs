@@ -69,7 +69,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private static string EncodePassword(string password)
         {
             var bytes = Encoding.UTF8.GetBytes(password);
-            return PasswordHashPrefix + bytes;
+            return PasswordHashPrefix + Convert.ToBase64String(bytes);
         }
 
         private static string DecodePassword(string password)
