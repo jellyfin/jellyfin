@@ -1,4 +1,4 @@
-jellyfin (10.2.0~rc2) unstable; urgency=medium
+jellyfin (10.2.0-1) unstable; urgency=medium
 
   * jellyfin:
   * PR452 Use EF Core for Activity database
@@ -75,6 +75,8 @@ jellyfin (10.2.0~rc2) unstable; urgency=medium
   * PR869: Remove DLL support and require all packages/plugins to be zip archives
   * PR872: Fix potential NullReferenceException
   * PR890: Drop ETag and use Last-Modified header
+  * PR892: Add jellyfin-ffmpeg and versioning to package deps
+  * PR901: Properly dispose HttpWebResponse when the request failed to avoid 'too many open files'
   * jellyfin-web:
   * PR24 Add Master codeowners
   * PR34 Revert "Add Master codeowners"
@@ -102,7 +104,7 @@ jellyfin (10.2.0~rc2) unstable; urgency=medium
   * PR127 Change sharedcomponents module to core
   * PR135 Make sure fallback culture is always available
 
- -- Jellyfin Packaging Team <packaging@jellyfin.org>  Sun, 13 Feb 2019 01:03:20 -0500
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  Fri, 15 Feb 2019 20:51:25 -0500
 
 jellyfin (10.1.0-1) unstable; urgency=medium
 
