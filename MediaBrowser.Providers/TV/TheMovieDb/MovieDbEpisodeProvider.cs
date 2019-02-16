@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV.TheMovieDb
 {
-    class MovieDbEpisodeProvider :
+    public class MovieDbEpisodeProvider :
             MovieDbProviderBase,
             IRemoteMetadataProvider<Episode, EpisodeInfo>,
             IHasOrder

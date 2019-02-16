@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.LocalMetadata.Providers
 {
-    class PlaylistXmlProvider : BaseXmlProvider<Playlist>
+    public class PlaylistXmlProvider : BaseXmlProvider<Playlist>
     {
         private readonly ILogger _logger;
         private readonly IProviderManager _providerManager;

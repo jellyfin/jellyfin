@@ -11,7 +11,7 @@ namespace MediaBrowser.Api.System
     /// <summary>
     /// Class SessionInfoWebSocketListener
     /// </summary>
-    class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<List<ActivityLogEntry>, WebSocketListenerState>
+    public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<List<ActivityLogEntry>, WebSocketListenerState>
     {
         /// <summary>
         /// Gets the name.
