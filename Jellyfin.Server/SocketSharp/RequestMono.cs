@@ -11,7 +11,7 @@ namespace Jellyfin.Server.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {
-        internal static string GetParameter(string header, string attr)
+        internal static string GetParameter(ReadOnlySpan<char> header, string attr)
         {
             int ap = header.IndexOf(attr, StringComparison.Ordinal);
             if (ap == -1)
@@ -31,13 +31,14 @@ namespace Jellyfin.Server.SocketSharp
                 ending = ' ';
             }
 
-            int end = header.IndexOf(ending, ap + 1);
+            var slice = header.Slice(ap + 1);
+            int end = slice.IndexOf(ending);
             if (end == -1)
             {
-                return ending == '"' ? null : header.Substring(ap);
+                return ending == '"' ? null : header.Slice(ap).ToString();
             }
 
-            return header.Substring(ap + 1, end - ap - 1);
+            return slice.Slice(0, end - ap - 1).ToString();
         }
 
         private async Task LoadMultiPart(WebROCollection form)
@@ -394,7 +395,7 @@ namespace Jellyfin.Server.SocketSharp
                 }
 
                 var elem = new Element();
-                string header;
+                ReadOnlySpan<char> header;
                 while ((header = ReadHeaders()) != null)
                 {
                     if (header.StartsWith("Content-Disposition:", StringComparison.OrdinalIgnoreCase))
@@ -404,7 +405,7 @@ namespace Jellyfin.Server.SocketSharp
                     }
                     else if (header.StartsWith("Content-Type:", StringComparison.OrdinalIgnoreCase))
                     {
-                        elem.ContentType = header.Substring("Content-Type:".Length).Trim();
+                        elem.ContentType = header.Slice("Content-Type:".Length).Trim().ToString();
                         elem.Encoding = GetEncoding(elem.ContentType);
                     }
                 }
@@ -452,7 +453,7 @@ namespace Jellyfin.Server.SocketSharp
                 return sb.ToString();
             }
 
-            private static string GetContentDispositionAttribute(string l, string name)
+            private static string GetContentDispositionAttribute(ReadOnlySpan<char> l, string name)
             {
                 int idx = l.IndexOf(name + "=\"", StringComparison.Ordinal);
                 if (idx < 0)
@@ -461,7 +462,7 @@ namespace Jellyfin.Server.SocketSharp
                 }
 
                 int begin = idx + name.Length + "=\"".Length;
-                int end = l.IndexOf('"', begin);
+                int end = l.Slice(begin).IndexOf('"');
                 if (end < 0)
                 {
                     return null;
@@ -472,10 +473,10 @@ namespace Jellyfin.Server.SocketSharp
                     return string.Empty;
                 }
 
-                return l.Substring(begin, end - begin);
+                return l.Slice(begin, end - begin).ToString();
             }
 
-            private string GetContentDispositionAttributeWithEncoding(string l, string name)
+            private string GetContentDispositionAttributeWithEncoding(ReadOnlySpan<char> l, string name)
             {
                 int idx = l.IndexOf(name + "=\"", StringComparison.Ordinal);
                 if (idx < 0)
@@ -484,7 +485,7 @@ namespace Jellyfin.Server.SocketSharp
                 }
 
                 int begin = idx + name.Length + "=\"".Length;
-                int end = l.IndexOf('"', begin);
+                int end = l.Slice(begin).IndexOf('"');
                 if (end < 0)
                 {
                     return null;
@@ -495,7 +496,7 @@ namespace Jellyfin.Server.SocketSharp
                     return string.Empty;
                 }
 
-                string temp = l.Substring(begin, end - begin);
+                ReadOnlySpan<char> temp = l.Slice(begin, end - begin);
                 byte[] source = new byte[temp.Length];
                 for (int i = temp.Length - 1; i >= 0; i--)
                 {
