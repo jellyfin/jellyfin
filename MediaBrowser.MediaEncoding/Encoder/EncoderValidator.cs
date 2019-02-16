@@ -38,7 +38,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 case _unknown:
                     return "Unknown";
                 default:
-                    return string.Format("{0}.{1}",_major,_minor);
+                    return $"{_major}.{_minor}";
             }
         }
 
@@ -150,7 +150,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 else
                 {
-                    // Version is ok so no warning required
+                    _logger.LogInformation("FFmpeg validation: Found suitable ffmpeg version");
                 }
             }
 
