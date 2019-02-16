@@ -24,6 +24,7 @@ namespace Jellyfin.Server.SocketSharp
 
         private TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private bool _disposed = false;
 
         public SharpWebSocket(SocketHttpListener.WebSocket socket, ILogger logger)
         {
@@ -40,9 +41,9 @@ namespace Jellyfin.Server.SocketSharp
             _logger = logger;
             WebSocket = socket;
 
-            socket.OnMessage += socket_OnMessage;
-            socket.OnClose += socket_OnClose;
-            socket.OnError += socket_OnError;
+            socket.OnMessage += OnSocketMessage;
+            socket.OnClose += OnSocketClose;
+            socket.OnError += OnSocketError;
 
             WebSocket.ConnectAsServer();
         }
@@ -52,29 +53,22 @@ namespace Jellyfin.Server.SocketSharp
             return _taskCompletionSource.Task;
         }
 
-        void socket_OnError(object sender, SocketHttpListener.ErrorEventArgs e)
+        private void OnSocketError(object sender, SocketHttpListener.ErrorEventArgs e)
         {
             _logger.LogError("Error in SharpWebSocket: {Message}", e.Message ?? string.Empty);
-            //Closed?.Invoke(this, EventArgs.Empty);
+
+            // Closed?.Invoke(this, EventArgs.Empty);
         }
 
-        void socket_OnClose(object sender, SocketHttpListener.CloseEventArgs e)
+        private void OnSocketClose(object sender, SocketHttpListener.CloseEventArgs e)
         {
             _taskCompletionSource.TrySetResult(true);
 
             Closed?.Invoke(this, EventArgs.Empty);
         }
 
-        void socket_OnMessage(object sender, SocketHttpListener.MessageEventArgs e)
+        private void OnSocketMessage(object sender, SocketHttpListener.MessageEventArgs e)
         {
-            //if (!string.IsNullOrEmpty(e.Data))
-            //{
-            //    if (OnReceive != null)
-            //    {
-            //        OnReceive(e.Data);
-            //    }
-            //    return;
-            //}
             if (OnReceiveBytes != null)
             {
                 OnReceiveBytes(e.RawData);
@@ -117,6 +111,7 @@ namespace Jellyfin.Server.SocketSharp
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -125,16 +120,23 @@ namespace Jellyfin.Server.SocketSharp
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             if (dispose)
             {
-                WebSocket.OnMessage -= socket_OnMessage;
-                WebSocket.OnClose -= socket_OnClose;
-                WebSocket.OnError -= socket_OnError;
+                WebSocket.OnMessage -= OnSocketMessage;
+                WebSocket.OnClose -= OnSocketClose;
+                WebSocket.OnError -= OnSocketError;
 
                 _cancellationTokenSource.Cancel();
 
                 WebSocket.Close();
             }
+
+            _disposed = true;
         }
 
         /// <summary>
@@ -142,11 +144,5 @@ namespace Jellyfin.Server.SocketSharp
         /// </summary>
         /// <value>The receive action.</value>
         public Action<byte[]> OnReceiveBytes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the on receive.
-        /// </summary>
-        /// <value>The on receive.</value>
-        public Action<string> OnReceive { get; set; }
     }
 }

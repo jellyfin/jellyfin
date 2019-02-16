@@ -57,13 +57,28 @@ namespace Jellyfin.Server
                     errs => Task.FromResult(0)).ConfigureAwait(false);
         }
 
+        public static void Shutdown()
+        {
+            if (!_tokenSource.IsCancellationRequested)
+            {
+                _tokenSource.Cancel();
+            }
+        }
+
+        public static void Restart()
+        {
+            _restartOnShutdown = true;
+
+            Shutdown();
+        }
+
         private static async Task StartApp(StartupOptions options)
         {
             ServerApplicationPaths appPaths = CreateApplicationPaths(options);
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
-            await CreateLogger(appPaths);
+            await CreateLogger(appPaths).ConfigureAwait(false);
             _logger = _loggerFactory.CreateLogger("Main");
 
             AppDomain.CurrentDomain.UnhandledException += (sender, e)
@@ -76,6 +91,7 @@ namespace Jellyfin.Server
                 {
                     return; // Already shutting down
                 }
+
                 e.Cancel = true;
                 _logger.LogInformation("Ctrl+C, shutting down");
                 Environment.ExitCode = 128 + 2;
@@ -89,6 +105,7 @@ namespace Jellyfin.Server
                 {
                     return; // Already shutting down
                 }
+
                 _logger.LogInformation("Received a SIGTERM signal, shutting down");
                 Environment.ExitCode = 128 + 15;
                 Shutdown();
@@ -102,7 +119,7 @@ namespace Jellyfin.Server
             SQLitePCL.Batteries_V2.Init();
 
             // Allow all https requests
-            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; } );
 
             var fileSystem = new ManagedFileSystem(_loggerFactory, environmentInfo, null, appPaths.TempDirectory, true);
 
@@ -115,18 +132,18 @@ namespace Jellyfin.Server
                 new NullImageEncoder(),
                 new NetworkManager(_loggerFactory, environmentInfo)))
             {
-                await appHost.Init(new ServiceCollection());
+                await appHost.Init(new ServiceCollection()).ConfigureAwait(false);
 
                 appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
 
-                await appHost.RunStartupTasks();
+                await appHost.RunStartupTasks().ConfigureAwait(false);
 
                 // TODO: read input for a stop command
 
                 try
                 {
                     // Block main thread until shutdown
-                    await Task.Delay(-1, _tokenSource.Token);
+                    await Task.Delay(-1, _tokenSource.Token).ConfigureAwait(false);
                 }
                 catch (TaskCanceledException)
                 {
@@ -146,7 +163,7 @@ namespace Jellyfin.Server
         /// for everything else the XDG approach is followed:
         /// https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="options">StartupOptions</param>
         /// <returns>ServerApplicationPaths</returns>
         private static ServerApplicationPaths CreateApplicationPaths(StartupOptions options)
         {
@@ -308,6 +325,7 @@ namespace Jellyfin.Server
                         await rscstr.CopyToAsync(fstr).ConfigureAwait(false);
                     }
                 }
+
                 var configuration = new ConfigurationBuilder()
                     .SetBasePath(appPaths.ConfigurationDirectoryPath)
                     .AddJsonFile("logging.json")
@@ -335,7 +353,7 @@ namespace Jellyfin.Server
             }
         }
 
-        public static IImageEncoder GetImageEncoder(
+        private static IImageEncoder GetImageEncoder(
             IFileSystem fileSystem,
             IApplicationPaths appPaths,
             ILocalizationManager localizationManager)
@@ -376,24 +394,10 @@ namespace Jellyfin.Server
                         {
                             return MediaBrowser.Model.System.OperatingSystem.BSD;
                         }
+
                         throw new Exception($"Can't resolve OS with description: '{osDescription}'");
                     }
             }
-        }
-
-        public static void Shutdown()
-        {
-            if (!_tokenSource.IsCancellationRequested)
-            {
-                _tokenSource.Cancel();
-            }
-        }
-
-        public static void Restart()
-        {
-            _restartOnShutdown = true;
-
-            Shutdown();
         }
 
         private static void StartNewInstance(StartupOptions options)

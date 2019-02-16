@@ -34,9 +34,16 @@ namespace Jellyfin.Server.SocketSharp
         private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
         private CancellationToken _disposeCancellationToken;
 
-        public WebSocketSharpListener(ILogger logger, X509Certificate certificate, IStreamHelper streamHelper,
-            INetworkManager networkManager, ISocketFactory socketFactory, ICryptoProvider cryptoProvider,
-            bool enableDualMode, IFileSystem fileSystem, IEnvironmentInfo environment)
+        public WebSocketSharpListener(
+            ILogger logger,
+            X509Certificate certificate,
+            IStreamHelper streamHelper,
+            INetworkManager networkManager,
+            ISocketFactory socketFactory,
+            ICryptoProvider cryptoProvider,
+            bool enableDualMode,
+            IFileSystem fileSystem,
+            IEnvironmentInfo environment)
         {
             _logger = logger;
             _certificate = certificate;
@@ -61,7 +68,9 @@ namespace Jellyfin.Server.SocketSharp
         public void Start(IEnumerable<string> urlPrefixes)
         {
             if (_listener == null)
+            {
                 _listener = new HttpListener(_logger, _cryptoProvider, _socketFactory, _networkManager, _streamHelper, _fileSystem, _environment);
+            }
 
             _listener.EnableDualMode = _enableDualMode;
 
@@ -83,15 +92,18 @@ namespace Jellyfin.Server.SocketSharp
 
         private void ProcessContext(HttpListenerContext context)
         {
-            var _ = Task.Run(async () => await InitTask(context, _disposeCancellationToken));
+            _ = Task.Run(async () => await InitTask(context, _disposeCancellationToken).ConfigureAwait(false));
         }
 
         private static void LogRequest(ILogger logger, HttpListenerRequest request)
         {
             var url = request.Url.ToString();
 
-            logger.LogInformation("{0} {1}. UserAgent: {2}",
-                request.IsWebSocketRequest ? "WS" : "HTTP " + request.HttpMethod, url, request.UserAgent ?? string.Empty);
+            logger.LogInformation(
+                "{0} {1}. UserAgent: {2}",
+                request.IsWebSocketRequest ? "WS" : "HTTP " + request.HttpMethod,
+                url,
+                request.UserAgent ?? string.Empty);
         }
 
         private Task InitTask(HttpListenerContext context, CancellationToken cancellationToken)
@@ -201,7 +213,7 @@ namespace Jellyfin.Server.SocketSharp
             }
             catch (ObjectDisposedException)
             {
-                //TODO Investigate and properly fix.
+                // TODO: Investigate and properly fix.
             }
             catch (Exception ex)
             {
@@ -223,38 +235,39 @@ namespace Jellyfin.Server.SocketSharp
         public Task Stop()
         {
             _disposeCancellationTokenSource.Cancel();
-
-            if (_listener != null)
-            {
-                _listener.Close();
-            }
+            _listener?.Close();
 
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Releases the unmanaged resources and disposes of the managed resources used.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private bool _disposed;
-        private readonly object _disposeLock = new object();
+
+        /// <summary>
+        /// Releases the unmanaged resources and disposes of the managed resources used.
+        /// </summary>
+        /// <param name="disposing">Whether or not the managed resources should be disposed</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposed) return;
-
-            lock (_disposeLock)
+            if (_disposed)
             {
-                if (_disposed) return;
-
-                if (disposing)
-                {
-                    Stop();
-                }
-
-                //release unmanaged resources here...
-                _disposed = true;
+                return;
             }
+
+            if (disposing)
+            {
+                Stop().GetAwaiter().GetResult();
+            }
+
+            _disposed = true;
         }
     }
 }

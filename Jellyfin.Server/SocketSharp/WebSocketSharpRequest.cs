@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Emby.Server.Implementations.HttpServer;
@@ -24,7 +25,7 @@ namespace Jellyfin.Server.SocketSharp
             this.request = httpContext.Request;
             this.response = new WebSocketSharpResponse(logger, httpContext.Response, this);
 
-            //HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
+            // HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
         }
 
         private static string GetHandlerPathIfAny(string listenerUrl)
@@ -41,7 +42,7 @@ namespace Jellyfin.Server.SocketSharp
             }
 
             var startHostUrl = listenerUrl.Substring(pos + "://".Length);
-            var endPos = startHostUrl.IndexOf('/');
+            var endPos = startHostUrl.IndexOf('/', StringComparison.Ordinal);
             if (endPos == -1)
             {
                 return null;
@@ -69,9 +70,11 @@ namespace Jellyfin.Server.SocketSharp
 
         public string UserHostAddress => request.UserHostAddress;
 
-        public string XForwardedFor => string.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"];
+        public string XForwardedFor
+            => string.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"];
 
-        public int? XForwardedPort => string.IsNullOrEmpty(request.Headers["X-Forwarded-Port"]) ? (int?)null : int.Parse(request.Headers["X-Forwarded-Port"]);
+        public int? XForwardedPort
+            => string.IsNullOrEmpty(request.Headers["X-Forwarded-Port"]) ? (int?)null : int.Parse(request.Headers["X-Forwarded-Port"], CultureInfo.InvariantCulture);
 
         public string XForwardedProtocol => string.IsNullOrEmpty(request.Headers["X-Forwarded-Proto"]) ? null : request.Headers["X-Forwarded-Proto"];
 
@@ -107,6 +110,7 @@ namespace Jellyfin.Server.SocketSharp
                 switch (crlf)
                 {
                     case 0:
+                    {
                         if (c == '\r')
                         {
                             crlf = 1;
@@ -121,29 +125,39 @@ namespace Jellyfin.Server.SocketSharp
                         {
                             throw new ArgumentException("net_WebHeaderInvalidControlChars");
                         }
+
                         break;
+                    }
 
                     case 1:
+                    {
                         if (c == '\n')
                         {
                             crlf = 2;
                             break;
                         }
+
                         throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
+                    }
 
                     case 2:
+                    {
                         if (c == ' ' || c == '\t')
                         {
                             crlf = 0;
                             break;
                         }
+
                         throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
+                    }
                 }
             }
+
             if (crlf != 0)
             {
                 throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
             }
+
             return name;
         }
 
@@ -156,6 +170,7 @@ namespace Jellyfin.Server.SocketSharp
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -343,6 +358,7 @@ namespace Jellyfin.Server.SocketSharp
                     this.pathInfo = System.Net.WebUtility.UrlDecode(pathInfo);
                     this.pathInfo = NormalizePathInfo(pathInfo, mode);
                 }
+
                 return this.pathInfo;
             }
         }
@@ -444,7 +460,7 @@ namespace Jellyfin.Server.SocketSharp
 
         public string ContentType => request.ContentType;
 
-        public Encoding contentEncoding;
+        private Encoding contentEncoding;
         public Encoding ContentEncoding
         {
             get => contentEncoding ?? request.ContentEncoding;
@@ -502,6 +518,7 @@ namespace Jellyfin.Server.SocketSharp
                         i++;
                     }
                 }
+
                 return httpFiles;
             }
         }
