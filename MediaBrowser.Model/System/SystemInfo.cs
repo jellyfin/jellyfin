@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.InteropServices;
 using MediaBrowser.Model.Updates;
 
@@ -136,7 +137,7 @@ namespace MediaBrowser.Model.System
         /// </summary>
         public SystemInfo()
         {
-            CompletedInstallations = new InstallationInfo[] { };
+            CompletedInstallations = Array.Empty<InstallationInfo>();
         }
     }
 }

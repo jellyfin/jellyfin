@@ -38,7 +38,9 @@ namespace Emby.Dlna
             IFileSystem fileSystem,
             IApplicationPaths appPaths,
             ILoggerFactory loggerFactory,
-            IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IAssemblyInfo assemblyInfo)
+            IJsonSerializer jsonSerializer,
+            IServerApplicationHost appHost,
+            IAssemblyInfo assemblyInfo)
         {
             _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Channels
 {
-    class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask
+    public class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
         private readonly IChannelManager _channelManager;
         private readonly IUserManager _userManager;

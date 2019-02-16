@@ -9,7 +9,7 @@ using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
-    class SpecialFolderResolver : FolderResolver<Folder>
+    public class SpecialFolderResolver : FolderResolver<Folder>
     {
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationPaths _appPaths;
