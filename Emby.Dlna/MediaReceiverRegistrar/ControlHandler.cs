@@ -36,7 +36,8 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             };
         }
 
-        public ControlHandler(IServerConfigurationManager config, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(config, logger, xmlReaderSettingsFactory)
+        public ControlHandler(IServerConfigurationManager config, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
+            : base(config, logger, xmlReaderSettingsFactory)
         {
         }
     }

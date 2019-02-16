@@ -282,7 +282,7 @@ namespace Jellyfin.Drawing.Skia
                     var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
 
                     // decode
-                    var _ = codec.GetPixels(bitmap.Info, bitmap.GetPixels());
+                    _ = codec.GetPixels(bitmap.Info, bitmap.GetPixels());
 
                     origin = codec.EncodedOrigin;
 
