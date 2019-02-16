@@ -13,12 +13,12 @@ using HttpListenerResponse = SocketHttpListener.Net.HttpListenerResponse;
 using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
 using IRequest = MediaBrowser.Model.Services.IRequest;
 
-
 namespace Jellyfin.Server.SocketSharp
 {
     public class WebSocketSharpResponse : IHttpResponse
     {
         private readonly ILogger _logger;
+
         private readonly HttpListenerResponse _response;
 
         public WebSocketSharpResponse(ILogger logger, HttpListenerResponse response, IRequest request)
@@ -30,7 +30,9 @@ namespace Jellyfin.Server.SocketSharp
         }
 
         public IRequest Request { get; private set; }
+
         public Dictionary<string, object> Items { get; private set; }
+
         public object OriginalResponse => _response;
 
         public int StatusCode
@@ -51,7 +53,7 @@ namespace Jellyfin.Server.SocketSharp
             set => _response.ContentType = value;
         }
 
-        //public ICookies Cookies { get; set; }
+        public QueryParamCollection Headers => _response.Headers;
 
         public void AddHeader(string name, string value)
         {
@@ -63,8 +65,6 @@ namespace Jellyfin.Server.SocketSharp
 
             _response.AddHeader(name, value);
         }
-
-        public QueryParamCollection Headers => _response.Headers;
 
         public string GetHeader(string name)
         {
@@ -114,9 +114,9 @@ namespace Jellyfin.Server.SocketSharp
 
         public void SetContentLength(long contentLength)
         {
-            //you can happily set the Content-Length header in Asp.Net
-            //but HttpListener will complain if you do - you have to set ContentLength64 on the response.
-            //workaround: HttpListener throws "The parameter is incorrect" exceptions when we try to set the Content-Length header
+            // you can happily set the Content-Length header in Asp.Net
+            // but HttpListener will complain if you do - you have to set ContentLength64 on the response.
+            // workaround: HttpListener throws "The parameter is incorrect" exceptions when we try to set the Content-Length header
             _response.ContentLength64 = contentLength;
         }
 
@@ -147,15 +147,12 @@ namespace Jellyfin.Server.SocketSharp
             {
                 sb.Append($";domain={cookie.Domain}");
             }
-            //else if (restrictAllCookiesToDomain != null)
-            //{
-            //    sb.Append($";domain={restrictAllCookiesToDomain}");
-            //}
 
             if (cookie.Secure)
             {
                 sb.Append(";Secure");
             }
+
             if (cookie.HttpOnly)
             {
                 sb.Append(";HttpOnly");
@@ -163,7 +160,6 @@ namespace Jellyfin.Server.SocketSharp
 
             return sb.ToString();
         }
-
 
         public bool SendChunked
         {

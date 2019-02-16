@@ -55,6 +55,8 @@ These builds are not necessarily run from the `build` script, but are present fo
 
 * The `clean` action should always `exit 0` even if no work is done or it fails.
 
+* The `clean` action can be passed a variable as argument 1, named `keep_artifacts`, containing either the value `y` or `n`. It is indended to handle situations when the user runs `build --keep-artifacts` and should be handled intelligently. Usually, this is used to preserve Docker images while still removing temporary directories.
+
 ### Output Files
 
 * Upon completion of the defined actions, at least one output file must be created in the `<platform>/pkg-dist` directory.

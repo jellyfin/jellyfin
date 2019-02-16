@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV.Omdb
 {
-    class OmdbEpisodeProvider :
+    public class OmdbEpisodeProvider :
             IRemoteMetadataProvider<Episode, EpisodeInfo>,
             IHasOrder
     {

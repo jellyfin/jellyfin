@@ -7,7 +7,7 @@ WORKDIR="$( pwd )"
 package_temporary_dir="${WORKDIR}/pkg-dist-tmp"
 output_dir="${WORKDIR}/pkg-dist"
 current_user="$( whoami )"
-image_name="jellyfin-debian-build"
+image_name="jellyfin-ubuntu-build"
 
 # Determine if sudo should be used for Docker
 if [[ ! -z $(id -Gn | grep -q 'docker') ]] \

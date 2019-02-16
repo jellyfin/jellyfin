@@ -5,16 +5,11 @@ source ../common.build.sh
 keep_artifacts="${1}"
 
 WORKDIR="$( pwd )"
-VERSION="$( grep -A1 '^Version:' ${WORKDIR}/pkg-src/jellyfin.spec | awk '{ print $NF }' )"
 
 package_temporary_dir="${WORKDIR}/pkg-dist-tmp"
-package_source_dir="${WORKDIR}/pkg-src"
 output_dir="${WORKDIR}/pkg-dist"
 current_user="$( whoami )"
-image_name="jellyfin-fedora-build"
-
-rm -f "${package_source_dir}/jellyfin-${VERSION}.tar.gz" &>/dev/null \
-  || sudo rm -f "${package_source_dir}/jellyfin-${VERSION}.tar.gz" &>/dev/null
+image_name="jellyfin-ubuntu-build"
 
 rm -rf "${package_temporary_dir}" &>/dev/null \
   || sudo rm -rf "${package_temporary_dir}" &>/dev/null

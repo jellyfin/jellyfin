@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Photos
 {
-    class PhotoAlbumMetadataService : MetadataService<PhotoAlbum, ItemLookupInfo>
+    public class PhotoAlbumMetadataService : MetadataService<PhotoAlbum, ItemLookupInfo>
     {
         protected override void MergeData(MetadataResult<PhotoAlbum> source, MetadataResult<PhotoAlbum> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {

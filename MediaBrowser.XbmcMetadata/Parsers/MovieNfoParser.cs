@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
-    class MovieNfoParser : BaseNfoParser<Video>
+    public class MovieNfoParser : BaseNfoParser<Video>
     {
         protected override bool SupportsUrlAfterClosingXmlTag => true;
 

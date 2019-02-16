@@ -2,10 +2,12 @@
 
 NAME=jellyfin
 
-restart_cmds=("s6-svc -t /var/run/s6/services/${NAME}" \
-  "systemctl restart ${NAME}" \
-  "service ${NAME} restart" \
-  "/etc/init.d/${NAME} restart") 
+restart_cmds=(
+  "systemctl restart ${NAME}"
+  "service ${NAME} restart"
+  "/etc/init.d/${NAME} restart"
+  "s6-svc -t /var/run/s6/services/${NAME}"
+)
 
 for restart_cmd in "${restart_cmds[@]}"; do
   cmd=$(echo "$restart_cmd" | awk '{print $1}')
