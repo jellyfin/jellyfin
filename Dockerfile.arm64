@@ -6,7 +6,7 @@ ARG DOTNET_VERSION=3.0
 FROM multiarch/qemu-user-static:x86_64-aarch64 as qemu
 FROM alpine as qemu_extract
 COPY --from=qemu /usr/bin qemu-aarch64-static.tar.gz
-RUN tar -xzvf qemu-aarch64-static.tar.gz && ls
+RUN tar -xzvf qemu-aarch64-static.tar.gz
 
 
 FROM microsoft/dotnet:${DOTNET_VERSION}-sdk-stretch as builder
@@ -15,7 +15,6 @@ COPY . .
 #TODO Remove or update the sed line when we update dotnet version.
 RUN export DOTNET_CLI_TELEMETRY_OPTOUT=1 \
  && find . -type f -exec sed -i 's/netcoreapp2.1/netcoreapp3.0/g' {} \; \
- && dotnet clean \
  && dotnet publish \
     -r linux-arm64 \
     --configuration release \
