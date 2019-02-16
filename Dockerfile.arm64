@@ -1,4 +1,4 @@
-# Requires binfm_misc registration for aarch64
+# Requires binfm_misc registration
 # https://github.com/multiarch/qemu-user-static#binfmt_misc-register
 ARG DOTNET_VERSION=3.0
 
@@ -12,10 +12,13 @@ RUN tar -xzvf qemu-aarch64-static.tar.gz
 FROM microsoft/dotnet:${DOTNET_VERSION}-sdk-stretch as builder
 WORKDIR /repo
 COPY . .
-#TODO Remove or update the sed line when we update dotnet version.
-RUN export DOTNET_CLI_TELEMETRY_OPTOUT=1 \
- && find . -type f -exec sed -i 's/netcoreapp2.1/netcoreapp3.0/g' {} \; \
- && dotnet publish \
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+# TODO Remove or update the sed line when we update dotnet version.
+RUN find . -type f -exec sed -i 's/netcoreapp2.1/netcoreapp3.0/g' {} \;
+# Discard objs - may cause failures if exists
+RUN find . -type d -name obj | xargs -r rm -r
+# Build
+RUN dotnet publish \
     -r linux-arm64 \
     --configuration release \
     --output /jellyfin \
