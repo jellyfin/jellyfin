@@ -62,17 +62,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 !string.IsNullOrWhiteSpace(options.OpenSubtitlesPasswordHash) &&
                 !options.OpenSubtitlesPasswordHash.StartsWith(PasswordHashPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                options.OpenSubtitlesPasswordHash = ToBase64EncodedString(options.OpenSubtitlesPasswordHash);
+                options.OpenSubtitlesPasswordHash = EncodePassword(options.OpenSubtitlesPasswordHash);
             }
         }
 
-        private static string ToBase64EncodedString(string password)
+        private static string EncodePassword(string password)
         {
             var bytes = Encoding.UTF8.GetBytes(password);
             return PasswordHashPrefix + bytes;
         }
 
-        private static string DecodeBase64EncodedString(string password)
+        private static string DecodePassword(string password)
         {
             if (password == null ||
                 !password.StartsWith(PasswordHashPrefix, StringComparison.OrdinalIgnoreCase))
@@ -187,7 +187,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var options = GetOptions();
 
             var user = options.OpenSubtitlesUsername ?? string.Empty;
-            var password = DecodeBase64EncodedString(options.OpenSubtitlesPasswordHash);
+            var password = DecodePassword(options.OpenSubtitlesPasswordHash);
 
             var loginResponse = await OpenSubtitles.LogInAsync(user, password, "en", cancellationToken).ConfigureAwait(false);
 
