@@ -28,8 +28,10 @@ RUN dotnet publish \
 FROM microsoft/dotnet:${DOTNET_VERSION}-runtime-stretch-slim-arm64v8
 COPY --from=qemu_extract qemu-aarch64-static /usr/bin
 RUN apt-get update \
- && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg
+ && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg \
+ && mkdir -p /cache /config /media \
+ && chmod 777 /cache /config /media
 COPY --from=builder /jellyfin /jellyfin
 EXPOSE 8096
-VOLUME /config /media
-ENTRYPOINT dotnet /jellyfin/jellyfin.dll --datadir /config
+VOLUME /cache /config /media
+ENTRYPOINT dotnet /jellyfin/jellyfin.dll --datadir /config --cachedir /cache
