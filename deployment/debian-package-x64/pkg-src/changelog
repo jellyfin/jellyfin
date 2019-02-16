@@ -78,9 +78,6 @@ jellyfin (10.2.0-1) unstable; urgency=medium
   * PR892: Add jellyfin-ffmpeg and versioning to package deps
   * PR901: Properly dispose HttpWebResponse when the request failed to avoid 'too many open files'
   * jellyfin-web:
-  * PR24 Add Master codeowners
-  * PR34 Revert "Add Master codeowners"
-  * PR49 Release 10.1.0
   * PR51 remove more code for sync and camera roll
   * PR56 Use English for fallback translations and clean up language files
   * PR58 Css slider fixes
