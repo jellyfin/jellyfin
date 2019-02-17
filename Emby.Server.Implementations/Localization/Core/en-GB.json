@@ -90,7 +90,7 @@
     "UserPasswordChangedWithName": "Password has been changed for user {0}",
     "UserPolicyUpdatedWithName": "User policy has been updated for {0}",
     "UserStartedPlayingItemWithValues": "{0} has started playing {1}",
-    "UserStoppedPlayingItemWithValues": "{0} has stopped playing {1}",
+    "UserStoppedPlayingItemWithValues": "{0} has finished playing {1} on {2}",
     "ValueHasBeenAddedToLibrary": "{0} has been added to your media library",
     "ValueSpecialEpisodeName": "Special - {0}",
     "VersionNumber": "Version {0}"

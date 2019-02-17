@@ -7,8 +7,8 @@
 %endif
 
 Name:           jellyfin
-Version:        10.1.0
-Release:        1%{?dist}
+Version:        10.2.0
+Release:        2%{?dist}
 Summary:        The Free Software Media Browser
 License:        GPLv2
 URL:            https://jellyfin.media
@@ -140,6 +140,110 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Fri Feb 15 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
+- jellyfin:
+- PR452 Use EF Core for Activity database
+- PR535 Clean up streambuilder
+- PR655 Support trying local branches in submodule
+- PR656 Do some logging in MediaInfoService
+- PR657 Remove conditions that are always true/false
+- PR661 Fix NullRef from progress report
+- PR663 Use TagLibSharp Nuget package
+- PR664 Revert "Fix segment_time_delta for ffmpeg 4.1"
+- PR666 Add cross-platform build for arm64
+- PR668 Return Audio objects from MusicAlbum.Tracks
+- PR671 Set EnableRaisingEvents correctly
+- PR672 Remove unconditional caching, modified since header and use ETags
+- PR677 Fix arm32 Docker
+- PR681 Fix Windows build script errors + pin ffmpeg to 4.0
+- PR686 Disable some StyleCop warnings
+- PR687 Fix some analyzer warnings
+- PR689 Fix RPM package build for fedora
+- PR702 Fix debug build on windows
+- PR706 Make another docker layer reusable
+- PR709 Fix always null expressions
+- PR710 Fix a spelling mistake
+- PR711 Remove remnants of system events
+- PR713 Fix empty statement in DidlBuilder.cs
+- PR716 Remove more compile time warnings
+- PR721 Change image dimentions from double to int
+- PR723 Minor improvements to db code
+- PR724 Move Skia back into it's own project
+- PR726 Clean up IFileSystem wrappers around stdlib.
+- PR727 Change default aspect ratio to 2/3 from 0
+- PR728 Use ffmpeg from jrottenberg/ffmpeg
+- PR732 Reworked LocalizationManager to load data async
+- PR733 Remove unused function
+- PR734 Fix more analyzer warnings
+- PR736 Start startup tasks async
+- PR737 Add AssemblyInfo for Jellyfin.Drawing.Skia
+- PR739 Change multi version logic for movies
+- PR740 Remove code for pre-installed plugins & properly check if file exists
+- PR756 Make cache dir configurable
+- PR757 Fix default aspect ratio
+- PR758 Add password field to initial setup
+- PR764 Remove dead code, made some functions properly async
+- PR769 Fix conditions where the ! was swallowed in #726
+- PR774 reimplement support for plugin repository
+- PR782 Remove commented file MediaBrowser.LocalMetadata.Savers.PersonXmlSaver
+- PR783 Update builds to use #749 and #756
+- PR788 Fix more warnings
+- PR794 Remove MoreLINQ
+- PR797 Fix all warnings
+- PR798 Cleanup around the api endpoints
+- PR800 Add CentOS and update rpm spec for the cachedir option
+- PR802 Fix build error
+- PR804 Handle new option parser properly
+- PR805 Add weblate translation status to README
+- PR807 Fix restart script in OS packages
+- PR810 Fix loading of rating files
+- PR812 Fix up the explicit docs links in the README
+- PR819 Some small changes in Device.cs and DidlBuilder.cs
+- PR822 Complete rename ImageSize -> ImageDimensions
+- PR824 Improved Docker pkgbuild
+- PR831 Move some arrays to generics
+- PR833 Add await to GetCountries in LocalizationService
+- PR834 Add donation badge and reorganize badges
+- PR838 Quick style fix
+- PR840 Fix more warnings
+- PR841 Fix OC badge to all and add forum badge
+- PR842 Use VAAPI-enabled ffmpeg
+- PR852 Use SQLitePCL.pretty.netstandard on NuGet
+- PR853 Fix poor handling of cache directories
+- PR864 Add support for ZIP plugin archives
+- PR868 Fix audio streaming via BaseProgressiveStreamingService
+- PR869 Remove DLL support and require all packages/plugins to be zip archives
+- PR872 Fix potential NullReferenceException
+- PR899: DLNA: Fix race condition leading to missing device names
+- PR890 Drop ETag and use Last-Modified header
+- PR892: Add jellyfin-ffmpeg and versioning to package deps
+- PR901: Properly dispose HttpWebResponse when the request failed to avoid 'too many open files'
+- PR909: Fix docker arm builds
+- PR910: Enhance Dockerfiles
+- PR911: Checkout submodules in Docker Hub hook
+- jellyfin-web:
+- PR51 remove more code for sync and camera roll
+- PR56 Use English for fallback translations and clean up language files
+- PR58 Css slider fixes
+- PR62 remove BOM markers
+- PR65 Fix profile image not being shown on profile page
+- PR73 Dev sync
+- PR74 Add download menu option to media items
+- PR75 User profile fixes
+- PR76 Fix syntax error caused by deminification
+- PR79 Remove unused Connect related from the frontend
+- PR80 Remove games
+- PR92 Added frontend support for a password field on setup
+- PR94 Update british strings
+- PR95 add display language option back
+- PR112 Removed seasonal theme support
+- PR116 Consolidate all strings into a single file per language
+- PR117 Fix volume slider behavior
+- PR118 Enable and fix PiP for Safari
+- PR119 Make the toggle track visible on all themes
+- PR121 Fix syntax error in site.js
+- PR127 Change sharedcomponents module to core
+- PR135 Make sure fallback culture is always available
 * Sun Jan 20 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
 - jellyfin:
 - PR335 Build scripts and build system consolidation.

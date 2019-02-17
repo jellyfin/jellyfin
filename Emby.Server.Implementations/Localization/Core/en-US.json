@@ -30,7 +30,7 @@
     "Inherit": "Inherit",
     "ItemAddedWithName": "{0} was added to the library",
     "ItemRemovedWithName": "{0} was removed from the library",
-    "LabelIpAddressValue": "Ip address: {0}",
+    "LabelIpAddressValue": "IP address: {0}",
     "LabelRunningTimeValue": "Running time: {0}",
     "Latest": "Latest",
     "MessageApplicationUpdated": "Jellyfin Server has been updated",

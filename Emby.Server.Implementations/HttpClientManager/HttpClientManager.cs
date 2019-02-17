@@ -66,11 +66,6 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
             ServicePointManager.Expect100Continue = false;
-
-#if NET46
-// Trakt requests sometimes fail without this
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls;
-#endif
         }
 
         /// <summary>
@@ -106,23 +101,6 @@ namespace Emby.Server.Implementations.HttpClientManager
             return client;
         }
 
-        private static WebRequest CreateWebRequest(string url)
-        {
-            try
-            {
-                return WebRequest.Create(url);
-            }
-            catch (NotSupportedException)
-            {
-                //Webrequest creation does fail on MONO randomly when using WebRequest.Create
-                //the issue occurs in the GetCreator method here: http://www.oschina.net/code/explore/mono-2.8.1/mcs/class/System/System.Net/WebRequest.cs
-
-                var type = Type.GetType("System.Net.HttpRequestCreator, System, Version=4.0.0.0,Culture=neutral, PublicKeyToken=b77a5c561934e089");
-                var creator = Activator.CreateInstance(type, nonPublic: true) as IWebRequestCreate;
-                return creator.Create(new Uri(url)) as HttpWebRequest;
-            }
-        }
-
         private WebRequest GetRequest(HttpRequestOptions options, string method)
         {
             string url = options.Url;
@@ -135,7 +113,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                 url = url.Replace(userInfo + "@", string.Empty);
             }
 
-            var request = CreateWebRequest(url);
+            var request = WebRequest.Create(url);
 
             if (request is HttpWebRequest httpWebRequest)
             {
@@ -627,14 +605,16 @@ namespace Emby.Server.Implementations.HttpClientManager
 
                 var exception = new HttpException(webException.Message, webException);
 
-                var response = webException.Response as HttpWebResponse;
-                if (response != null)
+                using (var response = webException.Response as HttpWebResponse)
                 {
-                    exception.StatusCode = response.StatusCode;
-
-                    if ((int)response.StatusCode == 429)
+                    if (response != null)
                     {
-                        client.LastTimeout = DateTime.UtcNow;
+                        exception.StatusCode = response.StatusCode;
+
+                        if ((int)response.StatusCode == 429)
+                        {
+                            client.LastTimeout = DateTime.UtcNow;
+                        }
                     }
                 }
 

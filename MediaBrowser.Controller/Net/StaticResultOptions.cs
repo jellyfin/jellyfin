@@ -12,8 +12,6 @@ namespace MediaBrowser.Controller.Net
         public string ContentType { get; set; }
         public TimeSpan? CacheDuration { get; set; }
         public DateTime? DateLastModified { get; set; }
-        public Guid CacheKey { get; set; }
-
         public Func<Task<Stream>> ContentFactory { get; set; }
 
         public bool IsHeadRequest { get; set; }
