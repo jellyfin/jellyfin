@@ -82,7 +82,7 @@ namespace Jellyfin.Server
 
             appConfig = await CreateConfiguration(appPaths).ConfigureAwait(false);
 
-            await CreateLogger(appConfig, appPaths).ConfigureAwait(false);
+            CreateLogger(appConfig, appPaths);
 
             _logger = _loggerFactory.CreateLogger("Main");
 
@@ -338,7 +338,7 @@ namespace Jellyfin.Server
                 .Build();
         }
 
-        private static async Task CreateLogger(IConfiguration configuration, IApplicationPaths appPaths)
+        private static void CreateLogger(IConfiguration configuration, IApplicationPaths appPaths)
         {
             try
             {
