@@ -665,7 +665,7 @@ namespace Emby.Server.Implementations
             SocketFactory = new SocketFactory();
             serviceCollection.AddSingleton(SocketFactory);
 
-            InstallationManager = new InstallationManager(LoggerFactory, this, ApplicationPaths, HttpClient, JsonSerializer, ServerConfigurationManager, FileSystemManager, CryptographyProvider, PackageRuntime);
+            InstallationManager = new InstallationManager(LoggerFactory, this, ApplicationPaths, HttpClient, JsonSerializer, ServerConfigurationManager, FileSystemManager, CryptographyProvider, ZipClient, PackageRuntime);
             serviceCollection.AddSingleton(InstallationManager);
 
             ZipClient = new ZipClient(FileSystemManager);

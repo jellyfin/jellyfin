@@ -89,11 +89,6 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            if (_sessionManager.Sessions.Any(i => usn.IndexOf(i.DeviceId, StringComparison.OrdinalIgnoreCase) != -1))
-            {
-                return;
-            }
-
             var cancellationToken = _disposeCancellationTokenSource.Token;
 
             await _sessionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -101,6 +96,11 @@ namespace Emby.Dlna.PlayTo
             try
             {
                 if (_disposed)
+                {
+                    return;
+                }
+
+                if (_sessionManager.Sessions.Any(i => usn.IndexOf(i.DeviceId, StringComparison.OrdinalIgnoreCase) != -1))
                 {
                     return;
                 }
