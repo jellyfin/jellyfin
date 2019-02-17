@@ -6,8 +6,7 @@ namespace Emby.Server.Implementations
     {
         public static readonly Dictionary<string, string> Configuration = new Dictionary<string, string>
         {
-            {"ManagedFileSystem:DefaultDirectory", null},
-            {"ManagedFileSystem:EnableSeparateFileAndDirectoryQueries", "True"}
+            {"HttpListenerHost:DefaultRedirectPath", "web/index.html"}
         };
     }
 }

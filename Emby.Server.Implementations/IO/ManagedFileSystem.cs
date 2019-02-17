@@ -22,59 +22,25 @@ namespace Emby.Server.Implementations.IO
         private readonly bool _supportsAsyncFileStreams;
         private char[] _invalidFileNameChars;
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
-        private readonly bool EnableSeparateFileAndDirectoryQueries;
 
         private readonly string _tempPath;
 
         private readonly IEnvironmentInfo _environmentInfo;
         private readonly bool _isEnvironmentCaseInsensitive;
 
-        private readonly string _defaultDirectory;
-
         public ManagedFileSystem(
             ILoggerFactory loggerFactory,
             IEnvironmentInfo environmentInfo,
-            IApplicationPaths applicationPaths,
-            IConfiguration configuration)
+            IApplicationPaths applicationPaths)
         {
             Logger = loggerFactory.CreateLogger("FileSystem");
             _supportsAsyncFileStreams = true;
             _tempPath = applicationPaths.TempDirectory;
             _environmentInfo = environmentInfo;
-            _defaultDirectory = configuration["ManagedFileSystem:DefaultDirectory"];
-
-            // On Linux with mono, this needs to be true or symbolic links are ignored
-            EnableSeparateFileAndDirectoryQueries =
-                bool.Parse(configuration["ManagedFileSystem:EnableSeparateFileAndDirectoryQueries"]);
 
             SetInvalidFileNameChars(environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows);
 
             _isEnvironmentCaseInsensitive = environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows;
-        }
-
-        public virtual string DefaultDirectory
-        {
-            get
-            {
-                var value = _defaultDirectory;
-
-                if (!string.IsNullOrEmpty(value))
-                {
-                    try
-                    {
-                        if (Directory.Exists(value))
-                        {
-                            return value;
-                        }
-                    }
-                    catch
-                    {
-
-                    }
-                }
-
-                return null;
-            }
         }
 
         public virtual void AddShortcutHandler(IShortcutHandler handler)
@@ -779,13 +745,8 @@ namespace Emby.Server.Implementations.IO
             var directoryInfo = new DirectoryInfo(path);
             var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
-            if (EnableSeparateFileAndDirectoryQueries)
-            {
-                return ToMetadata(directoryInfo.EnumerateDirectories("*", searchOption))
-                                .Concat(ToMetadata(directoryInfo.EnumerateFiles("*", searchOption)));
-            }
-
-            return ToMetadata(directoryInfo.EnumerateFileSystemInfos("*", searchOption));
+            return ToMetadata(directoryInfo.EnumerateDirectories("*", searchOption))
+                .Concat(ToMetadata(directoryInfo.EnumerateFiles("*", searchOption)));
         }
 
         private IEnumerable<FileSystemMetadata> ToMetadata(IEnumerable<FileSystemInfo> infos)

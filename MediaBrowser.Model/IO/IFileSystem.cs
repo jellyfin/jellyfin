@@ -113,8 +113,6 @@ namespace MediaBrowser.Model.IO
         Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share,
             FileOpenOptions fileOpenOptions);
 
-        string DefaultDirectory { get; }
-
         /// <summary>
         /// Swaps the files.
         /// </summary>

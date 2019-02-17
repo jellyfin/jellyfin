@@ -126,7 +126,7 @@ namespace Jellyfin.Server
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; } );
 
-            var fileSystem = new ManagedFileSystem(_loggerFactory, environmentInfo, appPaths, appConfig);
+            var fileSystem = new ManagedFileSystem(_loggerFactory, environmentInfo, appPaths);
 
             using (var appHost = new CoreAppHost(
                 appPaths,
@@ -135,7 +135,8 @@ namespace Jellyfin.Server
                 fileSystem,
                 environmentInfo,
                 new NullImageEncoder(),
-                new NetworkManager(_loggerFactory, environmentInfo)))
+                new NetworkManager(_loggerFactory, environmentInfo),
+                appConfig))
             {
                 await appHost.Init(new ServiceCollection()).ConfigureAwait(false);
 
