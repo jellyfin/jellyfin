@@ -181,11 +181,17 @@ namespace Emby.Server.Implementations
         /// <value>The logger.</value>
         protected ILogger Logger { get; set; }
 
+        private IPlugin[] _plugins;
+
         /// <summary>
         /// Gets or sets the plugins.
         /// </summary>
         /// <value>The plugins.</value>
-        public IPlugin[] Plugins { get; protected set; }
+        public IPlugin[] Plugins
+        {
+            get => _plugins;
+            protected set => _plugins = value;
+        }
 
         /// <summary>
         /// Gets or sets the logger factory.
@@ -1047,6 +1053,41 @@ namespace Emby.Server.Implementations
             CollectionFolder.JsonSerializer = JsonSerializer;
             CollectionFolder.ApplicationHost = this;
             AuthenticatedAttribute.AuthService = AuthService;
+
+            InstallationManager.PluginInstalled += PluginInstalled;
+        }
+
+        private async void PluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> args)
+        {
+            string dir = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(args.Argument.targetFilename));
+            var types = Directory.EnumerateFiles(dir, "*.dll", SearchOption.TopDirectoryOnly)
+                        .Select(x => Assembly.LoadFrom(x))
+                        .SelectMany(x => x.ExportedTypes)
+                        .Where(x => x.IsClass && !x.IsAbstract && !x.IsInterface && !x.IsGenericType)
+                        .ToList();
+
+            types.AddRange(types);
+
+            var plugins = types.Where(x => x.IsAssignableFrom(typeof(IPlugin)))
+                    .Select(CreateInstanceSafe)
+                    .Where(x => x != null)
+                    .Cast<IPlugin>()
+                    .Select(LoadPlugin)
+                    .Where(x => x != null)
+                    .ToArray();
+
+            int oldLen = _plugins.Length;
+            Array.Resize<IPlugin>(ref _plugins, _plugins.Length + plugins.Length);
+            plugins.CopyTo(_plugins, oldLen);
+
+            var entries = types.Where(x => x.IsAssignableFrom(typeof(IServerEntryPoint)))
+                .Select(CreateInstanceSafe)
+                .Where(x => x != null)
+                .Cast<IServerEntryPoint>()
+                .ToList();
+
+            await Task.WhenAll(StartEntryPoints(entries, true));
+            await Task.WhenAll(StartEntryPoints(entries, false));
         }
 
         /// <summary>
