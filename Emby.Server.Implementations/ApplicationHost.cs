@@ -104,10 +104,10 @@ using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
-using ServiceStack.Text.Jsv;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 
 namespace Emby.Server.Implementations
@@ -318,6 +318,8 @@ namespace Emby.Server.Implementations
         private IMediaSourceManager MediaSourceManager { get; set; }
         private IPlaylistManager PlaylistManager { get; set; }
 
+        private readonly IConfiguration _configuration;
+
         /// <summary>
         /// Gets or sets the installation manager.
         /// </summary>
@@ -356,8 +358,10 @@ namespace Emby.Server.Implementations
             IFileSystem fileSystem,
             IEnvironmentInfo environmentInfo,
             IImageEncoder imageEncoder,
-            INetworkManager networkManager)
+            INetworkManager networkManager,
+            IConfiguration configuration)
         {
+            _configuration = configuration;
 
             // hack alert, until common can target .net core
             BaseExtensions.CryptographyProvider = CryptographyProvider;
@@ -727,11 +731,10 @@ namespace Emby.Server.Implementations
             HttpServer = new HttpListenerHost(this,
                 LoggerFactory,
                 ServerConfigurationManager,
-                "web/index.html",
+                _configuration,
                 NetworkManager,
                 JsonSerializer,
-                XmlSerializer,
-                GetParseFn);
+                XmlSerializer);
 
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             serviceCollection.AddSingleton(HttpServer);
@@ -829,11 +832,6 @@ namespace Emby.Server.Implementations
         protected virtual IBrotliCompressor CreateBrotliCompressor()
         {
             return null;
-        }
-
-        private static Func<string, object> GetParseFn(Type propertyType)
-        {
-            return s => JsvReader.GetParseFn(propertyType)(s);
         }
 
         public virtual string PackageRuntime => "netcore";
