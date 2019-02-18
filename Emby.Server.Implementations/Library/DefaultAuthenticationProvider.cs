@@ -38,6 +38,16 @@ namespace Emby.Server.Implementations.Library
             {
                 throw new Exception("Invalid username or password");
             }
+
+            //As long as jellyfin supports passwordless users, we need this little block here to accomodate
+            if (IsPasswordEmpty(resolvedUser, password))
+            {
+                return Task.FromResult(new ProviderAuthenticationResult
+                {
+                    Username = username
+                });
+            }
+
             ConvertPasswordFormat(resolvedUser);
             byte[] passwordbytes = Encoding.UTF8.GetBytes(password);
 
@@ -106,15 +116,30 @@ namespace Emby.Server.Implementations.Library
             return Task.FromResult(hasConfiguredPassword);
         }
 
-        private bool IsPasswordEmpty(User user, string passwordHash)
+        private bool IsPasswordEmpty(User user, string password)
         {
-            return string.IsNullOrEmpty(passwordHash);
+            if (string.IsNullOrEmpty(user.Password))
+            {
+                return string.IsNullOrEmpty(password);
+            }
+            return false;
         }
 
         public Task ChangePassword(User user, string newPassword)
         {
-            //string newPasswordHash = null;
             ConvertPasswordFormat(user);
+            //This is needed to support changing a no password user to a password user
+            if (string.IsNullOrEmpty(user.Password))
+            {
+                PasswordHash newPasswordHash = new PasswordHash(_cryptographyProvider);
+                newPasswordHash.SaltBytes = _cryptographyProvider.GenerateSalt();
+                newPasswordHash.Salt = PasswordHash.ConvertToByteString(newPasswordHash.SaltBytes);
+                newPasswordHash.Id = _cryptographyProvider.DefaultHashMethod;
+                newPasswordHash.Hash = GetHashedStringChangeAuth(newPassword, newPasswordHash);
+                user.Password = newPasswordHash.ToString();
+                return Task.CompletedTask;
+            }
+
             PasswordHash passwordHash = new PasswordHash(user.Password);
             if (passwordHash.Id == "SHA1" && string.IsNullOrEmpty(passwordHash.Salt))
             {
@@ -141,11 +166,6 @@ namespace Emby.Server.Implementations.Library
         public string GetPasswordHash(User user)
         {
             return user.Password;
-        }
-
-        public string GetEmptyHashedString(User user)
-        {
-            return null;
         }
 
         public string GetHashedStringChangeAuth(string newPassword, PasswordHash passwordHash)

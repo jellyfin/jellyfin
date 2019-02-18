@@ -18,48 +18,52 @@ namespace MediaBrowser.Model.Cryptography
         public byte[] HashBytes;
         public PasswordHash(string storageString)
         {
-            string[] SplitStorageString = storageString.Split('$');
-            Id = SplitStorageString[1];
-            if (SplitStorageString[2].Contains("="))
+            string[] splitted = storageString.Split('$');
+            Id = splitted[1];
+            if (splitted[2].Contains("="))
             {
-                foreach (string paramset in (SplitStorageString[2].Split(',')))
+                foreach (string paramset in (splitted[2].Split(',')))
                 {
                     if (!String.IsNullOrEmpty(paramset))
                     {
                         string[] fields = paramset.Split('=');
-                        if(fields.Length == 2)
+                        if (fields.Length == 2)
                         {
                             Parameters.Add(fields[0], fields[1]);
                         }
+                        else
+                        {
+                            throw new Exception($"Malformed parameter in password hash string {paramset}");
+                        }
                     }
                 }
-                if (SplitStorageString.Length == 5)
+                if (splitted.Length == 5)
                 {
-                    Salt = SplitStorageString[3];
+                    Salt = splitted[3];
                     SaltBytes = ConvertFromByteString(Salt);
-                    Hash = SplitStorageString[4];
+                    Hash = splitted[4];
                     HashBytes = ConvertFromByteString(Hash);
                 }
                 else
                 {
                     Salt = string.Empty;
-                    Hash = SplitStorageString[3];
+                    Hash = splitted[3];
                     HashBytes = ConvertFromByteString(Hash);
                 }
             }
             else
             {
-                if (SplitStorageString.Length == 4)
+                if (splitted.Length == 4)
                 {
-                    Salt = SplitStorageString[2];
+                    Salt = splitted[2];
                     SaltBytes = ConvertFromByteString(Salt);
-                    Hash = SplitStorageString[3];
+                    Hash = splitted[3];
                     HashBytes = ConvertFromByteString(Hash);
                 }
                 else
                 {
                     Salt = string.Empty;
-                    Hash = SplitStorageString[2];
+                    Hash = splitted[2];
                     HashBytes = ConvertFromByteString(Hash);
                 }
 
@@ -83,6 +87,7 @@ namespace MediaBrowser.Model.Cryptography
             }
             return Bytes.ToArray();
         }
+
         public static string ConvertToByteString(byte[] bytes)
         {
             return BitConverter.ToString(bytes).Replace("-", "");
@@ -104,19 +109,18 @@ namespace MediaBrowser.Model.Cryptography
 
         public override string ToString()
         {
-            string OutString = "$";
-            OutString += Id;
+            string outString = "$" +Id;
             string paramstring = SerializeParameters();
             if (!string.IsNullOrEmpty(paramstring))
             {
-                OutString += $"${paramstring}";
+                outString += $"${paramstring}";
             }
             if (!string.IsNullOrEmpty(Salt))
             {
-                OutString += $"${Salt}";
+                outString += $"${Salt}";
             }
-            OutString += $"${Hash}";
-            return OutString;
+            outString += $"${Hash}";
+            return outString;
         }
     }
 

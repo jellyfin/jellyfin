@@ -475,13 +475,13 @@ namespace Emby.Server.Implementations.Library
         private string GetLocalPasswordHash(User user)
         {
             return string.IsNullOrEmpty(user.EasyPassword)
-                ? _defaultAuthenticationProvider.GetEmptyHashedString(user)
+                ? null
                 : user.EasyPassword;
         }
 
         private bool IsPasswordEmpty(User user, string passwordHash)
         {
-            return string.Equals(passwordHash, _defaultAuthenticationProvider.GetEmptyHashedString(user), StringComparison.OrdinalIgnoreCase);
+            return string.IsNullOrEmpty(passwordHash);
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -102,12 +103,12 @@ namespace Emby.Server.Implementations.Cryptography
                 }
                 else
                 {
-                    return PBKDF2(HashMethod, bytes, salt,defaultiterations);
+                    return PBKDF2(HashMethod, bytes, salt, defaultiterations);
                 }
             }
             else
             {
-                throw new CryptographicException($"Requested hash method is not supported: {HashMethod}"));
+                throw new CryptographicException($"Requested hash method is not supported: {HashMethod}");
             }
         }
 
