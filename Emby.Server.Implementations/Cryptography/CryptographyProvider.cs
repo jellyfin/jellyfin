@@ -132,8 +132,7 @@ namespace Emby.Server.Implementations.Cryptography
                 }
                 catch (Exception e)
                 {
-                    iterations = defaultiterations;
-                    throw new Exception($"Couldn't successfully parse iterations value from string:{hash.Parameters["iterations"]}", e);
+                    throw new InvalidDataException($"Couldn't successfully parse iterations value from string: {hash.Parameters["iterations"]}", e);
                 }
             }
             return PBKDF2(hash.Id, hash.HashBytes, hash.SaltBytes, iterations);
