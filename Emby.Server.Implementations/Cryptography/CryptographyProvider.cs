@@ -107,7 +107,7 @@ namespace Emby.Server.Implementations.Cryptography
             }
             else
             {
-                throw new CryptographicException(String.Format("Requested hash method is not supported: {0}", HashMethod));
+                throw new CryptographicException($"Requested hash method is not supported: {HashMethod}"));
             }
         }
 
@@ -121,14 +121,21 @@ namespace Emby.Server.Implementations.Cryptography
             int iterations = defaultiterations;
             if (!hash.Parameters.ContainsKey("iterations"))
             {
-                hash.Parameters.Add("iterations", defaultiterations.ToString());
+                hash.Parameters.Add("iterations", defaultiterations.ToString(CultureInfo.InvariantCulture));
             }
             else
             {
-                try { iterations = int.Parse(hash.Parameters["iterations"]); }
-                catch (Exception e) { iterations = defaultiterations; throw new Exception($"Couldn't successfully parse iterations value from string:{hash.Parameters["iterations"]}", e); }
+                try
+                {
+                    iterations = int.Parse(hash.Parameters["iterations"]);
+                }
+                catch (Exception e)
+                {
+                    iterations = defaultiterations;
+                    throw new Exception($"Couldn't successfully parse iterations value from string:{hash.Parameters["iterations"]}", e);
+                }
             }
-            return PBKDF2(hash.Id, hash.HashBytes, hash.SaltBytes,iterations);
+            return PBKDF2(hash.Id, hash.HashBytes, hash.SaltBytes, iterations);
         }
 
         public byte[] GenerateSalt()

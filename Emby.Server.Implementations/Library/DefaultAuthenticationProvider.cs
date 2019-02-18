@@ -44,7 +44,7 @@ namespace Emby.Server.Implementations.Library
             PasswordHash readyHash = new PasswordHash(resolvedUser.Password);
             byte[] CalculatedHash;
             string CalculatedHashString;
-            if (_cryptographyProvider.GetSupportedHashMethods().Any(i => i == readyHash.Id))
+            if (_cryptographyProvider.GetSupportedHashMethods().Contains(readyHash.Id))
             {
                 if (String.IsNullOrEmpty(readyHash.Salt))
                 {
@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Library
             }
             else
             {
-                throw new Exception(String.Format("Requested crypto method not available in provider: {0}", readyHash.Id));
+                throw new Exception(String.Format($"Requested crypto method not available in provider: {readyHash.Id}"));
             }
 
             //var success = string.Equals(GetPasswordHash(resolvedUser), GetHashedString(resolvedUser, password), StringComparison.OrdinalIgnoreCase);
@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.Library
                 if (user.EasyPassword != null && !user.EasyPassword.Contains("$"))
                 {
                     string hash = user.EasyPassword;
-                    user.EasyPassword = String.Format("$SHA1${0}", hash);
+                    user.EasyPassword = string.Format("$SHA1${0}", hash);
                 }
             }
         }
@@ -122,7 +122,8 @@ namespace Emby.Server.Implementations.Library
                 passwordHash.Salt = PasswordHash.ConvertToByteString(passwordHash.SaltBytes);
                 passwordHash.Id = _cryptographyProvider.DefaultHashMethod;
                 passwordHash.Hash = GetHashedStringChangeAuth(newPassword, passwordHash);
-            }else if (newPassword != null)
+            }
+            else if (newPassword != null)
             {
                 passwordHash.Hash = GetHashedString(user, newPassword);
             }
