@@ -12,6 +12,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -225,6 +226,16 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 request.Recursive = true;
                 request.IncludeItemTypes = "Playlist";
+            }
+
+            if (!user.Policy.EnabledFolders.Where(i => new Guid(i).Equals(item.Id)).Any() && !user.Policy.EnableAllFolders)
+            {
+                Logger.LogWarning($"{user.Name} is not permitted to access Library {item.Name}.");
+                return new QueryResult<BaseItem>
+                {
+                    Items = new BaseItem[0],
+                    TotalRecordCount = 0
+                };
             }
 
             if (request.Recursive || !string.IsNullOrEmpty(request.Ids) || user == null)
