@@ -74,7 +74,6 @@ namespace Emby.Server.Implementations.Library
         private readonly Func<IDtoService> _dtoServiceFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly IFileSystem _fileSystem;
-        private readonly ICryptoProvider _cryptographyProvider;
 
         private IAuthenticationProvider[] _authenticationProviders;
         private DefaultAuthenticationProvider _defaultAuthenticationProvider;
@@ -89,8 +88,7 @@ namespace Emby.Server.Implementations.Library
             Func<IDtoService> dtoServiceFactory,
             IServerApplicationHost appHost,
             IJsonSerializer jsonSerializer,
-            IFileSystem fileSystem,
-            ICryptoProvider cryptographyProvider)
+            IFileSystem fileSystem)
         {
             _logger = loggerFactory.CreateLogger(nameof(UserManager));
             UserRepository = userRepository;
@@ -101,7 +99,6 @@ namespace Emby.Server.Implementations.Library
             _appHost = appHost;
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
-            _cryptographyProvider = cryptographyProvider;
             ConfigurationManager = configurationManager;
             _users = Array.Empty<User>();
 

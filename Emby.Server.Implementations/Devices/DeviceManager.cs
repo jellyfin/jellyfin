@@ -34,8 +34,6 @@ namespace Emby.Server.Implementations.Devices
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IServerConfigurationManager _config;
-        private readonly ILogger _logger;
-        private readonly INetworkManager _network;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;
 
@@ -55,17 +53,13 @@ namespace Emby.Server.Implementations.Devices
             IUserManager userManager,
             IFileSystem fileSystem,
             ILibraryMonitor libraryMonitor,
-            IServerConfigurationManager config,
-            ILoggerFactory loggerFactory,
-            INetworkManager network)
+            IServerConfigurationManager config)
         {
             _json = json;
             _userManager = userManager;
             _fileSystem = fileSystem;
             _libraryMonitor = libraryMonitor;
             _config = config;
-            _logger = loggerFactory.CreateLogger(nameof(DeviceManager));
-            _network = network;
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
             _authRepo = authRepo;
@@ -414,14 +408,12 @@ namespace Emby.Server.Implementations.Devices
     {
         private readonly DeviceManager _deviceManager;
         private readonly IServerConfigurationManager _config;
-        private readonly IFileSystem _fileSystem;
         private ILogger _logger;
 
-        public DeviceManagerEntryPoint(IDeviceManager deviceManager, IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger)
+        public DeviceManagerEntryPoint(IDeviceManager deviceManager, IServerConfigurationManager config, ILogger logger)
         {
             _deviceManager = (DeviceManager)deviceManager;
             _config = config;
-            _fileSystem = fileSystem;
             _logger = logger;
         }
 

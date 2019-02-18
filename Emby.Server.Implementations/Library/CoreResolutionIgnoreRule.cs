@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
@@ -7,7 +6,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -16,16 +14,14 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class CoreResolutionIgnoreRule : IResolverIgnoreRule
     {
-        private readonly IFileSystem _fileSystem;
         private readonly ILibraryManager _libraryManager;
-        private readonly ILogger _logger;
 
         private bool _ignoreDotPrefix;
 
         /// <summary>
         /// Any folder named in this list will be ignored - can be added to at runtime for extensibility
         /// </summary>
-        public static readonly Dictionary<string, string> IgnoreFolders = new List<string>
+        public static readonly string[] IgnoreFolders =
         {
                 "metadata",
                 "ps3_update",
@@ -50,13 +46,11 @@ namespace Emby.Server.Implementations.Library
                 // macos
                 ".AppleDouble"
 
-        }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+        };
 
-        public CoreResolutionIgnoreRule(IFileSystem fileSystem, ILibraryManager libraryManager, ILogger logger)
+        public CoreResolutionIgnoreRule(ILibraryManager libraryManager)
         {
-            _fileSystem = fileSystem;
             _libraryManager = libraryManager;
-            _logger = logger;
 
             _ignoreDotPrefix = Environment.OSVersion.Platform != PlatformID.Win32NT;
         }
@@ -117,7 +111,7 @@ namespace Emby.Server.Implementations.Library
             if (fileInfo.IsDirectory)
             {
                 // Ignore any folders in our list
-                if (IgnoreFolders.ContainsKey(filename))
+                if (IgnoreFolders.Contains(filename, StringComparer.OrdinalIgnoreCase))
                 {
                     return true;
                 }

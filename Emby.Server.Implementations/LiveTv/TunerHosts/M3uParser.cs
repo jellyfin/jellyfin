@@ -19,14 +19,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
     public class M3uParser
     {
         private readonly ILogger _logger;
-        private readonly IFileSystem _fileSystem;
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
 
-        public M3uParser(ILogger logger, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost)
+        public M3uParser(ILogger logger, IHttpClient httpClient, IServerApplicationHost appHost)
         {
             _logger = logger;
-            _fileSystem = fileSystem;
             _httpClient = httpClient;
             _appHost = appHost;
         }

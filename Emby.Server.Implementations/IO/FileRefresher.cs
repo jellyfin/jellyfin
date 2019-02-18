@@ -17,31 +17,23 @@ namespace Emby.Server.Implementations.IO
     public class FileRefresher : IDisposable
     {
         private ILogger Logger { get; set; }
-        private ITaskManager TaskManager { get; set; }
         private ILibraryManager LibraryManager { get; set; }
         private IServerConfigurationManager ConfigurationManager { get; set; }
-        private readonly IFileSystem _fileSystem;
         private readonly List<string> _affectedPaths = new List<string>();
         private Timer _timer;
         private readonly object _timerLock = new object();
         public string Path { get; private set; }
 
         public event EventHandler<EventArgs> Completed;
-        private readonly IEnvironmentInfo _environmentInfo;
-        private readonly ILibraryManager _libraryManager;
 
-        public FileRefresher(string path, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ITaskManager taskManager, ILogger logger, IEnvironmentInfo environmentInfo, ILibraryManager libraryManager1)
+        public FileRefresher(string path, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ILogger logger)
         {
             logger.LogDebug("New file refresher created for {0}", path);
             Path = path;
 
-            _fileSystem = fileSystem;
             ConfigurationManager = configurationManager;
             LibraryManager = libraryManager;
-            TaskManager = taskManager;
             Logger = logger;
-            _environmentInfo = environmentInfo;
-            _libraryManager = libraryManager1;
             AddPath(path);
         }
 

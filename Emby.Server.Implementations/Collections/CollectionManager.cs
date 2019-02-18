@@ -342,14 +342,12 @@ namespace Emby.Server.Implementations.Collections
     {
         private readonly CollectionManager _collectionManager;
         private readonly IServerConfigurationManager _config;
-        private readonly IFileSystem _fileSystem;
         private ILogger _logger;
 
-        public CollectionManagerEntryPoint(ICollectionManager collectionManager, IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger)
+        public CollectionManagerEntryPoint(ICollectionManager collectionManager, IServerConfigurationManager config, ILogger logger)
         {
             _collectionManager = (CollectionManager)collectionManager;
             _config = config;
-            _fileSystem = fileSystem;
             _logger = logger;
         }
 

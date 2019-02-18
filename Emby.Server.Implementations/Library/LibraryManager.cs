@@ -986,7 +986,7 @@ namespace Emby.Server.Implementations.Library
             // Ensure the location is available.
             Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
 
-            return new PeopleValidator(this, _logger, ConfigurationManager, _fileSystem).ValidatePeople(cancellationToken, progress);
+            return new PeopleValidator(this, _logger, _fileSystem).ValidatePeople(cancellationToken, progress);
         }
 
         /// <summary>
@@ -2543,7 +2543,7 @@ namespace Emby.Server.Implementations.Library
 
             var resolvers = new IItemResolver[]
             {
-                new GenericVideoResolver<Trailer>(this, _fileSystem)
+                new GenericVideoResolver<Trailer>(this)
             };
 
             return ResolvePaths(files, directoryService, null, new LibraryOptions(), null, resolvers)

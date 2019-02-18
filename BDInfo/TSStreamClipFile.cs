@@ -28,7 +28,6 @@ namespace BDInfo
 {
     public class TSStreamClipFile
     {
-        private readonly IFileSystem _fileSystem;
         public FileSystemMetadata FileInfo = null;
         public string FileType = null;
         public bool IsValid = false;
@@ -37,10 +36,9 @@ namespace BDInfo
         public Dictionary<ushort, TSStream> Streams =
             new Dictionary<ushort, TSStream>();
 
-        public TSStreamClipFile(FileSystemMetadata fileInfo, IFileSystem fileSystem)
+        public TSStreamClipFile(FileSystemMetadata fileInfo)
         {
             FileInfo = fileInfo;
-            _fileSystem = fileSystem;
             Name = fileInfo.Name.ToUpper();
         }
 

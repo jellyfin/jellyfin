@@ -24,7 +24,6 @@ namespace Emby.Server.Implementations.Library.Validators
         /// </summary>
         private readonly ILogger _logger;
 
-        private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
@@ -32,11 +31,10 @@ namespace Emby.Server.Implementations.Library.Validators
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
-        public PeopleValidator(ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem)
+        public PeopleValidator(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem)
         {
             _libraryManager = libraryManager;
             _logger = logger;
-            _config = config;
             _fileSystem = fileSystem;
         }
 

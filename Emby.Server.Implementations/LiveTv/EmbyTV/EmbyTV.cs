@@ -105,8 +105,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _mediaSourceManager = mediaSourceManager;
             _streamHelper = streamHelper;
 
-            _seriesTimerProvider = new SeriesTimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers"));
-            _timerProvider = new TimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "timers"), _logger);
+            _seriesTimerProvider = new SeriesTimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers"));
+            _timerProvider = new TimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "timers"), _logger);
             _timerProvider.TimerFired += _timerProvider_TimerFired;
 
             _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
@@ -1708,7 +1708,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             if (mediaSource.RequiresLooping || !(mediaSource.Container ?? string.Empty).EndsWith("ts", StringComparison.OrdinalIgnoreCase) || (mediaSource.Protocol != MediaProtocol.File && mediaSource.Protocol != MediaProtocol.Http))
             {
-                return new EncodedRecorder(_logger, _fileSystem, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, _httpClient, _processFactory, _config, _assemblyInfo);
+                return new EncodedRecorder(_logger, _fileSystem, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, _processFactory, _config);
             }
 
             return new DirectRecorder(_logger, _httpClient, _fileSystem, _streamHelper);
