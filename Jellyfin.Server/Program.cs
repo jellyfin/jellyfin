@@ -280,7 +280,6 @@ namespace Jellyfin.Server
             // Ensure the main folders exist before we continue
             try
             {
-                Directory.CreateDirectory(dataDir);
                 Directory.CreateDirectory(logDir);
                 Directory.CreateDirectory(configDir);
                 Directory.CreateDirectory(cacheDir);
