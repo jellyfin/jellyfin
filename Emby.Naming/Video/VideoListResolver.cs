@@ -175,7 +175,55 @@ namespace Emby.Naming.Video
                 return videos;
             }
 
-            return videos.GroupBy(v => new {v.Name, v.Year}).Select(group => new VideoInfo
+            var folderName = Path.GetFileName(Path.GetDirectoryName(videos[0].Files[0].Path));
+            if (!string.IsNullOrEmpty(folderName))
+            {
+                var videosMatchingFolder = new List<VideoInfo>();
+                foreach (VideoInfo video in videos)
+                {
+                    // Only interested in single files
+                    if (video.Files.Count != 1)
+                    {
+                        continue;
+                    }
+
+                    if (string.Equals(folderName, video.Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        videosMatchingFolder.Add(video);
+                    }
+                    // Eg. My Movie == My Movie - Some Other Info, TODO doesn't seem like a robust test
+                    else if (video.Name.StartsWith(folderName, StringComparison.OrdinalIgnoreCase) &&
+                        video.Name.Substring(folderName.Length).TrimStart().StartsWith("-"))
+                    {
+                        videosMatchingFolder.Add(video);
+                    }
+                }
+
+                // It is assumed that any non-matching files are random samples, trailers, extras etc.
+                // So if there's at least one video file matching the folder name, skip the rest.
+                if (videosMatchingFolder.Count > 0)
+                {
+                    var primary = videosMatchingFolder[0];
+                    var remainingVideos = videosMatchingFolder.Skip(1);
+                    var videoInfo = new VideoInfo
+                    {
+                        Name = folderName,
+                        Year = primary.Year,
+                        Files = primary.Files,
+                        AlternateVersions = new List<VideoFileInfo>(),
+                        Extras = primary.Extras
+                    };
+                    foreach (VideoInfo video in remainingVideos)
+                    {
+                        videoInfo.AlternateVersions.Add(video.Files.First());
+                        videoInfo.Extras.AddRange(video.Extras);
+                    }
+
+                    return new[] { videoInfo };
+                }
+            }
+
+            return videos.GroupBy(v => new { v.Name, v.Year }).Select(group => new VideoInfo
             {
                 // Because of the grouping, we can grab the information from the first movie and make it primary
                 // The remaining movie matches are 'alternate versions'
