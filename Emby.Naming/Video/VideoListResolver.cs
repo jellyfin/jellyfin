@@ -175,7 +175,7 @@ namespace Emby.Naming.Video
                 return videos;
             }
 
-            var folderName = Path.GetFileName(Path.GetDirectoryName(videos.First().Files.First().Path));
+            var folderName = Path.GetFileName(Path.GetDirectoryName(videos[0].Files[0].Path));
             if (!string.IsNullOrEmpty(folderName))
             {
                 var videosMatchingFolder = new List<VideoInfo>();
@@ -203,13 +203,13 @@ namespace Emby.Naming.Video
                 // So if there's at least one video file matching the folder name, skip the rest.
                 if (videosMatchingFolder.Count > 0)
                 {
-                    var primary = videosMatchingFolder.First();
+                    var primary = videosMatchingFolder[0];
                     var remainingVideos = videosMatchingFolder.Skip(1);
                     var videoInfo = new VideoInfo
                     {
                         Name = folderName,
-                        Year = videosMatchingFolder.First().Year,
-                        Files = videosMatchingFolder.First().Files,
+                        Year = primary.Year,
+                        Files = primary.Files,
                         AlternateVersions = new List<VideoFileInfo>(),
                         Extras = primary.Extras
                     };
