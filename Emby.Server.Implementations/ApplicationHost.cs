@@ -471,7 +471,7 @@ namespace Emby.Server.Implementations
         {
             try
             {
-                Logger.LogWarning("Creating instance of {Type}", type);
+                Logger.LogDebug("Creating instance of {Type}", type);
                 return ActivatorUtilities.CreateInstance(_serviceProvider, type);
             }
             catch (Exception ex)
