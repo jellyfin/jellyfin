@@ -230,7 +230,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (!user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id))
             {
-                Logger.LogWarning($"{user.Name} is not permitted to access Library {item.Name}.");
+                Logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Name, item.Name);
                 return new QueryResult<BaseItem>
                 {
                     Items = Array.Empty<BaseItem>(),
