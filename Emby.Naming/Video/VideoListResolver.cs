@@ -215,7 +215,7 @@ namespace Emby.Naming.Video
                 testFilename = testFilename.Substring(folderName.Length).Trim();
                 return string.IsNullOrEmpty(testFilename) ||
                        testFilename.StartsWith("-") ||
-                       string.IsNullOrEmpty(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty)) ;
+                       string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty)) ;
             }
 
             return false;
