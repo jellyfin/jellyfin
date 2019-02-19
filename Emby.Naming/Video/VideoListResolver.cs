@@ -183,7 +183,6 @@ namespace Emby.Naming.Video
             {
                 if (videos.All(i => i.Files.Count == 1 && IsEligibleForMultiVersion(folderName, i.Files[0].Path)))
                 {
-                    // Enforce the multi-version limit
                     if (HaveSameYear(videos))
                     {
                         var ordered = videos.OrderBy(i => i.Name).ToList();
