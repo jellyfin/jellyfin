@@ -2,7 +2,15 @@
 CONFIG := Release
 TERM := xterm
 SHELL := /bin/bash
-DOTNETRUNTIME := debian-x64
+
+ARCH := $(shell arch)
+ifeq ($(ARCH),x86_64)
+    DOTNETRUNTIME := debian-x64
+endif
+ifeq ($(ARCH),armv7l)
+    DOTNETRUNTIME := debian-arm
+endif
+
 export DH_VERBOSE=1
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
