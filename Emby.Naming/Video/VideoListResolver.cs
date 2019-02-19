@@ -175,64 +175,50 @@ namespace Emby.Naming.Video
                 return videos;
             }
 
+            var list = new List<VideoInfo>();
+
             var folderName = Path.GetFileName(Path.GetDirectoryName(videos[0].Files[0].Path));
-            if (!string.IsNullOrEmpty(folderName))
+
+            if (!string.IsNullOrEmpty(folderName) && folderName.Length > 1)
             {
-                var videosMatchingFolder = new List<VideoInfo>();
-                foreach (VideoInfo video in videos)
+                if (videos.All(i => i.Files.Count == 1 && IsEligibleForMultiVersion(folderName, i.Files[0].Path)))
                 {
-                    // Only interested in single files
-                    if (video.Files.Count != 1)
+                    if (HaveSameYear(videos))
                     {
-                        continue;
-                    }
+                        var ordered = videos.OrderBy(i => i.Name).ToList();
 
-                    if (string.Equals(folderName, video.Name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        videosMatchingFolder.Add(video);
-                    }
-                    // Eg. My Movie == My Movie - Some Other Info, TODO doesn't seem like a robust test
-                    else if (video.Name.StartsWith(folderName, StringComparison.OrdinalIgnoreCase) &&
-                        video.Name.Substring(folderName.Length).TrimStart().StartsWith("-"))
-                    {
-                        videosMatchingFolder.Add(video);
-                    }
-                }
+                        list.Add(ordered[0]);
 
-                // It is assumed that any non-matching files are random samples, trailers, extras etc.
-                // So if there's at least one video file matching the folder name, skip the rest.
-                if (videosMatchingFolder.Count > 0)
-                {
-                    var primary = videosMatchingFolder[0];
-                    var remainingVideos = videosMatchingFolder.Skip(1);
-                    var videoInfo = new VideoInfo
-                    {
-                        Name = folderName,
-                        Year = primary.Year,
-                        Files = primary.Files,
-                        AlternateVersions = new List<VideoFileInfo>(),
-                        Extras = primary.Extras
-                    };
-                    foreach (VideoInfo video in remainingVideos)
-                    {
-                        videoInfo.AlternateVersions.Add(video.Files.First());
-                        videoInfo.Extras.AddRange(video.Extras);
-                    }
+                        list[0].AlternateVersions = ordered.Skip(1).Select(i => i.Files[0]).ToList();
+                        list[0].Name = folderName;
+                        list[0].Extras.AddRange(ordered.Skip(1).SelectMany(i => i.Extras));
 
-                    return new[] { videoInfo };
+                        return list;
+                    }
                 }
             }
 
-            return videos.GroupBy(v => new { v.Name, v.Year }).Select(group => new VideoInfo
+            return videos;
+        }
+
+        private bool HaveSameYear(List<VideoInfo> videos)
+        {
+            return videos.Select(i => i.Year ?? -1).Distinct().Count() < 2;
+        }
+
+        private bool IsEligibleForMultiVersion(string folderName, string testFilename)
+        {
+            testFilename = Path.GetFileNameWithoutExtension(testFilename) ?? string.Empty;
+
+            if (testFilename.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
             {
-                // Because of the grouping, we can grab the information from the first movie and make it primary
-                // The remaining movie matches are 'alternate versions'
-                Name = group.First().Name,
-                Year = group.First().Year,
-                Files = group.First().Files,
-                AlternateVersions = group.Skip(1).Select(i => i.Files[0]).ToList(),
-                Extras = group.First().Extras.Concat(group.Skip(1).SelectMany(i => i.Extras)).ToList()
-            });
+                testFilename = testFilename.Substring(folderName.Length).Trim();
+                return string.IsNullOrEmpty(testFilename) ||
+                       testFilename.StartsWith("-") ||
+                       string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty)) ;
+            }
+
+            return false;
         }
 
         private List<VideoFileInfo> GetExtras(IEnumerable<VideoFileInfo> remainingFiles, List<string> baseNames)
