@@ -175,16 +175,23 @@ namespace Emby.Naming.Video
                 return videos;
             }
 
-            return videos.GroupBy(v => new {v.Name, v.Year}).Select(group => new VideoInfo
+            var folderName = Path.GetFileName(Path.GetDirectoryName(videos[0].Files[0].Path));
+
+            if (!string.IsNullOrEmpty(folderName) && folderName.Length > 1)
             {
-                // Because of the grouping, we can grab the information from the first movie and make it primary
-                // The remaining movie matches are 'alternate versions'
-                Name = group.First().Name,
-                Year = group.First().Year,
-                Files = group.First().Files,
-                AlternateVersions = group.Skip(1).Select(i => i.Files[0]).ToList(),
-                Extras = group.First().Extras.Concat(group.Skip(1).SelectMany(i => i.Extras)).ToList()
-            });
+                var ordered = videos.OrderBy(i => i.Name);
+
+                return ordered.GroupBy(v => new {v.Name, v.Year}).Select(group => new VideoInfo
+                {
+                    Name = folderName,
+                    Year = group.First().Year,
+                    Files = group.First().Files,
+                    AlternateVersions = group.Skip(1).Select(i => i.Files[0]).ToList(),
+                    Extras = group.First().Extras.Concat(group.Skip(1).SelectMany(i => i.Extras)).ToList()
+                });
+            }
+
+            return videos;
         }
 
         private List<VideoFileInfo> GetExtras(IEnumerable<VideoFileInfo> remainingFiles, List<string> baseNames)
