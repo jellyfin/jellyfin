@@ -19,6 +19,7 @@
  - [LogicalPhallacy](https://github.com/LogicalPhallacy/)
  - [RazeLighter777](https://github.com/RazeLighter777)
  - [WillWill56](https://github.com/WillWill56)
+ - [Liggy](https://github.com/Liggy)
 
 # Emby Contributors
 
