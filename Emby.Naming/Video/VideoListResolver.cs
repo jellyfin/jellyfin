@@ -184,7 +184,7 @@ namespace Emby.Naming.Video
                 if (videos.All(i => i.Files.Count == 1 && IsEligibleForMultiVersion(folderName, i.Files[0].Path)))
                 {
                     // Enforce the multi-version limit
-                    if (videos.Count <= 8 && HaveSameYear(videos))
+                    if (HaveSameYear(videos))
                     {
                         var ordered = videos.OrderBy(i => i.Name).ToList();
 
@@ -200,23 +200,6 @@ namespace Emby.Naming.Video
             }
 
             return videos;
-            //foreach (var video in videos.OrderBy(i => i.Name))
-            //{
-            //    var match = list
-            //        .FirstOrDefault(i => string.Equals(i.Name, video.Name, StringComparison.OrdinalIgnoreCase));
-
-            //    if (match != null && video.Files.Count == 1 && match.Files.Count == 1)
-            //    {
-            //        match.AlternateVersions.Add(video.Files[0]);
-            //        match.Extras.AddRange(video.Extras);
-            //    }
-            //    else
-            //    {
-            //        list.Add(video);
-            //    }
-            //}
-
-            //return list;
         }
 
         private bool HaveSameYear(List<VideoInfo> videos)
@@ -226,17 +209,14 @@ namespace Emby.Naming.Video
 
         private bool IsEligibleForMultiVersion(string folderName, string testFilename)
         {
-            testFilename = Path.GetFileNameWithoutExtension(testFilename);
-
-            if (string.Equals(folderName, testFilename, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
+            testFilename = Path.GetFileNameWithoutExtension(testFilename) ?? string.Empty;
 
             if (testFilename.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
             {
                 testFilename = testFilename.Substring(folderName.Length).Trim();
-                return testFilename.StartsWith("-", StringComparison.OrdinalIgnoreCase) || Regex.Replace(testFilename, @"\[([^]]*)\]", "").Trim() == string.Empty;
+                return string.IsNullOrEmpty(testFilename) ||
+                       testFilename.StartsWith("-") ||
+                       string.IsNullOrEmpty(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty)) ;
             }
 
             return false;
