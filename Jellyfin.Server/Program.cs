@@ -124,11 +124,11 @@ namespace Jellyfin.Server
             SQLitePCL.Batteries_V2.Init();
 
             // Allow all https requests
-            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; } );
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
             var fileSystem = new ManagedFileSystem(_loggerFactory, environmentInfo, appPaths);
 
-            using (var appHost = new CoreAppHost(
+            using (var appHost = new ApplicationHost(
                 appPaths,
                 _loggerFactory,
                 options,
@@ -136,7 +136,9 @@ namespace Jellyfin.Server
                 environmentInfo,
                 new NullImageEncoder(),
                 new NetworkManager(_loggerFactory, environmentInfo),
-                appConfig))
+                appConfig,
+                onShutdown: Shutdown,
+                onRestart: Restart))
             {
                 await appHost.Init(new ServiceCollection()).ConfigureAwait(false);
 

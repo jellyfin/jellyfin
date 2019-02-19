@@ -15,7 +15,7 @@ using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 using SocketHttpListener.Net;
 
-namespace Jellyfin.Server.SocketSharp
+namespace Emby.Server.Implementations.SocketSharp
 {
     public class WebSocketSharpListener : IHttpListener
     {
@@ -227,7 +227,7 @@ namespace Jellyfin.Server.SocketSharp
 
             var operationName = urlSegments[urlSegments.Length - 1];
 
-            var req = new WebSocketSharpRequest(httpContext, operationName, _logger);
+            var req = new Emby.Server.Implementations.SocketSharp.WebSocketSharpRequest(httpContext, operationName, _logger);
 
             return req;
         }

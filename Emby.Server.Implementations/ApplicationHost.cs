@@ -42,6 +42,7 @@ using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
+using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Emby.Server.Implementations.Xml;
@@ -115,13 +116,13 @@ namespace Emby.Server.Implementations
     /// <summary>
     /// Class CompositionRoot
     /// </summary>
-    public abstract class ApplicationHost : IServerApplicationHost, IDisposable
+    public class ApplicationHost : IServerApplicationHost, IDisposable
     {
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
         /// </summary>
         /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
-        public abstract bool CanSelfRestart { get; }
+        public bool CanSelfRestart => StartupOptions.RestartPath != null;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance can self update.
@@ -359,7 +360,9 @@ namespace Emby.Server.Implementations
             IEnvironmentInfo environmentInfo,
             IImageEncoder imageEncoder,
             INetworkManager networkManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            Action onRestart,
+            Action onShutdown)
         {
             _configuration = configuration;
 
@@ -387,6 +390,9 @@ namespace Emby.Server.Implementations
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
             NetworkManager.NetworkChanged += NetworkManager_NetworkChanged;
+
+            RestartInternal = onRestart;
+            ShutdownInternal = onShutdown;
         }
 
         public string ExpandVirtualPath(string path)
@@ -866,7 +872,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        protected virtual bool SupportsDualModeSockets => true;
+        protected bool SupportsDualModeSockets => true;
 
         private X509Certificate GetCertificate(CertificateInfo info)
         {
@@ -1182,7 +1188,17 @@ namespace Emby.Server.Implementations
             });
         }
 
-        protected abstract IHttpListener CreateHttpListener();
+        protected IHttpListener CreateHttpListener()
+            => new WebSocketSharpListener(
+                Logger,
+                Certificate,
+                StreamHelper,
+                NetworkManager,
+                SocketFactory,
+                CryptographyProvider,
+                SupportsDualModeSockets,
+                FileSystemManager,
+                EnvironmentInfo);
 
         /// <summary>
         /// Starts the server.
@@ -1363,7 +1379,7 @@ namespace Emby.Server.Implementations
             });
         }
 
-        protected abstract void RestartInternal();
+        private Action RestartInternal;
 
         /// <summary>
         /// Gets the composable part assemblies.
@@ -1425,7 +1441,10 @@ namespace Emby.Server.Implementations
             }
         }
 
-        protected abstract IEnumerable<Assembly> GetAssembliesWithPartsInternal();
+        private IEnumerable<Assembly> GetAssembliesWithPartsInternal()
+        {
+            yield return Assembly.GetEntryAssembly();
+        }
 
         /// <summary>
         /// Gets the system status.
@@ -1723,7 +1742,7 @@ namespace Emby.Server.Implementations
             ShutdownInternal();
         }
 
-        protected abstract void ShutdownInternal();
+        private Action ShutdownInternal;
 
         public event EventHandler HasUpdateAvailableChanged;
 

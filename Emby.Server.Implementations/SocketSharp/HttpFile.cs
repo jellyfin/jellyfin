@@ -1,7 +1,7 @@
 using System.IO;
 using MediaBrowser.Model.Services;
 
-namespace Jellyfin.Server.SocketSharp
+namespace Emby.Server.Implementations.SocketSharp
 {
     public class HttpFile : IHttpFile
     {

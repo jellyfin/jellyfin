@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 
-namespace Jellyfin.Server.SocketSharp
+namespace Emby.Server.Implementations.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {
@@ -614,7 +614,7 @@ namespace Jellyfin.Server.SocketSharp
                     else if (StrUtils.StartsWith(header, "Content-Type:", true))
                     {
                         elem.ContentType = header.Substring("Content-Type:".Length).Trim();
-                        elem.Encoding = GetEncoding(elem.ContentType);
+                        elem.Encoding = WebSocketSharpRequest.GetEncoding(elem.ContentType);
                     }
                 }
 

@@ -12,7 +12,7 @@ using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
 using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
 using IResponse = MediaBrowser.Model.Services.IResponse;
 
-namespace Jellyfin.Server.SocketSharp
+namespace Emby.Server.Implementations.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {
@@ -42,7 +42,7 @@ namespace Jellyfin.Server.SocketSharp
             }
 
             var startHostUrl = listenerUrl.Substring(pos + "://".Length);
-            var endPos = startHostUrl.IndexOf('/', StringComparison.Ordinal);
+            var endPos = startHostUrl.IndexOf("/", StringComparison.Ordinal);
             if (endPos == -1)
             {
                 return null;
@@ -307,11 +307,11 @@ namespace Jellyfin.Server.SocketSharp
             }
 
             format = LeftPart(format, '.');
-            if (format.Contains("json", StringComparison.OrdinalIgnoreCase))
+            if (format.ToLower().Contains("json"))
             {
                 return "application/json";
             }
-            else if (format.Contains("xml", StringComparison.OrdinalIgnoreCase))
+            else if (format.ToLower().Contains("xml"))
             {
                 return "application/xml";
             }
@@ -326,7 +326,7 @@ namespace Jellyfin.Server.SocketSharp
                 return null;
             }
 
-            var pos = strVal.IndexOf(needle, StringComparison.Ordinal);
+            var pos = strVal.IndexOf(needle.ToString(), StringComparison.Ordinal);
             return pos == -1 ? strVal : strVal.Substring(0, pos);
         }
 
