@@ -175,22 +175,71 @@ namespace Emby.Naming.Video
                 return videos;
             }
 
+            var list = new List<VideoInfo>();
+
             var folderName = Path.GetFileName(Path.GetDirectoryName(videos[0].Files[0].Path));
 
             if (!string.IsNullOrEmpty(folderName) && folderName.Length > 1)
             {
-                var ordered = videos.OrderBy(i => i.Name).ToList();
-
-                return ordered.GroupBy(v => new {v.Name, v.Year}).Select(group => new VideoInfo
+                if (videos.All(i => i.Files.Count == 1 && IsEligibleForMultiVersion(folderName, i.Files[0].Path)))
                 {
-                    Name = folderName,
-                    Files = group.First().Files,
-                    AlternateVersions = group.Skip(1).Select(i => i.Files[0]).ToList(),
-                    Extras = group.First().Extras.Concat(group.Skip(1).SelectMany(i => i.Extras)).ToList()
-                });
+                    // Enforce the multi-version limit
+                    if (videos.Count <= 8 && HaveSameYear(videos))
+                    {
+                        var ordered = videos.OrderBy(i => i.Name).ToList();
+
+                        list.Add(ordered[0]);
+
+                        list[0].AlternateVersions = ordered.Skip(1).Select(i => i.Files[0]).ToList();
+                        list[0].Name = folderName;
+                        list[0].Extras.AddRange(ordered.Skip(1).SelectMany(i => i.Extras));
+
+                        return list;
+                    }
+                }
             }
 
             return videos;
+            //foreach (var video in videos.OrderBy(i => i.Name))
+            //{
+            //    var match = list
+            //        .FirstOrDefault(i => string.Equals(i.Name, video.Name, StringComparison.OrdinalIgnoreCase));
+
+            //    if (match != null && video.Files.Count == 1 && match.Files.Count == 1)
+            //    {
+            //        match.AlternateVersions.Add(video.Files[0]);
+            //        match.Extras.AddRange(video.Extras);
+            //    }
+            //    else
+            //    {
+            //        list.Add(video);
+            //    }
+            //}
+
+            //return list;
+        }
+
+        private bool HaveSameYear(List<VideoInfo> videos)
+        {
+            return videos.Select(i => i.Year ?? -1).Distinct().Count() < 2;
+        }
+
+        private bool IsEligibleForMultiVersion(string folderName, string testFilename)
+        {
+            testFilename = Path.GetFileNameWithoutExtension(testFilename);
+
+            if (string.Equals(folderName, testFilename, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (testFilename.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
+            {
+                testFilename = testFilename.Substring(folderName.Length).Trim();
+                return testFilename.StartsWith("-", StringComparison.OrdinalIgnoreCase) || Regex.Replace(testFilename, @"\[([^]]*)\]", "").Trim() == string.Empty;
+            }
+
+            return false;
         }
 
         private List<VideoFileInfo> GetExtras(IEnumerable<VideoFileInfo> remainingFiles, List<string> baseNames)
