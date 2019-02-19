@@ -228,12 +228,12 @@ namespace MediaBrowser.Api.UserLibrary
                 request.IncludeItemTypes = "Playlist";
             }
 
-            if (!user.Policy.EnabledFolders.Where(i => new Guid(i).Equals(item.Id)).Any() && !user.Policy.EnableAllFolders)
+            if (!user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Any(i => new Guid(i).Equals(item.Id)))
             {
                 Logger.LogWarning($"{user.Name} is not permitted to access Library {item.Name}.");
                 return new QueryResult<BaseItem>
                 {
-                    Items = new BaseItem[0],
+                    Items = Array.Empty<BaseItem>(),
                     TotalRecordCount = 0
                 };
             }
