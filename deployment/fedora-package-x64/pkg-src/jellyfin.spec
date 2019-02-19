@@ -77,6 +77,7 @@ EOF
 %{_libdir}/%{name}/*.dll
 %{_libdir}/%{name}/*.so
 %{_libdir}/%{name}/*.a
+%{_libdir}/%{name}/*.xml
 %{_libdir}/%{name}/createdump
 # Needs 755 else only root can run it since binary build by dotnet is 722
 %attr(755,root,root) %{_libdir}/%{name}/jellyfin
