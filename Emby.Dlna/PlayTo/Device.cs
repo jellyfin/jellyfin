@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
 using Emby.Dlna.Common;
 using Emby.Dlna.Server;
@@ -733,26 +734,21 @@ namespace Emby.Dlna.PlayTo
                 return (true, null);
             }
 
-            XElement uPnpResponse;
+            XElement uPnpResponse = null;
 
-            // Handle different variations sent back by devices
             try
             {
-                uPnpResponse = XElement.Parse(trackString);
+                uPnpResponse = ParseResponse(trackString);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // first try to add a root node with a dlna namesapce
-                try
-                {
-                    uPnpResponse = XElement.Parse("<data xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + trackString + "</data>");
-                    uPnpResponse = uPnpResponse.Descendants().First();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Unable to parse xml {0}", trackString);
-                    return (true, null);
-                }
+                _logger.LogError(ex, "Uncaught exception while parsing xml");
+            }
+
+            if (uPnpResponse == null)
+            {
+                _logger.LogError("Failed to parse xml: \n {Xml}", trackString);
+                return (true, null);
             }
 
             var e = uPnpResponse.Element(uPnpNamespaces.items);
@@ -760,6 +756,43 @@ namespace Emby.Dlna.PlayTo
             var uTrack = CreateUBaseObject(e, trackUri);
 
             return (true, uTrack);
+        }
+
+        private XElement ParseResponse(string xml)
+        {
+            // Handle different variations sent back by devices
+            try
+            {
+                return XElement.Parse(xml);
+            }
+            catch (XmlException)
+            {
+
+            }
+
+            // first try to add a root node with a dlna namesapce
+            try
+            {
+                return XElement.Parse("<data xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + xml + "</data>")
+                                .Descendants()
+                                .First();
+            }
+            catch (XmlException)
+            {
+
+            }
+
+            // some devices send back invalid xml
+            try
+            {
+                return XElement.Parse(xml.Replace("&", "&amp;"));
+            }
+            catch (XmlException)
+            {
+
+            }
+
+            return null;
         }
 
         private static uBaseObject CreateUBaseObject(XElement container, string trackUri)
