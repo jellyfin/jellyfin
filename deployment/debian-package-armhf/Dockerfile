@@ -1,7 +1,7 @@
 FROM debian:9
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
-ARG PLATFORM_DIR=/jellyfin/deployment/debian-package-armel
+ARG PLATFORM_DIR=/jellyfin/deployment/debian-package-armhf
 ARG ARTIFACT_DIR=/dist
 ARG SDK_VERSION=2.2
 # Docker run environment
