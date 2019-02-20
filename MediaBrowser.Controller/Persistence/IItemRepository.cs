@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="items">The items.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void SaveItems(List<BaseItem> items, CancellationToken cancellationToken);
+        void SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken);
 
         void SaveImages(BaseItem item);
 
@@ -141,12 +141,12 @@ namespace MediaBrowser.Controller.Persistence
 
         int GetCount(InternalItemsQuery query);
 
-        QueryResult<Tuple<BaseItem, ItemCounts>> GetGenres(InternalItemsQuery query);
-        QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query);
-        QueryResult<Tuple<BaseItem, ItemCounts>> GetStudios(InternalItemsQuery query);
-        QueryResult<Tuple<BaseItem, ItemCounts>> GetArtists(InternalItemsQuery query);
-        QueryResult<Tuple<BaseItem, ItemCounts>> GetAlbumArtists(InternalItemsQuery query);
-        QueryResult<Tuple<BaseItem, ItemCounts>> GetAllArtists(InternalItemsQuery query);
+        QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query);
+        QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query);
+        QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query);
+        QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query);
+        QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
+        QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query);
 
         List<string> GetMusicGenreNames();
         List<string> GetStudioNames();

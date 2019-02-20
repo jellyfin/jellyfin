@@ -69,7 +69,7 @@ namespace Jellyfin.Server.SocketSharp
         {
             if (_listener == null)
             {
-                _listener = new HttpListener(_logger, _cryptoProvider, _socketFactory, _networkManager, _streamHelper, _fileSystem, _environment);
+                _listener = new HttpListener(_logger, _cryptoProvider, _socketFactory, _streamHelper, _fileSystem, _environment);
             }
 
             _listener.EnableDualMode = _enableDualMode;
@@ -79,20 +79,12 @@ namespace Jellyfin.Server.SocketSharp
                 _listener.LoadCert(_certificate);
             }
 
-            foreach (var prefix in urlPrefixes)
-            {
-                _logger.LogInformation("Adding HttpListener prefix " + prefix);
-                _listener.Prefixes.Add(prefix);
-            }
+            _logger.LogInformation("Adding HttpListener prefixes {Prefixes}", urlPrefixes);
+            _listener.Prefixes.AddRange(urlPrefixes);
 
-            _listener.OnContext = ProcessContext;
+            _listener.OnContext = async c => await InitTask(c, _disposeCancellationToken).ConfigureAwait(false);
 
             _listener.Start();
-        }
-
-        private void ProcessContext(HttpListenerContext context)
-        {
-            _ = Task.Run(async () => await InitTask(context, _disposeCancellationToken).ConfigureAwait(false));
         }
 
         private static void LogRequest(ILogger logger, HttpListenerRequest request)
@@ -151,10 +143,7 @@ namespace Jellyfin.Server.SocketSharp
                     Endpoint = endpoint
                 };
 
-                if (WebSocketConnecting != null)
-                {
-                    WebSocketConnecting(connectingArgs);
-                }
+                WebSocketConnecting?.Invoke(connectingArgs);
 
                 if (connectingArgs.AllowConnection)
                 {
@@ -165,6 +154,7 @@ namespace Jellyfin.Server.SocketSharp
                     if (WebSocketConnected != null)
                     {
                         var socket = new SharpWebSocket(webSocketContext.WebSocket, _logger);
+                        await socket.ConnectAsServerAsync().ConfigureAwait(false);
 
                         WebSocketConnected(new WebSocketConnectEventArgs
                         {
@@ -174,7 +164,7 @@ namespace Jellyfin.Server.SocketSharp
                             Endpoint = endpoint
                         });
 
-                        await ReceiveWebSocket(ctx, socket).ConfigureAwait(false);
+                        await ReceiveWebSocketAsync(ctx, socket).ConfigureAwait(false);
                     }
                 }
                 else
@@ -192,7 +182,7 @@ namespace Jellyfin.Server.SocketSharp
             }
         }
 
-        private async Task ReceiveWebSocket(HttpListenerContext ctx, SharpWebSocket socket)
+        private async Task ReceiveWebSocketAsync(HttpListenerContext ctx, SharpWebSocket socket)
         {
             try
             {

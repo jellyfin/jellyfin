@@ -73,24 +73,12 @@ namespace MediaBrowser.Common
         string ApplicationUserAgent { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance can self update.
-        /// </summary>
-        /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
-        bool CanSelfUpdate { get; }
-
-        /// <summary>
         /// Gets the exports.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="manageLiftime">if set to <c>true</c> [manage liftime].</param>
         /// <returns>IEnumerable{``0}.</returns>
         IEnumerable<T> GetExports<T>(bool manageLifetime = true);
-
-        /// <summary>
-        /// Updates the application.
-        /// </summary>
-        /// <returns>Task.</returns>
-        Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress);
 
         /// <summary>
         /// Resolves this instance.

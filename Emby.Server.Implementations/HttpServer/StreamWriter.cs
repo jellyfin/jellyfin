@@ -14,8 +14,6 @@ namespace Emby.Server.Implementations.HttpServer
     /// </summary>
     public class StreamWriter : IAsyncStreamWriter, IHasHeaders
     {
-        private ILogger Logger { get; set; }
-
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         /// <summary>
@@ -45,7 +43,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="source">The source.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="logger">The logger.</param>
-        public StreamWriter(Stream source, string contentType, ILogger logger)
+        public StreamWriter(Stream source, string contentType)
         {
             if (string.IsNullOrEmpty(contentType))
             {
@@ -53,7 +51,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             SourceStream = source;
-            Logger = logger;
 
             Headers["Content-Type"] = contentType;
 
@@ -69,7 +66,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="source">The source.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="logger">The logger.</param>
-        public StreamWriter(byte[] source, string contentType, int contentLength, ILogger logger)
+        public StreamWriter(byte[] source, string contentType, int contentLength)
         {
             if (string.IsNullOrEmpty(contentType))
             {
@@ -77,7 +74,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             SourceBytes = source;
-            Logger = logger;
 
             Headers["Content-Type"] = contentType;
 

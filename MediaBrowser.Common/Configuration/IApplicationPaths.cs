@@ -42,12 +42,6 @@ namespace MediaBrowser.Common.Configuration
         string PluginConfigurationsPath { get; }
 
         /// <summary>
-        /// Gets the path to where temporary update files will be stored
-        /// </summary>
-        /// <value>The plugin configurations path.</value>
-        string TempUpdatePath { get; }
-
-        /// <summary>
         /// Gets the path to the log directory
         /// </summary>
         /// <value>The log directory path.</value>

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
@@ -18,47 +17,55 @@ namespace SocketHttpListener.Net
         internal ISocketFactory SocketFactory { get; private set; }
         internal IFileSystem FileSystem { get; private set; }
         internal IStreamHelper StreamHelper { get; private set; }
-        internal INetworkManager NetworkManager { get; private set; }
         internal IEnvironmentInfo EnvironmentInfo { get; private set; }
 
         public bool EnableDualMode { get; set; }
 
-        AuthenticationSchemes auth_schemes;
-        HttpListenerPrefixCollection prefixes;
-        AuthenticationSchemeSelector auth_selector;
-        string realm;
-        bool unsafe_ntlm_auth;
-        bool listening;
-        bool disposed;
+        private AuthenticationSchemes auth_schemes;
+        private HttpListenerPrefixCollection prefixes;
+        private AuthenticationSchemeSelector auth_selector;
+        private string realm;
+        private bool unsafe_ntlm_auth;
+        private bool listening;
+        private bool disposed;
 
-        Dictionary<HttpListenerContext, HttpListenerContext> registry;   // Dictionary<HttpListenerContext,HttpListenerContext>
-        Dictionary<HttpConnection, HttpConnection> connections;
+        private Dictionary<HttpListenerContext, HttpListenerContext> registry;
+        private Dictionary<HttpConnection, HttpConnection> connections;
         private ILogger _logger;
         private X509Certificate _certificate;
 
         public Action<HttpListenerContext> OnContext { get; set; }
 
-        public HttpListener(ILogger logger, ICryptoProvider cryptoProvider, ISocketFactory socketFactory,
-            INetworkManager networkManager, IStreamHelper streamHelper, IFileSystem fileSystem,
+        public HttpListener(
+            ILogger logger,
+            ICryptoProvider cryptoProvider,
+            ISocketFactory socketFactory,
+            IStreamHelper streamHelper,
+            IFileSystem fileSystem,
             IEnvironmentInfo environmentInfo)
         {
             _logger = logger;
             CryptoProvider = cryptoProvider;
             SocketFactory = socketFactory;
-            NetworkManager = networkManager;
             StreamHelper = streamHelper;
             FileSystem = fileSystem;
             EnvironmentInfo = environmentInfo;
+
             prefixes = new HttpListenerPrefixCollection(logger, this);
             registry = new Dictionary<HttpListenerContext, HttpListenerContext>();
             connections = new Dictionary<HttpConnection, HttpConnection>();
             auth_schemes = AuthenticationSchemes.Anonymous;
         }
 
-        public HttpListener(ILogger logger, X509Certificate certificate, ICryptoProvider cryptoProvider,
-            ISocketFactory socketFactory, INetworkManager networkManager, IStreamHelper streamHelper,
-            IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
-            : this(logger, cryptoProvider, socketFactory, networkManager, streamHelper, fileSystem, environmentInfo)
+        public HttpListener(
+            ILogger logger,
+            X509Certificate certificate,
+            ICryptoProvider cryptoProvider,
+            ISocketFactory socketFactory,
+            IStreamHelper streamHelper,
+            IFileSystem fileSystem,
+            IEnvironmentInfo environmentInfo)
+            : this(logger, cryptoProvider, socketFactory, streamHelper, fileSystem, environmentInfo)
         {
             _certificate = certificate;
         }

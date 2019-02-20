@@ -396,14 +396,12 @@ namespace MediaBrowser.Api.UserLibrary
 
         public VideoType[] GetVideoTypes()
         {
-            var val = VideoTypes;
-
-            if (string.IsNullOrEmpty(val))
+            if (string.IsNullOrEmpty(VideoTypes))
             {
-                return new VideoType[] { };
+                return Array.Empty<VideoType>();
             }
 
-            return val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (VideoType)Enum.Parse(typeof(VideoType), v, true)).ToArray();
+            return VideoTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (VideoType)Enum.Parse(typeof(VideoType), v, true)).ToArray();
         }
 
         /// <summary>

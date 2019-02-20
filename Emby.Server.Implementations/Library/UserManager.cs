@@ -168,9 +168,9 @@ namespace Emby.Server.Implementations.Library
         /// <exception cref="ArgumentNullException"></exception>
         public User GetUserById(Guid id)
         {
-            if (id.Equals(Guid.Empty))
+            if (id == Guid.Empty)
             {
-                throw new ArgumentNullException(nameof(id));
+                throw new ArgumentException(nameof(id), "Guid can't be empty");
             }
 
             return Users.FirstOrDefault(u => u.Id == id);

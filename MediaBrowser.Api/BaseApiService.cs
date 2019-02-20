@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
@@ -118,8 +119,7 @@ namespace MediaBrowser.Api
         {
             var options = new DtoOptions();
 
-            var hasFields = request as IHasItemFields;
-            if (hasFields != null)
+            if (request is IHasItemFields hasFields)
             {
                 options.Fields = hasFields.GetItemFields();
             }
@@ -133,9 +133,11 @@ namespace MediaBrowser.Api
                     client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
                     client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    var list = options.Fields.ToList();
-                    list.Add(Model.Querying.ItemFields.RecursiveItemCount);
-                    options.Fields = list.ToArray();
+                    int oldLen = options.Fields.Length;
+                    var arr = new ItemFields[oldLen + 1];
+                    options.Fields.CopyTo(arr, 0);
+                    arr[oldLen] = Model.Querying.ItemFields.RecursiveItemCount;
+                    options.Fields = arr;
                 }
 
                 if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
@@ -146,9 +148,12 @@ namespace MediaBrowser.Api
                    client.IndexOf("samsung", StringComparison.OrdinalIgnoreCase) != -1 ||
                    client.IndexOf("androidtv", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    var list = options.Fields.ToList();
-                    list.Add(Model.Querying.ItemFields.ChildCount);
-                    options.Fields = list.ToArray();
+
+                    int oldLen = options.Fields.Length;
+                    var arr = new ItemFields[oldLen + 1];
+                    options.Fields.CopyTo(arr, 0);
+                    arr[oldLen] = Model.Querying.ItemFields.ChildCount;
+                    options.Fields = arr;
                 }
             }
 
@@ -167,7 +172,16 @@ namespace MediaBrowser.Api
 
                 if (!string.IsNullOrWhiteSpace(hasDtoOptions.EnableImageTypes))
                 {
-                    options.ImageTypes = (hasDtoOptions.EnableImageTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToArray();
+                    if (string.IsNullOrEmpty(hasDtoOptions.EnableImageTypes))
+                    {
+                        options.ImageTypes = Array.Empty<ImageType>();
+                    }
+                    else
+                    {
+                        options.ImageTypes = hasDtoOptions.EnableImageTypes.Split(new [] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                                                            .Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true))
+                                                                            .ToArray();
+                    }
                 }
             }
 
