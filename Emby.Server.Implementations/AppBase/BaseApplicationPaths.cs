@@ -73,12 +73,6 @@ namespace Emby.Server.Implementations.AppBase
         public string PluginConfigurationsPath => Path.Combine(PluginsPath, "configurations");
 
         /// <summary>
-        /// Gets the path to where temporary update files will be stored
-        /// </summary>
-        /// <value>The plugin configurations path.</value>
-        public string TempUpdatePath => Path.Combine(ProgramDataPath, "updates");
-
-        /// <summary>
         /// Gets the path to the log directory
         /// </summary>
         /// <value>The log directory path.</value>
