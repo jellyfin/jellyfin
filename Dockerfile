@@ -9,7 +9,7 @@ RUN dotnet publish \
     --output /jellyfin \
     Jellyfin.Server
 
-FROM jrottenberg/ffmpeg:4.0-vaapi as ffmpeg
+FROM jellyfin/ffmpeg as ffmpeg
 FROM microsoft/dotnet:${DOTNET_VERSION}-runtime
 # libfontconfig1 is required for Skia
 RUN apt-get update \
