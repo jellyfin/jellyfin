@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private readonly ILogger _logger;
         private readonly TvDbClientManager _tvDbClientManager;
 
-        public TvdbSeasonImageProvider(IHttpClient httpClient, ILogger logger, TvDbClientManager tvDbClientManager)
+        public TvdbSeasonImageProvider(IHttpClient httpClient, ILogger<TvdbSeasonImageProvider> logger, TvDbClientManager tvDbClientManager)
         {
             _httpClient = httpClient;
             _logger = logger;

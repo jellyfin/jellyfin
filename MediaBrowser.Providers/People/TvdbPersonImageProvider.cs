@@ -24,7 +24,7 @@ namespace MediaBrowser.Providers.People
         private readonly ILibraryManager _libraryManager;
         private readonly TvDbClientManager _tvDbClientManager;
 
-        public TvdbPersonImageProvider(ILibraryManager libraryManager, IHttpClient httpClient, ILogger logger, TvDbClientManager tvDbClientManager)
+        public TvdbPersonImageProvider(ILibraryManager libraryManager, IHttpClient httpClient, ILogger<TvdbPersonImageProvider> logger, TvDbClientManager tvDbClientManager)
         {
             _libraryManager = libraryManager;
             _httpClient = httpClient;

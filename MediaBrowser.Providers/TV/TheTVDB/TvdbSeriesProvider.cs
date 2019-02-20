@@ -29,7 +29,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private readonly ILocalizationManager _localizationManager;
         private readonly TvDbClientManager _tvDbClientManager;
 
-        public TvdbSeriesProvider(IHttpClient httpClient, ILogger logger, ILibraryManager libraryManager, ILocalizationManager localizationManager, TvDbClientManager tvDbClientManager)
+        public TvdbSeriesProvider(IHttpClient httpClient, ILogger<TvdbSeriesProvider> logger, ILibraryManager libraryManager, ILocalizationManager localizationManager, TvDbClientManager tvDbClientManager)
         {
             _httpClient = httpClient;
             _logger = logger;

@@ -20,7 +20,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private readonly ILogger _logger;
         private readonly TvDbClientManager _tvDbClientManager;
 
-        public TvdbEpisodeImageProvider(IHttpClient httpClient, ILogger logger, TvDbClientManager tvDbClientManager)
+        public TvdbEpisodeImageProvider(IHttpClient httpClient, ILogger<TvdbEpisodeImageProvider> logger, TvDbClientManager tvDbClientManager)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                         if (string.IsNullOrEmpty(episodeTvdbId))
                         {
                             _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
-                                episodeInfo.ParentIndexNumber, episodeInfo.IndexNumber);
+                                episodeInfo.ParentIndexNumber, episodeInfo.IndexNumber, series.GetProviderId(MetadataProviders.Tvdb));
                             return imageResult;
                         }
                     }

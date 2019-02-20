@@ -24,7 +24,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private readonly ILogger _logger;
         private readonly TvDbClientManager _tvDbClientManager;
 
-        public TvdbEpisodeProvider(IHttpClient httpClient, ILogger logger, TvDbClientManager tvDbClientManager)
+        public TvdbEpisodeProvider(IHttpClient httpClient, ILogger<TvdbEpisodeProvider> logger, TvDbClientManager tvDbClientManager)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -48,11 +48,13 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     var episodeTvdbId = searchInfo.GetProviderId(MetadataProviders.Tvdb);
                     if (string.IsNullOrEmpty(episodeTvdbId))
                     {
+                        searchInfo.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(),
+                            out var seriesTvdbId);
                         episodeTvdbId = await _tvDbClientManager.GetEpisodeTvdbId(searchInfo, searchInfo.MetadataLanguage, cancellationToken);
                         if (string.IsNullOrEmpty(episodeTvdbId))
                         {
                             _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
-                                searchInfo.ParentIndexNumber, searchInfo.IndexNumber);
+                                searchInfo.ParentIndexNumber, searchInfo.IndexNumber, seriesTvdbId);
                             return list;
                         }
                     }
@@ -124,7 +126,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             }
             else
             {
-                _logger.LogDebug("No series identity found for {0}", searchInfo.Name);
+                _logger.LogDebug("No series identity found for {EpisodeName}", searchInfo.Name);
             }
 
             return result;
