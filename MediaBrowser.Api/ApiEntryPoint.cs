@@ -170,7 +170,7 @@ namespace MediaBrowser.Api
         /// </summary>
         private void DeleteEncodedMediaCache()
         {
-            var path = _config.ApplicationPaths.TranscodingTempPath;
+            var path = _config.ApplicationPaths.GetTranscodingTempPath();
 
             foreach (var file in _fileSystem.GetFilePaths(path, true))
             {

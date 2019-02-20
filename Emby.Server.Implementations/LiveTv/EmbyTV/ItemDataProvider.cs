@@ -43,12 +43,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             var jsonFile = path + ".json";
 
+            if (!File.Exists(jsonFile))
+            {
+                return new List<T>();
+            }
+
             try
             {
                 return _jsonSerializer.DeserializeFromFile<List<T>>(jsonFile) ?? new List<T>();
-            }
-            catch (FileNotFoundException)
-            {
             }
             catch (IOException)
             {
@@ -57,6 +59,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 Logger.LogError(ex, "Error deserializing {jsonFile}", jsonFile);
             }
+
             return new List<T>();
         }
 
