@@ -77,7 +77,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         {
             // Traverse all episode pages and join them together
             var episodes = new List<EpisodeRecord>();
-            var episodePage = await GetEpisodesPageAsync(tvdbId, new EpisodeQuery(), language, cancellationToken);
+            var episodePage = await GetEpisodesPageAsync(tvdbId, new EpisodeQuery(), language, cancellationToken)
+                .ConfigureAwait(false);
             episodes.AddRange(episodePage.Data);
             if (!episodePage.Links.Next.HasValue || !episodePage.Links.Last.HasValue)
             {
@@ -89,7 +90,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             for (var page = next; page <= last; ++page)
             {
-                episodePage = await GetEpisodesPageAsync(tvdbId, page, new EpisodeQuery(), language, cancellationToken);
+                episodePage = await GetEpisodesPageAsync(tvdbId, page, new EpisodeQuery(), language, cancellationToken)
+                    .ConfigureAwait(false);
                 episodes.AddRange(episodePage.Data);
             }
 
@@ -172,7 +174,9 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             string language,
             CancellationToken cancellationToken)
         {
-            var episodePage = await GetEpisodesPageAsync(Convert.ToInt32(seriesTvdbId), episodeQuery, language, cancellationToken);
+            var episodePage =
+                await GetEpisodesPageAsync(Convert.ToInt32(seriesTvdbId), episodeQuery, language, cancellationToken)
+                    .ConfigureAwait(false);
             return episodePage.Data.FirstOrDefault()?.Id.ToString();
         }
 
@@ -198,7 +202,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 }
 
                 _tvDbClient.AcceptedLanguage = TvdbUtils.NormalizeLanguage(language) ?? DefaultLanguage;
-                var result = await resultFactory.Invoke();
+                var result = await resultFactory.Invoke().ConfigureAwait(false);
                 _cache.Set(key, result, TimeSpan.FromHours(1));
                 return result;
             }

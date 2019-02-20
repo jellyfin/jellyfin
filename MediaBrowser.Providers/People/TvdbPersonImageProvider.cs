@@ -64,7 +64,9 @@ namespace MediaBrowser.Providers.People
                 .Where(i => TvdbSeriesProvider.IsValidSeries(i.ProviderIds))
                 .ToList();
 
-            var infos = (await Task.WhenAll(seriesWithPerson.Select(async i => await GetImageFromSeriesData(i, item.Name, cancellationToken))))
+            var infos = (await Task.WhenAll(seriesWithPerson.Select(async i =>
+                        await GetImageFromSeriesData(i, item.Name, cancellationToken).ConfigureAwait(false)))
+                    .ConfigureAwait(false))
                 .Where(i => i != null)
                 .Take(1);
 
@@ -77,7 +79,9 @@ namespace MediaBrowser.Providers.People
 
             try
             {
-                var actorsResult = await _tvDbClientManager.GetActorsAsync(tvdbId, series.GetPreferredMetadataLanguage(), cancellationToken);
+                var actorsResult = await _tvDbClientManager
+                    .GetActorsAsync(tvdbId, series.GetPreferredMetadataLanguage(), cancellationToken)
+                    .ConfigureAwait(false);
                 var actor = actorsResult.Data.FirstOrDefault(a =>
                     string.Equals(a.Name, personName, StringComparison.OrdinalIgnoreCase) &&
                     !string.IsNullOrEmpty(a.Image));

@@ -68,7 +68,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 try
                 {
                     var imageResults =
-                        await _tvDbClientManager.GetImagesAsync(tvdbId, imageQuery, language, cancellationToken);
+                        await _tvDbClientManager.GetImagesAsync(tvdbId, imageQuery, language, cancellationToken)
+                            .ConfigureAwait(false);
 
                     remoteImages.AddRange(GetImages(imageResults.Data, language));
                 }

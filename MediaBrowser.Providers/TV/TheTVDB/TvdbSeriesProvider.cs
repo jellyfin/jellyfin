@@ -84,7 +84,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 result.Item = new Series();
                 result.HasMetadata = true;
 
-                await FetchSeriesData(result, itemId.MetadataLanguage, itemId.ProviderIds, cancellationToken);
+                await FetchSeriesData(result, itemId.MetadataLanguage, itemId.ProviderIds, cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             return result;
@@ -102,19 +103,23 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out var imdbId) && !string.IsNullOrEmpty(imdbId))
             {
                 series.SetProviderId(MetadataProviders.Imdb, imdbId);
-                tvdbId = await GetSeriesByRemoteId(imdbId, MetadataProviders.Imdb.ToString(), metadataLanguage, cancellationToken);
+                tvdbId = await GetSeriesByRemoteId(imdbId, MetadataProviders.Imdb.ToString(), metadataLanguage,
+                    cancellationToken).ConfigureAwait(false);
             }
 
             if (seriesProviderIds.TryGetValue(MetadataProviders.Zap2It.ToString(), out var zap2It) && !string.IsNullOrEmpty(zap2It))
             {
                 series.SetProviderId(MetadataProviders.Zap2It, zap2It);
-                tvdbId = await GetSeriesByRemoteId(zap2It, MetadataProviders.Zap2It.ToString(), metadataLanguage, cancellationToken);
+                tvdbId = await GetSeriesByRemoteId(zap2It, MetadataProviders.Zap2It.ToString(), metadataLanguage,
+                    cancellationToken).ConfigureAwait(false);
             }
 
             try
             {
                 var seriesResult =
-                    await _tvDbClientManager.GetSeriesByIdAsync(Convert.ToInt32(tvdbId), metadataLanguage, cancellationToken);
+                    await _tvDbClientManager
+                        .GetSeriesByIdAsync(Convert.ToInt32(tvdbId), metadataLanguage, cancellationToken)
+                        .ConfigureAwait(false);
                 MapSeriesToResult(result, seriesResult.Data, metadataLanguage);
             }
             catch (TvDbServerException e)
@@ -129,7 +134,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             try
             {
-                var actorsResult = await _tvDbClientManager.GetActorsAsync(Convert.ToInt32(tvdbId), metadataLanguage, cancellationToken);
+                var actorsResult = await _tvDbClientManager
+                    .GetActorsAsync(Convert.ToInt32(tvdbId), metadataLanguage, cancellationToken).ConfigureAwait(false);
                 MapActorsToResult(result, actorsResult.Data);
             }
             catch (TvDbServerException e)
@@ -146,11 +152,13 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             {
                 if (string.Equals(idType, MetadataProviders.Zap2It.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
-                    result = await _tvDbClientManager.GetSeriesByZap2ItIdAsync(id, language, cancellationToken);
+                    result = await _tvDbClientManager.GetSeriesByZap2ItIdAsync(id, language, cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 else
                 {
-                    result = await _tvDbClientManager.GetSeriesByImdbIdAsync(id, language, cancellationToken);
+                    result = await _tvDbClientManager.GetSeriesByImdbIdAsync(id, language, cancellationToken)
+                        .ConfigureAwait(false);
                 }
             }
             catch (TvDbServerException e)
@@ -210,7 +218,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             TvDbResponse<SeriesSearchResult[]> result;
             try
             {
-                result = await _tvDbClientManager.GetSeriesByNameAsync(comparableName, language, cancellationToken);
+                result = await _tvDbClientManager.GetSeriesByNameAsync(comparableName, language, cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (TvDbServerException e)
             {
@@ -238,7 +247,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 try
                 {
                     var seriesSesult =
-                        await _tvDbClientManager.GetSeriesByIdAsync(seriesSearchResult.Id, language, cancellationToken);
+                        await _tvDbClientManager.GetSeriesByIdAsync(seriesSearchResult.Id, language, cancellationToken)
+                            .ConfigureAwait(false);
                     remoteSearchResult.SetProviderId(MetadataProviders.Imdb, seriesSesult.Data.ImdbId);
                     remoteSearchResult.SetProviderId(MetadataProviders.Zap2It, seriesSesult.Data.Zap2itId);
                 }
@@ -403,7 +413,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 return;
             }
 
-            var srch = await FindSeries(info.Name, info.Year, info.MetadataLanguage, CancellationToken.None).ConfigureAwait(false);
+            var srch = await FindSeries(info.Name, info.Year, info.MetadataLanguage, CancellationToken.None)
+                .ConfigureAwait(false);
 
             var entry = srch.FirstOrDefault();
 

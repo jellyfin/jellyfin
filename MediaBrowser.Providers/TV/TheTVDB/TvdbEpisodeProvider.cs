@@ -50,7 +50,9 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     {
                         searchInfo.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(),
                             out var seriesTvdbId);
-                        episodeTvdbId = await _tvDbClientManager.GetEpisodeTvdbId(searchInfo, searchInfo.MetadataLanguage, cancellationToken);
+                        episodeTvdbId = await _tvDbClientManager
+                            .GetEpisodeTvdbId(searchInfo, searchInfo.MetadataLanguage, cancellationToken)
+                            .ConfigureAwait(false);
                         if (string.IsNullOrEmpty(episodeTvdbId))
                         {
                             _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
@@ -58,7 +60,9 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                             return list;
                         }
                     }
-                    var episodeResult = await _tvDbClientManager.GetEpisodesAsync(Convert.ToInt32(episodeTvdbId), searchInfo.MetadataLanguage, cancellationToken);
+
+                    var episodeResult = await _tvDbClientManager.GetEpisodesAsync(Convert.ToInt32(episodeTvdbId),
+                        searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
                     var metadataResult = MapEpisodeToResult(searchInfo, episodeResult.Data);
 
                     if (metadataResult.HasMetadata)
@@ -104,7 +108,9 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 {
                     if (string.IsNullOrEmpty(tvdbId))
                     {
-                        tvdbId = await _tvDbClientManager.GetEpisodeTvdbId(searchInfo, searchInfo.MetadataLanguage, cancellationToken);
+                        tvdbId = await _tvDbClientManager
+                            .GetEpisodeTvdbId(searchInfo, searchInfo.MetadataLanguage, cancellationToken)
+                            .ConfigureAwait(false);
                         if (string.IsNullOrEmpty(tvdbId))
                         {
                             _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
@@ -115,7 +121,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
                     var episodeResult = await _tvDbClientManager.GetEpisodesAsync(
                         Convert.ToInt32(tvdbId), searchInfo.MetadataLanguage,
-                        cancellationToken);
+                        cancellationToken).ConfigureAwait(false);
 
                     result = MapEpisodeToResult(searchInfo, episodeResult.Data);
                 }

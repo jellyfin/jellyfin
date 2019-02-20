@@ -73,7 +73,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 };
                 try
                 {
-                    var imageResults = await _tvDbClientManager.GetImagesAsync(tvdbId, imageQuery, language, cancellationToken);
+                    var imageResults = await _tvDbClientManager
+                        .GetImagesAsync(tvdbId, imageQuery, language, cancellationToken).ConfigureAwait(false);
                     remoteImages.AddRange(GetImages(imageResults.Data, language));
                 }
                 catch (TvDbServerException)
