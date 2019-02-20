@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,8 +18,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 {
     public class TvdbSeasonImageProvider : IRemoteImageProvider, IHasOrder
     {
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly TvDbClientManager _tvDbClientManager;
@@ -66,7 +63,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             var language = item.GetPreferredMetadataLanguage();
             var remoteImages = new List<RemoteImageInfo>();
 
-            var keyTypes = new[] {KeyType.Season, KeyType.Seasonwide, KeyType.Fanart};
+            var keyTypes = new[] { KeyType.Season, KeyType.Seasonwide, KeyType.Fanart };
             foreach (var keyType in keyTypes)
             {
                 var imageQuery = new ImagesQuery

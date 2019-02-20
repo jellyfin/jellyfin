@@ -57,7 +57,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
             var language = item.GetPreferredMetadataLanguage();
             var remoteImages = new List<RemoteImageInfo>();
-            var keyTypes = new[] {KeyType.Poster, KeyType.Series, KeyType.Fanart};
+            var keyTypes = new[] { KeyType.Poster, KeyType.Series, KeyType.Fanart };
             var tvdbId = Convert.ToInt32(item.GetProviderId(MetadataProviders.Tvdb));
             foreach (KeyType keyType in keyTypes)
             {

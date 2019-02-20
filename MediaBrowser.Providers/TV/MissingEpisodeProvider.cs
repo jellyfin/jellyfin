@@ -64,11 +64,11 @@ namespace MediaBrowser.Providers.TV
                     DateTime.TryParse(i.FirstAired, out var firstAired);
                     var seasonNumber = i.AiredSeason.GetValueOrDefault(-1);
                     var episodeNumber = i.AiredEpisodeNumber.GetValueOrDefault(-1);
-                    return (SeasonNumber: seasonNumber, EpisodeNumber: episodeNumber, firstAired: firstAired);
+                    return (seasonNumber: seasonNumber, episodeNumber: episodeNumber, firstAired: firstAired);
                 })
-                .Where(i => i.SeasonNumber != -1 && i.EpisodeNumber != -1)
-                .OrderBy(i => i.SeasonNumber)
-                .ThenBy(i => i.EpisodeNumber)
+                .Where(i => i.seasonNumber != -1 && i.episodeNumber != -1)
+                .OrderBy(i => i.seasonNumber)
+                .ThenBy(i => i.episodeNumber)
                 .ToList();
 
             var allRecursiveChildren = series.GetRecursiveChildren();
@@ -133,18 +133,18 @@ namespace MediaBrowser.Providers.TV
             Series series,
             IEnumerable<BaseItem> allItems,
             bool addMissingEpisodes,
-            IReadOnlyCollection<(int SeasonNumber, int Episodenumber, DateTime FirstAired)> episodeLookup,
+            IReadOnlyCollection<(int seasonNumber, int episodenumber, DateTime firstAired)> episodeLookup,
             CancellationToken cancellationToken)
         {
             var existingEpisodes = allItems.OfType<Episode>().ToList();
 
-            var seasonCounts = episodeLookup.GroupBy(e => e.SeasonNumber).ToDictionary(g => g.Key, g => g.Count());
+            var seasonCounts = episodeLookup.GroupBy(e => e.seasonNumber).ToDictionary(g => g.Key, g => g.Count());
 
             var hasChanges = false;
 
             foreach (var tuple in episodeLookup)
             {
-                if (tuple.SeasonNumber <= 0 || tuple.Episodenumber <= 0)
+                if (tuple.seasonNumber <= 0 || tuple.episodenumber <= 0)
                 {
                     // Ignore episode/season zeros
                     continue;
@@ -157,15 +157,15 @@ namespace MediaBrowser.Providers.TV
                     continue;
                 }
 
-                var airDate = tuple.FirstAired;
+                var airDate = tuple.firstAired;
 
                 var now = DateTime.UtcNow.AddDays(-UnairedEpisodeThresholdDays);
 
                 if (airDate < now && addMissingEpisodes || airDate > now)
                 {
                     // tvdb has a lot of nearly blank episodes
-                    _logger.LogInformation("Creating virtual missing/unaired episode {0} {1}x{2}", series.Name, tuple.SeasonNumber, tuple.Episodenumber);
-                    await AddEpisode(series, tuple.SeasonNumber, tuple.Episodenumber, cancellationToken).ConfigureAwait(false);
+                    _logger.LogInformation("Creating virtual missing/unaired episode {0} {1}x{2}", series.Name, tuple.seasonNumber, tuple.episodenumber);
+                    await AddEpisode(series, tuple.seasonNumber, tuple.episodenumber, cancellationToken).ConfigureAwait(false);
 
                     hasChanges = true;
                 }
@@ -179,7 +179,7 @@ namespace MediaBrowser.Providers.TV
         /// </summary>
         private bool RemoveObsoleteOrMissingEpisodes(
             IEnumerable<BaseItem> allRecursiveChildren,
-            IEnumerable<(int SeasonNumber, int EpisodeNumber, DateTime FirstAired)> episodeLookup,
+            IEnumerable<(int seasonNumber, int episodeNumber, DateTime firstAired)> episodeLookup,
             bool allowMissingEpisodes)
         {
             var existingEpisodes = allRecursiveChildren.OfType<Episode>();
@@ -218,7 +218,7 @@ namespace MediaBrowser.Providers.TV
                     }
 
                     // If the episode no longer exists in the remote lookup, delete it
-                    if (!episodeLookup.Any(e => e.SeasonNumber == seasonNumber && e.EpisodeNumber == episodeNumber))
+                    if (!episodeLookup.Any(e => e.seasonNumber == seasonNumber && e.episodeNumber == episodeNumber))
                     {
                         return true;
                     }
@@ -252,7 +252,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="episodeLookup">The episode lookup.</param>
         /// <returns>Task{System.Boolean}.</returns>
         private bool RemoveObsoleteOrMissingSeasons(IList<BaseItem> allRecursiveChildren,
-            IEnumerable<(int SeasonNumber, int EpisodeNumber, DateTime FirstAired)> episodeLookup)
+            IEnumerable<(int seasonNumber, int episodeNumber, DateTime firstAired)> episodeLookup)
         {
             var existingSeasons = allRecursiveChildren.OfType<Season>().ToList();
 
@@ -286,7 +286,7 @@ namespace MediaBrowser.Providers.TV
                         }
 
                         // If the season no longer exists in the remote lookup, delete it, but only if an existing episode doesn't require it
-                        return episodeLookup.All(e => e.SeasonNumber != seasonNumber) && allEpisodes.All(s => s.ParentIndexNumber != seasonNumber || s.IsInSeasonFolder);
+                        return episodeLookup.All(e => e.seasonNumber != seasonNumber) && allEpisodes.All(s => s.ParentIndexNumber != seasonNumber || s.IsInSeasonFolder);
                     }
 
                     // Season does not have a number
@@ -354,10 +354,10 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seasonCounts"></param>
         /// <param name="episodeTuple"></param>
         /// <returns>Episode.</returns>
-        private Episode GetExistingEpisode(IList<Episode> existingEpisodes, IReadOnlyDictionary<int, int> seasonCounts, (int SeasonNumber, int EpisodeNumber, DateTime FirstAired) episodeTuple)
+        private Episode GetExistingEpisode(IList<Episode> existingEpisodes, IReadOnlyDictionary<int, int> seasonCounts, (int seasonNumber, int episodeNumber, DateTime firstAired) episodeTuple)
         {
-            var seasonNumber = episodeTuple.SeasonNumber;
-            var episodeNumber = episodeTuple.EpisodeNumber;
+            var seasonNumber = episodeTuple.seasonNumber;
+            var episodeNumber = episodeTuple.episodeNumber;
 
             while (true)
             {

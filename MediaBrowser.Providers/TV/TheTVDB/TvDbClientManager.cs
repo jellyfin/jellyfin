@@ -16,16 +16,16 @@ namespace MediaBrowser.Providers.TV.TheTVDB
     {
         private readonly SemaphoreSlim _cacheWriteLock = new SemaphoreSlim(1, 1);
         private readonly IMemoryCache _cache;
-        private readonly TvDbClient tvDbClient;
-        private DateTime tokenCreatedAt;
+        private readonly TvDbClient _tvDbClient;
+        private DateTime _tokenCreatedAt;
         private const string DefaultLanguage =  "en";
 
         public TvDbClientManager(IMemoryCache memoryCache)
         {
             _cache = memoryCache;
-            tvDbClient = new TvDbClient();
-            tvDbClient.Authentication.AuthenticateAsync(TvdbUtils.TvdbApiKey);
-            tokenCreatedAt = DateTime.Now;
+            _tvDbClient = new TvDbClient();
+            _tvDbClient.Authentication.AuthenticateAsync(TvdbUtils.TvdbApiKey);
+            _tokenCreatedAt = DateTime.Now;
         }
 
         public TvDbClient TvDbClient
@@ -33,21 +33,21 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             get
             {
                 // Refresh if necessary
-                if (tokenCreatedAt > DateTime.Now.Subtract(TimeSpan.FromHours(20)))
+                if (_tokenCreatedAt > DateTime.Now.Subtract(TimeSpan.FromHours(20)))
                 {
                     try
                     {
-                        tvDbClient.Authentication.RefreshTokenAsync();
+                        _tvDbClient.Authentication.RefreshTokenAsync();
                     }
                     catch
                     {
-                        tvDbClient.Authentication.AuthenticateAsync(TvdbUtils.TvdbApiKey);
+                        _tvDbClient.Authentication.AuthenticateAsync(TvdbUtils.TvdbApiKey);
                     }
 
-                    tokenCreatedAt = DateTime.Now;
+                    _tokenCreatedAt = DateTime.Now;
                 }
 
-                return tvDbClient;
+                return _tvDbClient;
             }
         }
 
@@ -197,7 +197,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     return cachedValue;
                 }
 
-                tvDbClient.AcceptedLanguage = TvdbUtils.NormalizeLanguage(language) ?? DefaultLanguage;
+                _tvDbClient.AcceptedLanguage = TvdbUtils.NormalizeLanguage(language) ?? DefaultLanguage;
                 var result = await resultFactory.Invoke();
                 _cache.Set(key, result, TimeSpan.FromHours(1));
                 return result;
