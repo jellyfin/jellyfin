@@ -44,9 +44,10 @@ namespace Jellyfin.Server.SocketSharp
             socket.OnMessage += OnSocketMessage;
             socket.OnClose += OnSocketClose;
             socket.OnError += OnSocketError;
-
-            WebSocket.ConnectAsServer();
         }
+
+        public Task ConnectAsServerAsync()
+            => WebSocket.ConnectAsServer();
 
         public Task StartReceive()
         {
@@ -133,7 +134,7 @@ namespace Jellyfin.Server.SocketSharp
 
                 _cancellationTokenSource.Cancel();
 
-                WebSocket.Close();
+                WebSocket.CloseAsync().GetAwaiter().GetResult();
             }
 
             _disposed = true;
