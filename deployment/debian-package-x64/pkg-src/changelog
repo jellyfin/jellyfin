@@ -1,3 +1,19 @@
+jellyfin (10.2.1-1) unstable; urgency=medium
+
+  * jellyfin:
+  * PR920 Fix cachedir missing from Docker container
+  * PR924 Use the movie name instead of folder name
+  * PR933 Semi-revert to prefer old movie grouping behaviour
+  * PR948 Revert movie matching (supercedes PR933, PR924, PR739)
+  * PR960 Use jellyfin/ffmpeg image
+  * jellyfin-web:
+  * PR136 Re-add OpenSubtitles configuration page
+  * PR137 Replace HeaderEmbyServer with HeaderJellyfinServer on plugincatalog
+  * PR138 Remove left-over JS for Customize Home Screen
+  * PR141 Exit fullscreen automatically after video playback ends
+
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  Wed, 20 Feb 2019 11:36:16 -0500
+
 jellyfin (10.2.0-2) unstable; urgency=medium
 
   * jellyfin:

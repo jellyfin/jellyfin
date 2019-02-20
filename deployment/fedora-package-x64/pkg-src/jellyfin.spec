@@ -7,8 +7,8 @@
 %endif
 
 Name:           jellyfin
-Version:        10.2.0
-Release:        2%{?dist}
+Version:        10.2.1
+Release:        1%{?dist}
 Summary:        The Free Software Media Browser
 License:        GPLv2
 URL:            https://jellyfin.media
@@ -140,6 +140,18 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Wed Feb 20 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
+- jellyfin:
+- PR920 Fix cachedir missing from Docker container
+- PR924 Use the movie name instead of folder name
+- PR933 Semi-revert to prefer old movie grouping behaviour
+- PR948 Revert movie matching (supercedes PR933, PR924, PR739)
+- PR960 Use jellyfin/ffmpeg image
+- jellyfin-web:
+- PR136 Re-add OpenSubtitles configuration page
+- PR137 Replace HeaderEmbyServer with HeaderJellyfinServer on plugincatalog
+- PR138 Remove left-over JS for Customize Home Screen
+- PR141 Exit fullscreen automatically after video playback ends
 * Fri Feb 15 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
 - jellyfin:
 - PR452 Use EF Core for Activity database
