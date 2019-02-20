@@ -175,23 +175,50 @@ namespace Emby.Naming.Video
                 return videos;
             }
 
+            var list = new List<VideoInfo>();
+
             var folderName = Path.GetFileName(Path.GetDirectoryName(videos[0].Files[0].Path));
 
             if (!string.IsNullOrEmpty(folderName) && folderName.Length > 1)
             {
-                var ordered = videos.OrderBy(i => i.Name);
-
-                return ordered.GroupBy(v => new {v.Name, v.Year}).Select(group => new VideoInfo
+                if (videos.All(i => i.Files.Count == 1 && IsEligibleForMultiVersion(folderName, i.Files[0].Path)))
                 {
-                    Name = folderName,
-                    Year = group.First().Year,
-                    Files = group.First().Files,
-                    AlternateVersions = group.Skip(1).Select(i => i.Files[0]).ToList(),
-                    Extras = group.First().Extras.Concat(group.Skip(1).SelectMany(i => i.Extras)).ToList()
-                });
+                    if (HaveSameYear(videos))
+                    {
+                        var ordered = videos.OrderBy(i => i.Name).ToList();
+
+                        list.Add(ordered[0]);
+
+                        list[0].AlternateVersions = ordered.Skip(1).Select(i => i.Files[0]).ToList();
+                        list[0].Name = folderName;
+                        list[0].Extras.AddRange(ordered.Skip(1).SelectMany(i => i.Extras));
+
+                        return list;
+                    }
+                }
             }
 
             return videos;
+        }
+
+        private bool HaveSameYear(List<VideoInfo> videos)
+        {
+            return videos.Select(i => i.Year ?? -1).Distinct().Count() < 2;
+        }
+
+        private bool IsEligibleForMultiVersion(string folderName, string testFilename)
+        {
+            testFilename = Path.GetFileNameWithoutExtension(testFilename) ?? string.Empty;
+
+            if (testFilename.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
+            {
+                testFilename = testFilename.Substring(folderName.Length).Trim();
+                return string.IsNullOrEmpty(testFilename) ||
+                       testFilename.StartsWith("-") ||
+                       string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty)) ;
+            }
+
+            return false;
         }
 
         private List<VideoFileInfo> GetExtras(IEnumerable<VideoFileInfo> remainingFiles, List<string> baseNames)
