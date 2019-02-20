@@ -52,7 +52,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         {
             if (!TvdbSeriesProvider.IsValidSeries(item.ProviderIds))
             {
-                return new RemoteImageInfo[] { };
+                return Array.Empty<RemoteImageInfo>();
             }
 
             var language = item.GetPreferredMetadataLanguage();
