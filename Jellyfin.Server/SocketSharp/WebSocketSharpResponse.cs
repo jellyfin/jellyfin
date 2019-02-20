@@ -55,6 +55,41 @@ namespace Jellyfin.Server.SocketSharp
 
         public QueryParamCollection Headers => _response.Headers;
 
+        private static string AsHeaderValue(Cookie cookie)
+        {
+            DateTime defaultExpires = DateTime.MinValue;
+
+            var path = cookie.Expires == defaultExpires
+                ? "/"
+                : cookie.Path ?? "/";
+
+            var sb = new StringBuilder();
+
+            sb.Append($"{cookie.Name}={cookie.Value};path={path}");
+
+            if (cookie.Expires != defaultExpires)
+            {
+                sb.Append($";expires={cookie.Expires:R}");
+            }
+
+            if (!string.IsNullOrEmpty(cookie.Domain))
+            {
+                sb.Append($";domain={cookie.Domain}");
+            }
+
+            if (cookie.Secure)
+            {
+                sb.Append(";Secure");
+            }
+
+            if (cookie.HttpOnly)
+            {
+                sb.Append(";HttpOnly");
+            }
+
+            return sb.ToString();
+        }
+
         public void AddHeader(string name, string value)
         {
             if (string.Equals(name, "Content-Type", StringComparison.OrdinalIgnoreCase))
@@ -124,41 +159,6 @@ namespace Jellyfin.Server.SocketSharp
         {
             var cookieStr = AsHeaderValue(cookie);
             _response.Headers.Add("Set-Cookie", cookieStr);
-        }
-
-        public static string AsHeaderValue(Cookie cookie)
-        {
-            var defaultExpires = DateTime.MinValue;
-
-            var path = cookie.Expires == defaultExpires
-                ? "/"
-                : cookie.Path ?? "/";
-
-            var sb = new StringBuilder();
-
-            sb.Append($"{cookie.Name}={cookie.Value};path={path}");
-
-            if (cookie.Expires != defaultExpires)
-            {
-                sb.Append($";expires={cookie.Expires:R}");
-            }
-
-            if (!string.IsNullOrEmpty(cookie.Domain))
-            {
-                sb.Append($";domain={cookie.Domain}");
-            }
-
-            if (cookie.Secure)
-            {
-                sb.Append(";Secure");
-            }
-
-            if (cookie.HttpOnly)
-            {
-                sb.Append(";HttpOnly");
-            }
-
-            return sb.ToString();
         }
 
         public bool SendChunked
