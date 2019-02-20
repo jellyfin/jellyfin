@@ -429,6 +429,7 @@ namespace SocketHttpListener
 
         private Task<bool> ProcessWebSocketFrameAsync(WebSocketFrame frame)
         {
+            // TODO: @bond change to if/else chain
             return frame.IsCompressed && _compression == CompressionMethod.None
                    ? ProcessUnsupportedFrameAsync(
                        frame,
