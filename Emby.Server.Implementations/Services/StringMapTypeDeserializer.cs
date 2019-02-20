@@ -11,15 +11,16 @@ namespace Emby.Server.Implementations.Services
     {
         internal class PropertySerializerEntry
         {
-            public PropertySerializerEntry(Action<object, object> propertySetFn, Func<string, object> propertyParseStringFn)
+            public PropertySerializerEntry(Action<object, object> propertySetFn, Func<string, object> propertyParseStringFn, Type propertyType)
             {
                 PropertySetFn = propertySetFn;
                 PropertyParseStringFn = propertyParseStringFn;
+                PropertyType = PropertyType;
             }
 
-            public Action<object, object> PropertySetFn;
-            public Func<string, object> PropertyParseStringFn;
-            public Type PropertyType;
+            public Action<object, object> PropertySetFn { get; private set; }
+            public Func<string, object> PropertyParseStringFn { get; private set; }
+            public Type PropertyType { get; private set; }
         }
 
         private readonly Type type;
@@ -29,7 +30,9 @@ namespace Emby.Server.Implementations.Services
         public Func<string, object> GetParseFn(Type propertyType)
         {
             if (propertyType == typeof(string))
+            {
                 return s => s;
+            }
 
             return _GetParseFn(propertyType);
         }
@@ -48,7 +51,7 @@ namespace Emby.Server.Implementations.Services
                 var propertySetFn = TypeAccessor.GetSetPropertyMethod(type, propertyInfo);
                 var propertyType = propertyInfo.PropertyType;
                 var propertyParseStringFn = GetParseFn(propertyType);
-                var propertySerializer = new PropertySerializerEntry(propertySetFn, propertyParseStringFn) { PropertyType = propertyType };
+                var propertySerializer = new PropertySerializerEntry(propertySetFn, propertyParseStringFn, propertyType);
 
                 propertySetterMap[propertyInfo.Name] = propertySerializer;
             }
@@ -56,34 +59,21 @@ namespace Emby.Server.Implementations.Services
 
         public object PopulateFromMap(object instance, IDictionary<string, string> keyValuePairs)
         {
-            string propertyName = null;
-            string propertyTextValue = null;
             PropertySerializerEntry propertySerializerEntry = null;
 
             if (instance == null)
+            {
                 instance = _CreateInstanceFn(type);
+            }
 
             foreach (var pair in keyValuePairs)
             {
-                propertyName = pair.Key;
-                propertyTextValue = pair.Value;
+                string propertyName = pair.Key;
+                string propertyTextValue = pair.Value;
 
-                if (string.IsNullOrEmpty(propertyTextValue))
-                {
-                    continue;
-                }
-
-                if (!propertySetterMap.TryGetValue(propertyName, out propertySerializerEntry))
-                {
-                    if (propertyName == "v")
-                    {
-                        continue;
-                    }
-
-                    continue;
-                }
-
-                if (propertySerializerEntry.PropertySetFn == null)
+                if (string.IsNullOrEmpty(propertyTextValue)
+                    || !propertySetterMap.TryGetValue(propertyName, out propertySerializerEntry)
+                    || propertySerializerEntry.PropertySetFn == null)
                 {
                     continue;
                 }
@@ -99,6 +89,7 @@ namespace Emby.Server.Implementations.Services
                 {
                     continue;
                 }
+
                 propertySerializerEntry.PropertySetFn(instance, value);
             }
 
@@ -107,7 +98,11 @@ namespace Emby.Server.Implementations.Services
 
         public static string LeftPart(string strVal, char needle)
         {
-            if (strVal == null) return null;
+            if (strVal == null)
+            {
+                return null;
+            }
+
             var pos = strVal.IndexOf(needle);
             return pos == -1
                 ? strVal
@@ -119,7 +114,10 @@ namespace Emby.Server.Implementations.Services
     {
         public static Action<object, object> GetSetPropertyMethod(Type type, PropertyInfo propertyInfo)
         {
-            if (!propertyInfo.CanWrite || propertyInfo.GetIndexParameters().Length > 0) return null;
+            if (!propertyInfo.CanWrite || propertyInfo.GetIndexParameters().Length > 0)
+            {
+                return null;
+            }
 
             var setMethodInfo = propertyInfo.SetMethod;
             return (instance, value) => setMethodInfo.Invoke(instance, new[] { value });
