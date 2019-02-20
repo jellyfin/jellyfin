@@ -42,6 +42,27 @@ namespace Emby.Server.Implementations.Serialization
         }
 
         /// <summary>
+        /// Serializes to stream.
+        /// </summary>
+        /// <param name="obj">The obj.</param>
+        /// <param name="stream">The stream.</param>
+        /// <exception cref="ArgumentNullException">obj</exception>
+        public void SerializeToStream<T>(T obj, Stream stream)
+        {
+            if (obj == null)
+            {
+                throw new ArgumentNullException(nameof(obj));
+            }
+
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            ServiceStack.Text.JsonSerializer.SerializeToStream<T>(obj, stream);
+        }
+
+        /// <summary>
         /// Serializes to file.
         /// </summary>
         /// <param name="obj">The obj.</param>

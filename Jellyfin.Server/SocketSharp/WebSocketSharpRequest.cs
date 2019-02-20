@@ -28,30 +28,6 @@ namespace Jellyfin.Server.SocketSharp
             // HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
         }
 
-        private static string GetHandlerPathIfAny(string listenerUrl)
-        {
-            if (listenerUrl == null)
-            {
-                return null;
-            }
-
-            var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
-            if (pos == -1)
-            {
-                return null;
-            }
-
-            var startHostUrl = listenerUrl.Substring(pos + "://".Length);
-            var endPos = startHostUrl.IndexOf('/', StringComparison.Ordinal);
-            if (endPos == -1)
-            {
-                return null;
-            }
-
-            var endHostUrl = startHostUrl.Substring(endPos + 1);
-            return string.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
-        }
-
         public HttpListenerRequest HttpRequest => request;
 
         public object OriginalRequest => request;
@@ -102,7 +78,7 @@ namespace Jellyfin.Server.SocketSharp
             name = name.Trim(HttpTrimCharacters);
 
             // First, check for correctly formed multi-line value
-            // Second, check for absenece of CTL characters
+            // Second, check for absence of CTL characters
             int crlf = 0;
             for (int i = 0; i < name.Length; ++i)
             {
@@ -231,8 +207,15 @@ namespace Jellyfin.Server.SocketSharp
             {
                 foreach (var acceptsType in acceptContentTypes)
                 {
-                    var contentType = HttpResultFactory.GetRealContentType(acceptsType);
-                    acceptsAnything = acceptsAnything || contentType == "*/*";
+                    // TODO: @bond move to Span when Span.Split lands
+                    // https://github.com/dotnet/corefx/issues/26528
+                    var contentType = acceptsType?.Split(';')[0].Trim();
+                    acceptsAnything = contentType.Equals("*/*", StringComparison.OrdinalIgnoreCase);
+
+                    if (acceptsAnything)
+                    {
+                        break;
+                    }
                 }
 
                 if (acceptsAnything)
@@ -241,7 +224,7 @@ namespace Jellyfin.Server.SocketSharp
                     {
                         return defaultContentType;
                     }
-                    else if (serverDefaultContentType != null)
+                    else
                     {
                         return serverDefaultContentType;
                     }
@@ -284,11 +267,11 @@ namespace Jellyfin.Server.SocketSharp
 
         private static string GetQueryStringContentType(IRequest httpReq)
         {
-            var format = httpReq.QueryString["format"];
+            ReadOnlySpan<char> format = httpReq.QueryString["format"];
             if (format == null)
             {
                 const int formatMaxLength = 4;
-                var pi = httpReq.PathInfo;
+                ReadOnlySpan<char> pi = httpReq.PathInfo;
                 if (pi == null || pi.Length <= formatMaxLength)
                 {
                     return null;
@@ -296,7 +279,7 @@ namespace Jellyfin.Server.SocketSharp
 
                 if (pi[0] == '/')
                 {
-                    pi = pi.Substring(1);
+                    pi = pi.Slice(1);
                 }
 
                 format = LeftPart(pi, '/');
@@ -330,6 +313,17 @@ namespace Jellyfin.Server.SocketSharp
             return pos == -1 ? strVal : strVal.Substring(0, pos);
         }
 
+        public static ReadOnlySpan<char> LeftPart(ReadOnlySpan<char> strVal, char needle)
+        {
+            if (strVal == null)
+            {
+                return null;
+            }
+
+            var pos = strVal.IndexOf(needle);
+            return pos == -1 ? strVal : strVal.Slice(0, pos);
+        }
+
         public static string HandlerFactoryPath;
 
         private string pathInfo;
@@ -341,7 +335,7 @@ namespace Jellyfin.Server.SocketSharp
                 {
                     var mode = HandlerFactoryPath;
 
-                    var pos = request.RawUrl.IndexOf("?", StringComparison.Ordinal);
+                    var pos = request.RawUrl.IndexOf('?', StringComparison.Ordinal);
                     if (pos != -1)
                     {
                         var path = request.RawUrl.Substring(0, pos);
@@ -525,10 +519,13 @@ namespace Jellyfin.Server.SocketSharp
 
         public static string NormalizePathInfo(string pathInfo, string handlerPath)
         {
-            var trimmed = pathInfo.TrimStart('/');
-            if (handlerPath != null && trimmed.StartsWith(handlerPath, StringComparison.OrdinalIgnoreCase))
+            if (handlerPath != null)
             {
-                return trimmed.Substring(handlerPath.Length);
+                var trimmed = pathInfo.TrimStart('/');
+                if (trimmed.StartsWith(handlerPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    return trimmed.Substring(handlerPath.Length);
+                }
             }
 
             return pathInfo;

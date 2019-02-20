@@ -1225,9 +1225,9 @@ namespace Emby.Server.Implementations.Library
         /// <exception cref="ArgumentNullException">id</exception>
         public BaseItem GetItemById(Guid id)
         {
-            if (id.Equals(Guid.Empty))
+            if (id == Guid.Empty)
             {
-                throw new ArgumentNullException(nameof(id));
+                throw new ArgumentException(nameof(id), "Guid can't be empty");
             }
 
             if (LibraryItemsCache.TryGetValue(id, out BaseItem item))
@@ -1236,8 +1236,6 @@ namespace Emby.Server.Implementations.Library
             }
 
             item = RetrieveItem(id);
-
-            //_logger.LogDebug("GetitemById {0}", id);
 
             if (item != null)
             {
@@ -1333,7 +1331,7 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.GetItemIdsList(query);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetStudios(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1344,7 +1342,7 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.GetStudios(query);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetGenres(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1355,7 +1353,7 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.GetGenres(query);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1366,7 +1364,7 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.GetMusicGenres(query);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetAllArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1377,7 +1375,7 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.GetAllArtists(query);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1421,7 +1419,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetAlbumArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1808,18 +1806,16 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task.</returns>
         public void CreateItems(IEnumerable<BaseItem> items, BaseItem parent, CancellationToken cancellationToken)
         {
-            var list = items.ToList();
+            ItemRepository.SaveItems(items, cancellationToken);
 
-            ItemRepository.SaveItems(list, cancellationToken);
-
-            foreach (var item in list)
+            foreach (var item in items)
             {
                 RegisterItem(item);
             }
 
             if (ItemAdded != null)
             {
-                foreach (var item in list)
+                foreach (var item in items)
                 {
                     // With the live tv guide this just creates too much noise
                     if (item.SourceType != SourceType.Library)
@@ -1853,7 +1849,7 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// Updates the item.
         /// </summary>
-        public void UpdateItems(List<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
+        public void UpdateItems(IEnumerable<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
             foreach (var item in items)
             {
@@ -1908,7 +1904,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Task.</returns>
         public void UpdateItem(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            UpdateItems(new List<BaseItem> { item }, parent, updateReason, cancellationToken);
+            UpdateItems(new [] { item }, parent, updateReason, cancellationToken);
         }
 
         /// <summary>
@@ -2005,9 +2001,7 @@ namespace Emby.Server.Implementations.Library
                    .FirstOrDefault();
             }
 
-            var options = collectionFolder == null ? new LibraryOptions() : collectionFolder.GetLibraryOptions();
-
-            return options;
+            return collectionFolder == null ? new LibraryOptions() : collectionFolder.GetLibraryOptions();
         }
 
         public string GetContentType(BaseItem item)
@@ -2017,11 +2011,13 @@ namespace Emby.Server.Implementations.Library
             {
                 return configuredContentType;
             }
+
             configuredContentType = GetConfiguredContentType(item, true);
             if (!string.IsNullOrEmpty(configuredContentType))
             {
                 return configuredContentType;
             }
+
             return GetInheritedContentType(item);
         }
 
@@ -2056,6 +2052,7 @@ namespace Emby.Server.Implementations.Library
             {
                 return collectionFolder.CollectionType;
             }
+
             return GetContentTypeOverride(item.ContainingFolderPath, inheritConfiguredPath);
         }
 
@@ -2066,6 +2063,7 @@ namespace Emby.Server.Implementations.Library
             {
                 return nameValuePair.Value;
             }
+
             return null;
         }
 
@@ -2108,9 +2106,9 @@ namespace Emby.Server.Implementations.Library
             string viewType,
             string sortName)
         {
-            var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views");
-
-            path = Path.Combine(path, _fileSystem.GetValidFilename(viewType));
+            var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath,
+                                    "views",
+                                    _fileSystem.GetValidFilename(viewType));
 
             var id = GetNewItemId(path + "_namedview_" + name, typeof(UserView));
 
