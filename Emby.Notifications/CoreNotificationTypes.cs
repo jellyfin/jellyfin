@@ -11,101 +11,81 @@ namespace Emby.Notifications
     public class CoreNotificationTypes : INotificationTypeFactory
     {
         private readonly ILocalizationManager _localization;
-        private readonly IServerApplicationHost _appHost;
 
-        public CoreNotificationTypes(ILocalizationManager localization, IServerApplicationHost appHost)
+        public CoreNotificationTypes(ILocalizationManager localization)
         {
             _localization = localization;
-            _appHost = appHost;
         }
 
         public IEnumerable<NotificationTypeInfo> GetNotificationTypes()
         {
-            var knownTypes = new List<NotificationTypeInfo>
+            var knownTypes = new NotificationTypeInfo[]
             {
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.ApplicationUpdateInstalled.ToString()
                 },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.InstallationFailed.ToString()
                 },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.PluginInstalled.ToString()
                 },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.PluginError.ToString()
                 },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.PluginUninstalled.ToString()
                 },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.PluginUpdateInstalled.ToString()
                 },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.ServerRestartRequired.ToString()
                 },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.TaskFailed.ToString()
                 },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.NewLibraryContent.ToString()
                 },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.AudioPlayback.ToString()
                 },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.VideoPlayback.ToString()
                 },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.AudioPlaybackStopped.ToString()
                 },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.VideoPlaybackStopped.ToString()
                 },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.CameraImageUploaded.ToString()
                 },
-
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.UserLockedOut.ToString()
-                }
-            };
-
-            if (!_appHost.CanSelfUpdate)
-            {
-                knownTypes.Add(new NotificationTypeInfo
+                },
+                new NotificationTypeInfo
                 {
                     Type = NotificationType.ApplicationUpdateAvailable.ToString()
-                });
-            }
+                }
+            };
 
             foreach (var type in knownTypes)
             {

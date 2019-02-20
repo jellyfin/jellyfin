@@ -26,15 +26,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
     {
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
-        private readonly IEnvironmentInfo _environment;
         private readonly INetworkManager _networkManager;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        public M3UTunerHost(IServerConfigurationManager config, IMediaSourceManager mediaSourceManager, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost, IEnvironmentInfo environment, INetworkManager networkManager) : base(config, logger, jsonSerializer, mediaEncoder, fileSystem)
+        public M3UTunerHost(IServerConfigurationManager config, IMediaSourceManager mediaSourceManager, ILogger logger, IJsonSerializer jsonSerializer, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost, INetworkManager networkManager)
+            : base(config, logger, jsonSerializer, fileSystem)
         {
             _httpClient = httpClient;
             _appHost = appHost;
-            _environment = environment;
             _networkManager = networkManager;
             _mediaSourceManager = mediaSourceManager;
         }
@@ -52,7 +51,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             var channelIdPrefix = GetFullChannelIdPrefix(info);
 
-            var result = await new M3uParser(Logger, FileSystem, _httpClient, _appHost).Parse(info.Url, channelIdPrefix, info.Id, cancellationToken).ConfigureAwait(false);
+            var result = await new M3uParser(Logger, _httpClient, _appHost).Parse(info.Url, channelIdPrefix, info.Id, cancellationToken).ConfigureAwait(false);
 
             return result.Cast<ChannelInfo>().ToList();
         }
@@ -115,7 +114,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task Validate(TunerHostInfo info)
         {
-            using (var stream = await new M3uParser(Logger, FileSystem, _httpClient, _appHost).GetListingsStream(info.Url, CancellationToken.None).ConfigureAwait(false))
+            using (var stream = await new M3uParser(Logger, _httpClient, _appHost).GetListingsStream(info.Url, CancellationToken.None).ConfigureAwait(false))
             {
 
             }

@@ -5,11 +5,14 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- We need C# 7.1 for async main-->
     <LangVersion>latest</LangVersion>
+    <!-- Disable documentation warnings (for now) -->
+    <NoWarn>SA1600;CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

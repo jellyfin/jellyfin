@@ -548,7 +548,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
         private IImageProcessor _imageProcessor;
 
-        public MovieResolver(ILibraryManager libraryManager, IFileSystem fileSystem, IImageProcessor imageProcessor) : base(libraryManager, fileSystem)
+        public MovieResolver(ILibraryManager libraryManager, IImageProcessor imageProcessor)
+            : base(libraryManager)
         {
             _imageProcessor = imageProcessor;
         }

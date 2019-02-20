@@ -1,11 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Data
@@ -13,18 +10,12 @@ namespace Emby.Server.Implementations.Data
     public class CleanDatabaseScheduledTask : ILibraryPostScanTask
     {
         private readonly ILibraryManager _libraryManager;
-        private readonly IItemRepository _itemRepo;
         private readonly ILogger _logger;
-        private readonly IFileSystem _fileSystem;
-        private readonly IApplicationPaths _appPaths;
 
-        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IFileSystem fileSystem, IApplicationPaths appPaths)
+        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, ILogger logger)
         {
             _libraryManager = libraryManager;
-            _itemRepo = itemRepo;
             _logger = logger;
-            _fileSystem = fileSystem;
-            _appPaths = appPaths;
         }
 
         public Task Run(IProgress<double> progress, CancellationToken cancellationToken)

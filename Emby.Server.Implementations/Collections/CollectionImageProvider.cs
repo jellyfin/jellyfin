@@ -10,14 +10,18 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Collections
 {
     public class CollectionImageProvider : BaseDynamicImageProvider<BoxSet>
     {
-        public CollectionImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor) : base(fileSystem, providerManager, applicationPaths, imageProcessor)
+        public CollectionImageProvider(
+            IFileSystem fileSystem,
+            IProviderManager providerManager,
+            IApplicationPaths applicationPaths,
+            IImageProcessor imageProcessor)
+            : base(fileSystem, providerManager, applicationPaths, imageProcessor)
         {
         }
 

@@ -173,14 +173,8 @@ namespace MediaBrowser.Api
             _fileSystem.DeleteFile(file);
         }
 
-        public object Get(GetDefaultDirectoryBrowser request)
-        {
-            var result = new DefaultDirectoryBrowserInfo();
-
-            result.Path = _fileSystem.DefaultDirectory;
-
-            return ToOptimizedResult(result);
-        }
+        public object Get(GetDefaultDirectoryBrowser request) =>
+            ToOptimizedResult(new DefaultDirectoryBrowserInfo {Path = null});
 
         /// <summary>
         /// Gets the specified request.

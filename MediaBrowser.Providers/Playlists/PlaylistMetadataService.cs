@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Playlists
 {
-    class PlaylistMetadataService : MetadataService<Playlist, ItemLookupInfo>
+    public class PlaylistMetadataService : MetadataService<Playlist, ItemLookupInfo>
     {
         protected override IList<BaseItem> GetChildrenForMetadataUpdates(Playlist item)
         {

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
+    <PackageReference Include="OptimizedPriorityQueue" Version="4.2.0" />
     <PackageReference Include="PlaylistsNET" Version="1.0.2" />
     <PackageReference Include="TvDbSharper" Version="2.0.0" />
   </ItemGroup>

@@ -13,7 +13,7 @@ namespace Jellyfin.Server.SocketSharp
     {
         internal static string GetParameter(string header, string attr)
         {
-            int ap = header.IndexOf(attr);
+            int ap = header.IndexOf(attr, StringComparison.Ordinal);
             if (ap == -1)
             {
                 return null;
@@ -82,9 +82,7 @@ namespace Jellyfin.Server.SocketSharp
                     }
                     else
                     {
-                        //
                         // We use a substream, as in 2.x we will support large uploads streamed to disk,
-                        //
                         var sub = new HttpPostedFile(e.Filename, e.ContentType, input, e.Start, e.Length);
                         files[e.Name] = sub;
                     }
@@ -127,8 +125,12 @@ namespace Jellyfin.Server.SocketSharp
 
         public string Authorization => string.IsNullOrEmpty(request.Headers["Authorization"]) ? null : request.Headers["Authorization"];
 
-        protected bool validate_cookies, validate_query_string, validate_form;
-        protected bool checked_cookies, checked_query_string, checked_form;
+        protected bool validate_cookies { get; set; }
+        protected bool validate_query_string { get; set; }
+        protected bool validate_form { get; set; }
+        protected bool checked_cookies { get; set; }
+        protected bool checked_query_string { get; set; }
+        protected bool checked_form { get; set; }
 
         private static void ThrowValidationException(string name, string key, string value)
         {
@@ -138,8 +140,12 @@ namespace Jellyfin.Server.SocketSharp
                 v = v.Substring(0, 16) + "...\"";
             }
 
-            string msg = string.Format("A potentially dangerous Request.{0} value was " +
-                            "detected from the client ({1}={2}).", name, key, v);
+            string msg = string.Format(
+                CultureInfo.InvariantCulture,
+                "A potentially dangerous Request.{0} value was detected from the client ({1}={2}).",
+                name,
+                key,
+                v);
 
             throw new Exception(msg);
         }
@@ -179,6 +185,7 @@ namespace Jellyfin.Server.SocketSharp
             for (int idx = 1; idx < len; idx++)
             {
                 char next = val[idx];
+
                 // See http://secunia.com/advisories/14325
                 if (current == '<' || current == '\xff1c')
                 {
@@ -218,7 +225,7 @@ namespace Jellyfin.Server.SocketSharp
 
             if (starts_with)
             {
-                return StrUtils.StartsWith(ContentType, ct, true);
+                return ContentType.StartsWith(ct, StringComparison.OrdinalIgnoreCase);
             }
 
             return string.Equals(ContentType, ct, StringComparison.OrdinalIgnoreCase);
@@ -256,6 +263,7 @@ namespace Jellyfin.Server.SocketSharp
                                         value.Append((char)c);
                                     }
                                 }
+
                                 if (c == -1)
                                 {
                                     AddRawKeyValue(form, key, value);
@@ -271,6 +279,7 @@ namespace Jellyfin.Server.SocketSharp
                                 key.Append((char)c);
                             }
                         }
+
                         if (c == -1)
                         {
                             AddRawKeyValue(form, key, value);
@@ -308,237 +317,29 @@ namespace Jellyfin.Server.SocketSharp
                         result.Append(key);
                         result.Append('=');
                     }
+
                     result.Append(pair.Value);
                 }
 
                 return result.ToString();
             }
         }
-
-        public sealed class HttpPostedFile
-        {
-            private string name;
-            private string content_type;
-            private Stream stream;
-
-            private class ReadSubStream : Stream
-            {
-                private Stream s;
-                private long offset;
-                private long end;
-                private long position;
-
-                public ReadSubStream(Stream s, long offset, long length)
-                {
-                    this.s = s;
-                    this.offset = offset;
-                    this.end = offset + length;
-                    position = offset;
-                }
-
-                public override void Flush()
-                {
-                }
-
-                public override int Read(byte[] buffer, int dest_offset, int count)
-                {
-                    if (buffer == null)
-                    {
-                        throw new ArgumentNullException(nameof(buffer));
-                    }
-
-                    if (dest_offset < 0)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(dest_offset), "< 0");
-                    }
-
-                    if (count < 0)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(count), "< 0");
-                    }
-
-                    int len = buffer.Length;
-                    if (dest_offset > len)
-                    {
-                        throw new ArgumentException("destination offset is beyond array size", nameof(dest_offset));
-                    }
-
-                    // reordered to avoid possible integer overflow
-                    if (dest_offset > len - count)
-                    {
-                        throw new ArgumentException("Reading would overrun buffer", nameof(count));
-                    }
-
-                    if (count > end - position)
-                    {
-                        count = (int)(end - position);
-                    }
-
-                    if (count <= 0)
-                    {
-                        return 0;
-                    }
-
-                    s.Position = position;
-                    int result = s.Read(buffer, dest_offset, count);
-                    if (result > 0)
-                    {
-                        position += result;
-                    }
-                    else
-                    {
-                        position = end;
-                    }
-
-                    return result;
-                }
-
-                public override int ReadByte()
-                {
-                    if (position >= end)
-                    {
-                        return -1;
-                    }
-
-                    s.Position = position;
-                    int result = s.ReadByte();
-                    if (result < 0)
-                    {
-                        position = end;
-                    }
-                    else
-                    {
-                        position++;
-                    }
-
-                    return result;
-                }
-
-                public override long Seek(long d, SeekOrigin origin)
-                {
-                    long real;
-                    switch (origin)
-                    {
-                        case SeekOrigin.Begin:
-                            real = offset + d;
-                            break;
-                        case SeekOrigin.End:
-                            real = end + d;
-                            break;
-                        case SeekOrigin.Current:
-                            real = position + d;
-                            break;
-                        default:
-                            throw new ArgumentException(nameof(origin));
-                    }
-
-                    long virt = real - offset;
-                    if (virt < 0 || virt > Length)
-                    {
-                        throw new ArgumentException();
-                    }
-
-                    position = s.Seek(real, SeekOrigin.Begin);
-                    return position;
-                }
-
-                public override void SetLength(long value)
-                {
-                    throw new NotSupportedException();
-                }
-
-                public override void Write(byte[] buffer, int offset, int count)
-                {
-                    throw new NotSupportedException();
-                }
-
-                public override bool CanRead => true;
-
-                public override bool CanSeek => true;
-
-                public override bool CanWrite => false;
-
-                public override long Length => end - offset;
-
-                public override long Position
-                {
-                    get => position - offset;
-                    set
-                    {
-                        if (value > Length)
-                        {
-                            throw new ArgumentOutOfRangeException(nameof(value));
-                        }
-
-                        position = Seek(value, SeekOrigin.Begin);
-                    }
-                }
-            }
-
-            internal HttpPostedFile(string name, string content_type, Stream base_stream, long offset, long length)
-            {
-                this.name = name;
-                this.content_type = content_type;
-                this.stream = new ReadSubStream(base_stream, offset, length);
-            }
-
-            public string ContentType => content_type;
-
-            public int ContentLength => (int)stream.Length;
-
-            public string FileName => name;
-
-            public Stream InputStream => stream;
-        }
-
-        private class Helpers
-        {
-            public static readonly CultureInfo InvariantCulture = CultureInfo.InvariantCulture;
-        }
-
-        internal static class StrUtils
-        {
-            public static bool StartsWith(string str1, string str2, bool ignore_case)
-            {
-                if (string.IsNullOrEmpty(str1))
-                {
-                    return false;
-                }
-
-                var comparison = ignore_case ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-                return str1.IndexOf(str2, comparison) == 0;
-            }
-
-            public static bool EndsWith(string str1, string str2, bool ignore_case)
-            {
-                int l2 = str2.Length;
-                if (l2 == 0)
-                {
-                    return true;
-                }
-
-                int l1 = str1.Length;
-                if (l2 > l1)
-                {
-                    return false;
-                }
-
-                var comparison = ignore_case ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-                return str1.IndexOf(str2, comparison) == str1.Length - str2.Length - 1;
-            }
-        }
-
         private class HttpMultipart
         {
 
             public class Element
             {
-                public string ContentType;
-                public string Name;
-                public string Filename;
-                public Encoding Encoding;
-                public long Start;
-                public long Length;
+                public string ContentType { get; set; }
+
+                public string Name { get; set; }
+
+                public string Filename { get; set; }
+
+                public Encoding Encoding { get; set; }
+
+                public long Start { get; set; }
+
+                public long Length { get; set; }
 
                 public override string ToString()
                 {
@@ -547,15 +348,23 @@ namespace Jellyfin.Server.SocketSharp
                 }
             }
 
-            private Stream data;
-            private string boundary;
-            private byte[] boundary_bytes;
-            private byte[] buffer;
-            private bool at_eof;
-            private Encoding encoding;
-            private StringBuilder sb;
+            private const byte LF = (byte)'\n';
 
-            private const byte LF = (byte)'\n', CR = (byte)'\r';
+            private const byte CR = (byte)'\r';
+
+            private Stream data;
+
+            private string boundary;
+
+            private byte[] boundaryBytes;
+
+            private byte[] buffer;
+
+            private bool atEof;
+
+            private Encoding encoding;
+
+            private StringBuilder sb;
 
             // See RFC 2046
             // In the case of multipart entities, in which one or more different
@@ -570,16 +379,46 @@ namespace Jellyfin.Server.SocketSharp
             public HttpMultipart(Stream data, string b, Encoding encoding)
             {
                 this.data = data;
-                //DB: 30/01/11: cannot set or read the Position in HttpListener in Win.NET
-                //var ms = new MemoryStream(32 * 1024);
-                //data.CopyTo(ms);
-                //this.data = ms;
-
                 boundary = b;
-                boundary_bytes = encoding.GetBytes(b);
-                buffer = new byte[boundary_bytes.Length + 2]; // CRLF or '--'
+                boundaryBytes = encoding.GetBytes(b);
+                buffer = new byte[boundaryBytes.Length + 2]; // CRLF or '--'
                 this.encoding = encoding;
                 sb = new StringBuilder();
+            }
+
+            public Element ReadNextElement()
+            {
+                if (atEof || ReadBoundary())
+                {
+                    return null;
+                }
+
+                var elem = new Element();
+                string header;
+                while ((header = ReadHeaders()) != null)
+                {
+                    if (header.StartsWith("Content-Disposition:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        elem.Name = GetContentDispositionAttribute(header, "name");
+                        elem.Filename = StripPath(GetContentDispositionAttributeWithEncoding(header, "filename"));
+                    }
+                    else if (header.StartsWith("Content-Type:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        elem.ContentType = header.Substring("Content-Type:".Length).Trim();
+                        elem.Encoding = GetEncoding(elem.ContentType);
+                    }
+                }
+
+                long start = data.Position;
+                elem.Start = start;
+                long pos = MoveToNextBoundary();
+                if (pos == -1)
+                {
+                    return null;
+                }
+
+                elem.Length = pos - start;
+                return elem;
             }
 
             private string ReadLine()
@@ -600,6 +439,7 @@ namespace Jellyfin.Server.SocketSharp
                     {
                         break;
                     }
+
                     got_cr = b == CR;
                     sb.Append((char)b);
                 }
@@ -681,13 +521,14 @@ namespace Jellyfin.Server.SocketSharp
                         return false;
                     }
 
-                    if (!StrUtils.EndsWith(line, boundary, false))
+                    if (!line.EndsWith(boundary, StringComparison.Ordinal))
                     {
                         return true;
                     }
                 }
                 catch
                 {
+
                 }
 
                 return false;
@@ -769,7 +610,7 @@ namespace Jellyfin.Server.SocketSharp
                             return -1;
                         }
 
-                        if (!CompareBytes(boundary_bytes, buffer))
+                        if (!CompareBytes(boundaryBytes, buffer))
                         {
                             state = 0;
                             data.Position = retval + 2;
@@ -785,7 +626,7 @@ namespace Jellyfin.Server.SocketSharp
 
                         if (buffer[bl - 2] == '-' && buffer[bl - 1] == '-')
                         {
-                            at_eof = true;
+                            atEof = true;
                         }
                         else if (buffer[bl - 2] != CR || buffer[bl - 1] != LF)
                         {
@@ -800,6 +641,7 @@ namespace Jellyfin.Server.SocketSharp
                             c = data.ReadByte();
                             continue;
                         }
+
                         data.Position = retval + 2;
                         if (got_cr)
                         {
@@ -816,42 +658,6 @@ namespace Jellyfin.Server.SocketSharp
                 }
 
                 return retval;
-            }
-
-            public Element ReadNextElement()
-            {
-                if (at_eof || ReadBoundary())
-                {
-                    return null;
-                }
-
-                var elem = new Element();
-                string header;
-                while ((header = ReadHeaders()) != null)
-                {
-                    if (StrUtils.StartsWith(header, "Content-Disposition:", true))
-                    {
-                        elem.Name = GetContentDispositionAttribute(header, "name");
-                        elem.Filename = StripPath(GetContentDispositionAttributeWithEncoding(header, "filename"));
-                    }
-                    else if (StrUtils.StartsWith(header, "Content-Type:", true))
-                    {
-                        elem.ContentType = header.Substring("Content-Type:".Length).Trim();
-                        elem.Encoding = GetEncoding(elem.ContentType);
-                    }
-                }
-
-                long start = 0;
-                start = data.Position;
-                elem.Start = start;
-                long pos = MoveToNextBoundary();
-                if (pos == -1)
-                {
-                    return null;
-                }
-
-                elem.Length = pos - start;
-                return elem;
             }
 
             private static string StripPath(string path)

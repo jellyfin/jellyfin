@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
@@ -19,8 +18,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public event EventHandler<GenericEventArgs<TimerInfo>> TimerFired;
 
-        public TimerManager(IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, string dataPath, ILogger logger1)
-            : base(fileSystem, jsonSerializer, logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
+        public TimerManager(IJsonSerializer jsonSerializer, ILogger logger, string dataPath, ILogger logger1)
+            : base(jsonSerializer, logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
             _logger = logger1;
         }

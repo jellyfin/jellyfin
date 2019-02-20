@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
 namespace Emby.Server.Implementations.AppBase
@@ -18,9 +17,8 @@ namespace Emby.Server.Implementations.AppBase
         /// <param name="type">The type.</param>
         /// <param name="path">The path.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
-        /// <param name="fileSystem">The file system</param>
         /// <returns>System.Object.</returns>
-        public static object GetXmlConfiguration(Type type, string path, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
+        public static object GetXmlConfiguration(Type type, string path, IXmlSerializer xmlSerializer)
         {
             object configuration;
 

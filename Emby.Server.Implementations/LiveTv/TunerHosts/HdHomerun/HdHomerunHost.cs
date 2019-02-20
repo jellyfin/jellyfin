@@ -31,15 +31,22 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IServerApplicationHost _appHost;
         private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
-        private readonly IEnvironmentInfo _environment;
 
-        public HdHomerunHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost, ISocketFactory socketFactory, INetworkManager networkManager, IEnvironmentInfo environment) : base(config, logger, jsonSerializer, mediaEncoder, fileSystem)
+        public HdHomerunHost(
+            IServerConfigurationManager config,
+            ILogger logger,
+            IJsonSerializer jsonSerializer,
+            IFileSystem fileSystem,
+            IHttpClient httpClient,
+            IServerApplicationHost appHost,
+            ISocketFactory socketFactory,
+            INetworkManager networkManager)
+            : base(config, logger, jsonSerializer, fileSystem)
         {
             _httpClient = httpClient;
             _appHost = appHost;
             _socketFactory = socketFactory;
             _networkManager = networkManager;
-            _environment = environment;
         }
 
         public string Name => "HD Homerun";

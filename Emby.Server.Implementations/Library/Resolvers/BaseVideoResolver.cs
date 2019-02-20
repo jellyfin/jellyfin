@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
@@ -18,11 +17,9 @@ namespace Emby.Server.Implementations.Library.Resolvers
         where T : Video, new()
     {
         protected readonly ILibraryManager LibraryManager;
-        protected readonly IFileSystem FileSystem;
 
-        protected BaseVideoResolver(ILibraryManager libraryManager, IFileSystem fileSystem)
+        protected BaseVideoResolver(ILibraryManager libraryManager)
         {
-            FileSystem = fileSystem;
             LibraryManager = libraryManager;
         }
 

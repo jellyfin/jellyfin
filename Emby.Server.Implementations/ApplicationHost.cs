@@ -105,10 +105,10 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.Providers.TV.TheTVDB;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
-using ServiceStack.Text.Jsv;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 
 namespace Emby.Server.Implementations
@@ -123,12 +123,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
         public abstract bool CanSelfRestart { get; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can self update.
-        /// </summary>
-        /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
-        public virtual bool CanSelfUpdate => false;
 
         public virtual bool CanLaunchWebBrowser
         {
@@ -319,6 +313,8 @@ namespace Emby.Server.Implementations
         private IMediaSourceManager MediaSourceManager { get; set; }
         private IPlaylistManager PlaylistManager { get; set; }
 
+        private readonly IConfiguration _configuration;
+
         /// <summary>
         /// Gets or sets the installation manager.
         /// </summary>
@@ -357,8 +353,10 @@ namespace Emby.Server.Implementations
             IFileSystem fileSystem,
             IEnvironmentInfo environmentInfo,
             IImageEncoder imageEncoder,
-            INetworkManager networkManager)
+            INetworkManager networkManager,
+            IConfiguration configuration)
         {
+            _configuration = configuration;
 
             // hack alert, until common can target .net core
             BaseExtensions.CryptographyProvider = CryptographyProvider;
@@ -434,7 +432,7 @@ namespace Emby.Server.Implementations
             {
                 if (_deviceId == null)
                 {
-                    _deviceId = new DeviceId(ApplicationPaths, LoggerFactory, FileSystemManager);
+                    _deviceId = new DeviceId(ApplicationPaths, LoggerFactory);
                 }
 
                 return _deviceId.Value;
@@ -472,7 +470,7 @@ namespace Emby.Server.Implementations
         {
             try
             {
-                Logger.LogWarning("Creating instance of {Type}", type);
+                Logger.LogDebug("Creating instance of {Type}", type);
                 return ActivatorUtilities.CreateInstance(_serviceProvider, type);
             }
             catch (Exception ex)
@@ -668,10 +666,10 @@ namespace Emby.Server.Implementations
             SocketFactory = new SocketFactory();
             serviceCollection.AddSingleton(SocketFactory);
 
-            InstallationManager = new InstallationManager(LoggerFactory, this, ApplicationPaths, HttpClient, JsonSerializer, ServerConfigurationManager, FileSystemManager, CryptographyProvider, PackageRuntime);
+            InstallationManager = new InstallationManager(LoggerFactory, this, ApplicationPaths, HttpClient, JsonSerializer, ServerConfigurationManager, FileSystemManager, CryptographyProvider, ZipClient, PackageRuntime);
             serviceCollection.AddSingleton(InstallationManager);
 
-            ZipClient = new ZipClient(FileSystemManager);
+            ZipClient = new ZipClient();
             serviceCollection.AddSingleton(ZipClient);
 
             HttpResultFactory = new HttpResultFactory(LoggerFactory, FileSystemManager, JsonSerializer, CreateBrotliCompressor());
@@ -709,7 +707,7 @@ namespace Emby.Server.Implementations
             AuthenticationRepository = GetAuthenticationRepository();
             serviceCollection.AddSingleton(AuthenticationRepository);
 
-            UserManager = new UserManager(LoggerFactory, ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, this, JsonSerializer, FileSystemManager, CryptographyProvider);
+            UserManager = new UserManager(LoggerFactory, ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, this, JsonSerializer, FileSystemManager);
             serviceCollection.AddSingleton(UserManager);
 
             LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager);
@@ -719,7 +717,7 @@ namespace Emby.Server.Implementations
             var musicManager = new MusicManager(LibraryManager);
             serviceCollection.AddSingleton<IMusicManager>(new MusicManager(LibraryManager));
 
-            LibraryMonitor = new LibraryMonitor(LoggerFactory, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager, EnvironmentInfo);
+            LibraryMonitor = new LibraryMonitor(LoggerFactory, LibraryManager, ServerConfigurationManager, FileSystemManager, EnvironmentInfo);
             serviceCollection.AddSingleton(LibraryMonitor);
 
             serviceCollection.AddSingleton<ISearchEngine>(new SearchEngine(LoggerFactory, LibraryManager, UserManager));
@@ -730,11 +728,10 @@ namespace Emby.Server.Implementations
             HttpServer = new HttpListenerHost(this,
                 LoggerFactory,
                 ServerConfigurationManager,
-                "web/index.html",
+                _configuration,
                 NetworkManager,
                 JsonSerializer,
-                XmlSerializer,
-                GetParseFn);
+                XmlSerializer);
 
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             serviceCollection.AddSingleton(HttpServer);
@@ -748,7 +745,7 @@ namespace Emby.Server.Implementations
             var encryptionManager = new EncryptionManager();
             serviceCollection.AddSingleton<IEncryptionManager>(encryptionManager);
 
-            DeviceManager = new DeviceManager(AuthenticationRepository, JsonSerializer, LibraryManager, LocalizationManager, UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager, LoggerFactory, NetworkManager);
+            DeviceManager = new DeviceManager(AuthenticationRepository, JsonSerializer, LibraryManager, LocalizationManager, UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager);
             serviceCollection.AddSingleton(DeviceManager);
 
             MediaSourceManager = new MediaSourceManager(ItemRepository, ApplicationPaths, LocalizationManager, UserManager, LibraryManager, LoggerFactory, JsonSerializer, FileSystemManager, UserDataManager, () => MediaEncoder);
@@ -760,7 +757,7 @@ namespace Emby.Server.Implementations
             ProviderManager = new ProviderManager(HttpClient, SubtitleManager, ServerConfigurationManager, LibraryMonitor, LoggerFactory, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer);
             serviceCollection.AddSingleton(ProviderManager);
 
-            DtoService = new DtoService(LoggerFactory, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, this, () => DeviceManager, () => MediaSourceManager, () => LiveTvManager);
+            DtoService = new DtoService(LoggerFactory, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ProviderManager, this, () => MediaSourceManager, () => LiveTvManager);
             serviceCollection.AddSingleton(DtoService);
 
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager, HttpClient, ProviderManager);
@@ -832,11 +829,6 @@ namespace Emby.Server.Implementations
         protected virtual IBrotliCompressor CreateBrotliCompressor()
         {
             return null;
-        }
-
-        private static Func<string, object> GetParseFn(Type propertyType)
-        {
-            return s => JsvReader.GetParseFn(propertyType)(s);
         }
 
         public virtual string PackageRuntime => "netcore";
@@ -950,7 +942,7 @@ namespace Emby.Server.Implementations
 
         protected virtual FFMpegInfo GetFFMpegInfo()
         {
-            return new FFMpegLoader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager, GetFfmpegInstallInfo())
+            return new FFMpegLoader(ApplicationPaths, FileSystemManager, GetFfmpegInstallInfo())
                 .GetFFMpegInfo(StartupOptions);
         }
 
@@ -1461,7 +1453,6 @@ namespace Emby.Server.Implementations
                 OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
                 OperatingSystemDisplayName = EnvironmentInfo.OperatingSystemName,
                 CanSelfRestart = CanSelfRestart,
-                CanSelfUpdate = CanSelfUpdate,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 WanAddress = wanAddress,
                 HasUpdateAvailable = HasUpdateAvailable,
@@ -1758,21 +1749,6 @@ namespace Emby.Server.Implementations
             var list = Plugins.ToList();
             list.Remove(plugin);
             Plugins = list.ToArray();
-        }
-
-        /// <summary>
-        /// Updates the application.
-        /// </summary>
-        /// <param name="package">The package that contains the update</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        public async Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            await InstallationManager.InstallPackage(package, false, progress, cancellationToken).ConfigureAwait(false);
-
-            HasUpdateAvailable = false;
-
-            OnApplicationUpdated(package);
         }
 
         /// <summary>

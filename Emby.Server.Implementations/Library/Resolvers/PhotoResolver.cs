@@ -7,7 +7,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
@@ -15,13 +14,11 @@ namespace Emby.Server.Implementations.Library.Resolvers
     {
         private readonly IImageProcessor _imageProcessor;
         private readonly ILibraryManager _libraryManager;
-        private readonly IFileSystem _fileSystem;
 
-        public PhotoResolver(IImageProcessor imageProcessor, ILibraryManager libraryManager, IFileSystem fileSystem)
+        public PhotoResolver(IImageProcessor imageProcessor, ILibraryManager libraryManager)
         {
             _imageProcessor = imageProcessor;
             _libraryManager = libraryManager;
-            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -113,8 +110,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 return false;
             }
 
-            return imageProcessor.SupportedInputFormats.Contains((Path.GetExtension(path) ?? string.Empty).TrimStart('.'));
+            return imageProcessor.SupportedInputFormats.Contains(Path.GetExtension(path).TrimStart('.'), StringComparer.Ordinal);
         }
-
     }
 }

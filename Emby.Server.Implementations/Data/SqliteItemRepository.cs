@@ -536,7 +536,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(item));
             }
 
-            SaveItems(new List<BaseItem> { item }, cancellationToken);
+            SaveItems(new [] { item }, cancellationToken);
         }
 
         public void SaveImages(BaseItem item)
@@ -576,7 +576,7 @@ namespace Emby.Server.Implementations.Data
         /// or
         /// cancellationToken
         /// </exception>
-        public void SaveItems(List<BaseItem> items, CancellationToken cancellationToken)
+        public void SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken)
         {
             if (items == null)
             {
@@ -587,7 +587,7 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            var tuples = new List<Tuple<BaseItem, List<Guid>, BaseItem, string, List<string>>>();
+            var tuples = new List<(BaseItem, List<Guid>, BaseItem, string, List<string>)>();
             foreach (var item in items)
             {
                 var ancestorIds = item.SupportsAncestors ?
@@ -599,7 +599,7 @@ namespace Emby.Server.Implementations.Data
                 var userdataKey = item.GetUserDataKeys().FirstOrDefault();
                 var inheritedTags = item.GetInheritedTags();
 
-                tuples.Add(new Tuple<BaseItem, List<Guid>, BaseItem, string, List<string>>(item, ancestorIds, topParent, userdataKey, inheritedTags));
+                tuples.Add((item, ancestorIds, topParent, userdataKey, inheritedTags));
             }
 
             using (WriteLock.Write())
@@ -615,7 +615,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void SaveItemsInTranscation(IDatabaseConnection db, List<Tuple<BaseItem, List<Guid>, BaseItem, string, List<string>>> tuples)
+        private void SaveItemsInTranscation(IDatabaseConnection db, IEnumerable<(BaseItem, List<Guid>, BaseItem, string, List<string>)> tuples)
         {
             var statements = PrepareAllSafe(db, new string[]
             {
@@ -966,7 +966,7 @@ namespace Emby.Server.Implementations.Data
 
             if (item.ExtraIds.Length > 0)
             {
-                saveItemStatement.TryBind("@ExtraIds", string.Join("|", item.ExtraIds.ToArray()));
+                saveItemStatement.TryBind("@ExtraIds", string.Join("|", item.ExtraIds));
             }
             else
             {
@@ -1183,9 +1183,9 @@ namespace Emby.Server.Implementations.Data
         /// <exception cref="ArgumentException"></exception>
         public BaseItem RetrieveItem(Guid id)
         {
-            if (id.Equals(Guid.Empty))
+            if (id == Guid.Empty)
             {
-                throw new ArgumentNullException(nameof(id));
+                throw new ArgumentException(nameof(id), "Guid can't be empty");
             }
 
             CheckDisposed();
@@ -2079,14 +2079,14 @@ namespace Emby.Server.Implementations.Data
                 return false;
             }
 
-            var sortingFields = query.OrderBy.Select(i => i.Item1);
+            var sortingFields = new HashSet<string>(query.OrderBy.Select(i => i.Item1), StringComparer.OrdinalIgnoreCase);
 
-            return sortingFields.Contains(ItemSortBy.IsFavoriteOrLiked, StringComparer.OrdinalIgnoreCase)
-                    || sortingFields.Contains(ItemSortBy.IsPlayed, StringComparer.OrdinalIgnoreCase)
-                    || sortingFields.Contains(ItemSortBy.IsUnplayed, StringComparer.OrdinalIgnoreCase)
-                    || sortingFields.Contains(ItemSortBy.PlayCount, StringComparer.OrdinalIgnoreCase)
-                    || sortingFields.Contains(ItemSortBy.DatePlayed, StringComparer.OrdinalIgnoreCase)
-                    || sortingFields.Contains(ItemSortBy.SeriesDatePlayed, StringComparer.OrdinalIgnoreCase)
+            return sortingFields.Contains(ItemSortBy.IsFavoriteOrLiked)
+                    || sortingFields.Contains(ItemSortBy.IsPlayed)
+                    || sortingFields.Contains(ItemSortBy.IsUnplayed)
+                    || sortingFields.Contains(ItemSortBy.PlayCount)
+                    || sortingFields.Contains(ItemSortBy.DatePlayed)
+                    || sortingFields.Contains(ItemSortBy.SeriesDatePlayed)
                     || query.IsFavoriteOrLiked.HasValue
                     || query.IsFavorite.HasValue
                     || query.IsResumable.HasValue
@@ -2094,9 +2094,9 @@ namespace Emby.Server.Implementations.Data
                     || query.IsLiked.HasValue;
         }
 
-        private readonly List<ItemFields> allFields = Enum.GetNames(typeof(ItemFields))
+        private readonly ItemFields[] _allFields = Enum.GetNames(typeof(ItemFields))
             .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-            .ToList();
+            .ToArray();
 
         private string[] GetColumnNamesFromField(ItemFields field)
         {
@@ -2151,18 +2151,26 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
+        private static readonly HashSet<string> _programExcludeParentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Series",
+            "Season",
+            "MusicAlbum",
+            "MusicArtist",
+            "PhotoAlbum"
+        };
+
+        private static readonly HashSet<string> _programTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Program",
+            "TvChannel",
+            "LiveTvProgram",
+            "LiveTvTvChannel"
+        };
+
         private bool HasProgramAttributes(InternalItemsQuery query)
         {
-            var excludeParentTypes = new string[]
-            {
-                "Series",
-                "Season",
-                "MusicAlbum",
-                "MusicArtist",
-                "PhotoAlbum"
-            };
-
-            if (excludeParentTypes.Contains(query.ParentType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (_programExcludeParentTypes.Contains(query.ParentType))
             {
                 return false;
             }
@@ -2172,29 +2180,18 @@ namespace Emby.Server.Implementations.Data
                 return true;
             }
 
-            var types = new string[]
-            {
-                "Program",
-                "TvChannel",
-                "LiveTvProgram",
-                "LiveTvTvChannel"
-            };
-
-            return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
+            return query.IncludeItemTypes.Any(x => _programTypes.Contains(x));
         }
+
+        private static readonly HashSet<string> _serviceTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "TvChannel",
+            "LiveTvTvChannel"
+        };
 
         private bool HasServiceName(InternalItemsQuery query)
         {
-            var excludeParentTypes = new string[]
-            {
-                "Series",
-                "Season",
-                "MusicAlbum",
-                "MusicArtist",
-                "PhotoAlbum"
-            };
-
-            if (excludeParentTypes.Contains(query.ParentType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (_programExcludeParentTypes.Contains(query.ParentType))
             {
                 return false;
             }
@@ -2204,27 +2201,18 @@ namespace Emby.Server.Implementations.Data
                 return true;
             }
 
-            var types = new string[]
-            {
-                "TvChannel",
-                "LiveTvTvChannel"
-            };
-
-            return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
+            return query.IncludeItemTypes.Any(x => _serviceTypes.Contains(x));
         }
+
+        private static readonly HashSet<string> _startDateTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Program",
+            "LiveTvProgram"
+        };
 
         private bool HasStartDate(InternalItemsQuery query)
         {
-            var excludeParentTypes = new string[]
-            {
-                "Series",
-                "Season",
-                "MusicAlbum",
-                "MusicArtist",
-                "PhotoAlbum"
-            };
-
-            if (excludeParentTypes.Contains(query.ParentType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (_programExcludeParentTypes.Contains(query.ParentType))
             {
                 return false;
             }
@@ -2234,13 +2222,7 @@ namespace Emby.Server.Implementations.Data
                 return true;
             }
 
-            var types = new string[]
-            {
-                "Program",
-                "LiveTvProgram"
-            };
-
-            return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
+            return query.IncludeItemTypes.Any(x => _startDateTypes.Contains(x));
         }
 
         private bool HasEpisodeAttributes(InternalItemsQuery query)
@@ -2263,16 +2245,26 @@ namespace Emby.Server.Implementations.Data
             return query.IncludeItemTypes.Contains("Trailer", StringComparer.OrdinalIgnoreCase);
         }
 
+
+        private static readonly HashSet<string> _artistExcludeParentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Series",
+            "Season",
+            "PhotoAlbum"
+        };
+
+        private static readonly HashSet<string> _artistsTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Audio",
+            "MusicAlbum",
+            "MusicVideo",
+            "AudioBook",
+            "AudioPodcast"
+        };
+
         private bool HasArtistFields(InternalItemsQuery query)
         {
-            var excludeParentTypes = new string[]
-            {
-                "Series",
-                "Season",
-                "PhotoAlbum"
-            };
-
-            if (excludeParentTypes.Contains(query.ParentType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (_artistExcludeParentTypes.Contains(query.ParentType))
             {
                 return false;
             }
@@ -2282,17 +2274,17 @@ namespace Emby.Server.Implementations.Data
                 return true;
             }
 
-            var types = new string[]
-            {
-                "Audio",
-                "MusicAlbum",
-                "MusicVideo",
-                "AudioBook",
-                "AudioPodcast"
-            };
-
-            return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
+            return query.IncludeItemTypes.Any(x => _artistsTypes.Contains(x));
         }
+
+        private static readonly HashSet<string> _seriesTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Audio",
+            "MusicAlbum",
+            "MusicVideo",
+            "AudioBook",
+            "AudioPodcast"
+        };
 
         private bool HasSeriesFields(InternalItemsQuery query)
         {
@@ -2306,26 +2298,18 @@ namespace Emby.Server.Implementations.Data
                 return true;
             }
 
-            var types = new string[]
-            {
-                "Book",
-                "AudioBook",
-                "Episode",
-                "Season"
-            };
-
-            return types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase));
+            return query.IncludeItemTypes.Any(x => _seriesTypes.Contains(x));
         }
 
-        private string[] GetFinalColumnsToSelect(InternalItemsQuery query, string[] startColumns)
+        private List<string> GetFinalColumnsToSelect(InternalItemsQuery query, IEnumerable<string> startColumns)
         {
             var list = startColumns.ToList();
 
-            foreach (var field in allFields)
+            foreach (var field in _allFields)
             {
                 if (!HasField(query, field))
                 {
-                    foreach (var fieldToRemove in GetColumnNamesFromField(field).ToList())
+                    foreach (var fieldToRemove in GetColumnNamesFromField(field))
                     {
                         list.Remove(fieldToRemove);
                     }
@@ -2419,11 +2403,14 @@ namespace Emby.Server.Implementations.Data
 
                 list.Add(builder.ToString());
 
-                var excludeIds = query.ExcludeItemIds.ToList();
-                excludeIds.Add(item.Id);
-                excludeIds.AddRange(item.ExtraIds);
+                var oldLen = query.ExcludeItemIds.Length;
+                var newLen = oldLen + item.ExtraIds.Length + 1;
+                var excludeIds = new Guid[newLen];
+                query.ExcludeItemIds.CopyTo(excludeIds, 0);
+                excludeIds[oldLen] = item.Id;
+                item.ExtraIds.CopyTo(excludeIds, oldLen + 1);
 
-                query.ExcludeItemIds = excludeIds.ToArray();
+                query.ExcludeItemIds = excludeIds;
                 query.ExcludeProviderIds = item.ProviderIds;
             }
 
@@ -2444,7 +2431,7 @@ namespace Emby.Server.Implementations.Data
                 list.Add(builder.ToString());
             }
 
-            return list.ToArray();
+            return list;
         }
 
         private void BindSearchParams(InternalItemsQuery query, IStatement statement)
@@ -2723,18 +2710,17 @@ namespace Emby.Server.Implementations.Data
 
         private void AddItem(List<BaseItem> items, BaseItem newItem)
         {
-            var providerIds = newItem.ProviderIds.ToList();
-
             for (var i = 0; i < items.Count; i++)
             {
                 var item = items[i];
 
-                foreach (var providerId in providerIds)
+                foreach (var providerId in newItem.ProviderIds)
                 {
                     if (providerId.Key == MetadataProviders.TmdbCollection.ToString())
                     {
                         continue;
                     }
+
                     if (item.GetProviderId(providerId.Key) == providerId.Value)
                     {
                         if (newItem.SourceType == SourceType.Library)
@@ -2753,10 +2739,10 @@ namespace Emby.Server.Implementations.Data
         {
             var elapsed = (DateTime.UtcNow - startDate).TotalMilliseconds;
 
-            int slowThreshold = 1000;
+            int slowThreshold = 100;
 
 #if DEBUG
-            slowThreshold = 250;
+            slowThreshold = 10;
 #endif
 
             if (elapsed >= slowThreshold)
@@ -2806,7 +2792,7 @@ namespace Emby.Server.Implementations.Data
 
             var whereText = whereClauses.Count == 0 ?
                 string.Empty :
-                " where " + string.Join(" AND ", whereClauses.ToArray());
+                " where " + string.Join(" AND ", whereClauses);
 
             commandText += whereText
                         + GetGroupBy(query)
@@ -2930,25 +2916,31 @@ namespace Emby.Server.Implementations.Data
 
         private string GetOrderByText(InternalItemsQuery query)
         {
-            var orderBy = query.OrderBy.ToList();
-            var enableOrderInversion = false;
-
-            if (query.SimilarTo != null && orderBy.Count == 0)
+            if (string.IsNullOrEmpty(query.SearchTerm))
             {
-                orderBy.Add(new ValueTuple<string, SortOrder>("SimilarityScore", SortOrder.Descending));
-                orderBy.Add(new ValueTuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
+                int oldLen = query.OrderBy.Length;
+
+                if (query.SimilarTo != null && oldLen == 0)
+                {
+                    var arr = new (string, SortOrder)[oldLen + 2];
+                    query.OrderBy.CopyTo(arr, 0);
+                    arr[oldLen] = ("SimilarityScore", SortOrder.Descending);
+                    arr[oldLen + 1] = (ItemSortBy.Random, SortOrder.Ascending);
+                    query.OrderBy = arr;
+                }
+            }
+            else
+            {
+                query.OrderBy = new []
+                {
+                    ("SearchScore", SortOrder.Descending),
+                    (ItemSortBy.SortName, SortOrder.Ascending)
+                };
             }
 
-            if (!string.IsNullOrEmpty(query.SearchTerm))
-            {
-                orderBy = new List<(string, SortOrder)>();
-                orderBy.Add(new ValueTuple<string, SortOrder>("SearchScore", SortOrder.Descending));
-                orderBy.Add(new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending));
-            }
+            var orderBy = query.OrderBy;
 
-            query.OrderBy = orderBy.ToArray();
-
-            if (orderBy.Count == 0)
+            if (orderBy.Length == 0)
             {
                 return string.Empty;
             }
@@ -2957,6 +2949,7 @@ namespace Emby.Server.Implementations.Data
             {
                 var columnMap = MapOrderByField(i.Item1, query);
                 var columnAscending = i.Item2 == SortOrder.Ascending;
+                const bool enableOrderInversion = false;
                 if (columnMap.Item2 && enableOrderInversion)
                 {
                     columnAscending = !columnAscending;
@@ -2968,7 +2961,7 @@ namespace Emby.Server.Implementations.Data
             }));
         }
 
-        private ValueTuple<string, bool> MapOrderByField(string name, InternalItemsQuery query)
+        private (string, bool) MapOrderByField(string name, InternalItemsQuery query)
         {
             if (string.Equals(name, ItemSortBy.AirTime, StringComparison.OrdinalIgnoreCase))
             {
@@ -3218,7 +3211,7 @@ namespace Emby.Server.Implementations.Data
 
             var whereText = whereClauses.Count == 0 ?
                 string.Empty :
-                " where " + string.Join(" AND ", whereClauses.ToArray());
+                " where " + string.Join(" AND ", whereClauses);
 
             commandText += whereText
                         + GetGroupBy(query)
@@ -4378,7 +4371,7 @@ namespace Emby.Server.Implementations.Data
             }
             else if (query.Years.Length > 1)
             {
-                var val = string.Join(",", query.Years.ToArray());
+                var val = string.Join(",", query.Years);
 
                 whereClauses.Add("ProductionYear in (" + val + ")");
             }
@@ -4952,7 +4945,12 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 return result;
             }
 
-            return new[] { value }.Where(IsValidType);
+            if (IsValidType(value))
+            {
+                return new[] { value };
+            }
+
+            return Array.Empty<string>();
         }
 
         public void DeleteItem(Guid id, CancellationToken cancellationToken)
@@ -5215,32 +5213,32 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetAllArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 0, 1 }, typeof(MusicArtist).FullName);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 0 }, typeof(MusicArtist).FullName);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetAlbumArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 1 }, typeof(MusicArtist).FullName);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetStudios(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 3 }, typeof(Studio).FullName);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetGenres(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 2 }, typeof(Genre).FullName);
         }
 
-        public QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query)
+        public QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 2 }, typeof(MusicGenre).FullName);
         }
@@ -5317,7 +5315,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
         }
 
-        private QueryResult<Tuple<BaseItem, ItemCounts>> GetItemValues(InternalItemsQuery query, int[] itemValueTypes, string returnType)
+        private QueryResult<(BaseItem, ItemCounts)> GetItemValues(InternalItemsQuery query, int[] itemValueTypes, string returnType)
         {
             if (query == null)
             {
@@ -5335,7 +5333,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             var typeClause = itemValueTypes.Length == 1 ?
                 ("Type=" + itemValueTypes[0].ToString(CultureInfo.InvariantCulture)) :
-                ("Type in (" + string.Join(",", itemValueTypes.Select(i => i.ToString(CultureInfo.InvariantCulture)).ToArray()) + ")");
+                ("Type in (" + string.Join(",", itemValueTypes.Select(i => i.ToString(CultureInfo.InvariantCulture))) + ")");
 
             InternalItemsQuery typeSubQuery = null;
 
@@ -5363,11 +5361,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                 whereClauses.Add("guid in (select ItemId from ItemValues where ItemValues.CleanValue=A.CleanName AND " + typeClause + ")");
 
-                var typeWhereText = whereClauses.Count == 0 ?
-                    string.Empty :
-                    " where " + string.Join(" AND ", whereClauses);
-
-                itemCountColumnQuery += typeWhereText;
+                itemCountColumnQuery += " where " + string.Join(" AND ", whereClauses);
 
                 itemCountColumns = new Dictionary<string, string>()
                 {
@@ -5400,7 +5394,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 IsSeries = query.IsSeries
             };
 
-            columns = GetFinalColumnsToSelect(query, columns.ToArray()).ToList();
+            columns = GetFinalColumnsToSelect(query, columns);
 
             var commandText = "select "
                             + string.Join(",", columns)
@@ -5492,8 +5486,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 {
                     return connection.RunInTransaction(db =>
                     {
-                        var list = new List<Tuple<BaseItem, ItemCounts>>();
-                        var result = new QueryResult<Tuple<BaseItem, ItemCounts>>();
+                        var list = new List<(BaseItem, ItemCounts)>();
+                        var result = new QueryResult<(BaseItem, ItemCounts)>();
 
                         var statements = PrepareAllSafe(db, statementTexts);
 
@@ -5531,7 +5525,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                                     {
                                         var countStartColumn = columns.Count - 1;
 
-                                        list.Add(new Tuple<BaseItem, ItemCounts>(item, GetItemCounts(row, countStartColumn, typesToCount)));
+                                        list.Add((item, GetItemCounts(row, countStartColumn, typesToCount)));
                                     }
                                 }
 
@@ -6198,6 +6192,5 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             return item;
         }
-
     }
 }

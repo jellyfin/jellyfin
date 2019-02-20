@@ -5,7 +5,7 @@ using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Sorting
 {
-    class SeriesSortNameComparer : IBaseItemComparer
+    public class SeriesSortNameComparer : IBaseItemComparer
     {
         /// <summary>
         /// Compares the specified x.

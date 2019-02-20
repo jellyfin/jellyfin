@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
@@ -20,59 +22,25 @@ namespace Emby.Server.Implementations.IO
         private readonly bool _supportsAsyncFileStreams;
         private char[] _invalidFileNameChars;
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
-        private bool EnableSeparateFileAndDirectoryQueries;
 
-        private string _tempPath;
+        private readonly string _tempPath;
 
-        private IEnvironmentInfo _environmentInfo;
-        private bool _isEnvironmentCaseInsensitive;
-
-        private string _defaultDirectory;
+        private readonly IEnvironmentInfo _environmentInfo;
+        private readonly bool _isEnvironmentCaseInsensitive;
 
         public ManagedFileSystem(
             ILoggerFactory loggerFactory,
             IEnvironmentInfo environmentInfo,
-            string defaultDirectory,
-            string tempPath,
-            bool enableSeparateFileAndDirectoryQueries)
+            IApplicationPaths applicationPaths)
         {
             Logger = loggerFactory.CreateLogger("FileSystem");
             _supportsAsyncFileStreams = true;
-            _tempPath = tempPath;
+            _tempPath = applicationPaths.TempDirectory;
             _environmentInfo = environmentInfo;
-            _defaultDirectory = defaultDirectory;
-
-            // On Linux with mono, this needs to be true or symbolic links are ignored
-            EnableSeparateFileAndDirectoryQueries = enableSeparateFileAndDirectoryQueries;
 
             SetInvalidFileNameChars(environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows);
 
             _isEnvironmentCaseInsensitive = environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows;
-        }
-
-        public virtual string DefaultDirectory
-        {
-            get
-            {
-                var value = _defaultDirectory;
-
-                if (!string.IsNullOrEmpty(value))
-                {
-                    try
-                    {
-                        if (Directory.Exists(value))
-                        {
-                            return value;
-                        }
-                    }
-                    catch
-                    {
-
-                    }
-                }
-
-                return null;
-            }
         }
 
         public virtual void AddShortcutHandler(IShortcutHandler handler)
@@ -718,7 +686,7 @@ namespace Emby.Server.Implementations.IO
             SetAttributes(path, false, false);
             File.Delete(path);
         }
-        
+
         public virtual List<FileSystemMetadata> GetDrives()
         {
             // Only include drives in the ready state or this method could end up being very slow, waiting for drives to timeout
@@ -777,20 +745,15 @@ namespace Emby.Server.Implementations.IO
             var directoryInfo = new DirectoryInfo(path);
             var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
-            if (EnableSeparateFileAndDirectoryQueries)
-            {
-                return ToMetadata(directoryInfo.EnumerateDirectories("*", searchOption))
-                                .Concat(ToMetadata(directoryInfo.EnumerateFiles("*", searchOption)));
-            }
-
-            return ToMetadata(directoryInfo.EnumerateFileSystemInfos("*", searchOption));
+            return ToMetadata(directoryInfo.EnumerateDirectories("*", searchOption))
+                .Concat(ToMetadata(directoryInfo.EnumerateFiles("*", searchOption)));
         }
 
         private IEnumerable<FileSystemMetadata> ToMetadata(IEnumerable<FileSystemInfo> infos)
         {
             return infos.Select(GetFileSystemMetadata);
         }
-        
+
         public virtual IEnumerable<string> GetDirectoryPaths(string path, bool recursive = false)
         {
             var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;

@@ -8,3 +8,4 @@ README.md
 deployment/*/dist
 deployment/*/pkg-dist
 deployment/collect-dist/
+ci/

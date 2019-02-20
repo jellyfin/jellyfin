@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.IO
         /// <summary>
         /// Any file name ending in any of these will be ignored by the watchers
         /// </summary>
-        private readonly HashSet<string> _alwaysIgnoreFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<string> _alwaysIgnoreFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "small.jpg",
             "albumart.jpg",
@@ -44,7 +44,7 @@ namespace Emby.Server.Implementations.IO
             "TempSBE"
         };
 
-        private readonly string[] _alwaysIgnoreSubstrings = new string[]
+        private static readonly string[] _alwaysIgnoreSubstrings = new string[]
         {
             // Synology
             "eaDir",
@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.IO
             ".actors"
         };
 
-        private readonly HashSet<string> _alwaysIgnoreExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<string> _alwaysIgnoreExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             // thumbs.db
             ".db",
@@ -123,12 +123,6 @@ namespace Emby.Server.Implementations.IO
         /// <value>The logger.</value>
         private ILogger Logger { get; set; }
 
-        /// <summary>
-        /// Gets or sets the task manager.
-        /// </summary>
-        /// <value>The task manager.</value>
-        private ITaskManager TaskManager { get; set; }
-
         private ILibraryManager LibraryManager { get; set; }
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
@@ -140,19 +134,12 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         public LibraryMonitor(
             ILoggerFactory loggerFactory,
-            ITaskManager taskManager,
             ILibraryManager libraryManager,
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
             IEnvironmentInfo environmentInfo)
         {
-            if (taskManager == null)
-            {
-                throw new ArgumentNullException(nameof(taskManager));
-            }
-
             LibraryManager = libraryManager;
-            TaskManager = taskManager;
             Logger = loggerFactory.CreateLogger(GetType().Name);
             ConfigurationManager = configurationManager;
             _fileSystem = fileSystem;
@@ -541,7 +528,7 @@ namespace Emby.Server.Implementations.IO
                     }
                 }
 
-                var newRefresher = new FileRefresher(path, _fileSystem, ConfigurationManager, LibraryManager, TaskManager, Logger, _environmentInfo, LibraryManager);
+                var newRefresher = new FileRefresher(path, ConfigurationManager, LibraryManager, Logger);
                 newRefresher.Completed += NewRefresher_Completed;
                 _activeRefreshers.Add(newRefresher);
             }

@@ -3,7 +3,6 @@ using System.Linq;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers.TV
 {
@@ -74,7 +73,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             return null;
         }
 
-        public EpisodeResolver(ILibraryManager libraryManager, IFileSystem fileSystem) : base(libraryManager, fileSystem)
+        public EpisodeResolver(ILibraryManager libraryManager)
+            : base(libraryManager)
         {
         }
     }
