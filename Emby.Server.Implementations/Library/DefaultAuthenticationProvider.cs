@@ -205,8 +205,6 @@ namespace Emby.Server.Implementations.Library
                 //the password has no salt and should be called with the older method for safety
                 return PasswordHash.ConvertToByteString(_cryptographyProvider.ComputeHash(passwordHash.Id, Encoding.UTF8.GetBytes(str)));
             }
-
-
         }
     }
 }
