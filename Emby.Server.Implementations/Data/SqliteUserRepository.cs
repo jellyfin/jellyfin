@@ -60,7 +60,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void TryMigrateToLocalUsersTable(ManagedConnection connection)
+        private void TryMigrateToLocalUsersTable(SQLiteDatabaseConnection connection)
         {
             try
             {
@@ -119,31 +119,28 @@ namespace Emby.Server.Implementations.Data
 
             var serialized = _jsonSerializer.SerializeToBytes(user);
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(db =>
                 {
-                    connection.RunInTransaction(db =>
+                    using (var statement = db.PrepareStatement("insert into LocalUsersv2 (guid, data) values (@guid, @data)"))
                     {
-                        using (var statement = db.PrepareStatement("insert into LocalUsersv2 (guid, data) values (@guid, @data)"))
-                        {
-                            statement.TryBind("@guid", user.Id.ToGuidBlob());
-                            statement.TryBind("@data", serialized);
+                        statement.TryBind("@guid", user.Id.ToGuidBlob());
+                        statement.TryBind("@data", serialized);
 
-                            statement.MoveNext();
-                        }
+                        statement.MoveNext();
+                    }
 
-                        var createdUser = GetUser(user.Id, false);
+                    var createdUser = GetUser(user.Id, connection);
 
-                        if (createdUser == null)
-                        {
-                            throw new ApplicationException("created user should never be null");
-                        }
+                    if (createdUser == null)
+                    {
+                        throw new ApplicationException("created user should never be null");
+                    }
 
-                        user.InternalId = createdUser.InternalId;
+                    user.InternalId = createdUser.InternalId;
 
-                    }, TransactionMode);
-                }
+                }, TransactionMode);
             }
         }
 
@@ -156,39 +153,30 @@ namespace Emby.Server.Implementations.Data
 
             var serialized = _jsonSerializer.SerializeToBytes(user);
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(db =>
                 {
-                    connection.RunInTransaction(db =>
+                    using (var statement = db.PrepareStatement("update LocalUsersv2 set data=@data where Id=@InternalId"))
                     {
-                        using (var statement = db.PrepareStatement("update LocalUsersv2 set data=@data where Id=@InternalId"))
-                        {
-                            statement.TryBind("@InternalId", user.InternalId);
-                            statement.TryBind("@data", serialized);
-                            statement.MoveNext();
-                        }
+                        statement.TryBind("@InternalId", user.InternalId);
+                        statement.TryBind("@data", serialized);
+                        statement.MoveNext();
+                    }
 
-                    }, TransactionMode);
-                }
+                }, TransactionMode);
             }
         }
 
-        private User GetUser(Guid guid, bool openLock)
+        private User GetUser(Guid guid, SQLiteDatabaseConnection connection)
         {
-            using (openLock ? WriteLock.Read() : null)
+            using (var statement = connection.PrepareStatement("select id,guid,data from LocalUsersv2 where guid=@guid"))
             {
-                using (var connection = CreateConnection(true))
-                {
-                    using (var statement = connection.PrepareStatement("select id,guid,data from LocalUsersv2 where guid=@guid"))
-                    {
-                        statement.TryBind("@guid", guid);
+                statement.TryBind("@guid", guid);
 
-                        foreach (var row in statement.ExecuteQuery())
-                        {
-                            return GetUser(row);
-                        }
-                    }
+                foreach (var row in statement.ExecuteQuery())
+                {
+                    return GetUser(row);
                 }
             }
 
@@ -218,14 +206,11 @@ namespace Emby.Server.Implementations.Data
         {
             var list = new List<User>();
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                foreach (var row in connection.Query("select id,guid,data from LocalUsersv2"))
                 {
-                    foreach (var row in connection.Query("select id,guid,data from LocalUsersv2"))
-                    {
-                        list.Add(GetUser(row));
-                    }
+                    list.Add(GetUser(row));
                 }
             }
 
@@ -245,19 +230,16 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(user));
             }
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(db =>
                 {
-                    connection.RunInTransaction(db =>
+                    using (var statement = db.PrepareStatement("delete from LocalUsersv2 where Id=@id"))
                     {
-                        using (var statement = db.PrepareStatement("delete from LocalUsersv2 where Id=@id"))
-                        {
-                            statement.TryBind("@id", user.InternalId);
-                            statement.MoveNext();
-                        }
-                    }, TransactionMode);
-                }
+                        statement.TryBind("@id", user.InternalId);
+                        statement.MoveNext();
+                    }
+                }, TransactionMode);
             }
         }
     }

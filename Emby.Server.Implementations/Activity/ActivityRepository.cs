@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.Activity
             }
         }
 
-        private void TryMigrate(ManagedConnection connection)
+        private void TryMigrate(SQLiteDatabaseConnection connection)
         {
             try
             {
@@ -85,7 +85,6 @@ namespace Emby.Server.Implementations.Activity
                 throw new ArgumentNullException(nameof(entry));
             }
 
-            using (WriteLock.Write())
             using (var connection = CreateConnection())
             {
                 connection.RunInTransaction(db =>
@@ -124,7 +123,6 @@ namespace Emby.Server.Implementations.Activity
                 throw new ArgumentNullException(nameof(entry));
             }
 
-            using (WriteLock.Write())
             using (var connection = CreateConnection())
             {
                 connection.RunInTransaction(db =>
@@ -159,7 +157,6 @@ namespace Emby.Server.Implementations.Activity
 
         public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit)
         {
-            using (WriteLock.Read())
             using (var connection = CreateConnection(true))
             {
                 var commandText = BaseActivitySelectText;

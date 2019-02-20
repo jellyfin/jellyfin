@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SQLitePCL;
 using SQLitePCL.pretty;
@@ -12,15 +13,12 @@ namespace Emby.Server.Implementations.Data
     public abstract class BaseSqliteRepository : IDisposable
     {
         protected string DbFilePath { get; set; }
-        protected ReaderWriterLockSlim WriteLock;
 
         protected ILogger Logger { get; private set; }
 
         protected BaseSqliteRepository(ILogger logger)
         {
             Logger = logger;
-
-            WriteLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         }
 
         protected TransactionMode TransactionMode => TransactionMode.Deferred;
@@ -31,130 +29,96 @@ namespace Emby.Server.Implementations.Data
 
         static BaseSqliteRepository()
         {
-            SQLite3.EnableSharedCache = false;
-
-            int rc = raw.sqlite3_config(raw.SQLITE_CONFIG_MEMSTATUS, 0);
-            //CheckOk(rc);
-
-            rc = raw.sqlite3_config(raw.SQLITE_CONFIG_MULTITHREAD, 1);
-            //rc = raw.sqlite3_config(raw.SQLITE_CONFIG_SINGLETHREAD, 1);
-            //rc = raw.sqlite3_config(raw.SQLITE_CONFIG_SERIALIZED, 1);
-            //CheckOk(rc);
-
-            rc = raw.sqlite3_enable_shared_cache(1);
-
             ThreadSafeMode = raw.sqlite3_threadsafe();
         }
 
         private static bool _versionLogged;
 
         private string _defaultWal;
-        protected ManagedConnection _connection;
 
-        protected virtual bool EnableSingleConnection => true;
-
-        protected ManagedConnection CreateConnection(bool isReadOnly = false)
+        protected SQLiteDatabaseConnection CreateConnection(bool isReadOnly = false)
         {
-            if (_connection != null)
+            if (!_versionLogged)
             {
-                return _connection;
+                _versionLogged = true;
+                Logger.LogInformation("Sqlite version: " + SQLite3.Version);
+                Logger.LogInformation("Sqlite compiler options: " + string.Join(",", SQLite3.CompilerOptions));
             }
 
-            lock (WriteLock)
+            ConnectionFlags connectionFlags;
+
+            if (isReadOnly)
             {
-                if (!_versionLogged)
+                //Logger.LogInformation("Opening read connection");
+                //connectionFlags = ConnectionFlags.Create;
+                connectionFlags = ConnectionFlags.ReadOnly;
+            }
+            else
+            {
+                //Logger.LogInformation("Opening write connection");
+                connectionFlags = ConnectionFlags.Create;
+                connectionFlags |= ConnectionFlags.ReadWrite;
+            }
+
+            connectionFlags |= ConnectionFlags.SharedCached;
+            connectionFlags |= ConnectionFlags.FullMutex;
+
+            var db = SQLite3.Open(DbFilePath, connectionFlags, null);
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(_defaultWal))
                 {
-                    _versionLogged = true;
-                    Logger.LogInformation("Sqlite version: " + SQLite3.Version);
-                    Logger.LogInformation("Sqlite compiler options: " + string.Join(",", SQLite3.CompilerOptions.ToArray()));
+                    _defaultWal = db.Query("PRAGMA journal_mode").SelectScalarString().First();
+
+                    Logger.LogInformation("Default journal_mode for {0} is {1}", DbFilePath, _defaultWal);
                 }
 
-                ConnectionFlags connectionFlags;
-
-                if (isReadOnly)
+                var queries = new List<string>
                 {
-                    //Logger.LogInformation("Opening read connection");
-                    //connectionFlags = ConnectionFlags.ReadOnly;
-                    connectionFlags = ConnectionFlags.Create;
-                    connectionFlags |= ConnectionFlags.ReadWrite;
+                    //"PRAGMA cache size=-10000"
+                    //"PRAGMA read_uncommitted = true",
+                    //"PRAGMA synchronous=Normal"
+                };
+
+                if (CacheSize.HasValue)
+                {
+                    queries.Add("PRAGMA cache_size=" + CacheSize.Value.ToString(CultureInfo.InvariantCulture));
+                }
+
+                if (EnableTempStoreMemory)
+                {
+                    queries.Add("PRAGMA temp_store = memory");
                 }
                 else
                 {
-                    //Logger.LogInformation("Opening write connection");
-                    connectionFlags = ConnectionFlags.Create;
-                    connectionFlags |= ConnectionFlags.ReadWrite;
+                    queries.Add("PRAGMA temp_store = file");
                 }
 
-                if (EnableSingleConnection)
+                foreach (var query in queries)
                 {
-                    connectionFlags |= ConnectionFlags.PrivateCache;
+                    db.Execute(query);
                 }
-                else
-                {
-                    connectionFlags |= ConnectionFlags.SharedCached;
-                }
-
-                connectionFlags |= ConnectionFlags.NoMutex;
-
-                var db = SQLite3.Open(DbFilePath, connectionFlags, null);
-
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(_defaultWal))
-                    {
-                        _defaultWal = db.Query("PRAGMA journal_mode").SelectScalarString().First();
-
-                        Logger.LogInformation("Default journal_mode for {0} is {1}", DbFilePath, _defaultWal);
-                    }
-
-                    var queries = new List<string>
-                    {
-                        //"PRAGMA cache size=-10000"
-                        //"PRAGMA read_uncommitted = true",
-                        "PRAGMA synchronous=Normal"
-                    };
-
-                    if (CacheSize.HasValue)
-                    {
-                        queries.Add("PRAGMA cache_size=" + CacheSize.Value.ToString(CultureInfo.InvariantCulture));
-                    }
-
-                    if (EnableTempStoreMemory)
-                    {
-                        queries.Add("PRAGMA temp_store = memory");
-                    }
-                    else
-                    {
-                        queries.Add("PRAGMA temp_store = file");
-                    }
-
-                    foreach (var query in queries)
-                    {
-                        db.Execute(query);
-                    }
-                }
-                catch
-                {
-                    using (db)
-                    {
-
-                    }
-
-                    throw;
-                }
-
-                _connection = new ManagedConnection(db, false);
-
-                return _connection;
             }
+            catch
+            {
+                using (db)
+                {
+
+                }
+
+                throw;
+            }
+
+            return db;
         }
 
-        public IStatement PrepareStatement(ManagedConnection connection, string sql)
+        public IStatement PrepareStatement(SQLiteDatabaseConnection connection, string sql)
         {
             return connection.PrepareStatement(sql);
         }
 
-        public IStatement PrepareStatementSafe(ManagedConnection connection, string sql)
+        public IStatement PrepareStatementSafe(SQLiteDatabaseConnection connection, string sql)
         {
             return connection.PrepareStatement(sql);
         }
@@ -179,7 +143,7 @@ namespace Emby.Server.Implementations.Data
             return sql.Select(connection.PrepareStatement).ToList();
         }
 
-        protected bool TableExists(ManagedConnection connection, string name)
+        protected bool TableExists(SQLiteDatabaseConnection connection, string name)
         {
             return connection.RunInTransaction(db =>
             {
@@ -199,7 +163,7 @@ namespace Emby.Server.Implementations.Data
             }, ReadTransactionMode);
         }
 
-        protected void RunDefaultInitialization(ManagedConnection db)
+        protected void RunDefaultInitialization(SQLiteDatabaseConnection db)
         {
             var queries = new List<string>
             {
@@ -243,7 +207,7 @@ namespace Emby.Server.Implementations.Data
 
         public void Dispose()
         {
-            _disposed = true;
+
             Dispose(true);
         }
 
@@ -255,42 +219,13 @@ namespace Emby.Server.Implementations.Data
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
-            if (dispose)
+            if (_disposed)
             {
-                DisposeConnection();
+                return;
             }
-        }
 
-        private void DisposeConnection()
-        {
-            try
-            {
-                lock (_disposeLock)
-                {
-                    using (WriteLock.Write())
-                    {
-                        if (_connection != null)
-                        {
-                            using (_connection)
-                            {
-                                _connection.Close();
-                            }
-                            _connection = null;
-                        }
 
-                        CloseConnection();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error disposing database");
-            }
-        }
-
-        protected virtual void CloseConnection()
-        {
-
+            _disposed = true;
         }
 
         protected List<string> GetColumnNames(IDatabaseConnection connection, string table)
@@ -318,62 +253,6 @@ namespace Emby.Server.Implementations.Data
             }
 
             connection.Execute("alter table " + table + " add column " + columnName + " " + type + " NULL");
-        }
-    }
-
-    public static class ReaderWriterLockSlimExtensions
-    {
-        private sealed class ReadLockToken : IDisposable
-        {
-            private ReaderWriterLockSlim _sync;
-            public ReadLockToken(ReaderWriterLockSlim sync)
-            {
-                _sync = sync;
-                sync.EnterReadLock();
-            }
-            public void Dispose()
-            {
-                if (_sync != null)
-                {
-                    _sync.ExitReadLock();
-                    _sync = null;
-                }
-            }
-        }
-        private sealed class WriteLockToken : IDisposable
-        {
-            private ReaderWriterLockSlim _sync;
-            public WriteLockToken(ReaderWriterLockSlim sync)
-            {
-                _sync = sync;
-                sync.EnterWriteLock();
-            }
-            public void Dispose()
-            {
-                if (_sync != null)
-                {
-                    _sync.ExitWriteLock();
-                    _sync = null;
-                }
-            }
-        }
-
-        public static IDisposable Read(this ReaderWriterLockSlim obj)
-        {
-            //if (BaseSqliteRepository.ThreadSafeMode > 0)
-            //{
-            //    return new DummyToken();
-            //}
-            return new WriteLockToken(obj);
-        }
-
-        public static IDisposable Write(this ReaderWriterLockSlim obj)
-        {
-            //if (BaseSqliteRepository.ThreadSafeMode > 0)
-            //{
-            //    return new DummyToken();
-            //}
-            return new WriteLockToken(obj);
         }
     }
 }

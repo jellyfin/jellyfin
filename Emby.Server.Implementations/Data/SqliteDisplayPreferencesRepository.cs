@@ -98,15 +98,12 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(db =>
                 {
-                    connection.RunInTransaction(db =>
-                    {
-                        SaveDisplayPreferences(displayPreferences, userId, client, db);
-                    }, TransactionMode);
-                }
+                    SaveDisplayPreferences(displayPreferences, userId, client, db);
+                }, TransactionMode);
             }
         }
 
@@ -142,18 +139,15 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(db =>
                 {
-                    connection.RunInTransaction(db =>
+                    foreach (var displayPreference in displayPreferences)
                     {
-                        foreach (var displayPreference in displayPreferences)
-                        {
-                            SaveDisplayPreferences(displayPreference, userId, displayPreference.Client, db);
-                        }
-                    }, TransactionMode);
-                }
+                        SaveDisplayPreferences(displayPreference, userId, displayPreference.Client, db);
+                    }
+                }, TransactionMode);
             }
         }
 
@@ -174,27 +168,24 @@ namespace Emby.Server.Implementations.Data
 
             var guidId = displayPreferencesId.GetMD5();
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where id = @id and userId=@userId and client=@client"))
                 {
-                    using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where id = @id and userId=@userId and client=@client"))
-                    {
-                        statement.TryBind("@id", guidId.ToGuidBlob());
-                        statement.TryBind("@userId", userId.ToGuidBlob());
-                        statement.TryBind("@client", client);
+                    statement.TryBind("@id", guidId.ToGuidBlob());
+                    statement.TryBind("@userId", userId.ToGuidBlob());
+                    statement.TryBind("@client", client);
 
-                        foreach (var row in statement.ExecuteQuery())
-                        {
-                            return Get(row);
-                        }
+                    foreach (var row in statement.ExecuteQuery())
+                    {
+                        return Get(row);
                     }
-
-                    return new DisplayPreferences
-                    {
-                        Id = guidId.ToString("N")
-                    };
                 }
+
+                return new DisplayPreferences
+                {
+                    Id = guidId.ToString("N")
+                };
             }
         }
 
@@ -208,18 +199,15 @@ namespace Emby.Server.Implementations.Data
         {
             var list = new List<DisplayPreferences>();
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where userId=@userId"))
                 {
-                    using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where userId=@userId"))
-                    {
-                        statement.TryBind("@userId", userId.ToGuidBlob());
+                    statement.TryBind("@userId", userId.ToGuidBlob());
 
-                        foreach (var row in statement.ExecuteQuery())
-                        {
-                            list.Add(Get(row));
-                        }
+                    foreach (var row in statement.ExecuteQuery())
+                    {
+                        list.Add(Get(row));
                     }
                 }
             }
