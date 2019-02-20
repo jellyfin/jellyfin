@@ -123,12 +123,6 @@ namespace Emby.Server.Implementations
         /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
         public abstract bool CanSelfRestart { get; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can self update.
-        /// </summary>
-        /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
-        public virtual bool CanSelfUpdate => false;
-
         public virtual bool CanLaunchWebBrowser
         {
             get
@@ -1456,7 +1450,6 @@ namespace Emby.Server.Implementations
                 OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
                 OperatingSystemDisplayName = EnvironmentInfo.OperatingSystemName,
                 CanSelfRestart = CanSelfRestart,
-                CanSelfUpdate = CanSelfUpdate,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 WanAddress = wanAddress,
                 HasUpdateAvailable = HasUpdateAvailable,
@@ -1753,21 +1746,6 @@ namespace Emby.Server.Implementations
             var list = Plugins.ToList();
             list.Remove(plugin);
             Plugins = list.ToArray();
-        }
-
-        /// <summary>
-        /// Updates the application.
-        /// </summary>
-        /// <param name="package">The package that contains the update</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        public async Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            await InstallationManager.InstallPackage(package, false, progress, cancellationToken).ConfigureAwait(false);
-
-            HasUpdateAvailable = false;
-
-            OnApplicationUpdated(package);
         }
 
         /// <summary>

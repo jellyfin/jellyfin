@@ -101,7 +101,7 @@ namespace MediaBrowser.Api.UserLibrary
             throw new NotImplementedException();
         }
 
-        protected override QueryResult<Tuple<BaseItem, ItemCounts>> GetItems(GetItemsByName request, InternalItemsQuery query)
+        protected override QueryResult<(BaseItem, ItemCounts)> GetItems(GetItemsByName request, InternalItemsQuery query)
         {
             var items = LibraryManager.GetPeopleItems(new InternalPeopleQuery
             {
@@ -109,10 +109,10 @@ namespace MediaBrowser.Api.UserLibrary
                 NameContains = query.NameContains ?? query.SearchTerm
             });
 
-            return new QueryResult<Tuple<BaseItem, ItemCounts>>
+            return new QueryResult<(BaseItem, ItemCounts)>
             {
                 TotalRecordCount = items.Count,
-                Items = items.Take(query.Limit ?? int.MaxValue).Select(i => new Tuple<BaseItem, ItemCounts>(i, new ItemCounts())).ToArray()
+                Items = items.Take(query.Limit ?? int.MaxValue).Select(i => (i as BaseItem, new ItemCounts())).ToArray()
             };
         }
 

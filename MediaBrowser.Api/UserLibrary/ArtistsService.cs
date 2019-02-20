@@ -112,7 +112,7 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(result);
         }
 
-        protected override QueryResult<Tuple<BaseItem, ItemCounts>> GetItems(GetItemsByName request, InternalItemsQuery query)
+        protected override QueryResult<(BaseItem, ItemCounts)> GetItems(GetItemsByName request, InternalItemsQuery query)
         {
             if (request is GetAlbumArtists)
             {
