@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.TV
 
         public string Key => MetadataProviders.Tvdb.ToString();
 
-        public string UrlFormatString => "https://thetvdb.com/?tab=series&id={0}";
+        public string UrlFormatString => TvdbUtils.TvdbBaseUrl + "?tab=series&id={0}";
 
         public bool Supports(IHasProviderIds item)
         {
@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.TV
 
         public string Key => MetadataProviders.Tvdb.ToString();
 
-        public string UrlFormatString => "https://thetvdb.com/?tab=episode&id={0}";
+        public string UrlFormatString => TvdbUtils.TvdbBaseUrl + "?tab=episode&id={0}";
 
         public bool Supports(IHasProviderIds item)
         {

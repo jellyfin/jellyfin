@@ -5,9 +5,9 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 {
     public static class TvdbUtils
     {
-        public static readonly string TvdbApiKey = "OG4V3YJ3FAP7FP2K";
-        public static readonly string TvdbBaseUrl = "https://www.thetvdb.com/";
-        public static readonly string BannerUrl = TvdbBaseUrl + "banners/";
+        public const string TvdbApiKey = "OG4V3YJ3FAP7FP2K";
+        public const string TvdbBaseUrl = "https://www.thetvdb.com/";
+        public const string BannerUrl = TvdbBaseUrl + "banners/";
 
         public static ImageType GetImageTypeFromKeyType(string keyType)
         {
