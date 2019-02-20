@@ -165,7 +165,7 @@ namespace BDInfo
                 foreach (var file in files)
                 {
                     PlaylistFiles.Add(
-                        file.Name.ToUpper(), new TSPlaylistFile(this, file, _fileSystem));
+                        file.Name.ToUpper(), new TSPlaylistFile(this, file));
                 }
             }
 
@@ -185,7 +185,7 @@ namespace BDInfo
                 foreach (var file in files)
                 {
                     StreamClipFiles.Add(
-                        file.Name.ToUpper(), new TSStreamClipFile(file, _fileSystem));
+                        file.Name.ToUpper(), new TSStreamClipFile(file));
                 }
             }
 

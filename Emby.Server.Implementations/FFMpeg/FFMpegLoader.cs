@@ -3,27 +3,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.FFMpeg
 {
     public class FFMpegLoader
     {
-        private readonly IHttpClient _httpClient;
         private readonly IApplicationPaths _appPaths;
-        private readonly ILogger _logger;
-        private readonly IZipClient _zipClient;
         private readonly IFileSystem _fileSystem;
         private readonly FFMpegInstallInfo _ffmpegInstallInfo;
 
-        public FFMpegLoader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem, FFMpegInstallInfo ffmpegInstallInfo)
+        public FFMpegLoader(IApplicationPaths appPaths, IFileSystem fileSystem, FFMpegInstallInfo ffmpegInstallInfo)
         {
-            _logger = logger;
             _appPaths = appPaths;
-            _httpClient = httpClient;
-            _zipClient = zipClient;
             _fileSystem = fileSystem;
             _ffmpegInstallInfo = ffmpegInstallInfo;
         }
@@ -115,8 +107,7 @@ namespace Emby.Server.Implementations.FFMpeg
             var encoderFilename = Path.GetFileName(info.EncoderPath);
             var probeFilename = Path.GetFileName(info.ProbePath);
 
-            foreach (var directory in _fileSystem.GetDirectoryPaths(rootEncoderPath)
-                .ToList())
+            foreach (var directory in _fileSystem.GetDirectoryPaths(rootEncoderPath))
             {
                 var allFiles = _fileSystem.GetFilePaths(directory, true).ToList();
 

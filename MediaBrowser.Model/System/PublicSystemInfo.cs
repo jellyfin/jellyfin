@@ -24,12 +24,12 @@ namespace MediaBrowser.Model.System
         /// Gets or sets the server version.
         /// </summary>
         /// <value>The version.</value>
-        public string Version { get; set; }        
+        public string Version { get; set; }
 
         /// <summary>
-        /// Gets or sets the operating sytem.
+        /// Gets or sets the operating system.
         /// </summary>
-        /// <value>The operating sytem.</value>
+        /// <value>The operating system.</value>
         public string OperatingSystem { get; set; }
 
         /// <summary>

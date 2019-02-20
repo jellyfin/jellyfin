@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Updates;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common
 {
@@ -13,12 +14,6 @@ namespace MediaBrowser.Common
     /// </summary>
     public interface IApplicationHost
     {
-        /// <summary>
-        /// Gets the display name of the operating system.
-        /// </summary>
-        /// <value>The display name of the operating system.</value>
-        string OperatingSystemDisplayName { get; }
-
         /// <summary>
         /// Gets the name.
         /// </summary>
@@ -78,12 +73,6 @@ namespace MediaBrowser.Common
         string ApplicationUserAgent { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance can self update.
-        /// </summary>
-        /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
-        bool CanSelfUpdate { get; }
-
-        /// <summary>
         /// Gets the exports.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -92,24 +81,11 @@ namespace MediaBrowser.Common
         IEnumerable<T> GetExports<T>(bool manageLifetime = true);
 
         /// <summary>
-        /// Updates the application.
-        /// </summary>
-        /// <returns>Task.</returns>
-        Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress);
-
-        /// <summary>
         /// Resolves this instance.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>``0.</returns>
         T Resolve<T>();
-
-        /// <summary>
-        /// Resolves this instance.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>``0.</returns>
-        T TryResolve<T>();
 
         /// <summary>
         /// Shuts down.
@@ -131,7 +107,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Inits this instance.
         /// </summary>
-        Task Init();
+        Task Init(IServiceCollection serviceCollection);
 
         /// <summary>
         /// Creates the instance.

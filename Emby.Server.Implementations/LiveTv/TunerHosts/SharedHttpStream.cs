@@ -94,7 +94,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             var now = DateTime.UtcNow;
 
-            var _ = StartStreaming(response, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
+            _ = StartStreaming(response, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
 
             //OpenedMediaSource.Protocol = MediaProtocol.File;
             //OpenedMediaSource.Path = tempFile;

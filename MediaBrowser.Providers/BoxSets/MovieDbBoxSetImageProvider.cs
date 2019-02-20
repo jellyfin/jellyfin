@@ -14,7 +14,7 @@ using MediaBrowser.Providers.Movies;
 
 namespace MediaBrowser.Providers.BoxSets
 {
-    class MovieDbBoxSetImageProvider : IRemoteImageProvider, IHasOrder
+    public class MovieDbBoxSetImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClient _httpClient;
 

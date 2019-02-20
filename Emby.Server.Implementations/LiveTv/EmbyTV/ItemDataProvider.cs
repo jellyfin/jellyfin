@@ -17,15 +17,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         protected readonly ILogger Logger;
         private readonly string _dataPath;
         protected readonly Func<T, T, bool> EqualityComparer;
-        private readonly IFileSystem _fileSystem;
 
-        public ItemDataProvider(IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, string dataPath, Func<T, T, bool> equalityComparer)
+        public ItemDataProvider(IJsonSerializer jsonSerializer, ILogger logger, string dataPath, Func<T, T, bool> equalityComparer)
         {
             Logger = logger;
             _dataPath = dataPath;
             EqualityComparer = equalityComparer;
             _jsonSerializer = jsonSerializer;
-            _fileSystem = fileSystem;
         }
 
         public IReadOnlyList<T> GetAll()

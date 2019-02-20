@@ -9,7 +9,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
@@ -23,18 +22,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         protected readonly IServerConfigurationManager Config;
         protected readonly ILogger Logger;
         protected IJsonSerializer JsonSerializer;
-        protected readonly IMediaEncoder MediaEncoder;
         protected readonly IFileSystem FileSystem;
 
         private readonly ConcurrentDictionary<string, ChannelCache> _channelCache =
             new ConcurrentDictionary<string, ChannelCache>(StringComparer.OrdinalIgnoreCase);
 
-        protected BaseTunerHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem)
+        protected BaseTunerHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IFileSystem fileSystem)
         {
             Config = config;
             Logger = logger;
             JsonSerializer = jsonSerializer;
-            MediaEncoder = mediaEncoder;
             FileSystem = fileSystem;
         }
 

@@ -28,7 +28,6 @@ namespace BDInfo
 {
     public class TSPlaylistFile
     {
-        private readonly IFileSystem _fileSystem;
         private FileSystemMetadata FileInfo = null;
         public string FileType = null;
         public bool IsInitialized = false;
@@ -64,21 +63,19 @@ namespace BDInfo
             new List<TSGraphicsStream>();
 
         public TSPlaylistFile(BDROM bdrom,
-            FileSystemMetadata fileInfo, IFileSystem fileSystem)
+            FileSystemMetadata fileInfo)
         {
             BDROM = bdrom;
             FileInfo = fileInfo;
-            _fileSystem = fileSystem;
             Name = fileInfo.Name.ToUpper();
         }
 
         public TSPlaylistFile(BDROM bdrom,
             string name,
-            List<TSStreamClip> clips, IFileSystem fileSystem)
+            List<TSStreamClip> clips)
         {
             BDROM = bdrom;
             Name = name;
-            _fileSystem = fileSystem;
             IsCustom = true;
             foreach (var clip in clips)
             {

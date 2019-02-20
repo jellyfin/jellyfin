@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 package_win64() (
     local NSSM_VERSION="nssm-2.24-101-g897c7ad"
     local NSSM_URL="https://nssm.cc/ci/${NSSM_VERSION}.zip"
@@ -15,7 +16,7 @@ package_win64() (
         wget ${NSSM_URL} -O ${TEMP_DIR}/nssm.zip
         wget ${FFMPEG_URL} -O ${TEMP_DIR}/ffmpeg.zip
         unzip ${TEMP_DIR}/nssm.zip -d $TEMP_DIR
-        cp ${TEMP_DIR}/${NSSM_VERSION}}/win64/nssm.exe ${OUTPUT_DIR}/nssm.exe
+        cp ${TEMP_DIR}/${NSSM_VERSION}/win64/nssm.exe ${OUTPUT_DIR}/nssm.exe
         unzip ${TEMP_DIR}/ffmpeg.zip -d $TEMP_DIR
         cp ${TEMP_DIR}/${FFMPEG_VERSION}/bin/ffmpeg.exe ${OUTPUT_DIR}/ffmpeg.exe
         cp ${TEMP_DIR}/${FFMPEG_VERSION}/bin/ffprobe.exe ${OUTPUT_DIR}/ffprobe.exe

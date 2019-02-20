@@ -19,7 +19,6 @@ namespace IsoMounter
 
         private readonly IEnvironmentInfo EnvironmentInfo;
         private readonly bool ExecutablesAvailable;
-        private readonly IFileSystem FileSystem;
         private readonly ILogger _logger;
         private readonly string MountCommand;
         private readonly string MountPointRoot;
@@ -31,11 +30,10 @@ namespace IsoMounter
 
         #region Constructor(s)
 
-        public LinuxIsoManager(ILogger logger, IFileSystem fileSystem, IEnvironmentInfo environment, IProcessFactory processFactory)
+        public LinuxIsoManager(ILogger logger, IEnvironmentInfo environment, IProcessFactory processFactory)
         {
 
             EnvironmentInfo = environment;
-            FileSystem = fileSystem;
             _logger = logger;
             ProcessFactory = processFactory;
 

@@ -19,7 +19,9 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using ServiceStack.Text.Jsv;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -53,20 +55,20 @@ namespace Emby.Server.Implementations.HttpServer
             IServerApplicationHost applicationHost,
             ILoggerFactory loggerFactory,
             IServerConfigurationManager config,
-            string defaultRedirectPath,
+            IConfiguration configuration,
             INetworkManager networkManager,
             IJsonSerializer jsonSerializer,
-            IXmlSerializer xmlSerializer,
-            Func<Type, Func<string, object>> funcParseFn)
+            IXmlSerializer xmlSerializer)
         {
             _appHost = applicationHost;
             _logger = loggerFactory.CreateLogger("HttpServer");
             _config = config;
-            DefaultRedirectPath = defaultRedirectPath;
+            DefaultRedirectPath = configuration["HttpListenerHost:DefaultRedirectPath"];
             _networkManager = networkManager;
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
-            _funcParseFn = funcParseFn;
+            
+            _funcParseFn = t => s => JsvReader.GetParseFn(t)(s);
 
             Instance = this;
             ResponseFilters = Array.Empty<Action<IRequest, IResponse, object>>();

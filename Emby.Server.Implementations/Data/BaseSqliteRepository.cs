@@ -224,30 +224,13 @@ namespace Emby.Server.Implementations.Data
                 });
             }
 
-            db.ExecuteAll(string.Join(";", queries.ToArray()));
+            db.ExecuteAll(string.Join(";", queries));
             Logger.LogInformation("PRAGMA synchronous=" + db.Query("PRAGMA synchronous").SelectScalarString().First());
         }
 
         protected virtual bool EnableTempStoreMemory => false;
 
         protected virtual int? CacheSize => null;
-
-        internal static void CheckOk(int rc)
-        {
-            string msg = "";
-
-            if (raw.SQLITE_OK != rc)
-            {
-                throw CreateException((ErrorCode)rc, msg);
-            }
-        }
-
-        internal static Exception CreateException(ErrorCode rc, string msg)
-        {
-            var exp = new Exception(msg);
-
-            return exp;
-        }
 
         private bool _disposed;
         protected void CheckDisposed()
@@ -375,13 +358,6 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        public class DummyToken : IDisposable
-        {
-            public void Dispose()
-            {
-            }
-        }
-
         public static IDisposable Read(this ReaderWriterLockSlim obj)
         {
             //if (BaseSqliteRepository.ThreadSafeMode > 0)
@@ -390,6 +366,7 @@ namespace Emby.Server.Implementations.Data
             //}
             return new WriteLockToken(obj);
         }
+
         public static IDisposable Write(this ReaderWriterLockSlim obj)
         {
             //if (BaseSqliteRepository.ThreadSafeMode > 0)

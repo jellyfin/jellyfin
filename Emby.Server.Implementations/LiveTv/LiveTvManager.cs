@@ -184,7 +184,7 @@ namespace Emby.Server.Implementations.LiveTv
 
         public QueryResult<BaseItem> GetInternalChannels(LiveTvChannelQuery query, DtoOptions dtoOptions, CancellationToken cancellationToken)
         {
-            var user = query.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(query.UserId);
+            var user = query.UserId == Guid.Empty ? null : _userManager.GetUserById(query.UserId);
 
             var topFolder = GetInternalLiveTvFolder(cancellationToken);
 

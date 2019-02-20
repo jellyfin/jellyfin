@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// <summary>
     /// Class ChapterImagesTask
     /// </summary>
-    class ChapterImagesTask : IScheduledTask
+    public class ChapterImagesTask : IScheduledTask
     {
         /// <summary>
         /// The _logger

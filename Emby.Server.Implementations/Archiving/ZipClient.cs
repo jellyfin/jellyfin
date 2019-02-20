@@ -14,11 +14,9 @@ namespace Emby.Server.Implementations.Archiving
     /// </summary>
     public class ZipClient : IZipClient
     {
-        private readonly IFileSystem _fileSystem;
-
-        public ZipClient(IFileSystem fileSystem)
+        public ZipClient()
         {
-            _fileSystem = fileSystem;
+
         }
 
         /// <summary>

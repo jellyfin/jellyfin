@@ -209,9 +209,9 @@ namespace MediaBrowser.Api.UserLibrary
             };
         }
 
-        protected virtual QueryResult<Tuple<BaseItem, ItemCounts>> GetItems(GetItemsByName request, InternalItemsQuery query)
+        protected virtual QueryResult<(BaseItem, ItemCounts)> GetItems(GetItemsByName request, InternalItemsQuery query)
         {
-            return new QueryResult<Tuple<BaseItem, ItemCounts>>();
+            return new QueryResult<(BaseItem, ItemCounts)>();
         }
 
         private void SetItemCounts(BaseItemDto dto, ItemCounts counts)

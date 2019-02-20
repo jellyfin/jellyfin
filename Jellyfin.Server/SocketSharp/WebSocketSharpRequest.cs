@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Emby.Server.Implementations.HttpServer;
@@ -24,31 +25,7 @@ namespace Jellyfin.Server.SocketSharp
             this.request = httpContext.Request;
             this.response = new WebSocketSharpResponse(logger, httpContext.Response, this);
 
-            //HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
-        }
-
-        private static string GetHandlerPathIfAny(string listenerUrl)
-        {
-            if (listenerUrl == null)
-            {
-                return null;
-            }
-
-            var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
-            if (pos == -1)
-            {
-                return null;
-            }
-
-            var startHostUrl = listenerUrl.Substring(pos + "://".Length);
-            var endPos = startHostUrl.IndexOf('/');
-            if (endPos == -1)
-            {
-                return null;
-            }
-
-            var endHostUrl = startHostUrl.Substring(endPos + 1);
-            return string.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
+            // HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
         }
 
         public HttpListenerRequest HttpRequest => request;
@@ -69,9 +46,11 @@ namespace Jellyfin.Server.SocketSharp
 
         public string UserHostAddress => request.UserHostAddress;
 
-        public string XForwardedFor => string.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"];
+        public string XForwardedFor
+            => string.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"];
 
-        public int? XForwardedPort => string.IsNullOrEmpty(request.Headers["X-Forwarded-Port"]) ? (int?)null : int.Parse(request.Headers["X-Forwarded-Port"]);
+        public int? XForwardedPort
+            => string.IsNullOrEmpty(request.Headers["X-Forwarded-Port"]) ? (int?)null : int.Parse(request.Headers["X-Forwarded-Port"], CultureInfo.InvariantCulture);
 
         public string XForwardedProtocol => string.IsNullOrEmpty(request.Headers["X-Forwarded-Proto"]) ? null : request.Headers["X-Forwarded-Proto"];
 
@@ -99,7 +78,7 @@ namespace Jellyfin.Server.SocketSharp
             name = name.Trim(HttpTrimCharacters);
 
             // First, check for correctly formed multi-line value
-            // Second, check for absenece of CTL characters
+            // Second, check for absence of CTL characters
             int crlf = 0;
             for (int i = 0; i < name.Length; ++i)
             {
@@ -107,6 +86,7 @@ namespace Jellyfin.Server.SocketSharp
                 switch (crlf)
                 {
                     case 0:
+                    {
                         if (c == '\r')
                         {
                             crlf = 1;
@@ -121,29 +101,39 @@ namespace Jellyfin.Server.SocketSharp
                         {
                             throw new ArgumentException("net_WebHeaderInvalidControlChars");
                         }
+
                         break;
+                    }
 
                     case 1:
+                    {
                         if (c == '\n')
                         {
                             crlf = 2;
                             break;
                         }
+
                         throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
+                    }
 
                     case 2:
+                    {
                         if (c == ' ' || c == '\t')
                         {
                             crlf = 0;
                             break;
                         }
+
                         throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
+                    }
                 }
             }
+
             if (crlf != 0)
             {
                 throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
             }
+
             return name;
         }
 
@@ -156,6 +146,7 @@ namespace Jellyfin.Server.SocketSharp
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -216,8 +207,15 @@ namespace Jellyfin.Server.SocketSharp
             {
                 foreach (var acceptsType in acceptContentTypes)
                 {
-                    var contentType = HttpResultFactory.GetRealContentType(acceptsType);
-                    acceptsAnything = acceptsAnything || contentType == "*/*";
+                    // TODO: @bond move to Span when Span.Split lands
+                    // https://github.com/dotnet/corefx/issues/26528
+                    var contentType = acceptsType?.Split(';')[0].Trim();
+                    acceptsAnything = contentType.Equals("*/*", StringComparison.OrdinalIgnoreCase);
+
+                    if (acceptsAnything)
+                    {
+                        break;
+                    }
                 }
 
                 if (acceptsAnything)
@@ -226,7 +224,7 @@ namespace Jellyfin.Server.SocketSharp
                     {
                         return defaultContentType;
                     }
-                    else if (serverDefaultContentType != null)
+                    else
                     {
                         return serverDefaultContentType;
                     }
@@ -269,11 +267,11 @@ namespace Jellyfin.Server.SocketSharp
 
         private static string GetQueryStringContentType(IRequest httpReq)
         {
-            var format = httpReq.QueryString["format"];
+            ReadOnlySpan<char> format = httpReq.QueryString["format"];
             if (format == null)
             {
                 const int formatMaxLength = 4;
-                var pi = httpReq.PathInfo;
+                ReadOnlySpan<char> pi = httpReq.PathInfo;
                 if (pi == null || pi.Length <= formatMaxLength)
                 {
                     return null;
@@ -281,7 +279,7 @@ namespace Jellyfin.Server.SocketSharp
 
                 if (pi[0] == '/')
                 {
-                    pi = pi.Substring(1);
+                    pi = pi.Slice(1);
                 }
 
                 format = LeftPart(pi, '/');
@@ -315,6 +313,17 @@ namespace Jellyfin.Server.SocketSharp
             return pos == -1 ? strVal : strVal.Substring(0, pos);
         }
 
+        public static ReadOnlySpan<char> LeftPart(ReadOnlySpan<char> strVal, char needle)
+        {
+            if (strVal == null)
+            {
+                return null;
+            }
+
+            var pos = strVal.IndexOf(needle);
+            return pos == -1 ? strVal : strVal.Slice(0, pos);
+        }
+
         public static string HandlerFactoryPath;
 
         private string pathInfo;
@@ -326,7 +335,7 @@ namespace Jellyfin.Server.SocketSharp
                 {
                     var mode = HandlerFactoryPath;
 
-                    var pos = request.RawUrl.IndexOf("?", StringComparison.Ordinal);
+                    var pos = request.RawUrl.IndexOf('?', StringComparison.Ordinal);
                     if (pos != -1)
                     {
                         var path = request.RawUrl.Substring(0, pos);
@@ -343,6 +352,7 @@ namespace Jellyfin.Server.SocketSharp
                     this.pathInfo = System.Net.WebUtility.UrlDecode(pathInfo);
                     this.pathInfo = NormalizePathInfo(pathInfo, mode);
                 }
+
                 return this.pathInfo;
             }
         }
@@ -444,7 +454,7 @@ namespace Jellyfin.Server.SocketSharp
 
         public string ContentType => request.ContentType;
 
-        public Encoding contentEncoding;
+        private Encoding contentEncoding;
         public Encoding ContentEncoding
         {
             get => contentEncoding ?? request.ContentEncoding;
@@ -502,16 +512,20 @@ namespace Jellyfin.Server.SocketSharp
                         i++;
                     }
                 }
+
                 return httpFiles;
             }
         }
 
         public static string NormalizePathInfo(string pathInfo, string handlerPath)
         {
-            var trimmed = pathInfo.TrimStart('/');
-            if (handlerPath != null && trimmed.StartsWith(handlerPath, StringComparison.OrdinalIgnoreCase))
+            if (handlerPath != null)
             {
-                return trimmed.Substring(handlerPath.Length);
+                var trimmed = pathInfo.TrimStart('/');
+                if (trimmed.StartsWith(handlerPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    return trimmed.Substring(handlerPath.Length);
+                }
             }
 
             return pathInfo;

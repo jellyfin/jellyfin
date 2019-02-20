@@ -7,20 +7,6 @@ namespace MediaBrowser.Model.Configuration
     /// </summary>
     public class BaseApplicationConfiguration
     {
-        // TODO: @bond Remove?
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable debug level logging].
-        /// </summary>
-        /// <value><c>true</c> if [enable debug level logging]; otherwise, <c>false</c>.</value>
-        public bool EnableDebugLevelLogging { get; set; }
-
-        /// <summary>
-        /// Enable automatically and silently updating of the application
-        /// </summary>
-        /// <value><c>true</c> if [enable auto update]; otherwise, <c>false</c>.</value>
-        public bool EnableAutoUpdate { get; set; }
-
-        // TODO: @bond Remove?
         /// <summary>
         /// The number of days we should retain log files
         /// </summary>
@@ -44,7 +30,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public BaseApplicationConfiguration()
         {
-            EnableAutoUpdate = true;
             LogFileRetentionDays = 3;
         }
     }
