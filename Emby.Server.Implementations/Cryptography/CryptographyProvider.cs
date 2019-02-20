@@ -74,7 +74,8 @@ namespace Emby.Server.Implementations.Cryptography
 
         private byte[] PBKDF2(string method, byte[] bytes, byte[] salt, int iterations)
         {
-            using (var r = new Rfc2898DeriveBytes(bytes, salt, iterations, new HashAlgorithmName(method)))
+            //downgrading for now as we need this library to be dotnetstandard compliant
+            using (var r = new Rfc2898DeriveBytes(bytes, salt, iterations))
             {
                 return r.GetBytes(32);
             }

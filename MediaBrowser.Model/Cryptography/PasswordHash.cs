@@ -10,26 +10,33 @@ namespace MediaBrowser.Model.Cryptography
         //https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
         //$<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
 
-        public string Id;
-        public Dictionary<string, string> Parameters = new Dictionary<string, string>();
-        public string Salt;
-        public byte[] SaltBytes;
-        public string Hash;
-        public byte[] HashBytes;
+        private string id;
+        private Dictionary<string, string> parameters = new Dictionary<string, string>();
+        private string salt;
+        private byte[] saltBytes;
+        private string hash;
+        private byte[] hashBytes;
+        public string Id { get => id; set => id = value; }
+        public Dictionary<string, string> Parameters { get => parameters; set => parameters = value; }
+        public string Salt { get => salt; set => salt = value; }
+        public byte[] SaltBytes { get => saltBytes; set => saltBytes = value; }
+        public string Hash { get => hash; set => hash = value; }
+        public byte[] HashBytes { get => hashBytes; set => hashBytes = value; }
+
         public PasswordHash(string storageString)
         {
             string[] splitted = storageString.Split('$');
-            Id = splitted[1];
+            id = splitted[1];
             if (splitted[2].Contains("="))
             {
                 foreach (string paramset in (splitted[2].Split(',')))
                 {
-                    if (!String.IsNullOrEmpty(paramset))
+                    if (!string.IsNullOrEmpty(paramset))
                     {
                         string[] fields = paramset.Split('=');
                         if (fields.Length == 2)
                         {
-                            Parameters.Add(fields[0], fields[1]);
+                            parameters.Add(fields[0], fields[1]);
                         }
                         else
                         {
@@ -39,32 +46,32 @@ namespace MediaBrowser.Model.Cryptography
                 }
                 if (splitted.Length == 5)
                 {
-                    Salt = splitted[3];
-                    SaltBytes = ConvertFromByteString(Salt);
-                    Hash = splitted[4];
-                    HashBytes = ConvertFromByteString(Hash);
+                    salt = splitted[3];
+                    saltBytes = ConvertFromByteString(salt);
+                    hash = splitted[4];
+                    hashBytes = ConvertFromByteString(hash);
                 }
                 else
                 {
-                    Salt = string.Empty;
-                    Hash = splitted[3];
-                    HashBytes = ConvertFromByteString(Hash);
+                    salt = string.Empty;
+                    hash = splitted[3];
+                    hashBytes = ConvertFromByteString(hash);
                 }
             }
             else
             {
                 if (splitted.Length == 4)
                 {
-                    Salt = splitted[2];
-                    SaltBytes = ConvertFromByteString(Salt);
-                    Hash = splitted[3];
-                    HashBytes = ConvertFromByteString(Hash);
+                    salt = splitted[2];
+                    saltBytes = ConvertFromByteString(salt);
+                    hash = splitted[3];
+                    hashBytes = ConvertFromByteString(hash);
                 }
                 else
                 {
-                    Salt = string.Empty;
-                    Hash = splitted[2];
-                    HashBytes = ConvertFromByteString(Hash);
+                    salt = string.Empty;
+                    hash = splitted[2];
+                    hashBytes = ConvertFromByteString(hash);
                 }
 
             }
@@ -73,9 +80,9 @@ namespace MediaBrowser.Model.Cryptography
 
         public PasswordHash(ICryptoProvider cryptoProvider)
         {
-            Id = cryptoProvider.DefaultHashMethod;
-            SaltBytes = cryptoProvider.GenerateSalt();
-            Salt = ConvertToByteString(SaltBytes);
+            id = cryptoProvider.DefaultHashMethod;
+            saltBytes = cryptoProvider.GenerateSalt();
+            salt = ConvertToByteString(SaltBytes);
         }
 
         public static byte[] ConvertFromByteString(string byteString)
@@ -95,31 +102,35 @@ namespace MediaBrowser.Model.Cryptography
 
         private string SerializeParameters()
         {
-            string ReturnString = String.Empty;
-            foreach (var KVP in Parameters)
+            string ReturnString = string.Empty;
+            foreach (var KVP in parameters)
             {
-                ReturnString += String.Format(",{0}={1}", KVP.Key, KVP.Value);
+                ReturnString += $",{KVP.Key}={KVP.Value}";
             }
+
             if ((!string.IsNullOrEmpty(ReturnString)) && ReturnString[0] == ',')
             {
                 ReturnString = ReturnString.Remove(0, 1);
             }
+
             return ReturnString;
         }
 
         public override string ToString()
         {
-            string outString = "$" +Id;
+            string outString = "$" +id;
             string paramstring = SerializeParameters();
             if (!string.IsNullOrEmpty(paramstring))
             {
                 outString += $"${paramstring}";
             }
-            if (!string.IsNullOrEmpty(Salt))
+
+            if (!string.IsNullOrEmpty(salt))
             {
-                outString += $"${Salt}";
+                outString += $"${salt}";
             }
-            outString += $"${Hash}";
+
+            outString += $"${hash}";
             return outString;
         }
     }

@@ -55,6 +55,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     TryMigrateToLocalUsersTable(connection);
                 }
+
                 RemoveEmptyPasswordHashes();
             }
         }

@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.Library
             string CalculatedHashString;
             if (_cryptographyProvider.GetSupportedHashMethods().Contains(readyHash.Id))
             {
-                if (String.IsNullOrEmpty(readyHash.Salt))
+                if (string.IsNullOrEmpty(readyHash.Salt))
                 {
                     CalculatedHash = _cryptographyProvider.ComputeHash(readyHash.Id, passwordbytes);
                     CalculatedHashString = BitConverter.ToString(CalculatedHash).Replace("-", string.Empty);
@@ -66,6 +66,7 @@ namespace Emby.Server.Implementations.Library
                     CalculatedHash = _cryptographyProvider.ComputeHash(readyHash.Id, passwordbytes, readyHash.SaltBytes);
                     CalculatedHashString = BitConverter.ToString(CalculatedHash).Replace("-", string.Empty);
                 }
+
                 if (CalculatedHashString == readyHash.Hash)
                 {
                     success = true;
@@ -96,17 +97,19 @@ namespace Emby.Server.Implementations.Library
         {
             if (!string.IsNullOrEmpty(user.Password))
             {
-                if (!user.Password.Contains("$"))
-                {
-                    string hash = user.Password;
-                    user.Password = String.Format("$SHA1${0}", hash);
-                }
-                
-                if (user.EasyPassword != null && !user.EasyPassword.Contains("$"))
-                {
-                    string hash = user.EasyPassword;
-                    user.EasyPassword = string.Format("$SHA1${0}", hash);
-                }
+                return;
+            }
+
+            if (!user.Password.Contains("$"))
+            {
+                string hash = user.Password;
+                user.Password = String.Format("$SHA1${0}", hash);
+            }
+            
+            if (user.EasyPassword != null && !user.EasyPassword.Contains("$"))
+            {
+                string hash = user.EasyPassword;
+                user.EasyPassword = string.Format("$SHA1${0}", hash);
             }
         }
 
@@ -122,6 +125,7 @@ namespace Emby.Server.Implementations.Library
             {
                 return string.IsNullOrEmpty(password);
             }
+
             return false;
         }
 
@@ -189,6 +193,7 @@ namespace Emby.Server.Implementations.Library
                 ConvertPasswordFormat(user);
                 passwordHash = new PasswordHash(user.Password);
             }
+
             if (passwordHash.SaltBytes != null)
             {
                 //the password is modern format with PBKDF and we should take advantage of that
