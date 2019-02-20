@@ -1476,16 +1476,19 @@ namespace MediaBrowser.Controller.Entities
 
             var extrasChanged = !item.ExtraIds.SequenceEqual(newExtraIds);
 
-            var ownerId = item.Id;
-
-            var tasks = newExtras.Select(i =>
+            if (extrasChanged)
             {
-                return RefreshMetadataForOwnedItem(i, true, new MetadataRefreshOptions(options), cancellationToken);
-            });
+                var ownerId = item.Id;
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+                var tasks = newExtras.Select(i =>
+                {
+                    return RefreshMetadataForOwnedItem(i, true, new MetadataRefreshOptions(options), cancellationToken);
+                });
 
-            item.ExtraIds = newExtraIds;
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+
+                item.ExtraIds = newExtraIds;
+            }
 
             return extrasChanged;
         }
