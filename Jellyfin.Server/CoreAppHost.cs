@@ -47,15 +47,6 @@ namespace Jellyfin.Server
         protected override void ShutdownInternal() => Program.Shutdown();
 
         protected override IHttpListener CreateHttpListener()
-            => new WebSocketSharpListener(
-                Logger,
-                Certificate,
-                StreamHelper,
-                NetworkManager,
-                SocketFactory,
-                CryptographyProvider,
-                SupportsDualModeSockets,
-                FileSystemManager,
-                EnvironmentInfo);
+            => new WebSocketSharpListener(Logger);
     }
 }
