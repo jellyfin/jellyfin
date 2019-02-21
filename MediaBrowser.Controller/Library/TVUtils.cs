@@ -8,16 +8,6 @@ namespace MediaBrowser.Controller.Library
     public static class TVUtils
     {
         /// <summary>
-        /// The TVDB API key
-        /// </summary>
-        public static readonly string TvdbApiKey = "72930AE1CB7E2DB3";
-        public static readonly string TvdbBaseUrl = "https://www.thetvdb.com/";
-        /// <summary>
-        /// The banner URL
-        /// </summary>
-        public static readonly string BannerUrl = TvdbBaseUrl + "banners/";
-
-        /// <summary>
         /// Gets the air days.
         /// </summary>
         /// <param name="day">The day.</param>
@@ -28,24 +18,24 @@ namespace MediaBrowser.Controller.Library
             {
                 if (string.Equals(day, "Daily", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new DayOfWeek[]
-                               {
-                                   DayOfWeek.Sunday,
-                                   DayOfWeek.Monday,
-                                   DayOfWeek.Tuesday,
-                                   DayOfWeek.Wednesday,
-                                   DayOfWeek.Thursday,
-                                   DayOfWeek.Friday,
-                                   DayOfWeek.Saturday
-                               };
+                    return new[]
+                    {
+                        DayOfWeek.Sunday,
+                        DayOfWeek.Monday,
+                        DayOfWeek.Tuesday,
+                        DayOfWeek.Wednesday,
+                        DayOfWeek.Thursday,
+                        DayOfWeek.Friday,
+                        DayOfWeek.Saturday
+                    };
                 }
 
                 if (Enum.TryParse(day, true, out DayOfWeek value))
                 {
-                    return new DayOfWeek[]
-                               {
-                                   value
-                               };
+                    return new[]
+                    {
+                        value
+                    };
                 }
 
                 return new DayOfWeek[] { };

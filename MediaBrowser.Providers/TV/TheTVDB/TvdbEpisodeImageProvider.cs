@@ -1,33 +1,30 @@
+using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
+using Microsoft.Extensions.Logging;
+using TvDbSharper;
+using TvDbSharper.Dto;
 
 namespace MediaBrowser.Providers.TV.TheTVDB
 {
     public class TvdbEpisodeImageProvider : IRemoteImageProvider
     {
-        private readonly IServerConfigurationManager _config;
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IHttpClient _httpClient;
-        private readonly IFileSystem _fileSystem;
+        private readonly ILogger _logger;
+        private readonly TvDbClientManager _tvDbClientManager;
 
-        public TvdbEpisodeImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
+        public TvdbEpisodeImageProvider(IHttpClient httpClient, ILogger<TvdbEpisodeImageProvider> logger, TvDbClientManager tvDbClientManager)
         {
-            _config = config;
             _httpClient = httpClient;
-            _fileSystem = fileSystem;
+            _logger = logger;
+            _tvDbClientManager = tvDbClientManager;
         }
 
         public string Name => "TheTVDB";
@@ -45,113 +42,70 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             };
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var episode = (Episode)item;
             var series = episode.Series;
-
+            var imageResult = new List<RemoteImageInfo>();
+            var language = item.GetPreferredMetadataLanguage();
             if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
             {
+                var episodeTvdbId = episode.GetProviderId(MetadataProviders.Tvdb);
+
                 // Process images
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, series.ProviderIds);
-
-                var nodes = TvdbEpisodeProvider.Current.GetEpisodeXmlNodes(seriesDataPath, episode.GetLookupInfo());
-
-                var result = nodes.Select(i => GetImageInfo(i, cancellationToken))
-                    .Where(i => i != null)
-                    .ToList();
-
-                return Task.FromResult<IEnumerable<RemoteImageInfo>>(result);
-            }
-
-            return Task.FromResult<IEnumerable<RemoteImageInfo>>(new RemoteImageInfo[] { });
-        }
-
-        private RemoteImageInfo GetImageInfo(XmlReader reader, CancellationToken cancellationToken)
-        {
-            var height = 225;
-            var width = 400;
-            var url = string.Empty;
-
-            // Use XmlReader for best performance
-            using (reader)
-            {
-                reader.MoveToContent();
-                reader.Read();
-
-                // Loop through each element
-                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                try
                 {
-                    if (reader.NodeType == XmlNodeType.Element)
+                    if (string.IsNullOrEmpty(episodeTvdbId))
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        switch (reader.Name)
+                        var episodeInfo = new EpisodeInfo
                         {
-                            case "thumb_width":
-                                {
-                                    var val = reader.ReadElementContentAsString();
-
-                                    if (!string.IsNullOrWhiteSpace(val))
-                                    {
-                                        // int.TryParse is local aware, so it can be probamatic, force us culture
-                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var rval))
-                                        {
-                                            width = rval;
-                                        }
-                                    }
-                                    break;
-                                }
-
-                            case "thumb_height":
-                                {
-                                    var val = reader.ReadElementContentAsString();
-
-                                    if (!string.IsNullOrWhiteSpace(val))
-                                    {
-                                        // int.TryParse is local aware, so it can be probamatic, force us culture
-                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var rval))
-                                        {
-                                            height = rval;
-                                        }
-                                    }
-                                    break;
-                                }
-
-                            case "filename":
-                                {
-                                    var val = reader.ReadElementContentAsString();
-                                    if (!string.IsNullOrWhiteSpace(val))
-                                    {
-                                        url = TVUtils.BannerUrl + val;
-                                    }
-                                    break;
-                                }
-                            default:
-                                {
-                                    reader.Skip();
-                                    break;
-                                }
+                            IndexNumber = episode.IndexNumber.Value,
+                            ParentIndexNumber = episode.ParentIndexNumber.Value,
+                            SeriesProviderIds = series.ProviderIds
+                        };
+                        episodeTvdbId = await _tvDbClientManager
+                            .GetEpisodeTvdbId(episodeInfo, language, cancellationToken).ConfigureAwait(false);
+                        if (string.IsNullOrEmpty(episodeTvdbId))
+                        {
+                            _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
+                                episodeInfo.ParentIndexNumber, episodeInfo.IndexNumber, series.GetProviderId(MetadataProviders.Tvdb));
+                            return imageResult;
                         }
                     }
-                    else
+
+                    var episodeResult =
+                        await _tvDbClientManager
+                            .GetEpisodesAsync(Convert.ToInt32(episodeTvdbId), language, cancellationToken)
+                            .ConfigureAwait(false);
+
+                    var image = GetImageInfo(episodeResult.Data);
+                    if (image != null)
                     {
-                        reader.Read();
+                        imageResult.Add(image);
                     }
+                }
+                catch (TvDbServerException e)
+                {
+                    _logger.LogError(e, "Failed to retrieve episode images for {TvDbId}", episodeTvdbId);
                 }
             }
 
-            if (string.IsNullOrEmpty(url))
+            return imageResult;
+        }
+
+        private RemoteImageInfo GetImageInfo(EpisodeRecord episode)
+        {
+            if (string.IsNullOrEmpty(episode.Filename))
             {
                 return null;
             }
 
             return new RemoteImageInfo
             {
-                Width = width,
-                Height = height,
+                Width = Convert.ToInt32(episode.ThumbWidth),
+                Height = Convert.ToInt32(episode.ThumbHeight),
                 ProviderName = Name,
-                Url = url,
+                Url = TvdbUtils.BannerUrl + episode.Filename,
                 Type = ImageType.Primary
             };
         }

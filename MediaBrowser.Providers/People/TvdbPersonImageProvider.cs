@@ -1,42 +1,35 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Xml;
-using MediaBrowser.Providers.TV;
 using MediaBrowser.Providers.TV.TheTVDB;
+using Microsoft.Extensions.Logging;
+using TvDbSharper;
 
 namespace MediaBrowser.Providers.People
 {
     public class TvdbPersonImageProvider : IRemoteImageProvider, IHasOrder
     {
-        private readonly IServerConfigurationManager _config;
-        private readonly ILibraryManager _libraryManager;
         private readonly IHttpClient _httpClient;
-        private readonly IFileSystem _fileSystem;
-        private readonly IXmlReaderSettingsFactory _xmlSettings;
+        private readonly ILogger _logger;
+        private readonly ILibraryManager _libraryManager;
+        private readonly TvDbClientManager _tvDbClientManager;
 
-        public TvdbPersonImageProvider(IServerConfigurationManager config, ILibraryManager libraryManager, IHttpClient httpClient, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlSettings)
+        public TvdbPersonImageProvider(ILibraryManager libraryManager, IHttpClient httpClient, ILogger<TvdbPersonImageProvider> logger, TvDbClientManager tvDbClientManager)
         {
-            _config = config;
             _libraryManager = libraryManager;
             _httpClient = httpClient;
-            _fileSystem = fileSystem;
-            _xmlSettings = xmlSettings;
+            _logger = logger;
+            _tvDbClientManager = tvDbClientManager;
         }
 
         public string Name => ProviderName;
@@ -56,7 +49,7 @@ namespace MediaBrowser.Providers.People
             };
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var seriesWithPerson = _libraryManager.GetItemList(new InternalItemsQuery
             {
@@ -71,152 +64,44 @@ namespace MediaBrowser.Providers.People
                 .Where(i => TvdbSeriesProvider.IsValidSeries(i.ProviderIds))
                 .ToList();
 
-            var infos = seriesWithPerson.Select(i => GetImageFromSeriesData(i, item.Name, cancellationToken))
+            var infos = (await Task.WhenAll(seriesWithPerson.Select(async i =>
+                        await GetImageFromSeriesData(i, item.Name, cancellationToken).ConfigureAwait(false)))
+                    .ConfigureAwait(false))
                 .Where(i => i != null)
                 .Take(1);
 
-            return Task.FromResult(infos);
+            return infos;
         }
 
-        private RemoteImageInfo GetImageFromSeriesData(Series series, string personName, CancellationToken cancellationToken)
+        private async Task<RemoteImageInfo> GetImageFromSeriesData(Series series, string personName, CancellationToken cancellationToken)
         {
-            var tvdbPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, series.ProviderIds);
-
-            var actorXmlPath = Path.Combine(tvdbPath, "actors.xml");
+            var tvdbId = Convert.ToInt32(series.GetProviderId(MetadataProviders.Tvdb));
 
             try
             {
-                return GetImageInfo(actorXmlPath, personName, cancellationToken);
-            }
-            catch (FileNotFoundException)
-            {
-                return null;
-            }
-            catch (IOException)
-            {
-                return null;
-            }
-        }
-
-        private RemoteImageInfo GetImageInfo(string xmlFile, string personName, CancellationToken cancellationToken)
-        {
-            var settings = _xmlSettings.Create(false);
-
-            settings.CheckCharacters = false;
-            settings.IgnoreProcessingInstructions = true;
-            settings.IgnoreComments = true;
-
-            using (var fileStream = _fileSystem.GetFileStream(xmlFile, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
-            {
-                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
+                var actorsResult = await _tvDbClientManager
+                    .GetActorsAsync(tvdbId, series.GetPreferredMetadataLanguage(), cancellationToken)
+                    .ConfigureAwait(false);
+                var actor = actorsResult.Data.FirstOrDefault(a =>
+                    string.Equals(a.Name, personName, StringComparison.OrdinalIgnoreCase) &&
+                    !string.IsNullOrEmpty(a.Image));
+                if (actor == null)
                 {
-                    // Use XmlReader for best performance
-                    using (var reader = XmlReader.Create(streamReader, settings))
-                    {
-                        reader.MoveToContent();
-                        reader.Read();
-
-                        // Loop through each element
-                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            if (reader.NodeType == XmlNodeType.Element)
-                            {
-                                switch (reader.Name)
-                                {
-                                    case "Actor":
-                                        {
-                                            if (reader.IsEmptyElement)
-                                            {
-                                                reader.Read();
-                                                continue;
-                                            }
-                                            using (var subtree = reader.ReadSubtree())
-                                            {
-                                                var info = FetchImageInfoFromActorNode(personName, subtree);
-
-                                                if (info != null)
-                                                {
-                                                    return info;
-                                                }
-                                            }
-                                            break;
-                                        }
-                                    default:
-                                        reader.Skip();
-                                        break;
-                                }
-                            }
-                            else
-                            {
-                                reader.Read();
-                            }
-                        }
-                    }
+                    return null;
                 }
-            }
 
-            return null;
-        }
-
-        /// <summary>
-        /// Fetches the data from actor node.
-        /// </summary>
-        /// <param name="personName">Name of the person.</param>
-        /// <param name="reader">The reader.</param>
-        /// <returns>System.String.</returns>
-        private RemoteImageInfo FetchImageInfoFromActorNode(string personName, XmlReader reader)
-        {
-            string name = null;
-            string image = null;
-
-            reader.MoveToContent();
-            reader.Read();
-
-            // Loop through each element
-            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "Name":
-                            {
-                                name = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
-                                break;
-                            }
-
-                        case "Image":
-                            {
-                                image = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
-                {
-                    reader.Read();
-                }
-            }
-
-            if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(image) &&
-                string.Equals(name, personName, StringComparison.OrdinalIgnoreCase))
-            {
                 return new RemoteImageInfo
                 {
-                    Url = TVUtils.BannerUrl + image,
+                    Url = TvdbUtils.BannerUrl + actor.Image,
                     Type = ImageType.Primary,
                     ProviderName = Name
-
                 };
             }
-
-            return null;
+            catch (TvDbServerException e)
+            {
+                _logger.LogError(e, "Failed to retrieve actor {ActorName} from series {SeriesTvdbId}", personName, tvdbId);
+                return null;
+            }
         }
 
         public int Order => 1;
