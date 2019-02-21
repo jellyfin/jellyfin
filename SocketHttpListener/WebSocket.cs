@@ -4,11 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using SocketHttpListener.Net.WebSockets;
-using HttpStatusCode = SocketHttpListener.Net.HttpStatusCode;
 using WebSocketState = System.Net.WebSockets.WebSocketState;
 
 namespace SocketHttpListener

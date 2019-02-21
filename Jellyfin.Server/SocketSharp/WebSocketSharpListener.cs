@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
+ using System.Net;
+ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
@@ -13,9 +14,8 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
-using SocketHttpListener.Net;
 
-namespace Jellyfin.Server.SocketSharp
+ namespace Jellyfin.Server.SocketSharp
 {
     public class WebSocketSharpListener : IHttpListener
     {
@@ -67,24 +67,44 @@ namespace Jellyfin.Server.SocketSharp
 
         public void Start(IEnumerable<string> urlPrefixes)
         {
+            // TODO
+            //if (_listener == null)
+            //{
+            //    _listener = new HttpListener(_logger, _cryptoProvider, _socketFactory, _streamHelper, _fileSystem, _environment);
+            //}
+
+            //_listener.EnableDualMode = _enableDualMode;
+
+            //if (_certificate != null)
+            //{
+            //    _listener.LoadCert(_certificate);
+            //}
+
+            //_logger.LogInformation("Adding HttpListener prefixes {Prefixes}", urlPrefixes);
+            //_listener.Prefixes.AddRange(urlPrefixes);
+
+            //_listener.OnContext = async c => await InitTask(c, _disposeCancellationToken).ConfigureAwait(false);
+
+            //_listener.Start();
+
             if (_listener == null)
             {
-                _listener = new HttpListener(_logger, _cryptoProvider, _socketFactory, _streamHelper, _fileSystem, _environment);
+                _listener = new HttpListener();
             }
-
-            _listener.EnableDualMode = _enableDualMode;
-
-            if (_certificate != null)
-            {
-                _listener.LoadCert(_certificate);
-            }
-
+            
             _logger.LogInformation("Adding HttpListener prefixes {Prefixes}", urlPrefixes);
-            _listener.Prefixes.AddRange(urlPrefixes);
 
-            _listener.OnContext = async c => await InitTask(c, _disposeCancellationToken).ConfigureAwait(false);
+            //foreach (var urlPrefix in urlPrefixes)
+            //{
+            //    _listener.Prefixes.Add(urlPrefix);
+            //}
+            _listener.Prefixes.Add("http://localhost:8096/");
 
             _listener.Start();
+
+            // TODO how to do this in netcore?
+            _listener.BeginGetContext(async c => await InitTask(c, _disposeCancellationToken).ConfigureAwait(false),
+                null);
         }
 
         private static void LogRequest(ILogger logger, HttpListenerRequest request)
@@ -98,8 +118,10 @@ namespace Jellyfin.Server.SocketSharp
                 request.UserAgent ?? string.Empty);
         }
 
-        private Task InitTask(HttpListenerContext context, CancellationToken cancellationToken)
+        private Task InitTask(IAsyncResult asyncResult, CancellationToken cancellationToken)
         {
+            var context = _listener.EndGetContext(asyncResult);
+            _listener.BeginGetContext(async c => await InitTask(c, _disposeCancellationToken).ConfigureAwait(false), null);
             IHttpRequest httpReq = null;
             var request = context.Request;
 
@@ -134,7 +156,7 @@ namespace Jellyfin.Server.SocketSharp
                 var endpoint = ctx.Request.RemoteEndPoint.ToString();
                 var url = ctx.Request.RawUrl;
 
-                var queryString = ctx.Request.QueryString;
+                var queryString = new QueryParamCollection(ctx.Request.QueryString);
 
                 var connectingArgs = new WebSocketConnectingEventArgs
                 {
@@ -153,7 +175,7 @@ namespace Jellyfin.Server.SocketSharp
 
                     if (WebSocketConnected != null)
                     {
-                        var socket = new SharpWebSocket(webSocketContext.WebSocket, _logger);
+                        SharpWebSocket socket = null; //new SharpWebSocket(webSocketContext.WebSocket, _logger);
                         await socket.ConnectAsServerAsync().ConfigureAwait(false);
 
                         WebSocketConnected(new WebSocketConnectEventArgs

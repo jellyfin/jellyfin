@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Text;
 using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.Services;
@@ -438,7 +439,7 @@ namespace Jellyfin.Server.SocketSharp
 
         public string UserAgent => request.UserAgent;
 
-        public QueryParamCollection Headers => request.Headers;
+        public QueryParamCollection Headers => new QueryParamCollection(request.Headers);
 
         private QueryParamCollection queryString;
         public QueryParamCollection QueryString => queryString ?? (queryString = MyHttpUtility.ParseQueryString(request.Url.Query));

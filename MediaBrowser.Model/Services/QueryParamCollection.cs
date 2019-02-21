@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
+using System.Net;
 using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Services
 {
+    // Remove this garbage class, it's just a bastard copy of NameValueCollection
     public class QueryParamCollection : List<NameValuePair>
     {
         public QueryParamCollection()
@@ -17,6 +20,30 @@ namespace MediaBrowser.Model.Services
             foreach (var pair in headers)
             {
                 Add(pair.Key, pair.Value);
+            }
+        }
+
+        // TODO remove this shit
+        public QueryParamCollection(WebHeaderCollection webHeaderCollection)
+        {
+            foreach (var key in webHeaderCollection.AllKeys)
+            {
+                foreach (var value in webHeaderCollection.GetValues(key) ?? Array.Empty<string>())
+                {
+                    Add(key, value);
+                }
+            }
+        }
+
+        // TODO remove this shit
+        public QueryParamCollection(NameValueCollection nameValueCollection)
+        {
+            foreach (var key in nameValueCollection.AllKeys)
+            {
+                foreach (var value in nameValueCollection.GetValues(key) ?? Array.Empty<string>())
+                {
+                    Add(key, value);
+                }
             }
         }
 
@@ -50,6 +77,10 @@ namespace MediaBrowser.Model.Services
         /// </summary>
         public virtual void Add(string key, string value)
         {
+            if (string.Equals(key, "content-length", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
             Add(new NameValuePair(key, value));
         }
 

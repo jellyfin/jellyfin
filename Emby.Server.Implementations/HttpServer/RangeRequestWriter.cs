@@ -96,7 +96,7 @@ namespace Emby.Server.Implementations.HttpServer
             RangeLength = 1 + RangeEnd - RangeStart;
 
             // Content-Length is the length of what we're serving, not the original content
-            Headers["Content-Length"] = RangeLength.ToString(UsCulture);
+            // TODO Headers["Content-Length"] = RangeLength.ToString(UsCulture);
             Headers["Content-Range"] = string.Format("bytes {0}-{1}/{2}", RangeStart, RangeEnd, TotalContentLength);
 
             if (RangeStart > 0 && SourceStream.CanSeek)

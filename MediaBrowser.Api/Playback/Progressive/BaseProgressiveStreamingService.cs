@@ -324,7 +324,8 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Seeing cases of -1 here
             if (response.ContentLength.HasValue && response.ContentLength.Value >= 0)
             {
-                responseHeaders["Content-Length"] = response.ContentLength.Value.ToString(UsCulture);
+                // TODO
+                //responseHeaders["Content-Length"] = response.ContentLength.Value.ToString(UsCulture);
             }
 
             if (isHeadRequest)
@@ -382,17 +383,18 @@ namespace MediaBrowser.Api.Playback.Progressive
                 var hasHeaders = streamResult as IHasHeaders;
                 if (hasHeaders != null)
                 {
-                    if (contentLength.HasValue)
-                    {
-                        hasHeaders.Headers["Content-Length"] = contentLength.Value.ToString(CultureInfo.InvariantCulture);
-                    }
-                    else
-                    {
+                    // TODO
+                    //if (contentLength.HasValue)
+                    //{
+                    //    hasHeaders.Headers["Content-Length"] = contentLength.Value.ToString(CultureInfo.InvariantCulture);
+                    //}
+                    //else
+                    //{
                         if (hasHeaders.Headers.ContainsKey("Content-Length"))
                         {
                             hasHeaders.Headers.Remove("Content-Length");
                         }
-                    }
+                    //}
                 }
 
                 return streamResult;
