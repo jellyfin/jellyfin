@@ -12,7 +12,8 @@ pushd ${SOURCE_DIR}
 sed -i '/dotnet-sdk-2.2,/d' debian/control
 
 # Build DEB
-dpkg-buildpackage -us -uc
+export CONFIG_SITE=/etc/dpkg-cross/cross-config.${ARCH}
+dpkg-buildpackage -us -uc -aarmhf
 
 # Move the artifacts out
 mkdir -p ${ARTIFACT_DIR}/deb

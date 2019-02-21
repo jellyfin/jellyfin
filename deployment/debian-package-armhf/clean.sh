@@ -9,7 +9,7 @@ WORKDIR="$( pwd )"
 package_temporary_dir="${WORKDIR}/pkg-dist-tmp"
 output_dir="${WORKDIR}/pkg-dist"
 current_user="$( whoami )"
-image_name="jellyfin-debian-build"
+image_name="jellyfin-debian_armhf-build"
 
 rm -rf "${package_temporary_dir}" &>/dev/null \
   || sudo rm -rf "${package_temporary_dir}" &>/dev/null
