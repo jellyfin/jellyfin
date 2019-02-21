@@ -1577,7 +1577,7 @@ namespace Emby.Server.Implementations
 
             if (addresses.Count == 0)
             {
-                addresses.AddRange(NetworkManager.GetLocalIpAddresses());
+                addresses.AddRange(NetworkManager.GetLocalIpAddresses(ServerConfigurationManager.Configuration.IgnoreVirtualInterfaces));
             }
 
             var resultList = new List<IpAddressInfo>();

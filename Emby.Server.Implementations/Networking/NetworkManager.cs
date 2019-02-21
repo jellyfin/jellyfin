@@ -79,13 +79,13 @@ namespace Emby.Server.Implementations.Networking
         private IpAddressInfo[] _localIpAddresses;
         private readonly object _localIpAddressSyncLock = new object();
 
-        public IpAddressInfo[] GetLocalIpAddresses()
+        public IpAddressInfo[] GetLocalIpAddresses(bool ignoreVirtualInterface = true)
         {
             lock (_localIpAddressSyncLock)
             {
                 if (_localIpAddresses == null)
                 {
-                    var addresses = GetLocalIpAddressesInternal().Result.Select(ToIpAddressInfo).ToArray();
+                    var addresses = GetLocalIpAddressesInternal(ignoreVirtualInterface).Result.Select(ToIpAddressInfo).ToArray();
 
                     _localIpAddresses = addresses;
 
@@ -95,9 +95,9 @@ namespace Emby.Server.Implementations.Networking
             }
         }
 
-        private async Task<List<IPAddress>> GetLocalIpAddressesInternal()
+        private async Task<List<IPAddress>> GetLocalIpAddressesInternal(bool ignoreVirtualInterface)
         {
-            var list = GetIPsDefault()
+            var list = GetIPsDefault(ignoreVirtualInterface)
                 .ToList();
 
             if (list.Count == 0)
@@ -383,7 +383,7 @@ namespace Emby.Server.Implementations.Networking
             return Dns.GetHostAddressesAsync(hostName);
         }
 
-        private List<IPAddress> GetIPsDefault()
+        private List<IPAddress> GetIPsDefault(bool ignoreVirtualInterface)
         {
             NetworkInterface[] interfaces;
 
@@ -414,7 +414,7 @@ namespace Emby.Server.Implementations.Networking
                     // Try to exclude virtual adapters
                     // http://stackoverflow.com/questions/8089685/c-sharp-finding-my-machines-local-ip-address-and-not-the-vms
                     var addr = ipProperties.GatewayAddresses.FirstOrDefault();
-                    if (addr == null || string.Equals(addr.Address.ToString(), "0.0.0.0", StringComparison.OrdinalIgnoreCase))
+                    if (addr == null || (ignoreVirtualInterface && string.Equals(addr.Address.ToString(), "0.0.0.0", StringComparison.OrdinalIgnoreCase)))
                     {
                         return new List<IPAddress>();
                     }

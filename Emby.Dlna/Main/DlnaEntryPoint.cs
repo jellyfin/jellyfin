@@ -171,7 +171,7 @@ namespace Emby.Dlna.Main
                 {
                     var enableMultiSocketBinding = _environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows;
 
-                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger, enableMultiSocketBinding)
+                    _communicationsServer = new SsdpCommunicationsServer(_config, _socketFactory, _networkManager, _logger, enableMultiSocketBinding)
                     {
                         IsShared = true
                     };

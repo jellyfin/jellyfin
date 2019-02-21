@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Controller.Configuration;
 
 namespace Rssdp.Infrastructure
 {
@@ -45,6 +46,7 @@ namespace Rssdp.Infrastructure
         private readonly ILogger _logger;
         private ISocketFactory _SocketFactory;
         private readonly INetworkManager _networkManager;
+        private readonly IServerConfigurationManager _config;
 
         private int _LocalPort;
         private int _MulticastTtl;
@@ -74,9 +76,11 @@ namespace Rssdp.Infrastructure
         /// Minimum constructor.
         /// </summary>
         /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
-        public SsdpCommunicationsServer(ISocketFactory socketFactory, INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
+        public SsdpCommunicationsServer(IServerConfigurationManager config, ISocketFactory socketFactory,
+            INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
             : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger, enableMultiSocketBinding)
         {
+            _config = config;
         }
 
         /// <summary>
@@ -363,7 +367,7 @@ namespace Rssdp.Infrastructure
 
             if (_enableMultiSocketBinding)
             {
-                foreach (var address in _networkManager.GetLocalIpAddresses())
+                foreach (var address in _networkManager.GetLocalIpAddresses(_config.Configuration.IgnoreVirtualInterfaces))
                 {
                     if (address.AddressFamily == IpAddressFamily.InterNetworkV6)
                     {
