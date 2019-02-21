@@ -592,7 +592,7 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 if (totalContentLength.HasValue)
                 {
-                    responseHeaders["Content-Length"] = totalContentLength.Value.ToString(UsCulture);
+                    // TODO responseHeaders["Content-Length"] = totalContentLength.Value.ToString(UsCulture);
                 }
 
                 if (isHeadRequest)

@@ -152,7 +152,7 @@ namespace MediaBrowser.Model.Services
 
         QueryParamCollection Headers { get; }
 
-        Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken);
+        Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, IFileSystem fileSystem, IStreamHelper streamHelper, CancellationToken cancellationToken);
 
         bool SendChunked { get; set; }
     }

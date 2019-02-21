@@ -4,11 +4,10 @@ using System.Net;
 using System.Text;
 using MediaBrowser.Model.Services;
 using SocketHttpListener.Net;
-using HttpStatusCode = SocketHttpListener.Net.HttpStatusCode;
-using HttpVersion = SocketHttpListener.Net.HttpVersion;
 
 namespace SocketHttpListener
 {
+    // TODO what is the point of this class?
     internal class HttpResponse : HttpBase
     {
         #region Private Fields

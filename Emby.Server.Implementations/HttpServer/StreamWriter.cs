@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (source.CanSeek)
             {
-                Headers["Content-Length"] = source.Length.ToString(UsCulture);
+                // TODO Headers["Content-Length"] = source.Length.ToString(UsCulture);
             }
         }
 
@@ -77,7 +77,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             Headers["Content-Type"] = contentType;
 
-            Headers["Content-Length"] = contentLength.ToString(UsCulture);
+            // TODO Headers["Content-Length"] = contentLength.ToString(UsCulture);
         }
 
         public async Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken)

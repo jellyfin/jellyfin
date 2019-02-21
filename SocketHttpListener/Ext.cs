@@ -6,7 +6,6 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
-using HttpStatusCode = SocketHttpListener.Net.HttpStatusCode;
 using WebSocketState = System.Net.WebSockets.WebSocketState;
 
 namespace SocketHttpListener

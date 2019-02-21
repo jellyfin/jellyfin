@@ -686,6 +686,9 @@ namespace Emby.Server.Implementations.HttpServer
         {
             var bOutput = Encoding.UTF8.GetBytes(text);
             response.SetContentLength(bOutput.Length);
+            // TODO
+            response.Headers.Remove("Content-Length"); // DO NOT SET THIS, IT'S DONE AUTOMATICALLY BECAUSE MS ARE NOT STUPID
+            response.SendChunked = true;
 
             return response.OutputStream.WriteAsync(bOutput, 0, bOutput.Length);
         }

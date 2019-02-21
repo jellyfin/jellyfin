@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,7 @@ namespace Emby.Server.Implementations.HttpServer
     public class FileWriter : IHttpResult
     {
         private ILogger Logger { get; set; }
+        public IFileSystem FileSystem { get; }
 
         private string RangeHeader { get; set; }
         private bool IsHeadRequest { get; set; }
@@ -51,6 +53,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             Path = path;
             Logger = logger;
+            FileSystem = fileSystem;
             RangeHeader = rangeHeader;
 
             Headers["Content-Type"] = contentType;
@@ -60,7 +63,8 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (string.IsNullOrWhiteSpace(rangeHeader))
             {
-                Headers["Content-Length"] = TotalContentLength.ToString(UsCulture);
+                // TODO
+                //Headers["Content-Length"] = TotalContentLength.ToString(UsCulture);
                 StatusCode = HttpStatusCode.OK;
             }
             else
@@ -95,7 +99,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             // Content-Length is the length of what we're serving, not the original content
             var lengthString = RangeLength.ToString(UsCulture);
-            Headers["Content-Length"] = lengthString;
+            // TODO Headers["Content-Length"] = lengthString;
             var rangeString = string.Format("bytes {0}-{1}/{2}", RangeStart, RangeEnd, TotalContentLength);
             Headers["Content-Range"] = rangeString;
 
@@ -174,12 +178,12 @@ namespace Emby.Server.Implementations.HttpServer
                     }
 
                     //var count = FileShare == FileShareMode.ReadWrite ? TotalContentLength : 0;
-
-                    await response.TransmitFile(path, 0, 0, FileShare, cancellationToken).ConfigureAwait(false);
+                    // TODO not DI friendly lol
+                    await response.TransmitFile(path, 0, 0, FileShare, FileSystem, new StreamHelper(), cancellationToken).ConfigureAwait(false);
                     return;
                 }
-
-                await response.TransmitFile(path, RangeStart, RangeLength, FileShare, cancellationToken).ConfigureAwait(false);
+                // TODO not DI friendly lol
+                await response.TransmitFile(path, RangeStart, RangeLength, FileShare, FileSystem, new StreamHelper(), cancellationToken).ConfigureAwait(false);
             }
             finally
             {

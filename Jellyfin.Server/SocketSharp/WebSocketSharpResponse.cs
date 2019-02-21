@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
-using HttpListenerResponse = SocketHttpListener.Net.HttpListenerResponse;
 using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
 using IRequest = MediaBrowser.Model.Services.IRequest;
 
@@ -53,7 +54,7 @@ namespace Jellyfin.Server.SocketSharp
             set => _response.ContentType = value;
         }
 
-        public QueryParamCollection Headers => _response.Headers;
+        public QueryParamCollection Headers => new QueryParamCollection(_response.Headers);
 
         private static string AsHeaderValue(Cookie cookie)
         {
@@ -152,7 +153,7 @@ namespace Jellyfin.Server.SocketSharp
             // you can happily set the Content-Length header in Asp.Net
             // but HttpListener will complain if you do - you have to set ContentLength64 on the response.
             // workaround: HttpListener throws "The parameter is incorrect" exceptions when we try to set the Content-Length header
-            _response.ContentLength64 = contentLength;
+            //_response.ContentLength64 = contentLength;
         }
 
         public void SetCookie(Cookie cookie)
@@ -172,10 +173,43 @@ namespace Jellyfin.Server.SocketSharp
         public void ClearCookies()
         {
         }
-
-        public Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
+        const int StreamCopyToBufferSize = 81920;
+        public async Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, IFileSystem fileSystem, IStreamHelper streamHelper, CancellationToken cancellationToken)
         {
-            return _response.TransmitFile(path, offset, count, fileShareMode, cancellationToken);
+            // TODO
+            // return _response.TransmitFile(path, offset, count, fileShareMode, cancellationToken);
+            var allowAsync = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+            //if (count <= 0)
+            //{
+            //    allowAsync = true;
+            //}
+
+            var fileOpenOptions = FileOpenOptions.SequentialScan;
+
+            if (allowAsync)
+            {
+                fileOpenOptions |= FileOpenOptions.Asynchronous;
+            }
+
+            // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
+
+            using (var fs = fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, fileShareMode, fileOpenOptions))
+            {
+                if (offset > 0)
+                {
+                    fs.Position = offset;
+                }
+                
+                if (count > 0)
+                {
+                    await streamHelper.CopyToAsync(fs, OutputStream, count, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await fs.CopyToAsync(OutputStream, StreamCopyToBufferSize, cancellationToken).ConfigureAwait(false);
+                }
+            }
         }
     }
 }
