@@ -36,9 +36,9 @@ build_jellyfin()
 
     echo -e "${CYAN}Building jellyfin in '${ROOT}' for ${DOTNETRUNTIME} with configuration ${CONFIG} and output directory '${OUTPUT_DIR}'.${NC}"
     if [[ $DOTNETRUNTIME == 'framework' ]]; then
-        dotnet publish "${ROOT}" --configuration "${CONFIG}" --output="${OUTPUT_DIR}"
+        dotnet publish "${ROOT}" --configuration "${CONFIG}" --output="${OUTPUT_DIR}" "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
     else
-        dotnet publish "${ROOT}" --configuration "${CONFIG}" --output="${OUTPUT_DIR}" --self-contained --runtime ${DOTNETRUNTIME}
+        dotnet publish "${ROOT}" --configuration "${CONFIG}" --output="${OUTPUT_DIR}" --self-contained --runtime ${DOTNETRUNTIME} "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
     fi    
     EXIT_CODE=$?
     if [ $EXIT_CODE -eq 0 ]; then

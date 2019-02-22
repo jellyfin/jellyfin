@@ -49,7 +49,8 @@ Jellyfin is a free software media system that puts you in control of managing an
 %install
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime %{dotnet_runtime} Jellyfin.Server
+dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime %{dotnet_runtime} \
+    "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none" Jellyfin.Server
 %{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/%{name}/LICENSE
 %{__install} -D -m 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
 %{__install} -D -m 0644 Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/%{name}/logging.json
@@ -73,7 +74,6 @@ EOF
 %{_libdir}/%{name}/jellyfin-web/*
 %attr(755,root,root) %{_bindir}/%{name}
 %{_libdir}/%{name}/*.json
-%{_libdir}/%{name}/*.pdb
 %{_libdir}/%{name}/*.dll
 %{_libdir}/%{name}/*.so
 %{_libdir}/%{name}/*.a

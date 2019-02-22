@@ -7,6 +7,7 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 RUN dotnet publish \
     --configuration release \
     --output /jellyfin \
+    "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none" \
     Jellyfin.Server
 
 FROM jellyfin/ffmpeg as ffmpeg

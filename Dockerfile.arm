@@ -21,6 +21,7 @@ RUN dotnet publish \
     -r linux-arm \
     --configuration release \
     --output /jellyfin \
+    "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none" \
     Jellyfin.Server
 
 
