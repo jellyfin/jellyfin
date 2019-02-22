@@ -354,7 +354,7 @@ namespace Rssdp.Infrastructure
 
             var message = BuildMessage(header, values);
 
-            return _CommunicationsServer.SendMulticastMessage(message, cancellationToken);
+            return _CommunicationsServer.SendMulticastMessage(message, null, cancellationToken);
         }
 
         private void ProcessSearchResponseMessage(HttpResponseMessage message, IpAddressInfo localIpAddress)

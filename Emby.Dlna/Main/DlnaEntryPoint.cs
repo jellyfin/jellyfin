@@ -230,7 +230,7 @@ namespace Emby.Dlna.Main
 
             try
             {
-                _Publisher = new SsdpDevicePublisher(_communicationsServer, _environmentInfo.OperatingSystemName, _environmentInfo.OperatingSystemVersion);
+                _Publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, _environmentInfo.OperatingSystemName, _environmentInfo.OperatingSystemVersion, _config.GetDlnaConfiguration().SendOnlyMatchedHost);
                 _Publisher.LogFunction = LogMessage;
                 _Publisher.SupportPnpRootDevice = false;
 
@@ -269,6 +269,8 @@ namespace Emby.Dlna.Main
                 {
                     CacheLifetime = TimeSpan.FromSeconds(1800), //How long SSDP clients can cache this info.
                     Location = uri, // Must point to the URL that serves your devices UPnP description document.
+                    Address = address,
+                    SubnetMask = _networkManager.GetLocalIpSubnetMask(address),
                     FriendlyName = "Jellyfin",
                     Manufacturer = "Jellyfin",
                     ModelName = "Jellyfin Server",

@@ -62,5 +62,8 @@ namespace MediaBrowser.Common.Net
         Task<IpAddressInfo[]> GetHostAddressesAsync(string host);
 
         bool IsAddressInSubnets(string addressString, string[] subnets);
+
+        bool IsInSameSubnet(IpAddressInfo address1, IpAddressInfo address2, IpAddressInfo subnetMask);
+        IpAddressInfo GetLocalIpSubnetMask(IpAddressInfo address);
     }
 }

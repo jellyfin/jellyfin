@@ -240,15 +240,15 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        public Task SendMulticastMessage(string message, CancellationToken cancellationToken)
+        public Task SendMulticastMessage(string message, IpAddressInfo fromLocalIpAddress, CancellationToken cancellationToken)
         {
-            return SendMulticastMessage(message, SsdpConstants.UdpResendCount, cancellationToken);
+            return SendMulticastMessage(message, SsdpConstants.UdpResendCount, fromLocalIpAddress, cancellationToken);
         }
 
         /// <summary>
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
-        public async Task SendMulticastMessage(string message, int sendCount, CancellationToken cancellationToken)
+        public async Task SendMulticastMessage(string message, int sendCount, IpAddressInfo fromLocalIpAddress, CancellationToken cancellationToken)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
 
@@ -268,7 +268,7 @@ namespace Rssdp.Infrastructure
                     IpAddress = new IpAddressInfo(SsdpConstants.MulticastLocalAdminAddress, IpAddressFamily.InterNetwork),
                     Port = SsdpConstants.MulticastPort
 
-                }, cancellationToken).ConfigureAwait(false);
+                }, fromLocalIpAddress, cancellationToken).ConfigureAwait(false);
 
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
@@ -336,14 +336,15 @@ namespace Rssdp.Infrastructure
 
         #region Private Methods
 
-        private Task SendMessageIfSocketNotDisposed(byte[] messageData, IpEndPointInfo destination, CancellationToken cancellationToken)
+        private Task SendMessageIfSocketNotDisposed(byte[] messageData, IpEndPointInfo destination, IpAddressInfo fromLocalIpAddress, CancellationToken cancellationToken)
         {
             var sockets = _sendSockets;
             if (sockets != null)
             {
                 sockets = sockets.ToList();
 
-                var tasks = sockets.Select(s => SendFromSocket(s, messageData, destination, cancellationToken));
+                var tasks = sockets.Where(s => (fromLocalIpAddress == null || fromLocalIpAddress.Equals(s.LocalIPAddress)))
+                    .Select(s => SendFromSocket(s, messageData, destination, cancellationToken));
                 return Task.WhenAll(tasks);
             }
 
