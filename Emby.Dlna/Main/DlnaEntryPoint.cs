@@ -253,10 +253,10 @@ namespace Emby.Dlna.Main
             foreach (var address in addresses)
             {
                 // TODO: Remove this condition on platforms that support it
-                //if (address.AddressFamily == IpAddressFamily.InterNetworkV6)
-                //{
-                //    continue;
-                //}
+                if (address.AddressFamily == IpAddressFamily.InterNetworkV6)
+                {
+                   continue;
+                }
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
