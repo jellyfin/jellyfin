@@ -2436,8 +2436,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                args += " -flags -global_header -fflags +genpts";
-
                 if (state.VideoStream != null && IsH264(state.VideoStream) &&
                     string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
@@ -2448,6 +2446,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (state.RunTimeTicks.HasValue && state.BaseRequest.CopyTimestamps)
                 {
                     args += " -copyts -avoid_negative_ts disabled -start_at_zero";
+                }
+
+                if (!state.RunTimeTicks.HasValue)
+                {
+                    args += " -flags -global_header -fflags +genpts";
                 }
             }
             else
