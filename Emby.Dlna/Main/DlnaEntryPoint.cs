@@ -252,9 +252,9 @@ namespace Emby.Dlna.Main
 
             foreach (var address in addresses)
             {
-                // TODO: Remove this condition on platforms that support it
                 if (address.AddressFamily == IpAddressFamily.InterNetworkV6)
                 {
+                   // Not support IPv6 right now
                    continue;
                 }
 

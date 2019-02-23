@@ -372,7 +372,7 @@ namespace Rssdp.Infrastructure
                 {
                     if (address.AddressFamily == IpAddressFamily.InterNetworkV6)
                     {
-                        // Not supported ?
+                        // Not support IPv6 right now
                         continue;
                     }
 
