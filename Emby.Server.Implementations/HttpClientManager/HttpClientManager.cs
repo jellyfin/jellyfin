@@ -539,21 +539,10 @@ namespace Emby.Server.Implementations.HttpClientManager
 
                     var contentLength = GetContentLength(httpResponse);
 
-                    if (contentLength.HasValue)
+                    using (var stream = httpResponse.GetResponseStream())
+                    using (var fs = _fileSystem.GetFileStream(tempFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                     {
-                        using (var fs = _fileSystem.GetFileStream(tempFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
-                        {
-                            await httpResponse.GetResponseStream().CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
-                        }
-                    }
-                    else
-                    {
-                        // We're not able to track progress
-                        using (var stream = httpResponse.GetResponseStream())
-                        using (var fs = _fileSystem.GetFileStream(tempFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
-                        {
-                            await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
-                        }
+                        await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
                     }
 
                     options.Progress.Report(100);
