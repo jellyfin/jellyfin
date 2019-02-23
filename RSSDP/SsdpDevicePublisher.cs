@@ -438,12 +438,7 @@ namespace Rssdp.Infrastructure
 
             var message = BuildMessage(header, values);
 
-            if (_sendOnlyMatchedHost)
-            {
-                _CommsServer.SendMulticastMessage(message, _sendOnlyMatchedHost ? rootDevice.Address : null, cancellationToken);
-            } else {
-                _CommsServer.SendMulticastMessage(message, null, cancellationToken);
-            }
+            _CommsServer.SendMulticastMessage(message, _sendOnlyMatchedHost ? rootDevice.Address : null, cancellationToken);
 
             //WriteTrace(String.Format("Sent alive notification"), device);
         }
@@ -488,13 +483,7 @@ namespace Rssdp.Infrastructure
 
             var sendCount = IsDisposed ? 1 : 3;
             WriteTrace(String.Format("Sent byebye notification"), device);
-            if (_sendOnlyMatchedHost)
-            {
-                return _CommsServer.SendMulticastMessage(message, sendCount,
-                        _sendOnlyMatchedHost ? device.ToRootDevice().Address : null, cancellationToken);
-            } else {
-                return _CommsServer.SendMulticastMessage(message, sendCount, null, cancellationToken);
-            }
+            return _CommsServer.SendMulticastMessage(message, sendCount, _sendOnlyMatchedHost ? device.ToRootDevice().Address : null, cancellationToken);
         }
 
         private void DisposeRebroadcastTimer()
