@@ -129,6 +129,7 @@ namespace Jellyfin.Server.SocketSharp
 
         private async Task ProcessWebSocketRequest(HttpListenerContext ctx)
         {
+            int statusCode = 200;
             try
             {
                 var endpoint = ctx.Request.RemoteEndPoint.ToString();
@@ -164,33 +165,23 @@ namespace Jellyfin.Server.SocketSharp
                             Endpoint = endpoint
                         });
 
-                        await ReceiveWebSocketAsync(ctx, socket).ConfigureAwait(false);
+                        await socket.StartReceive().ConfigureAwait(false);
                     }
                 }
                 else
                 {
                     _logger.LogWarning("Web socket connection not allowed");
-                    ctx.Response.StatusCode = 401;
-                    ctx.Response.Close();
+                    statusCode = 401;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "AcceptWebSocketAsync error");
-                ctx.Response.StatusCode = 500;
-                ctx.Response.Close();
-            }
-        }
-
-        private async Task ReceiveWebSocketAsync(HttpListenerContext ctx, SharpWebSocket socket)
-        {
-            try
-            {
-                await socket.StartReceive().ConfigureAwait(false);
+                statusCode = 500;
             }
             finally
             {
-                TryClose(ctx, 200);
+                TryClose(ctx, statusCode);
             }
         }
 
@@ -200,10 +191,6 @@ namespace Jellyfin.Server.SocketSharp
             {
                 ctx.Response.StatusCode = statusCode;
                 ctx.Response.Close();
-            }
-            catch (ObjectDisposedException)
-            {
-                // TODO: Investigate and properly fix.
             }
             catch (Exception ex)
             {
