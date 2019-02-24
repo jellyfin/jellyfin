@@ -12,6 +12,6 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>Task.</returns>
-        Task ProcessMessage(WebSocketMessageInfo message);
+        Task ProcessMessageAsync(WebSocketMessageInfo message);
     }
 }
