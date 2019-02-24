@@ -2,7 +2,23 @@
 CONFIG := Release
 TERM := xterm
 SHELL := /bin/bash
-DOTNETRUNTIME := debian-x64
+
+HOST_ARCH := $(shell arch)
+BUILD_ARCH := ${DEB_HOST_MULTIARCH}
+ifeq ($(HOST_ARCH),x86_64)
+    ifeq ($(BUILD_ARCH),arm-linux-gnueabihf)
+        # Cross-building ARM on AMD64
+        DOTNETRUNTIME := debian-arm
+    else
+        # Building AMD64
+        DOTNETRUNTIME := debian-x64
+    endif
+endif
+ifeq ($(HOST_ARCH),armv7l)
+    # Building ARM
+    DOTNETRUNTIME := debian-arm
+endif
+
 export DH_VERBOSE=1
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
