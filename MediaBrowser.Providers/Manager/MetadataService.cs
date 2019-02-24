@@ -92,10 +92,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 localImagesFailed = true;
-                if (!(item is IItemByName))
-                {
-                    Logger.LogError(ex, "Error validating images for {0}", item.Path ?? item.Name ?? "Unknown name");
-                }
+                Logger.LogError(ex, "Error validating images for {0}", item.Path ?? item.Name ?? "Unknown name");
             }
 
             var metadataResult = new MetadataResult<TItemType>
