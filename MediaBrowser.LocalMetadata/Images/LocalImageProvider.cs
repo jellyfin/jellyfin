@@ -63,6 +63,7 @@ namespace MediaBrowser.LocalMetadata.Images
             {
                 return new List<FileSystemMetadata>();
             }
+
             var path = item.ContainingFolderPath;
 
             // Exit if the cache dir does not exist, alternative solution is to create it, but that's a lot of empty dirs...
