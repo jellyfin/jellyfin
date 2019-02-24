@@ -171,17 +171,13 @@ namespace Jellyfin.Server.SocketSharp
                 else
                 {
                     _logger.LogWarning("Web socket connection not allowed");
-                    statusCode = 401;
+                    TryClose(ctx, 401);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "AcceptWebSocketAsync error");
-                statusCode = 500;
-            }
-            finally
-            {
-                TryClose(ctx, statusCode);
+                TryClose(ctx, 500);
             }
         }
 
