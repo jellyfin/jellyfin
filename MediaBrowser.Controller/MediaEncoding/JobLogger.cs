@@ -24,7 +24,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 using (var reader = new StreamReader(source))
                 {
-                    while (!reader.EndOfStream)
+                    // If ffmpeg process is closed, the state is disposed, so don't write to target in that case
+                    while (!reader.EndOfStream && target.CanWrite)
                     {
                         var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
@@ -36,11 +37,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                         await target.FlushAsync().ConfigureAwait(false);
                     }
                 }
-            }
-            catch (ObjectDisposedException)
-            {
-                //TODO Investigate and properly fix.
-                // Don't spam the log. This doesn't seem to throw in windows, but sometimes under linux
             }
             catch (Exception ex)
             {
