@@ -24,14 +24,19 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 using (var reader = new StreamReader(source))
                 {
-                    // If ffmpeg process is closed, the state is disposed, so don't write to target in that case
-                    while (!reader.EndOfStream && target.CanWrite)
+                    while (!reader.EndOfStream)
                     {
                         var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
                         ParseLogLine(line, state);
 
                         var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
+
+                        // If ffmpeg process is closed, the state is disposed, so don't write to target in that case
+                        if (!target.CanWrite)
+                        {
+                            break;
+                        }
 
                         await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
                         await target.FlushAsync().ConfigureAwait(false);
