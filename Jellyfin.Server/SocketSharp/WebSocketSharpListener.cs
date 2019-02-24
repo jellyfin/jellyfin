@@ -129,7 +129,6 @@ namespace Jellyfin.Server.SocketSharp
 
         private async Task ProcessWebSocketRequest(HttpListenerContext ctx)
         {
-            int statusCode = 200;
             try
             {
                 var endpoint = ctx.Request.RemoteEndPoint.ToString();
