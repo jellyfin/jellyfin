@@ -278,6 +278,7 @@ namespace Emby.Server.Implementations.Library
             {
                 throw new ArgumentNullException(nameof(item));
             }
+
             if (item is IItemByName)
             {
                 if (!(item is MusicArtist))
@@ -285,18 +286,7 @@ namespace Emby.Server.Implementations.Library
                     return;
                 }
             }
-
-            else if (item.IsFolder)
-            {
-                //if (!(item is ICollectionFolder) && !(item is UserView) && !(item is Channel) && !(item is AggregateFolder))
-                //{
-                //    if (item.SourceType != SourceType.Library)
-                //    {
-                //        return;
-                //    }
-                //}
-            }
-            else
+            else if (!item.IsFolder)
             {
                 if (!(item is Video) && !(item is LiveTvChannel))
                 {
@@ -371,19 +361,20 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var metadataPath in GetMetadataPaths(item, children))
             {
-                _logger.LogDebug("Deleting path {0}", metadataPath);
+                if (!Directory.Exists(metadataPath))
+                {
+                    continue;
+                }
+
+                _logger.LogDebug("Deleting path {MetadataPath}", metadataPath);
 
                 try
                 {
                     Directory.Delete(metadataPath, true);
                 }
-                catch (IOException)
-                {
-
-                }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error deleting {metadataPath}", metadataPath);
+                    _logger.LogError(ex, "Error deleting {MetadataPath}", metadataPath);
                 }
             }
 

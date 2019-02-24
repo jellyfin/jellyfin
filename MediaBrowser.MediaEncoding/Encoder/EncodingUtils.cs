@@ -6,11 +6,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 {
     public static class EncodingUtils
     {
-        public static string GetInputArgument(List<string> inputFiles, MediaProtocol protocol)
+        public static string GetInputArgument(IReadOnlyList<string> inputFiles, MediaProtocol protocol)
         {
             if (protocol != MediaProtocol.File)
             {
-                var url = inputFiles.First();
+                var url = inputFiles[0];
 
                 return string.Format("\"{0}\"", url);
             }
@@ -29,7 +29,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // If there's more than one we'll need to use the concat command
             if (inputFiles.Count > 1)
             {
-                var files = string.Join("|", inputFiles.Select(NormalizePath).ToArray());
+                var files = string.Join("|", inputFiles.Select(NormalizePath));
 
                 return string.Format("concat:\"{0}\"", files);
             }
