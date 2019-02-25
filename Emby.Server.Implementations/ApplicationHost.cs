@@ -42,6 +42,7 @@ using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
+using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Emby.Server.Implementations.Xml;
@@ -105,10 +106,15 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.Providers.TV.TheTVDB;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
+using HttpResponse = MediaBrowser.Model.Net.HttpResponse;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 
 namespace Emby.Server.Implementations
@@ -123,7 +129,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
         public abstract bool CanSelfRestart { get; }
-
+        public IWebHost Host { get; set; }
         public virtual bool CanLaunchWebBrowser
         {
             get
@@ -612,6 +618,115 @@ namespace Emby.Server.Implementations
             await RegisterResources(serviceCollection);
 
             FindParts();
+
+            Host = new WebHostBuilder()
+                .UseKestrel()
+                .UseContentRoot("/Users/clausvium/RiderProjects/jellyfin/Jellyfin.Server/bin/Debug/netcoreapp2.1/jellyfin-web/src")
+                .UseStartup<Startup>()
+//                .ConfigureServices(async services =>
+//                {
+//                    services.AddSingleton<IStartup>(startUp);
+//                    RegisterResources(services);
+//                    FindParts();
+//                    try
+//                    {
+//                        ImageProcessor.ImageEncoder =
+//                            new NullImageEncoder(); //SkiaEncoder(_loggerFactory, appPaths, fileSystem, localizationManager);
+//                    }
+//                    catch (Exception ex)
+//                    {
+//                        Logger.LogInformation(ex, "Skia not available. Will fallback to NullIMageEncoder. {0}");
+//                        ImageProcessor.ImageEncoder = new NullImageEncoder();
+//                    }
+//                    await RunStartupTasks().ConfigureAwait(false);
+//                })
+                .UseUrls("http://localhost:8096")
+                .ConfigureServices(s => s.AddRouting())
+                .Configure( app =>
+                {
+                    app.UseWebSockets(new WebSocketOptions {
+                        KeepAliveInterval = TimeSpan.FromMilliseconds(1000000000),
+                        ReceiveBufferSize = 0x10000
+                    });
+
+                    app.UseRouter(r =>
+                        {
+                            // TODO all the verbs, but really MVC...
+                            r.MapGet("/{*localpath}", ExecuteHandler);
+                            r.MapPut("/{*localpath}", ExecuteHandler);
+                            r.MapPost("/{*localpath}", ExecuteHandler);
+                            r.MapDelete("/{*localpath}", ExecuteHandler);
+                            r.MapVerb("HEAD", "/{*localpath}", ExecuteHandler);
+                        });
+                })
+                .Build();
+        }
+
+        public async Task ExecuteHandler(HttpRequest request, Microsoft.AspNetCore.Http.HttpResponse response, RouteData data)
+        {
+            var ctx = request.HttpContext;
+            if (ctx.WebSockets.IsWebSocketRequest)
+            {
+                try
+                {
+                    var endpoint = ctx.Request.Path.ToString();
+                    var url = ctx.Request.Path.ToString();
+
+                    var queryString = new QueryParamCollection(request.Query);
+
+                    var connectingArgs = new WebSocketConnectingEventArgs
+                    {
+                        Url = url,
+                        QueryString = queryString,
+                        Endpoint = endpoint
+                    };
+
+                    if (connectingArgs.AllowConnection)
+                    {
+                        Logger.LogDebug("Web socket connection allowed");
+
+                        var webSocketContext = ctx.WebSockets.AcceptWebSocketAsync(null).Result;
+
+                        //SharpWebSocket socket = new SharpWebSocket(webSocketContext, Logger);
+                        //socket.ConnectAsServerAsync().ConfigureAwait(false);
+
+//                        var connection = new WebSocketConnection(webSocketContext, e.Endpoint, _jsonSerializer, _logger)
+//                        {
+//                            OnReceive = ProcessWebSocketMessageReceived,
+//                            Url = e.Url,
+//                            QueryString = e.QueryString ?? new QueryParamCollection()
+//                        };
+//
+//                        connection.Closed += Connection_Closed;
+//
+//                        lock (_webSocketConnections)
+//                        {
+//                            _webSocketConnections.Add(connection);
+//                        }
+//
+//                        WebSocketConnected(new WebSocketConnectEventArgs
+//                        {
+//                            Url = url,
+//                            QueryString = queryString,
+//                            WebSocket = socket,
+//                            Endpoint = endpoint
+//                        });
+                          await webSocketContext.ReceiveAsync(new ArraySegment<byte>(), CancellationToken.None).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        Logger.LogWarning("Web socket connection not allowed");
+                        ctx.Response.StatusCode = 401;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ctx.Response.StatusCode = 500;
+                }
+            }
+
+            var req = new WebSocketSharpRequest(request, response, request.Path, Logger);
+            await ((HttpListenerHost)HttpServer).RequestHandler(req,request.Path.ToString(), request.Host.ToString(), data.Values["localpath"].ToString(), CancellationToken.None).ConfigureAwait(false);
         }
 
         protected virtual IHttpClient CreateHttpClient()
@@ -1067,7 +1182,7 @@ namespace Emby.Server.Implementations
 
             HttpServer.Init(GetExports<IService>(false), GetExports<IWebSocketListener>());
 
-            StartServer();
+            //StartServer();
 
             LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(),
                 GetExports<IItemResolver>(),

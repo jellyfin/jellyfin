@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using MediaBrowser.Model.Dto;
+using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Model.Services
 {
@@ -16,6 +17,14 @@ namespace MediaBrowser.Model.Services
         }
 
         public QueryParamCollection(IDictionary<string, string> headers)
+        {
+            foreach (var pair in headers)
+            {
+                Add(pair.Key, pair.Value);
+            }
+        }
+
+        public QueryParamCollection(Microsoft.AspNetCore.Http.IHeaderDictionary headers)
         {
             foreach (var pair in headers)
             {
@@ -44,6 +53,14 @@ namespace MediaBrowser.Model.Services
                 {
                     Add(key, value);
                 }
+            }
+        }
+
+        public QueryParamCollection(IQueryCollection queryCollection)
+        {
+            foreach (var pair in queryCollection)
+            {
+                Add(pair.Key, pair.Value);
             }
         }
 
