@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -286,31 +287,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private static readonly string[] _skipLogExtensions =
-        {
-            ".js",
-            ".css",
-            ".woff",
-            ".woff2",
-            ".ttf",
-            ".html"
-        };
-
-        private bool EnableLogging(string url, string localPath)
-        {
-            var extension = GetExtension(url);
-
-            return ((string.IsNullOrEmpty(extension) || !_skipLogExtensions.Contains(extension))
-                && (string.IsNullOrEmpty(localPath) || localPath.IndexOf("system/ping", StringComparison.OrdinalIgnoreCase) == -1));
-        }
-
-        private static string GetExtension(string url)
-        {
-            var parts = url.Split(new[] { '?' }, 2);
-
-            return Path.GetExtension(parts[0]);
-        }
-
         public static string RemoveQueryStringByKey(string url, string key)
         {
             var uri = new Uri(url);
@@ -448,10 +424,9 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         protected async Task RequestHandler(IHttpRequest httpReq, string urlString, string host, string localPath, CancellationToken cancellationToken)
         {
-            var date = DateTime.Now;
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
             var httpRes = httpReq.Response;
-            bool enableLog = false;
-            bool logHeaders = false;
             string urlToLog = null;
             string remoteIp = httpReq.RemoteIp;
 
@@ -498,18 +473,8 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                var operationName = httpReq.OperationName;
-
-                enableLog = EnableLogging(urlString, localPath);
-                urlToLog = urlString;
-                logHeaders = enableLog && urlToLog.IndexOf("/videos/", StringComparison.OrdinalIgnoreCase) != -1;
-
-                if (enableLog)
-                {
-                    urlToLog = GetUrlToLog(urlString);
-
-                    LoggerUtils.LogRequest(_logger, urlToLog, httpReq.HttpMethod, httpReq.UserAgent, logHeaders ? httpReq.Headers : null);
-                }
+                urlToLog = GetUrlToLog(urlString);
+                Logger.LogDebug("HTTP {HttpMethod} {Url} UserAgent: {UserAgent} \nHeaders: {@Headers}", urlToLog, httpReq.UserAgent ?? string.Empty, httpReq.HttpMethod, httpReq.Headers);
 
                 if (string.Equals(localPath, "/emby/", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase))
@@ -517,6 +482,7 @@ namespace Emby.Server.Implementations.HttpServer
                     RedirectToUrl(httpRes, DefaultRedirectPath);
                     return;
                 }
+
                 if (string.Equals(localPath, "/emby", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase))
                 {
@@ -562,16 +528,19 @@ namespace Emby.Server.Implementations.HttpServer
                     RedirectToUrl(httpRes, DefaultRedirectPath);
                     return;
                 }
+
                 if (string.Equals(localPath, "/web/", StringComparison.OrdinalIgnoreCase))
                 {
                     RedirectToUrl(httpRes, "../" + DefaultRedirectPath);
                     return;
                 }
+
                 if (string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase))
                 {
                     RedirectToUrl(httpRes, DefaultRedirectPath);
                     return;
                 }
+
                 if (string.IsNullOrEmpty(localPath))
                 {
                     RedirectToUrl(httpRes, "/" + DefaultRedirectPath);
@@ -607,33 +576,21 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (handler != null)
                 {
-                    await handler.ProcessRequestAsync(this, httpReq, httpRes, Logger, operationName, cancellationToken).ConfigureAwait(false);
+                    await handler.ProcessRequestAsync(this, httpReq, httpRes, Logger, httpReq.OperationName, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     await ErrorHandler(new FileNotFoundException(), httpReq, false, false).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (ex is SocketException || ex is IOException || ex is OperationCanceledException)
             {
                 await ErrorHandler(ex, httpReq, false, false).ConfigureAwait(false);
             }
-
-            catch (IOException ex)
-            {
-                await ErrorHandler(ex, httpReq, false, false).ConfigureAwait(false);
-            }
-
-            catch (SocketException ex)
-            {
-                await ErrorHandler(ex, httpReq, false, false).ConfigureAwait(false);
-            }
-
             catch (SecurityException ex)
             {
                 await ErrorHandler(ex, httpReq, false, true).ConfigureAwait(false);
             }
-
             catch (Exception ex)
             {
                 var logException = !string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase);
@@ -644,13 +601,15 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 httpRes.Close();
 
-                if (enableLog)
+                stopWatch.Stop();
+                var elapsed = stopWatch.Elapsed;
+                if (elapsed.Milliseconds > 500)
                 {
-                    var statusCode = httpRes.StatusCode;
-
-                    var duration = DateTime.Now - date;
-
-                    LoggerUtils.LogResponse(_logger, statusCode, urlToLog, remoteIp, duration, logHeaders ? httpRes.Headers : null);
+                    _logger.LogWarning("HTTP Response {StatusCode} to {RemoteIp}. Time (slow): {Elapsed:ss.fff}. {Url}", httpRes.StatusCode, remoteIp, stopWatch.Elapsed, urlToLog);
+                }
+                else
+                {
+                    _logger.LogDebug("HTTP Response {StatusCode} to {RemoteIp}. Time: {Elapsed:ss.fff}. {Url}", httpRes.StatusCode, remoteIp, stopWatch.Elapsed, urlToLog);
                 }
             }
         }
@@ -663,12 +622,11 @@ namespace Emby.Server.Implementations.HttpServer
             var pathParts = pathInfo.TrimStart('/').Split('/');
             if (pathParts.Length == 0)
             {
-                _logger.LogError("Path parts empty for PathInfo: {pathInfo}, Url: {RawUrl}", pathInfo, httpReq.RawUrl);
+                _logger.LogError("Path parts empty for PathInfo: {PathInfo}, Url: {RawUrl}", pathInfo, httpReq.RawUrl);
                 return null;
             }
 
             var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, out string contentType);
-
             if (restPath != null)
             {
                 return new ServiceHandler
