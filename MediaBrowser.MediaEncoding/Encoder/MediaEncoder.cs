@@ -694,7 +694,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 FileName = FFMpegPath,
                 Arguments = args,
                 IsHidden = true,
-                ErrorDialog = false
+                ErrorDialog = false,
+                EnableRaisingEvents = true
             });
 
             _logger.LogDebug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
@@ -816,7 +817,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 FileName = FFMpegPath,
                 Arguments = args,
                 IsHidden = true,
-                ErrorDialog = false
+                ErrorDialog = false,
+                EnableRaisingEvents = true
             });
 
             _logger.LogInformation(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
