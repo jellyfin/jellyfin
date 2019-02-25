@@ -550,16 +550,18 @@ namespace Emby.Server.Implementations
 
             var entryPoints = GetExports<IServerEntryPoint>();
 
-            var now = DateTime.UtcNow;
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
             await Task.WhenAll(StartEntryPoints(entryPoints, true));
-            Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:fff} ms", DateTime.Now - now);
+            Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:fff} ms", stopWatch.Elapsed);
 
             Logger.LogInformation("Core startup complete");
             HttpServer.GlobalResponse = null;
 
-            now = DateTime.UtcNow;
+            stopWatch.Restart();
             await Task.WhenAll(StartEntryPoints(entryPoints, false));
-            Logger.LogInformation("Executed all post-startup entry points in {Elapsed:fff} ms", DateTime.Now - now);
+            Logger.LogInformation("Executed all post-startup entry points in {Elapsed:fff} ms", stopWatch.Elapsed);
+            stopWatch.Stop();
         }
 
         private IEnumerable<Task> StartEntryPoints(IEnumerable<IServerEntryPoint> entryPoints, bool isBeforeStartup)
