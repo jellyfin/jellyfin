@@ -63,8 +63,6 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (string.IsNullOrWhiteSpace(rangeHeader))
             {
-                // TODO
-                //Headers["Content-Length"] = TotalContentLength.ToString(UsCulture);
                 StatusCode = HttpStatusCode.OK;
             }
             else
@@ -99,7 +97,6 @@ namespace Emby.Server.Implementations.HttpServer
 
             // Content-Length is the length of what we're serving, not the original content
             var lengthString = RangeLength.ToString(UsCulture);
-            // TODO Headers["Content-Length"] = lengthString;
             var rangeString = string.Format("bytes {0}-{1}/{2}", RangeStart, RangeEnd, TotalContentLength);
             Headers["Content-Range"] = rangeString;
 

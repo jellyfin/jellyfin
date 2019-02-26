@@ -53,11 +53,6 @@ namespace Emby.Server.Implementations.HttpServer
             SourceStream = source;
 
             Headers["Content-Type"] = contentType;
-
-            if (source.CanSeek)
-            {
-                // TODO Headers["Content-Length"] = source.Length.ToString(UsCulture);
-            }
         }
 
         /// <summary>
@@ -65,8 +60,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="contentType">Type of the content.</param>
-        /// <param name="logger">The logger.</param>
-        public StreamWriter(byte[] source, string contentType, int contentLength)
+        public StreamWriter(byte[] source, string contentType)
         {
             if (string.IsNullOrEmpty(contentType))
             {
@@ -76,8 +70,6 @@ namespace Emby.Server.Implementations.HttpServer
             SourceBytes = source;
 
             Headers["Content-Type"] = contentType;
-
-            // TODO Headers["Content-Length"] = contentLength.ToString(UsCulture);
         }
 
         public async Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken)

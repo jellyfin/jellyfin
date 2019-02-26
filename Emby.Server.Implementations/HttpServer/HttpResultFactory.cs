@@ -131,7 +131,7 @@ namespace Emby.Server.Implementations.HttpServer
                     content = Array.Empty<byte>();
                 }
 
-                result = new StreamWriter(content, contentType, contentLength);
+                result = new StreamWriter(content, contentType);
             }
             else
             {
@@ -175,7 +175,7 @@ namespace Emby.Server.Implementations.HttpServer
                     bytes = Array.Empty<byte>();
                 }
 
-                result = new StreamWriter(bytes, contentType, contentLength);
+                result = new StreamWriter(bytes, contentType);
             }
             else
             {
@@ -334,13 +334,13 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (isHeadRequest)
             {
-                var result = new StreamWriter(Array.Empty<byte>(), contentType, contentLength);
+                var result = new StreamWriter(Array.Empty<byte>(), contentType);
                 AddResponseHeaders(result, responseHeaders);
                 return result;
             }
             else
             {
-                var result = new StreamWriter(content, contentType, contentLength);
+                var result = new StreamWriter(content, contentType);
                 AddResponseHeaders(result, responseHeaders);
                 return result;
             }
@@ -590,11 +590,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
             else
             {
-                if (totalContentLength.HasValue)
-                {
-                    // TODO responseHeaders["Content-Length"] = totalContentLength.Value.ToString(UsCulture);
-                }
-
                 if (isHeadRequest)
                 {
                     using (stream)

@@ -327,7 +327,6 @@ namespace Emby.Server.Implementations.HttpClientManager
                     }
 
                     httpWebRequest.ContentType = contentType;
-                    // httpWebRequest.ContentLength = bytes.Length;
                     (await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false)).Write(bytes, 0, bytes.Length);
                 }
                 catch (Exception ex)

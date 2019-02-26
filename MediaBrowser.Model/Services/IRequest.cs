@@ -145,8 +145,6 @@ namespace MediaBrowser.Model.Services
         /// </summary>
         bool IsClosed { get; }
 
-        void SetContentLength(long contentLength);
-
         //Add Metadata to Response
         Dictionary<string, object> Items { get; }
 

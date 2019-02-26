@@ -649,11 +649,6 @@ namespace Emby.Server.Implementations.HttpServer
         private static Task Write(IResponse response, string text)
         {
             var bOutput = Encoding.UTF8.GetBytes(text);
-            response.SetContentLength(bOutput.Length);
-            // TODO
-            response.Headers.Remove("Content-Length"); // DO NOT SET THIS, IT'S DONE AUTOMATICALLY BECAUSE MS ARE NOT STUPID
-            response.SendChunked = true;
-
             return response.OutputStream.WriteAsync(bOutput, 0, bOutput.Length);
         }
 
@@ -672,6 +667,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             else
             {
+                // TODO what is this?
                 var httpsUrl = url
                     .Replace("http://", "https://", StringComparison.OrdinalIgnoreCase)
                     .Replace(":" + _config.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture), ":" + _config.Configuration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);

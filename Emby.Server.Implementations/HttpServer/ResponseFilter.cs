@@ -57,7 +57,6 @@ namespace Emby.Server.Implementations.HttpServer
 
                     if (length > 0)
                     {
-                        res.SetContentLength(length);
                         res.SendChunked = false;
                     }
                 }
