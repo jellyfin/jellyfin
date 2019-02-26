@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,7 +27,7 @@ namespace Emby.Server.Implementations.Data
 
         internal static int ThreadSafeMode { get; set; }
 
-        protected virtual ConnectionFlags DefaultConnectionFlags => ConnectionFlags.SharedCached | ConnectionFlags.FullMutex;
+        protected virtual ConnectionFlags DefaultConnectionFlags => ConnectionFlags.SharedCached | ConnectionFlags.NoMutex;
 
         private readonly SemaphoreSlim WriteLock = new SemaphoreSlim(1, 1);
 
@@ -39,6 +38,7 @@ namespace Emby.Server.Implementations.Data
         static BaseSqliteRepository()
         {
             ThreadSafeMode = raw.sqlite3_threadsafe();
+            raw.sqlite3_enable_shared_cache(1);
         }
 
         private string _defaultWal;
@@ -55,6 +55,7 @@ namespace Emby.Server.Implementations.Data
                                                 DbFilePath,
                                                 DefaultConnectionFlags | ConnectionFlags.Create | ConnectionFlags.ReadWrite,
                                                 null);
+                                                SQLiteDatabaseConnectionBuilder.InMemory.
                 }
 
                 if (string.IsNullOrWhiteSpace(_defaultWal))
@@ -110,34 +111,22 @@ namespace Emby.Server.Implementations.Data
         }
 
         public IStatement PrepareStatement(ManagedConnection connection, string sql)
-        {
-            return connection.PrepareStatement(sql);
-        }
+            => connection.PrepareStatement(sql);
 
         public IStatement PrepareStatementSafe(ManagedConnection connection, string sql)
-        {
-            return connection.PrepareStatement(sql);
-        }
+            => connection.PrepareStatement(sql);
 
         public IStatement PrepareStatement(IDatabaseConnection connection, string sql)
-        {
-            return connection.PrepareStatement(sql);
-        }
+            => connection.PrepareStatement(sql);
 
         public IStatement PrepareStatementSafe(IDatabaseConnection connection, string sql)
-        {
-            return connection.PrepareStatement(sql);
-        }
+            => connection.PrepareStatement(sql);
 
-        public List<IStatement> PrepareAll(IDatabaseConnection connection, IEnumerable<string> sql)
-        {
-            return PrepareAllSafe(connection, sql);
-        }
+        public IEnumerable<IStatement> PrepareAll(IDatabaseConnection connection, IEnumerable<string> sql)
+            => PrepareAllSafe(connection, sql);
 
-        public List<IStatement> PrepareAllSafe(IDatabaseConnection connection, IEnumerable<string> sql)
-        {
-            return sql.Select(connection.PrepareStatement).ToList();
-        }
+        public IEnumerable<IStatement> PrepareAllSafe(IDatabaseConnection connection, IEnumerable<string> sql)
+            => sql.Select(connection.PrepareStatement);
 
         protected bool TableExists(ManagedConnection connection, string name)
         {
@@ -201,7 +190,6 @@ namespace Emby.Server.Implementations.Data
 
         public void Dispose()
         {
-
             Dispose(true);
         }
 
@@ -218,6 +206,25 @@ namespace Emby.Server.Implementations.Data
                 return;
             }
 
+            if (dispose)
+            {
+                WriteLock.Wait();
+                try
+                {
+                    WriteConnection.Dispose();
+                }
+                finally
+                {
+                    WriteLock.Release();
+                }
+
+                foreach (var i in ReadConnectionPool)
+                {
+                    i.Dispose();
+                }
+
+                ReadConnectionPool.Dispose();
+            }
 
             _disposed = true;
         }
