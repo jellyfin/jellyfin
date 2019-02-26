@@ -71,7 +71,6 @@ using Microsoft.Extensions.Logging;
 
                     var webSocketContext = await ctx.WebSockets.AcceptWebSocketAsync(null).ConfigureAwait(false);
                     var socket = new SharpWebSocket(webSocketContext, _logger);
-                    await socket.ConnectAsServerAsync().ConfigureAwait(false);
 
                     WebSocketConnected(new WebSocketConnectEventArgs
                     {

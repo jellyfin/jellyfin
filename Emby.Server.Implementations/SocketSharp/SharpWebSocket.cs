@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.SocketSharp
         /// Gets or sets the web socket.
         /// </summary>
         /// <value>The web socket.</value>
-        private WebSocket WebSocket { get; set; }
+        private readonly WebSocket _webSocket;
 
         private TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
@@ -30,45 +30,14 @@ namespace Emby.Server.Implementations.SocketSharp
         public SharpWebSocket(WebSocket socket, ILogger logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            WebSocket = socket ?? throw new ArgumentNullException(nameof(socket));
+            _webSocket = socket ?? throw new ArgumentNullException(nameof(socket));
         }
 
-        public Task StartReceive()
-        {
-            return _taskCompletionSource.Task;
-        }
-
-        private void OnSocketError(object sender, SocketHttpListener.ErrorEventArgs e)
-        {
-            _logger.LogError("Error in SharpWebSocket: {Message}", e.Message ?? string.Empty);
-
-            // Closed?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void OnSocketClose(object sender, SocketHttpListener.CloseEventArgs e)
-        {
-            _taskCompletionSource.TrySetResult(true);
-
-            Closed?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void OnSocketMessage(SocketHttpListener.MessageEventArgs e)
-        {
-            if (OnReceiveBytes != null)
-            {
-                OnReceiveBytes(e.RawData);
-            }
-        }
-
-        public Task ConnectAsServerAsync()
-        {
-            return Task.CompletedTask;
-        }
         /// <summary>
         /// Gets or sets the state.
         /// </summary>
         /// <value>The state.</value>
-        public WebSocketState State => WebSocket.State;
+        public WebSocketState State => _webSocket.State;
 
         /// <summary>
         /// Sends the async.
@@ -79,7 +48,7 @@ namespace Emby.Server.Implementations.SocketSharp
         /// <returns>Task.</returns>
         public Task SendAsync(byte[] bytes, bool endOfMessage, CancellationToken cancellationToken)
         {
-            return WebSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Binary, endOfMessage, cancellationToken);
+            return _webSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Binary, endOfMessage, cancellationToken);
         }
 
         /// <summary>
@@ -91,7 +60,7 @@ namespace Emby.Server.Implementations.SocketSharp
         /// <returns>Task.</returns>
         public Task SendAsync(string text, bool endOfMessage, CancellationToken cancellationToken)
         {
-            return WebSocket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(text)), WebSocketMessageType.Text, endOfMessage, cancellationToken);
+            return _webSocket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(text)), WebSocketMessageType.Text, endOfMessage, cancellationToken);
         }
 
         /// <summary>
@@ -117,9 +86,6 @@ namespace Emby.Server.Implementations.SocketSharp
             if (dispose)
             {
                 _cancellationTokenSource.Cancel();
-
-                // TODO
-                // WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye", CancellationToken.None).GetAwaiter().GetResult();
             }
 
             _disposed = true;
