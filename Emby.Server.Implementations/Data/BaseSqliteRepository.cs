@@ -55,7 +55,6 @@ namespace Emby.Server.Implementations.Data
                                                 DbFilePath,
                                                 DefaultConnectionFlags | ConnectionFlags.Create | ConnectionFlags.ReadWrite,
                                                 null);
-                                                SQLiteDatabaseConnectionBuilder.InMemory.
                 }
 
                 if (string.IsNullOrWhiteSpace(_defaultWal))

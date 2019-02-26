@@ -616,7 +616,7 @@ namespace Emby.Server.Implementations.Data
             {
                 GetSaveItemCommandText(),
                 "delete from AncestorIds where ItemId=@ItemId"
-            });
+            }).ToList();
 
             using (var saveItemStatement = statements[0])
             using (var deleteAncestorsStatement = statements[1])
@@ -2824,7 +2824,7 @@ namespace Emby.Server.Implementations.Data
                 return connection.RunInTransaction(db =>
                 {
                     var result = new QueryResult<BaseItem>();
-                    var statements = PrepareAllSafe(db, statementTexts);
+                    var statements = PrepareAllSafe(db, statementTexts).ToList();
 
                     if (!isReturningZeroItems)
                     {
@@ -3236,7 +3236,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     var result = new QueryResult<Guid>();
 
-                    var statements = PrepareAllSafe(db, statementTexts);
+                    var statements = PrepareAllSafe(db, statementTexts).ToList();
 
                     if (!isReturningZeroItems)
                     {
@@ -5437,7 +5437,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     var list = new List<(BaseItem, ItemCounts)>();
                     var result = new QueryResult<(BaseItem, ItemCounts)>();
 
-                    var statements = PrepareAllSafe(db, statementTexts);
+                    var statements = PrepareAllSafe(db, statementTexts).ToList();
 
                     if (!isReturningZeroItems)
                     {
