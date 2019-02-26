@@ -21,6 +21,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Text.Jsv;
@@ -767,6 +768,10 @@ namespace Emby.Server.Implementations.HttpServer
             return _jsonSerializer.DeserializeFromStreamAsync(stream, type);
         }
 
+        public Task ProcessWebSocketRequest(HttpContext context)
+        {
+            return _websocketlistener.ProcessWebSocketRequest(context);
+        }
         //TODO Add Jellyfin Route Path Normalizer
 
         private static string NormalizeEmbyRoutePath(string path)
@@ -801,7 +806,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         private bool _disposed;
         private readonly object _disposeLock = new object();
-        public WebSocketSharpListener _websocketlistener;
+        private readonly WebSocketSharpListener _websocketlistener;
 
         protected virtual void Dispose(bool disposing)
         {

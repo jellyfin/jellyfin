@@ -624,25 +624,7 @@ namespace Emby.Server.Implementations
 
             Host = new WebHostBuilder()
                 .UseKestrel()
-                .UseContentRoot(Path.Combine(Directory.GetCurrentDirectory(), @"jellyfin-web\src"))
-                //.UseStartup<Startup>()
-//                .ConfigureServices(async services =>
-//                {
-//                    services.AddSingleton<IStartup>(startUp);
-//                    RegisterResources(services);
-//                    FindParts();
-//                    try
-//                    {
-//                        ImageProcessor.ImageEncoder =
-//                            new NullImageEncoder(); //SkiaEncoder(_loggerFactory, appPaths, fileSystem, localizationManager);
-//                    }
-//                    catch (Exception ex)
-//                    {
-//                        Logger.LogInformation(ex, "Skia not available. Will fallback to NullIMageEncoder. {0}");
-//                        ImageProcessor.ImageEncoder = new NullImageEncoder();
-//                    }
-//                    await RunStartupTasks().ConfigureAwait(false);
-//                })
+                .UseContentRoot(Path.Combine(Directory.GetCurrentDirectory(), "jellyfin-web", "src"))
                 .UseUrls("http://localhost:8096")
                 .ConfigureServices(services =>
                 {
@@ -672,63 +654,7 @@ namespace Emby.Server.Implementations
                 return;
             }
 
-            await ((HttpListenerHost)HttpServer)._websocketlistener.ProcessWebSocketRequest(context).ConfigureAwait(false);
-            //                try
-            //                {
-            //                    var endpoint = ctx.Request.Path.ToString();
-            //                    var url = ctx.Request.Path.ToString();
-
-            //                    var queryString = new QueryParamCollection(request.Query);
-
-            //                    var connectingArgs = new WebSocketConnectingEventArgs
-            //                    {
-            //                        Url = url,
-            //                        QueryString = queryString,
-            //                        Endpoint = endpoint
-            //                    };
-
-            //                    if (connectingArgs.AllowConnection)
-            //                    {
-            //                        Logger.LogDebug("Web socket connection allowed");
-
-            //                        var webSocketContext = ctx.WebSockets.AcceptWebSocketAsync(null).Result;
-
-            //                        //SharpWebSocket socket = new SharpWebSocket(webSocketContext, Logger);
-            //                        //socket.ConnectAsServerAsync().ConfigureAwait(false);
-
-            ////                        var connection = new WebSocketConnection(webSocketContext, e.Endpoint, _jsonSerializer, _logger)
-            ////                        {
-            ////                            OnReceive = ProcessWebSocketMessageReceived,
-            ////                            Url = e.Url,
-            ////                            QueryString = e.QueryString ?? new QueryParamCollection()
-            ////                        };
-            ////
-            ////                        connection.Closed += Connection_Closed;
-            ////
-            ////                        lock (_webSocketConnections)
-            ////                        {
-            ////                            _webSocketConnections.Add(connection);
-            ////                        }
-            ////
-            ////                        WebSocketConnected(new WebSocketConnectEventArgs
-            ////                        {
-            ////                            Url = url,
-            ////                            QueryString = queryString,
-            ////                            WebSocket = socket,
-            ////                            Endpoint = endpoint
-            ////                        });
-            //                          await webSocketContext.ReceiveAsync(new ArraySegment<byte>(), CancellationToken.None).ConfigureAwait(false);
-            //                    }
-            //                    else
-            //                    {
-            //                        Logger.LogWarning("Web socket connection not allowed");
-            //                        ctx.Response.StatusCode = 401;
-            //                    }
-            //                }
-            //                catch (Exception ex)
-            //                {
-            //                    ctx.Response.StatusCode = 500;
-            //                }
+            await ((HttpListenerHost)HttpServer).ProcessWebSocketRequest(context).ConfigureAwait(false);
         }
         public async Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
         {
