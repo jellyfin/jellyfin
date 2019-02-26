@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
  using System.Net;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
@@ -144,22 +145,41 @@ using Microsoft.Extensions.Logging;
                     _logger.LogDebug("Web socket connection allowed");
 
                     var webSocketContext = await ctx.WebSockets.AcceptWebSocketAsync(null).ConfigureAwait(false);
+                    var socket = new SharpWebSocket(webSocketContext, _logger);
+                    await socket.ConnectAsServerAsync().ConfigureAwait(false);
 
-                    if (WebSocketConnected != null)
+                    WebSocketConnected(new WebSocketConnectEventArgs
                     {
-                        //SharpWebSocket socket = new SharpWebSocket(webSocketContext, _logger);
-                        //await socket.ConnectAsServerAsync().ConfigureAwait(false);
+                        Url = url,
+                        QueryString = queryString,
+                        WebSocket = socket,
+                        Endpoint = endpoint
+                    });
 
-                        //WebSocketConnected(new WebSocketConnectEventArgs
-                        //{
-                        //    Url = url,
-                        //    QueryString = queryString,
-                        //    WebSocket = socket,
-                        //    Endpoint = endpoint
-                        //});
+                    //await ReceiveWebSocketAsync(ctx, socket).ConfigureAwait(false);
+                    var buffer = WebSocket.CreateClientBuffer(1024 * 4, 1024 * 4);
+                    WebSocketReceiveResult result = await webSocketContext.ReceiveAsync(buffer, CancellationToken.None);
+                    socket.OnReceiveBytes(buffer.Array);
+                    //while (!result.CloseStatus.HasValue)
+                    //{
+                    //    await webSocketContext.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
 
-                        //await ReceiveWebSocketAsync(ctx, socket).ConfigureAwait(false);
-                    }
+                    //    result = await webSocketContext.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                    //}
+                    //WebSocketConnected?.Invoke(new WebSocketConnectEventArgs
+                    //{
+                    //    Url = url,
+                    //    QueryString = queryString,
+                    //    WebSocket = webSocketContext,
+                    //    Endpoint = endpoint
+                    //});
+                    await webSocketContext.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+                    //SharpWebSocket socket = new SharpWebSocket(webSocketContext, _logger);
+                    //await socket.ConnectAsServerAsync().ConfigureAwait(false);
+
+                    
+
+                    //await ReceiveWebSocketAsync(ctx, socket).ConfigureAwait(false);
                 }
                 else
                 {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
  using System.Net;
 using System.Threading;
@@ -152,7 +152,7 @@ using Microsoft.Extensions.Logging;
                         {
                             Url = url,
                             QueryString = queryString,
-                            WebSocket = socket,
+                            WebSocket = null, // socket,
                             Endpoint = endpoint
                         });
 

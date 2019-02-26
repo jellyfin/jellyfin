@@ -740,7 +740,7 @@ namespace Emby.Server.Implementations
 
             var request = context.Request;
             var response = context.Response;
-            var localPath = context.Request.Path.ToString().TrimStart('/');
+            var localPath = context.Request.Path.ToString();
 
             var req = new WebSocketSharpRequest(request, response, request.Path, Logger);
             await ((HttpListenerHost)HttpServer).RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, CancellationToken.None).ConfigureAwait(false);
