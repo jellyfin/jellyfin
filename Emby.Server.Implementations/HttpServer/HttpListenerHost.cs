@@ -68,7 +68,7 @@ namespace Emby.Server.Implementations.HttpServer
             _networkManager = networkManager;
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
-            
+
             _funcParseFn = t => s => JsvReader.GetParseFn(t)(s);
 
             Instance = this;
@@ -603,13 +603,13 @@ namespace Emby.Server.Implementations.HttpServer
 
                 stopWatch.Stop();
                 var elapsed = stopWatch.Elapsed;
-                if (elapsed.Milliseconds > 500)
+                if (elapsed.TotalMilliseconds > 500)
                 {
-                    _logger.LogWarning("HTTP Response {StatusCode} to {RemoteIp}. Time (slow): {Elapsed:ss.fff}. {Url}", httpRes.StatusCode, remoteIp, stopWatch.Elapsed, urlToLog);
+                    _logger.LogWarning("HTTP Response {StatusCode} to {RemoteIp}. Time (slow): {Elapsed:g}. {Url}", httpRes.StatusCode, remoteIp, elapsed, urlToLog);
                 }
                 else
                 {
-                    _logger.LogDebug("HTTP Response {StatusCode} to {RemoteIp}. Time: {Elapsed:ss.fff}. {Url}", httpRes.StatusCode, remoteIp, stopWatch.Elapsed, urlToLog);
+                    _logger.LogDebug("HTTP Response {StatusCode} to {RemoteIp}. Time: {Elapsed:g}. {Url}", httpRes.StatusCode, remoteIp, elapsed, urlToLog);
                 }
             }
         }
