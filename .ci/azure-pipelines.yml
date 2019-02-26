@@ -29,7 +29,7 @@ jobs:
       maxParallel: 2
     steps:
     - checkout: self
-      clean: false
+      clean: true
       submodules: true
       persistCredentials: false
 
@@ -159,7 +159,7 @@ jobs:
     - task: DownloadGitHubReleases@0
       displayName: Download ABI compatibility check tool from GitHub
       inputs:
-        connection: GitHub (EraYaN)
+        connection: Jellyfin GitHub
         userRepository: EraYaN/dotnet-compatibility
         defaultVersionType: 'latest' # Options: latest, specificVersion, specificTag
         #version: # Required when defaultVersionType != Latest
