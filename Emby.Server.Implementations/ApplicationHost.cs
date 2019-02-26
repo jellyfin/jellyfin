@@ -111,13 +111,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ServiceStack;
-using HttpResponse = MediaBrowser.Model.Net.HttpResponse;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 
 namespace Emby.Server.Implementations
@@ -623,21 +621,24 @@ namespace Emby.Server.Implementations
             FindParts();
 
             Host = new WebHostBuilder()
-                .UseKestrel()
+                .UseKestrel(options =>
+                {
+                    options.Listen(IPAddress.Any, HttpPort);
+                    options.Listen(IPAddress.Loopback, HttpPort);
+                    // TODO certs
+                    options.Listen(IPAddress.Any, HttpsPort, listenOptions => { listenOptions.UseHttps(); });
+                    options.Listen(IPAddress.Loopback, HttpsPort, listenOptions => { listenOptions.UseHttps(); });
+                })
                 .UseContentRoot(Path.Combine(Directory.GetCurrentDirectory(), "jellyfin-web", "src"))
-                .UseUrls("http://localhost:8096")
                 .ConfigureServices(services =>
                 {
                     services.AddResponseCompression();
                     services.AddHttpContextAccessor();
                     services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
                 })
-                .Configure( app =>
+                .Configure(app =>
                 {
-                    app.UseWebSockets(new WebSocketOptions {
-                        KeepAliveInterval = TimeSpan.FromMilliseconds(1000000000),
-                        ReceiveBufferSize = 0x10000
-                    });
+                    app.UseWebSockets();
 
                     app.UseResponseCompression();
                     app.Use(ExecuteWebsocketHandlerAsync);
