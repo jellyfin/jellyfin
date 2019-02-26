@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public object Dto { get; set; }
 
-        public string RawUrl => request.Path.ToString();
+        public string RawUrl => request.GetEncodedPathAndQuery();
 
         public string AbsoluteUri => request.GetDisplayUrl().TrimEnd('/');
 

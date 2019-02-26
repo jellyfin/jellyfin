@@ -160,6 +160,15 @@ using Microsoft.Extensions.Logging;
                     var buffer = WebSocket.CreateClientBuffer(1024 * 4, 1024 * 4);
                     WebSocketReceiveResult result = await webSocketContext.ReceiveAsync(buffer, CancellationToken.None);
                     socket.OnReceiveBytes(buffer.Array);
+
+                    while (result.MessageType != WebSocketMessageType.Close)
+                    {
+                        result = await webSocketContext.ReceiveAsync(buffer, CancellationToken.None);
+                        socket.OnReceiveBytes(buffer.Array);
+                    }
+                    await webSocketContext.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+                    socket.Dispose();
+
                     //while (!result.CloseStatus.HasValue)
                     //{
                     //    await webSocketContext.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
@@ -173,11 +182,11 @@ using Microsoft.Extensions.Logging;
                     //    WebSocket = webSocketContext,
                     //    Endpoint = endpoint
                     //});
-                    await webSocketContext.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+                    //await webSocketContext.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
                     //SharpWebSocket socket = new SharpWebSocket(webSocketContext, _logger);
                     //await socket.ConnectAsServerAsync().ConfigureAwait(false);
 
-                    
+
 
                     //await ReceiveWebSocketAsync(ctx, socket).ConfigureAwait(false);
                 }

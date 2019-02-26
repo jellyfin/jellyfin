@@ -119,7 +119,7 @@ namespace Emby.Server.Implementations.SocketSharp
                 _cancellationTokenSource.Cancel();
 
                 // TODO
-                WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye", CancellationToken.None).GetAwaiter().GetResult();
+                // WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye", CancellationToken.None).GetAwaiter().GetResult();
             }
 
             _disposed = true;
