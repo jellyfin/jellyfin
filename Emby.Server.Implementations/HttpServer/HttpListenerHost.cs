@@ -44,6 +44,7 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly IServerApplicationHost _appHost;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IXmlSerializer _xmlSerializer;
+        private readonly IHttpListener _socketListener;
         private readonly Func<Type, Func<string, object>> _funcParseFn;
 
         public Action<IRequest, IResponse, object>[] ResponseFilters { get; set; }
@@ -61,7 +62,8 @@ namespace Emby.Server.Implementations.HttpServer
             IConfiguration configuration,
             INetworkManager networkManager,
             IJsonSerializer jsonSerializer,
-            IXmlSerializer xmlSerializer)
+            IXmlSerializer xmlSerializer,
+            IHttpListener socketListener)
         {
             _appHost = applicationHost;
             _logger = loggerFactory.CreateLogger("HttpServer");
@@ -70,15 +72,13 @@ namespace Emby.Server.Implementations.HttpServer
             _networkManager = networkManager;
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
+            _socketListener = socketListener;
+            _socketListener.WebSocketConnected = OnWebSocketConnected;
 
             _funcParseFn = t => s => JsvReader.GetParseFn(t)(s);
 
             Instance = this;
             ResponseFilters = Array.Empty<Action<IRequest, IResponse, object>>();
-            _websocketlistener = new WebSocketSharpListener(_logger)
-            {
-                WebSocketConnected = OnWebSocketConnected
-            };
         }
 
         public string GlobalResponse { get; set; }
@@ -770,7 +770,8 @@ namespace Emby.Server.Implementations.HttpServer
 
         public Task ProcessWebSocketRequest(HttpContext context)
         {
-            return _websocketlistener.ProcessWebSocketRequest(context);
+            // TODO
+            return ((WebSocketSharpListener)_socketListener).ProcessWebSocketRequest(context);
         }
         //TODO Add Jellyfin Route Path Normalizer
 
@@ -867,8 +868,6 @@ namespace Emby.Server.Implementations.HttpServer
             _listener.WebSocketConnected = OnWebSocketConnected;
             _listener.ErrorHandler = ErrorHandler;
             _listener.RequestHandler = RequestHandler;
-
-            _listener.Start(UrlPrefixes);
         }
     }
 }

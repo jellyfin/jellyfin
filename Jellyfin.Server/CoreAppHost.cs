@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.HttpServer;
-using Jellyfin.Server.SocketSharp;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Configuration;
@@ -45,8 +44,5 @@ namespace Jellyfin.Server
         }
 
         protected override void ShutdownInternal() => Program.Shutdown();
-
-        protected override IHttpListener CreateHttpListener()
-            => new WebSocketSharpListener(Logger);
     }
 }

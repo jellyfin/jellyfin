@@ -791,7 +791,8 @@ namespace Emby.Server.Implementations
                 _configuration,
                 NetworkManager,
                 JsonSerializer,
-                XmlSerializer);
+                XmlSerializer,
+                CreateHttpListener());
 
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             serviceCollection.AddSingleton(HttpServer);
@@ -1125,8 +1126,6 @@ namespace Emby.Server.Implementations
 
             HttpServer.Init(GetExports<IService>(false), GetExports<IWebSocketListener>());
 
-            //StartServer();
-
             LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(),
                 GetExports<IItemResolver>(),
                 GetExports<IIntroProvider>(),
@@ -1239,45 +1238,7 @@ namespace Emby.Server.Implementations
             });
         }
 
-        protected abstract IHttpListener CreateHttpListener();
-
-        /// <summary>
-        /// Starts the server.
-        /// </summary>
-        private void StartServer()
-        {
-            try
-            {
-                ((HttpListenerHost)HttpServer).StartServer(GetUrlPrefixes().ToArray(), CreateHttpListener());
-                return;
-            }
-            catch (Exception ex)
-            {
-                var msg = string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase)
-                  ? "The http server is unable to start due to a Socket error. This can occasionally happen when the operating system takes longer than usual to release the IP bindings from the previous session. This can take up to five minutes. Please try waiting or rebooting the system."
-                  : "Error starting Http Server";
-
-                Logger.LogError(ex, msg);
-
-                if (HttpPort == ServerConfiguration.DefaultHttpPort)
-                {
-                    throw;
-                }
-            }
-
-            HttpPort = ServerConfiguration.DefaultHttpPort;
-
-            try
-            {
-                ((HttpListenerHost)HttpServer).StartServer(GetUrlPrefixes().ToArray(), CreateHttpListener());
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error starting http server");
-
-                throw;
-            }
-        }
+        protected IHttpListener CreateHttpListener() => new WebSocketSharpListener(Logger);
 
         private CertificateInfo GetCertificateInfo(bool generateCertificate)
         {
