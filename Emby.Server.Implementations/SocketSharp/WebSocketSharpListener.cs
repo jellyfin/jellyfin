@@ -17,8 +17,6 @@ using Microsoft.Extensions.Logging;
 {
     public class WebSocketSharpListener : IHttpListener
     {
-        private HttpListener _listener;
-
         private readonly ILogger _logger;
 
         private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
@@ -86,14 +84,14 @@ using Microsoft.Extensions.Logging;
 
                     do
                     {
-                        result = await webSocketContext.ReceiveAsync(buffer, CancellationToken.None);
+                        result = await webSocketContext.ReceiveAsync(buffer, _disposeCancellationToken);
                         socket.OnReceiveBytes(buffer.Array);
                         message.AddRange(buffer.Array.Take(result.Count));
                     } while (!result.EndOfMessage && result.MessageType != WebSocketMessageType.Close);
 
                     socket.OnReceiveBytes(message.ToArray());
                     await webSocketContext.CloseAsync(result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
-                        result.CloseStatusDescription, CancellationToken.None);
+                        result.CloseStatusDescription, _disposeCancellationToken);
                     socket.Dispose();
                 }
                 else
@@ -109,16 +107,9 @@ using Microsoft.Extensions.Logging;
             }
         }
 
-        public void Start(IEnumerable<string> urlPrefixes)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task Stop()
         {
             _disposeCancellationTokenSource.Cancel();
-            _listener?.Close();
-
             return Task.CompletedTask;
         }
 

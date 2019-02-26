@@ -803,7 +803,6 @@ namespace Emby.Server.Implementations.HttpServer
 
         private bool _disposed;
         private readonly object _disposeLock = new object();
-        private readonly WebSocketSharpListener _websocketlistener;
 
         protected virtual void Dispose(bool disposing)
         {
