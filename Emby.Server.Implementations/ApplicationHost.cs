@@ -655,7 +655,7 @@ namespace Emby.Server.Implementations
                 return;
             }
 
-            await ((HttpListenerHost)HttpServer).ProcessWebSocketRequest(context).ConfigureAwait(false);
+            await HttpServer.ProcessWebSocketRequest(context).ConfigureAwait(false);
         }
         public async Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
         {
@@ -670,7 +670,7 @@ namespace Emby.Server.Implementations
             var localPath = context.Request.Path.ToString();
 
             var req = new WebSocketSharpRequest(request, response, request.Path, Logger);
-            await ((HttpListenerHost)HttpServer).RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, CancellationToken.None).ConfigureAwait(false);
+            await HttpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, CancellationToken.None).ConfigureAwait(false);
         }
 
         protected virtual IHttpClient CreateHttpClient()
