@@ -172,16 +172,9 @@ namespace MediaBrowser.Api
 
                 if (!string.IsNullOrWhiteSpace(hasDtoOptions.EnableImageTypes))
                 {
-                    if (string.IsNullOrEmpty(hasDtoOptions.EnableImageTypes))
-                    {
-                        options.ImageTypes = Array.Empty<ImageType>();
-                    }
-                    else
-                    {
-                        options.ImageTypes = hasDtoOptions.EnableImageTypes.Split(new [] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                                                                            .Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true))
-                                                                            .ToArray();
-                    }
+                    options.ImageTypes = hasDtoOptions.EnableImageTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                                                        .Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true))
+                                                                        .ToArray();
                 }
             }
 

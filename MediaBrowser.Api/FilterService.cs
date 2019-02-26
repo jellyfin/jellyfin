@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -180,7 +181,7 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(filters);
         }
 
-        private QueryFiltersLegacy GetFilters(BaseItem[] items)
+        private QueryFiltersLegacy GetFilters(IReadOnlyCollection<BaseItem> items)
         {
             var result = new QueryFiltersLegacy();
 
