@@ -553,14 +553,14 @@ namespace Emby.Server.Implementations
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             await Task.WhenAll(StartEntryPoints(entryPoints, true));
-            Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:fff} ms", stopWatch.Elapsed);
+            Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
 
             Logger.LogInformation("Core startup complete");
             HttpServer.GlobalResponse = null;
 
             stopWatch.Restart();
             await Task.WhenAll(StartEntryPoints(entryPoints, false));
-            Logger.LogInformation("Executed all post-startup entry points in {Elapsed:fff} ms", stopWatch.Elapsed);
+            Logger.LogInformation("Executed all post-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
             stopWatch.Stop();
         }
 
