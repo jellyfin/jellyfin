@@ -495,16 +495,28 @@ namespace Emby.XmlTv.Classes
                     ParseMovieDbSystem(reader, result);
                     break;
                 case "SxxExx":
-                    // TODO
-                    // <episode-num system="SxxExx">S03E12</episode-num>
-                    reader.Skip();
+                    ParseSxxExxSystem(reader, result);
                     break;
                 default: // Handles empty string and nulls
                     reader.Skip();
                     break;
             }
         }
+        public void ParseSxxExxSystem(XmlReader reader, XmlTvProgram result)
+        {
 
+
+            string value = reader.ReadElementContentAsString().ToUpper();
+            //Validate format
+            if (Regex.IsMatch(value,"[S][0-9]+[E][0-9]+"))
+            {
+                //Split at E - take before and remove S
+                string season = value.Split('E')[0].Substring(1);
+                string episode = value.Split('E')[1];
+                result.Episode.Series = int.Parse(season);
+                result.Episode.Episode = int.Parse(episode);
+            }
+        }
         public void ParseMovieDbSystem(XmlReader reader, XmlTvProgram result)
         {
             // <episode-num system="thetvdb.com">series/248841</episode-num>
