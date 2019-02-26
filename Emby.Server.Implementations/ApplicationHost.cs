@@ -109,6 +109,7 @@ using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -621,8 +622,8 @@ namespace Emby.Server.Implementations
 
             Host = new WebHostBuilder()
                 .UseKestrel()
-                .UseContentRoot("/Users/clausvium/RiderProjects/jellyfin/Jellyfin.Server/bin/Debug/netcoreapp2.1/jellyfin-web/src")
-                .UseStartup<Startup>()
+                .UseContentRoot(Path.Combine(Directory.GetCurrentDirectory(), @"jellyfin-web\src"))
+                //.UseStartup<Startup>()
 //                .ConfigureServices(async services =>
 //                {
 //                    services.AddSingleton<IStartup>(startUp);
@@ -726,7 +727,7 @@ namespace Emby.Server.Implementations
             }
 
             var req = new WebSocketSharpRequest(request, response, request.Path, Logger);
-            await ((HttpListenerHost)HttpServer).RequestHandler(req,request.Path.ToString(), request.Host.ToString(), data.Values["localpath"].ToString(), CancellationToken.None).ConfigureAwait(false);
+            await ((HttpListenerHost)HttpServer).RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), data.Values["localpath"].ToString(), CancellationToken.None).ConfigureAwait(false);
         }
 
         protected virtual IHttpClient CreateHttpClient()
