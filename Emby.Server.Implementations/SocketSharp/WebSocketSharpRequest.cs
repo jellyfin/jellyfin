@@ -341,10 +341,10 @@ namespace Emby.Server.Implementations.SocketSharp
                 {
                     var mode = HandlerFactoryPath;
 
-                    var pos = request.Path.ToString().IndexOf("?", StringComparison.Ordinal);
+                    var pos = RawUrl.IndexOf("?", StringComparison.Ordinal);
                     if (pos != -1)
                     {
-                        var path = request.Path.ToString().Substring(0, pos);
+                        var path = RawUrl.Substring(0, pos);
                         this.pathInfo = GetPathInfo(
                             path,
                             mode,
@@ -352,10 +352,10 @@ namespace Emby.Server.Implementations.SocketSharp
                     }
                     else
                     {
-                        this.pathInfo = request.Path.ToString();
+                        this.pathInfo = RawUrl;
                     }
 
-                    this.pathInfo = System.Net.WebUtility.UrlDecode(pathInfo);
+                    this.pathInfo = WebUtility.UrlDecode(pathInfo);
                     this.pathInfo = NormalizePathInfo(pathInfo, mode);
                 }
 
