@@ -23,7 +23,8 @@ namespace Emby.Server.Implementations.Security
 
         public void Initialize()
         {
-            using (var connection = CreateConnection())
+            CreateConnections().GetAwaiter().GetResult();
+            using (var connection = GetConnection())
             {
                 RunDefaultInitialization(connection);
 
@@ -48,7 +49,7 @@ namespace Emby.Server.Implementations.Security
             }
         }
 
-        private void TryMigrate(SQLiteDatabaseConnection connection, bool tableNewlyCreated)
+        private void TryMigrate(ManagedConnection connection, bool tableNewlyCreated)
         {
             try
             {
@@ -87,7 +88,7 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException(nameof(info));
             }
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -119,7 +120,7 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException(nameof(info));
             }
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -151,7 +152,7 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException(nameof(info));
             }
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -248,7 +249,7 @@ namespace Emby.Server.Implementations.Security
 
             var list = new List<AuthenticationInfo>();
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 return connection.RunInTransaction(db =>
                 {
@@ -346,7 +347,7 @@ namespace Emby.Server.Implementations.Security
 
         public DeviceOptions GetDeviceOptions(string deviceId)
         {
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 return connection.RunInTransaction(db =>
                 {
@@ -378,7 +379,7 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException(nameof(options));
             }
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {

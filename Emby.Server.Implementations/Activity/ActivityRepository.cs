@@ -43,7 +43,8 @@ namespace Emby.Server.Implementations.Activity
 
         private void InitializeInternal()
         {
-            using (var connection = CreateConnection())
+            CreateConnections().GetAwaiter().GetResult();
+            using (var connection = GetConnection())
             {
                 RunDefaultInitialization(connection);
 
@@ -57,7 +58,7 @@ namespace Emby.Server.Implementations.Activity
             }
         }
 
-        private void TryMigrate(SQLiteDatabaseConnection connection)
+        private void TryMigrate(ManagedConnection connection)
         {
             try
             {
@@ -85,7 +86,7 @@ namespace Emby.Server.Implementations.Activity
                 throw new ArgumentNullException(nameof(entry));
             }
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -123,7 +124,7 @@ namespace Emby.Server.Implementations.Activity
                 throw new ArgumentNullException(nameof(entry));
             }
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -157,7 +158,7 @@ namespace Emby.Server.Implementations.Activity
 
         public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit)
         {
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 var commandText = BaseActivitySelectText;
                 var whereClauses = new List<string>();

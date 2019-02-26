@@ -40,7 +40,8 @@ namespace Emby.Server.Implementations.Data
         /// <returns>Task.</returns>
         public void Initialize()
         {
-            using (var connection = CreateConnection())
+            CreateConnections().GetAwaiter().GetResult();
+            using (var connection = GetConnection())
             {
                 RunDefaultInitialization(connection);
 
@@ -60,7 +61,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void TryMigrateToLocalUsersTable(SQLiteDatabaseConnection connection)
+        private void TryMigrateToLocalUsersTable(ManagedConnection connection)
         {
             try
             {
@@ -119,7 +120,7 @@ namespace Emby.Server.Implementations.Data
 
             var serialized = _jsonSerializer.SerializeToBytes(user);
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -153,7 +154,7 @@ namespace Emby.Server.Implementations.Data
 
             var serialized = _jsonSerializer.SerializeToBytes(user);
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -168,7 +169,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private User GetUser(Guid guid, SQLiteDatabaseConnection connection)
+        private User GetUser(Guid guid, ManagedConnection connection)
         {
             using (var statement = connection.PrepareStatement("select id,guid,data from LocalUsersv2 where guid=@guid"))
             {
@@ -206,7 +207,7 @@ namespace Emby.Server.Implementations.Data
         {
             var list = new List<User>();
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 foreach (var row in connection.Query("select id,guid,data from LocalUsersv2"))
                 {
@@ -230,7 +231,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(user));
             }
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {

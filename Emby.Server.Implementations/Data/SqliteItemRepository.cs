@@ -92,8 +92,6 @@ namespace Emby.Server.Implementations.Data
 
         private const string ChaptersTableName = "Chapters2";
 
-        protected override int? CacheSize => 20000;
-
         protected override bool EnableTempStoreMemory => true;
 
         /// <summary>
@@ -101,7 +99,8 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         public void Initialize(SqliteUserDataRepository userDataRepo, IUserManager userManager)
         {
-            using (var connection = CreateConnection())
+            CreateConnections().GetAwaiter().GetResult();
+            using (var connection = GetConnection())
             {
                 RunDefaultInitialization(connection);
 
@@ -551,7 +550,7 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -602,7 +601,7 @@ namespace Emby.Server.Implementations.Data
                 tuples.Add((item, ancestorIds, topParent, userdataKey, inheritedTags));
             }
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -1186,7 +1185,7 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 using (var statement = PrepareStatementSafe(connection, "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems where guid = @guid"))
                 {
@@ -1899,7 +1898,7 @@ namespace Emby.Server.Implementations.Data
         {
             CheckDisposed();
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 var list = new List<ChapterInfo>();
 
@@ -1928,7 +1927,7 @@ namespace Emby.Server.Implementations.Data
         {
             CheckDisposed();
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 using (var statement = PrepareStatementSafe(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex"))
                 {
@@ -1997,7 +1996,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(chapters));
             }
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -2533,7 +2532,7 @@ namespace Emby.Server.Implementations.Data
                 commandText += " where " + string.Join(" AND ", whereClauses);
             }
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 using (var statement = PrepareStatementSafe(connection, commandText))
                 {
@@ -2602,7 +2601,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 var list = new List<BaseItem>();
 
@@ -2820,7 +2819,7 @@ namespace Emby.Server.Implementations.Data
                 statementTexts.Add(commandText);
             }
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 return connection.RunInTransaction(db =>
                 {
@@ -3052,7 +3051,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 var list = new List<Guid>();
 
@@ -3119,7 +3118,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             var list = new List<Tuple<Guid, string>>();
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 using (var statement = PrepareStatementSafe(connection, commandText))
                 {
@@ -3231,7 +3230,7 @@ namespace Emby.Server.Implementations.Data
                 statementTexts.Add(commandText);
             }
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 return connection.RunInTransaction(db =>
                 {
@@ -4862,7 +4861,7 @@ namespace Emby.Server.Implementations.Data
 
         private void UpdateInheritedTags(CancellationToken cancellationToken)
         {
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -4925,7 +4924,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -4982,7 +4981,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             commandText += " order by ListOrder";
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 var list = new List<string>();
                 using (var statement = PrepareStatementSafe(connection, commandText))
@@ -5019,7 +5018,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             commandText += " order by ListOrder";
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 var list = new List<PersonInfo>();
 
@@ -5245,7 +5244,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             commandText += " Group By CleanValue";
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 var list = new List<string>();
 
@@ -5431,7 +5430,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 statementTexts.Add(countText);
             }
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 return connection.RunInTransaction(db =>
                 {
@@ -5698,7 +5697,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -5815,7 +5814,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             cmdText += " order by StreamIndex ASC";
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 var list = new List<MediaStream>();
 
@@ -5859,7 +5858,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {

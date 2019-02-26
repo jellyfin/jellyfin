@@ -61,7 +61,8 @@ namespace Emby.Server.Implementations.Data
         /// <returns>Task.</returns>
         private void InitializeInternal()
         {
-            using (var connection = CreateConnection())
+            CreateConnections().GetAwaiter().GetResult();
+            using (var connection = GetConnection())
             {
                 RunDefaultInitialization(connection);
 
@@ -98,7 +99,7 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -139,7 +140,7 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -168,7 +169,7 @@ namespace Emby.Server.Implementations.Data
 
             var guidId = displayPreferencesId.GetMD5();
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where id = @id and userId=@userId and client=@client"))
                 {
@@ -199,7 +200,7 @@ namespace Emby.Server.Implementations.Data
         {
             var list = new List<DisplayPreferences>();
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where userId=@userId"))
                 {

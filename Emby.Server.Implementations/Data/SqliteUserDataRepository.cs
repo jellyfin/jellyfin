@@ -34,7 +34,8 @@ namespace Emby.Server.Implementations.Data
         /// <returns>Task.</returns>
         public void Initialize(IUserManager userManager)
         {
-            using (var connection = CreateConnection())
+            CreateConnections().GetAwaiter().GetResult();
+            using (var connection = GetConnection())
             {
                 var userDatasTableExists = TableExists(connection, "UserDatas");
                 var userDataTableExists = TableExists(connection, "userdata");
@@ -172,7 +173,7 @@ namespace Emby.Server.Implementations.Data
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -240,7 +241,7 @@ namespace Emby.Server.Implementations.Data
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -275,7 +276,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(key));
             }
 
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId"))
                 {
@@ -321,7 +322,7 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<UserItemData>();
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where userId=@UserId"))
                 {
