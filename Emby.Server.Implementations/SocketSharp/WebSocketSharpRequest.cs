@@ -7,6 +7,7 @@ using System.Text;
 using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -44,11 +45,11 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public object Dto { get; set; }
 
-        public string RawUrl => request.Path.ToUriComponent();
+        public string RawUrl => request.Path.ToString();
 
-        public string AbsoluteUri => request.Path.ToUriComponent().TrimEnd('/');
+        public string AbsoluteUri => request.GetDisplayUrl().TrimEnd('/');
 
-        public string UserHostAddress => "";
+        public string UserHostAddress => request.HttpContext.Connection.RemoteIpAddress.ToString();
 
         public string XForwardedFor
             => StringValues.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"].ToString();
@@ -66,7 +67,7 @@ namespace Emby.Server.Implementations.SocketSharp
             remoteIp ??
             (remoteIp = CheckBadChars(XForwardedFor) ??
                         NormalizeIp(CheckBadChars(XRealIp) ??
-                                    (string.IsNullOrEmpty(request.Host.Host) ? null : NormalizeIp(request.Host.Host))));
+                                    (string.IsNullOrEmpty(request.HttpContext.Connection.RemoteIpAddress.ToString()) ? null : NormalizeIp(request.HttpContext.Connection.RemoteIpAddress.ToString()))));
 
         private static readonly char[] HttpTrimCharacters = new char[] { (char)0x09, (char)0xA, (char)0xB, (char)0xC, (char)0xD, (char)0x20 };
 
@@ -199,7 +200,7 @@ namespace Emby.Server.Implementations.SocketSharp
 
             const string serverDefaultContentType = "application/json";
 
-            var acceptContentTypes = httpReq.Headers.GetCommaSeparatedValues(HeaderNames.Accept); // TODO;
+            var acceptContentTypes = httpReq.Headers.GetCommaSeparatedValues(HeaderNames.Accept);
             string defaultContentType = null;
             if (HasAnyOfContentTypes(httpReq, FormUrlEncoded, MultiPartFormData))
             {
@@ -448,7 +449,7 @@ namespace Emby.Server.Implementations.SocketSharp
         private QueryParamCollection queryString;
         public QueryParamCollection QueryString => queryString ?? (queryString = new QueryParamCollection(request.Query));
 
-        public bool IsLocal => true; // TODO
+        public bool IsLocal => string.Equals(request.HttpContext.Connection.LocalIpAddress.ToString(), request.HttpContext.Connection.RemoteIpAddress.ToString());
 
         private string httpMethod;
         public string HttpMethod =>

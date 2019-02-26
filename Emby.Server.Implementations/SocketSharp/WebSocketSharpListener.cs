@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
  using System.Net;
 using System.Threading;
@@ -8,6 +8,7 @@ using Emby.Server.Implementations.Net;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 
  namespace Emby.Server.Implementations.SocketSharp
@@ -120,14 +121,14 @@ using Microsoft.Extensions.Logging;
 //            return RequestHandler(httpReq, uri.OriginalString, uri.Host, uri.LocalPath, cancellationToken);
 //        }
 
-        private async Task ProcessWebSocketRequest(HttpListenerContext ctx)
+        public async Task ProcessWebSocketRequest(HttpContext ctx)
         {
             try
             {
-                var endpoint = ctx.Request.RemoteEndPoint.ToString();
-                var url = ctx.Request.RawUrl;
+                var endpoint = ctx.Connection.RemoteIpAddress.ToString();
+                var url = ctx.Request.GetDisplayUrl();
 
-                var queryString = new QueryParamCollection(ctx.Request.QueryString);
+                var queryString = new QueryParamCollection(ctx.Request.Query);
 
                 var connectingArgs = new WebSocketConnectingEventArgs
                 {
@@ -142,40 +143,40 @@ using Microsoft.Extensions.Logging;
                 {
                     _logger.LogDebug("Web socket connection allowed");
 
-                    var webSocketContext = await ctx.AcceptWebSocketAsync(null).ConfigureAwait(false);
+                    var webSocketContext = await ctx.WebSockets.AcceptWebSocketAsync(null).ConfigureAwait(false);
 
                     if (WebSocketConnected != null)
                     {
-                        SharpWebSocket socket = null; //new SharpWebSocket(webSocketContext.WebSocket, _logger);
-                        await socket.ConnectAsServerAsync().ConfigureAwait(false);
+                        //SharpWebSocket socket = new SharpWebSocket(webSocketContext, _logger);
+                        //await socket.ConnectAsServerAsync().ConfigureAwait(false);
 
-                        WebSocketConnected(new WebSocketConnectEventArgs
-                        {
-                            Url = url,
-                            QueryString = queryString,
-                            WebSocket = socket,
-                            Endpoint = endpoint
-                        });
+                        //WebSocketConnected(new WebSocketConnectEventArgs
+                        //{
+                        //    Url = url,
+                        //    QueryString = queryString,
+                        //    WebSocket = socket,
+                        //    Endpoint = endpoint
+                        //});
 
-                        await ReceiveWebSocketAsync(ctx, socket).ConfigureAwait(false);
+                        //await ReceiveWebSocketAsync(ctx, socket).ConfigureAwait(false);
                     }
                 }
                 else
                 {
                     _logger.LogWarning("Web socket connection not allowed");
                     ctx.Response.StatusCode = 401;
-                    ctx.Response.Close();
+                    //ctx.Response.Close();
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "AcceptWebSocketAsync error");
                 ctx.Response.StatusCode = 500;
-                ctx.Response.Close();
+                //ctx.Response.Close();
             }
         }
 
-        private async Task ReceiveWebSocketAsync(HttpListenerContext ctx, SharpWebSocket socket)
+        private async Task ReceiveWebSocketAsync(HttpContext ctx, SharpWebSocket socket)
         {
             try
             {
@@ -187,12 +188,11 @@ using Microsoft.Extensions.Logging;
             }
         }
 
-        private void TryClose(HttpListenerContext ctx, int statusCode)
+        private void TryClose(HttpContext ctx, int statusCode)
         {
             try
             {
                 ctx.Response.StatusCode = statusCode;
-                ctx.Response.Close();
             }
             catch (ObjectDisposedException)
             {

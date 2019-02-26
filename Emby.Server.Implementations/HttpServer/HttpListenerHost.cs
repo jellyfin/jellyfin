@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Services;
+using Emby.Server.Implementations.SocketSharp;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -73,6 +74,10 @@ namespace Emby.Server.Implementations.HttpServer
 
             Instance = this;
             ResponseFilters = Array.Empty<Action<IRequest, IResponse, object>>();
+            _websocketlistener = new WebSocketSharpListener(_logger)
+            {
+                WebSocketConnected = OnWebSocketConnected
+            };
         }
 
         public string GlobalResponse { get; set; }
@@ -796,6 +801,8 @@ namespace Emby.Server.Implementations.HttpServer
 
         private bool _disposed;
         private readonly object _disposeLock = new object();
+        public WebSocketSharpListener _websocketlistener;
+
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed) return;
