@@ -1676,7 +1676,7 @@ namespace Emby.Server.Implementations
                     LogErrorResponseBody = false,
                     LogErrors = logPing,
                     LogRequest = logPing,
-                    TimeoutMs = 30000,
+                    TimeoutMs = 5000,
                     BufferContent = false,
 
                     CancellationToken = cancellationToken

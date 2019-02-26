@@ -273,11 +273,11 @@ namespace Emby.Server.Implementations.SocketSharp
 
         private static string GetQueryStringContentType(HttpRequest httpReq)
         {
-            string format = httpReq.Query["format"];
+            ReadOnlySpan<char> format = httpReq.Query["format"].ToString().AsSpan();
             if (format == null)
             {
                 const int formatMaxLength = 4;
-                string pi = httpReq.Path.ToString();
+                ReadOnlySpan<char> pi = httpReq.Path.ToString().AsSpan();
                 if (pi == null || pi.Length <= formatMaxLength)
                 {
                     return null;
@@ -285,7 +285,7 @@ namespace Emby.Server.Implementations.SocketSharp
 
                 if (pi[0] == '/')
                 {
-                    pi = pi.Substring(1);
+                    pi = pi.Slice(1);
                 }
 
                 format = LeftPart(pi, '/');
@@ -296,11 +296,11 @@ namespace Emby.Server.Implementations.SocketSharp
             }
 
             format = LeftPart(format, '.');
-            if (format.ToLower().Contains("json"))
+            if (format.Contains("json".AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
                 return "application/json";
             }
-            else if (format.ToLower().Contains("xml"))
+            else if (format.Contains("xml".AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
                 return "application/xml";
             }
@@ -308,25 +308,14 @@ namespace Emby.Server.Implementations.SocketSharp
             return null;
         }
 
-        public static string LeftPart(string strVal, char needle)
+        public static ReadOnlySpan<char> LeftPart(ReadOnlySpan<char> strVal, char needle)
         {
             if (strVal == null)
             {
                 return null;
             }
 
-            var pos = strVal.IndexOf(needle.ToString(), StringComparison.Ordinal);
-            return pos == -1 ? strVal : strVal.Substring(0, pos);
-        }
-
-        public static ReadOnlySpan<string> LeftPart(ReadOnlySpan<string> strVal, char needle)
-        {
-            if (strVal == null)
-            {
-                return null;
-            }
-
-            var pos = strVal.IndexOf(needle.ToString());
+            var pos = strVal.IndexOf(needle);
             return pos == -1 ? strVal : strVal.Slice(0, pos);
         }
 
