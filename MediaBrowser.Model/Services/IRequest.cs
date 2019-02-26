@@ -41,8 +41,6 @@ namespace MediaBrowser.Model.Services
 
         string UserAgent { get; }
 
-        IDictionary<string, Cookie> Cookies { get; }
-
         /// <summary>
         /// The expected Response ContentType for this request
         /// </summary>

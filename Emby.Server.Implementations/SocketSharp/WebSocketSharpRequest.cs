@@ -412,25 +412,6 @@ namespace Emby.Server.Implementations.SocketSharp
             return path.Length > 1 ? path.TrimEnd('/') : "/";
         }
 
-        private Dictionary<string, System.Net.Cookie> cookies;
-        public IDictionary<string, System.Net.Cookie> Cookies
-        {
-            get
-            {
-                if (cookies == null)
-                {
-                    cookies = new Dictionary<string, System.Net.Cookie>();
-                    foreach (var cookie in this.request.Cookies)
-                    {
-                        var httpCookie = cookie;
-                        cookies[httpCookie.Key] = new Cookie(httpCookie.Key, httpCookie.Value, "", "");
-                    }
-                }
-
-                return cookies;
-            }
-        }
-
         public string UserAgent => request.Headers[HeaderNames.UserAgent];
 
         public QueryParamCollection Headers => new QueryParamCollection(request.Headers);
