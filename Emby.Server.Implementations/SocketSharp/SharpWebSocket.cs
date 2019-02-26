@@ -28,18 +28,8 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public SharpWebSocket(SocketHttpListener.WebSocket socket, ILogger logger)
         {
-            if (socket == null)
-            {
-                throw new ArgumentNullException(nameof(socket));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            _logger = logger;
-            WebSocket = socket;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            WebSocket = socket ?? throw new ArgumentNullException(nameof(socket));
 
             socket.OnMessage += OnSocketMessage;
             socket.OnClose += OnSocketClose;

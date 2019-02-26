@@ -657,85 +657,92 @@ namespace Emby.Server.Implementations
                         ReceiveBufferSize = 0x10000
                     });
 
-                    app.UseRouter(r =>
-                        {
-                            // TODO all the verbs, but really MVC...
-                            r.MapGet("/{*localpath}", ExecuteHandler);
-                            r.MapPut("/{*localpath}", ExecuteHandler);
-                            r.MapPost("/{*localpath}", ExecuteHandler);
-                            r.MapDelete("/{*localpath}", ExecuteHandler);
-                            r.MapVerb("HEAD", "/{*localpath}", ExecuteHandler);
-                        });
+                    app.Use(ExecuteWebsocketHandlerAsync);
+                    app.Use(ExecuteHttpHandlerAsync);
                 })
                 .Build();
         }
 
-        public async Task ExecuteHandler(HttpRequest request, Microsoft.AspNetCore.Http.HttpResponse response, RouteData data)
+        public async Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next)
         {
-            var ctx = request.HttpContext;
-            if (ctx.WebSockets.IsWebSocketRequest)
+            if (!context.WebSockets.IsWebSocketRequest)
             {
-                await ((HttpListenerHost)HttpServer)._websocketlistener.ProcessWebSocketRequest(ctx).ConfigureAwait(false);
-//                try
-//                {
-//                    var endpoint = ctx.Request.Path.ToString();
-//                    var url = ctx.Request.Path.ToString();
-
-                //                    var queryString = new QueryParamCollection(request.Query);
-
-                //                    var connectingArgs = new WebSocketConnectingEventArgs
-                //                    {
-                //                        Url = url,
-                //                        QueryString = queryString,
-                //                        Endpoint = endpoint
-                //                    };
-
-                //                    if (connectingArgs.AllowConnection)
-                //                    {
-                //                        Logger.LogDebug("Web socket connection allowed");
-
-                //                        var webSocketContext = ctx.WebSockets.AcceptWebSocketAsync(null).Result;
-
-                //                        //SharpWebSocket socket = new SharpWebSocket(webSocketContext, Logger);
-                //                        //socket.ConnectAsServerAsync().ConfigureAwait(false);
-
-                ////                        var connection = new WebSocketConnection(webSocketContext, e.Endpoint, _jsonSerializer, _logger)
-                ////                        {
-                ////                            OnReceive = ProcessWebSocketMessageReceived,
-                ////                            Url = e.Url,
-                ////                            QueryString = e.QueryString ?? new QueryParamCollection()
-                ////                        };
-                ////
-                ////                        connection.Closed += Connection_Closed;
-                ////
-                ////                        lock (_webSocketConnections)
-                ////                        {
-                ////                            _webSocketConnections.Add(connection);
-                ////                        }
-                ////
-                ////                        WebSocketConnected(new WebSocketConnectEventArgs
-                ////                        {
-                ////                            Url = url,
-                ////                            QueryString = queryString,
-                ////                            WebSocket = socket,
-                ////                            Endpoint = endpoint
-                ////                        });
-                //                          await webSocketContext.ReceiveAsync(new ArraySegment<byte>(), CancellationToken.None).ConfigureAwait(false);
-                //                    }
-                //                    else
-                //                    {
-                //                        Logger.LogWarning("Web socket connection not allowed");
-                //                        ctx.Response.StatusCode = 401;
-                //                    }
-                //                }
-                //                catch (Exception ex)
-                //                {
-                //                    ctx.Response.StatusCode = 500;
-                //                }
+                await next();
+                return;
             }
 
+            await ((HttpListenerHost)HttpServer)._websocketlistener.ProcessWebSocketRequest(context).ConfigureAwait(false);
+            //                try
+            //                {
+            //                    var endpoint = ctx.Request.Path.ToString();
+            //                    var url = ctx.Request.Path.ToString();
+
+            //                    var queryString = new QueryParamCollection(request.Query);
+
+            //                    var connectingArgs = new WebSocketConnectingEventArgs
+            //                    {
+            //                        Url = url,
+            //                        QueryString = queryString,
+            //                        Endpoint = endpoint
+            //                    };
+
+            //                    if (connectingArgs.AllowConnection)
+            //                    {
+            //                        Logger.LogDebug("Web socket connection allowed");
+
+            //                        var webSocketContext = ctx.WebSockets.AcceptWebSocketAsync(null).Result;
+
+            //                        //SharpWebSocket socket = new SharpWebSocket(webSocketContext, Logger);
+            //                        //socket.ConnectAsServerAsync().ConfigureAwait(false);
+
+            ////                        var connection = new WebSocketConnection(webSocketContext, e.Endpoint, _jsonSerializer, _logger)
+            ////                        {
+            ////                            OnReceive = ProcessWebSocketMessageReceived,
+            ////                            Url = e.Url,
+            ////                            QueryString = e.QueryString ?? new QueryParamCollection()
+            ////                        };
+            ////
+            ////                        connection.Closed += Connection_Closed;
+            ////
+            ////                        lock (_webSocketConnections)
+            ////                        {
+            ////                            _webSocketConnections.Add(connection);
+            ////                        }
+            ////
+            ////                        WebSocketConnected(new WebSocketConnectEventArgs
+            ////                        {
+            ////                            Url = url,
+            ////                            QueryString = queryString,
+            ////                            WebSocket = socket,
+            ////                            Endpoint = endpoint
+            ////                        });
+            //                          await webSocketContext.ReceiveAsync(new ArraySegment<byte>(), CancellationToken.None).ConfigureAwait(false);
+            //                    }
+            //                    else
+            //                    {
+            //                        Logger.LogWarning("Web socket connection not allowed");
+            //                        ctx.Response.StatusCode = 401;
+            //                    }
+            //                }
+            //                catch (Exception ex)
+            //                {
+            //                    ctx.Response.StatusCode = 500;
+            //                }
+        }
+        public async Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
+        {
+            if (context.WebSockets.IsWebSocketRequest)
+            {
+                await next();
+                return;
+            }
+
+            var request = context.Request;
+            var response = context.Response;
+            var localPath = context.Request.Path.ToString().TrimStart('/');
+
             var req = new WebSocketSharpRequest(request, response, request.Path, Logger);
-            await ((HttpListenerHost)HttpServer).RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), data.Values["localpath"].ToString(), CancellationToken.None).ConfigureAwait(false);
+            await ((HttpListenerHost)HttpServer).RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, CancellationToken.None).ConfigureAwait(false);
         }
 
         protected virtual IHttpClient CreateHttpClient()
