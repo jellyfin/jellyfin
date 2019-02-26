@@ -646,7 +646,7 @@ namespace Emby.Server.Implementations
                 .UseUrls("http://localhost:8096")
                 .ConfigureServices(services =>
                 {
-                    services.AddRouting();
+                    services.AddResponseCompression();
                     services.AddHttpContextAccessor();
                     services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
                 })
@@ -657,6 +657,7 @@ namespace Emby.Server.Implementations
                         ReceiveBufferSize = 0x10000
                     });
 
+                    app.UseResponseCompression();
                     app.Use(ExecuteWebsocketHandlerAsync);
                     app.Use(ExecuteHttpHandlerAsync);
                 })
