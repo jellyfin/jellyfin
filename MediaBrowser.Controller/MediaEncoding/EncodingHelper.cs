@@ -1904,7 +1904,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 flags.Add("+ignidx");
             }
-            if (state.GenPtsInput)
+            if (state.GenPtsInput || string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
                 flags.Add("+genpts");
             }
