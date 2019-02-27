@@ -33,8 +33,6 @@ using Microsoft.Extensions.Logging;
         public Func<Exception, IRequest, bool, bool, Task> ErrorHandler { get; set; }
         public Func<IHttpRequest, string, string, string, CancellationToken, Task> RequestHandler { get; set; }
 
-        public Action<WebSocketConnectingEventArgs> WebSocketConnecting { get; set; }
-
         public Action<WebSocketConnectEventArgs> WebSocketConnected { get; set; }
 
         private static void LogRequest(ILogger logger, HttpRequest request)
@@ -52,60 +50,41 @@ using Microsoft.Extensions.Logging;
                 var endpoint = ctx.Connection.RemoteIpAddress.ToString();
                 var url = ctx.Request.GetDisplayUrl();
 
-                var connectingArgs = new WebSocketConnectingEventArgs
+                var webSocketContext = await ctx.WebSockets.AcceptWebSocketAsync(null).ConfigureAwait(false);
+                var socket = new SharpWebSocket(webSocketContext, _logger);
+
+                WebSocketConnected(new WebSocketConnectEventArgs
                 {
                     Url = url,
                     QueryString = ctx.Request.Query,
+                    WebSocket = socket,
                     Endpoint = endpoint
-                };
+                });
 
-                WebSocketConnecting?.Invoke(connectingArgs);
+                WebSocketReceiveResult result;
+                var message = new List<byte>();
 
-                if (connectingArgs.AllowConnection)
+                do
                 {
-                    _logger.LogDebug("Web socket connection allowed");
+                    var buffer = WebSocket.CreateServerBuffer(4096);
+                    result = await webSocketContext.ReceiveAsync(buffer, _disposeCancellationToken);
+                    message.AddRange(buffer.Array.Take(result.Count));
 
-                    var webSocketContext = await ctx.WebSockets.AcceptWebSocketAsync(null).ConfigureAwait(false);
-                    var socket = new SharpWebSocket(webSocketContext, _logger);
-
-                    WebSocketConnected(new WebSocketConnectEventArgs
+                    if (result.EndOfMessage)
                     {
-                        Url = url,
-                        QueryString = ctx.Request.Query,
-                        WebSocket = socket,
-                        Endpoint = endpoint
-                    });
-
-                    WebSocketReceiveResult result;
-                    var message = new List<byte>();
-
-                    do
-                    {
-                        var buffer = WebSocket.CreateServerBuffer(4096);
-                        result = await webSocketContext.ReceiveAsync(buffer, _disposeCancellationToken);
-                        message.AddRange(buffer.Array.Take(result.Count));
-
-                        if (result.EndOfMessage)
-                        {
-                            socket.OnReceiveBytes(message.ToArray());
-                            message.Clear();
-                        }
-                    } while (socket.State == WebSocketState.Open && result.MessageType != WebSocketMessageType.Close);
-
-
-                    if (webSocketContext.State == WebSocketState.Open)
-                    {
-                        await webSocketContext.CloseAsync(result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
-                            result.CloseStatusDescription, _disposeCancellationToken);
+                        socket.OnReceiveBytes(message.ToArray());
+                        message.Clear();
                     }
+                } while (socket.State == WebSocketState.Open && result.MessageType != WebSocketMessageType.Close);
 
-                    socket.Dispose();
-                }
-                else
+
+                if (webSocketContext.State == WebSocketState.Open)
                 {
-                    _logger.LogWarning("Web socket connection not allowed");
-                    ctx.Response.StatusCode = 401;
+                    await webSocketContext.CloseAsync(result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
+                        result.CloseStatusDescription, _disposeCancellationToken);
                 }
+
+                socket.Dispose();
             }
             catch (Exception ex)
             {

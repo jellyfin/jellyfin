@@ -102,12 +102,6 @@ namespace Emby.Server.Implementations.HttpServer
             _socket = socket;
             _socket.OnReceiveBytes = OnReceiveInternal;
 
-            var memorySocket = socket as IMemoryWebSocket;
-            if (memorySocket != null)
-            {
-                memorySocket.OnReceiveMemoryBytes = OnReceiveInternal;
-            }
-
             RemoteEndPoint = remoteEndPoint;
             _logger = logger;
 
@@ -143,34 +137,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        /// <summary>
-        /// Called when [receive].
-        /// </summary>
-        /// <param name="memory">The memory block.</param>
-        /// <param name="length">The length of the memory block.</param>
-        private void OnReceiveInternal(Memory<byte> memory, int length)
-        {
-            LastActivityDate = DateTime.UtcNow;
-
-            if (OnReceive == null)
-            {
-                return;
-            }
-
-            var bytes = memory.Slice(0, length).ToArray();
-
-            var charset = CharsetDetector.DetectFromBytes(bytes).Detected?.EncodingName;
-
-            if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
-            {
-                OnReceiveInternal(Encoding.UTF8.GetString(bytes, 0, bytes.Length));
-            }
-            else
-            {
-                OnReceiveInternal(Encoding.ASCII.GetString(bytes, 0, bytes.Length));
-            }
-        }
-
         private void OnReceiveInternal(string message)
         {
             LastActivityDate = DateTime.UtcNow;
@@ -194,7 +160,7 @@ namespace Emby.Server.Implementations.HttpServer
                 var info = new WebSocketMessageInfo
                 {
                     MessageType = stub.MessageType,
-                    Data = stub.Data == null ? null : stub.Data.ToString(),
+                    Data = stub.Data?.ToString(),
                     Connection = this
                 };
 

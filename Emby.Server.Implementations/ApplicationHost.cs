@@ -35,6 +35,7 @@ using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
+using Emby.Server.Implementations.Middleware;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Reflection;
@@ -641,6 +642,7 @@ namespace Emby.Server.Implementations
                     app.UseWebSockets();
 
                     app.UseResponseCompression();
+                    // TODO app.UseMiddleware<WebSocketMiddleware>();
                     app.Use(ExecuteWebsocketHandlerAsync);
                     app.Use(ExecuteHttpHandlerAsync);
                 })
