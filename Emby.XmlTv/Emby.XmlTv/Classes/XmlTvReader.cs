@@ -511,14 +511,7 @@ namespace Emby.XmlTv.Classes
             if (res.success)
             {
                 int.TryParse(res.groups[1].Value, out result.Episode.Series);
-                int.TryParse(res.groups[2].Value, out result.Episode.Episode);
-                } 
-                //Prevent potential DoS from guide injected with Int too large
-                catch(System.OverflowException ex)
-                {
-                    //XML file contained data too large/small for an Int
-                }
-                    
+                int.TryParse(res.groups[2].Value, out result.Episode.Episode);    
             }
         }
         public void ParseMovieDbSystem(XmlReader reader, XmlTvProgram result)
