@@ -23,9 +23,8 @@ namespace Emby.Server.Implementations.SocketSharp
         /// <value>The web socket.</value>
         private readonly WebSocket _webSocket;
 
-        private TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        private bool _disposed = false;
+        private bool _disposed;
 
         public SharpWebSocket(WebSocket socket, ILogger logger)
         {
