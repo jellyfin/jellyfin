@@ -8,66 +8,6 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
-    public class FFmpegVersion
-    {
-        private readonly int _major;
-        private readonly int _minor;
-
-        private const int _unknown = 0;
-
-        public FFmpegVersion(string p1)
-        {
-            var match = Regex.Match(p1, @"(?<major>\d+)\.(?<minor>\d+)");
-
-            if (match.Groups["major"].Success && match.Groups["minor"].Success)
-            {
-                _major = int.Parse(match.Groups["major"].Value);
-                _minor = int.Parse(match.Groups["minor"].Value);
-            }
-            else
-            {
-                _major = _unknown;
-                _minor = _unknown;
-            }
-        }
-
-        public override string ToString()
-        {
-            switch (_major)
-            {
-                case _unknown:
-                    return "Unknown";
-                default:
-                    return $"{_major}.{_minor}";
-            }
-        }
-
-        public bool Unknown()
-        {
-            return _major == _unknown;
-        }
-
-        public bool Below(FFmpegVersion checkAgainst)
-        {
-            return ToScalar() < checkAgainst.ToScalar();
-        }
-
-        public bool Above(FFmpegVersion checkAgainst)
-        {
-            return ToScalar() > checkAgainst.ToScalar();
-        }
-
-        public bool Same(FFmpegVersion checkAgainst)
-        {
-            return ToScalar() == checkAgainst.ToScalar();
-        }
-
-        private int ToScalar()
-        {
-            return (_major * 1000) + _minor;
-        }
-    }
-
     public class EncoderValidator
     {
         private readonly ILogger _logger;
@@ -119,19 +59,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // The min and max FFmpeg versions required to run jellyfin successfully
-            FFmpegVersion minRequired = new FFmpegVersion("4.0");
-            FFmpegVersion maxRequired = new FFmpegVersion("4.0");
+            var minRequired = new Version(4, 0);
+            var maxRequired = new Version(4, 0);
 
             // Work out what the version under test is
-            FFmpegVersion underTest = GetFFmpegVersion(output);
+            var underTest = GetFFmpegVersion(output);
 
             if (logOutput)
             {
-                _logger.LogInformation("FFmpeg validation: Found ffmpeg version {0}", underTest.ToString());
+                _logger.LogInformation("FFmpeg validation: Found ffmpeg version {0}", underTest != null ? underTest.ToString() : "unknown");
 
-                if (underTest.Unknown())
+                if (underTest == null) // Version is unknown
                 {
-                    if (minRequired.Same(maxRequired))
+                    if (minRequired.Equals(maxRequired))
                     {
                         _logger.LogWarning("FFmpeg validation: We recommend ffmpeg version {0}", minRequired.ToString());
                     }
@@ -140,21 +80,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         _logger.LogWarning("FFmpeg validation: We recommend a minimum of {0} and maximum of {1}", minRequired.ToString(), maxRequired.ToString());
                     }
                 }
-                else if (underTest.Below(minRequired))
+                else if (underTest.CompareTo(minRequired) < 0) // Version is below what we recommend
                 {
                     _logger.LogWarning("FFmpeg validation: The minimum recommended ffmpeg version is {0}", minRequired.ToString());
                 }
-                else if (underTest.Above(maxRequired))
+                else if (underTest.CompareTo(maxRequired) > 0) // Version is above what we recommend
                 {
                     _logger.LogWarning("FFmpeg validation: The maximum recommended ffmpeg version is {0}", maxRequired.ToString());
                 }
-                else
+                else  // Version is ok
                 {
                     _logger.LogInformation("FFmpeg validation: Found suitable ffmpeg version");
                 }
             }
 
-            return !underTest.Below(minRequired) && !underTest.Above(maxRequired);
+            // underTest shall be null if versions is unknown
+            return (underTest == null) ? false : !(underTest.CompareTo(minRequired) < 0) && !(underTest.CompareTo(maxRequired) > 0);
         }
 
         /// <summary>
@@ -166,36 +107,36 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="output"></param>
         /// <returns></returns>
-        static private FFmpegVersion GetFFmpegVersion(string output)
+        static private Version GetFFmpegVersion(string output)
         {
             // For pre-built binaries the FFmpeg version should be mentioned at the very start of the output
             var match = Regex.Match(output, @"ffmpeg version (\d+\.\d+)");
 
             if (match.Success)
             {
-                return new FFmpegVersion(match.Groups[1].Value);
+                return new Version(match.Groups[1].Value);
             }
             else
             {
                 // Try and use the individual library versions to determine a FFmpeg version
                 // This lookup table is to be maintained with the following command line:
                 // $ ./ffmpeg.exe -version | perl -ne ' print "$1=$2.$3," if /^(lib\w+)\s+(\d+)\.\s*(\d+)/'
-                var lut = new ReadOnlyDictionary<FFmpegVersion, string>
-                    (new Dictionary<FFmpegVersion, string>
+                var lut = new ReadOnlyDictionary<Version, string>
+                    (new Dictionary<Version, string>
                     {
-                        { new FFmpegVersion("4.1"), "libavutil=56.22,libavcodec=58.35,libavformat=58.20,libavdevice=58.5,libavfilter=7.40,libswscale=5.3,libswresample=3.3,libpostproc=55.3," },
-                        { new FFmpegVersion("4.0"), "libavutil=56.14,libavcodec=58.18,libavformat=58.12,libavdevice=58.3,libavfilter=7.16,libswscale=5.1,libswresample=3.1,libpostproc=55.1," },
-                        { new FFmpegVersion("3.4"), "libavutil=55.78,libavcodec=57.107,libavformat=57.83,libavdevice=57.10,libavfilter=6.107,libswscale=4.8,libswresample=2.9,libpostproc=54.7," },
-                        { new FFmpegVersion("3.3"), "libavutil=55.58,libavcodec=57.89,libavformat=57.71,libavdevice=57.6,libavfilter=6.82,libswscale=4.6,libswresample=2.7,libpostproc=54.5," },
-                        { new FFmpegVersion("3.2"), "libavutil=55.34,libavcodec=57.64,libavformat=57.56,libavdevice=57.1,libavfilter=6.65,libswscale=4.2,libswresample=2.3,libpostproc=54.1," },
-                        { new FFmpegVersion("2.8"), "libavutil=54.31,libavcodec=56.60,libavformat=56.40,libavdevice=56.4,libavfilter=5.40,libswscale=3.1,libswresample=1.2,libpostproc=53.3," }
+                        { new Version("4.1"), "libavutil=56.22,libavcodec=58.35,libavformat=58.20,libavdevice=58.5,libavfilter=7.40,libswscale=5.3,libswresample=3.3,libpostproc=55.3," },
+                        { new Version("4.0"), "libavutil=56.14,libavcodec=58.18,libavformat=58.12,libavdevice=58.3,libavfilter=7.16,libswscale=5.1,libswresample=3.1,libpostproc=55.1," },
+                        { new Version("3.4"), "libavutil=55.78,libavcodec=57.107,libavformat=57.83,libavdevice=57.10,libavfilter=6.107,libswscale=4.8,libswresample=2.9,libpostproc=54.7," },
+                        { new Version("3.3"), "libavutil=55.58,libavcodec=57.89,libavformat=57.71,libavdevice=57.6,libavfilter=6.82,libswscale=4.6,libswresample=2.7,libpostproc=54.5," },
+                        { new Version("3.2"), "libavutil=55.34,libavcodec=57.64,libavformat=57.56,libavdevice=57.1,libavfilter=6.65,libswscale=4.2,libswresample=2.3,libpostproc=54.1," },
+                        { new Version("2.8"), "libavutil=54.31,libavcodec=56.60,libavformat=56.40,libavdevice=56.4,libavfilter=5.40,libswscale=3.1,libswresample=1.2,libpostproc=53.3," }
                     });
 
                 // Create a reduced version string and lookup key from dictionary
                 var reducedVersion = GetVersionString(output);
-                var found = lut.FirstOrDefault(x => x.Value == reducedVersion).Key;
 
-                return found ?? new FFmpegVersion("Unknown");
+                // Try to lookup the string and return Key, otherwise if not found returns null
+                return lut.FirstOrDefault(x => x.Value == reducedVersion).Key;
             }
         }
 
