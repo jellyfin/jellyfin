@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Net;
 using MediaBrowser.Model.Dto;
-using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Model.Services
 {
@@ -13,23 +10,6 @@ namespace MediaBrowser.Model.Services
     {
         public QueryParamCollection()
         {
-
-        }
-
-        public QueryParamCollection(IHeaderDictionary headers)
-        {
-            foreach (var pair in headers)
-            {
-                Add(pair.Key, pair.Value);
-            }
-        }
-
-        public QueryParamCollection(IQueryCollection queryCollection)
-        {
-            foreach (var pair in queryCollection)
-            {
-                Add(pair.Key, pair.Value);
-            }
         }
 
         private static StringComparison GetStringComparison()

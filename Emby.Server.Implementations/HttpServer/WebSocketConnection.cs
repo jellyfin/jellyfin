@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using UtfUnknown;
 
@@ -67,7 +68,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// Gets or sets the query string.
         /// </summary>
         /// <value>The query string.</value>
-        public QueryParamCollection QueryString { get; set; }
+        public IQueryCollection QueryString { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.

@@ -3,11 +3,6 @@ namespace MediaBrowser.Model.Services
     public interface IHttpRequest : IRequest
     {
         /// <summary>
-        /// The HttpResponse
-        /// </summary>
-        IHttpResponse HttpResponse { get; }
-
-        /// <summary>
         /// The HTTP Verb
         /// </summary>
         string HttpMethod { get; }

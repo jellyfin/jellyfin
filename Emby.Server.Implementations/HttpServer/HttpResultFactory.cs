@@ -16,6 +16,8 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using IRequest = MediaBrowser.Model.Services.IRequest;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
@@ -246,9 +248,9 @@ namespace Emby.Server.Implementations.HttpServer
 
         private static string GetCompressionType(IRequest request)
         {
-            var acceptEncoding = request.Headers["Accept-Encoding"];
+            var acceptEncoding = request.Headers["Accept-Encoding"].ToString();
 
-            if (acceptEncoding != null)
+            if (string.IsNullOrEmpty(acceptEncoding))
             {
                 //if (_brotliCompressor != null && acceptEncoding.IndexOf("br", StringComparison.OrdinalIgnoreCase) != -1)
                 //    return "br";
@@ -424,12 +426,12 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         private object GetCachedResult(IRequest requestContext, IDictionary<string, string> responseHeaders, StaticResultOptions options)
         {
-            bool noCache = (requestContext.Headers.Get("Cache-Control") ?? string.Empty).IndexOf("no-cache", StringComparison.OrdinalIgnoreCase) != -1;
+            bool noCache = (requestContext.Headers[HeaderNames.CacheControl].ToString()).IndexOf("no-cache", StringComparison.OrdinalIgnoreCase) != -1;
             AddCachingHeaders(responseHeaders, options.CacheDuration, noCache, options.DateLastModified);
 
             if (!noCache)
             {
-                DateTime.TryParse(requestContext.Headers.Get("If-Modified-Since"), out var ifModifiedSinceHeader);
+                DateTime.TryParse(requestContext.Headers[HeaderNames.IfModifiedSince], out var ifModifiedSinceHeader);
 
                 if (IsNotModified(ifModifiedSinceHeader, options.CacheDuration, options.DateLastModified))
                 {
@@ -530,7 +532,7 @@ namespace Emby.Server.Implementations.HttpServer
             options.ResponseHeaders = options.ResponseHeaders ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var contentType = options.ContentType;
-            if (!string.IsNullOrEmpty(requestContext.Headers.Get("If-Modified-Since")))
+            if (!StringValues.IsNullOrEmpty(requestContext.Headers[HeaderNames.IfModifiedSince]))
             {
                 // See if the result is already cached in the browser
                 var result = GetCachedResult(requestContext, options.ResponseHeaders, options);
@@ -548,7 +550,7 @@ namespace Emby.Server.Implementations.HttpServer
             AddCachingHeaders(responseHeaders, options.CacheDuration, false, options.DateLastModified);
             AddAgeHeader(responseHeaders, options.DateLastModified);
 
-            var rangeHeader = requestContext.Headers.Get("Range");
+            var rangeHeader = requestContext.Headers["Range"];
 
             if (!isHeadRequest && !string.IsNullOrEmpty(options.Path))
             {
@@ -608,11 +610,6 @@ namespace Emby.Server.Implementations.HttpServer
                 return hasHeaders;
             }
         }
-
-        /// <summary>
-        /// The us culture
-        /// </summary>
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         /// <summary>
         /// Adds the caching responseHeaders.

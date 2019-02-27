@@ -13,7 +13,6 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using IHttpFile = MediaBrowser.Model.Services.IHttpFile;
 using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
-using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
 using IResponse = MediaBrowser.Model.Services.IResponse;
 
 namespace Emby.Server.Implementations.SocketSharp
@@ -21,7 +20,7 @@ namespace Emby.Server.Implementations.SocketSharp
     public partial class WebSocketSharpRequest : IHttpRequest
     {
         private readonly HttpRequest request;
-        private readonly IHttpResponse response;
+        private readonly IResponse response;
 
         public WebSocketSharpRequest(HttpRequest httpContext, HttpResponse response, string operationName, ILogger logger)
         {
@@ -34,11 +33,9 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public HttpRequest HttpRequest => request;
 
-        public object OriginalRequest => request;
-
         public IResponse Response => response;
 
-        public IHttpResponse HttpResponse => response;
+        public IResponse HttpResponse => response;
 
         public string OperationName { get; set; }
 
@@ -396,10 +393,9 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public string UserAgent => request.Headers[HeaderNames.UserAgent];
 
-        public QueryParamCollection Headers => new QueryParamCollection(request.Headers);
+        public IHeaderDictionary Headers => request.Headers;
 
-        private QueryParamCollection queryString;
-        public QueryParamCollection QueryString => queryString ?? (queryString = new QueryParamCollection(request.Query));
+        public IQueryCollection QueryString => request.Query;
 
         public bool IsLocal => string.Equals(request.HttpContext.Connection.LocalIpAddress.ToString(), request.HttpContext.Connection.RemoteIpAddress.ToString());
 

@@ -3,6 +3,7 @@ using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Xml;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
@@ -19,7 +20,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             XmlReaderSettingsFactory = xmlReaderSettingsFactory;
         }
 
-        public string GetServiceXml(IDictionary<string, string> headers)
+        public string GetServiceXml()
         {
             return new MediaReceiverRegistrarXmlBuilder().GetXml();
         }

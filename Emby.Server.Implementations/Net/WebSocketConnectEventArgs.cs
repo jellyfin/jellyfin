@@ -1,6 +1,7 @@
 using System;
 using System.Net.WebSockets;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace Emby.Server.Implementations.Net
 {
@@ -15,7 +16,7 @@ namespace Emby.Server.Implementations.Net
         /// Gets or sets the query string.
         /// </summary>
         /// <value>The query string.</value>
-        public QueryParamCollection QueryString { get; set; }
+        public IQueryCollection QueryString { get; set; }
         /// <summary>
         /// Gets or sets the web socket.
         /// </summary>

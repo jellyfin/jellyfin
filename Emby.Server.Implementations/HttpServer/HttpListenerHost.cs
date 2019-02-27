@@ -22,6 +22,7 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -154,7 +155,7 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 OnReceive = ProcessWebSocketMessageReceived,
                 Url = e.Url,
-                QueryString = e.QueryString ?? new QueryParamCollection()
+                QueryString = e.QueryString ?? new QueryCollection()
             };
 
             connection.Closed += Connection_Closed;
@@ -606,8 +607,8 @@ namespace Emby.Server.Implementations.HttpServer
             }
             finally
             {
-                httpRes.Close();
-
+                // TODO
+                httpRes.IsClosed = true;
                 stopWatch.Stop();
                 var elapsed = stopWatch.Elapsed;
                 if (elapsed.TotalMilliseconds > 500)

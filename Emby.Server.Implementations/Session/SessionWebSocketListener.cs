@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Session
@@ -62,7 +63,7 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
-        private SessionInfo GetSession(QueryParamCollection queryString, string remoteEndpoint)
+        private SessionInfo GetSession(IQueryCollection queryString, string remoteEndpoint)
         {
             if (queryString == null)
             {

@@ -1,23 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Server.Implementations;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
 using IRequest = MediaBrowser.Model.Services.IRequest;
 
 namespace Emby.Server.Implementations.SocketSharp
 {
-    public class WebSocketSharpResponse : IHttpResponse
+    public class WebSocketSharpResponse : IResponse
     {
         private readonly ILogger _logger;
 
@@ -51,42 +46,7 @@ namespace Emby.Server.Implementations.SocketSharp
             set => _response.ContentType = value;
         }
 
-        public QueryParamCollection Headers => new QueryParamCollection(_response.Headers);
-
-        private static string AsHeaderValue(Cookie cookie)
-        {
-            DateTime defaultExpires = DateTime.MinValue;
-
-            var path = cookie.Expires == defaultExpires
-                ? "/"
-                : cookie.Path ?? "/";
-
-            var sb = new StringBuilder();
-
-            sb.Append($"{cookie.Name}={cookie.Value};path={path}");
-
-            if (cookie.Expires != defaultExpires)
-            {
-                sb.Append($";expires={cookie.Expires:R}");
-            }
-
-            if (!string.IsNullOrEmpty(cookie.Domain))
-            {
-                sb.Append($";domain={cookie.Domain}");
-            }
-
-            if (cookie.Secure)
-            {
-                sb.Append(";Secure");
-            }
-
-            if (cookie.HttpOnly)
-            {
-                sb.Append(";HttpOnly");
-            }
-
-            return sb.ToString();
-        }
+        public IHeaderDictionary Headers => _response.Headers;
 
         public void AddHeader(string name, string value)
         {
@@ -111,51 +71,14 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public Stream OutputStream => _response.Body;
 
-        public void Close()
-        {
-            if (!this.IsClosed)
-            {
-                this.IsClosed = true;
-
-                try
-                {
-                    var response = this._response;
-
-                    var outputStream = response.Body;
-
-                    // This is needed with compression
-                    outputStream.Flush();
-                    outputStream.Dispose();
-                }
-                catch (SocketException)
-                {
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error in HttpListenerResponseWrapper");
-                }
-            }
-        }
-
         public bool IsClosed
         {
             get;
-            private set;
-        }
-
-        public void SetCookie(Cookie cookie)
-        {
-            var cookieStr = AsHeaderValue(cookie);
-            _response.Headers.Add("Set-Cookie", cookieStr);
+            set;
         }
 
         public bool SendChunked { get; set; }
 
-        public bool KeepAlive { get; set; }
-
-        public void ClearCookies()
-        {
-        }
         const int StreamCopyToBufferSize = 81920;
         public async Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, IFileSystem fileSystem, IStreamHelper streamHelper, CancellationToken cancellationToken)
         {

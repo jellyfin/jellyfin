@@ -1,20 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Model.Services
 {
     public interface IRequest
     {
-        /// <summary>
-        /// The underlying ASP.NET or HttpListener HttpRequest
-        /// </summary>
-        object OriginalRequest { get; }
-
         IResponse Response { get; }
 
         /// <summary>
@@ -51,9 +46,9 @@ namespace MediaBrowser.Model.Services
         /// </summary>
         Dictionary<string, object> Items { get; }
 
-        QueryParamCollection Headers { get; }
+        IHeaderDictionary Headers { get; }
 
-        QueryParamCollection QueryString { get; }
+        IQueryCollection QueryString { get; }
 
         Task<QueryParamCollection> GetFormData();
 
@@ -123,20 +118,14 @@ namespace MediaBrowser.Model.Services
         Stream OutputStream { get; }
 
         /// <summary>
-        /// Signal that this response has been handled and no more processing should be done.
-        /// When used in a request or response filter, no more filters or processing is done on this request.
-        /// </summary>
-        void Close();
-
-        /// <summary>
         /// Gets a value indicating whether this instance is closed.
         /// </summary>
-        bool IsClosed { get; }
+        bool IsClosed { get; set; }
 
         //Add Metadata to Response
         Dictionary<string, object> Items { get; }
 
-        QueryParamCollection Headers { get; }
+        IHeaderDictionary Headers { get; }
 
         Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, IFileSystem fileSystem, IStreamHelper streamHelper, CancellationToken cancellationToken);
 

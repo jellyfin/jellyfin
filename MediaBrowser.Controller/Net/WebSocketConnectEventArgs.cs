@@ -1,5 +1,7 @@
 using System;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -22,7 +24,7 @@ namespace MediaBrowser.Controller.Net
         /// Gets or sets the query string.
         /// </summary>
         /// <value>The query string.</value>
-        public QueryParamCollection QueryString { get; set; }
+        public IQueryCollection QueryString { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether [allow connection].
         /// </summary>
@@ -31,7 +33,7 @@ namespace MediaBrowser.Controller.Net
 
         public WebSocketConnectingEventArgs()
         {
-            QueryString = new QueryParamCollection();
+            QueryString = new QueryCollection();
             AllowConnection = true;
         }
     }

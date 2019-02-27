@@ -118,8 +118,6 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public string Authorization => StringValues.IsNullOrEmpty(request.Headers["Authorization"]) ? null : request.Headers["Authorization"].ToString();
 
-        protected bool validate_cookies { get; set; }
-        protected bool validate_query_string { get; set; }
         protected bool validate_form { get; set; }
         protected bool checked_form { get; set; }
 

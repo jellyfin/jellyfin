@@ -52,12 +52,10 @@ using Microsoft.Extensions.Logging;
                 var endpoint = ctx.Connection.RemoteIpAddress.ToString();
                 var url = ctx.Request.GetDisplayUrl();
 
-                var queryString = new QueryParamCollection(ctx.Request.Query);
-
                 var connectingArgs = new WebSocketConnectingEventArgs
                 {
                     Url = url,
-                    QueryString = queryString,
+                    QueryString = ctx.Request.Query,
                     Endpoint = endpoint
                 };
 
@@ -73,7 +71,7 @@ using Microsoft.Extensions.Logging;
                     WebSocketConnected(new WebSocketConnectEventArgs
                     {
                         Url = url,
-                        QueryString = queryString,
+                        QueryString = ctx.Request.Query,
                         WebSocket = socket,
                         Endpoint = endpoint
                     });
