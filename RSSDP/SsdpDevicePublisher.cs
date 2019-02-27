@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Common.Net;
 using Rssdp;
 
 namespace Rssdp.Infrastructure
@@ -16,10 +17,12 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public class SsdpDevicePublisher : DisposableManagedObjectBase, ISsdpDevicePublisher
     {
+        private readonly INetworkManager _networkManager;
 
         private ISsdpCommunicationsServer _CommsServer;
         private string _OSName;
         private string _OSVersion;
+        private bool _sendOnlyMatchedHost;
 
         private bool _SupportPnpRootDevice;
 
@@ -37,9 +40,11 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, string osName, string osVersion)
+        public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, INetworkManager networkManager,
+            string osName, string osVersion, bool sendOnlyMatchedHost)
         {
             if (communicationsServer == null) throw new ArgumentNullException(nameof(communicationsServer));
+            if (networkManager == null) throw new ArgumentNullException(nameof(networkManager));
             if (osName == null) throw new ArgumentNullException(nameof(osName));
             if (osName.Length == 0) throw new ArgumentException("osName cannot be an empty string.", nameof(osName));
             if (osVersion == null) throw new ArgumentNullException(nameof(osVersion));
@@ -51,10 +56,12 @@ namespace Rssdp.Infrastructure
             _RecentSearchRequests = new Dictionary<string, SearchRequest>(StringComparer.OrdinalIgnoreCase);
             _Random = new Random();
 
+            _networkManager = networkManager;
             _CommsServer = communicationsServer;
             _CommsServer.RequestReceived += CommsServer_RequestReceived;
             _OSName = osName;
             _OSVersion = osVersion;
+            _sendOnlyMatchedHost = sendOnlyMatchedHost;
 
             _CommsServer.BeginListeningForBroadcasts();
         }
@@ -250,7 +257,11 @@ namespace Rssdp.Infrastructure
 
                     foreach (var device in deviceList)
                     {
-                        SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);
+                        if (!_sendOnlyMatchedHost ||
+                            _networkManager.IsInSameSubnet(device.ToRootDevice().Address, remoteEndPoint.IpAddress, device.ToRootDevice().SubnetMask))
+                        {
+                            SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);
+                        }
                     }
                 }
                 else
@@ -427,7 +438,7 @@ namespace Rssdp.Infrastructure
 
             var message = BuildMessage(header, values);
 
-            _CommsServer.SendMulticastMessage(message, cancellationToken);
+            _CommsServer.SendMulticastMessage(message, _sendOnlyMatchedHost ? rootDevice.Address : null, cancellationToken);
 
             //WriteTrace(String.Format("Sent alive notification"), device);
         }
@@ -472,7 +483,7 @@ namespace Rssdp.Infrastructure
 
             var sendCount = IsDisposed ? 1 : 3;
             WriteTrace(String.Format("Sent byebye notification"), device);
-            return _CommsServer.SendMulticastMessage(message, sendCount, cancellationToken);
+            return _CommsServer.SendMulticastMessage(message, sendCount, _sendOnlyMatchedHost ? device.ToRootDevice().Address : null, cancellationToken);
         }
 
         private void DisposeRebroadcastTimer()

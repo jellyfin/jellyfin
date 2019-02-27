@@ -45,8 +45,8 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
-        Task SendMulticastMessage(string message, CancellationToken cancellationToken);
-        Task SendMulticastMessage(string message, int sendCount, CancellationToken cancellationToken);
+        Task SendMulticastMessage(string message, IpAddressInfo fromLocalIpAddress, CancellationToken cancellationToken);
+        Task SendMulticastMessage(string message, int sendCount, IpAddressInfo fromLocalIpAddress, CancellationToken cancellationToken);
 
         #endregion
 
