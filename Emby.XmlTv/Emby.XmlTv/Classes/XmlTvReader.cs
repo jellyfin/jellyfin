@@ -508,7 +508,7 @@ namespace Emby.XmlTv.Classes
 
             string value = reader.ReadElementContentAsString().ToUpper();
             //Validate format
-            if (Regex.IsMatch(value,"[S][0-9]+[E][0-9]+"))
+            if (Regex.IsMatch(value, "S[0-9]+E[0-9]+"))
             {
                 //Split at E - take before and remove S
                 string season = value.Split('E')[0].Substring(1);
