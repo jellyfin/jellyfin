@@ -57,18 +57,37 @@ namespace Jellyfin.Server.SocketSharp
         public string XRealIp => string.IsNullOrEmpty(request.Headers["X-Real-IP"]) ? null : request.Headers["X-Real-IP"];
 
         private string remoteIp;
-        public string RemoteIp =>
-            remoteIp ??
-            (remoteIp = CheckBadChars(XForwardedFor) ??
-                        NormalizeIp(CheckBadChars(XRealIp) ??
-                         (request.RemoteEndPoint != null ? NormalizeIp(request.RemoteEndPoint.Address.ToString()) : null)));
+        public string RemoteIp
+        {
+            get
+            {
+                if (remoteIp != null)
+                {
+                    return remoteIp;
+                }
+
+                var temp = CheckBadChars(XForwardedFor);
+                if (temp.Length != 0)
+                {
+                    return remoteIp = temp.ToString();
+                }
+
+                temp = CheckBadChars(XRealIp);
+                if (temp.Length != 0)
+                {
+                    return remoteIp = NormalizeIp(temp).ToString();
+                }
+
+                return remoteIp = NormalizeIp(request.RemoteEndPoint?.Address.ToString()).ToString();
+            }
+        }
 
         private static readonly char[] HttpTrimCharacters = new char[] { (char)0x09, (char)0xA, (char)0xB, (char)0xC, (char)0xD, (char)0x20 };
 
         // CheckBadChars - throws on invalid chars to be not found in header name/value
-        internal static string CheckBadChars(string name)
+        internal static ReadOnlySpan<char> CheckBadChars(ReadOnlySpan<char> name)
         {
-            if (name == null || name.Length == 0)
+            if (name.Length == 0)
             {
                 return name;
             }
@@ -99,7 +118,7 @@ namespace Jellyfin.Server.SocketSharp
                         }
                         else if (c == 127 || (c < ' ' && c != '\t'))
                         {
-                            throw new ArgumentException("net_WebHeaderInvalidControlChars");
+                            throw new ArgumentException("net_WebHeaderInvalidControlChars", nameof(name));
                         }
 
                         break;
@@ -113,7 +132,7 @@ namespace Jellyfin.Server.SocketSharp
                             break;
                         }
 
-                        throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
+                        throw new ArgumentException("net_WebHeaderInvalidCRLFChars", nameof(name));
                     }
 
                     case 2:
@@ -124,14 +143,14 @@ namespace Jellyfin.Server.SocketSharp
                             break;
                         }
 
-                        throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
+                        throw new ArgumentException("net_WebHeaderInvalidCRLFChars", nameof(name));
                     }
                 }
             }
 
             if (crlf != 0)
             {
-                throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
+                throw new ArgumentException("net_WebHeaderInvalidCRLFChars", nameof(name));
             }
 
             return name;
@@ -150,16 +169,16 @@ namespace Jellyfin.Server.SocketSharp
             return false;
         }
 
-        private string NormalizeIp(string ip)
+        private ReadOnlySpan<char> NormalizeIp(ReadOnlySpan<char> ip)
         {
-            if (!string.IsNullOrWhiteSpace(ip))
+            if (ip.Length != 0 && !ip.IsWhiteSpace())
             {
                 // Handle ipv4 mapped to ipv6
                 const string srch = "::ffff:";
                 var index = ip.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
                 if (index == 0)
                 {
-                    ip = ip.Substring(srch.Length);
+                    ip = ip.Slice(srch.Length);
                 }
             }
 
@@ -302,17 +321,6 @@ namespace Jellyfin.Server.SocketSharp
             return null;
         }
 
-        public static string LeftPart(string strVal, char needle)
-        {
-            if (strVal == null)
-            {
-                return null;
-            }
-
-            var pos = strVal.IndexOf(needle, StringComparison.Ordinal);
-            return pos == -1 ? strVal : strVal.Substring(0, pos);
-        }
-
         public static ReadOnlySpan<char> LeftPart(ReadOnlySpan<char> strVal, char needle)
         {
             if (strVal == null)
@@ -350,7 +358,7 @@ namespace Jellyfin.Server.SocketSharp
                     }
 
                     this.pathInfo = System.Net.WebUtility.UrlDecode(pathInfo);
-                    this.pathInfo = NormalizePathInfo(pathInfo, mode);
+                    this.pathInfo = NormalizePathInfo(pathInfo, mode).ToString();
                 }
 
                 return this.pathInfo;
@@ -517,14 +525,14 @@ namespace Jellyfin.Server.SocketSharp
             }
         }
 
-        public static string NormalizePathInfo(string pathInfo, string handlerPath)
+        public static ReadOnlySpan<char> NormalizePathInfo(string pathInfo, string handlerPath)
         {
             if (handlerPath != null)
             {
-                var trimmed = pathInfo.TrimStart('/');
+                var trimmed = pathInfo.AsSpan().TrimStart('/');
                 if (trimmed.StartsWith(handlerPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    return trimmed.Substring(handlerPath.Length);
+                    return trimmed.Slice(handlerPath.Length).ToString();
                 }
             }
 
