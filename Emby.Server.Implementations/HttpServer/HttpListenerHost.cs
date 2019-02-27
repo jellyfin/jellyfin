@@ -321,7 +321,7 @@ namespace Emby.Server.Implementations.HttpServer
             string pagePathWithoutQueryString = url.Split(new[] { '?' }, StringSplitOptions.RemoveEmptyEntries)[0];
 
             return newQueryString.Count > 0
-                ? string.Format("{0}?{1}", pagePathWithoutQueryString, newQueryString)
+                ? $"{pagePathWithoutQueryString}?{newQueryString.Select(value => value.Key + " = " + string.Join(", ", value.Value))}"
                 : pagePathWithoutQueryString;
         }
 
