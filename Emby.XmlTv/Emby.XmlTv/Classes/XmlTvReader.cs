@@ -506,7 +506,7 @@ namespace Emby.XmlTv.Classes
         {
 
 
-            string value = reader.ReadElementContentAsString().ToUpper();
+            string value = reader.ReadElementContentAsString().ToUpperInvariant();
             //Validate format
             if (Regex.IsMatch(value, "S[0-9]+E[0-9]+"))
             {
