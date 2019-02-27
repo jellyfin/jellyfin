@@ -414,7 +414,7 @@ namespace Emby.Server.Implementations.Networking
                     // Try to exclude virtual adapters
                     // http://stackoverflow.com/questions/8089685/c-sharp-finding-my-machines-local-ip-address-and-not-the-vms
                     var addr = ipProperties.GatewayAddresses.FirstOrDefault();
-                    if (addr == null || (ignoreVirtualInterface && string.Equals(addr.Address.ToString(), "0.0.0.0", StringComparison.OrdinalIgnoreCase)))
+                    if (addr == null || ignoreVirtualInterface && string.Equals(addr.Address.ToString(), "0.0.0.0", StringComparison.OrdinalIgnoreCase))
                     {
                         return new List<IPAddress>();
                     }
