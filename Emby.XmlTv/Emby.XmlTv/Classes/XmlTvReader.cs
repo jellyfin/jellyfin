@@ -507,11 +507,19 @@ namespace Emby.XmlTv.Classes
             //// <episode-num system="SxxExx">S012E32</episode-num
             string value = reader.ReadElementContentAsString();
             Regex exp = new Regex("s([0-9]+)e([0-9]+)",RegexOptions.IgnoreCase);
-			Match res = exp.Match(value)'
-            if (res.success)
+            Match res = exp.Match(value);
+            if (res.Success)
             {
-                int.TryParse(res.groups[1].Value, out result.Episode.Series);
-                int.TryParse(res.groups[2].Value, out result.Episode.Episode);    
+                int parsedInt;
+
+                if(int.TryParse(res.Groups[1].Value, out parsedInt))
+                {
+                    result.Episode.Series = parsedInt;
+                }
+                if(int.TryParse(res.Groups[2].Value, out parsedInt))
+                {
+                    result.Episode.Episode = parsedInt;
+                }   
             }
         }
         public void ParseMovieDbSystem(XmlReader reader, XmlTvProgram result)
