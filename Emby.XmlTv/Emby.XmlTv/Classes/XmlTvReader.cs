@@ -510,8 +510,17 @@ namespace Emby.XmlTv.Classes
 			Match res = exp.Match(value)'
             if (res.success)
             {
-                result.Episode.Series = int.Parse(res.groups[1].Value);
-                result.Episode.Episode = int.Parse(res.groups[2].Value);
+                try
+                {
+                    result.Episode.Series = int.Parse(res.groups[1].Value);
+                    result.Episode.Episode = int.Parse(res.groups[2].Value);
+                } 
+                //Prevent potential DoS from guide injected with Int too large
+                catch(System.OverflowException ex)
+                {
+                    //XML file contained data too large/small for an Int
+                }
+                    
             }
         }
         public void ParseMovieDbSystem(XmlReader reader, XmlTvProgram result)
