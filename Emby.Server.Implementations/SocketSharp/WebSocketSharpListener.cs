@@ -93,8 +93,12 @@ using Microsoft.Extensions.Logging;
                     } while (socket.State == WebSocketState.Open && result.MessageType != WebSocketMessageType.Close);
 
 
-                    await webSocketContext.CloseAsync(result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
-                        result.CloseStatusDescription, _disposeCancellationToken);
+                    if (webSocketContext.State == WebSocketState.Open)
+                    {
+                        await webSocketContext.CloseAsync(result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
+                            result.CloseStatusDescription, _disposeCancellationToken);
+                    }
+
                     socket.Dispose();
                 }
                 else
