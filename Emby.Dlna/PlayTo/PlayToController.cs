@@ -849,7 +849,7 @@ namespace Emby.Dlna.PlayTo
                 if (index == -1) return request;
 
                 var query = url.Substring(index + 1);
-                var values = QueryHelpers.ParseQuery(query);
+                Dictionary<string, StringValues> values = QueryHelpers.ParseQuery(query);
 
                 request.DeviceProfileId = values["DeviceProfileId"].ToString();
                 request.DeviceId = values["DeviceId"].ToString();

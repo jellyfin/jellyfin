@@ -16,43 +16,11 @@ namespace MediaBrowser.Model.Services
 
         }
 
-        public QueryParamCollection(IDictionary<string, string> headers)
+        public QueryParamCollection(IHeaderDictionary headers)
         {
             foreach (var pair in headers)
             {
                 Add(pair.Key, pair.Value);
-            }
-        }
-
-        public QueryParamCollection(Microsoft.AspNetCore.Http.IHeaderDictionary headers)
-        {
-            foreach (var pair in headers)
-            {
-                Add(pair.Key, pair.Value);
-            }
-        }
-
-        // TODO remove this shit
-        public QueryParamCollection(WebHeaderCollection webHeaderCollection)
-        {
-            foreach (var key in webHeaderCollection.AllKeys)
-            {
-                foreach (var value in webHeaderCollection.GetValues(key) ?? Array.Empty<string>())
-                {
-                    Add(key, value);
-                }
-            }
-        }
-
-        // TODO remove this shit
-        public QueryParamCollection(NameValueCollection nameValueCollection)
-        {
-            foreach (var key in nameValueCollection.AllKeys)
-            {
-                foreach (var value in nameValueCollection.GetValues(key) ?? Array.Empty<string>())
-                {
-                    Add(key, value);
-                }
             }
         }
 
@@ -72,21 +40,6 @@ namespace MediaBrowser.Model.Services
         private static StringComparer GetStringComparer()
         {
             return StringComparer.OrdinalIgnoreCase;
-        }
-
-        public string GetKey(int index)
-        {
-            return this[index].Name;
-        }
-
-        public string Get(int index)
-        {
-            return this[index].Value;
-        }
-
-        public virtual string[] GetValues(int index)
-        {
-            return new[] { Get(index) };
         }
 
         /// <summary>
@@ -127,16 +80,6 @@ namespace MediaBrowser.Model.Services
             }
 
             Add(key, value);
-        }
-
-        /// <summary>
-        /// Removes all parameters of the given name.
-        /// </summary>
-        /// <returns>The number of parameters that were removed</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="name" /> is null.</exception>
-        public virtual int Remove(string name)
-        {
-            return RemoveAll(p => p.Name == name);
         }
 
         public string Get(string name)
