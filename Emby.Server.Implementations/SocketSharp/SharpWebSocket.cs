@@ -90,6 +90,7 @@ namespace Emby.Server.Implementations.SocketSharp
                     _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed by client",
                         CancellationToken.None);
                 }
+                Closed?.Invoke(this, EventArgs.Empty);
             }
 
             _disposed = true;
