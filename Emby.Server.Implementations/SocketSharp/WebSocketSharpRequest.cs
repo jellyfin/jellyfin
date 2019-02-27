@@ -48,8 +48,6 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public string AbsoluteUri => request.GetDisplayUrl().TrimEnd('/');
 
-        public string UserHostAddress => request.HttpContext.Connection.RemoteIpAddress.ToString();
-
         public string XForwardedFor
             => StringValues.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"].ToString();
 
@@ -142,19 +140,6 @@ namespace Emby.Server.Implementations.SocketSharp
             return name;
         }
 
-        internal static bool ContainsNonAsciiChars(string token)
-        {
-            for (int i = 0; i < token.Length; ++i)
-            {
-                if ((token[i] < 0x20) || (token[i] > 0x7e))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         private string NormalizeIp(string ip)
         {
             if (!string.IsNullOrWhiteSpace(ip))
@@ -170,8 +155,6 @@ namespace Emby.Server.Implementations.SocketSharp
 
             return ip;
         }
-
-        public bool IsSecureConnection => request.IsHttps || XForwardedProtocol == "https";
 
         public string[] AcceptTypes => request.Headers.GetCommaSeparatedValues(HeaderNames.Accept);
 

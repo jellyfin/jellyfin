@@ -105,14 +105,6 @@ namespace Emby.Server.Implementations.SocketSharp
                 await LoadWwwForm(form).ConfigureAwait(false);
             }
 
-#if NET_4_0
-            if (validateRequestNewMode && !checked_form) {
-                // Setting this before calling the validator prevents
-                // possible endless recursion
-                checked_form = true;
-                ValidateNameValueCollection("Form", query_string_nvc, RequestValidationSource.Form);
-            } else
-#endif
             if (validate_form && !checked_form)
             {
                 checked_form = true;
@@ -129,8 +121,6 @@ namespace Emby.Server.Implementations.SocketSharp
         protected bool validate_cookies { get; set; }
         protected bool validate_query_string { get; set; }
         protected bool validate_form { get; set; }
-        protected bool checked_cookies { get; set; }
-        protected bool checked_query_string { get; set; }
         protected bool checked_form { get; set; }
 
         private static void ThrowValidationException(string name, string key, string value)
@@ -208,13 +198,6 @@ namespace Emby.Server.Implementations.SocketSharp
             }
 
             return false;
-        }
-
-        public void ValidateInput()
-        {
-            validate_cookies = true;
-            validate_query_string = true;
-            validate_form = true;
         }
 
         private bool IsContentType(string ct, bool starts_with)
