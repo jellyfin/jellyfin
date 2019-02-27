@@ -32,15 +32,16 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                         var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
 
+                        // If ffmpeg process is closed, the state is disposed, so don't write to target in that case
+                        if (!target.CanWrite)
+                        {
+                            break;
+                        }
+
                         await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
                         await target.FlushAsync().ConfigureAwait(false);
                     }
                 }
-            }
-            catch (ObjectDisposedException)
-            {
-                //TODO Investigate and properly fix.
-                // Don't spam the log. This doesn't seem to throw in windows, but sometimes under linux
             }
             catch (Exception ex)
             {
