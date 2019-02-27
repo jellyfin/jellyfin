@@ -80,12 +80,7 @@ namespace MediaBrowser.Controller.Net
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        protected virtual bool SendOnTimer => false;
-
-        protected virtual void ParseMessageParams(string[] values)
-        {
-
-        }
+        protected bool SendOnTimer => false;
 
         /// <summary>
         /// Starts sending messages over a web socket
@@ -97,11 +92,6 @@ namespace MediaBrowser.Controller.Net
 
             var dueTimeMs = long.Parse(vals[0], UsCulture);
             var periodMs = long.Parse(vals[1], UsCulture);
-
-            if (vals.Length > 2)
-            {
-                ParseMessageParams(vals.Skip(2).ToArray());
-            }
 
             var cancellationTokenSource = new CancellationTokenSource();
 
@@ -250,6 +240,7 @@ namespace MediaBrowser.Controller.Net
         {
             Logger.LogDebug("{1} stop transmitting over websocket to {0}", connection.Item1.RemoteEndPoint, GetType().Name);
 
+            connection.Item1.Dispose();
             var timer = connection.Item3;
 
             if (timer != null)

@@ -76,18 +76,23 @@ using Microsoft.Extensions.Logging;
                         Endpoint = endpoint
                     });
 
-                    var buffer = WebSocket.CreateClientBuffer(4096, 4096);
                     WebSocketReceiveResult result;
                     var message = new List<byte>();
 
                     do
                     {
+                        var buffer = WebSocket.CreateServerBuffer(4096);
                         result = await webSocketContext.ReceiveAsync(buffer, _disposeCancellationToken);
-                        socket.OnReceiveBytes(buffer.Array);
                         message.AddRange(buffer.Array.Take(result.Count));
-                    } while (!result.EndOfMessage && result.MessageType != WebSocketMessageType.Close);
 
-                    socket.OnReceiveBytes(message.ToArray());
+                        if (result.EndOfMessage)
+                        {
+                            socket.OnReceiveBytes(message.ToArray());
+                            message.Clear();
+                        }
+                    } while (socket.State == WebSocketState.Open && result.MessageType != WebSocketMessageType.Close);
+
+
                     await webSocketContext.CloseAsync(result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
                         result.CloseStatusDescription, _disposeCancellationToken);
                     socket.Dispose();

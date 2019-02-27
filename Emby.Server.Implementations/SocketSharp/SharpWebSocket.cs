@@ -85,6 +85,11 @@ namespace Emby.Server.Implementations.SocketSharp
             if (dispose)
             {
                 _cancellationTokenSource.Cancel();
+                if (_webSocket.State == WebSocketState.Open)
+                {
+                    _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed by client",
+                        CancellationToken.None);
+                }
             }
 
             _disposed = true;
