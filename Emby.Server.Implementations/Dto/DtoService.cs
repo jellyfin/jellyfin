@@ -5,8 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -21,8 +19,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
 
@@ -83,15 +79,8 @@ namespace Emby.Server.Implementations.Dto
             return GetBaseItemDto(item, options, user, owner);
         }
 
-        public BaseItemDto[] GetBaseItemDtos(List<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
-        {
-            return GetBaseItemDtos(items, items.Count, options, user, owner);
-        }
-
-        public BaseItemDto[] GetBaseItemDtos(BaseItem[] items, DtoOptions options, User user = null, BaseItem owner = null)
-        {
-            return GetBaseItemDtos(items, items.Length, options, user, owner);
-        }
+        public BaseItemDto[] GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
+            => GetBaseItemDtos(items, items.Count, options, user, owner);
 
         public BaseItemDto[] GetBaseItemDtos(IEnumerable<BaseItem> items, int itemCount, DtoOptions options, User user = null, BaseItem owner = null)
         {

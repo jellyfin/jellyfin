@@ -36,9 +36,7 @@ namespace MediaBrowser.Controller.Dto
             .ToArray();
 
         public bool ContainsField(ItemFields field)
-        {
-            return AllItemFields.Contains(field);
-        }
+            => Fields.Contains(field);
 
         public DtoOptions(bool allFields)
         {
@@ -47,15 +45,7 @@ namespace MediaBrowser.Controller.Dto
             EnableUserData = true;
             AddCurrentProgram = true;
 
-            if (allFields)
-            {
-                Fields = AllItemFields;
-            }
-            else
-            {
-                Fields = new ItemFields[] { };
-            }
-
+            Fields = allFields ? AllItemFields : Array.Empty<ItemFields>();
             ImageTypes = AllImageTypes;
         }
 

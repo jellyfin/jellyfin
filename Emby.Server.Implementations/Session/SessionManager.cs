@@ -1090,7 +1090,7 @@ namespace Emby.Server.Implementations.Session
             await SendMessageToSession(session, "Play", command, cancellationToken).ConfigureAwait(false);
         }
 
-        private IList<BaseItem> TranslateItemForPlayback(Guid id, User user)
+        private IEnumerable<BaseItem> TranslateItemForPlayback(Guid id, User user)
         {
             var item = _libraryManager.GetItemById(id);
 

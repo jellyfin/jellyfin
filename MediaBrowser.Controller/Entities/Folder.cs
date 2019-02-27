@@ -810,37 +810,19 @@ namespace MediaBrowser.Controller.Entities
         {
             if (query.ItemIds.Length > 0)
             {
-                var result = LibraryManager.GetItemsResult(query);
-
-                if (query.OrderBy.Length == 0)
-                {
-                    var ids = query.ItemIds.ToList();
-
-                    // Try to preserve order
-                    result.Items = result.Items.OrderBy(i => ids.IndexOf(i.Id)).ToArray();
-                }
-                return result;
+                return LibraryManager.GetItemsResult(query);
             }
 
             return GetItemsInternal(query);
         }
 
-        public BaseItem[] GetItemList(InternalItemsQuery query)
+        public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query)
         {
             query.EnableTotalRecordCount = false;
 
             if (query.ItemIds.Length > 0)
             {
-                var result = LibraryManager.GetItemList(query);
-
-                if (query.OrderBy.Length == 0)
-                {
-                    var ids = query.ItemIds.ToList();
-
-                    // Try to preserve order
-                    return result.OrderBy(i => ids.IndexOf(i.Id)).ToArray();
-                }
-                return result.ToArray();
+                return LibraryManager.GetItemList(query);
             }
 
             return GetItemsInternal(query).Items;
