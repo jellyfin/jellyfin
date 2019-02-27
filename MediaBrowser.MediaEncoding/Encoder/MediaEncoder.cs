@@ -282,12 +282,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        /// <summary>
+        /// With the given path string, replaces the filename with ffprobe, taking case
+        /// of any file extension (like .exe on windows).
+        /// </summary>
+        /// <param name="appPath"></param>
+        /// <returns></returns>
         private string GetProbePathFromEncoderPath(string appPath)
         {
             if (!string.IsNullOrEmpty(appPath))
             {
-                string pattern = @"[^\/\\]+?(\.[^\/\\\n.]+)?$";
-                string substitution = @"ffprobe$1";
+                const string pattern = @"[^\/\\]+?(\.[^\/\\\n.]+)?$";
+                const string substitution = @"ffprobe$1";
 
                 return Regex.Replace(appPath, pattern, substitution);
             }

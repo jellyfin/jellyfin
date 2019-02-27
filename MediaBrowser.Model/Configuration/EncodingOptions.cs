@@ -8,8 +8,14 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableThrottling { get; set; }
         public int ThrottleDelaySeconds { get; set; }
         public string HardwareAccelerationType { get; set; }
-        public string EncoderAppPathCustom { get; set; } // FFmpeg path as set by the user via the UI
-        public string EncoderAppPath { get; set; } // The current FFmpeg path being used by the system
+        /// <summary>
+        /// FFmpeg path as set by the user via the UI
+        /// </summary>
+        public string EncoderAppPathCustom { get; set; }
+        /// <summary>
+        /// The current FFmpeg path being used by the system
+        /// </summary>
+        public string EncoderAppPath { get; set; }
         public string VaapiDevice { get; set; }
         public int H264Crf { get; set; }
         public string H264Preset { get; set; }
