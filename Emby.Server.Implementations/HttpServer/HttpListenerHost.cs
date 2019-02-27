@@ -22,6 +22,7 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Text.Jsv;
@@ -298,7 +299,7 @@ namespace Emby.Server.Implementations.HttpServer
             var uri = new Uri(url);
 
             // this gets all the query string key value pairs as a collection
-            var newQueryString = MyHttpUtility.ParseQueryString(uri.Query);
+            var newQueryString = QueryHelpers.ParseQuery(uri.Query);
 
             var originalCount = newQueryString.Count;
 

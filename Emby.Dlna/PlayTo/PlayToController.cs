@@ -19,7 +19,9 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Session;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -847,13 +849,13 @@ namespace Emby.Dlna.PlayTo
                 if (index == -1) return request;
 
                 var query = url.Substring(index + 1);
-                QueryParamCollection values = MyHttpUtility.ParseQueryString(query);
+                var values = QueryHelpers.ParseQuery(query);
 
-                request.DeviceProfileId = values.Get("DeviceProfileId");
-                request.DeviceId = values.Get("DeviceId");
-                request.MediaSourceId = values.Get("MediaSourceId");
-                request.LiveStreamId = values.Get("LiveStreamId");
-                request.IsDirectStream = string.Equals("true", values.Get("Static"), StringComparison.OrdinalIgnoreCase);
+                request.DeviceProfileId = values["DeviceProfileId"].ToString();
+                request.DeviceId = values["DeviceId"].ToString();
+                request.MediaSourceId = values["MediaSourceId"].ToString();
+                request.LiveStreamId = values["LiveStreamId"].ToString();
+                request.IsDirectStream = string.Equals("true", values["Static"].ToString(), StringComparison.OrdinalIgnoreCase);
 
                 request.AudioStreamIndex = GetIntValue(values, "AudioStreamIndex");
                 request.SubtitleStreamIndex = GetIntValue(values, "SubtitleStreamIndex");
@@ -867,9 +869,9 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private static int? GetIntValue(QueryParamCollection values, string name)
+        private static int? GetIntValue(IReadOnlyDictionary<string, StringValues> values, string name)
         {
-            var value = values.Get(name);
+            var value = values[name].ToString();
 
             if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
             {
@@ -879,9 +881,9 @@ namespace Emby.Dlna.PlayTo
             return null;
         }
 
-        private static long GetLongValue(QueryParamCollection values, string name)
+        private static long GetLongValue(IReadOnlyDictionary<string, StringValues> values, string name)
         {
-            var value = values.Get(name);
+            var value = values[name].ToString();
 
             if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
             {
