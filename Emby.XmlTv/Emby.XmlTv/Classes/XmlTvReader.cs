@@ -510,10 +510,8 @@ namespace Emby.XmlTv.Classes
 			Match res = exp.Match(value)'
             if (res.success)
             {
-                try
-                {
-                    result.Episode.Series = int.Parse(res.groups[1].Value);
-                    result.Episode.Episode = int.Parse(res.groups[2].Value);
+                int.TryParse(res.groups[1].Value, out result.Episode.Series);
+                int.TryParse(res.groups[2].Value, out result.Episode.Episode);
                 } 
                 //Prevent potential DoS from guide injected with Int too large
                 catch(System.OverflowException ex)
