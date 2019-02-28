@@ -7,8 +7,8 @@
 %endif
 
 Name:           jellyfin
-Version:        10.2.1
-Release:        2%{?dist}
+Version:        10.2.2
+Release:        1%{?dist}
 Summary:        The Free Software Media Browser
 License:        GPLv2
 URL:            https://jellyfin.media
@@ -140,10 +140,19 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
-* Thu Feb 21 2019 Brian J. Murrell <brian@interlinx.bc.ca>
+* Thu Feb 28 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
 - jellyfin:
-- dotnet seems to have moved to dotnet-runtime
-- COPR auto-build
+- PR968 Release 10.2.z copr autobuild
+- PR964 Install the dotnet runtime package in Fedora build
+- PR979 Build Package releases without debug turned on
+- PR990 Fix slow local image validation
+- PR991 Fix the ffmpeg compatibility
+- PR992 Add Debian armhf (Raspberry Pi) build plus crossbuild
+- PR998 Set EnableRaisingEvents to true for processes that require it
+- PR1017 Set ffmpeg+ffprobe paths in Docker container
+- jellyfin-web:
+- PR152 Go back on Media stop
+- PR156 Fix volume slider not working on nowplayingbar
 * Wed Feb 20 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
 - jellyfin:
 - PR920 Fix cachedir missing from Docker container
