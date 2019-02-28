@@ -95,7 +95,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // underTest shall be null if versions is unknown
-            return (underTest == null) ? false : !(underTest.CompareTo(minRequired) < 0) && !(underTest.CompareTo(maxRequired) > 0);
+            return (underTest == null) ? false : (underTest.CompareTo(minRequired) >= 0 && underTest.CompareTo(maxRequired) <= 0);
         }
 
         /// <summary>
