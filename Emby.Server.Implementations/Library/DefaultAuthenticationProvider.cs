@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.Library
         //but at least they are in the new format.
         private void ConvertPasswordFormat(User user)
         {
-            if (!string.IsNullOrEmpty(user.Password))
+            if (string.IsNullOrEmpty(user.Password))
             {
                 return;
             }

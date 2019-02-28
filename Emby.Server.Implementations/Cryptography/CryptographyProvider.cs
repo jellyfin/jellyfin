@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Linq;
 using MediaBrowser.Model.Cryptography;
 
 namespace Emby.Server.Implementations.Cryptography
@@ -11,16 +12,18 @@ namespace Emby.Server.Implementations.Cryptography
     public class CryptographyProvider : ICryptoProvider
     {
         private HashSet<string> SupportedHashMethods;
-        public string DefaultHashMethod => "SHA256";
+        public string DefaultHashMethod => "PBKDF2";
         private RandomNumberGenerator rng;
         private int defaultiterations = 1000;
         public CryptographyProvider()
         {
+            //FIXME: When we get DotNet Standard 2.1 we need to revisit how we do the crypto
             //Currently supported hash methods from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptoconfig?view=netcore-2.1
             //there might be a better way to autogenerate this list as dotnet updates, but I couldn't find one
+            //Please note the default method of PBKDF2 is not included, it cannot be used to generate hashes cleanly as it is actually a pbkdf with sha1
             SupportedHashMethods = new HashSet<string>()
             {
-               "MD5"
+                "MD5"
                 ,"System.Security.Cryptography.MD5"
                 ,"SHA"
                 ,"SHA1"
@@ -75,10 +78,15 @@ namespace Emby.Server.Implementations.Cryptography
         private byte[] PBKDF2(string method, byte[] bytes, byte[] salt, int iterations)
         {
             //downgrading for now as we need this library to be dotnetstandard compliant
-            using (var r = new Rfc2898DeriveBytes(bytes, salt, iterations))
+            //with this downgrade we'll add a check to make sure we're on the downgrade method at the moment
+            if(method == DefaultHashMethod)
             {
-                return r.GetBytes(32);
+                using (var r = new Rfc2898DeriveBytes(bytes, salt, iterations))
+                {
+                    return r.GetBytes(32);
+                }
             }
+            throw new CryptographicException($"Cannot currently use PBKDF2 with requested hash method: {method}");
         }
 
         public byte[] ComputeHash(string HashMethod, byte[] bytes)
@@ -93,18 +101,22 @@ namespace Emby.Server.Implementations.Cryptography
 
         public byte[] ComputeHash(string HashMethod, byte[] bytes, byte[] salt)
         {
-            if (SupportedHashMethods.Contains(HashMethod))
+            if(HashMethod == DefaultHashMethod)
             {
-                if (salt.Length == 0)
+                return PBKDF2(HashMethod, bytes, salt, defaultiterations);
+            }
+            else if (SupportedHashMethods.Contains(HashMethod))
+            {
+                using (var h = HashAlgorithm.Create(HashMethod))
                 {
-                    using (var h = HashAlgorithm.Create(HashMethod))
+                    if (salt.Length == 0)
                     {
                         return h.ComputeHash(bytes);
                     }
-                }
-                else
-                {
-                    return PBKDF2(HashMethod, bytes, salt, defaultiterations);
+                    else
+                    {
+                        return h.ComputeHash(bytes.Concat(salt).ToArray());
+                    }
                 }
             }
             else
