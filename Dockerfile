@@ -22,4 +22,8 @@ COPY --from=ffmpeg / /
 COPY --from=builder /jellyfin /jellyfin
 EXPOSE 8096
 VOLUME /cache /config /media
-ENTRYPOINT dotnet /jellyfin/jellyfin.dll --datadir /config --cachedir /cache
+ENTRYPOINT dotnet /jellyfin/jellyfin.dll \
+    --datadir /config \
+    --cachedir /cache \
+    --ffmpeg /usr/local/bin/ffmpeg \
+    --ffprobe /usr/local/bin/ffprobe
