@@ -40,8 +40,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         public FFmpegLocation EncoderLocation { get; private set; }
 
-        private FFmpegLocation ProbeLocation;
-
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
         private string FFmpegPath;
@@ -54,11 +52,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly int DefaultImageExtractionTimeoutMs;
         private readonly string StartupOptionFFmpegPath;
         private readonly string StartupOptionFFprobePath;
-
-        /// <summary>
-        /// Enum to identify the two types of FF utilities of interest.
-        /// </summary>
-        private enum FFtype { Mpeg, Probe };
 
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(1, 1);
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
@@ -93,14 +86,20 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         public void Init()
         {
-            // 1) Custom path stored in config/encoding xml file under tag <EncoderAppPathCustom> takes precedence
-            if (!ValidatePath(FFtype.Mpeg, ConfigurationManager.GetConfiguration<EncodingOptions>("encoding").EncoderAppPathCustom, FFmpegLocation.Custom))
+            // ToDo - Finalise removal of the --ffprobe switch
+            if (!string.IsNullOrEmpty(StartupOptionFFprobePath))
+            {
+                _logger.LogWarning("--ffprobe switch is deprecated and shall be removed in the next release");
+            }
+
+            // 1) Custom path stored in config/encoding xml file under tag <EncoderAppPath> takes precedence
+            if (!ValidatePath(ConfigurationManager.GetConfiguration<EncodingOptions>("encoding").EncoderAppPath, FFmpegLocation.Custom))
             {
                 // 2) Check if the --ffmpeg CLI switch has been given
-                if (!ValidatePath(FFtype.Mpeg, StartupOptionFFmpegPath, FFmpegLocation.SetByArgument))
+                if (!ValidatePath(StartupOptionFFmpegPath, FFmpegLocation.SetByArgument))
                 {
                     // 3) Search system $PATH environment variable for valid FFmpeg
-                    if (!ValidatePath(FFtype.Mpeg, ExistsOnSystemPath("ffmpeg"), FFmpegLocation.System))
+                    if (!ValidatePath(ExistsOnSystemPath("ffmpeg"), FFmpegLocation.System))
                     {
                         EncoderLocation = FFmpegLocation.NotFound;
                         FFmpegPath = null;
@@ -108,110 +107,80 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            ReInit();
-        }
-
-        /// <summary>
-        /// Writes the currently used FFmpeg to config/encoding.xml file.
-        /// Sets the FFprobe path if not currently set.
-        /// Interrogates the FFmpeg tool to identify what encoders/decodres are available.
-        /// </summary>
-        private void ReInit()
-        {
-            // Write the FFmpeg path to the config/encoding.xml file as <EncoderAppPath> so it appears in UI
+            // Write the FFmpeg path to the config/encoding.xml file as <EncoderAppPathDisplay> so it appears in UI
             var config = ConfigurationManager.GetConfiguration<EncodingOptions>("encoding");
-            config.EncoderAppPath = FFmpegPath ?? string.Empty;
+            config.EncoderAppPathDisplay = FFmpegPath ?? string.Empty;
             ConfigurationManager.SaveConfiguration("encoding", config);
-
-            // Clear probe settings in case probe validation fails
-            ProbeLocation = FFmpegLocation.NotFound;
-            FFprobePath = null;
 
             // Only if mpeg path is set, try and set path to probe
             if (FFmpegPath != null)
             {
-                if (EncoderLocation == FFmpegLocation.Custom || StartupOptionFFprobePath == null)
-                {
-                    // If mpeg was read from config, or CLI switch not given, try and set probe from mpeg path
-                    ValidatePath(FFtype.Probe, GetProbePathFromEncoderPath(FFmpegPath), EncoderLocation);
-                }
-                else
-                {
-                    // Else try and set probe path from CLI switch
-                    ValidatePath(FFtype.Probe, StartupOptionFFmpegPath, FFmpegLocation.SetByArgument);
-                }
+                // Determine a probe path from the mpeg path
+                FFprobePath = Regex.Replace(FFmpegPath, @"[^\/\\]+?(\.[^\/\\\n.]+)?$", @"ffprobe$1");
 
-                // Interrogate to understand what coders it supports
+                // Interrogate to understand what coders are supported
                 var result = new EncoderValidator(_logger, _processFactory).GetAvailableCoders(FFmpegPath);
 
                 SetAvailableDecoders(result.decoders);
                 SetAvailableEncoders(result.encoders);
             }
 
-            // Stamp FFmpeg paths to the log file
-            LogPaths();
+            _logger.LogInformation("FFmpeg: {0}: {1}", EncoderLocation.ToString(), FFmpegPath ?? string.Empty);
         }
 
         /// <summary>
-        /// Triggered from the Settings > Trascoding UI page when users sumits Custom FFmpeg path to use.
+        /// Triggered from the Settings > Transcoding UI page when users submits Custom FFmpeg path to use.
+        /// Only write the new path to xml if it exists.  Do not perform validation checks on ffmpeg here.
         /// </summary>
         /// <param name="path"></param>
         /// <param name="pathType"></param>
         public void UpdateEncoderPath(string path, string pathType)
         {
+            string newPath;
+
             _logger.LogInformation("Attempting to update encoder path to {0}. pathType: {1}", path ?? string.Empty, pathType ?? string.Empty);
 
             if (!string.Equals(pathType, "custom", StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Unexpected pathType value");
             }
-
-            if (string.IsNullOrWhiteSpace(path))
+            else if (string.IsNullOrWhiteSpace(path))
             {
-                // User had cleared the custom path in UI.  Clear the Custom config
-                // setting and perform full Init to reinspect any CLI switches and system $PATH
-                var config = ConfigurationManager.GetConfiguration<EncodingOptions>("encoding");
-                config.EncoderAppPathCustom = string.Empty;
-                ConfigurationManager.SaveConfiguration("encoding", config);
-
-                Init();
+                // User had cleared the custom path in UI
+                newPath = string.Empty;
             }
-            else if (!File.Exists(path) && !Directory.Exists(path))
+            else if (File.Exists(path))
             {
-                // Given path is neither file or folder
-                throw new ResourceNotFoundException();
+                newPath = path;
+            }
+            else if (Directory.Exists(path))
+            {
+                // Given path is directory, so resolve down to filename
+                newPath = GetEncoderPathFromDirectory(path, "ffmpeg");
             }
             else
             {
-                // Supplied path could be either file path or folder path.
-                // Resolve down to file path and validate
-                if (!ValidatePath(FFtype.Mpeg, GetEncoderPath(path), FFmpegLocation.Custom))
-                {
-                    throw new ResourceNotFoundException("Failed validation checks.");
-                }
-                else
-                {
-                    // Write the validated mpeg path to the xml as <EncoderAppPathCustom>
-                    // This ensures its not lost on new startup
-                    var config = ConfigurationManager.GetConfiguration<EncodingOptions>("encoding");
-                    config.EncoderAppPathCustom = FFmpegPath;
-                    ConfigurationManager.SaveConfiguration("encoding", config);
-
-                    ReInit();
-                }
+                throw new ResourceNotFoundException();
             }
+
+            // Write the new ffmpeg path to the xml as <EncoderAppPath>
+            // This ensures its not lost on next startup
+            var config = ConfigurationManager.GetConfiguration<EncodingOptions>("encoding");
+            config.EncoderAppPath = newPath;
+            ConfigurationManager.SaveConfiguration("encoding", config);
+
+            // Trigger Init so we validate the new path and setup probe path
+            Init();
         }
 
         /// <summary>
-        /// Validates the supplied FQPN to ensure it is a FFxxx utility.
-        /// If checks pass, global variable FFmpegPath (or FFprobePath) and
-        /// EncoderLocation (or ProbeLocation) are updated.
+        /// Validates the supplied FQPN to ensure it is a ffmpeg utility.
+        /// If checks pass, global variable FFmpegPath and EncoderLocation are updated.
         /// </summary>
-        /// <param name="type">Either mpeg or probe</param>
         /// <param name="path">FQPN to test</param>
         /// <param name="location">Location (External, Custom, System) of tool</param>
         /// <returns></returns>
-        private bool ValidatePath(FFtype type, string path, FFmpegLocation location)
+        private bool ValidatePath(string path, FFmpegLocation location)
         {
             bool rc = false;
 
@@ -219,49 +188,26 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (File.Exists(path))
                 {
-                    rc = new EncoderValidator(_logger, _processFactory).ValidateVersion(path, false);
+                    rc = new EncoderValidator(_logger, _processFactory).ValidateVersion(path, true);
 
-                    // Only update the global variables if the checks passed
-                    if (rc)
+                    if (!rc)
                     {
-                        if (type == FFtype.Mpeg)
-                        {
-                            FFmpegPath = path;
-                            EncoderLocation = location;
-                        }
-                        else
-                        {
-                            FFprobePath = path;
-                            ProbeLocation = location;
-                        }
+                        _logger.LogWarning("FFmpeg: {0}: Failed version check: {1}", location.ToString(), path);
                     }
-                    else
-                    {
-                        _logger.LogError("{0}: {1}: Failed version check: {2}", type.ToString(), location.ToString(), path);
-                    }
+
+                    // ToDo - Enable the ffmpeg validator.  At the moment any version can be used.
+                    rc = true;
+
+                    FFmpegPath = path;
+                    EncoderLocation = location;
                 }
                 else
                 {
-                    _logger.LogError("{0}: {1}: File not found: {2}", type.ToString(), location.ToString(), path);
+                    _logger.LogWarning("FFmpeg: {0}: File not found: {1}", location.ToString(), path);
                 }
             }
 
             return rc;
-        }
-
-        private string GetEncoderPath(string path)
-        {
-            if (Directory.Exists(path))
-            {
-                return GetEncoderPathFromDirectory(path, "ffmpeg");
-            }
-
-            if (File.Exists(path))
-            {
-                return path;
-            }
-
-            return null;
         }
 
         private string GetEncoderPathFromDirectory(string path, string filename)
@@ -283,25 +229,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <summary>
-        /// With the given path string, replaces the filename with ffprobe, taking case
-        /// of any file extension (like .exe on windows).
-        /// </summary>
-        /// <param name="appPath"></param>
-        /// <returns></returns>
-        private string GetProbePathFromEncoderPath(string appPath)
-        {
-            if (!string.IsNullOrEmpty(appPath))
-            {
-                const string pattern = @"[^\/\\]+?(\.[^\/\\\n.]+)?$";
-                const string substitution = @"ffprobe$1";
-
-                return Regex.Replace(appPath, pattern, substitution);
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Search the system $PATH environment variable looking for given filename.
         /// </summary>
         /// <param name="fileName"></param>
@@ -320,12 +247,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
             return null;
-        }
-
-        private void LogPaths()
-        {
-            _logger.LogInformation("FFmpeg:  {0}: {1}", EncoderLocation.ToString(), FFmpegPath ?? string.Empty);
-            _logger.LogInformation("FFprobe: {0}: {1}", ProbeLocation.ToString(), FFprobePath ?? string.Empty);
         }
 
         private List<string> _encoders = new List<string>();

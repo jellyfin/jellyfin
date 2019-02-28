@@ -11,11 +11,11 @@ namespace MediaBrowser.Model.Configuration
         /// <summary>
         /// FFmpeg path as set by the user via the UI
         /// </summary>
-        public string EncoderAppPathCustom { get; set; }
-        /// <summary>
-        /// The current FFmpeg path being used by the system
-        /// </summary>
         public string EncoderAppPath { get; set; }
+        /// <summary>
+        /// The current FFmpeg path being used by the system and displayed on the transcode page
+        /// </summary>
+        public string EncoderAppPathDisplay { get; set; }
         public string VaapiDevice { get; set; }
         public int H264Crf { get; set; }
         public string H264Preset { get; set; }
