@@ -77,7 +77,7 @@ namespace MediaBrowser.Model.Users
 
         public UserPolicy()
         {
-            EnableContentDeletion = true;
+            EnableContentDeletion = false;
             EnableContentDeletionFromFolders = Array.Empty<string>();
 
             EnableSyncTranscoding = true;
