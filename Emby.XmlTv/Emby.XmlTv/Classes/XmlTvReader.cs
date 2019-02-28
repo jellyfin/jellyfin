@@ -516,7 +516,7 @@ namespace Emby.XmlTv.Classes
                 {
                     result.Episode.Series = parsedInt;
                 }
-                if(int.TryParse(res.Groups[2].Value, out parsedInt))
+                if (int.TryParse(res.Groups[2].Value, out parsedInt))
                 {
                     result.Episode.Episode = parsedInt;
                 }   
