@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
@@ -245,7 +246,7 @@ namespace Emby.Server.Implementations.Serialization
                 return null;
             }
 
-            return guid.ToString("N");
+            return guid.ToString("N", CultureInfo.InvariantCulture);
         }
 
         /// <summary>

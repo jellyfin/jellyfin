@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Progress;
@@ -14,14 +15,14 @@ namespace MediaBrowser.Controller.Channels
         {
             if (user.Policy.BlockedChannels != null)
             {
-                if (user.Policy.BlockedChannels.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+                if (user.Policy.BlockedChannels.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
             }
             else
             {
-                if (!user.Policy.EnableAllChannels && !user.Policy.EnabledChannels.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+                if (!user.Policy.EnableAllChannels && !user.Policy.EnabledChannels.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -60,7 +61,7 @@ namespace MediaBrowser.Controller.Channels
 
         public static string GetInternalMetadataPath(string basePath, Guid id)
         {
-            return System.IO.Path.Combine(basePath, "channels", id.ToString("N"), "metadata");
+            return System.IO.Path.Combine(basePath, "channels", id.ToString("N", CultureInfo.InvariantCulture), "metadata");
         }
 
         public override bool CanDelete()

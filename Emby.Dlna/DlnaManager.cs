@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -300,7 +301,7 @@ namespace Emby.Dlna
 
                     profile = ReserializeProfile(tempProfile);
 
-                    profile.Id = path.ToLowerInvariant().GetMD5().ToString("N");
+                    profile.Id = path.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
                     _profiles[path] = new Tuple<InternalProfileInfo, DeviceProfile>(GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
 
@@ -352,7 +353,7 @@ namespace Emby.Dlna
 
                 Info = new DeviceProfileInfo
                 {
-                    Id = file.FullName.ToLowerInvariant().GetMD5().ToString("N"),
+                    Id = file.FullName.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture),
                     Name = _fileSystem.GetFileNameWithoutExtension(file),
                     Type = type
                 }

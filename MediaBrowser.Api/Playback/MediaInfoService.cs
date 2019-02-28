@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -306,7 +307,7 @@ namespace MediaBrowser.Api.Playback
             {
                 result.MediaSources = Clone(result.MediaSources);
 
-                result.PlaySessionId = Guid.NewGuid().ToString("N");
+                result.PlaySessionId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
             }
 
             return result;

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -116,7 +117,7 @@ namespace MediaBrowser.Api.UserLibrary
                 .Select(i => new SpecialViewOption
                 {
                     Name = i.Name,
-                    Id = i.Id.ToString("N")
+                    Id = i.Id.ToString("N", CultureInfo.InvariantCulture)
 
                 })
             .OrderBy(i => i.Name)

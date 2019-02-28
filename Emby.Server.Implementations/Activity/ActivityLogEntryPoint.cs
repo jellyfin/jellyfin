@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -75,7 +76,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.AuthenticationFailed += OnAuthenticationFailed;
             _sessionManager.AuthenticationSucceeded += OnAuthenticationSucceeded;
             _sessionManager.SessionEnded += OnSessionEnded;
-
             _sessionManager.PlaybackStart += OnPlaybackStart;
             _sessionManager.PlaybackStopped += OnPlaybackStopped;
 
@@ -117,7 +117,7 @@ namespace Emby.Server.Implementations.Activity
             {
                 Name = string.Format(_localization.GetLocalizedString("SubtitleDownloadFailureFromForItem"), e.Provider, Notifications.Notifications.GetItemName(e.Item)),
                 Type = "SubtitleDownloadFailure",
-                ItemId = e.Item.Id.ToString("N"),
+                ItemId = e.Item.Id.ToString("N", CultureInfo.InvariantCulture),
                 ShortOverview = e.Exception.Message
             });
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -89,7 +90,7 @@ namespace Emby.Server.Implementations.Images
             ImageType imageType,
             CancellationToken cancellationToken)
         {
-            var outputPathWithoutExtension = Path.Combine(ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
+            var outputPathWithoutExtension = Path.Combine(ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
             Directory.CreateDirectory(Path.GetDirectoryName(outputPathWithoutExtension));
             string outputPath = CreateImage(item, itemsWithImages, outputPathWithoutExtension, imageType, 0);
 

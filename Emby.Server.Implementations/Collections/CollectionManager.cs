@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -182,7 +183,7 @@ namespace Emby.Server.Implementations.Collections
 
         public void AddToCollection(Guid collectionId, IEnumerable<Guid> ids)
         {
-            AddToCollection(collectionId, ids.Select(i => i.ToString("N")), true, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)));
+            AddToCollection(collectionId, ids.Select(i => i.ToString("N", CultureInfo.InvariantCulture)), true, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)));
         }
 
         private void AddToCollection(Guid collectionId, IEnumerable<string> ids, bool fireEvent, MetadataRefreshOptions refreshOptions)

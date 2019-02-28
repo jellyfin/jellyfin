@@ -1082,7 +1082,7 @@ namespace Emby.Dlna.Didl
 
         public static string GetClientId(Guid idValue, StubType? stubType)
         {
-            var id = idValue.ToString("N");
+            var id = idValue.ToString("N", CultureInfo.InvariantCulture);
 
             if (stubType.HasValue)
             {
@@ -1096,7 +1096,7 @@ namespace Emby.Dlna.Didl
         {
             var url = string.Format("{0}/Items/{1}/Images/{2}/0/{3}/{4}/{5}/{6}/0/0",
                 _serverAddress,
-                info.ItemId.ToString("N"),
+                info.ItemId.ToString("N", CultureInfo.InvariantCulture),
                 info.Type,
                 info.ImageTag,
                 format,

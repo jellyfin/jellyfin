@@ -174,7 +174,7 @@ namespace Emby.Server.Implementations.Security
 
             if (!query.UserId.Equals(Guid.Empty))
             {
-                statement.TryBind("@UserId", query.UserId.ToString("N"));
+                statement.TryBind("@UserId", query.UserId.ToString("N", CultureInfo.InvariantCulture));
             }
 
             if (!string.IsNullOrEmpty(query.DeviceId))

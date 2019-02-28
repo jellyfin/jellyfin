@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Controller.Configuration;
@@ -168,7 +169,7 @@ namespace MediaBrowser.Api
 
             foreach (var item in items.Where(i => i.Id != primaryVersion.Id))
             {
-                item.SetPrimaryVersionId(primaryVersion.Id.ToString("N"));
+                item.SetPrimaryVersionId(primaryVersion.Id.ToString("N", CultureInfo.InvariantCulture));
 
                 item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
 

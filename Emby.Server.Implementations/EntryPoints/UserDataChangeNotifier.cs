@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +9,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -125,12 +125,12 @@ namespace Emby.Server.Implementations.EntryPoints
                 .Select(i =>
                 {
                     var dto = _userDataManager.GetUserDataDto(i, user);
-                    dto.ItemId = i.Id.ToString("N");
+                    dto.ItemId = i.Id.ToString("N", CultureInfo.InvariantCulture);
                     return dto;
                 })
                 .ToArray();
 
-            var userIdString = userId.ToString("N");
+            var userIdString = userId.ToString("N", CultureInfo.InvariantCulture);
 
             return new UserDataChangeInfo
             {

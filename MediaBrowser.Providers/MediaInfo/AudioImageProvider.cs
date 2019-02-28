@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -99,11 +100,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (!string.IsNullOrWhiteSpace(item.Album) && !string.IsNullOrWhiteSpace(albumArtist))
                 {
-                    filename = (item.Album + "-" + albumArtist).GetMD5().ToString("N");
+                    filename = (item.Album + "-" + albumArtist).GetMD5().ToString("N", CultureInfo.InvariantCulture);
                 }
                 else
                 {
-                    filename = item.Id.ToString("N");
+                    filename = item.Id.ToString("N", CultureInfo.InvariantCulture);
                 }
 
                 filename += ".jpg";
@@ -111,7 +112,7 @@ namespace MediaBrowser.Providers.MediaInfo
             else
             {
                 // If it's an audio book or audio podcast, allow unique image per item
-                filename = item.Id.ToString("N") + ".jpg";
+                filename = item.Id.ToString("N", CultureInfo.InvariantCulture) + ".jpg";
             }
 
             var prefix = filename.Substring(0, 1);

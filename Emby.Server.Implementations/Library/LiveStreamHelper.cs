@@ -40,7 +40,7 @@ namespace Emby.Server.Implementations.Library
             var now = DateTime.UtcNow;
 
             MediaInfo mediaInfo = null;
-            var cacheFilePath = string.IsNullOrEmpty(cacheKey) ? null : Path.Combine(_appPaths.CachePath, "mediainfo", cacheKey.GetMD5().ToString("N") + ".json");
+            var cacheFilePath = string.IsNullOrEmpty(cacheKey) ? null : Path.Combine(_appPaths.CachePath, "mediainfo", cacheKey.GetMD5().ToString("N", CultureInfo.InvariantCulture) + ".json");
 
             if (!string.IsNullOrEmpty(cacheKey))
             {

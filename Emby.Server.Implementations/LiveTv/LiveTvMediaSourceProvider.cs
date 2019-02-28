@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -101,7 +102,7 @@ namespace Emby.Server.Implementations.LiveTv
                 {
                     var openKeys = new List<string>();
                     openKeys.Add(item.GetType().Name);
-                    openKeys.Add(item.Id.ToString("N"));
+                    openKeys.Add(item.Id.ToString("N", CultureInfo.InvariantCulture));
                     openKeys.Add(source.Id ?? string.Empty);
                     source.OpenToken = string.Join(StreamIdDelimeterString, openKeys.ToArray());
                 }

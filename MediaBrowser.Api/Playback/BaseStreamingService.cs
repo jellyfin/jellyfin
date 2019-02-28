@@ -142,7 +142,7 @@ namespace MediaBrowser.Api.Playback
             data += "-" + (state.Request.DeviceId ?? string.Empty)
                  + "-" + (state.Request.PlaySessionId ?? string.Empty);
 
-            var filename = data.GetMD5().ToString("N");
+            var filename = data.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             var ext = outputFileExtension.ToLowerInvariant();
             var folder = ServerConfigurationManager.ApplicationPaths.TranscodingTempPath;
 
@@ -215,6 +215,12 @@ namespace MediaBrowser.Api.Playback
 
             var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
 
+<<<<<<< HEAD
+=======
+            var transcodingId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+            var commandLineArgs = GetCommandLineArguments(outputPath, encodingOptions, state, true);
+
+>>>>>>> Use CultureInvariant string conversion for Guids
             var process = new Process()
             {
                 StartInfo = new ProcessStartInfo()

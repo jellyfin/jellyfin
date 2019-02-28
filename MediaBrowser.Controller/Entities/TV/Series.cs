@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -91,7 +92,7 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             var folders = LibraryManager.GetCollectionFolders(this)
-                .Select(i => i.Id.ToString("N"))
+                .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
                 .ToArray();
 
             if (folders.Length == 0)

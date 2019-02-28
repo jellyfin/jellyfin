@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.Session
         {
             var dict = new Dictionary<string, string>();
 
-            dict["ItemIds"] = string.Join(",", command.ItemIds.Select(i => i.ToString("N")).ToArray());
+            dict["ItemIds"] = string.Join(",", command.ItemIds.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
 
             if (command.StartPositionTicks.HasValue)
             {

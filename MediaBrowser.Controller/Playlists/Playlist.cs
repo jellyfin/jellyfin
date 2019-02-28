@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -239,7 +240,7 @@ namespace MediaBrowser.Controller.Playlists
                 return base.IsVisible(user);
             }
 
-            var userId = user.Id.ToString("N");
+            var userId = user.Id.ToString("N", CultureInfo.InvariantCulture);
             foreach (var share in shares)
             {
                 if (string.Equals(share.UserId, userId, StringComparison.OrdinalIgnoreCase))
