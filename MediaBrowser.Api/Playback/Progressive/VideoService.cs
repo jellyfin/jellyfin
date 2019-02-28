@@ -37,6 +37,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Videos/{Id}/stream.mov", "GET")]
     [Route("/Videos/{Id}/stream.iso", "GET")]
     [Route("/Videos/{Id}/stream.flv", "GET")]
+    [Route("/Videos/{Id}/stream.rm", "GET")]
     [Route("/Videos/{Id}/stream", "GET")]
     [Route("/Videos/{Id}/stream.ts", "HEAD")]
     [Route("/Videos/{Id}/stream.webm", "HEAD")]

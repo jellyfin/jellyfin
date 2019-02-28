@@ -22,6 +22,7 @@
  - [Liggy](https://github.com/Liggy)
  - [fruhnow](https://github.com/fruhnow)
  - [Lynxy](https://github.com/Lynxy)
+ - [fasheng](https://github.com/fasheng)
 
 # Emby Contributors
 
