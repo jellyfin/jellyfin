@@ -92,7 +92,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>System.String.</returns>
         string EscapeSubtitleFilterPath(string path);
 
-        void Init();
+        void SetFFmpegPath();
 
         void UpdateEncoderPath(string path, string pathType);
         bool SupportsEncoder(string encoder);

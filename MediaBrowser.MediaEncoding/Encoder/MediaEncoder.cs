@@ -84,7 +84,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// Sets global variables FFmpegPath.
         /// Precedence is: Config > CLI > $PATH
         /// </summary>
-        public void Init()
+        public void SetFFmpegPath()
         {
             // ToDo - Finalise removal of the --ffprobe switch
             if (!string.IsNullOrEmpty(StartupOptionFFprobePath))
@@ -169,8 +169,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             config.EncoderAppPath = newPath;
             ConfigurationManager.SaveConfiguration("encoding", config);
 
-            // Trigger Init so we validate the new path and setup probe path
-            Init();
+            // Trigger SetFFmpegPath so we validate the new path and setup probe path
+            SetFFmpegPath();
         }
 
         /// <summary>

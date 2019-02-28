@@ -534,7 +534,7 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
 
-            MediaEncoder.Init();
+            MediaEncoder.SetFFmpegPath();
 
             //if (string.IsNullOrWhiteSpace(MediaEncoder.EncoderPath))
             //{
