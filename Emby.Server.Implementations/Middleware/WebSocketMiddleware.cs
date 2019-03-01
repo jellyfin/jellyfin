@@ -25,7 +25,10 @@ namespace Emby.Server.Implementations.Middleware
             if (httpContext.WebSockets.IsWebSocketRequest)
             {
                 var webSocketContext = await httpContext.WebSockets.AcceptWebSocketAsync(null).ConfigureAwait(false);
-                _webSocketManager.AddSocket(webSocketContext);
+                if (webSocketContext != null)
+                {
+                    await _webSocketManager.OnWebSocketConnected(webSocketContext);
+                }
             }
             else
             {
