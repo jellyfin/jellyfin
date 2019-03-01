@@ -502,11 +502,14 @@ namespace Emby.XmlTv.Classes
                     break;
             }
         }
+
         public void ParseSxxExxSystem(XmlReader reader, XmlTvProgram result)
         {
-            //// <episode-num system="SxxExx">S012E32</episode-num
-            string value = reader.ReadElementContentAsString();
-            Match res = Regex.Match(value, "s([0-9]+)e([0-9]+)", RegexOptions.IgnoreCase);
+            //// <episode-num system="SxxExx">S012E32</episode-num>
+
+            var value = reader.ReadElementContentAsString();
+            var res = Regex.Match(value, "s([0-9]+)e([0-9]+)", RegexOptions.IgnoreCase);
+
             if (res.Success)
             {
                 int parsedInt;
@@ -515,12 +518,14 @@ namespace Emby.XmlTv.Classes
                 {
                     result.Episode.Series = parsedInt;
                 }
+
                 if (int.TryParse(res.Groups[2].Value, out parsedInt))
                 {
                     result.Episode.Episode = parsedInt;
                 }   
             }
         }
+
         public void ParseMovieDbSystem(XmlReader reader, XmlTvProgram result)
         {
             // <episode-num system="thetvdb.com">series/248841</episode-num>
