@@ -506,8 +506,7 @@ namespace Emby.XmlTv.Classes
         {
             //// <episode-num system="SxxExx">S012E32</episode-num
             string value = reader.ReadElementContentAsString();
-            Regex exp = new Regex("s([0-9]+)e([0-9]+)",RegexOptions.IgnoreCase);
-            Match res = new Regex("s([0-9]+)e([0-9]+)", RegexOptions.IgnoreCase).Match(value);
+            Match res = Regex.Match(value, "s([0-9]+)e([0-9]+)", RegexOptions.IgnoreCase);
             if (res.Success)
             {
                 int parsedInt;
