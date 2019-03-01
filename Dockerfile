@@ -20,6 +20,12 @@ RUN apt-get update \
  && chmod 777 /cache /config /media
 COPY --from=ffmpeg / /
 COPY --from=builder /jellyfin /jellyfin
+
+ARG JELLYFIN_WEB_VERSION=10.2.2
+RUN curl -L https://github.com/jellyfin/jellyfin-web/archive/v${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
+ && rm -rf /jellyfin/jellyfin-web \
+ && mv jellyfin-web-${JELLYFIN_WEB_VERSION} /jellyfin/jellyfin-web
+
 EXPOSE 8096
 VOLUME /cache /config /media
 ENTRYPOINT dotnet /jellyfin/jellyfin.dll \
