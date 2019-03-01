@@ -62,10 +62,6 @@ namespace Emby.Server.Implementations.Localization
         {
             const string ratingsResource = "Emby.Server.Implementations.Localization.Ratings.";
 
-            Directory.CreateDirectory(LocalizationPath);
-
-            var existingFiles = GetRatingsFiles(LocalizationPath).Select(Path.GetFileName);
-
             // Extract from the assembly
             foreach (var resource in _assembly.GetManifestResourceNames())
             {
@@ -74,99 +70,41 @@ namespace Emby.Server.Implementations.Localization
                     continue;
                 }
 
-                string filename = "ratings-" + resource.Substring(ratingsResource.Length);
+                string countryCode = resource.Substring(ratingsResource.Length, 2);
+                var dict = new Dictionary<string, ParentalRating>(StringComparer.OrdinalIgnoreCase);
 
-                if (existingFiles.Contains(filename))
+                using (var str = _assembly.GetManifestResourceStream(resource))
+                using (var reader = new StreamReader(str))
                 {
-                    continue;
-                }
-
-                using (var stream = _assembly.GetManifestResourceStream(resource))
-                {
-                    string target = Path.Combine(LocalizationPath, filename);
-                    _logger.LogInformation("Extracting ratings to {0}", target);
-
-                    using (var fs = _fileSystem.GetFileStream(target, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+                    string line;
+                    while ((line = await reader.ReadLineAsync()) != null)
                     {
-                        await stream.CopyToAsync(fs);
+                        if (string.IsNullOrWhiteSpace(line))
+                        {
+                            continue;
+                        }
+
+                        string[] parts = line.Split(',');
+                        if (parts.Length == 2
+                            && int.TryParse(parts[1], NumberStyles.Integer, UsCulture, out var value))
+                        {
+                            dict.Add(parts[0], (new ParentalRating { Name = parts[0], Value = value }));
+                        }
+#if DEBUG
+                        else
+                        {
+                            _logger.LogWarning("Misformed line in ratings file for country {CountryCode}", countryCode);
+                        }
+#endif
                     }
                 }
-            }
+                _logger.LogWarning("{t}", countryCode);
 
-            foreach (var file in GetRatingsFiles(LocalizationPath))
-            {
-                await LoadRatings(file);
+                _allParentalRatings[countryCode] = dict;
             }
-
-            LoadAdditionalRatings();
 
             await LoadCultures();
         }
-
-        private void LoadAdditionalRatings()
-        {
-            LoadRatings("au", new[]
-            {
-                new ParentalRating("AU-G", 1),
-                new ParentalRating("AU-PG", 5),
-                new ParentalRating("AU-M", 6),
-                new ParentalRating("AU-MA15+", 7),
-                new ParentalRating("AU-M15+", 8),
-                new ParentalRating("AU-R18+", 9),
-                new ParentalRating("AU-X18+", 10),
-                new ParentalRating("AU-RC", 11)
-            });
-
-            LoadRatings("be", new[]
-            {
-                new ParentalRating("BE-AL", 1),
-                new ParentalRating("BE-MG6", 2),
-                new ParentalRating("BE-6", 3),
-                new ParentalRating("BE-9", 5),
-                new ParentalRating("BE-12", 6),
-                new ParentalRating("BE-16", 8)
-            });
-
-            LoadRatings("de", new[]
-            {
-                new ParentalRating("DE-0", 1),
-                new ParentalRating("FSK-0", 1),
-                new ParentalRating("DE-6", 5),
-                new ParentalRating("FSK-6", 5),
-                new ParentalRating("DE-12", 7),
-                new ParentalRating("FSK-12", 7),
-                new ParentalRating("DE-16", 8),
-                new ParentalRating("FSK-16", 8),
-                new ParentalRating("DE-18", 9),
-                new ParentalRating("FSK-18", 9)
-            });
-
-            LoadRatings("ru", new[]
-            {
-                new ParentalRating("RU-0+", 1),
-                new ParentalRating("RU-6+", 3),
-                new ParentalRating("RU-12+", 7),
-                new ParentalRating("RU-16+", 9),
-                new ParentalRating("RU-18+", 10)
-            });
-        }
-
-        private void LoadRatings(string country, ParentalRating[] ratings)
-        {
-            _allParentalRatings[country] = ratings.ToDictionary(i => i.Name);
-        }
-
-        private IEnumerable<string> GetRatingsFiles(string directory)
-            => _fileSystem.GetFilePaths(directory, false)
-                .Where(i => string.Equals(Path.GetExtension(i), ".csv", StringComparison.OrdinalIgnoreCase))
-                .Where(i => Path.GetFileName(i).StartsWith("ratings-", StringComparison.OrdinalIgnoreCase));
-
-        /// <summary>
-        /// Gets the localization path.
-        /// </summary>
-        /// <value>The localization path.</value>
-        public string LocalizationPath
-            => Path.Combine(_configurationManager.ApplicationPaths.ProgramDataPath, "localization");
 
         public string NormalizeFormKD(string text)
             => text.Normalize(NormalizationForm.FormKD);
@@ -286,47 +224,6 @@ namespace Emby.Server.Implementations.Localization
             _allParentalRatings.TryGetValue(countryCode, out var value);
 
             return value;
-        }
-
-        /// <summary>
-        /// Loads the ratings.
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <returns>Dictionary{System.StringParentalRating}.</returns>
-        private async Task LoadRatings(string file)
-        {
-            Dictionary<string, ParentalRating> dict
-                = new Dictionary<string, ParentalRating>(StringComparer.OrdinalIgnoreCase);
-
-            using (var str = File.OpenRead(file))
-            using (var reader = new StreamReader(str))
-            {
-                string line;
-                while ((line = await reader.ReadLineAsync()) != null)
-                {
-                    if (string.IsNullOrWhiteSpace(line))
-                    {
-                        continue;
-                    }
-
-                    string[] parts = line.Split(',');
-                    if (parts.Length == 2
-                        && int.TryParse(parts[1], NumberStyles.Integer, UsCulture, out var value))
-                    {
-                        dict.Add(parts[0], (new ParentalRating { Name = parts[0], Value = value }));
-                    }
-#if DEBUG
-                    else
-                    {
-                        _logger.LogWarning("Misformed line in {Path}", file);
-                    }
-#endif
-                }
-            }
-
-            var countryCode = Path.GetFileNameWithoutExtension(file).Split('-')[1];
-
-            _allParentalRatings[countryCode] = dict;
         }
 
         private static readonly string[] _unratedValues = { "n/a", "unrated", "not rated" };
