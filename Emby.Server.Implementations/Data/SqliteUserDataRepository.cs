@@ -119,9 +119,9 @@ namespace Emby.Server.Implementations.Data
                     {
                         list.Add(row[0].ReadGuidFromBlob());
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        Logger.LogError(ex, "Error while getting user");
                     }
                 }
             }

@@ -243,8 +243,7 @@ namespace Emby.Server.Implementations.Channels
             {
                 foreach (var item in returnItems)
                 {
-                    var task = RefreshLatestChannelItems(GetChannelProvider(item), CancellationToken.None);
-                    Task.WaitAll(task);
+                    RefreshLatestChannelItems(GetChannelProvider(item), CancellationToken.None).GetAwaiter().GetResult();
                 }
             }
 
@@ -303,9 +302,7 @@ namespace Emby.Server.Implementations.Channels
                 }
 
                 numComplete++;
-                double percent = numComplete;
-                percent /= allChannelsList.Count;
-
+                double percent = (double)numComplete / allChannelsList.Count;
                 progress.Report(100 * percent);
             }
 
@@ -658,9 +655,7 @@ namespace Emby.Server.Implementations.Channels
 
             foreach (var item in result.Items)
             {
-                var folder = item as Folder;
-
-                if (folder != null)
+                if (item is Folder folder)
                 {
                     await GetChannelItemsInternal(new InternalItemsQuery
                     {

@@ -818,10 +818,9 @@ namespace Emby.Dlna.Didl
         {
             AddCommonFields(item, itemStubType, context, writer, filter);
 
-            var hasArtists = item as IHasArtist;
             var hasAlbumArtists = item as IHasAlbumArtist;
 
-            if (hasArtists != null)
+            if (item is IHasArtist hasArtists)
             {
                 foreach (var artist in hasArtists.Artists)
                 {
