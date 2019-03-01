@@ -15,7 +15,6 @@ DEFAULT_CONFIG="Release"
 DEFAULT_OUTPUT_DIR="dist/jellyfin-git"
 DEFAULT_PKG_DIR="pkg-dist"
 DEFAULT_DOCKERFILE="Dockerfile"
-DEFAULT_IMAGE_TAG="jellyfin:"`git rev-parse --abbrev-ref HEAD`
 DEFAULT_ARCHIVE_CMD="tar -xvzf"
 
 # Parse the version from the AssemblyVersion
@@ -36,9 +35,9 @@ build_jellyfin()
 
     echo -e "${CYAN}Building jellyfin in '${ROOT}' for ${DOTNETRUNTIME} with configuration ${CONFIG} and output directory '${OUTPUT_DIR}'.${NC}"
     if [[ $DOTNETRUNTIME == 'framework' ]]; then
-        dotnet publish "${ROOT}" --configuration "${CONFIG}" --output="${OUTPUT_DIR}"
+        dotnet publish "${ROOT}" --configuration "${CONFIG}" --output="${OUTPUT_DIR}" "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
     else
-        dotnet publish "${ROOT}" --configuration "${CONFIG}" --output="${OUTPUT_DIR}" --self-contained --runtime ${DOTNETRUNTIME}
+        dotnet publish "${ROOT}" --configuration "${CONFIG}" --output="${OUTPUT_DIR}" --self-contained --runtime ${DOTNETRUNTIME} "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
     fi    
     EXIT_CODE=$?
     if [ $EXIT_CODE -eq 0 ]; then
@@ -53,7 +52,7 @@ build_jellyfin_docker()
 (
     BUILD_CONTEXT=${1-$DEFAULT_BUILD_CONTEXT}
     DOCKERFILE=${2-$DEFAULT_DOCKERFILE}
-    IMAGE_TAG=${3-$DEFAULT_IMAGE_TAG}
+    IMAGE_TAG=${3-"jellyfin:$(git rev-parse --abbrev-ref HEAD)"}
 
     echo -e "${CYAN}Building jellyfin docker image in '${BUILD_CONTEXT}' with Dockerfile '${DOCKERFILE}' and tag '${IMAGE_TAG}'.${NC}"
     docker build -t ${IMAGE_TAG} -f ${DOCKERFILE} ${BUILD_CONTEXT}

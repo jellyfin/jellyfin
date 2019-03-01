@@ -7,7 +7,7 @@
 %endif
 
 Name:           jellyfin
-Version:        10.2.1
+Version:        10.2.2
 Release:        1%{?dist}
 Summary:        The Free Software Media Browser
 License:        GPLv2
@@ -27,7 +27,7 @@ BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, 
 Requires:       libcurl, fontconfig, freetype, openssl, glibc libicu
 # Requirements not packaged in main repos
 # COPR @dotnet-sig/dotnet
-BuildRequires:  dotnet-sdk-2.2
+BuildRequires:  dotnet-runtime-2.2, dotnet-sdk-2.2
 # RPMfusion free
 Requires:       ffmpeg
 
@@ -49,7 +49,8 @@ Jellyfin is a free software media system that puts you in control of managing an
 %install
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime %{dotnet_runtime} Jellyfin.Server
+dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime %{dotnet_runtime} \
+    "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none" Jellyfin.Server
 %{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/%{name}/LICENSE
 %{__install} -D -m 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
 %{__install} -D -m 0644 Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/%{name}/logging.json
@@ -73,7 +74,6 @@ EOF
 %{_libdir}/%{name}/jellyfin-web/*
 %attr(755,root,root) %{_bindir}/%{name}
 %{_libdir}/%{name}/*.json
-%{_libdir}/%{name}/*.pdb
 %{_libdir}/%{name}/*.dll
 %{_libdir}/%{name}/*.so
 %{_libdir}/%{name}/*.a
@@ -140,6 +140,19 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Thu Feb 28 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
+- jellyfin:
+- PR968 Release 10.2.z copr autobuild
+- PR964 Install the dotnet runtime package in Fedora build
+- PR979 Build Package releases without debug turned on
+- PR990 Fix slow local image validation
+- PR991 Fix the ffmpeg compatibility
+- PR992 Add Debian armhf (Raspberry Pi) build plus crossbuild
+- PR998 Set EnableRaisingEvents to true for processes that require it
+- PR1017 Set ffmpeg+ffprobe paths in Docker container
+- jellyfin-web:
+- PR152 Go back on Media stop
+- PR156 Fix volume slider not working on nowplayingbar
 * Wed Feb 20 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
 - jellyfin:
 - PR920 Fix cachedir missing from Docker container
