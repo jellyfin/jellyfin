@@ -2279,11 +2279,10 @@ namespace Emby.Server.Implementations.Data
 
         private static readonly HashSet<string> _seriesTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "Audio",
-            "MusicAlbum",
-            "MusicVideo",
+            "Book",
             "AudioBook",
-            "AudioPodcast"
+            "Episode",
+            "Season"
         };
 
         private bool HasSeriesFields(InternalItemsQuery query)
