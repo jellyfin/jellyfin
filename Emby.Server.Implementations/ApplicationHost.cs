@@ -111,13 +111,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ServiceStack;
-using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 
 namespace Emby.Server.Implementations
 {
@@ -638,7 +636,6 @@ namespace Emby.Server.Implementations
                 {
                     services.AddResponseCompression();
                     services.AddHttpContextAccessor();
-                    services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
                 })
                 .Configure(app =>
                 {

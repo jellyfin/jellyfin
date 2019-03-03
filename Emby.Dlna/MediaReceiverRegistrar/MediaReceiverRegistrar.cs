@@ -1,9 +1,7 @@
-using System.Collections.Generic;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Xml;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
