@@ -626,9 +626,12 @@ namespace Emby.Server.Implementations
                 {
                     options.Listen(IPAddress.Any, HttpPort);
                     options.Listen(IPAddress.Loopback, HttpPort);
-                    // TODO certs
-                    options.Listen(IPAddress.Any, HttpsPort, listenOptions => { listenOptions.UseHttps(); });
-                    options.Listen(IPAddress.Loopback, HttpsPort, listenOptions => { listenOptions.UseHttps(); });
+
+                    if (CertificateInfo != null)
+                    {
+                        options.Listen(IPAddress.Any, HttpsPort, listenOptions => { listenOptions.UseHttps(Certificate); });
+                        options.Listen(IPAddress.Loopback, HttpsPort, listenOptions => { listenOptions.UseHttps(Certificate); });
+                    }
                 })
                 .UseContentRoot(Path.Combine(Directory.GetCurrentDirectory(), "jellyfin-web", "src"))
                 .ConfigureServices(services =>
@@ -927,11 +930,9 @@ namespace Emby.Server.Implementations
             }
         }
 
-        protected virtual bool SupportsDualModeSockets => true;
-
-        private X509Certificate GetCertificate(CertificateInfo info)
+        private X509Certificate2 GetCertificate(CertificateInfo info)
         {
-            var certificateLocation = info == null ? null : info.Path;
+            var certificateLocation = info?.Path;
 
             if (string.IsNullOrWhiteSpace(certificateLocation))
             {
@@ -1004,7 +1005,7 @@ namespace Emby.Server.Implementations
             return info;
         }
 
-        protected virtual FFMpegInfo GetFFMpegInfo()
+        protected FFMpegInfo GetFFMpegInfo()
         {
             return new FFMpegLoader(ApplicationPaths, FileSystemManager, GetFfmpegInstallInfo())
                 .GetFFMpegInfo(StartupOptions);
@@ -1085,7 +1086,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         private void SetStaticProperties()
         {
-            ((SqliteItemRepository)ItemRepository).ImageProcessor = ImageProcessor;
+            ItemRepository.ImageProcessor = ImageProcessor;
 
             // For now there's no real way to inject these properly
             BaseItem.Logger = LoggerFactory.CreateLogger("BaseItem");
@@ -1211,15 +1212,12 @@ namespace Emby.Server.Implementations
 
             AllConcreteTypes = GetComposablePartAssemblies()
                 .SelectMany(x => x.ExportedTypes)
-                .Where(type =>
-                {
-                    return type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsGenericType;
-                })
+                .Where(type => type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsGenericType)
                 .ToArray();
         }
 
         private CertificateInfo CertificateInfo { get; set; }
-        protected X509Certificate Certificate { get; private set; }
+        protected X509Certificate2 Certificate { get; private set; }
 
         private IEnumerable<string> GetUrlPrefixes()
         {

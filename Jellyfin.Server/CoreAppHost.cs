@@ -34,8 +34,6 @@ namespace Jellyfin.Server
 
         public override bool CanSelfRestart => StartupOptions.RestartPath != null;
 
-        protected override bool SupportsDualModeSockets => true;
-
         protected override void RestartInternal() => Program.Restart();
 
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()

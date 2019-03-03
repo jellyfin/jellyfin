@@ -35,6 +35,7 @@ namespace Emby.Server.Implementations.WebSockets
             WebSocketReceiveResult result;
             var message = new List<byte>();
 
+            // Keep listening for incoming messages, otherwise the socket closes automatically
             do
             {
                 var buffer = WebSocket.CreateServerBuffer(BufferSize);
@@ -57,7 +58,7 @@ namespace Emby.Server.Implementations.WebSockets
             }
         }
 
-        public async Task ProcessMessage(byte[] messageBytes, TaskCompletionSource<bool> taskCompletionSource)
+        private async Task ProcessMessage(byte[] messageBytes, TaskCompletionSource<bool> taskCompletionSource)
         {
             var charset = CharsetDetector.DetectFromBytes(messageBytes).Detected?.EncodingName;
             var message = string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase)
@@ -81,11 +82,12 @@ namespace Emby.Server.Implementations.WebSockets
                 {
                     try
                     {
-                        handler.ProcessMessage(info).ConfigureAwait(false);
+                        handler.ProcessMessage(info, taskCompletionSource).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "{0} failed processing WebSocket message {1}", handler.GetType().Name, info.MessageType ?? string.Empty);
+                        _logger.LogError(ex, "{HandlerType} failed processing WebSocket message {MessageType}",
+                            handler.GetType().Name, info.MessageType ?? string.Empty);
                     }
                 }));
 

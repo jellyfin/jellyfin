@@ -855,16 +855,5 @@ namespace Emby.Server.Implementations.HttpServer
         {
             Dispose(true);
         }
-
-        public void StartServer(string[] urlPrefixes, IHttpListener httpListener)
-        {
-            UrlPrefixes = urlPrefixes;
-
-            _listener = httpListener;
-
-            _listener.WebSocketConnected = OnWebSocketConnected;
-            _listener.ErrorHandler = ErrorHandler;
-            _listener.RequestHandler = RequestHandler;
-        }
     }
 }
