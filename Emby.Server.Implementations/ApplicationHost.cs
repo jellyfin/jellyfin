@@ -650,6 +650,8 @@ namespace Emby.Server.Implementations
                     app.Use(ExecuteHttpHandlerAsync);
                 })
                 .Build();
+
+            await Host.StartAsync();
         }
 
         public async Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next)
