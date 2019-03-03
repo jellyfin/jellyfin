@@ -408,11 +408,28 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public string ContentType => request.ContentType;
 
-        private Encoding contentEncoding;
-        public Encoding ContentEncoding
+        private Encoding ContentEncoding
         {
-            get => contentEncoding ?? Encoding.GetEncoding(request.Headers[HeaderNames.ContentEncoding].ToString());
-            set => contentEncoding = value;
+            get
+            {
+                // TODO is this necessary?
+                if (UserAgent != null && CultureInfo.InvariantCulture.CompareInfo.IsPrefix(UserAgent, "UP"))
+                {
+                    string postDataCharset = Headers["x-up-devcap-post-charset"];
+                    if (!string.IsNullOrEmpty(postDataCharset))
+                    {
+                        try
+                        {
+                            return Encoding.GetEncoding(postDataCharset);
+                        }
+                        catch (ArgumentException)
+                        {
+                        }
+                    }
+                }
+
+                return request.GetTypedHeaders().ContentType.Encoding ?? Encoding.UTF8;
+            }
         }
 
         public Uri UrlReferrer => request.GetTypedHeaders().Referer;

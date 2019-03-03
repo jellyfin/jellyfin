@@ -144,7 +144,6 @@ namespace Jellyfin.Server
                 appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
 
                 await appHost.RunStartupTasks().ConfigureAwait(false);
-                appHost.Host.Run();
                 // TODO: read input for a stop command
 
                 try
