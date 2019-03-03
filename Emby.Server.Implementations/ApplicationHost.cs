@@ -627,7 +627,7 @@ namespace Emby.Server.Implementations
                     options.Listen(IPAddress.Any, HttpPort);
                     options.Listen(IPAddress.Loopback, HttpPort);
 
-                    if (CertificateInfo != null)
+                    if (EnableHttps)
                     {
                         options.Listen(IPAddress.Any, HttpsPort, listenOptions => { listenOptions.UseHttps(Certificate); });
                         options.Listen(IPAddress.Loopback, HttpsPort, listenOptions => { listenOptions.UseHttps(Certificate); });
