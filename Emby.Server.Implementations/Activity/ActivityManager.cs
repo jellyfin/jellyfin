@@ -39,8 +39,13 @@ namespace Emby.Server.Implementations.Activity
         {
             var result = _repo.GetActivityLogEntries(minDate, hasUserId, startIndex, limit);
 
-            foreach (var item in result.Items.Where(i => !i.UserId.Equals(Guid.Empty)))
+            foreach (var item in result.Items)
             {
+                if (item.UserId == Guid.Empty)
+                {
+                    continue;
+                }
+
                 var user = _userManager.GetUserById(item.UserId);
 
                 if (user != null)

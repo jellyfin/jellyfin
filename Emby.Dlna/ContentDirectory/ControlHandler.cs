@@ -260,7 +260,7 @@ namespace Emby.Dlna.ContentDirectory
 
                     if (item.IsDisplayedAsFolder || serverItem.StubType.HasValue)
                     {
-                        var childrenResult = (GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount));
+                        var childrenResult = GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount);
 
                         _didlBuilder.WriteFolderElement(writer, item, serverItem.StubType, null, childrenResult.TotalRecordCount, filter, id);
                     }
@@ -273,7 +273,7 @@ namespace Emby.Dlna.ContentDirectory
                 }
                 else
                 {
-                    var childrenResult = (GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount));
+                    var childrenResult = GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount);
                     totalCount = childrenResult.TotalRecordCount;
 
                     provided = childrenResult.Items.Length;

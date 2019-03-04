@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Emby.Naming.Common;
 
 namespace Emby.Naming.TV
@@ -22,7 +21,9 @@ namespace Emby.Naming.TV
             // There were no failed tests without this block, but to be safe, we can keep it until
             // the regex which require file extensions are modified so that they don't need them.
             if (IsDirectory)
+            {
                 path += ".mp4";
+            }
 
             EpisodePathParserResult result = null;
 
@@ -35,6 +36,7 @@ namespace Emby.Naming.TV
                         continue;
                     }
                 }
+
                 if (isNamed.HasValue)
                 {
                     if (expression.IsNamed != isNamed.Value)
@@ -42,6 +44,7 @@ namespace Emby.Naming.TV
                         continue;
                     }
                 }
+
                 if (isOptimistic.HasValue)
                 {
                     if (expression.IsOptimistic != isOptimistic.Value)
@@ -191,13 +194,20 @@ namespace Emby.Naming.TV
 
         private void FillAdditional(string path, EpisodePathParserResult info, IEnumerable<EpisodeExpression> expressions)
         {
-            var results = expressions
-                .Where(i => i.IsNamed)
-                .Select(i => Parse(path, i))
-                .Where(i => i.Success);
-
-            foreach (var result in results)
+            foreach (var i in expressions)
             {
+                if (!i.IsNamed)
+                {
+                    continue;
+                }
+
+                var result = Parse(path, i);
+
+                if (!result.Success)
+                {
+                    continue;
+                }
+
                 if (string.IsNullOrEmpty(info.SeriesName))
                 {
                     info.SeriesName = result.SeriesName;
@@ -208,12 +218,10 @@ namespace Emby.Naming.TV
                     info.EndingEpsiodeNumber = result.EndingEpsiodeNumber;
                 }
 
-                if (!string.IsNullOrEmpty(info.SeriesName))
+                if (!string.IsNullOrEmpty(info.SeriesName)
+                    && (!info.EpisodeNumber.HasValue || info.EndingEpsiodeNumber.HasValue))
                 {
-                    if (!info.EpisodeNumber.HasValue || info.EndingEpsiodeNumber.HasValue)
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
         }

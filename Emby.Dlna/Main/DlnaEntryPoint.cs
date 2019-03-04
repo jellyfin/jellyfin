@@ -246,7 +246,7 @@ namespace Emby.Dlna.Main
 
         private async Task RegisterServerEndpoints()
         {
-            var addresses = (await _appHost.GetLocalIpAddresses(CancellationToken.None).ConfigureAwait(false)).ToList();
+            var addresses = await _appHost.GetLocalIpAddresses(CancellationToken.None).ConfigureAwait(false);
 
             var udn = CreateUuid(_appHost.SystemId);
 

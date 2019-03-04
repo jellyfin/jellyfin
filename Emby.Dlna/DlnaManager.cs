@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -15,7 +16,6 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
@@ -29,7 +29,7 @@ namespace Emby.Dlna
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationHost _appHost;
-        private readonly IAssemblyInfo _assemblyInfo;
+        private static readonly Assembly _assembly = typeof(DlnaManager).Assembly;
 
         private readonly Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>> _profiles = new Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>>(StringComparer.Ordinal);
 
@@ -39,8 +39,7 @@ namespace Emby.Dlna
             IApplicationPaths appPaths,
             ILoggerFactory loggerFactory,
             IJsonSerializer jsonSerializer,
-            IServerApplicationHost appHost,
-            IAssemblyInfo assemblyInfo)
+            IServerApplicationHost appHost)
         {
             _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
@@ -48,7 +47,6 @@ namespace Emby.Dlna
             _logger = loggerFactory.CreateLogger("Dlna");
             _jsonSerializer = jsonSerializer;
             _appHost = appHost;
-            _assemblyInfo = assemblyInfo;
         }
 
         public async Task InitProfilesAsync()
@@ -368,15 +366,18 @@ namespace Emby.Dlna
 
             var systemProfilesPath = SystemProfilesPath;
 
-            foreach (var name in _assemblyInfo.GetManifestResourceNames(GetType())
-                .Where(i => i.StartsWith(namespaceName))
-                .ToList())
+            foreach (var name in _assembly.GetManifestResourceNames())
             {
+                if (!name.StartsWith(namespaceName))
+                {
+                    continue;
+                }
+
                 var filename = Path.GetFileName(name).Substring(namespaceName.Length);
 
                 var path = Path.Combine(systemProfilesPath, filename);
 
-                using (var stream = _assemblyInfo.GetManifestResourceStream(GetType(), name))
+                using (var stream = _assembly.GetManifestResourceStream(name))
                 {
                     var fileInfo = _fileSystem.GetFileInfo(path);
 
@@ -514,7 +515,7 @@ namespace Emby.Dlna
             return new ImageStream
             {
                 Format = format,
-                Stream = _assemblyInfo.GetManifestResourceStream(GetType(), resource)
+                Stream = _assembly.GetManifestResourceStream(resource)
             };
         }
     }
