@@ -88,7 +88,7 @@ namespace Emby.Server.Implementations.Localization
                         if (parts.Length == 2
                             && int.TryParse(parts[1], NumberStyles.Integer, UsCulture, out var value))
                         {
-                            dict.Add(parts[0], (new ParentalRating { Name = parts[0], Value = value }));
+                            dict.Add(parts[0], new ParentalRating { Name = parts[0], Value = value });
                         }
 #if DEBUG
                         else
