@@ -71,11 +71,7 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public Stream OutputStream => _response.Body;
 
-        public bool IsClosed
-        {
-            get;
-            set;
-        }
+        public bool IsClosed { get; set; }
 
         public bool SendChunked { get; set; }
 
