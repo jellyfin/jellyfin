@@ -12,8 +12,9 @@ using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
- namespace Emby.Server.Implementations.SocketSharp
+namespace Emby.Server.Implementations.SocketSharp
 {
     public class WebSocketSharpListener : IHttpListener
     {
@@ -39,7 +40,7 @@ using Microsoft.Extensions.Logging;
         {
             var url = request.GetDisplayUrl();
 
-            logger.LogInformation("{0} {1}. UserAgent: {2}", "WS", url, request.Headers["User-Agent"].ToString());
+            logger.LogInformation("WS {Url}. UserAgent: {UserAgent}", url, request.Headers[HeaderNames.UserAgent].ToString());
         }
 
         public async Task ProcessWebSocketRequest(HttpContext ctx)
