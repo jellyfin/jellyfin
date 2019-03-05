@@ -33,11 +33,7 @@ namespace Emby.Server.Implementations.HttpServer
     public class HttpListenerHost : IHttpServer, IDisposable
     {
         private string DefaultRedirectPath { get; set; }
-
-        private readonly ILogger _logger;
         public string[] UrlPrefixes { get; private set; }
-
-        private IHttpListener _listener;
 
         public event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
 
@@ -68,7 +64,7 @@ namespace Emby.Server.Implementations.HttpServer
             IHttpListener socketListener)
         {
             _appHost = applicationHost;
-            _logger = loggerFactory.CreateLogger("HttpServer");
+            Logger = loggerFactory.CreateLogger("HttpServer");
             _config = config;
             DefaultRedirectPath = configuration["HttpListenerHost:DefaultRedirectPath"];
             _networkManager = networkManager;
@@ -85,7 +81,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public string GlobalResponse { get; set; }
 
-        protected ILogger Logger => _logger;
+        protected ILogger Logger { get; }
 
         public object CreateInstance(Type type)
         {
@@ -151,7 +147,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return;
             }
 
-            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger)
+            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, Logger)
             {
                 OnReceive = ProcessWebSocketMessageReceived,
                 Url = e.Url,
@@ -220,11 +216,11 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (logExceptionStackTrace)
                 {
-                    _logger.LogError(ex, "Error processing request");
+                    Logger.LogError(ex, "Error processing request");
                 }
                 else if (logExceptionMessage)
                 {
-                    _logger.LogError(ex.Message);
+                    Logger.LogError(ex.Message);
                 }
 
                 var httpRes = httpReq.Response;
@@ -242,7 +238,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (Exception errorEx)
             {
-                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response)");
+                Logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response)");
             }
         }
 
@@ -284,14 +280,6 @@ namespace Emby.Server.Implementations.HttpServer
                 {
 
                 }
-            }
-
-            if (_listener != null)
-            {
-                _logger.LogInformation("Stopping HttpListener...");
-                var task = _listener.Stop();
-                Task.WaitAll(task);
-                _logger.LogInformation("HttpListener stopped");
             }
         }
 
@@ -613,11 +601,11 @@ namespace Emby.Server.Implementations.HttpServer
                 var elapsed = stopWatch.Elapsed;
                 if (elapsed.TotalMilliseconds > 500)
                 {
-                    _logger.LogWarning("HTTP Response {StatusCode} to {RemoteIp}. Time (slow): {Elapsed:g}. {Url}", httpRes.StatusCode, remoteIp, elapsed, urlToLog);
+                    Logger.LogWarning("HTTP Response {StatusCode} to {RemoteIp}. Time (slow): {Elapsed:g}. {Url}", httpRes.StatusCode, remoteIp, elapsed, urlToLog);
                 }
                 else
                 {
-                    _logger.LogDebug("HTTP Response {StatusCode} to {RemoteIp}. Time: {Elapsed:g}. {Url}", httpRes.StatusCode, remoteIp, elapsed, urlToLog);
+                    Logger.LogDebug("HTTP Response {StatusCode} to {RemoteIp}. Time: {Elapsed:g}. {Url}", httpRes.StatusCode, remoteIp, elapsed, urlToLog);
                 }
             }
         }
@@ -630,7 +618,7 @@ namespace Emby.Server.Implementations.HttpServer
             var pathParts = pathInfo.TrimStart('/').Split('/');
             if (pathParts.Length == 0)
             {
-                _logger.LogError("Path parts empty for PathInfo: {PathInfo}, Url: {RawUrl}", pathInfo, httpReq.RawUrl);
+                Logger.LogError("Path parts empty for PathInfo: {PathInfo}, Url: {RawUrl}", pathInfo, httpReq.RawUrl);
                 return null;
             }
 
@@ -644,7 +632,7 @@ namespace Emby.Server.Implementations.HttpServer
                 };
             }
 
-            _logger.LogError("Could not find handler for {PathInfo}", pathInfo);
+            Logger.LogError("Could not find handler for {PathInfo}", pathInfo);
             return null;
         }
 
@@ -696,7 +684,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             ServiceController = new ServiceController();
 
-            _logger.LogInformation("Calling ServiceStack AppHost.Init");
+            Logger.LogInformation("Calling ServiceStack AppHost.Init");
 
             var types = services.Select(r => r.GetType()).ToArray();
 
@@ -704,7 +692,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             ResponseFilters = new Action<IRequest, IResponse, object>[]
             {
-                new ResponseFilter(_logger).FilterResponse
+                new ResponseFilter(Logger).FilterResponse
             };
         }
 
@@ -834,7 +822,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return Task.CompletedTask;
             }
 
-            _logger.LogDebug("Websocket message received: {0}", result.MessageType);
+            Logger.LogDebug("Websocket message received: {0}", result.MessageType);
 
             var tasks = _webSocketListeners.Select(i => Task.Run(async () =>
             {
@@ -844,7 +832,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "{0} failed processing WebSocket message {1}", i.GetType().Name, result.MessageType ?? string.Empty);
+                    Logger.LogError(ex, "{0} failed processing WebSocket message {1}", i.GetType().Name, result.MessageType ?? string.Empty);
                 }
             }));
 
