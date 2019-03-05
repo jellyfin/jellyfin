@@ -35,16 +35,13 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
 
-        private IBrotliCompressor _brotliCompressor;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpResultFactory" /> class.
         /// </summary>
-        public HttpResultFactory(ILoggerFactory loggerfactory, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IBrotliCompressor brotliCompressor)
+        public HttpResultFactory(ILoggerFactory loggerfactory, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
         {
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
-            _brotliCompressor = brotliCompressor;
             _logger = loggerfactory.CreateLogger("HttpResultFactory");
         }
 
@@ -350,11 +347,6 @@ namespace Emby.Server.Implementations.HttpServer
 
         private byte[] Compress(byte[] bytes, string compressionType)
         {
-            if (string.Equals(compressionType, "br", StringComparison.OrdinalIgnoreCase))
-            {
-                return CompressBrotli(bytes);
-            }
-
             if (string.Equals(compressionType, "deflate", StringComparison.OrdinalIgnoreCase))
             {
                 return Deflate(bytes);
@@ -366,11 +358,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             throw new NotSupportedException(compressionType);
-        }
-
-        private byte[] CompressBrotli(byte[] bytes)
-        {
-            return _brotliCompressor.Compress(bytes);
         }
 
         private static byte[] Deflate(byte[] bytes)

@@ -741,7 +741,7 @@ namespace Emby.Server.Implementations
             ZipClient = new ZipClient();
             serviceCollection.AddSingleton(ZipClient);
 
-            HttpResultFactory = new HttpResultFactory(LoggerFactory, FileSystemManager, JsonSerializer, CreateBrotliCompressor());
+            HttpResultFactory = new HttpResultFactory(LoggerFactory, FileSystemManager, JsonSerializer);
             serviceCollection.AddSingleton(HttpResultFactory);
 
             serviceCollection.AddSingleton<IServerApplicationHost>(this);
@@ -894,11 +894,6 @@ namespace Emby.Server.Implementations
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
 
             _serviceProvider = serviceCollection.BuildServiceProvider();
-        }
-
-        protected virtual IBrotliCompressor CreateBrotliCompressor()
-        {
-            return null;
         }
 
         public virtual string PackageRuntime => "netcore";
