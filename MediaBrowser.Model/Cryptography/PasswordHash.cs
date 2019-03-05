@@ -6,27 +6,40 @@ namespace MediaBrowser.Model.Cryptography
 {
     public class PasswordHash
     {
-        //Defined from this hash storage spec
-        //https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
-        //$<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
+        // Defined from this hash storage spec
+        // https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
+        // $<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
+        // with one slight amendment to ease the transition, we're writing out the bytes in hex
+        // rather than making them a BASE64 string with stripped padding
 
-        private string id;
-        private Dictionary<string, string> parameters = new Dictionary<string, string>();
-        private string salt;
-        private byte[] saltBytes;
-        private string hash;
-        private byte[] hashBytes;
-        public string Id { get => id; set => id = value; }
-        public Dictionary<string, string> Parameters { get => parameters; set => parameters = value; }
-        public string Salt { get => salt; set => salt = value; }
-        public byte[] SaltBytes { get => saltBytes; set => saltBytes = value; }
-        public string Hash { get => hash; set => hash = value; }
-        public byte[] HashBytes { get => hashBytes; set => hashBytes = value; }
+        private string _id;
+
+        private Dictionary<string, string> _parameters = new Dictionary<string, string>();
+
+        private string _salt;
+
+        private byte[] _saltBytes;
+
+        private string _hash;
+
+        private byte[] _hashBytes;
+
+        public string Id { get => _id; set => _id = value; }
+
+        public Dictionary<string, string> Parameters { get => _parameters; set => _parameters = value; }
+
+        public string Salt { get => _salt; set => _salt = value; }
+
+        public byte[] SaltBytes { get => _saltBytes; set => _saltBytes = value; }
+
+        public string Hash { get => _hash; set => _hash = value; }
+
+        public byte[] HashBytes { get => _hashBytes; set => _hashBytes = value; }
 
         public PasswordHash(string storageString)
         {
             string[] splitted = storageString.Split('$');
-            id = splitted[1];
+            _id = splitted[1];
             if (splitted[2].Contains("="))
             {
                 foreach (string paramset in (splitted[2].Split(',')))
@@ -36,7 +49,7 @@ namespace MediaBrowser.Model.Cryptography
                         string[] fields = paramset.Split('=');
                         if (fields.Length == 2)
                         {
-                            parameters.Add(fields[0], fields[1]);
+                            _parameters.Add(fields[0], fields[1]);
                         }
                         else
                         {
@@ -46,32 +59,32 @@ namespace MediaBrowser.Model.Cryptography
                 }
                 if (splitted.Length == 5)
                 {
-                    salt = splitted[3];
-                    saltBytes = ConvertFromByteString(salt);
-                    hash = splitted[4];
-                    hashBytes = ConvertFromByteString(hash);
+                    _salt = splitted[3];
+                    _saltBytes = ConvertFromByteString(_salt);
+                    _hash = splitted[4];
+                    _hashBytes = ConvertFromByteString(_hash);
                 }
                 else
                 {
-                    salt = string.Empty;
-                    hash = splitted[3];
-                    hashBytes = ConvertFromByteString(hash);
+                    _salt = string.Empty;
+                    _hash = splitted[3];
+                    _hashBytes = ConvertFromByteString(_hash);
                 }
             }
             else
             {
                 if (splitted.Length == 4)
                 {
-                    salt = splitted[2];
-                    saltBytes = ConvertFromByteString(salt);
-                    hash = splitted[3];
-                    hashBytes = ConvertFromByteString(hash);
+                    _salt = splitted[2];
+                    _saltBytes = ConvertFromByteString(_salt);
+                    _hash = splitted[3];
+                    _hashBytes = ConvertFromByteString(_hash);
                 }
                 else
                 {
-                    salt = string.Empty;
-                    hash = splitted[2];
-                    hashBytes = ConvertFromByteString(hash);
+                    _salt = string.Empty;
+                    _hash = splitted[2];
+                    _hashBytes = ConvertFromByteString(_hash);
                 }
 
             }
@@ -80,9 +93,9 @@ namespace MediaBrowser.Model.Cryptography
 
         public PasswordHash(ICryptoProvider cryptoProvider)
         {
-            id = cryptoProvider.DefaultHashMethod;
-            saltBytes = cryptoProvider.GenerateSalt();
-            salt = ConvertToByteString(SaltBytes);
+            _id = cryptoProvider.DefaultHashMethod;
+            _saltBytes = cryptoProvider.GenerateSalt();
+            _salt = ConvertToByteString(SaltBytes);
         }
 
         public static byte[] ConvertFromByteString(string byteString)
@@ -92,6 +105,7 @@ namespace MediaBrowser.Model.Cryptography
             {
                 Bytes.Add(Convert.ToByte(byteString.Substring(i, 2),16));
             }
+
             return Bytes.ToArray();
         }
 
@@ -103,7 +117,7 @@ namespace MediaBrowser.Model.Cryptography
         private string SerializeParameters()
         {
             string ReturnString = string.Empty;
-            foreach (var KVP in parameters)
+            foreach (var KVP in _parameters)
             {
                 ReturnString += $",{KVP.Key}={KVP.Value}";
             }
@@ -118,19 +132,19 @@ namespace MediaBrowser.Model.Cryptography
 
         public override string ToString()
         {
-            string outString = "$" +id;
+            string outString = "$" +_id;
             string paramstring = SerializeParameters();
             if (!string.IsNullOrEmpty(paramstring))
             {
                 outString += $"${paramstring}";
             }
 
-            if (!string.IsNullOrEmpty(salt))
+            if (!string.IsNullOrEmpty(_salt))
             {
-                outString += $"${salt}";
+                outString += $"${_salt}";
             }
 
-            outString += $"${hash}";
+            outString += $"${_hash}";
             return outString;
         }
     }

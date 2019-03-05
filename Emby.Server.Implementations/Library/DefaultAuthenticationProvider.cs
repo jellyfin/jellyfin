@@ -19,18 +19,16 @@ namespace Emby.Server.Implementations.Library
         public string Name => "Default";
 
         public bool IsEnabled => true;
-
-
-        //This is dumb and an artifact of the backwards way auth providers were designed.
-        //This version of authenticate was never meant to be called, but needs to be here for interface compat
-        //Only the providers that don't provide local user support use this
+        
+        // This is dumb and an artifact of the backwards way auth providers were designed.
+        // This version of authenticate was never meant to be called, but needs to be here for interface compat
+        // Only the providers that don't provide local user support use this
         public Task<ProviderAuthenticationResult> Authenticate(string username, string password)
         {
             throw new NotImplementedException();
         }
-
-
-        //This is the verson that we need to use for local users. Because reasons.
+        
+        // This is the verson that we need to use for local users. Because reasons.
         public Task<ProviderAuthenticationResult> Authenticate(string username, string password, User resolvedUser)
         {
             bool success = false;
@@ -39,7 +37,7 @@ namespace Emby.Server.Implementations.Library
                 throw new Exception("Invalid username or password");
             }
 
-            //As long as jellyfin supports passwordless users, we need this little block here to accomodate
+            // As long as jellyfin supports passwordless users, we need this little block here to accomodate
             if (IsPasswordEmpty(resolvedUser, password))
             {
                 return Task.FromResult(new ProviderAuthenticationResult
@@ -70,7 +68,7 @@ namespace Emby.Server.Implementations.Library
                 if (CalculatedHashString == readyHash.Hash)
                 {
                     success = true;
-                    //throw new Exception("Invalid username or password");
+                    // throw new Exception("Invalid username or password");
                 }
             }
             else
@@ -78,7 +76,7 @@ namespace Emby.Server.Implementations.Library
                 throw new Exception(String.Format($"Requested crypto method not available in provider: {readyHash.Id}"));
             }
 
-            //var success = string.Equals(GetPasswordHash(resolvedUser), GetHashedString(resolvedUser, password), StringComparison.OrdinalIgnoreCase);
+            // var success = string.Equals(GetPasswordHash(resolvedUser), GetHashedString(resolvedUser, password), StringComparison.OrdinalIgnoreCase);
 
             if (!success)
             {
@@ -91,8 +89,8 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
-        //This allows us to move passwords forward to the newformat without breaking. They are still insecure, unsalted, and dumb before a password change
-        //but at least they are in the new format.
+        // This allows us to move passwords forward to the newformat without breaking. They are still insecure, unsalted, and dumb before a password change
+        // but at least they are in the new format.
         private void ConvertPasswordFormat(User user)
         {
             if (string.IsNullOrEmpty(user.Password))
@@ -121,18 +119,13 @@ namespace Emby.Server.Implementations.Library
 
         private bool IsPasswordEmpty(User user, string password)
         {
-            if (string.IsNullOrEmpty(user.Password))
-            {
-                return string.IsNullOrEmpty(password);
-            }
-
-            return false;
+            return (string.IsNullOrEmpty(user.Password) && string.IsNullOrEmpty(password));
         }
 
         public Task ChangePassword(User user, string newPassword)
         {
             ConvertPasswordFormat(user);
-            //This is needed to support changing a no password user to a password user
+            // This is needed to support changing a no password user to a password user
             if (string.IsNullOrEmpty(user.Password))
             {
                 PasswordHash newPasswordHash = new PasswordHash(_cryptographyProvider);
@@ -184,7 +177,7 @@ namespace Emby.Server.Implementations.Library
         public string GetHashedString(User user, string str)
         {
             PasswordHash passwordHash;
-            if (String.IsNullOrEmpty(user.Password))
+            if (string.IsNullOrEmpty(user.Password))
             {
                 passwordHash = new PasswordHash(_cryptographyProvider);
             }
@@ -196,13 +189,13 @@ namespace Emby.Server.Implementations.Library
 
             if (passwordHash.SaltBytes != null)
             {
-                //the password is modern format with PBKDF and we should take advantage of that
+                // the password is modern format with PBKDF and we should take advantage of that
                 passwordHash.HashBytes = Encoding.UTF8.GetBytes(str);
                 return PasswordHash.ConvertToByteString(_cryptographyProvider.ComputeHash(passwordHash));
             }
             else
             {
-                //the password has no salt and should be called with the older method for safety
+                // the password has no salt and should be called with the older method for safety
                 return PasswordHash.ConvertToByteString(_cryptographyProvider.ComputeHash(passwordHash.Id, Encoding.UTF8.GetBytes(str)));
             }
         }
