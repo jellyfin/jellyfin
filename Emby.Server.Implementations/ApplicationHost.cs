@@ -619,19 +619,23 @@ namespace Emby.Server.Implementations
 
             FindParts();
 
+            string contentRoot = ServerConfigurationManager.Configuration.DashboardSourcePath;
+            if (string.IsNullOrEmpty(contentRoot))
+            {
+                contentRoot = Path.Combine(ServerConfigurationManager.ApplicationPaths.ApplicationResourcesPath, "jellyfin-web", "src");
+            }
+
             Host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    options.Listen(IPAddress.Any, HttpPort);
-                    options.Listen(IPAddress.Loopback, HttpPort);
+                    options.ListenAnyIP(HttpPort);
 
                     if (EnableHttps)
                     {
-                        options.Listen(IPAddress.Any, HttpsPort, listenOptions => { listenOptions.UseHttps(Certificate); });
-                        options.Listen(IPAddress.Loopback, HttpsPort, listenOptions => { listenOptions.UseHttps(Certificate); });
+                        options.ListenAnyIP(HttpsPort, listenOptions => { listenOptions.UseHttps(Certificate); });
                     }
                 })
-                .UseContentRoot(Path.Combine(Directory.GetCurrentDirectory(), "jellyfin-web", "src"))
+                .UseContentRoot(contentRoot)
                 .ConfigureServices(services =>
                 {
                     services.AddResponseCompression();
@@ -655,7 +659,7 @@ namespace Emby.Server.Implementations
         {
             if (!context.WebSockets.IsWebSocketRequest)
             {
-                await next();
+                await next().ConfigureAwait(false);
                 return;
             }
 
@@ -665,7 +669,7 @@ namespace Emby.Server.Implementations
         {
             if (context.WebSockets.IsWebSocketRequest)
             {
-                await next();
+                await next().ConfigureAwait(false);
                 return;
             }
 
