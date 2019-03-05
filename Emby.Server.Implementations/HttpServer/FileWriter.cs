@@ -9,6 +9,7 @@ using Emby.Server.Implementations.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -56,10 +57,10 @@ namespace Emby.Server.Implementations.HttpServer
             FileSystem = fileSystem;
             RangeHeader = rangeHeader;
 
-            Headers["Content-Type"] = contentType;
+            Headers[HeaderNames.ContentType] = contentType;
 
             TotalContentLength = fileSystem.GetFileInfo(path).Length;
-            Headers["Accept-Ranges"] = "bytes";
+            Headers[HeaderNames.AcceptRanges] = "bytes";
 
             if (string.IsNullOrWhiteSpace(rangeHeader))
             {
@@ -97,8 +98,8 @@ namespace Emby.Server.Implementations.HttpServer
 
             // Content-Length is the length of what we're serving, not the original content
             var lengthString = RangeLength.ToString(UsCulture);
-            var rangeString = string.Format("bytes {0}-{1}/{2}", RangeStart, RangeEnd, TotalContentLength);
-            Headers["Content-Range"] = rangeString;
+            var rangeString = $"bytes {RangeStart}-{RangeEnd}/{TotalContentLength}";
+            Headers[HeaderNames.ContentRange] = rangeString;
 
             Logger.LogInformation("Setting range response values for {0}. RangeRequest: {1} Content-Length: {2}, Content-Range: {3}", Path, RangeHeader, lengthString, rangeString);
         }

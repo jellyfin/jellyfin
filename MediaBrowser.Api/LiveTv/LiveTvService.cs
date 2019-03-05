@@ -24,6 +24,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
+using Microsoft.Net.Http.Headers;
 
 namespace MediaBrowser.Api.LiveTv
 {
@@ -750,9 +751,10 @@ namespace MediaBrowser.Api.LiveTv
                 throw new FileNotFoundException();
             }
 
-            var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            outputHeaders["Content-Type"] = Model.Net.MimeTypes.GetMimeType(path);
+            var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [HeaderNames.ContentType] = Model.Net.MimeTypes.GetMimeType(path)
+            };
 
             return new ProgressiveFileCopier(_fileSystem, _streamHelper, path, outputHeaders, Logger, _environment)
             {
@@ -772,9 +774,10 @@ namespace MediaBrowser.Api.LiveTv
 
             var directStreamProvider = liveStreamInfo;
 
-            var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            outputHeaders["Content-Type"] = Model.Net.MimeTypes.GetMimeType("file." + request.Container);
+            var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [HeaderNames.ContentType] = Model.Net.MimeTypes.GetMimeType("file." + request.Container)
+            };
 
             return new ProgressiveFileCopier(directStreamProvider, _streamHelper, outputHeaders, Logger, _environment)
             {

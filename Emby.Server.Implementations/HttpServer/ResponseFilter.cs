@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -44,13 +45,13 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (dto is IHasHeaders hasHeaders)
             {
-                if (!hasHeaders.Headers.ContainsKey("Server"))
+                if (!hasHeaders.Headers.ContainsKey(HeaderNames.Server))
                 {
-                    hasHeaders.Headers["Server"] = "Microsoft-NetCore/2.0, UPnP/1.0 DLNADOC/1.50";
+                    hasHeaders.Headers[HeaderNames.Server] = "Microsoft-NetCore/2.0, UPnP/1.0 DLNADOC/1.50";
                 }
 
                 // Content length has to be explicitly set on on HttpListenerResponse or it won't be happy
-                if (hasHeaders.Headers.TryGetValue("Content-Length", out string contentLength)
+                if (hasHeaders.Headers.TryGetValue(HeaderNames.ContentLength, out string contentLength)
                     && !string.IsNullOrEmpty(contentLength))
                 {
                     var length = long.Parse(contentLength, UsCulture);

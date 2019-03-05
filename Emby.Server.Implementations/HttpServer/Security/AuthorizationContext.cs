@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Services;
+using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer.Security
 {
@@ -176,7 +177,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (string.IsNullOrEmpty(auth))
             {
-                auth = httpReq.Headers["Authorization"];
+                auth = httpReq.Headers[HeaderNames.Authorization];
             }
 
             return GetAuthorization(auth);

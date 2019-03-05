@@ -17,6 +17,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.LiveTv.Listings
 {
@@ -638,7 +639,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 #if NETSTANDARD2_0
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                options.RequestHeaders["Accept-Encoding"] = "deflate";
+                options.RequestHeaders[HeaderNames.AcceptEncoding] = "deflate";
             }
 #endif
 
@@ -676,7 +677,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 #if NETSTANDARD2_0
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                options.RequestHeaders["Accept-Encoding"] = "deflate";
+                options.RequestHeaders[HeaderNames.AcceptEncoding] = "deflate";
             }
 #endif
 

@@ -75,7 +75,7 @@ namespace Emby.Server.Implementations.HttpServer
         public object GetRedirectResult(string url)
         {
             var responseHeaders = new Dictionary<string, string>();
-            responseHeaders["Location"] = url;
+            responseHeaders[HeaderNames.Location] = url;
 
             var result = new HttpResult(Array.Empty<byte>(), "text/plain", HttpStatusCode.Redirect);
 
@@ -96,9 +96,9 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out string expires))
             {
-                responseHeaders["Expires"] = "-1";
+                responseHeaders[HeaderNames.Expires] = "-1";
             }
 
             AddResponseHeaders(result, responseHeaders);
@@ -142,9 +142,9 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string _))
+            if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out string _))
             {
-                responseHeaders["Expires"] = "-1";
+                responseHeaders[HeaderNames.Expires] = "-1";
             }
 
             AddResponseHeaders(result, responseHeaders);
@@ -186,9 +186,9 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string _))
+            if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out string _))
             {
-                responseHeaders["Expires"] = "-1";
+                responseHeaders[HeaderNames.Expires] = "-1";
             }
 
             AddResponseHeaders(result, responseHeaders);
@@ -213,7 +213,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             }
 
-            responseHeaders["Expires"] = "-1";
+            responseHeaders[HeaderNames.Expires] = "-1";
 
             return ToOptimizedResultInternal(requestContext, result, responseHeaders);
         }
@@ -245,7 +245,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         private static string GetCompressionType(IRequest request)
         {
-            var acceptEncoding = request.Headers["Accept-Encoding"].ToString();
+            var acceptEncoding = request.Headers[HeaderNames.AcceptEncoding].ToString();
 
             if (string.IsNullOrEmpty(acceptEncoding))
             {
@@ -325,9 +325,9 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             content = Compress(content, requestedCompressionType);
-            responseHeaders["Content-Encoding"] = requestedCompressionType;
+            responseHeaders[HeaderNames.ContentEncoding] = requestedCompressionType;
 
-            responseHeaders["Vary"] = "Accept-Encoding";
+            responseHeaders[HeaderNames.Vary] = HeaderNames.AcceptEncoding;
 
             var contentLength = content.Length;
 
@@ -537,7 +537,7 @@ namespace Emby.Server.Implementations.HttpServer
             AddCachingHeaders(responseHeaders, options.CacheDuration, false, options.DateLastModified);
             AddAgeHeader(responseHeaders, options.DateLastModified);
 
-            var rangeHeader = requestContext.Headers["Range"];
+            var rangeHeader = requestContext.Headers[HeaderNames.Range];
 
             if (!isHeadRequest && !string.IsNullOrEmpty(options.Path))
             {
@@ -606,23 +606,23 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (noCache)
             {
-                responseHeaders["Cache-Control"] = "no-cache, no-store, must-revalidate";
-                responseHeaders["pragma"] = "no-cache, no-store, must-revalidate";
+                responseHeaders[HeaderNames.CacheControl] = "no-cache, no-store, must-revalidate";
+                responseHeaders[HeaderNames.Pragma] = "no-cache, no-store, must-revalidate";
                 return;
             }
 
             if (cacheDuration.HasValue)
             {
-                responseHeaders["Cache-Control"] = "public, max-age=" + cacheDuration.Value.TotalSeconds;
+                responseHeaders[HeaderNames.CacheControl] = "public, max-age=" + cacheDuration.Value.TotalSeconds;
             }
             else
             {
-                responseHeaders["Cache-Control"] = "public";
+                responseHeaders[HeaderNames.CacheControl] = "public";
             }
 
             if (lastModifiedDate.HasValue)
             {
-                responseHeaders["Last-Modified"] = lastModifiedDate.ToString();
+                responseHeaders[HeaderNames.LastModified] = lastModifiedDate.ToString();
             }
         }
 
@@ -635,7 +635,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (lastDateModified.HasValue)
             {
-                responseHeaders["Age"] = Convert.ToInt64((DateTime.UtcNow - lastDateModified.Value).TotalSeconds).ToString(CultureInfo.InvariantCulture);
+                responseHeaders[HeaderNames.Age] = Convert.ToInt64((DateTime.UtcNow - lastDateModified.Value).TotalSeconds).ToString(CultureInfo.InvariantCulture);
             }
         }
 
@@ -692,10 +692,5 @@ namespace Emby.Server.Implementations.HttpServer
                 hasHeaders.Headers[item.Key] = item.Value;
             }
         }
-    }
-
-    public interface IBrotliCompressor
-    {
-        byte[] Compress(byte[] content);
     }
 }

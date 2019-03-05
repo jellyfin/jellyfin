@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -52,7 +53,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             SourceStream = source;
 
-            Headers["Content-Type"] = contentType;
+            Headers[HeaderNames.ContentType] = contentType;
         }
 
         /// <summary>
@@ -69,7 +70,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             SourceBytes = source;
 
-            Headers["Content-Type"] = contentType;
+            Headers[HeaderNames.ContentType] = contentType;
         }
 
         public async Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken)

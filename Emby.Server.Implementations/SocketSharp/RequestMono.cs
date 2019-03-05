@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.SocketSharp
 {
@@ -114,9 +115,9 @@ namespace Emby.Server.Implementations.SocketSharp
             return form;
         }
 
-        public string Accept => StringValues.IsNullOrEmpty(request.Headers["Accept"]) ? null : request.Headers["Accept"].ToString();
+        public string Accept => StringValues.IsNullOrEmpty(request.Headers[HeaderNames.Accept]) ? null : request.Headers[HeaderNames.Accept].ToString();
 
-        public string Authorization => StringValues.IsNullOrEmpty(request.Headers["Authorization"]) ? null : request.Headers["Authorization"].ToString();
+        public string Authorization => StringValues.IsNullOrEmpty(request.Headers[HeaderNames.Authorization]) ? null : request.Headers[HeaderNames.Authorization].ToString();
 
         protected bool validate_form { get; set; }
         protected bool checked_form { get; set; }
