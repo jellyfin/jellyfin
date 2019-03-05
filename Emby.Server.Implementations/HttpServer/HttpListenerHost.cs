@@ -756,11 +756,10 @@ namespace Emby.Server.Implementations.HttpServer
 
         public Task ProcessWebSocketRequest(HttpContext context)
         {
-            // TODO
-            return ((WebSocketSharpListener)_socketListener).ProcessWebSocketRequest(context);
+            return _socketListener.ProcessWebSocketRequest(context);
         }
-        //TODO Add Jellyfin Route Path Normalizer
 
+        //TODO Add Jellyfin Route Path Normalizer
         private static string NormalizeEmbyRoutePath(string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))

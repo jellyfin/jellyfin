@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Net;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -30,5 +31,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// Stops this instance.
         /// </summary>
         Task Stop();
+
+        Task ProcessWebSocketRequest(HttpContext ctx);
     }
 }
