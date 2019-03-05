@@ -15,6 +15,7 @@ namespace Emby.Server.Implementations.HttpServer
 {
     public class FileWriter : IHttpResult
     {
+        private readonly IStreamHelper _streamHelper;
         private ILogger Logger { get; set; }
         public IFileSystem FileSystem { get; }
 
@@ -45,12 +46,14 @@ namespace Emby.Server.Implementations.HttpServer
 
         public string Path { get; set; }
 
-        public FileWriter(string path, string contentType, string rangeHeader, ILogger logger, IFileSystem fileSystem)
+        public FileWriter(string path, string contentType, string rangeHeader, ILogger logger, IFileSystem fileSystem, IStreamHelper streamHelper)
         {
             if (string.IsNullOrEmpty(contentType))
             {
                 throw new ArgumentNullException(nameof(contentType));
             }
+
+            _streamHelper = streamHelper;
 
             Path = path;
             Logger = logger;
@@ -147,8 +150,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private string[] SkipLogExtensions = new string[]
-        {
+        private readonly string[] SkipLogExtensions = {
             ".js",
             ".html",
             ".css"
@@ -165,8 +167,10 @@ namespace Emby.Server.Implementations.HttpServer
                 }
 
                 var path = Path;
+                var offset = RangeStart;
+                var count = RangeLength;
 
-                if (string.IsNullOrWhiteSpace(RangeHeader) || (RangeStart <= 0 && RangeEnd >= TotalContentLength - 1))
+                if (string.IsNullOrWhiteSpace(RangeHeader) || RangeStart <= 0 && RangeEnd >= TotalContentLength - 1)
                 {
                     var extension = System.IO.Path.GetExtension(path);
 
@@ -175,20 +179,15 @@ namespace Emby.Server.Implementations.HttpServer
                         Logger.LogDebug("Transmit file {0}", path);
                     }
 
-                    //var count = FileShare == FileShareMode.ReadWrite ? TotalContentLength : 0;
-                    // TODO not DI friendly lol
-                    await response.TransmitFile(path, 0, 0, FileShare, FileSystem, new StreamHelper(), cancellationToken).ConfigureAwait(false);
-                    return;
+                    offset = 0;
+                    count = 0;
                 }
-                // TODO not DI friendly lol
-                await response.TransmitFile(path, RangeStart, RangeLength, FileShare, FileSystem, new StreamHelper(), cancellationToken).ConfigureAwait(false);
+
+                await response.TransmitFile(path, offset, count, FileShare, FileSystem, _streamHelper, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                if (OnComplete != null)
-                {
-                    OnComplete();
-                }
+                OnComplete?.Invoke();
             }
         }
 
@@ -205,8 +204,5 @@ namespace Emby.Server.Implementations.HttpServer
             get => (HttpStatusCode)Status;
             set => Status = (int)value;
         }
-
-        public string StatusDescription { get; set; }
-
     }
 }

@@ -34,14 +34,16 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly IStreamHelper _streamHelper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpResultFactory" /> class.
         /// </summary>
-        public HttpResultFactory(ILoggerFactory loggerfactory, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
+        public HttpResultFactory(ILoggerFactory loggerfactory, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IStreamHelper streamHelper)
         {
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
+            _streamHelper = streamHelper;
             _logger = loggerfactory.CreateLogger("HttpResultFactory");
         }
 
@@ -541,7 +543,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (!isHeadRequest && !string.IsNullOrEmpty(options.Path))
             {
-                var hasHeaders = new FileWriter(options.Path, contentType, rangeHeader, _logger, _fileSystem)
+                var hasHeaders = new FileWriter(options.Path, contentType, rangeHeader, _logger, _fileSystem, _streamHelper)
                 {
                     OnComplete = options.OnComplete,
                     OnError = options.OnError,

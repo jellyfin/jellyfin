@@ -741,7 +741,7 @@ namespace Emby.Server.Implementations
             ZipClient = new ZipClient();
             serviceCollection.AddSingleton(ZipClient);
 
-            HttpResultFactory = new HttpResultFactory(LoggerFactory, FileSystemManager, JsonSerializer);
+            HttpResultFactory = new HttpResultFactory(LoggerFactory, FileSystemManager, JsonSerializer, StreamHelper);
             serviceCollection.AddSingleton(HttpResultFactory);
 
             serviceCollection.AddSingleton<IServerApplicationHost>(this);

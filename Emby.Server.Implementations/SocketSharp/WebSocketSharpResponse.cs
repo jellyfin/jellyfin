@@ -78,8 +78,6 @@ namespace Emby.Server.Implementations.SocketSharp
         const int StreamCopyToBufferSize = 81920;
         public async Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, IFileSystem fileSystem, IStreamHelper streamHelper, CancellationToken cancellationToken)
         {
-            // TODO
-            // return _response.TransmitFile(path, offset, count, fileShareMode, cancellationToken);
             var allowAsync = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
             //if (count <= 0)
