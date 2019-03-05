@@ -25,16 +25,12 @@ namespace MediaBrowser.Model.Services
         /// <summary>
         /// Adds a new query parameter.
         /// </summary>
-        public virtual void Add(string key, string value)
+        public void Add(string key, string value)
         {
-            if (string.Equals(key, "content-length", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
             Add(new NameValuePair(key, value));
         }
 
-        public virtual void Set(string key, string value)
+        private void Set(string key, string value)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -62,7 +58,7 @@ namespace MediaBrowser.Model.Services
             Add(key, value);
         }
 
-        public string Get(string name)
+        private string Get(string name)
         {
             var stringComparison = GetStringComparison();
 
@@ -77,7 +73,7 @@ namespace MediaBrowser.Model.Services
             return null;
         }
 
-        public virtual List<NameValuePair> GetItems(string name)
+        private List<NameValuePair> GetItems(string name)
         {
             var stringComparison = GetStringComparison();
 
@@ -109,20 +105,6 @@ namespace MediaBrowser.Model.Services
             }
 
             return list;
-        }
-
-        public Dictionary<string, string> ToDictionary()
-        {
-            var stringComparer = GetStringComparer();
-
-            var headers = new Dictionary<string, string>(stringComparer);
-
-            foreach (var pair in this)
-            {
-                headers[pair.Name] = pair.Value;
-            }
-
-            return headers;
         }
 
         public IEnumerable<string> Keys

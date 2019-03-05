@@ -99,12 +99,10 @@ namespace Emby.Server.Implementations.HttpServer
             RangeStart = requestedRange.Key;
             RangeLength = 1 + RangeEnd - RangeStart;
 
-            // Content-Length is the length of what we're serving, not the original content
-            var lengthString = RangeLength.ToString(UsCulture);
             var rangeString = $"bytes {RangeStart}-{RangeEnd}/{TotalContentLength}";
             Headers[HeaderNames.ContentRange] = rangeString;
 
-            Logger.LogInformation("Setting range response values for {0}. RangeRequest: {1} Content-Length: {2}, Content-Range: {3}", Path, RangeHeader, lengthString, rangeString);
+            Logger.LogInformation("Setting range response values for {0}. RangeRequest: {1} Content-Range: {2}", Path, RangeHeader, rangeString);
         }
 
         /// <summary>
