@@ -129,7 +129,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
         public abstract bool CanSelfRestart { get; }
-        public IWebHost Host { get; set; }
+
         public virtual bool CanLaunchWebBrowser
         {
             get
@@ -625,7 +625,7 @@ namespace Emby.Server.Implementations
                 contentRoot = Path.Combine(ServerConfigurationManager.ApplicationPaths.ApplicationResourcesPath, "jellyfin-web", "src");
             }
 
-            Host = new WebHostBuilder()
+            var host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
                     options.ListenAnyIP(HttpPort);
@@ -652,10 +652,10 @@ namespace Emby.Server.Implementations
                 })
                 .Build();
 
-            await Host.StartAsync();
+            await host.StartAsync();
         }
 
-        public async Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next)
+        private async Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next)
         {
             if (!context.WebSockets.IsWebSocketRequest)
             {
@@ -665,7 +665,8 @@ namespace Emby.Server.Implementations
 
             await HttpServer.ProcessWebSocketRequest(context).ConfigureAwait(false);
         }
-        public async Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
+
+        private async Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
         {
             if (context.WebSockets.IsWebSocketRequest)
             {
