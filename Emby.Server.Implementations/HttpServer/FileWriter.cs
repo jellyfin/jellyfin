@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.HttpServer
     {
         private readonly IStreamHelper _streamHelper;
         private ILogger Logger { get; set; }
-        public IFileSystem FileSystem { get; }
+        private readonly IFileSystem _fileSystem;
 
         private string RangeHeader { get; set; }
         private bool IsHeadRequest { get; set; }
@@ -54,10 +54,10 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             _streamHelper = streamHelper;
+            _fileSystem = fileSystem;
 
             Path = path;
             Logger = logger;
-            FileSystem = fileSystem;
             RangeHeader = rangeHeader;
 
             Headers[HeaderNames.ContentType] = contentType;
@@ -181,7 +181,7 @@ namespace Emby.Server.Implementations.HttpServer
                     count = 0;
                 }
 
-                await response.TransmitFile(path, offset, count, FileShare, FileSystem, _streamHelper, cancellationToken).ConfigureAwait(false);
+                await response.TransmitFile(path, offset, count, FileShare, _fileSystem, _streamHelper, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
