@@ -362,6 +362,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var contentType = state.GetMimeType(outputPath);
 
+            // TODO: The isHeadRequest is only here because ServiceStack will add Content-Length=0 to the response
             // Headers only
             if (isHeadRequest)
             {

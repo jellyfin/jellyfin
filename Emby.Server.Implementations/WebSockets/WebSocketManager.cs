@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.WebSockets
                 ? Encoding.UTF8.GetString(messageBytes, 0, messageBytes.Length)
                 : Encoding.ASCII.GetString(messageBytes, 0, messageBytes.Length);
 
-            // All messages are expected to be json
+            // All messages are expected to be valid JSON objects
             if (!message.StartsWith("{", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogDebug("Received web socket message that is not a json structure: {Message}", message);
