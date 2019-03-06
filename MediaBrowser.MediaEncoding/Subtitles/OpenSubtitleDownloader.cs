@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -29,17 +30,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly IServerConfigurationManager _config;
-        private readonly IEncryptionManager _encryption;
 
         private readonly IJsonSerializer _json;
         private readonly IFileSystem _fileSystem;
 
-        public OpenSubtitleDownloader(ILoggerFactory loggerFactory, IHttpClient httpClient, IServerConfigurationManager config, IEncryptionManager encryption, IJsonSerializer json, IFileSystem fileSystem)
+        public OpenSubtitleDownloader(ILoggerFactory loggerFactory, IHttpClient httpClient, IServerConfigurationManager config, IJsonSerializer json, IFileSystem fileSystem)
         {
             _logger = loggerFactory.CreateLogger(GetType().Name);
             _httpClient = httpClient;
             _config = config;
-            _encryption = encryption;
             _json = json;
             _fileSystem = fileSystem;
 
@@ -63,16 +62,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 !string.IsNullOrWhiteSpace(options.OpenSubtitlesPasswordHash) &&
                 !options.OpenSubtitlesPasswordHash.StartsWith(PasswordHashPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                options.OpenSubtitlesPasswordHash = EncryptPassword(options.OpenSubtitlesPasswordHash);
+                options.OpenSubtitlesPasswordHash = EncodePassword(options.OpenSubtitlesPasswordHash);
             }
         }
 
-        private string EncryptPassword(string password)
+        private static string EncodePassword(string password)
         {
-            return PasswordHashPrefix + _encryption.EncryptString(password);
+            var bytes = Encoding.UTF8.GetBytes(password);
+            return PasswordHashPrefix + Convert.ToBase64String(bytes);
         }
 
-        private string DecryptPassword(string password)
+        private static string DecodePassword(string password)
         {
             if (password == null ||
                 !password.StartsWith(PasswordHashPrefix, StringComparison.OrdinalIgnoreCase))
@@ -80,7 +80,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 return string.Empty;
             }
 
-            return _encryption.DecryptString(password.Substring(2));
+            var bytes = Convert.FromBase64String(password.Substring(2));
+            return Encoding.UTF8.GetString(bytes, 0, bytes.Length);
         }
 
         public string Name => "Open Subtitles";
@@ -186,7 +187,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var options = GetOptions();
 
             var user = options.OpenSubtitlesUsername ?? string.Empty;
-            var password = DecryptPassword(options.OpenSubtitlesPasswordHash);
+            var password = DecodePassword(options.OpenSubtitlesPasswordHash);
 
             var loginResponse = await OpenSubtitles.LogInAsync(user, password, "en", cancellationToken).ConfigureAwait(false);
 

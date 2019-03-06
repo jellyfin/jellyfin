@@ -744,10 +744,8 @@ namespace Emby.Server.Implementations
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager, ServerConfigurationManager);
             serviceCollection.AddSingleton(TVSeriesManager);
 
-            var encryptionManager = new EncryptionManager();
-            serviceCollection.AddSingleton<IEncryptionManager>(encryptionManager);
-
             DeviceManager = new DeviceManager(AuthenticationRepository, JsonSerializer, LibraryManager, LocalizationManager, UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager);
+
             serviceCollection.AddSingleton(DeviceManager);
 
             MediaSourceManager = new MediaSourceManager(ItemRepository, ApplicationPaths, LocalizationManager, UserManager, LibraryManager, LoggerFactory, JsonSerializer, FileSystemManager, UserDataManager, () => MediaEncoder);
