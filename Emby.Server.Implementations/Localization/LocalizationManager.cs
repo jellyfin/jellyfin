@@ -93,12 +93,11 @@ namespace Emby.Server.Implementations.Localization
 #if DEBUG
                         else
                         {
-                            _logger.LogWarning("Misformed line in ratings file for country {CountryCode}", countryCode);
+                            _logger.LogWarning("Malformed line in ratings file for country {CountryCode}", countryCode);
                         }
 #endif
                     }
                 }
-                _logger.LogWarning("{t}", countryCode);
 
                 _allParentalRatings[countryCode] = dict;
             }
