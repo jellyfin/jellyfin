@@ -26,7 +26,7 @@ usage() {
     echo -e " $ build [-k/--keep-artifacts] [-b/--web-branch <web_branch>] <platform> <action>"
     echo -e ""
     echo -e "The 'keep-artifacts' option preserves build artifacts, e.g. Docker images for system package builds."
-    echo -e "The web_branch defaults to the same branch name as the current main branch."
+    echo -e "The web_branch defaults to the same branch name as the current main branch or can be 'local' to not touch the submodule branching."
     echo -e "To build all platforms, use 'all'."
     echo -e "To perform all build actions, use 'all'."
     echo -e "Build output files are collected at '../jellyfin-build/<platform>'."
@@ -164,37 +164,39 @@ for target_platform in ${platform[@]}; do
     fi
 done
 
-# Initialize submodules
-git submodule update --init --recursive
+if [[ ${web_branch} != 'local' ]]; then
+    # Initialize submodules
+    git submodule update --init --recursive
 
-# configure branch
-pushd MediaBrowser.WebDashboard/jellyfin-web
+    # configure branch
+    pushd MediaBrowser.WebDashboard/jellyfin-web
 
-if ! git diff-index --quiet HEAD --; then
+    if ! git diff-index --quiet HEAD --; then
+        popd
+        echo
+        echo "ERROR: Your 'jellyfin-web' submodule working directory is not clean!"
+        echo "This script will overwrite your unstaged and unpushed changes."
+        echo "Please do development on 'jellyfin-web' outside of the submodule."
+        exit 1
+    fi
+
+    git fetch --all
+    # If this is an official branch name, fetch it from origin
+    official_branches_regex="^master$|^dev$|^release-.*$|^hotfix-.*$"
+    if [[ ${web_branch} =~ ${official_branches_regex} ]]; then
+        git checkout origin/${web_branch} || {
+            echo "ERROR: 'jellyfin-web' branch 'origin/${web_branch}' is invalid."
+            exit 1
+        }
+    # Otherwise, just check out the local branch (for testing, etc.)
+    else
+        git checkout ${web_branch} || {
+            echo "ERROR: 'jellyfin-web' branch '${web_branch}' is invalid."
+            exit 1
+        }
+    fi
     popd
-    echo
-    echo "ERROR: Your 'jellyfin-web' submodule working directory is not clean!"
-    echo "This script will overwrite your unstaged and unpushed changes."
-    echo "Please do development on 'jellyfin-web' outside of the submodule."
-    exit 1
 fi
-
-git fetch --all
-# If this is an official branch name, fetch it from origin
-official_branches_regex="^master$|^dev$|^release-.*$|^hotfix-.*$"
-if [[ ${web_branch} =~ ${official_branches_regex} ]]; then
-    git checkout origin/${web_branch} || {
-        echo "ERROR: 'jellyfin-web' branch 'origin/${web_branch}' is invalid."
-        exit 1
-    }
-# Otherwise, just check out the local branch (for testing, etc.)
-else
-    git checkout ${web_branch} || {
-        echo "ERROR: 'jellyfin-web' branch '${web_branch}' is invalid."
-        exit 1
-    }
-fi
-popd
 
 # Execute each platform and action in order, if said action is enabled
 pushd deployment/
