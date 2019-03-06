@@ -475,11 +475,6 @@ namespace Emby.Server.Implementations.Library
                 : user.EasyPassword;
         }
 
-        private bool IsPasswordEmpty(User user, string passwordHash)
-        {
-            return string.IsNullOrEmpty(passwordHash);
-        }
-
         /// <summary>
         /// Loads the users from the repository
         /// </summary>
@@ -522,14 +517,14 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user).Result;
-            var hasConfiguredEasyPassword = !IsPasswordEmpty(user, GetLocalPasswordHash(user));
+            bool hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user).Result;
+            bool hasConfiguredEasyPassword = string.IsNullOrEmpty(GetLocalPasswordHash(user));
 
-            var hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
+            bool hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
                 hasConfiguredEasyPassword :
                 hasConfiguredPassword;
 
-            var dto = new UserDto
+            UserDto dto = new UserDto
             {
                 Id = user.Id,
                 Name = user.Name,
@@ -548,7 +543,7 @@ namespace Emby.Server.Implementations.Library
                 dto.EnableAutoLogin = true;
             }
 
-            var image = user.GetImageInfo(ImageType.Primary, 0);
+            ItemImageInfo image = user.GetImageInfo(ImageType.Primary, 0);
 
             if (image != null)
             {

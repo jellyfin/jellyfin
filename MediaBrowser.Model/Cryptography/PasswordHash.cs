@@ -100,13 +100,14 @@ namespace MediaBrowser.Model.Cryptography
 
         public static byte[] ConvertFromByteString(string byteString)
         {
-            List<byte> Bytes = new List<byte>();
+            List<byte> bytes = new List<byte>();
             for (int i = 0; i < byteString.Length; i += 2)
             {
-                Bytes.Add(Convert.ToByte(byteString.Substring(i, 2),16));
+                // TODO: NetStandard2.1 switch this to use a span instead of a substring.
+                bytes.Add(Convert.ToByte(byteString.Substring(i, 2),16));
             }
 
-            return Bytes.ToArray();
+            return bytes.ToArray();
         }
 
         public static string ConvertToByteString(byte[] bytes)

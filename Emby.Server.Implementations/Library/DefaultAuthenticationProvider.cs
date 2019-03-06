@@ -50,22 +50,22 @@ namespace Emby.Server.Implementations.Library
             byte[] passwordbytes = Encoding.UTF8.GetBytes(password);
 
             PasswordHash readyHash = new PasswordHash(resolvedUser.Password);
-            byte[] CalculatedHash;
-            string CalculatedHashString;
+            byte[] calculatedHash;
+            string calculatedHashString;
             if (_cryptographyProvider.GetSupportedHashMethods().Contains(readyHash.Id))
             {
                 if (string.IsNullOrEmpty(readyHash.Salt))
                 {
-                    CalculatedHash = _cryptographyProvider.ComputeHash(readyHash.Id, passwordbytes);
-                    CalculatedHashString = BitConverter.ToString(CalculatedHash).Replace("-", string.Empty);
+                    calculatedHash = _cryptographyProvider.ComputeHash(readyHash.Id, passwordbytes);
+                    calculatedHashString = BitConverter.ToString(calculatedHash).Replace("-", string.Empty);
                 }
                 else
                 {
-                    CalculatedHash = _cryptographyProvider.ComputeHash(readyHash.Id, passwordbytes, readyHash.SaltBytes);
-                    CalculatedHashString = BitConverter.ToString(CalculatedHash).Replace("-", string.Empty);
+                    calculatedHash = _cryptographyProvider.ComputeHash(readyHash.Id, passwordbytes, readyHash.SaltBytes);
+                    calculatedHashString = BitConverter.ToString(calculatedHash).Replace("-", string.Empty);
                 }
 
-                if (CalculatedHashString == readyHash.Hash)
+                if (calculatedHashString == readyHash.Hash)
                 {
                     success = true;
                     // throw new Exception("Invalid username or password");
