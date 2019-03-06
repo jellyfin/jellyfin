@@ -217,7 +217,7 @@ for target_platform in ${platform[@]}; do
     done
     if [[ -d pkg-dist/ ]]; then
         echo -e ">> Collecting build artifacts"
-        target_dir="../../../jellyfin-build/${target_platform}"
+        target_dir="../../../bin/${target_platform}"
         mkdir -p ${target_dir}
         mv pkg-dist/* ${target_dir}/
     fi
