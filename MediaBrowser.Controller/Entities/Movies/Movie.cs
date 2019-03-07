@@ -21,10 +21,10 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public Movie()
         {
-            SpecialFeatureIds = new Guid[] { };
-            RemoteTrailers = EmptyMediaUrlArray;
-            LocalTrailerIds = new Guid[] { };
-            RemoteTrailerIds = new Guid[] { };
+            SpecialFeatureIds = Array.Empty<Guid>();
+            RemoteTrailers = Array.Empty<MediaUrl>();
+            LocalTrailerIds = Array.Empty<Guid>();
+            RemoteTrailerIds = Array.Empty<Guid>();
         }
 
         public Guid[] LocalTrailerIds { get; set; }

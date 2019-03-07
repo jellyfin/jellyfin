@@ -36,10 +36,20 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public abstract class BaseItem : IHasProviderIds, IHasLookupInfo<ItemLookupInfo>
     {
-        protected static MetadataFields[] EmptyMetadataFieldsArray = Array.Empty<MetadataFields>();
-        protected static MediaUrl[] EmptyMediaUrlArray = Array.Empty<MediaUrl>();
-        protected static ItemImageInfo[] EmptyItemImageInfoArray = Array.Empty<ItemImageInfo>();
-        public static readonly LinkedChild[] EmptyLinkedChildArray = Array.Empty<LinkedChild>();
+        private static readonly List<string> _supportedExtensions = new List<string>(SupportedImageExtensions)
+        {
+            ".nfo",
+            ".xml",
+            ".srt",
+            ".vtt",
+            ".sub",
+            ".idx",
+            ".txt",
+            ".edl",
+            ".bif",
+            ".smi",
+            ".ttml"
+        };
 
         protected BaseItem()
         {
@@ -49,8 +59,8 @@ namespace MediaBrowser.Controller.Entities
             Genres = Array.Empty<string>();
             Studios = Array.Empty<string>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            LockedFields = EmptyMetadataFieldsArray;
-            ImageInfos = EmptyItemImageInfoArray;
+            LockedFields = Array.Empty<MetadataFields>();
+            ImageInfos = Array.Empty<ItemImageInfo>();
             ProductionLocations = Array.Empty<string>();
             RemoteTrailers = Array.Empty<MediaUrl>();
             ExtraIds = Array.Empty<Guid>();
@@ -2452,10 +2462,8 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var filename = System.IO.Path.GetFileNameWithoutExtension(Path);
-            var extensions = new List<string> { ".nfo", ".xml", ".srt", ".vtt", ".sub", ".idx", ".txt", ".edl", ".bif", ".smi", ".ttml" };
-            extensions.AddRange(SupportedImageExtensions);
 
-            return FileSystem.GetFiles(System.IO.Path.GetDirectoryName(Path), extensions.ToArray(), false, false)
+            return FileSystem.GetFiles(System.IO.Path.GetDirectoryName(Path), _supportedExtensions, false, false)
                 .Where(i => System.IO.Path.GetFileNameWithoutExtension(i.FullName).StartsWith(filename, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }

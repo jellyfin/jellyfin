@@ -20,6 +20,9 @@ namespace Emby.Server.Implementations.Images
     public abstract class BaseDynamicImageProvider<T> : IHasItemChangeMonitor, IForcedProvider, ICustomMetadataProvider<T>, IHasOrder
         where T : BaseItem
     {
+        protected virtual IReadOnlyCollection<ImageType> SupportedImages { get; }
+            = new ImageType[] { ImageType.Primary };
+
         protected IFileSystem FileSystem { get; private set; }
         protected IProviderManager ProviderManager { get; private set; }
         protected IApplicationPaths ApplicationPaths { get; private set; }
@@ -33,18 +36,7 @@ namespace Emby.Server.Implementations.Images
             ImageProcessor = imageProcessor;
         }
 
-        protected virtual bool Supports(BaseItem item)
-        {
-            return true;
-        }
-
-        public virtual ImageType[] GetSupportedImages(BaseItem item)
-        {
-            return new ImageType[]
-            {
-                ImageType.Primary
-            };
-        }
+        protected virtual bool Supports(BaseItem _) => true;
 
         public async Task<ItemUpdateType> FetchAsync(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
@@ -54,15 +46,14 @@ namespace Emby.Server.Implementations.Images
             }
 
             var updateType = ItemUpdateType.None;
-            var supportedImages = GetSupportedImages(item);
 
-            if (supportedImages.Contains(ImageType.Primary))
+            if (SupportedImages.Contains(ImageType.Primary))
             {
                 var primaryResult = await FetchAsync(item, ImageType.Primary, options, cancellationToken).ConfigureAwait(false);
                 updateType = updateType | primaryResult;
             }
 
-            if (supportedImages.Contains(ImageType.Thumb))
+            if (SupportedImages.Contains(ImageType.Thumb))
             {
                 var thumbResult = await FetchAsync(item, ImageType.Thumb, options, cancellationToken).ConfigureAwait(false);
                 updateType = updateType | thumbResult;
@@ -94,7 +85,7 @@ namespace Emby.Server.Implementations.Images
         }
 
         protected async Task<ItemUpdateType> FetchToFileInternal(BaseItem item,
-            List<BaseItem> itemsWithImages,
+            IReadOnlyList<BaseItem> itemsWithImages,
             ImageType imageType,
             CancellationToken cancellationToken)
         {
@@ -119,9 +110,9 @@ namespace Emby.Server.Implementations.Images
             return ItemUpdateType.ImageUpdate;
         }
 
-        protected abstract List<BaseItem> GetItemsWithImages(BaseItem item);
+        protected abstract IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item);
 
-        protected string CreateThumbCollage(BaseItem primaryItem, List<BaseItem> items, string outputPath)
+        protected string CreateThumbCollage(BaseItem primaryItem, IEnumerable<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 640, 360);
         }
@@ -132,38 +123,38 @@ namespace Emby.Server.Implementations.Images
                 .Select(i =>
                 {
                     var image = i.GetImageInfo(ImageType.Primary, 0);
-
                     if (image != null && image.IsLocalFile)
                     {
                         return image.Path;
                     }
+
                     image = i.GetImageInfo(ImageType.Thumb, 0);
-
                     if (image != null && image.IsLocalFile)
                     {
                         return image.Path;
                     }
+
                     return null;
                 })
                 .Where(i => !string.IsNullOrEmpty(i));
         }
 
-        protected string CreatePosterCollage(BaseItem primaryItem, List<BaseItem> items, string outputPath)
+        protected string CreatePosterCollage(BaseItem primaryItem, IEnumerable<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 400, 600);
         }
 
-        protected string CreateSquareCollage(BaseItem primaryItem, List<BaseItem> items, string outputPath)
+        protected string CreateSquareCollage(BaseItem primaryItem, IEnumerable<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 600, 600);
         }
 
-        protected string CreateThumbCollage(BaseItem primaryItem, List<BaseItem> items, string outputPath, int width, int height)
+        protected string CreateThumbCollage(BaseItem primaryItem, IEnumerable<BaseItem> items, string outputPath, int width, int height)
         {
             return CreateCollage(primaryItem, items, outputPath, width, height);
         }
 
-        private string CreateCollage(BaseItem primaryItem, List<BaseItem> items, string outputPath, int width, int height)
+        private string CreateCollage(BaseItem primaryItem, IEnumerable<BaseItem> items, string outputPath, int width, int height)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
@@ -192,7 +183,7 @@ namespace Emby.Server.Implementations.Images
         public string Name => "Dynamic Image Provider";
 
         protected virtual string CreateImage(BaseItem item,
-            List<BaseItem> itemsWithImages,
+            IReadOnlyCollection<BaseItem> itemsWithImages,
             string outputPathWithoutExtension,
             ImageType imageType,
             int imageIndex)
@@ -211,18 +202,15 @@ namespace Emby.Server.Implementations.Images
 
             if (imageType == ImageType.Primary)
             {
-                if (item is UserView)
+                if (item is UserView || item is Playlist || item is MusicGenre || item is Genre || item is PhotoAlbum)
                 {
                     return CreateSquareCollage(item, itemsWithImages, outputPath);
                 }
-                if (item is Playlist || item is MusicGenre || item is Genre || item is PhotoAlbum)
-                {
-                    return CreateSquareCollage(item, itemsWithImages, outputPath);
-                }
+
                 return CreatePosterCollage(item, itemsWithImages, outputPath);
             }
 
-            throw new ArgumentException("Unexpected image type");
+            throw new ArgumentException("Unexpected image type", nameof(imageType));
         }
 
         protected virtual int MaxImageAgeDays => 7;
@@ -234,13 +222,11 @@ namespace Emby.Server.Implementations.Images
                 return false;
             }
 
-            var supportedImages = GetSupportedImages(item);
-
-            if (supportedImages.Contains(ImageType.Primary) && HasChanged(item, ImageType.Primary))
+            if (SupportedImages.Contains(ImageType.Primary) && HasChanged(item, ImageType.Primary))
             {
                 return true;
             }
-            if (supportedImages.Contains(ImageType.Thumb) && HasChanged(item, ImageType.Thumb))
+            if (SupportedImages.Contains(ImageType.Thumb) && HasChanged(item, ImageType.Thumb))
             {
                 return true;
             }
@@ -285,7 +271,7 @@ namespace Emby.Server.Implementations.Images
 
         public int Order => 0;
 
-        protected string CreateSingleImage(List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType)
+        protected string CreateSingleImage(IEnumerable<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType)
         {
             var image = itemsWithImages
                 .Where(i => i.HasImage(imageType) && i.GetImageInfo(imageType, 0).IsLocalFile && Path.HasExtension(i.GetImagePath(imageType)))

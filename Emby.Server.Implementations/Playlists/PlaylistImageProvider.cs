@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.Playlists
         {
         }
 
-        protected override List<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
         {
             var playlist = (Playlist)item;
 
@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.Playlists
             _libraryManager = libraryManager;
         }
 
-        protected override List<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
         {
             return _libraryManager.GetItemList(new InternalItemsQuery
             {
@@ -89,7 +89,6 @@ namespace Emby.Server.Implementations.Playlists
                 Recursive = true,
                 ImageTypes = new[] { ImageType.Primary },
                 DtoOptions = new DtoOptions(false)
-
             });
         }
     }
@@ -103,7 +102,7 @@ namespace Emby.Server.Implementations.Playlists
             _libraryManager = libraryManager;
         }
 
-        protected override List<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
         {
             return _libraryManager.GetItemList(new InternalItemsQuery
             {
@@ -116,11 +115,5 @@ namespace Emby.Server.Implementations.Playlists
                 DtoOptions = new DtoOptions(false)
             });
         }
-
-        //protected override Task<string> CreateImage(IHasMetadata item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
-        //{
-        //    return CreateSingleImage(itemsWithImages, outputPathWithoutExtension, ImageType.Primary);
-        //}
     }
-
 }

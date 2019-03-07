@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Emby.Server.Implementations.Images;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -20,7 +19,7 @@ namespace Emby.Server.Implementations.UserViews
         {
         }
 
-        protected override List<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
         {
             var view = (CollectionFolder)item;
             var viewType = view.CollectionType;
@@ -56,7 +55,7 @@ namespace Emby.Server.Implementations.UserViews
                 includeItemTypes = new string[] { "Video", "Audio", "Photo", "Movie", "Series" };
             }
 
-            var recursive = !new[] { CollectionType.Playlists }.Contains(view.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            var recursive = !string.Equals(CollectionType.Playlists, viewType, StringComparison.OrdinalIgnoreCase);
 
             return view.GetItemList(new InternalItemsQuery
             {
@@ -71,7 +70,7 @@ namespace Emby.Server.Implementations.UserViews
                 },
                 IncludeItemTypes = includeItemTypes
 
-            }).ToList();
+            });
         }
 
         protected override bool Supports(BaseItem item)
@@ -79,7 +78,7 @@ namespace Emby.Server.Implementations.UserViews
             return item is CollectionFolder;
         }
 
-        protected override string CreateImage(BaseItem item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override string CreateImage(BaseItem item, IReadOnlyCollection<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             var outputPath = Path.ChangeExtension(outputPathWithoutExtension, ".png");
 

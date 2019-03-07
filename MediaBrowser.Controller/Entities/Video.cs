@@ -167,7 +167,7 @@ namespace MediaBrowser.Controller.Entities
             AdditionalParts = Array.Empty<string>();
             LocalAlternateVersions = Array.Empty<string>();
             SubtitleFiles = Array.Empty<string>();
-            LinkedAlternateVersions = EmptyLinkedChildArray;
+            LinkedAlternateVersions = Array.Empty<LinkedChild>();
         }
 
         public override bool CanDownload()

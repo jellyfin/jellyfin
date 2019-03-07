@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
-using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -405,8 +404,7 @@ namespace Emby.Server.Implementations.SocketSharp
                 return null;
             }
 
-            var path = sbPathInfo.ToString();
-            return path.Length > 1 ? path.TrimEnd('/') : "/";
+            return sbPathInfo.Length > 1 ? sbPathInfo.ToString().TrimEnd('/') : "/";
         }
 
         public string UserAgent => request.Headers[HeaderNames.UserAgent];
