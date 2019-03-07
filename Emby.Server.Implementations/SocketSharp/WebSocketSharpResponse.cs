@@ -16,37 +16,27 @@ namespace Emby.Server.Implementations.SocketSharp
     {
         private readonly ILogger _logger;
 
-        private readonly HttpResponse _response;
-
-        public WebSocketSharpResponse(ILogger logger, HttpResponse response, IRequest request)
+        public WebSocketSharpResponse(ILogger logger, HttpResponse response)
         {
             _logger = logger;
-            this._response = response;
-            Items = new Dictionary<string, object>();
-            Request = request;
+            OriginalResponse = response;
         }
 
-        public IRequest Request { get; private set; }
-
-        public Dictionary<string, object> Items { get; private set; }
-
-        public object OriginalResponse => _response;
+        public HttpResponse OriginalResponse { get; }
 
         public int StatusCode
         {
-            get => this._response.StatusCode;
-            set => this._response.StatusCode = value;
+            get => OriginalResponse.StatusCode;
+            set => OriginalResponse.StatusCode = value;
         }
 
         public string StatusDescription { get; set; }
 
         public string ContentType
         {
-            get => _response.ContentType;
-            set => _response.ContentType = value;
+            get => OriginalResponse.ContentType;
+            set => OriginalResponse.ContentType = value;
         }
-
-        public IHeaderDictionary Headers => _response.Headers;
 
         public void AddHeader(string name, string value)
         {
@@ -56,22 +46,15 @@ namespace Emby.Server.Implementations.SocketSharp
                 return;
             }
 
-            _response.Headers.Add(name, value);
-        }
-
-        public string GetHeader(string name)
-        {
-            return _response.Headers[name];
+            OriginalResponse.Headers.Add(name, value);
         }
 
         public void Redirect(string url)
         {
-            _response.Redirect(url);
+            OriginalResponse.Redirect(url);
         }
 
-        public Stream OutputStream => _response.Body;
-
-        public bool IsClosed { get; set; }
+        public Stream OutputStream => OriginalResponse.Body;
 
         public bool SendChunked { get; set; }
 

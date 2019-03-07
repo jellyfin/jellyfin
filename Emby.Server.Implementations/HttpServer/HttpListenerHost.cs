@@ -225,7 +225,7 @@ namespace Emby.Server.Implementations.HttpServer
 
                 var httpRes = httpReq.Response;
 
-                if (httpRes.IsClosed)
+                if (httpRes.OriginalResponse.HasStarted)
                 {
                     return;
                 }
@@ -595,8 +595,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
             finally
             {
-                // TODO response closes automatically after the handler is done, but some functions rely on knowing if it's closed or not
-                httpRes.IsClosed = true;
                 stopWatch.Stop();
                 var elapsed = stopWatch.Elapsed;
                 if (elapsed.TotalMilliseconds > 500)

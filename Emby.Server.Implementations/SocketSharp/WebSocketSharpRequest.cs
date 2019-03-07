@@ -20,22 +20,19 @@ namespace Emby.Server.Implementations.SocketSharp
     public partial class WebSocketSharpRequest : IHttpRequest
     {
         private readonly HttpRequest request;
-        private readonly IResponse response;
 
         public WebSocketSharpRequest(HttpRequest httpContext, HttpResponse response, string operationName, ILogger logger)
         {
             this.OperationName = operationName;
             this.request = httpContext;
-            this.response = new WebSocketSharpResponse(logger, response, this);
+            this.Response = new WebSocketSharpResponse(logger, response);
 
             // HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
         }
 
         public HttpRequest HttpRequest => request;
 
-        public IResponse Response => response;
-
-        public IResponse HttpResponse => response;
+        public IResponse Response { get; }
 
         public string OperationName { get; set; }
 
