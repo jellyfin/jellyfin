@@ -390,7 +390,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 InternalMediaInfoResult result;
                 try
                 {
-                    result = await _jsonSerializer.DeserializeFromStreamAsync<InternalMediaInfoResult>(process.StandardOutput.BaseStream).ConfigureAwait(false);
+                    result = await _jsonSerializer.DeserializeFromStreamAsync<InternalMediaInfoResult>(
+                                        process.StandardOutput.BaseStream).ConfigureAwait(false);
                 }
                 catch
                 {
