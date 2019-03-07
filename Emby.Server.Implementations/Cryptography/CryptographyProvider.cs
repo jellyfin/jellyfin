@@ -11,21 +11,7 @@ namespace Emby.Server.Implementations.Cryptography
 {
     public class CryptographyProvider : ICryptoProvider
     {
-        private HashSet<string> _supportedHashMethods;
-
-        public string DefaultHashMethod => "PBKDF2";
-
-        private RandomNumberGenerator _randomNumberGenerator;
-
-        private const int _defaultIterations = 1000;
-
-        public CryptographyProvider()
-        {
-            //FIXME: When we get DotNet Standard 2.1 we need to revisit how we do the crypto
-            //Currently supported hash methods from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptoconfig?view=netcore-2.1
-            //there might be a better way to autogenerate this list as dotnet updates, but I couldn't find one
-            //Please note the default method of PBKDF2 is not included, it cannot be used to generate hashes cleanly as it is actually a pbkdf with sha1
-            _supportedHashMethods = new HashSet<string>()
+        private static readonly HashSet<string> _supportedHashMethods = new HashSet<string>()
             {
                 "MD5",
                 "System.Security.Cryptography.MD5",
@@ -42,6 +28,19 @@ namespace Emby.Server.Implementations.Cryptography
                 "SHA-512",
                 "System.Security.Cryptography.SHA512"
             };
+
+        public string DefaultHashMethod => "PBKDF2";
+
+        private RandomNumberGenerator _randomNumberGenerator;
+
+        private const int _defaultIterations = 1000;
+
+        public CryptographyProvider()
+        {
+            //FIXME: When we get DotNet Standard 2.1 we need to revisit how we do the crypto
+            //Currently supported hash methods from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptoconfig?view=netcore-2.1
+            //there might be a better way to autogenerate this list as dotnet updates, but I couldn't find one
+            //Please note the default method of PBKDF2 is not included, it cannot be used to generate hashes cleanly as it is actually a pbkdf with sha1
             _randomNumberGenerator = RandomNumberGenerator.Create();
         }
 
