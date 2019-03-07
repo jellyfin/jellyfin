@@ -1056,7 +1056,7 @@ namespace Emby.Server.Implementations
                         .Where(i => i != null)
                         .ToArray();
 
-            HttpServer.Init(GetExports<IService>(false), GetExports<IWebSocketListener>());
+            HttpServer.Init(GetExports<IService>(false), GetExports<IWebSocketListener>(), GetUrlPrefixes());
 
             LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(),
                 GetExports<IItemResolver>(),

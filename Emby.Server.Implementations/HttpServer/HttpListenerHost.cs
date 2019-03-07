@@ -676,10 +676,12 @@ namespace Emby.Server.Implementations.HttpServer
         /// Adds the rest handlers.
         /// </summary>
         /// <param name="services">The services.</param>
-        public void Init(IEnumerable<IService> services, IEnumerable<IWebSocketListener> listeners)
+        /// <param name="listeners"></param>
+        /// <param name="urlPrefixes"></param>
+        public void Init(IEnumerable<IService> services, IEnumerable<IWebSocketListener> listeners, IEnumerable<string> urlPrefixes)
         {
             _webSocketListeners = listeners.ToArray();
-
+            UrlPrefixes = urlPrefixes.ToArray();
             ServiceController = new ServiceController();
 
             Logger.LogInformation("Calling ServiceStack AppHost.Init");
