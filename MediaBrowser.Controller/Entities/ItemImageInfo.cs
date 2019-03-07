@@ -25,22 +25,10 @@ namespace MediaBrowser.Controller.Entities
         public DateTime DateModified { get; set; }
 
         public int Width { get; set; }
+
         public int Height { get; set; }
 
         [IgnoreDataMember]
-        public bool IsLocalFile
-        {
-            get
-            {
-                if (Path != null)
-                {
-                    if (Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        }
+        public bool IsLocalFile => Path == null || !Path.StartsWith("http", StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -79,7 +79,7 @@ namespace Emby.Server.Implementations.SocketSharp
                         byte[] copy = new byte[e.Length];
 
                         input.Position = e.Start;
-                        input.Read(copy, 0, (int)e.Length);
+                        await input.ReadAsync(copy, 0, (int)e.Length).ConfigureAwait(false);
 
                         form.Add(e.Name, (e.Encoding ?? ContentEncoding).GetString(copy, 0, copy.Length));
                     }
@@ -98,11 +98,11 @@ namespace Emby.Server.Implementations.SocketSharp
             var form = new WebROCollection();
             files = new Dictionary<string, HttpPostedFile>();
 
-            if (IsContentType("multipart/form-data", true))
+            if (IsContentType("multipart/form-data"))
             {
                 await LoadMultiPart(form).ConfigureAwait(false);
             }
-            else if (IsContentType("application/x-www-form-urlencoded", true))
+            else if (IsContentType("application/x-www-form-urlencoded"))
             {
                 await LoadWwwForm(form).ConfigureAwait(false);
             }
@@ -200,19 +200,14 @@ namespace Emby.Server.Implementations.SocketSharp
             return false;
         }
 
-        private bool IsContentType(string ct, bool starts_with)
+        private bool IsContentType(string ct)
         {
-            if (ct == null || ContentType == null)
+            if (ContentType == null)
             {
                 return false;
             }
 
-            if (starts_with)
-            {
-                return ContentType.StartsWith(ct, StringComparison.OrdinalIgnoreCase);
-            }
-
-            return string.Equals(ContentType, ct, StringComparison.OrdinalIgnoreCase);
+            return ContentType.StartsWith(ct, StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task LoadWwwForm(WebROCollection form)

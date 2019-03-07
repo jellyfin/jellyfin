@@ -7,7 +7,6 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
@@ -22,7 +21,7 @@ namespace MediaBrowser.Controller.Entities.TV
     {
         public Series()
         {
-            RemoteTrailers = EmptyMediaUrlArray;
+            RemoteTrailers = Array.Empty<MediaUrl>();
             LocalTrailerIds = Array.Empty<Guid>();
             RemoteTrailerIds = Array.Empty<Guid>();
             AirDays = Array.Empty<DayOfWeek>();
