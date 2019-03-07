@@ -101,7 +101,7 @@ namespace MediaBrowser.Model.Services
 
     public interface IResponse
     {
-        IRequest Request { get; }
+        HttpResponse OriginalResponse { get; }
 
         int StatusCode { get; set; }
 
@@ -111,21 +111,9 @@ namespace MediaBrowser.Model.Services
 
         void AddHeader(string name, string value);
 
-        string GetHeader(string name);
-
         void Redirect(string url);
 
         Stream OutputStream { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is closed.
-        /// </summary>
-        bool IsClosed { get; set; }
-
-        //Add Metadata to Response
-        Dictionary<string, object> Items { get; }
-
-        IHeaderDictionary Headers { get; }
 
         Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, IFileSystem fileSystem, IStreamHelper streamHelper, CancellationToken cancellationToken);
 

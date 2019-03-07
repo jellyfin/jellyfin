@@ -90,7 +90,10 @@ namespace Emby.Server.Implementations.SocketSharp
             catch (Exception ex)
             {
                 _logger.LogError(ex, "AcceptWebSocketAsync error");
-                ctx.Response.StatusCode = 500;
+                if (!ctx.Response.HasStarted)
+                {
+                    ctx.Response.StatusCode = 500;
+                }
             }
         }
 
