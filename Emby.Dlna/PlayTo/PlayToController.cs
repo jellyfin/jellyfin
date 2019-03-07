@@ -21,7 +21,6 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 
 namespace Emby.Dlna.PlayTo
 {
