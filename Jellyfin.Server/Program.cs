@@ -125,7 +125,7 @@ namespace Jellyfin.Server
             SQLitePCL.Batteries_V2.Init();
 
             // Allow all https requests
-            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; } );
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
             var fileSystem = new ManagedFileSystem(_loggerFactory, environmentInfo, appPaths);
 
@@ -144,7 +144,6 @@ namespace Jellyfin.Server
                 appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
 
                 await appHost.RunStartupTasks().ConfigureAwait(false);
-                // TODO: read input for a stop command
 
                 try
                 {
