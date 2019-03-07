@@ -9,8 +9,6 @@ namespace Emby.Dlna.PlayTo
 {
     public class PlaylistItemFactory
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         public PlaylistItem Create(Photo item, DeviceProfile profile)
         {
             var playlistItem = new PlaylistItem
