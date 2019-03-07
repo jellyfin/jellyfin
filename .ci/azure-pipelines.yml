@@ -156,7 +156,7 @@ jobs:
         overWrite: true # Optional
         flattenFolders: true # Optional
 
-    - task: DownloadGitHubReleases@0
+    - task: DownloadGitHubRelease@0
       displayName: Download ABI compatibility check tool from GitHub
       inputs:
         connection: Jellyfin GitHub
