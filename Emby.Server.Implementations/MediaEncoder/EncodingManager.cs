@@ -202,6 +202,10 @@ namespace Emby.Server.Implementations.MediaEncoder
         private static List<string> GetSavedChapterImages(Video video, IDirectoryService directoryService)
         {
             var path = GetChapterImagesPath(video);
+            if (!Directory.Exists(path))
+            {
+                return new List<string>();
+            }
 
             try
             {

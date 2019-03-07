@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
@@ -32,32 +31,28 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 if (_items == null)
                 {
+                    if (!File.Exists(_dataPath))
+                    {
+                        return new List<T>();
+                    }
+
                     Logger.LogInformation("Loading live tv data from {0}", _dataPath);
                     _items = GetItemsFromFile(_dataPath);
                 }
+
                 return _items.ToList();
             }
         }
 
         private List<T> GetItemsFromFile(string path)
         {
-            var jsonFile = path + ".json";
-
-            if (!File.Exists(jsonFile))
-            {
-                return new List<T>();
-            }
-
             try
             {
-                return _jsonSerializer.DeserializeFromFile<List<T>>(jsonFile) ?? new List<T>();
-            }
-            catch (IOException)
-            {
+                return _jsonSerializer.DeserializeFromFile<List<T>>(path);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error deserializing {jsonFile}", jsonFile);
+                Logger.LogError(ex, "Error deserializing {Path}", path);
             }
 
             return new List<T>();
@@ -70,12 +65,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 throw new ArgumentNullException(nameof(newList));
             }
 
-            var file = _dataPath + ".json";
-            Directory.CreateDirectory(Path.GetDirectoryName(file));
+            Directory.CreateDirectory(Path.GetDirectoryName(_dataPath));
 
             lock (_fileDataLock)
             {
-                _jsonSerializer.SerializeToFile(newList, file);
+                _jsonSerializer.SerializeToFile(newList, _dataPath);
                 _items = newList;
             }
         }

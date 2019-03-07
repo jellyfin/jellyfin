@@ -105,8 +105,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _mediaSourceManager = mediaSourceManager;
             _streamHelper = streamHelper;
 
-            _seriesTimerProvider = new SeriesTimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers"));
-            _timerProvider = new TimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "timers"), _logger);
+            _seriesTimerProvider = new SeriesTimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers.json"));
+            _timerProvider = new TimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "timers.json"), _logger);
             _timerProvider.TimerFired += _timerProvider_TimerFired;
 
             _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;

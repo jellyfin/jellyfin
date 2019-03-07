@@ -334,10 +334,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="protocol">The protocol.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="ArgumentException">Unrecognized InputType</exception>
-        public string GetInputArgument(string[] inputFiles, MediaProtocol protocol)
-        {
-            return EncodingUtils.GetInputArgument(inputFiles.ToList(), protocol);
-        }
+        public string GetInputArgument(IReadOnlyList<string> inputFiles, MediaProtocol protocol)
+            => EncodingUtils.GetInputArgument(inputFiles, protocol);
 
         /// <summary>
         /// Gets the media info internal.
@@ -354,8 +352,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             CancellationToken cancellationToken)
         {
             var args = extractChapters
-                ? "{0} -i {1} -threads 0 -v info -print_format json -show_streams -show_chapters -show_format"
-                : "{0} -i {1} -threads 0 -v info -print_format json -show_streams -show_format";
+                ? "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_chapters -show_format"
+                : "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_format";
+            args = string.Format(args, probeSizeArgument, inputPath).Trim();
 
             var process = _processFactory.Create(new ProcessOptions
             {
@@ -364,8 +363,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 // Must consume both or ffmpeg may hang due to deadlocks. See comments below.
                 RedirectStandardOutput = true,
+
                 FileName = FFprobePath,
-                Arguments = string.Format(args, probeSizeArgument, inputPath).Trim(),
+                Arguments = args,
+
 
                 IsHidden = true,
                 ErrorDialog = false,
@@ -383,36 +384,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
+                _logger.LogDebug("Starting ffprobe with args {Args}", args);
                 StartProcess(processWrapper);
 
+                InternalMediaInfoResult result;
                 try
                 {
-                    //process.BeginErrorReadLine();
-
-                    var result = await _jsonSerializer.DeserializeFromStreamAsync<InternalMediaInfoResult>(process.StandardOutput.BaseStream).ConfigureAwait(false);
-
-                    if (result == null || (result.streams == null && result.format == null))
-                    {
-                        throw new Exception("ffprobe failed - streams and format are both null.");
-                    }
-
-                    if (result.streams != null)
-                    {
-                        // Normalize aspect ratio if invalid
-                        foreach (var stream in result.streams)
-                        {
-                            if (string.Equals(stream.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
-                            {
-                                stream.display_aspect_ratio = string.Empty;
-                            }
-                            if (string.Equals(stream.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
-                            {
-                                stream.sample_aspect_ratio = string.Empty;
-                            }
-                        }
-                    }
-
-                    return new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
+                    result = await _jsonSerializer.DeserializeFromStreamAsync<InternalMediaInfoResult>(
+                                        process.StandardOutput.BaseStream).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -420,6 +399,30 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     throw;
                 }
+
+                if (result == null || (result.streams == null && result.format == null))
+                {
+                    throw new Exception("ffprobe failed - streams and format are both null.");
+                }
+
+                if (result.streams != null)
+                {
+                    // Normalize aspect ratio if invalid
+                    foreach (var stream in result.streams)
+                    {
+                        if (string.Equals(stream.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.display_aspect_ratio = string.Empty;
+                        }
+
+                        if (string.Equals(stream.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.sample_aspect_ratio = string.Empty;
+                        }
+                    }
+                }
+
+                return new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
             }
         }
 

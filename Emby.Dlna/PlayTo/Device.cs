@@ -1126,6 +1126,11 @@ namespace Emby.Dlna.PlayTo
 
         private void OnPlaybackStart(uBaseObject mediaInfo)
         {
+            if (string.IsNullOrWhiteSpace(mediaInfo.Url))
+            {
+                return;
+            }
+
             PlaybackStart?.Invoke(this, new PlaybackStartEventArgs
             {
                 MediaInfo = mediaInfo
@@ -1134,8 +1139,7 @@ namespace Emby.Dlna.PlayTo
 
         private void OnPlaybackProgress(uBaseObject mediaInfo)
         {
-            var mediaUrl = mediaInfo.Url;
-            if (string.IsNullOrWhiteSpace(mediaUrl))
+            if (string.IsNullOrWhiteSpace(mediaInfo.Url))
             {
                 return;
             }
@@ -1148,7 +1152,6 @@ namespace Emby.Dlna.PlayTo
 
         private void OnPlaybackStop(uBaseObject mediaInfo)
         {
-
             PlaybackStopped?.Invoke(this, new PlaybackStoppedEventArgs
             {
                 MediaInfo = mediaInfo

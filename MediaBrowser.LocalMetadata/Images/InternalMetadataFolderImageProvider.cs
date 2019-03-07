@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.LocalMetadata.Images
 {
@@ -12,11 +13,16 @@ namespace MediaBrowser.LocalMetadata.Images
     {
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
+        private readonly ILogger _logger;
 
-        public InternalMetadataFolderImageProvider(IServerConfigurationManager config, IFileSystem fileSystem)
+        public InternalMetadataFolderImageProvider(
+            IServerConfigurationManager config,
+            IFileSystem fileSystem,
+            ILogger<InternalMetadataFolderImageProvider> logger)
         {
             _config = config;
             _fileSystem = fileSystem;
+            _logger = logger;
         }
 
         public string Name => "Internal Images";
@@ -53,12 +59,18 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             var path = item.GetInternalMetadataPath();
 
+            if (!Directory.Exists(path))
+            {
+                return new List<LocalImageInfo>();
+            }
+
             try
             {
                 return new LocalImageProvider(_fileSystem).GetImages(item, path, false, directoryService);
             }
-            catch (IOException)
+            catch (IOException ex)
             {
+                _logger.LogError(ex, "Error while getting images for {Library}", item.Name);
                 return new List<LocalImageInfo>();
             }
         }
