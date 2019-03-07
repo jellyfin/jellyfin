@@ -36,7 +36,6 @@ using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Playlists;
-using Emby.Server.Implementations.Reflection;
 using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
@@ -91,7 +90,6 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
@@ -681,9 +679,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(ServerConfigurationManager);
 
-            var assemblyInfo = new AssemblyInfo();
-            serviceCollection.AddSingleton<IAssemblyInfo>(assemblyInfo);
-
             LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer, LoggerFactory);
             await LocalizationManager.LoadAll();
             serviceCollection.AddSingleton<ILocalizationManager>(LocalizationManager);
@@ -702,7 +697,7 @@ namespace Emby.Server.Implementations
             var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LoggerFactory, JsonSerializer, ApplicationPaths, FileSystemManager);
             serviceCollection.AddSingleton<IDisplayPreferencesRepository>(displayPreferencesRepo);
 
-            ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, JsonSerializer, LoggerFactory, assemblyInfo);
+            ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, JsonSerializer, LoggerFactory);
             serviceCollection.AddSingleton<IItemRepository>(ItemRepository);
 
             AuthenticationRepository = GetAuthenticationRepository();
