@@ -18,6 +18,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace MediaBrowser.Api.Images
 {
@@ -634,7 +635,7 @@ namespace MediaBrowser.Api.Images
 
             var imageResult = await _imageProcessor.ProcessImage(options).ConfigureAwait(false);
 
-            headers["Vary"] = "Accept";
+            headers[HeaderNames.Vary] = HeaderNames.Accept;
 
             return await ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {

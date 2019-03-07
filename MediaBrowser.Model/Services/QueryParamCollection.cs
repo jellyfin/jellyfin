@@ -5,19 +5,11 @@ using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Services
 {
+    // Remove this garbage class, it's just a bastard copy of NameValueCollection
     public class QueryParamCollection : List<NameValuePair>
     {
         public QueryParamCollection()
         {
-
-        }
-
-        public QueryParamCollection(IDictionary<string, string> headers)
-        {
-            foreach (var pair in headers)
-            {
-                Add(pair.Key, pair.Value);
-            }
         }
 
         private static StringComparison GetStringComparison()
@@ -30,30 +22,15 @@ namespace MediaBrowser.Model.Services
             return StringComparer.OrdinalIgnoreCase;
         }
 
-        public string GetKey(int index)
-        {
-            return this[index].Name;
-        }
-
-        public string Get(int index)
-        {
-            return this[index].Value;
-        }
-
-        public virtual string[] GetValues(int index)
-        {
-            return new[] { Get(index) };
-        }
-
         /// <summary>
         /// Adds a new query parameter.
         /// </summary>
-        public virtual void Add(string key, string value)
+        public void Add(string key, string value)
         {
             Add(new NameValuePair(key, value));
         }
 
-        public virtual void Set(string key, string value)
+        private void Set(string key, string value)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -81,17 +58,7 @@ namespace MediaBrowser.Model.Services
             Add(key, value);
         }
 
-        /// <summary>
-        /// Removes all parameters of the given name.
-        /// </summary>
-        /// <returns>The number of parameters that were removed</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="name" /> is null.</exception>
-        public virtual int Remove(string name)
-        {
-            return RemoveAll(p => p.Name == name);
-        }
-
-        public string Get(string name)
+        private string Get(string name)
         {
             var stringComparison = GetStringComparison();
 
@@ -106,7 +73,7 @@ namespace MediaBrowser.Model.Services
             return null;
         }
 
-        public virtual List<NameValuePair> GetItems(string name)
+        private List<NameValuePair> GetItems(string name)
         {
             var stringComparison = GetStringComparison();
 
@@ -138,20 +105,6 @@ namespace MediaBrowser.Model.Services
             }
 
             return list;
-        }
-
-        public Dictionary<string, string> ToDictionary()
-        {
-            var stringComparer = GetStringComparer();
-
-            var headers = new Dictionary<string, string>(stringComparer);
-
-            foreach (var pair in this)
-            {
-                headers[pair.Name] = pair.Value;
-            }
-
-            return headers;
         }
 
         public IEnumerable<string> Keys

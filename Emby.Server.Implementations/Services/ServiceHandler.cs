@@ -154,7 +154,7 @@ namespace Emby.Server.Implementations.Services
             {
                 if (name == null) continue; //thank you ASP.NET
 
-                var values = request.QueryString.GetValues(name);
+                var values = request.QueryString[name];
                 if (values.Count == 1)
                 {
                     map[name] = values[0];

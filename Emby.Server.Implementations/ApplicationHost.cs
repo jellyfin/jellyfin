@@ -34,6 +34,7 @@ using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
+using Emby.Server.Implementations.Middleware;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Reflection;
@@ -41,6 +42,7 @@ using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
+using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Emby.Server.Implementations.Xml;
@@ -104,11 +106,15 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.Providers.TV.TheTVDB;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using ServiceStack;
-using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 
 namespace Emby.Server.Implementations
 {
@@ -611,6 +617,68 @@ namespace Emby.Server.Implementations
             await RegisterResources(serviceCollection);
 
             FindParts();
+
+            string contentRoot = ServerConfigurationManager.Configuration.DashboardSourcePath;
+            if (string.IsNullOrEmpty(contentRoot))
+            {
+                contentRoot = Path.Combine(ServerConfigurationManager.ApplicationPaths.ApplicationResourcesPath, "jellyfin-web", "src");
+            }
+
+            var host = new WebHostBuilder()
+                .UseKestrel(options =>
+                {
+                    options.ListenAnyIP(HttpPort);
+
+                    if (EnableHttps)
+                    {
+                        options.ListenAnyIP(HttpsPort, listenOptions => { listenOptions.UseHttps(Certificate); });
+                    }
+                })
+                .UseContentRoot(contentRoot)
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression();
+                    services.AddHttpContextAccessor();
+                })
+                .Configure(app =>
+                {
+                    app.UseWebSockets();
+
+                    app.UseResponseCompression();
+                    // TODO app.UseMiddleware<WebSocketMiddleware>();
+                    app.Use(ExecuteWebsocketHandlerAsync);
+                    app.Use(ExecuteHttpHandlerAsync);
+                })
+                .Build();
+
+            await host.StartAsync();
+        }
+
+        private async Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next)
+        {
+            if (!context.WebSockets.IsWebSocketRequest)
+            {
+                await next().ConfigureAwait(false);
+                return;
+            }
+
+            await HttpServer.ProcessWebSocketRequest(context).ConfigureAwait(false);
+        }
+
+        private async Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
+        {
+            if (context.WebSockets.IsWebSocketRequest)
+            {
+                await next().ConfigureAwait(false);
+                return;
+            }
+
+            var request = context.Request;
+            var response = context.Response;
+            var localPath = context.Request.Path.ToString();
+
+            var req = new WebSocketSharpRequest(request, response, request.Path, Logger);
+            await HttpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, CancellationToken.None).ConfigureAwait(false);
         }
 
         protected virtual IHttpClient CreateHttpClient()
@@ -673,7 +741,7 @@ namespace Emby.Server.Implementations
             ZipClient = new ZipClient();
             serviceCollection.AddSingleton(ZipClient);
 
-            HttpResultFactory = new HttpResultFactory(LoggerFactory, FileSystemManager, JsonSerializer, CreateBrotliCompressor());
+            HttpResultFactory = new HttpResultFactory(LoggerFactory, FileSystemManager, JsonSerializer, StreamHelper);
             serviceCollection.AddSingleton(HttpResultFactory);
 
             serviceCollection.AddSingleton<IServerApplicationHost>(this);
@@ -732,7 +800,8 @@ namespace Emby.Server.Implementations
                 _configuration,
                 NetworkManager,
                 JsonSerializer,
-                XmlSerializer);
+                XmlSerializer,
+                CreateHttpListener());
 
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             serviceCollection.AddSingleton(HttpServer);
@@ -836,11 +905,6 @@ namespace Emby.Server.Implementations
             _serviceProvider = serviceCollection.BuildServiceProvider();
         }
 
-        protected virtual IBrotliCompressor CreateBrotliCompressor()
-        {
-            return null;
-        }
-
         public virtual string PackageRuntime => "netcore";
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths, EnvironmentInfo.EnvironmentInfo environmentInfo)
@@ -873,11 +937,9 @@ namespace Emby.Server.Implementations
             }
         }
 
-        protected virtual bool SupportsDualModeSockets => true;
-
-        private X509Certificate GetCertificate(CertificateInfo info)
+        private X509Certificate2 GetCertificate(CertificateInfo info)
         {
-            var certificateLocation = info == null ? null : info.Path;
+            var certificateLocation = info?.Path;
 
             if (string.IsNullOrWhiteSpace(certificateLocation))
             {
@@ -952,7 +1014,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         private void SetStaticProperties()
         {
-            ((SqliteItemRepository)ItemRepository).ImageProcessor = ImageProcessor;
+            ItemRepository.ImageProcessor = ImageProcessor;
 
             // For now there's no real way to inject these properly
             BaseItem.Logger = LoggerFactory.CreateLogger("BaseItem");
@@ -995,8 +1057,6 @@ namespace Emby.Server.Implementations
                         .ToArray();
 
             HttpServer.Init(GetExports<IService>(false), GetExports<IWebSocketListener>());
-
-            StartServer();
 
             LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(),
                 GetExports<IItemResolver>(),
@@ -1080,15 +1140,12 @@ namespace Emby.Server.Implementations
 
             AllConcreteTypes = GetComposablePartAssemblies()
                 .SelectMany(x => x.ExportedTypes)
-                .Where(type =>
-                {
-                    return type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsGenericType;
-                })
+                .Where(type => type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsGenericType)
                 .ToArray();
         }
 
         private CertificateInfo CertificateInfo { get; set; }
-        protected X509Certificate Certificate { get; private set; }
+        protected X509Certificate2 Certificate { get; private set; }
 
         private IEnumerable<string> GetUrlPrefixes()
         {
@@ -1110,45 +1167,7 @@ namespace Emby.Server.Implementations
             });
         }
 
-        protected abstract IHttpListener CreateHttpListener();
-
-        /// <summary>
-        /// Starts the server.
-        /// </summary>
-        private void StartServer()
-        {
-            try
-            {
-                ((HttpListenerHost)HttpServer).StartServer(GetUrlPrefixes().ToArray(), CreateHttpListener());
-                return;
-            }
-            catch (Exception ex)
-            {
-                var msg = string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase)
-                  ? "The http server is unable to start due to a Socket error. This can occasionally happen when the operating system takes longer than usual to release the IP bindings from the previous session. This can take up to five minutes. Please try waiting or rebooting the system."
-                  : "Error starting Http Server";
-
-                Logger.LogError(ex, msg);
-
-                if (HttpPort == ServerConfiguration.DefaultHttpPort)
-                {
-                    throw;
-                }
-            }
-
-            HttpPort = ServerConfiguration.DefaultHttpPort;
-
-            try
-            {
-                ((HttpListenerHost)HttpServer).StartServer(GetUrlPrefixes().ToArray(), CreateHttpListener());
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error starting http server");
-
-                throw;
-            }
-        }
+        protected IHttpListener CreateHttpListener() => new WebSocketSharpListener(Logger);
 
         private CertificateInfo GetCertificateInfo(bool generateCertificate)
         {
@@ -1585,7 +1604,7 @@ namespace Emby.Server.Implementations
                     LogErrorResponseBody = false,
                     LogErrors = logPing,
                     LogRequest = logPing,
-                    TimeoutMs = 30000,
+                    TimeoutMs = 5000,
                     BufferContent = false,
 
                     CancellationToken = cancellationToken

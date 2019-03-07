@@ -1,20 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Model.Services
 {
     public interface IRequest
     {
-        /// <summary>
-        /// The underlying ASP.NET or HttpListener HttpRequest
-        /// </summary>
-        object OriginalRequest { get; }
-
         IResponse Response { get; }
 
         /// <summary>
@@ -41,8 +36,6 @@ namespace MediaBrowser.Model.Services
 
         string UserAgent { get; }
 
-        IDictionary<string, Cookie> Cookies { get; }
-
         /// <summary>
         /// The expected Response ContentType for this request
         /// </summary>
@@ -53,20 +46,15 @@ namespace MediaBrowser.Model.Services
         /// </summary>
         Dictionary<string, object> Items { get; }
 
-        QueryParamCollection Headers { get; }
+        IHeaderDictionary Headers { get; }
 
-        QueryParamCollection QueryString { get; }
+        IQueryCollection QueryString { get; }
 
         Task<QueryParamCollection> GetFormData();
 
         string RawUrl { get; }
 
         string AbsoluteUri { get; }
-
-        /// <summary>
-        /// The Remote Ip as reported by Request.UserHostAddress
-        /// </summary>
-        string UserHostAddress { get; }
 
         /// <summary>
         /// The Remote Ip as reported by X-Forwarded-For, X-Real-IP or Request.UserHostAddress
@@ -77,11 +65,6 @@ namespace MediaBrowser.Model.Services
         /// The value of the Authorization Header used to send the Api Key, null if not available
         /// </summary>
         string Authorization { get; }
-
-        /// <summary>
-        /// e.g. is https or not
-        /// </summary>
-        bool IsSecureConnection { get; }
 
         string[] AcceptTypes { get; }
 
@@ -135,24 +118,16 @@ namespace MediaBrowser.Model.Services
         Stream OutputStream { get; }
 
         /// <summary>
-        /// Signal that this response has been handled and no more processing should be done.
-        /// When used in a request or response filter, no more filters or processing is done on this request.
-        /// </summary>
-        void Close();
-
-        /// <summary>
         /// Gets a value indicating whether this instance is closed.
         /// </summary>
-        bool IsClosed { get; }
-
-        void SetContentLength(long contentLength);
+        bool IsClosed { get; set; }
 
         //Add Metadata to Response
         Dictionary<string, object> Items { get; }
 
-        QueryParamCollection Headers { get; }
+        IHeaderDictionary Headers { get; }
 
-        Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken);
+        Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, IFileSystem fileSystem, IStreamHelper streamHelper, CancellationToken cancellationToken);
 
         bool SendChunked { get; set; }
     }

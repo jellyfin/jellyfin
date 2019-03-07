@@ -1,11 +1,12 @@
 using System;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Net;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.SocketSharp
+namespace Emby.Server.Implementations.SocketSharp
 {
     public class SharpWebSocket : IWebSocket
     {
@@ -20,67 +21,22 @@ namespace Jellyfin.Server.SocketSharp
         /// Gets or sets the web socket.
         /// </summary>
         /// <value>The web socket.</value>
-        private SocketHttpListener.WebSocket WebSocket { get; set; }
+        private readonly WebSocket _webSocket;
 
-        private TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        private bool _disposed = false;
+        private bool _disposed;
 
-        public SharpWebSocket(SocketHttpListener.WebSocket socket, ILogger logger)
+        public SharpWebSocket(WebSocket socket, ILogger logger)
         {
-            if (socket == null)
-            {
-                throw new ArgumentNullException(nameof(socket));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            _logger = logger;
-            WebSocket = socket;
-
-            socket.OnMessage += OnSocketMessage;
-            socket.OnClose += OnSocketClose;
-            socket.OnError += OnSocketError;
-        }
-
-        public Task ConnectAsServerAsync()
-            => WebSocket.ConnectAsServer();
-
-        public Task StartReceive()
-        {
-            return _taskCompletionSource.Task;
-        }
-
-        private void OnSocketError(object sender, SocketHttpListener.ErrorEventArgs e)
-        {
-            _logger.LogError("Error in SharpWebSocket: {Message}", e.Message ?? string.Empty);
-
-            // Closed?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void OnSocketClose(object sender, SocketHttpListener.CloseEventArgs e)
-        {
-            _taskCompletionSource.TrySetResult(true);
-
-            Closed?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void OnSocketMessage(object sender, SocketHttpListener.MessageEventArgs e)
-        {
-            if (OnReceiveBytes != null)
-            {
-                OnReceiveBytes(e.RawData);
-            }
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _webSocket = socket ?? throw new ArgumentNullException(nameof(socket));
         }
 
         /// <summary>
         /// Gets or sets the state.
         /// </summary>
         /// <value>The state.</value>
-        public WebSocketState State => WebSocket.ReadyState;
+        public WebSocketState State => _webSocket.State;
 
         /// <summary>
         /// Sends the async.
@@ -91,7 +47,7 @@ namespace Jellyfin.Server.SocketSharp
         /// <returns>Task.</returns>
         public Task SendAsync(byte[] bytes, bool endOfMessage, CancellationToken cancellationToken)
         {
-            return WebSocket.SendAsync(bytes);
+            return _webSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Binary, endOfMessage, cancellationToken);
         }
 
         /// <summary>
@@ -103,7 +59,7 @@ namespace Jellyfin.Server.SocketSharp
         /// <returns>Task.</returns>
         public Task SendAsync(string text, bool endOfMessage, CancellationToken cancellationToken)
         {
-            return WebSocket.SendAsync(text);
+            return _webSocket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(text)), WebSocketMessageType.Text, endOfMessage, cancellationToken);
         }
 
         /// <summary>
@@ -128,13 +84,13 @@ namespace Jellyfin.Server.SocketSharp
 
             if (dispose)
             {
-                WebSocket.OnMessage -= OnSocketMessage;
-                WebSocket.OnClose -= OnSocketClose;
-                WebSocket.OnError -= OnSocketError;
-
                 _cancellationTokenSource.Cancel();
-
-                WebSocket.CloseAsync().GetAwaiter().GetResult();
+                if (_webSocket.State == WebSocketState.Open)
+                {
+                    _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed by client",
+                        CancellationToken.None);
+                }
+                Closed?.Invoke(this, EventArgs.Empty);
             }
 
             _disposed = true;

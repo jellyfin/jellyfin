@@ -6,14 +6,16 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
-namespace Jellyfin.Server.SocketSharp
+namespace Emby.Server.Implementations.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {
         internal static string GetParameter(ReadOnlySpan<char> header, string attr)
         {
-            int ap = header.IndexOf(attr, StringComparison.Ordinal);
+            int ap = header.IndexOf(attr.AsSpan(), StringComparison.Ordinal);
             if (ap == -1)
             {
                 return null;
@@ -43,7 +45,7 @@ namespace Jellyfin.Server.SocketSharp
 
         private async Task LoadMultiPart(WebROCollection form)
         {
-            string boundary = GetParameter(ContentType, "; boundary=");
+            string boundary = GetParameter(ContentType.AsSpan(), "; boundary=");
             if (boundary == null)
             {
                 return;
@@ -105,14 +107,6 @@ namespace Jellyfin.Server.SocketSharp
                 await LoadWwwForm(form).ConfigureAwait(false);
             }
 
-#if NET_4_0
-            if (validateRequestNewMode && !checked_form) {
-                // Setting this before calling the validator prevents
-                // possible endless recursion
-                checked_form = true;
-                ValidateNameValueCollection("Form", query_string_nvc, RequestValidationSource.Form);
-            } else
-#endif
             if (validate_form && !checked_form)
             {
                 checked_form = true;
@@ -122,15 +116,11 @@ namespace Jellyfin.Server.SocketSharp
             return form;
         }
 
-        public string Accept => string.IsNullOrEmpty(request.Headers["Accept"]) ? null : request.Headers["Accept"];
+        public string Accept => StringValues.IsNullOrEmpty(request.Headers[HeaderNames.Accept]) ? null : request.Headers[HeaderNames.Accept].ToString();
 
-        public string Authorization => string.IsNullOrEmpty(request.Headers["Authorization"]) ? null : request.Headers["Authorization"];
+        public string Authorization => StringValues.IsNullOrEmpty(request.Headers[HeaderNames.Authorization]) ? null : request.Headers[HeaderNames.Authorization].ToString();
 
-        protected bool validate_cookies { get; set; }
-        protected bool validate_query_string { get; set; }
         protected bool validate_form { get; set; }
-        protected bool checked_cookies { get; set; }
-        protected bool checked_query_string { get; set; }
         protected bool checked_form { get; set; }
 
         private static void ThrowValidationException(string name, string key, string value)
@@ -208,13 +198,6 @@ namespace Jellyfin.Server.SocketSharp
             }
 
             return false;
-        }
-
-        public void ValidateInput()
-        {
-            validate_cookies = true;
-            validate_query_string = true;
-            validate_form = true;
         }
 
         private bool IsContentType(string ct, bool starts_with)
@@ -396,14 +379,14 @@ namespace Jellyfin.Server.SocketSharp
 
                 var elem = new Element();
                 ReadOnlySpan<char> header;
-                while ((header = ReadHeaders()) != null)
+                while ((header = ReadHeaders().AsSpan()) != null)
                 {
-                    if (header.StartsWith("Content-Disposition:", StringComparison.OrdinalIgnoreCase))
+                    if (header.StartsWith("Content-Disposition:".AsSpan(), StringComparison.OrdinalIgnoreCase))
                     {
                         elem.Name = GetContentDispositionAttribute(header, "name");
                         elem.Filename = StripPath(GetContentDispositionAttributeWithEncoding(header, "filename"));
                     }
-                    else if (header.StartsWith("Content-Type:", StringComparison.OrdinalIgnoreCase))
+                    else if (header.StartsWith("Content-Type:".AsSpan(), StringComparison.OrdinalIgnoreCase))
                     {
                         elem.ContentType = header.Slice("Content-Type:".Length).Trim().ToString();
                         elem.Encoding = GetEncoding(elem.ContentType);
@@ -455,7 +438,7 @@ namespace Jellyfin.Server.SocketSharp
 
             private static string GetContentDispositionAttribute(ReadOnlySpan<char> l, string name)
             {
-                int idx = l.IndexOf(name + "=\"", StringComparison.Ordinal);
+                int idx = l.IndexOf((name + "=\"").AsSpan(), StringComparison.Ordinal);
                 if (idx < 0)
                 {
                     return null;
@@ -478,7 +461,7 @@ namespace Jellyfin.Server.SocketSharp
 
             private string GetContentDispositionAttributeWithEncoding(ReadOnlySpan<char> l, string name)
             {
-                int idx = l.IndexOf(name + "=\"", StringComparison.Ordinal);
+                int idx = l.IndexOf((name + "=\"").AsSpan(), StringComparison.Ordinal);
                 if (idx < 0)
                 {
                     return null;

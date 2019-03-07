@@ -58,9 +58,8 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <summary>
         /// Gets the data to send.
         /// </summary>
-        /// <param name="state">The state.</param>
         /// <returns>Task{IEnumerable{TaskInfo}}.</returns>
-        protected override Task<IEnumerable<TaskInfo>> GetDataToSend(WebSocketListenerState state, CancellationToken cancellationToken)
+        protected override Task<IEnumerable<TaskInfo>> GetDataToSend()
         {
             return Task.FromResult(TaskManager.ScheduledTasks
                 .OrderBy(i => i.Name)

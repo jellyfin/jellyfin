@@ -79,9 +79,8 @@ namespace MediaBrowser.Api.Session
         /// <summary>
         /// Gets the data to send.
         /// </summary>
-        /// <param name="state">The state.</param>
         /// <returns>Task{SystemInfo}.</returns>
-        protected override Task<IEnumerable<SessionInfo>> GetDataToSend(WebSocketListenerState state, CancellationToken cancellationToken)
+        protected override Task<IEnumerable<SessionInfo>> GetDataToSend()
         {
             return Task.FromResult(_sessionManager.Sessions);
         }
