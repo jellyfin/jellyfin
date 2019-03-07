@@ -19,7 +19,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _processFactory = processFactory;
         }
 
-        public (IEnumerable<string> decoders, IEnumerable<string> encoders) Validate(string encoderPath)
+        public (IEnumerable<string> decoders, IEnumerable<string> encoders) GetAvailableCoders(string encoderPath)
         {
             _logger.LogInformation("Validating media encoder at {EncoderPath}", encoderPath);
 
@@ -48,6 +48,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (string.IsNullOrWhiteSpace(output))
             {
+                if (logOutput)
+                {
+                    _logger.LogError("FFmpeg validation: The process returned no result");
+                }
                 return false;
             }
 
@@ -55,6 +59,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (output.IndexOf("Libav developers", StringComparison.OrdinalIgnoreCase) != -1)
             {
+                if (logOutput)
+                {
+                    _logger.LogError("FFmpeg validation: avconv instead of ffmpeg is not supported");
+                }
                 return false;
             }
 
