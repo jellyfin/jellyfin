@@ -366,7 +366,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Headers only
             if (isHeadRequest)
             {
-                return ResultFactory.GetResult(null, new byte[] { }, contentType, responseHeaders);
+                return ResultFactory.GetResult(null, Array.Empty<byte>(), contentType, responseHeaders);
             }
 
             var transcodingLock = ApiEntryPoint.Instance.GetTranscodingLock(outputPath);
