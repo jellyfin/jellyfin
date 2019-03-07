@@ -36,6 +36,12 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public abstract class BaseItem : IHasProviderIds, IHasLookupInfo<ItemLookupInfo>
     {
+        /// <summary>
+        /// The supported image extensions
+        /// </summary>
+        public static readonly IReadOnlyList<string> SupportedImageExtensions
+            = new [] { ".png", ".jpg", ".jpeg", ".tbn", ".gif" };
+
         private static readonly List<string> _supportedExtensions = new List<string>(SupportedImageExtensions)
         {
             ".nfo",
@@ -68,11 +74,6 @@ namespace MediaBrowser.Controller.Entities
 
         public static readonly char[] SlugReplaceChars = { '?', '/', '&' };
         public static char SlugChar = '-';
-
-        /// <summary>
-        /// The supported image extensions
-        /// </summary>
-        public static readonly string[] SupportedImageExtensions = { ".png", ".jpg", ".jpeg", ".tbn", ".gif" };
 
         /// <summary>
         /// The trailer folder name
