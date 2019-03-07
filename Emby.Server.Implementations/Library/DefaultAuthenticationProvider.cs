@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.Library
             }
             else
             {
-                throw new Exception(String.Format($"Requested crypto method not available in provider: {readyHash.Id}"));
+                throw new Exception(string.Format($"Requested crypto method not available in provider: {readyHash.Id}"));
             }
 
             // var success = string.Equals(GetPasswordHash(resolvedUser), GetHashedString(resolvedUser, password), StringComparison.OrdinalIgnoreCase);
