@@ -148,7 +148,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private readonly string[] SkipLogExtensions = {
+        private static readonly string[] SkipLogExtensions = {
             ".js",
             ".html",
             ".css"
