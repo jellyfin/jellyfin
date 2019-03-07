@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using CommandLine;
 using Emby.Drawing;
 using Emby.Server.Implementations;
-using Emby.Server.Implementations.EnvironmentInfo;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
 using Jellyfin.Drawing.Skia;
@@ -46,7 +45,6 @@ namespace Jellyfin.Server
             const string pattern = @"^(-[^-\s]{2})"; // Match -xx, not -x, not --xx, not xx
             const string substitution = @"-$1"; // Prepend with additional single-hyphen
             var regex = new Regex(pattern);
-
             for (var i = 0; i < args.Length; i++)
             {
                 args[i] = regex.Replace(args[i], substitution);
@@ -54,9 +52,7 @@ namespace Jellyfin.Server
 
             // Parse the command line arguments and either start the app or exit indicating error
             await Parser.Default.ParseArguments<StartupOptions>(args)
-                .MapResult(
-                    options => StartApp(options),
-                    errs => Task.FromResult(0)).ConfigureAwait(false);
+                .MapResult(StartApp, _ => Task.CompletedTask).ConfigureAwait(false);
         }
 
         public static void Shutdown()
@@ -119,31 +115,29 @@ namespace Jellyfin.Server
 
             _logger.LogInformation("Jellyfin version: {Version}", Assembly.GetEntryAssembly().GetName().Version);
 
-            EnvironmentInfo environmentInfo = new EnvironmentInfo(GetOperatingSystem());
-            ApplicationHost.LogEnvironmentInfo(_logger, appPaths, environmentInfo);
+            ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
             SQLitePCL.Batteries_V2.Init();
 
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
-            var fileSystem = new ManagedFileSystem(_loggerFactory, environmentInfo, appPaths);
+            var fileSystem = new ManagedFileSystem(_loggerFactory, appPaths);
 
             using (var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
                 fileSystem,
-                environmentInfo,
                 new NullImageEncoder(),
-                new NetworkManager(_loggerFactory, environmentInfo),
+                new NetworkManager(_loggerFactory),
                 appConfig))
             {
-                await appHost.Init(new ServiceCollection()).ConfigureAwait(false);
+                await appHost.InitAsync(new ServiceCollection()).ConfigureAwait(false);
 
                 appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
 
-                await appHost.RunStartupTasks().ConfigureAwait(false);
+                await appHost.RunStartupTasksAsync().ConfigureAwait(false);
 
                 try
                 {
@@ -179,7 +173,6 @@ namespace Jellyfin.Server
             // ELSE IF $XDG_DATA_HOME then use $XDG_DATA_HOME/jellyfin
             // ELSE    use $HOME/.local/share/jellyfin
             var dataDir = options.DataDir;
-
             if (string.IsNullOrEmpty(dataDir))
             {
                 dataDir = Environment.GetEnvironmentVariable("JELLYFIN_DATA_PATH");
@@ -236,7 +229,6 @@ namespace Jellyfin.Server
             // ELSE IF XDG_CACHE_HOME, use $XDG_CACHE_HOME/jellyfin
             // ELSE    HOME/.cache/jellyfin
             var cacheDir = options.CacheDir;
-
             if (string.IsNullOrEmpty(cacheDir))
             {
                 cacheDir = Environment.GetEnvironmentVariable("JELLYFIN_CACHE_DIR");
@@ -270,7 +262,6 @@ namespace Jellyfin.Server
             // ELSE IF --datadir, use <datadir>/log (assume portable run)
             // ELSE    <datadir>/log
             var logDir = options.LogDir;
-
             if (string.IsNullOrEmpty(logDir))
             {
                 logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
@@ -362,36 +353,6 @@ namespace Jellyfin.Server
             }
 
             return new NullImageEncoder();
-        }
-
-        private static MediaBrowser.Model.System.OperatingSystem GetOperatingSystem()
-        {
-            switch (Environment.OSVersion.Platform)
-            {
-                case PlatformID.MacOSX:
-                    return MediaBrowser.Model.System.OperatingSystem.OSX;
-                case PlatformID.Win32NT:
-                    return MediaBrowser.Model.System.OperatingSystem.Windows;
-                case PlatformID.Unix:
-                default:
-                    {
-                        string osDescription = RuntimeInformation.OSDescription;
-                        if (osDescription.Contains("linux", StringComparison.OrdinalIgnoreCase))
-                        {
-                            return MediaBrowser.Model.System.OperatingSystem.Linux;
-                        }
-                        else if (osDescription.Contains("darwin", StringComparison.OrdinalIgnoreCase))
-                        {
-                            return MediaBrowser.Model.System.OperatingSystem.OSX;
-                        }
-                        else if (osDescription.Contains("bsd", StringComparison.OrdinalIgnoreCase))
-                        {
-                            return MediaBrowser.Model.System.OperatingSystem.BSD;
-                        }
-
-                        throw new Exception($"Can't resolve OS with description: '{osDescription}'");
-                    }
-            }
         }
 
         private static void StartNewInstance(StartupOptions options)

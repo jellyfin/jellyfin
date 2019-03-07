@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.LiveTv
@@ -23,25 +22,22 @@ namespace MediaBrowser.Api.LiveTv
         public bool AllowEndOfFile = true;
 
         private readonly IDirectStreamProvider _directStreamProvider;
-        private readonly IEnvironmentInfo _environment;
         private IStreamHelper _streamHelper;
 
-        public ProgressiveFileCopier(IFileSystem fileSystem, IStreamHelper streamHelper, string path, Dictionary<string, string> outputHeaders, ILogger logger, IEnvironmentInfo environment)
+        public ProgressiveFileCopier(IFileSystem fileSystem, IStreamHelper streamHelper, string path, Dictionary<string, string> outputHeaders, ILogger logger)
         {
             _fileSystem = fileSystem;
             _path = path;
             _outputHeaders = outputHeaders;
             _logger = logger;
-            _environment = environment;
             _streamHelper = streamHelper;
         }
 
-        public ProgressiveFileCopier(IDirectStreamProvider directStreamProvider, IStreamHelper streamHelper, Dictionary<string, string> outputHeaders, ILogger logger, IEnvironmentInfo environment)
+        public ProgressiveFileCopier(IDirectStreamProvider directStreamProvider, IStreamHelper streamHelper, Dictionary<string, string> outputHeaders, ILogger logger)
         {
             _directStreamProvider = directStreamProvider;
             _outputHeaders = outputHeaders;
             _logger = logger;
-            _environment = environment;
             _streamHelper = streamHelper;
         }
 

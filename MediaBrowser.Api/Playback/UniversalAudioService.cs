@@ -18,7 +18,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
@@ -93,7 +92,6 @@ namespace MediaBrowser.Api.Playback
             IAuthorizationContext authorizationContext,
             IImageProcessor imageProcessor,
             INetworkManager networkManager,
-            IEnvironmentInfo environmentInfo,
             ILoggerFactory loggerFactory)
         {
             HttpClient = httpClient;
@@ -112,7 +110,6 @@ namespace MediaBrowser.Api.Playback
             AuthorizationContext = authorizationContext;
             ImageProcessor = imageProcessor;
             NetworkManager = networkManager;
-            EnvironmentInfo = environmentInfo;
             _loggerFactory = loggerFactory;
             _logger = loggerFactory.CreateLogger(nameof(UniversalAudioService));
         }
@@ -133,7 +130,6 @@ namespace MediaBrowser.Api.Playback
         protected IAuthorizationContext AuthorizationContext { get; private set; }
         protected IImageProcessor ImageProcessor { get; private set; }
         protected INetworkManager NetworkManager { get; private set; }
-        protected IEnvironmentInfo EnvironmentInfo { get; private set; }
         private ILoggerFactory _loggerFactory;
         private ILogger _logger;
 
@@ -338,8 +334,7 @@ namespace MediaBrowser.Api.Playback
                     DeviceManager,
                     MediaSourceManager,
                     JsonSerializer,
-                    AuthorizationContext,
-                    EnvironmentInfo)
+                    AuthorizationContext)
                 {
                     Request = Request
                 };

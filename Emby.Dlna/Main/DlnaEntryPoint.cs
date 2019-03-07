@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
@@ -24,6 +23,7 @@ using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 using Rssdp;
 using Rssdp.Infrastructure;
+using OperatingSystem =  MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Dlna.Main
 {
@@ -48,9 +48,8 @@ namespace Emby.Dlna.Main
         private readonly IDeviceDiscovery _deviceDiscovery;
 
         private SsdpDevicePublisher _Publisher;
-        
+
         private readonly ISocketFactory _socketFactory;
-        private readonly IEnvironmentInfo _environmentInfo;
         private readonly INetworkManager _networkManager;
 
         private ISsdpCommunicationsServer _communicationsServer;
@@ -76,7 +75,6 @@ namespace Emby.Dlna.Main
             IDeviceDiscovery deviceDiscovery,
             IMediaEncoder mediaEncoder,
             ISocketFactory socketFactory,
-            IEnvironmentInfo environmentInfo,
             INetworkManager networkManager,
             IUserViewManager userViewManager,
             IXmlReaderSettingsFactory xmlReaderSettingsFactory,
@@ -96,7 +94,6 @@ namespace Emby.Dlna.Main
             _deviceDiscovery = deviceDiscovery;
             _mediaEncoder = mediaEncoder;
             _socketFactory = socketFactory;
-            _environmentInfo = environmentInfo;
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger("Dlna");
 
@@ -169,8 +166,8 @@ namespace Emby.Dlna.Main
             {
                 if (_communicationsServer == null)
                 {
-                    var enableMultiSocketBinding = _environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows ||
-                                                   _environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Linux;
+                    var enableMultiSocketBinding = OperatingSystem.Id == OperatingSystemId.Windows ||
+                                                   OperatingSystem.Id == OperatingSystemId.Linux;
 
                     _communicationsServer = new SsdpCommunicationsServer(_config, _socketFactory, _networkManager, _logger, enableMultiSocketBinding)
                     {
@@ -230,7 +227,7 @@ namespace Emby.Dlna.Main
 
             try
             {
-                _Publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, _environmentInfo.OperatingSystemName, _environmentInfo.OperatingSystemVersion, _config.GetDlnaConfiguration().SendOnlyMatchedHost);
+                _Publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost);
                 _Publisher.LogFunction = LogMessage;
                 _Publisher.SupportPnpRootDevice = false;
 
