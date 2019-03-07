@@ -1,0 +1,183 @@
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+variables:
+  - name: TestProjects
+    value: 'Jellyfin.Server.Tests/Jellyfin.Server.Tests.csproj'
+  - name: RestoreBuildProjects
+    value: 'Jellyfin.Server/Jellyfin.Server.csproj'
+
+pr:
+  autoCancel: true
+
+trigger:
+  batch: true
+  branches:
+    include:
+      - master
+
+jobs:
+  - job: main_build
+    displayName: Main Build
+    pool:
+      vmImage: ubuntu-16.04
+    strategy:
+      matrix:
+        release:
+          BuildConfiguration: Release
+        debug:
+          BuildConfiguration: Debug
+      maxParallel: 2
+    steps:
+    - checkout: self
+      clean: true
+      submodules: true
+      persistCredentials: false
+
+    - task: DotNetCoreCLI@2
+      displayName: Restore
+      inputs:
+        command: restore
+        projects: '$(RestoreBuildProjects)'
+
+    - task: DotNetCoreCLI@2
+      displayName: Build
+      inputs:
+        projects: '$(RestoreBuildProjects)'
+        arguments: '--configuration $(BuildConfiguration)'
+
+    - task: DotNetCoreCLI@2
+      displayName: Test
+      inputs:
+        command: test
+        projects: '$(RestoreBuildProjects)'
+        arguments: '--configuration $(BuildConfiguration)'
+      enabled: false
+
+    - task: DotNetCoreCLI@2
+      displayName: Publish
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: '$(RestoreBuildProjects)'
+        arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
+        zipAfterPublish: false
+
+    # - task: PublishBuildArtifacts@1
+    #   displayName: 'Publish Artifact'
+    #   inputs:
+    #     PathtoPublish: '$(build.artifactstagingdirectory)'
+    #     artifactName: 'jellyfin-build-$(BuildConfiguration)'
+    #     zipAfterPublish: true
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact Naming'
+      condition: eq(variables['BuildConfiguration'], 'Release')
+      inputs:
+        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/Emby.Naming.dll'
+        artifactName: 'Jellyfin.Naming'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact Controller'
+      condition: eq(variables['BuildConfiguration'], 'Release')
+      inputs:
+        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Controller.dll'
+        artifactName: 'Jellyfin.Controller'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact Model'
+      condition: eq(variables['BuildConfiguration'], 'Release')
+      inputs:
+        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Model.dll'
+        artifactName: 'Jellyfin.Model'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact Common'
+      condition: eq(variables['BuildConfiguration'], 'Release')
+      inputs:
+        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Common.dll'
+        artifactName: 'Jellyfin.Common'
+
+  - job: dotnet_compat
+    displayName: Compatibility Check
+    pool:
+      vmImage: ubuntu-16.04
+    dependsOn: main_build
+    condition: succeeded()
+    strategy:
+      matrix:
+        Naming:
+          NugetPackageName: Jellyfin.Naming
+          AssemblyFileName: Emby.Naming.dll
+        Controller:
+          NugetPackageName: Jellyfin.Controller
+          AssemblyFileName: MediaBrowser.Controller.dll
+        Model:
+          NugetPackageName: Jellyfin.Model
+          AssemblyFileName: MediaBrowser.Model.dll
+        Common:
+          NugetPackageName: Jellyfin.Common
+          AssemblyFileName: MediaBrowser.Common.dll
+      maxParallel: 2
+    steps:
+    - checkout: none
+
+    - task: NuGetCommand@2
+      displayName: 'Download $(NugetPackageName)'
+      inputs:
+        command: custom
+        arguments: 'install $(NugetPackageName) -OutputDirectory $(System.ArtifactsDirectory)/packages -ExcludeVersion -DirectDownload'
+
+    - task: CopyFiles@2
+      displayName: Copy Nuget Assembly to current-release folder
+      inputs:
+        sourceFolder: $(System.ArtifactsDirectory)/packages/$(NugetPackageName) # Optional
+        contents: '**/*.dll'
+        targetFolder: $(System.ArtifactsDirectory)/current-release
+        cleanTargetFolder: true # Optional
+        overWrite: true # Optional
+        flattenFolders: true # Optional
+
+    - task: DownloadBuildArtifacts@0
+      displayName: Download the Assembly Build Artifact
+      inputs:
+        buildType: 'current' # Options: current, specific
+        allowPartiallySucceededBuilds: false # Optional
+        downloadType: 'single' # Options: single, specific
+        artifactName: '$(NugetPackageName)' # Required when downloadType == Single
+        downloadPath: '$(System.ArtifactsDirectory)/new-artifacts'
+
+    - task: CopyFiles@2
+      displayName: Copy Artifact Assembly to new-release folder
+      inputs:
+        sourceFolder: $(System.ArtifactsDirectory)/new-artifacts # Optional
+        contents: '**/*.dll'
+        targetFolder: $(System.ArtifactsDirectory)/new-release
+        cleanTargetFolder: true # Optional
+        overWrite: true # Optional
+        flattenFolders: true # Optional
+
+    - task: DownloadGitHubReleases@0
+      displayName: Download ABI compatibility check tool from GitHub
+      inputs:
+        connection: Jellyfin GitHub
+        userRepository: EraYaN/dotnet-compatibility
+        defaultVersionType: 'latest' # Options: latest, specificVersion, specificTag
+        #version: # Required when defaultVersionType != Latest
+        itemPattern: '**-ci.zip' # Optional
+        downloadPath: '$(System.ArtifactsDirectory)'
+
+    - task: ExtractFiles@1
+      displayName: Extract ABI compatibility check tool
+      inputs:
+        archiveFilePatterns: '$(System.ArtifactsDirectory)/*-ci.zip'
+        destinationFolder: $(System.ArtifactsDirectory)/tools
+        cleanDestinationFolder: true
+
+    - task: CmdLine@2
+      displayName: Execute ABI compatibility check tool
+      inputs:
+        script: 'dotnet tools/CompatibilityCheckerCoreCLI.dll current-release/$(AssemblyFileName) new-release/$(AssemblyFileName)'
+        workingDirectory: $(System.ArtifactsDirectory) # Optional
+        #failOnStderr: false # Optional
+
+
