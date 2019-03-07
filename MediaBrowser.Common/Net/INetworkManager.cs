@@ -53,7 +53,7 @@ namespace MediaBrowser.Common.Net
         /// <returns><c>true</c> if [is in local network] [the specified endpoint]; otherwise, <c>false</c>.</returns>
         bool IsInLocalNetwork(string endpoint);
 
-        IpAddressInfo[] GetLocalIpAddresses();
+        IpAddressInfo[] GetLocalIpAddresses(bool ignoreVirtualInterface);
 
         IpAddressInfo ParseIpAddress(string ipAddress);
 
@@ -62,5 +62,8 @@ namespace MediaBrowser.Common.Net
         Task<IpAddressInfo[]> GetHostAddressesAsync(string host);
 
         bool IsAddressInSubnets(string addressString, string[] subnets);
+
+        bool IsInSameSubnet(IpAddressInfo address1, IpAddressInfo address2, IpAddressInfo subnetMask);
+        IpAddressInfo GetLocalIpSubnetMask(IpAddressInfo address);
     }
 }

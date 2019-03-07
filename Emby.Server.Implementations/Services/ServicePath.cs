@@ -16,7 +16,7 @@ namespace Emby.Server.Implementations.Services
         private const char ComponentSeperator = '.';
         private const string VariablePrefix = "{";
 
-        readonly bool[] componentsWithSeparators;
+        private readonly bool[] componentsWithSeparators;
 
         private readonly string restPath;
         public bool IsWildCardPath { get; private set; }
@@ -54,10 +54,6 @@ namespace Emby.Server.Implementations.Services
         public string Description { get; private set; }
         public bool IsHidden { get; private set; }
 
-        public int Priority { get; set; } //passed back to RouteAttribute
-
-        public IEnumerable<string> PathVariables => this.variablesNames.Where(e => !string.IsNullOrWhiteSpace(e));
-
         public static string[] GetPathPartsForMatching(string pathInfo)
         {
             return pathInfo.ToLowerInvariant().Split(new[] { PathSeperatorChar }, StringSplitOptions.RemoveEmptyEntries);
@@ -83,9 +79,12 @@ namespace Emby.Server.Implementations.Services
             {
                 list.Add(hashPrefix + part);
 
-                var subParts = part.Split(ComponentSeperator);
-                if (subParts.Length == 1) continue;
+                if (part.IndexOf(ComponentSeperator) == -1)
+                {
+                    continue;
+                }
 
+                var subParts = part.Split(ComponentSeperator);
                 foreach (var subPart in subParts)
                 {
                     list.Add(hashPrefix + subPart);
@@ -114,7 +113,7 @@ namespace Emby.Server.Implementations.Services
             {
                 if (string.IsNullOrEmpty(component)) continue;
 
-                if (StringContains(component, VariablePrefix)
+                if (component.IndexOf(VariablePrefix, StringComparison.OrdinalIgnoreCase) != -1
                     && component.IndexOf(ComponentSeperator) != -1)
                 {
                     hasSeparators.Add(true);
@@ -165,7 +164,11 @@ namespace Emby.Server.Implementations.Services
 
             for (var i = 0; i < components.Length - 1; i++)
             {
-                if (!this.isWildcard[i]) continue;
+                if (!this.isWildcard[i])
+                {
+                    continue;
+                }
+
                 if (this.literalsToMatch[i + 1] == null)
                 {
                     throw new ArgumentException(
@@ -173,7 +176,7 @@ namespace Emby.Server.Implementations.Services
                 }
             }
 
-            this.wildcardCount = this.isWildcard.Count(x => x);
+            this.wildcardCount = this.isWildcard.Length;
             this.IsWildCardPath = this.wildcardCount > 0;
 
             this.FirstMatchHashKey = !this.IsWildCardPath
@@ -181,19 +184,14 @@ namespace Emby.Server.Implementations.Services
                 : WildCardChar + PathSeperator + firstLiteralMatch;
 
             this.typeDeserializer = new StringMapTypeDeserializer(createInstanceFn, getParseFn, this.RequestType);
-            RegisterCaseInsenstivePropertyNameMappings();
+
+            _propertyNamesMap = new HashSet<string>(
+                    GetSerializableProperties(RequestType).Select(x => x.Name),
+                    StringComparer.OrdinalIgnoreCase);
         }
 
-        private void RegisterCaseInsenstivePropertyNameMappings()
+        internal static string[] IgnoreAttributesNamed = new[]
         {
-            foreach (var propertyInfo in GetSerializableProperties(RequestType))
-            {
-                var propertyName = propertyInfo.Name;
-                propertyNamesMap.Add(propertyName.ToLowerInvariant(), propertyName);
-            }
-        }
-
-        internal static string[] IgnoreAttributesNamed = new[] {
             "IgnoreDataMemberAttribute",
             "JsonIgnoreAttribute"
         };
@@ -201,19 +199,12 @@ namespace Emby.Server.Implementations.Services
 
         private static Type excludeType = typeof(Stream);
 
-        internal static List<PropertyInfo> GetSerializableProperties(Type type)
+        internal static IEnumerable<PropertyInfo> GetSerializableProperties(Type type)
         {
-            var list = new List<PropertyInfo>();
-            var props = GetPublicProperties(type);
-
-            foreach (var prop in props)
+            foreach (var prop in GetPublicProperties(type))
             {
-                if (prop.GetMethod == null)
-                {
-                    continue;
-                }
-
-                if (excludeType == prop.PropertyType)
+                if (prop.GetMethod == null
+                    || excludeType == prop.PropertyType)
                 {
                     continue;
                 }
@@ -230,23 +221,21 @@ namespace Emby.Server.Implementations.Services
 
                 if (!ignored)
                 {
-                    list.Add(prop);
+                    yield return prop;
                 }
             }
-
-            // else return those properties that are not decorated with IgnoreDataMember
-            return list;
         }
 
-        private static List<PropertyInfo> GetPublicProperties(Type type)
+        private static IEnumerable<PropertyInfo> GetPublicProperties(Type type)
         {
-            if (type.GetTypeInfo().IsInterface)
+            if (type.IsInterface)
             {
                 var propertyInfos = new List<PropertyInfo>();
-
-                var considered = new List<Type>();
+                var considered = new List<Type>()
+                {
+                    type
+                };
                 var queue = new Queue<Type>();
-                considered.Add(type);
                 queue.Enqueue(type);
 
                 while (queue.Count > 0)
@@ -254,15 +243,16 @@ namespace Emby.Server.Implementations.Services
                     var subType = queue.Dequeue();
                     foreach (var subInterface in subType.GetTypeInfo().ImplementedInterfaces)
                     {
-                        if (considered.Contains(subInterface)) continue;
+                        if (considered.Contains(subInterface))
+                        {
+                            continue;
+                        }
 
                         considered.Add(subInterface);
                         queue.Enqueue(subInterface);
                     }
 
-                    var typeProperties = GetTypesPublicProperties(subType);
-
-                    var newPropertyInfos = typeProperties
+                    var newPropertyInfos = GetTypesPublicProperties(subType)
                         .Where(x => !propertyInfos.Contains(x));
 
                     propertyInfos.InsertRange(0, newPropertyInfos);
@@ -271,28 +261,22 @@ namespace Emby.Server.Implementations.Services
                 return propertyInfos;
             }
 
-            var list = new List<PropertyInfo>();
-
-            foreach (var t in GetTypesPublicProperties(type))
-            {
-                if (t.GetIndexParameters().Length == 0)
-                {
-                    list.Add(t);
-                }
-            }
-            return list;
+            return GetTypesPublicProperties(type)
+                .Where(x => x.GetIndexParameters().Length == 0);
         }
 
-        private static PropertyInfo[] GetTypesPublicProperties(Type subType)
+        private static IEnumerable<PropertyInfo> GetTypesPublicProperties(Type subType)
         {
-            var pis = new List<PropertyInfo>();
             foreach (var pi in subType.GetRuntimeProperties())
             {
                 var mi = pi.GetMethod ?? pi.SetMethod;
-                if (mi != null && mi.IsStatic) continue;
-                pis.Add(pi);
+                if (mi != null && mi.IsStatic)
+                {
+                    continue;
+                }
+
+                yield return pi;
             }
-            return pis.ToArray();
         }
 
         /// <summary>
@@ -302,7 +286,7 @@ namespace Emby.Server.Implementations.Services
 
         private readonly StringMapTypeDeserializer typeDeserializer;
 
-        private readonly Dictionary<string, string> propertyNamesMap = new Dictionary<string, string>();
+        private readonly HashSet<string> _propertyNamesMap;
 
         public int MatchScore(string httpMethod, string[] withPathInfoParts)
         {
@@ -312,13 +296,10 @@ namespace Emby.Server.Implementations.Services
                 return -1;
             }
 
-            var score = 0;
-
             //Routes with least wildcard matches get the highest score
-            score += Math.Max((100 - wildcardMatchCount), 1) * 1000;
-
-            //Routes with less variable (and more literal) matches
-            score += Math.Max((10 - VariableArgsCount), 1) * 100;
+            var score = Math.Max((100 - wildcardMatchCount), 1) * 1000
+                        //Routes with less variable (and more literal) matches
+                        + Math.Max((10 - VariableArgsCount), 1) * 100;
 
             //Exact verb match is better than ANY
             if (Verbs.Length == 1 && string.Equals(httpMethod, Verbs[0], StringComparison.OrdinalIgnoreCase))
@@ -331,11 +312,6 @@ namespace Emby.Server.Implementations.Services
             }
 
             return score;
-        }
-
-        private bool StringContains(string str1, string str2)
-        {
-            return str1.IndexOf(str2, StringComparison.OrdinalIgnoreCase) != -1;
         }
 
         /// <summary>
@@ -374,7 +350,8 @@ namespace Emby.Server.Implementations.Services
                     if (i < this.TotalComponentsCount - 1)
                     {
                         // Continue to consume up until a match with the next literal
-                        while (pathIx < withPathInfoParts.Length && !LiteralsEqual(withPathInfoParts[pathIx], this.literalsToMatch[i + 1]))
+                        while (pathIx < withPathInfoParts.Length
+                            && !string.Equals(withPathInfoParts[pathIx], this.literalsToMatch[i + 1], StringComparison.InvariantCultureIgnoreCase))
                         {
                             pathIx++;
                             wildcardMatchCount++;
@@ -403,31 +380,17 @@ namespace Emby.Server.Implementations.Services
                         continue;
                     }
 
-                    if (withPathInfoParts.Length <= pathIx || !LiteralsEqual(withPathInfoParts[pathIx], literalToMatch))
+                    if (withPathInfoParts.Length <= pathIx
+                        || !string.Equals(withPathInfoParts[pathIx], literalToMatch, StringComparison.InvariantCultureIgnoreCase))
                     {
                         return false;
                     }
+
                     pathIx++;
                 }
             }
 
             return pathIx == withPathInfoParts.Length;
-        }
-
-        private static bool LiteralsEqual(string str1, string str2)
-        {
-            // Most cases
-            if (string.Equals(str1, str2, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            // Handle turkish i
-            str1 = str1.ToUpperInvariant();
-            str2 = str2.ToUpperInvariant();
-
-            // Invariant IgnoreCase would probably be better but it's not available in PCL
-            return string.Equals(str1, str2, StringComparison.CurrentCultureIgnoreCase);
         }
 
         private bool ExplodeComponents(ref string[] withPathInfoParts)
@@ -436,13 +399,20 @@ namespace Emby.Server.Implementations.Services
             for (var i = 0; i < withPathInfoParts.Length; i++)
             {
                 var component = withPathInfoParts[i];
-                if (string.IsNullOrEmpty(component)) continue;
+                if (string.IsNullOrEmpty(component))
+                {
+                    continue;
+                }
 
                 if (this.PathComponentsCount != this.TotalComponentsCount
                     && this.componentsWithSeparators[i])
                 {
                     var subComponents = component.Split(ComponentSeperator);
-                    if (subComponents.Length < 2) return false;
+                    if (subComponents.Length < 2)
+                    {
+                        return false;
+                    }
+
                     totalComponents.AddRange(subComponents);
                 }
                 else
@@ -483,7 +453,7 @@ namespace Emby.Server.Implementations.Services
                     continue;
                 }
 
-                if (!this.propertyNamesMap.TryGetValue(variableName.ToLowerInvariant(), out var propertyNameOnRequest))
+                if (!this._propertyNamesMap.Contains(variableName))
                 {
                     if (string.Equals("ignore", variableName, StringComparison.OrdinalIgnoreCase))
                     {
@@ -507,6 +477,7 @@ namespace Emby.Server.Implementations.Services
                         {
                             sb.Append(PathSeperatorChar + requestComponents[j]);
                         }
+
                         value = sb.ToString();
                     }
                     else
@@ -517,13 +488,13 @@ namespace Emby.Server.Implementations.Services
                         var stopLiteral = i == this.TotalComponentsCount - 1 ? null : this.literalsToMatch[i + 1];
                         if (!string.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
                         {
-                            var sb = new StringBuilder();
-                            sb.Append(value);
+                            var sb = new StringBuilder(value);
                             pathIx++;
                             while (!string.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
                             {
                                 sb.Append(PathSeperatorChar + requestComponents[pathIx++]);
                             }
+
                             value = sb.ToString();
                         }
                         else
@@ -538,7 +509,7 @@ namespace Emby.Server.Implementations.Services
                     pathIx++;
                 }
 
-                requestKeyValuesMap[propertyNameOnRequest] = value;
+                requestKeyValuesMap[variableName] = value;
             }
 
             if (queryStringAndFormData != null)

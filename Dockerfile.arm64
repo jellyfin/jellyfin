@@ -18,11 +18,8 @@ RUN find . -type f -exec sed -i 's/netcoreapp2.1/netcoreapp3.0/g' {} \;
 # Discard objs - may cause failures if exists
 RUN find . -type d -name obj | xargs -r rm -r
 # Build
-RUN dotnet publish \
-    -r linux-arm64 \
-    --configuration release \
-    --output /jellyfin \
-    Jellyfin.Server
+RUN bash -c "source deployment/common.build.sh && \
+    build_jellyfin Jellyfin.Server Release linux-arm64 /jellyfin"
 
 
 FROM microsoft/dotnet:${DOTNET_VERSION}-runtime-stretch-slim-arm64v8
@@ -32,6 +29,16 @@ RUN apt-get update \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media
 COPY --from=builder /jellyfin /jellyfin
+
+ARG JELLYFIN_WEB_VERSION=10.2.2
+RUN curl -L https://github.com/jellyfin/jellyfin-web/archive/v${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
+ && rm -rf /jellyfin/jellyfin-web \
+ && mv jellyfin-web-${JELLYFIN_WEB_VERSION} /jellyfin/jellyfin-web
+
 EXPOSE 8096
 VOLUME /cache /config /media
-ENTRYPOINT dotnet /jellyfin/jellyfin.dll --datadir /config --cachedir /cache
+ENTRYPOINT dotnet /jellyfin/jellyfin.dll \
+    --datadir /config \
+    --cachedir /cache \
+    --ffmpeg /usr/bin/ffmpeg \
+    --ffprobe /usr/bin/ffprobe

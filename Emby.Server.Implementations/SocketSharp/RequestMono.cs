@@ -13,9 +13,9 @@ namespace Emby.Server.Implementations.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {
-        internal static string GetParameter(string header, string attr)
+        internal static string GetParameter(ReadOnlySpan<char> header, string attr)
         {
-            int ap = header.IndexOf(attr, StringComparison.Ordinal);
+            int ap = header.IndexOf(attr.AsSpan(), StringComparison.Ordinal);
             if (ap == -1)
             {
                 return null;
@@ -33,18 +33,19 @@ namespace Emby.Server.Implementations.SocketSharp
                 ending = ' ';
             }
 
-            int end = header.IndexOf(ending, ap + 1);
+            var slice = header.Slice(ap + 1);
+            int end = slice.IndexOf(ending);
             if (end == -1)
             {
-                return ending == '"' ? null : header.Substring(ap);
+                return ending == '"' ? null : header.Slice(ap).ToString();
             }
 
-            return header.Substring(ap + 1, end - ap - 1);
+            return slice.Slice(0, end - ap - 1).ToString();
         }
 
         private async Task LoadMultiPart(WebROCollection form)
         {
-            string boundary = GetParameter(ContentType, "; boundary=");
+            string boundary = GetParameter(ContentType.AsSpan(), "; boundary=");
             if (boundary == null)
             {
                 return;
@@ -377,17 +378,17 @@ namespace Emby.Server.Implementations.SocketSharp
                 }
 
                 var elem = new Element();
-                string header;
-                while ((header = ReadHeaders()) != null)
+                ReadOnlySpan<char> header;
+                while ((header = ReadHeaders().AsSpan()) != null)
                 {
-                    if (header.StartsWith("Content-Disposition:", StringComparison.OrdinalIgnoreCase))
+                    if (header.StartsWith("Content-Disposition:".AsSpan(), StringComparison.OrdinalIgnoreCase))
                     {
                         elem.Name = GetContentDispositionAttribute(header, "name");
                         elem.Filename = StripPath(GetContentDispositionAttributeWithEncoding(header, "filename"));
                     }
-                    else if (header.StartsWith("Content-Type:", StringComparison.OrdinalIgnoreCase))
+                    else if (header.StartsWith("Content-Type:".AsSpan(), StringComparison.OrdinalIgnoreCase))
                     {
-                        elem.ContentType = header.Substring("Content-Type:".Length).Trim();
+                        elem.ContentType = header.Slice("Content-Type:".Length).Trim().ToString();
                         elem.Encoding = GetEncoding(elem.ContentType);
                     }
                 }
@@ -435,16 +436,16 @@ namespace Emby.Server.Implementations.SocketSharp
                 return sb.ToString();
             }
 
-            private static string GetContentDispositionAttribute(string l, string name)
+            private static string GetContentDispositionAttribute(ReadOnlySpan<char> l, string name)
             {
-                int idx = l.IndexOf(name + "=\"", StringComparison.Ordinal);
+                int idx = l.IndexOf((name + "=\"").AsSpan(), StringComparison.Ordinal);
                 if (idx < 0)
                 {
                     return null;
                 }
 
                 int begin = idx + name.Length + "=\"".Length;
-                int end = l.IndexOf('"', begin);
+                int end = l.Slice(begin).IndexOf('"');
                 if (end < 0)
                 {
                     return null;
@@ -455,19 +456,19 @@ namespace Emby.Server.Implementations.SocketSharp
                     return string.Empty;
                 }
 
-                return l.Substring(begin, end - begin);
+                return l.Slice(begin, end - begin).ToString();
             }
 
-            private string GetContentDispositionAttributeWithEncoding(string l, string name)
+            private string GetContentDispositionAttributeWithEncoding(ReadOnlySpan<char> l, string name)
             {
-                int idx = l.IndexOf(name + "=\"", StringComparison.Ordinal);
+                int idx = l.IndexOf((name + "=\"").AsSpan(), StringComparison.Ordinal);
                 if (idx < 0)
                 {
                     return null;
                 }
 
                 int begin = idx + name.Length + "=\"".Length;
-                int end = l.IndexOf('"', begin);
+                int end = l.Slice(begin).IndexOf('"');
                 if (end < 0)
                 {
                     return null;
@@ -478,7 +479,7 @@ namespace Emby.Server.Implementations.SocketSharp
                     return string.Empty;
                 }
 
-                string temp = l.Substring(begin, end - begin);
+                ReadOnlySpan<char> temp = l.Slice(begin, end - begin);
                 byte[] source = new byte[temp.Length];
                 for (int i = temp.Length - 1; i >= 0; i--)
                 {

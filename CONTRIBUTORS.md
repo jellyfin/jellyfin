@@ -21,6 +21,9 @@
  - [WillWill56](https://github.com/WillWill56)
  - [Liggy](https://github.com/Liggy)
  - [fruhnow](https://github.com/fruhnow)
+ - [Lynxy](https://github.com/Lynxy)
+ - [fasheng](https://github.com/fasheng)
+ - [ploughpuff](https://github.com/ploughpuff) 
 
 # Emby Contributors
 

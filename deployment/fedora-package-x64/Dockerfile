@@ -13,7 +13,7 @@ RUN dnf update -y \
  && dnf install -y @buildsys-build rpmdevtools dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel \
  && dnf copr enable -y @dotnet-sig/dotnet \
  && rpmdev-setuptree \
- && dnf install -y dotnet-sdk-${SDK_VERSION} \
+ && dnf install -y dotnet-sdk-${SDK_VERSION} dotnet-runtime-${SDK_VERSION} \
  && ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh \
  && mkdir -p ${SOURCE_DIR}/SPECS \
  && ln -s ${PLATFORM_DIR}/pkg-src/jellyfin.spec ${SOURCE_DIR}/SPECS/jellyfin.spec \

@@ -9,7 +9,7 @@
 <a href="https://github.com/jellyfin/jellyfin"><img alt="GPL 2.0 License" src="https://img.shields.io/github/license/jellyfin/jellyfin.svg"/></a>
 <a href="https://github.com/jellyfin/jellyfin/releases"><img alt="Current Release" src="https://img.shields.io/github/release/jellyfin/jellyfin.svg"/></a>
 <a href="https://translate.jellyfin.org/engage/jellyfin/?utm_source=widget"><img alt="Translations" src="https://translate.jellyfin.org/widgets/jellyfin/-/svg-badge.svg"/></a>
-<a href="https://cloud.drone.io/jellyfin/jellyfin"><img alt="Build Status" src="https://cloud.drone.io/api/badges/jellyfin/jellyfin/status.svg"/></a>
+<a href="https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=1"><img alt="Azure DevOps builds" src="https://dev.azure.com/jellyfin-project/jellyfin/_apis/build/status/Jellyfin%20CI"></a>
 <a href="https://hub.docker.com/r/jellyfin/jellyfin"><img alt="Docker Pull Count" src="https://img.shields.io/docker/pulls/jellyfin/jellyfin.svg"/></a>
 </br>
 <a href="https://opencollective.com/jellyfin"><img alt="Donate" src="https://img.shields.io/opencollective/all/jellyfin.svg?label=backers"/></a>

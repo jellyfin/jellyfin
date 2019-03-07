@@ -107,12 +107,18 @@ namespace Emby.Dlna.PlayTo
             foreach (var arg in action.ArgumentList)
             {
                 if (arg.Direction == "out")
+                {
                     continue;
+                }
 
                 if (arg.Name == "InstanceID")
+                {
                     stateString += BuildArgumentXml(arg, "0");
+                }
                 else
+                {
                     stateString += BuildArgumentXml(arg, null);
+                }
             }
 
             return string.Format(CommandBase, action.Name, xmlNamespace, stateString);
@@ -125,11 +131,18 @@ namespace Emby.Dlna.PlayTo
             foreach (var arg in action.ArgumentList)
             {
                 if (arg.Direction == "out")
+                {
                     continue;
+                }
+
                 if (arg.Name == "InstanceID")
+                {
                     stateString += BuildArgumentXml(arg, "0");
+                }
                 else
+                {
                     stateString += BuildArgumentXml(arg, value.ToString(), commandParameter);
+                }
             }
 
             return string.Format(CommandBase, action.Name, xmlNamesapce, stateString);
@@ -142,11 +155,17 @@ namespace Emby.Dlna.PlayTo
             foreach (var arg in action.ArgumentList)
             {
                 if (arg.Name == "InstanceID")
+                {
                     stateString += BuildArgumentXml(arg, "0");
+                }
                 else if (dictionary.ContainsKey(arg.Name))
+                {
                     stateString += BuildArgumentXml(arg, dictionary[arg.Name]);
+                }
                 else
+                {
                     stateString += BuildArgumentXml(arg, value.ToString());
+                }
             }
 
             return string.Format(CommandBase, action.Name, xmlNamesapce, stateString);

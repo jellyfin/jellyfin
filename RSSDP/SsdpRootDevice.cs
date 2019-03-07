@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using Rssdp.Infrastructure;
+using MediaBrowser.Model.Net;
 
 namespace Rssdp
 {
@@ -52,6 +53,15 @@ namespace Rssdp
         /// </summary>
         public Uri Location { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Address used to check if the received message from same interface with this device/tree. Required.
+        /// </summary>
+        public IpAddressInfo Address { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SubnetMask used to check if the received message from same interface with this device/tree. Required.
+        /// </summary>
+        public IpAddressInfo SubnetMask { get; set; }
 
         /// <summary>
         /// The base URL to use for all relative url's provided in other propertise (and those of child devices). Optional.

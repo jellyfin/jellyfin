@@ -35,64 +35,52 @@ namespace Emby.Server.Implementations.Channels
         public static string GetUserDistinctValue(User user)
         {
             var channels = user.Policy.EnabledChannels
-                .OrderBy(i => i)
-                .ToList();
+                .OrderBy(i => i);
 
-            return string.Join("|", channels.ToArray());
+            return string.Join("|", channels);
         }
 
         private void CleanDatabase(CancellationToken cancellationToken)
         {
             var installedChannelIds = ((ChannelManager)_channelManager).GetInstalledChannelIds();
 
-            var databaseIds = _libraryManager.GetItemIds(new InternalItemsQuery
+            var uninstalledChannels = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(Channel).Name }
+                IncludeItemTypes = new[] { typeof(Channel).Name },
+                ExcludeItemIds = installedChannelIds.ToArray()
             });
 
-            var invalidIds = databaseIds
-                .Except(installedChannelIds)
-                .ToList();
-
-            foreach (var id in invalidIds)
+            foreach (var channel in uninstalledChannels)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                CleanChannel(id, cancellationToken);
+                CleanChannel((Channel)channel, cancellationToken);
             }
         }
 
-        private void CleanChannel(Guid id, CancellationToken cancellationToken)
+        private void CleanChannel(Channel channel, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Cleaning channel {0} from database", id);
+            _logger.LogInformation("Cleaning channel {0} from database", channel.Id);
 
             // Delete all channel items
-            var allIds = _libraryManager.GetItemIds(new InternalItemsQuery
+            var items = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                ChannelIds = new[] { id }
+                ChannelIds = new[] { channel.Id }
             });
 
-            foreach (var deleteId in allIds)
+            foreach (var item in items)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                DeleteItem(deleteId);
+                _libraryManager.DeleteItem(item, new DeleteOptions
+                {
+                    DeleteFileLocation = false
+
+                }, false);
             }
 
             // Finally, delete the channel itself
-            DeleteItem(id);
-        }
-
-        private void DeleteItem(Guid id)
-        {
-            var item = _libraryManager.GetItemById(id);
-
-            if (item == null)
-            {
-                return;
-            }
-
-            _libraryManager.DeleteItem(item, new DeleteOptions
+            _libraryManager.DeleteItem(channel, new DeleteOptions
             {
                 DeleteFileLocation = false
 

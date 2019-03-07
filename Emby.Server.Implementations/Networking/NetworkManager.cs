@@ -79,13 +79,13 @@ namespace Emby.Server.Implementations.Networking
         private IpAddressInfo[] _localIpAddresses;
         private readonly object _localIpAddressSyncLock = new object();
 
-        public IpAddressInfo[] GetLocalIpAddresses()
+        public IpAddressInfo[] GetLocalIpAddresses(bool ignoreVirtualInterface = true)
         {
             lock (_localIpAddressSyncLock)
             {
                 if (_localIpAddresses == null)
                 {
-                    var addresses = GetLocalIpAddressesInternal().Result.Select(ToIpAddressInfo).ToArray();
+                    var addresses = GetLocalIpAddressesInternal(ignoreVirtualInterface).Result.Select(ToIpAddressInfo).ToArray();
 
                     _localIpAddresses = addresses;
 
@@ -95,9 +95,9 @@ namespace Emby.Server.Implementations.Networking
             }
         }
 
-        private async Task<List<IPAddress>> GetLocalIpAddressesInternal()
+        private async Task<List<IPAddress>> GetLocalIpAddressesInternal(bool ignoreVirtualInterface)
         {
-            var list = GetIPsDefault()
+            var list = GetIPsDefault(ignoreVirtualInterface)
                 .ToList();
 
             if (list.Count == 0)
@@ -383,7 +383,7 @@ namespace Emby.Server.Implementations.Networking
             return Dns.GetHostAddressesAsync(hostName);
         }
 
-        private List<IPAddress> GetIPsDefault()
+        private List<IPAddress> GetIPsDefault(bool ignoreVirtualInterface)
         {
             NetworkInterface[] interfaces;
 
@@ -414,7 +414,7 @@ namespace Emby.Server.Implementations.Networking
                     // Try to exclude virtual adapters
                     // http://stackoverflow.com/questions/8089685/c-sharp-finding-my-machines-local-ip-address-and-not-the-vms
                     var addr = ipProperties.GatewayAddresses.FirstOrDefault();
-                    if (addr == null || string.Equals(addr.Address.ToString(), "0.0.0.0", StringComparison.OrdinalIgnoreCase))
+                    if (addr == null || ignoreVirtualInterface && string.Equals(addr.Address.ToString(), "0.0.0.0", StringComparison.OrdinalIgnoreCase))
                     {
                         return new List<IPAddress>();
                     }
@@ -634,6 +634,66 @@ namespace Emby.Server.Implementations.Networking
 
             ipAddressInfo = null;
             return false;
+        }
+
+        public bool IsInSameSubnet(IpAddressInfo address1, IpAddressInfo address2, IpAddressInfo subnetMask)
+        {
+             IPAddress network1 = GetNetworkAddress(ToIPAddress(address1), ToIPAddress(subnetMask));
+             IPAddress network2 = GetNetworkAddress(ToIPAddress(address2), ToIPAddress(subnetMask));
+             return network1.Equals(network2);
+        }
+
+        private IPAddress GetNetworkAddress(IPAddress address, IPAddress subnetMask)
+        {
+            byte[] ipAdressBytes = address.GetAddressBytes();
+            byte[] subnetMaskBytes = subnetMask.GetAddressBytes();
+
+            if (ipAdressBytes.Length != subnetMaskBytes.Length)
+            {
+                throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
+            }
+
+            byte[] broadcastAddress = new byte[ipAdressBytes.Length];
+            for (int i = 0; i < broadcastAddress.Length; i++)
+            {
+                broadcastAddress[i] = (byte)(ipAdressBytes[i] & (subnetMaskBytes[i]));
+            }
+            return new IPAddress(broadcastAddress);
+        }
+
+        public IpAddressInfo GetLocalIpSubnetMask(IpAddressInfo address)
+        {
+            NetworkInterface[] interfaces;
+            IPAddress ipaddress = ToIPAddress(address);
+
+            try
+            {
+                var validStatuses = new[] { OperationalStatus.Up, OperationalStatus.Unknown };
+
+                interfaces = NetworkInterface.GetAllNetworkInterfaces()
+                    .Where(i => validStatuses.Contains(i.OperationalStatus))
+                    .ToArray();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error in GetAllNetworkInterfaces");
+                return null;
+            }
+
+            foreach (NetworkInterface ni in interfaces)
+            {
+                if (ni.GetIPProperties().GatewayAddresses.FirstOrDefault() != null)
+                {
+                    foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
+                    {
+                        if (ip.Address.Equals(ipaddress) && ip.IPv4Mask != null)
+                        {
+                           return ToIpAddressInfo(ip.IPv4Mask);
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         public static IpEndPointInfo ToIpEndPointInfo(IPEndPoint endpoint)

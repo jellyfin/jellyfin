@@ -26,17 +26,17 @@ namespace DvdLib.Ifo
 
             if (vmgPath == null)
             {
-                var allIfos = allFiles.Where(i => string.Equals(i.Extension, ".ifo", StringComparison.OrdinalIgnoreCase));
-
-                foreach (var ifo in allIfos)
+                foreach (var ifo in allFiles)
                 {
-                    var num = ifo.Name.Split('_').ElementAtOrDefault(1);
-                    var numbersRead = new List<ushort>();
+                    if (!string.Equals(ifo.Extension, ".ifo", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
 
-                    if (!string.IsNullOrEmpty(num) && ushort.TryParse(num, out var ifoNumber) && !numbersRead.Contains(ifoNumber))
+                    var nums = ifo.Name.Split(new [] { '_' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (nums.Length >= 2 && ushort.TryParse(nums[1], out var ifoNumber))
                     {
                         ReadVTS(ifoNumber, ifo.FullName);
-                        numbersRead.Add(ifoNumber);
                     }
                 }
             }
@@ -76,7 +76,7 @@ namespace DvdLib.Ifo
             }
         }
 
-        private void ReadVTS(ushort vtsNum, List<FileSystemMetadata> allFiles)
+        private void ReadVTS(ushort vtsNum, IEnumerable<FileSystemMetadata> allFiles)
         {
             var filename = string.Format("VTS_{0:00}_0.IFO", vtsNum);
 

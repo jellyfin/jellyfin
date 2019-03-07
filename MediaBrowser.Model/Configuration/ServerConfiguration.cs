@@ -178,6 +178,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] LocalNetworkSubnets { get; set; }
         public string[] LocalNetworkAddresses { get; set; }
         public string[] CodecsUsed { get; set; }
+        public bool IgnoreVirtualInterfaces { get; set; }
         public bool EnableExternalContentInSuggestions { get; set; }
         public bool RequireHttps { get; set; }
         public bool IsBehindProxy { get; set; }
@@ -205,6 +206,7 @@ namespace MediaBrowser.Model.Configuration
             CodecsUsed = Array.Empty<string>();
             ImageExtractionTimeoutMs = 0;
             PathSubstitutions = Array.Empty<PathSubstitution>();
+            IgnoreVirtualInterfaces = false;
             EnableSimpleArtistDetection = true;
 
             DisplaySpecialsWithinSeasons = true;

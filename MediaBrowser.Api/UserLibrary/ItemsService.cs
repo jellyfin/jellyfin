@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using MediaBrowser.Controller.Dto;
@@ -197,29 +198,27 @@ namespace MediaBrowser.Api.UserLibrary
                 request.ParentId = null;
             }
 
-            var item = string.IsNullOrEmpty(request.ParentId) ?
-                null :
-                _libraryManager.GetItemById(request.ParentId);
+            BaseItem item = null;
+
+            if (!string.IsNullOrEmpty(request.ParentId))
+            {
+                item = _libraryManager.GetItemById(request.ParentId);
+            }
 
             if (item == null)
             {
-                item = string.IsNullOrEmpty(request.ParentId) ?
-                    user == null ? _libraryManager.RootFolder : _libraryManager.GetUserRootFolder() :
-                    _libraryManager.GetItemById(request.ParentId);
+                item = _libraryManager.GetUserRootFolder();
             }
 
-            // Default list type = children
-
-            var folder = item as Folder;
+            Folder folder = item as Folder;
             if (folder == null)
             {
-                folder = user == null ? _libraryManager.RootFolder : _libraryManager.GetUserRootFolder();
+                folder = _libraryManager.GetUserRootFolder();
             }
 
             var hasCollectionType = folder as IHasCollectionType;
-            var isPlaylistQuery = (hasCollectionType != null && string.Equals(hasCollectionType.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase));
-
-            if (isPlaylistQuery)
+            if (hasCollectionType != null
+                && string.Equals(hasCollectionType.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             {
                 request.Recursive = true;
                 request.IncludeItemTypes = "Playlist";
@@ -235,20 +234,12 @@ namespace MediaBrowser.Api.UserLibrary
                 };
             }
 
-            if (request.Recursive || !string.IsNullOrEmpty(request.Ids) || user == null)
-            {
-                return folder.GetItems(GetItemsQuery(request, dtoOptions, user));
-            }
-
-            var userRoot = item as UserRootFolder;
-
-            if (userRoot == null)
+            if (request.Recursive || !string.IsNullOrEmpty(request.Ids) || !(item is UserRootFolder))
             {
                 return folder.GetItems(GetItemsQuery(request, dtoOptions, user));
             }
 
             var itemsArray = folder.GetChildren(user, true).ToArray();
-
             return new QueryResult<BaseItem>
             {
                 Items = itemsArray,

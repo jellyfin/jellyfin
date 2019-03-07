@@ -10,6 +10,7 @@ namespace MediaBrowser.Model.Net
         public static IpAddressInfo IPv6Loopback = new IpAddressInfo("::1", IpAddressFamily.InterNetworkV6);
 
         public string Address { get; set; }
+        public IpAddressInfo SubnetMask { get; set; }
         public IpAddressFamily AddressFamily { get; set; }
 
         public IpAddressInfo(string address, IpAddressFamily addressFamily)

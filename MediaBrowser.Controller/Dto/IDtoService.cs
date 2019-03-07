@@ -57,9 +57,7 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="options">The options.</param>
         /// <param name="user">The user.</param>
         /// <param name="owner">The owner.</param>
-        BaseItemDto[] GetBaseItemDtos(BaseItem[] items, DtoOptions options, User user = null, BaseItem owner = null);
-
-        BaseItemDto[] GetBaseItemDtos(List<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null);
+        BaseItemDto[] GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null);
 
         /// <summary>
         /// Gets the item by name dto.

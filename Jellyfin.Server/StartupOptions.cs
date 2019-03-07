@@ -20,10 +20,10 @@ namespace Jellyfin.Server
         [Option('l', "logdir", Required = false, HelpText = "Path to use for writing log files.")]
         public string LogDir { get; set; }
 
-        [Option("ffmpeg", Required = false, HelpText = "Path to external FFmpeg executable to use in place of default found in PATH. Must be specified along with --ffprobe.")]
+        [Option("ffmpeg", Required = false, HelpText = "Path to external FFmpeg executable to use in place of default found in PATH.")]
         public string FFmpegPath { get; set; }
 
-        [Option("ffprobe", Required = false, HelpText = "Path to external FFprobe executable to use in place of default found in PATH. Must be specified along with --ffmpeg.")]
+        [Option("ffprobe", Required = false, HelpText = "(deprecated) Option has no effect and shall be removed in next release.")]
         public string FFprobePath { get; set; }
 
         [Option("service", Required = false, HelpText = "Run as headless service.")]

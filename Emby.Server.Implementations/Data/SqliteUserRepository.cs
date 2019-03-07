@@ -55,6 +55,8 @@ namespace Emby.Server.Implementations.Data
                 {
                     TryMigrateToLocalUsersTable(connection);
                 }
+
+                RemoveEmptyPasswordHashes();
             }
         }
 
@@ -71,6 +73,38 @@ namespace Emby.Server.Implementations.Data
             {
                 Logger.LogError(ex, "Error migrating users database");
             }
+        }
+
+        private void RemoveEmptyPasswordHashes()
+        {
+            foreach (var user in RetrieveAllUsers())
+            {
+                // If the user password is the sha1 hash of the empty string, remove it
+                if (!string.Equals(user.Password, "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709", StringComparison.Ordinal)
+                    || !string.Equals(user.Password, "$SHA1$DA39A3EE5E6B4B0D3255BFEF95601890AFD80709", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                user.Password = null;
+                var serialized = _jsonSerializer.SerializeToBytes(user);
+
+                using (WriteLock.Write())
+                using (var connection = CreateConnection())
+                {
+                    connection.RunInTransaction(db =>
+                    {
+                        using (var statement = db.PrepareStatement("update LocalUsersv2 set data=@data where Id=@InternalId"))
+                        {
+                            statement.TryBind("@InternalId", user.InternalId);
+                            statement.TryBind("@data", serialized);
+                            statement.MoveNext();
+                        }
+
+                    }, TransactionMode);
+                }
+            }
+
         }
 
         /// <summary>

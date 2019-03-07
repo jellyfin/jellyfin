@@ -169,9 +169,10 @@ namespace Emby.Dlna.Main
             {
                 if (_communicationsServer == null)
                 {
-                    var enableMultiSocketBinding = _environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows;
+                    var enableMultiSocketBinding = _environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows ||
+                                                   _environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Linux;
 
-                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger, enableMultiSocketBinding)
+                    _communicationsServer = new SsdpCommunicationsServer(_config, _socketFactory, _networkManager, _logger, enableMultiSocketBinding)
                     {
                         IsShared = true
                     };
@@ -229,7 +230,7 @@ namespace Emby.Dlna.Main
 
             try
             {
-                _Publisher = new SsdpDevicePublisher(_communicationsServer, _environmentInfo.OperatingSystemName, _environmentInfo.OperatingSystemVersion);
+                _Publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, _environmentInfo.OperatingSystemName, _environmentInfo.OperatingSystemVersion, _config.GetDlnaConfiguration().SendOnlyMatchedHost);
                 _Publisher.LogFunction = LogMessage;
                 _Publisher.SupportPnpRootDevice = false;
 
@@ -245,17 +246,17 @@ namespace Emby.Dlna.Main
 
         private async Task RegisterServerEndpoints()
         {
-            var addresses = (await _appHost.GetLocalIpAddresses(CancellationToken.None).ConfigureAwait(false)).ToList();
+            var addresses = await _appHost.GetLocalIpAddresses(CancellationToken.None).ConfigureAwait(false);
 
             var udn = CreateUuid(_appHost.SystemId);
 
             foreach (var address in addresses)
             {
-                // TODO: Remove this condition on platforms that support it
-                //if (address.AddressFamily == IpAddressFamily.InterNetworkV6)
-                //{
-                //    continue;
-                //}
+                if (address.AddressFamily == IpAddressFamily.InterNetworkV6)
+                {
+                   // Not support IPv6 right now
+                   continue;
+                }
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
@@ -268,6 +269,8 @@ namespace Emby.Dlna.Main
                 {
                     CacheLifetime = TimeSpan.FromSeconds(1800), //How long SSDP clients can cache this info.
                     Location = uri, // Must point to the URL that serves your devices UPnP description document.
+                    Address = address,
+                    SubnetMask = _networkManager.GetLocalIpSubnetMask(address),
                     FriendlyName = "Jellyfin",
                     Manufacturer = "Jellyfin",
                     ModelName = "Jellyfin Server",
