@@ -104,7 +104,7 @@ namespace MediaBrowser.Model.Cryptography
             for (int i = 0; i < byteString.Length; i += 2)
             {
                 // TODO: NetStandard2.1 switch this to use a span instead of a substring.
-                bytes.Add(Convert.ToByte(byteString.Substring(i, 2),16));
+                bytes.Add(Convert.ToByte(byteString.Substring(i, 2), 16));
             }
 
             return bytes.ToArray();
@@ -133,7 +133,7 @@ namespace MediaBrowser.Model.Cryptography
 
         public override string ToString()
         {
-            string outString = "$" +_id;
+            string outString = "$" + _id;
             string paramstring = SerializeParameters();
             if (!string.IsNullOrEmpty(paramstring))
             {

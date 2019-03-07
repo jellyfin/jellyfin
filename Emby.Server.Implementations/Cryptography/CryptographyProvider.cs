@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Cryptography
         {
             //downgrading for now as we need this library to be dotnetstandard compliant
             //with this downgrade we'll add a check to make sure we're on the downgrade method at the moment
-            if(method == DefaultHashMethod)
+            if (method == DefaultHashMethod)
             {
                 using (var r = new Rfc2898DeriveBytes(bytes, salt, iterations))
                 {
@@ -96,7 +96,7 @@ namespace Emby.Server.Implementations.Cryptography
 
         public byte[] ComputeHash(string hashMethod, byte[] bytes)
         {
-            return ComputeHash(hashMethod, bytes, new byte[0]);
+            return ComputeHash(hashMethod, bytes, Array.Empty<byte>());
         }
 
         public byte[] ComputeHashWithDefaultMethod(byte[] bytes)
@@ -106,7 +106,7 @@ namespace Emby.Server.Implementations.Cryptography
 
         public byte[] ComputeHash(string hashMethod, byte[] bytes, byte[] salt)
         {
-            if(hashMethod == DefaultHashMethod)
+            if (hashMethod == DefaultHashMethod)
             {
                 return PBKDF2(hashMethod, bytes, salt, _defaultIterations);
             }

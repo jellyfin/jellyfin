@@ -101,7 +101,7 @@ namespace Emby.Server.Implementations.Library
             if (!user.Password.Contains("$"))
             {
                 string hash = user.Password;
-                user.Password = String.Format("$SHA1${0}", hash);
+                user.Password = string.Format("$SHA1${0}", hash);
             }
             
             if (user.EasyPassword != null && !user.EasyPassword.Contains("$"))
