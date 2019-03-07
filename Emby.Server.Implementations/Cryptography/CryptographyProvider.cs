@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.Cryptography
 
         private RandomNumberGenerator _randomNumberGenerator;
 
-        private int _defaultIterations = 1000;
+        private const int _defaultIterations = 1000;
 
         public CryptographyProvider()
         {
@@ -27,20 +27,20 @@ namespace Emby.Server.Implementations.Cryptography
             //Please note the default method of PBKDF2 is not included, it cannot be used to generate hashes cleanly as it is actually a pbkdf with sha1
             _supportedHashMethods = new HashSet<string>()
             {
-                "MD5"
-                ,"System.Security.Cryptography.MD5"
-                ,"SHA"
-                ,"SHA1"
-                ,"System.Security.Cryptography.SHA1"
-                ,"SHA256"
-                ,"SHA-256"
-                ,"System.Security.Cryptography.SHA256"
-                ,"SHA384"
-                ,"SHA-384"
-                ,"System.Security.Cryptography.SHA384"
-                ,"SHA512"
-                ,"SHA-512"
-                ,"System.Security.Cryptography.SHA512"
+                "MD5",
+                "System.Security.Cryptography.MD5",
+                "SHA",
+                "SHA1",
+                "System.Security.Cryptography.SHA1",
+                "SHA256",
+                "SHA-256",
+                "System.Security.Cryptography.SHA256",
+                "SHA384",
+                "SHA-384",
+                "System.Security.Cryptography.SHA384",
+                "SHA512",
+                "SHA-512",
+                "System.Security.Cryptography.SHA512"
             };
             _randomNumberGenerator = RandomNumberGenerator.Create();
         }
@@ -120,7 +120,10 @@ namespace Emby.Server.Implementations.Cryptography
                     }
                     else
                     {
-                        return h.ComputeHash(bytes.Concat(salt).ToArray());
+                        byte[] salted = new byte[bytes.Length + salt.Length];
+                        Array.Copy(bytes, salted, bytes.Length);
+                        Array.Copy(salt, 0, salted, bytes.Length, salt.Length);
+                        return h.ComputeHash(salted);
                     }
                 }
             }

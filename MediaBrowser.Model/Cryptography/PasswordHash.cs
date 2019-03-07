@@ -100,14 +100,14 @@ namespace MediaBrowser.Model.Cryptography
 
         public static byte[] ConvertFromByteString(string byteString)
         {
-            List<byte> bytes = new List<byte>();
+            byte[] bytes = new byte[byteString.Length / 2];
             for (int i = 0; i < byteString.Length; i += 2)
             {
                 // TODO: NetStandard2.1 switch this to use a span instead of a substring.
-                bytes.Add(Convert.ToByte(byteString.Substring(i, 2), 16));
+                bytes[i / 2] = Convert.ToByte(byteString.Substring(i, 2), 16);
             }
 
-            return bytes.ToArray();
+            return bytes;
         }
 
         public static string ConvertToByteString(byte[] bytes)
@@ -117,18 +117,18 @@ namespace MediaBrowser.Model.Cryptography
 
         private string SerializeParameters()
         {
-            string ReturnString = string.Empty;
+            string returnString = string.Empty;
             foreach (var KVP in _parameters)
             {
-                ReturnString += $",{KVP.Key}={KVP.Value}";
+                returnString += $",{KVP.Key}={KVP.Value}";
             }
 
-            if ((!string.IsNullOrEmpty(ReturnString)) && ReturnString[0] == ',')
+            if ((!string.IsNullOrEmpty(returnString)) && returnString[0] == ',')
             {
-                ReturnString = ReturnString.Remove(0, 1);
+                returnString = returnString.Remove(0, 1);
             }
 
-            return ReturnString;
+            return returnString;
         }
 
         public override string ToString()
