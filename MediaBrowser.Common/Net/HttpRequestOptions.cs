@@ -28,17 +28,12 @@ namespace MediaBrowser.Common.Net
             get => GetHeaderValue(HeaderNames.Accept);
             set => RequestHeaders[HeaderNames.Accept] = value;
         }
+
         /// <summary>
         /// Gets or sets the cancellation token.
         /// </summary>
         /// <value>The cancellation token.</value>
         public CancellationToken CancellationToken { get; set; }
-
-        /// <summary>
-        /// Gets or sets the resource pool.
-        /// </summary>
-        /// <value>The resource pool.</value>
-        public SemaphoreSlim ResourcePool { get; set; }
 
         /// <summary>
         /// Gets or sets the user agent.
@@ -86,8 +81,6 @@ namespace MediaBrowser.Common.Net
         public bool LogRequest { get; set; }
         public bool LogRequestAsDebug { get; set; }
         public bool LogErrors { get; set; }
-        public bool LogResponse { get; set; }
-        public bool LogResponseHeaders { get; set; }
 
         public bool LogErrorResponseBody { get; set; }
         public bool EnableKeepAlive { get; set; }
@@ -95,7 +88,6 @@ namespace MediaBrowser.Common.Net
         public CacheMode CacheMode { get; set; }
         public TimeSpan CacheLength { get; set; }
 
-        public int TimeoutMs { get; set; }
         public bool EnableDefaultUserAgent { get; set; }
 
         public bool AppendCharsetToMimeType { get; set; }
@@ -119,17 +111,6 @@ namespace MediaBrowser.Common.Net
             LogRequest = true;
             LogErrors = true;
             CacheMode = CacheMode.None;
-
-            TimeoutMs = 20000;
-        }
-
-        public void SetPostData(IDictionary<string, string> values)
-        {
-            var strings = values.Keys.Select(key => string.Format("{0}={1}", key, values[key]));
-            var postContent = string.Join("&", strings.ToArray());
-
-            RequestContent = postContent;
-            RequestContentType = "application/x-www-form-urlencoded";
         }
     }
 
