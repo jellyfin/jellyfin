@@ -39,7 +39,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The supported image extensions
         /// </summary>
-        public static readonly IReadOnlyList<string> SupportedImageExtensions
+        public static readonly string[] SupportedImageExtensions
             = new [] { ".png", ".jpg", ".jpeg", ".tbn", ".gif" };
 
         private static readonly List<string> _supportedExtensions = new List<string>(SupportedImageExtensions)
