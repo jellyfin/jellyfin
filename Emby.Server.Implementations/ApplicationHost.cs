@@ -46,6 +46,7 @@ using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Emby.Server.Implementations.Xml;
+using Jellyfin.Api.Controllers;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -110,6 +111,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -614,10 +616,6 @@ namespace Emby.Server.Implementations
 
             SetHttpLimit();
 
-            await RegisterResources(serviceCollection);
-
-            FindParts();
-
             string contentRoot = ServerConfigurationManager.Configuration.DashboardSourcePath;
             if (string.IsNullOrEmpty(contentRoot))
             {
@@ -639,6 +637,11 @@ namespace Emby.Server.Implementations
                 {
                     services.AddResponseCompression();
                     services.AddHttpContextAccessor();
+                    services.AddMvc()
+                        .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                        .AddApplicationPart(Assembly.Load("Jellyfin.Api")).AddControllersAsServices(); // TODO netcoreapp doesn't need this
+                    RegisterResources(services);
+
                 })
                 .Configure(app =>
                 {
@@ -647,9 +650,12 @@ namespace Emby.Server.Implementations
                     app.UseResponseCompression();
                     // TODO app.UseMiddleware<WebSocketMiddleware>();
                     app.Use(ExecuteWebsocketHandlerAsync);
+                    app.UseMvc();
                     app.Use(ExecuteHttpHandlerAsync);
                 })
                 .Build();
+
+            FindParts();
 
             await host.StartAsync();
         }
@@ -691,7 +697,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-        protected async Task RegisterResources(IServiceCollection serviceCollection)
+        protected void RegisterResources(IServiceCollection serviceCollection)
         {
             serviceCollection.AddMemoryCache();
 
@@ -753,7 +759,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IAssemblyInfo>(assemblyInfo);
 
             LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer, LoggerFactory);
-            await LocalizationManager.LoadAll();
+            LocalizationManager.LoadAll().GetAwaiter().GetResult();
             serviceCollection.AddSingleton<ILocalizationManager>(LocalizationManager);
 
             serviceCollection.AddSingleton<IBlurayExaminer>(new BdInfoExaminer(FileSystemManager));
