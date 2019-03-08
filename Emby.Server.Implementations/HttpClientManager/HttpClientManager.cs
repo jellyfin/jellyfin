@@ -352,11 +352,6 @@ namespace Emby.Server.Implementations.HttpClientManager
                 }
             }
 
-            if (options.ResourcePool != null)
-            {
-                await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
-            }
-
             if (options.LogRequest)
             {
                 _logger.LogDebug("HttpClientManager {0}: {1}", httpMethod.ToString(), options.Url);
@@ -396,10 +391,6 @@ namespace Emby.Server.Implementations.HttpClientManager
             catch (OperationCanceledException ex)
             {
                 throw GetCancellationException(options, options.CancellationToken, ex);
-            }
-            finally
-            {
-                options.ResourcePool?.Release();
             }
         }
 
@@ -483,11 +474,6 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             var httpWebRequest = GetRequestMessage(options, HttpMethod.Get);
 
-            if (options.ResourcePool != null)
-            {
-                await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
-            }
-
             options.Progress.Report(0);
 
             if (options.LogRequest)
@@ -527,10 +513,6 @@ namespace Emby.Server.Implementations.HttpClientManager
                 }
 
                 throw GetException(ex, options);
-            }
-            finally
-            {
-                options.ResourcePool?.Release();
             }
         }
 

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -34,7 +35,6 @@ using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
-using Emby.Server.Implementations.Middleware;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Reflection;
@@ -1479,12 +1479,12 @@ namespace Emby.Server.Implementations
                     LogErrorResponseBody = false,
                     LogErrors = false,
                     LogRequest = false,
-                    TimeoutMs = 10000,
                     BufferContent = false,
                     CancellationToken = cancellationToken
                 }))
                 {
-                    return GetLocalApiUrl(response.ReadToEnd().Trim());
+                    string res = await response.ReadToEndAsync().ConfigureAwait(false);
+                    return GetLocalApiUrl(res.Trim());
                 }
             }
             catch (Exception ex)
@@ -1604,16 +1604,15 @@ namespace Emby.Server.Implementations
                     LogErrorResponseBody = false,
                     LogErrors = logPing,
                     LogRequest = logPing,
-                    TimeoutMs = 5000,
                     BufferContent = false,
 
                     CancellationToken = cancellationToken
 
-                }, "POST").ConfigureAwait(false))
+                }, HttpMethod.Post).ConfigureAwait(false))
                 {
                     using (var reader = new StreamReader(response.Content))
                     {
-                        var result = reader.ReadToEnd();
+                        var result = await reader.ReadToEndAsync().ConfigureAwait(false);
                         var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
 
                         _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
