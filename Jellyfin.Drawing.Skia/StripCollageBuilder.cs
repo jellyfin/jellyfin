@@ -78,20 +78,15 @@ namespace Jellyfin.Drawing.Skia
                 canvas.Clear(SKColors.Black);
 
                 // determine sizes for each image that will composited into the final image
-                var iSlice = Convert.ToInt32(width * 0.23475);
-                int iTrans = Convert.ToInt32(height * .25);
-                int iHeight = Convert.ToInt32(height * .70);
-                var horizontalImagePadding = Convert.ToInt32(width * 0.0125);
-                var verticalSpacing = Convert.ToInt32(height * 0.01111111111111111111111111111111);
+                var iSlice = Convert.ToInt32(width * 0.33);
+                int iTrans = Convert.ToInt32(height * 0.25);
+                int iHeight = Convert.ToInt32(height * 1.00);
                 int imageIndex = 0;
-
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < 3; i++)
                 {
-
                     using (var currentBitmap = GetNextValidImage(paths, imageIndex, out int newIndex))
                     {
                         imageIndex = newIndex;
-
                         if (currentBitmap == null)
                         {
                             continue;
@@ -108,44 +103,7 @@ namespace Jellyfin.Drawing.Skia
                             using (var subset = image.Subset(SKRectI.Create(ix, 0, iSlice, iHeight)))
                             {
                                 // draw image onto canvas
-                                canvas.DrawImage(subset ?? image, (horizontalImagePadding * (i + 1)) + (iSlice * i), verticalSpacing);
-
-                                if (subset == null)
-                                {
-                                    continue;
-                                }
-                                // create reflection of image below the drawn image
-                                using (var croppedBitmap = SKBitmap.FromImage(subset))
-                                using (var reflectionBitmap = new SKBitmap(croppedBitmap.Width, croppedBitmap.Height / 2, croppedBitmap.ColorType, croppedBitmap.AlphaType))
-                                {
-                                    // resize to half height
-                                    currentBitmap.ScalePixels(reflectionBitmap, SKFilterQuality.High);
-
-                                    using (var flippedBitmap = new SKBitmap(reflectionBitmap.Width, reflectionBitmap.Height, reflectionBitmap.ColorType, reflectionBitmap.AlphaType))
-                                    using (var flippedCanvas = new SKCanvas(flippedBitmap))
-                                    {
-                                        // flip image vertically
-                                        var matrix = SKMatrix.MakeScale(1, -1);
-                                        matrix.SetScaleTranslate(1, -1, 0, flippedBitmap.Height);
-                                        flippedCanvas.SetMatrix(matrix);
-                                        flippedCanvas.DrawBitmap(reflectionBitmap, 0, 0);
-                                        flippedCanvas.ResetMatrix();
-
-                                        // create gradient to make image appear as a reflection
-                                        var remainingHeight = height - (iHeight + (2 * verticalSpacing));
-                                        flippedCanvas.ClipRect(SKRect.Create(reflectionBitmap.Width, remainingHeight));
-                                        using (var gradient = new SKPaint())
-                                        {
-                                            gradient.IsAntialias = true;
-                                            gradient.BlendMode = SKBlendMode.SrcOver;
-                                            gradient.Shader = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(0, remainingHeight), new[] { new SKColor(0, 0, 0, 128), new SKColor(0, 0, 0, 208), new SKColor(0, 0, 0, 240), new SKColor(0, 0, 0, 255) }, null, SKShaderTileMode.Clamp);
-                                            flippedCanvas.DrawPaint(gradient);
-                                        }
-
-                                        // finally draw reflection onto canvas
-                                        canvas.DrawBitmap(flippedBitmap, (horizontalImagePadding * (i + 1)) + (iSlice * i), iHeight + (2 * verticalSpacing));
-                                    }
-                                }
+                                canvas.DrawImage(subset ?? image, iSlice * i, 0);
                             }
                         }
                     }
