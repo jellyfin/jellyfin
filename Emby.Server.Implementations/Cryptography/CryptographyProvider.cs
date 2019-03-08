@@ -14,6 +14,7 @@ namespace Emby.Server.Implementations.Cryptography
         private static readonly HashSet<string> _supportedHashMethods = new HashSet<string>()
             {
                 "MD5",
+                "PBKDF2",
                 "System.Security.Cryptography.MD5",
                 "SHA",
                 "SHA1",
@@ -136,7 +137,7 @@ namespace Emby.Server.Implementations.Cryptography
         {
             return PBKDF2(DefaultHashMethod, bytes, salt, _defaultIterations);
         }
-        
+
         public byte[] ComputeHash(PasswordHash hash)
         {
             int iterations = _defaultIterations;
