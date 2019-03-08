@@ -99,7 +99,6 @@ namespace MediaBrowser.Common.Net
         public bool EnableDefaultUserAgent { get; set; }
 
         public bool AppendCharsetToMimeType { get; set; }
-        public string DownloadFilePath { get; set; }
 
         private string GetHeaderValue(string name)
         {
