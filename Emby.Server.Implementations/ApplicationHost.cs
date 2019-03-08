@@ -629,7 +629,7 @@ namespace Emby.Server.Implementations
                 {
                     options.ListenAnyIP(HttpPort);
 
-                    if (EnableHttps)
+                    if (EnableHttps && Certificate != null)
                     {
                         options.ListenAnyIP(HttpsPort, listenOptions => { listenOptions.UseHttps(Certificate); });
                     }
