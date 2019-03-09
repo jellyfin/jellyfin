@@ -77,12 +77,14 @@ namespace Jellyfin.Drawing.Skia
             {
                 canvas.Clear(SKColors.Black);
 
+                // number of images used in the thumbnail
+                var iCount = 3;
+
                 // determine sizes for each image that will composited into the final image
-                var iSlice = Convert.ToInt32(width * 0.33);
-                int iTrans = Convert.ToInt32(height * 0.25);
+                var iSlice = Convert.ToInt32(width / iCount);
                 int iHeight = Convert.ToInt32(height * 1.00);
                 int imageIndex = 0;
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < iCount; i++)
                 {
                     using (var currentBitmap = GetNextValidImage(paths, imageIndex, out int newIndex))
                     {
