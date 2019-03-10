@@ -71,28 +71,28 @@ jobs:
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact Naming'
-      condition: eq(variables['BuildConfiguration'], 'Release')
+      condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
         PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/Emby.Naming.dll'
         artifactName: 'Jellyfin.Naming'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact Controller'
-      condition: eq(variables['BuildConfiguration'], 'Release')
+      condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
         PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Controller.dll'
         artifactName: 'Jellyfin.Controller'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact Model'
-      condition: eq(variables['BuildConfiguration'], 'Release')
+      condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
         PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Model.dll'
         artifactName: 'Jellyfin.Model'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact Common'
-      condition: eq(variables['BuildConfiguration'], 'Release')
+      condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
         PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Common.dll'
         artifactName: 'Jellyfin.Common'
@@ -121,16 +121,27 @@ jobs:
     steps:
     - checkout: none
 
-    - task: NuGetCommand@2
-      displayName: 'Download $(NugetPackageName)'
+    - task: DownloadBuildArtifacts@0
       inputs:
-        command: custom
-        arguments: 'install $(NugetPackageName) -OutputDirectory $(System.ArtifactsDirectory)/packages -ExcludeVersion -DirectDownload'
+        buildType: 'current' # Options: current, specific
+        #project: # Required when buildType == Specific
+        #pipeline: # Required when buildType == Specific
+        #specificBuildWithTriggering: false # Optional
+        buildVersionToDownload: 'latestFromBranch' # Required when buildType == Specific# Options: latest, latestFromBranch, specific
+        allowPartiallySucceededBuilds: false # Optional
+        branchName: 'refs/heads/master' # Required when buildType == Specific && BuildVersionToDownload == LatestFromBranch
+        #buildId: # Required when buildType == Specific && BuildVersionToDownload == Specific
+        #tags: # Optional
+        downloadType: 'single' # Options: single, specific
+        artifactName: '$(NugetPackageName)'# Required when downloadType == Single
+        #itemPattern: '**' # Optional
+        downloadPath: '$(System.ArtifactsDirectory)/current-artifacts'
+        #parallelizationLimit: '8' # Optional
 
     - task: CopyFiles@2
       displayName: Copy Nuget Assembly to current-release folder
       inputs:
-        sourceFolder: $(System.ArtifactsDirectory)/packages/$(NugetPackageName) # Optional
+        sourceFolder: $(System.ArtifactsDirectory)/current-artifacts # Optional
         contents: '**/*.dll'
         targetFolder: $(System.ArtifactsDirectory)/current-release
         cleanTargetFolder: true # Optional
