@@ -128,8 +128,8 @@ jobs:
         #pipeline: # Required when buildType == Specific
         #specificBuildWithTriggering: false # Optional
         buildVersionToDownload: 'latestFromBranch' # Required when buildType == Specific# Options: latest, latestFromBranch, specific
-        allowPartiallySucceededBuilds: false # Optional
-        branchName: 'refs/heads/master' # Required when buildType == Specific && BuildVersionToDownload == LatestFromBranch
+        allowPartiallySucceededBuilds: true # Optional
+        branchName: '$(System.PullRequest.TargetBranch)' # Required when buildType == Specific && BuildVersionToDownload == LatestFromBranch
         #buildId: # Required when buildType == Specific && BuildVersionToDownload == Specific
         #tags: # Optional
         downloadType: 'single' # Options: single, specific
