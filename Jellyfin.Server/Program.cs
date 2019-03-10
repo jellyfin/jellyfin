@@ -174,7 +174,7 @@ namespace Jellyfin.Server
         {
             // dataDir
             // IF      --datadir
-            // ELSE IF $JELLYFIN_DATA_PATH
+            // ELSE IF $JELLYFIN_DATA_DIR
             // ELSE IF windows, use <%APPDATA%>/jellyfin
             // ELSE IF $XDG_DATA_HOME then use $XDG_DATA_HOME/jellyfin
             // ELSE    use $HOME/.local/share/jellyfin
@@ -182,7 +182,7 @@ namespace Jellyfin.Server
 
             if (string.IsNullOrEmpty(dataDir))
             {
-                dataDir = Environment.GetEnvironmentVariable("JELLYFIN_DATA_PATH");
+                dataDir = Environment.GetEnvironmentVariable("JELLYFIN_DATA_DIR");
 
                 if (string.IsNullOrEmpty(dataDir))
                 {
