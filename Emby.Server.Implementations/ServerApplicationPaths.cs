@@ -35,12 +35,6 @@ namespace Emby.Server.Implementations
         /// <value>The root folder path.</value>
         public string RootFolderPath => Path.Combine(ProgramDataPath, "root");
 
-/*        /// <summary>
-        /// Gets the path to the Web resources
-        /// </summary>
-        /// <value>The web folder path.</value>
-        public string WebPath => WebPath; */
-
         /// <summary>
         /// Gets the path to the default user view directory.  Used if no specific user view is defined.
         /// </summary>
