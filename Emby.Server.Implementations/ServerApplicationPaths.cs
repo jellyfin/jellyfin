@@ -17,11 +17,13 @@ namespace Emby.Server.Implementations
             string programDataPath,
             string logDirectoryPath,
             string configurationDirectoryPath,
-            string cacheDirectoryPath)
+            string cacheDirectoryPath,
+            string webDirectoryPath)
             : base(programDataPath,
                 logDirectoryPath,
                 configurationDirectoryPath,
-                cacheDirectoryPath)
+                cacheDirectoryPath,
+                webDirectoryPath)
         {
         }
 

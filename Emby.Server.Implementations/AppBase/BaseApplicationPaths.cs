@@ -17,12 +17,14 @@ namespace Emby.Server.Implementations.AppBase
             string programDataPath,
             string logDirectoryPath,
             string configurationDirectoryPath,
-            string cacheDirectoryPath)
+            string cacheDirectoryPath,
+            string webDirectoryPath)
         {
             ProgramDataPath = programDataPath;
             LogDirectoryPath = logDirectoryPath;
             ConfigurationDirectoryPath = configurationDirectoryPath;
             CachePath = cacheDirectoryPath;
+            WebPath = webDirectoryPath;
 
             DataPath = Path.Combine(ProgramDataPath, "data");
         }
