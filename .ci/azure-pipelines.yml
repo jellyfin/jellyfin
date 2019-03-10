@@ -8,12 +8,15 @@ variables:
 
 pr:
   autoCancel: true
+  branches:
+    include:
+      - 'refs/*'
 
 trigger:
   batch: true
   branches:
     include:
-      - master
+      - 'refs/*'
 
 jobs:
   - job: main_build
@@ -122,13 +125,14 @@ jobs:
     - checkout: none
 
     - task: DownloadBuildArtifacts@0
+      displayName: Download the Reference Assembly Build Artifact
       inputs:
         buildType: 'current' # Options: current, specific
         #project: # Required when buildType == Specific
         #pipeline: # Required when buildType == Specific
         #specificBuildWithTriggering: false # Optional
         buildVersionToDownload: 'latestFromBranch' # Required when buildType == Specific# Options: latest, latestFromBranch, specific
-        allowPartiallySucceededBuilds: true # Optional
+        allowPartiallySucceededBuilds: false # Optional
         branchName: '$(System.PullRequest.TargetBranch)' # Required when buildType == Specific && BuildVersionToDownload == LatestFromBranch
         #buildId: # Required when buildType == Specific && BuildVersionToDownload == Specific
         #tags: # Optional
@@ -149,7 +153,7 @@ jobs:
         flattenFolders: true # Optional
 
     - task: DownloadBuildArtifacts@0
-      displayName: Download the Assembly Build Artifact
+      displayName: Download the New Assembly Build Artifact
       inputs:
         buildType: 'current' # Options: current, specific
         allowPartiallySucceededBuilds: false # Optional
