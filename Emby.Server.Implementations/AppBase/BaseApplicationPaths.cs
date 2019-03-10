@@ -36,6 +36,12 @@ namespace Emby.Server.Implementations.AppBase
         public string ProgramDataPath { get; private set; }
 
         /// <summary>
+        /// Gets the path to the web resources folder
+        /// </summary>
+        /// <value>The web resources path.</value>
+        public string WebPath { get; set; }
+
+        /// <summary>
         /// Gets the path to the system folder
         /// </summary>
         public string ProgramSystemPath { get; } = AppContext.BaseDirectory;

@@ -621,7 +621,7 @@ namespace Emby.Server.Implementations
             string contentRoot = ServerConfigurationManager.Configuration.DashboardSourcePath;
             if (string.IsNullOrEmpty(contentRoot))
             {
-                contentRoot = Path.Combine(ServerConfigurationManager.ApplicationPaths,WebPath, "src");
+                contentRoot = Path.Combine(ServerConfigurationManager.ApplicationPaths.WebPath, "src");
             }
 
             var host = new WebHostBuilder()
@@ -921,6 +921,7 @@ namespace Emby.Server.Implementations
             logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
             logger.LogInformation("Processor count: {ProcessorCount}", Environment.ProcessorCount);
             logger.LogInformation("Program data path: {ProgramDataPath}", appPaths.ProgramDataPath);
+            logger.LogInformation("Web resources path: {WebPath}", appPaths.WebPath);
             logger.LogInformation("Application directory: {ApplicationPath}", appPaths.ProgramSystemPath);
         }
 
@@ -1393,6 +1394,7 @@ namespace Emby.Server.Implementations
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
                 Id = SystemId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
+                WebPath = ApplicationPaths.WebPath,
                 LogPath = ApplicationPaths.LogDirectoryPath,
                 ItemsByNamePath = ApplicationPaths.InternalMetadataPath,
                 InternalMetadataPath = ApplicationPaths.InternalMetadataPath,

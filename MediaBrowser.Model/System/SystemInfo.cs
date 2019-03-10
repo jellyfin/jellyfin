@@ -84,6 +84,12 @@ namespace MediaBrowser.Model.System
         public string ProgramDataPath { get; set; }
 
         /// <summary>
+        /// Gets or sets the web resources path.
+        /// </summary>
+        /// <value>The web resources path.</value>
+        public string WebPath { get; set; }
+
+        /// <summary>
         /// Gets or sets the items by name path.
         /// </summary>
         /// <value>The items by name path.</value>

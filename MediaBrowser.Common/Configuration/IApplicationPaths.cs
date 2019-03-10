@@ -12,6 +12,12 @@ namespace MediaBrowser.Common.Configuration
         string ProgramDataPath { get; }
 
         /// <summary>
+        /// Gets the path to the web resources folder
+        /// </summary>
+        /// <value>The web resources path.</value>
+        string WebPath { get; }
+
+        /// <summary>
         /// Gets the path to the program system folder
         /// </summary>
         /// <value>The program data path.</value>
