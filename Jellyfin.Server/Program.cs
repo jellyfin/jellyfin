@@ -191,8 +191,6 @@ namespace Jellyfin.Server
                 }
             }
 
-            Directory.CreateDirectory(dataDir);
-
             // configDir
             // IF      --configdir
             // ELSE IF $JELLYFIN_CONFIG_DIR
@@ -285,6 +283,7 @@ namespace Jellyfin.Server
             // Ensure the main folders exist before we continue
             try
             {
+                Directory.CreateDirectory(dataDir);
                 Directory.CreateDirectory(logDir);
                 Directory.CreateDirectory(configDir);
                 Directory.CreateDirectory(cacheDir);
