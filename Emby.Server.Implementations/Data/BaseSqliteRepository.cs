@@ -12,7 +12,7 @@ namespace Emby.Server.Implementations.Data
     {
         protected string DbFilePath { get; set; }
 
-        protected ILogger Logger { get; private set; }
+        protected ILogger Logger { get; }
 
         protected BaseSqliteRepository(ILogger logger)
         {
@@ -23,31 +23,23 @@ namespace Emby.Server.Implementations.Data
 
         protected TransactionMode ReadTransactionMode => TransactionMode.Deferred;
 
-        internal static int ThreadSafeMode { get; set; }
-
         protected virtual ConnectionFlags DefaultConnectionFlags => ConnectionFlags.SharedCached | ConnectionFlags.NoMutex;
 
-        private readonly SemaphoreSlim WriteLock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
 
-        private SQLiteDatabaseConnection WriteConnection;
-
-        static BaseSqliteRepository()
-        {
-            ThreadSafeMode = raw.sqlite3_threadsafe();
-            raw.sqlite3_enable_shared_cache(1);
-        }
+        private SQLiteDatabaseConnection _writeConnection;
 
         private string _defaultWal;
 
-        protected ManagedConnection GetConnection(bool isReadOnly = false)
+        protected ManagedConnection GetConnection(bool _ = false)
         {
-            WriteLock.Wait();
-            if (WriteConnection != null)
+            _writeLock.Wait();
+            if (_writeConnection != null)
             {
-                return new ManagedConnection(WriteConnection, WriteLock);
+                return new ManagedConnection(_writeConnection, _writeLock);
             }
 
-            WriteConnection = SQLite3.Open(
+            _writeConnection = SQLite3.Open(
                 DbFilePath,
                 DefaultConnectionFlags | ConnectionFlags.Create | ConnectionFlags.ReadWrite,
                 null);
@@ -55,21 +47,21 @@ namespace Emby.Server.Implementations.Data
 
             if (string.IsNullOrWhiteSpace(_defaultWal))
             {
-                _defaultWal = WriteConnection.Query("PRAGMA journal_mode").SelectScalarString().First();
+                _defaultWal = _writeConnection.Query("PRAGMA journal_mode").SelectScalarString().First();
 
                 Logger.LogInformation("Default journal_mode for {0} is {1}", DbFilePath, _defaultWal);
             }
 
             if (EnableTempStoreMemory)
             {
-                WriteConnection.Execute("PRAGMA temp_store = memory");
+                _writeConnection.Execute("PRAGMA temp_store = memory");
             }
             else
             {
-                WriteConnection.Execute("PRAGMA temp_store = file");
+                _writeConnection.Execute("PRAGMA temp_store = file");
             }
 
-            return new ManagedConnection(WriteConnection, WriteLock);
+            return new ManagedConnection(_writeConnection, _writeLock);
         }
 
         public IStatement PrepareStatement(ManagedConnection connection, string sql)
@@ -170,20 +162,20 @@ namespace Emby.Server.Implementations.Data
 
             if (dispose)
             {
-                WriteLock.Wait();
+                _writeLock.Wait();
                 try
                 {
-                    WriteConnection.Dispose();
+                    _writeConnection.Dispose();
                 }
                 finally
                 {
-                    WriteLock.Release();
+                    _writeLock.Release();
                 }
 
-                WriteLock.Dispose();
+                _writeLock.Dispose();
             }
 
-            WriteConnection = null;
+            _writeConnection = null;
 
             _disposed = true;
         }

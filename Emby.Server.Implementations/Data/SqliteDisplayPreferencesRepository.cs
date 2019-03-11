@@ -18,13 +18,13 @@ namespace Emby.Server.Implementations.Data
     /// </summary>
     public class SqliteDisplayPreferencesRepository : BaseSqliteRepository, IDisplayPreferencesRepository
     {
-        protected IFileSystem FileSystem { get; private set; }
+        private readonly IFileSystem _fileSystem;
 
         public SqliteDisplayPreferencesRepository(ILoggerFactory loggerFactory, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, IFileSystem fileSystem)
             : base(loggerFactory.CreateLogger(nameof(SqliteDisplayPreferencesRepository)))
         {
             _jsonSerializer = jsonSerializer;
-            FileSystem = fileSystem;
+            _fileSystem = fileSystem;
             DbFilePath = Path.Combine(appPaths.DataPath, "displaypreferences.db");
         }
 
@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.Data
             {
                 Logger.LogError(ex, "Error loading database file. Will reset and retry.");
 
-                FileSystem.DeleteFile(DbFilePath);
+                _fileSystem.DeleteFile(DbFilePath);
 
                 InitializeInternal();
             }
