@@ -107,7 +107,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Inits this instance.
         /// </summary>
-        Task Init(IServiceCollection serviceCollection);
+        Task Init();
 
         /// <summary>
         /// Creates the instance.

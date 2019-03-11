@@ -586,7 +586,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public async Task Init(IServiceCollection serviceCollection)
+        public async Task Init()
         {
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
