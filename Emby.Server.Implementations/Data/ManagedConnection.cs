@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using SQLitePCL.pretty;
@@ -9,20 +8,13 @@ namespace Emby.Server.Implementations.Data
     public class ManagedConnection : IDisposable
     {
         private SQLiteDatabaseConnection _db;
-        private SemaphoreSlim _writeLock;
-        private BlockingCollection<SQLiteDatabaseConnection> _readConPool;
+        private readonly SemaphoreSlim _writeLock;
         private bool _disposed = false;
 
         public ManagedConnection(SQLiteDatabaseConnection db, SemaphoreSlim writeLock)
         {
             _db = db;
             _writeLock = writeLock;
-        }
-
-        public ManagedConnection(SQLiteDatabaseConnection db, BlockingCollection<SQLiteDatabaseConnection> queue)
-        {
-            _db = db;
-            _readConPool = queue;
         }
 
         public IStatement PrepareStatement(string sql)
@@ -77,8 +69,7 @@ namespace Emby.Server.Implementations.Data
                 return;
             }
 
-            _writeLock?.Release();
-            _readConPool?.Add(_db);
+            _writeLock.Release();
 
             _db = null; // Don't dispose it
             _disposed = true;

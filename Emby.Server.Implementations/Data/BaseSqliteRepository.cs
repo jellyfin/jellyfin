@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SQLitePCL;
 using SQLitePCL.pretty;
@@ -33,8 +31,6 @@ namespace Emby.Server.Implementations.Data
 
         private SQLiteDatabaseConnection WriteConnection;
 
-        private readonly BlockingCollection<SQLiteDatabaseConnection> ReadConnectionPool = new BlockingCollection<SQLiteDatabaseConnection>();
-
         static BaseSqliteRepository()
         {
             ThreadSafeMode = raw.sqlite3_threadsafe();
@@ -43,70 +39,37 @@ namespace Emby.Server.Implementations.Data
 
         private string _defaultWal;
 
-        protected async Task CreateConnections()
-        {
-            await WriteLock.WaitAsync().ConfigureAwait(false);
-
-            try
-            {
-                if (WriteConnection == null)
-                {
-                    WriteConnection = SQLite3.Open(
-                                                DbFilePath,
-                                                DefaultConnectionFlags | ConnectionFlags.Create | ConnectionFlags.ReadWrite,
-                                                null);
-                }
-
-                if (string.IsNullOrWhiteSpace(_defaultWal))
-                {
-                    _defaultWal = WriteConnection.Query("PRAGMA journal_mode").SelectScalarString().First();
-
-                    Logger.LogInformation("Default journal_mode for {0} is {1}", DbFilePath, _defaultWal);
-                }
-
-                if (EnableTempStoreMemory)
-                {
-                    WriteConnection.Execute("PRAGMA temp_store = memory");
-                }
-                else
-                {
-                    WriteConnection.Execute("PRAGMA temp_store = file");
-                }
-            }
-            catch
-            {
-
-                throw;
-            }
-            finally
-            {
-                WriteLock.Release();
-            }
-
-            // Add one reading connection for each thread
-            int threads = System.Environment.ProcessorCount;
-            for (int i = 0; i <= threads; i++)
-            {
-                ReadConnectionPool.Add(SQLite3.Open(DbFilePath, DefaultConnectionFlags | ConnectionFlags.ReadOnly, null));
-            }
-        }
-
         protected ManagedConnection GetConnection(bool isReadOnly = false)
         {
-            if (isReadOnly)
+            WriteLock.Wait();
+            if (WriteConnection != null)
             {
-                return new ManagedConnection(ReadConnectionPool.Take(), ReadConnectionPool);
+                return new ManagedConnection(WriteConnection, WriteLock);
+            }
+
+            WriteConnection = SQLite3.Open(
+                DbFilePath,
+                DefaultConnectionFlags | ConnectionFlags.Create | ConnectionFlags.ReadWrite,
+                null);
+
+
+            if (string.IsNullOrWhiteSpace(_defaultWal))
+            {
+                _defaultWal = WriteConnection.Query("PRAGMA journal_mode").SelectScalarString().First();
+
+                Logger.LogInformation("Default journal_mode for {0} is {1}", DbFilePath, _defaultWal);
+            }
+
+            if (EnableTempStoreMemory)
+            {
+                WriteConnection.Execute("PRAGMA temp_store = memory");
             }
             else
             {
-                if (WriteConnection == null)
-                {
-                    throw new InvalidOperationException("Can't access the write connection at this time.");
-                }
-
-                WriteLock.Wait();
-                return new ManagedConnection(WriteConnection, WriteLock);
+                WriteConnection.Execute("PRAGMA temp_store = file");
             }
+
+            return new ManagedConnection(WriteConnection, WriteLock);
         }
 
         public IStatement PrepareStatement(ManagedConnection connection, string sql)
@@ -217,13 +180,10 @@ namespace Emby.Server.Implementations.Data
                     WriteLock.Release();
                 }
 
-                foreach (var i in ReadConnectionPool)
-                {
-                    i.Dispose();
-                }
-
-                ReadConnectionPool.Dispose();
+                WriteLock.Dispose();
             }
+
+            WriteConnection = null;
 
             _disposed = true;
         }

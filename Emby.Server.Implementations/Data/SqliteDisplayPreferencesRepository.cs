@@ -61,7 +61,6 @@ namespace Emby.Server.Implementations.Data
         /// <returns>Task.</returns>
         private void InitializeInternal()
         {
-            CreateConnections().GetAwaiter().GetResult();
             using (var connection = GetConnection())
             {
                 RunDefaultInitialization(connection);

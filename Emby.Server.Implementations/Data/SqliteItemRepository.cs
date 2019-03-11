@@ -99,7 +99,6 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         public void Initialize(SqliteUserDataRepository userDataRepo, IUserManager userManager)
         {
-            CreateConnections().GetAwaiter().GetResult();
             using (var connection = GetConnection())
             {
                 RunDefaultInitialization(connection);

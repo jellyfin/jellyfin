@@ -34,7 +34,6 @@ namespace Emby.Server.Implementations.Data
         /// <returns>Task.</returns>
         public void Initialize(IUserManager userManager)
         {
-            CreateConnections().GetAwaiter().GetResult();
             using (var connection = GetConnection())
             {
                 var userDatasTableExists = TableExists(connection, "UserDatas");

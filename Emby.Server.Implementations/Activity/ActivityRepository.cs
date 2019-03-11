@@ -43,7 +43,6 @@ namespace Emby.Server.Implementations.Activity
 
         private void InitializeInternal()
         {
-            CreateConnections().GetAwaiter().GetResult();
             using (var connection = GetConnection())
             {
                 RunDefaultInitialization(connection);

@@ -23,7 +23,6 @@ namespace Emby.Server.Implementations.Security
 
         public void Initialize()
         {
-            CreateConnections().GetAwaiter().GetResult();
             using (var connection = GetConnection())
             {
                 RunDefaultInitialization(connection);

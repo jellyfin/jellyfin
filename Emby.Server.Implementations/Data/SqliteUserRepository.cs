@@ -40,7 +40,6 @@ namespace Emby.Server.Implementations.Data
         /// <returns>Task.</returns>
         public void Initialize()
         {
-            CreateConnections().GetAwaiter().GetResult();
             using (var connection = GetConnection())
             {
                 RunDefaultInitialization(connection);
@@ -90,8 +89,7 @@ namespace Emby.Server.Implementations.Data
                 user.Password = null;
                 var serialized = _jsonSerializer.SerializeToBytes(user);
 
-                using (WriteLock.Write())
-                using (var connection = CreateConnection())
+                using (var connection = GetConnection())
                 {
                     connection.RunInTransaction(db =>
                     {
