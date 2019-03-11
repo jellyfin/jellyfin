@@ -639,7 +639,7 @@ namespace Emby.Server.Implementations
                     services.AddHttpContextAccessor();
                     services.AddMvc()
                         .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
-                        .AddApplicationPart(Assembly.Load("Jellyfin.Api")).AddControllersAsServices(); // TODO netcoreapp doesn't need this
+                        .AddApplicationPart(Assembly.Load("Jellyfin.Api"));
                     RegisterResources(services);
 
                 })
