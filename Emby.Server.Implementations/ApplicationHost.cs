@@ -700,6 +700,8 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
 
+            serviceCollection.AddSingleton<IConfiguration>(_configuration);
+
             serviceCollection.AddSingleton(JsonSerializer);
 
             serviceCollection.AddSingleton(LoggerFactory);
