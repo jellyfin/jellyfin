@@ -837,7 +837,6 @@ namespace Emby.Server.Implementations
                 LoggerFactory,
                 JsonSerializer,
                 StartupOptions.FFmpegPath,
-                StartupOptions.FFprobePath,
                 ServerConfigurationManager,
                 FileSystemManager,
                 () => SubtitleEncoder,
