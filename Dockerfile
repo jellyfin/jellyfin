@@ -31,5 +31,4 @@ VOLUME /cache /config /media
 ENTRYPOINT dotnet /jellyfin/jellyfin.dll \
     --datadir /config \
     --cachedir /cache \
-    --ffmpeg /usr/local/bin/ffmpeg \
-    --ffprobe /usr/local/bin/ffprobe
+    --ffmpeg /usr/local/bin/ffmpeg

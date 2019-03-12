@@ -51,7 +51,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IProcessFactory _processFactory;
         private readonly int DefaultImageExtractionTimeoutMs;
         private readonly string StartupOptionFFmpegPath;
-        private readonly string StartupOptionFFprobePath;
 
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(1, 1);
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
@@ -60,7 +59,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ILoggerFactory loggerFactory,
             IJsonSerializer jsonSerializer,
             string startupOptionsFFmpegPath,
-            string startupOptionsFFprobePath,
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
             Func<ISubtitleEncoder> subtitleEncoder,
@@ -71,7 +69,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _logger = loggerFactory.CreateLogger(nameof(MediaEncoder));
             _jsonSerializer = jsonSerializer;
             StartupOptionFFmpegPath = startupOptionsFFmpegPath;
-            StartupOptionFFprobePath = startupOptionsFFprobePath;
             ConfigurationManager = configurationManager;
             FileSystem = fileSystem;
             SubtitleEncoder = subtitleEncoder;
@@ -86,12 +83,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         public void SetFFmpegPath()
         {
-            // ToDo - Finalise removal of the --ffprobe switch
-            if (!string.IsNullOrEmpty(StartupOptionFFprobePath))
-            {
-                _logger.LogWarning("--ffprobe switch is deprecated and shall be removed in the next release");
-            }
-
             // 1) Custom path stored in config/encoding xml file under tag <EncoderAppPath> takes precedence
             if (!ValidatePath(ConfigurationManager.GetConfiguration<EncodingOptions>("encoding").EncoderAppPath, FFmpegLocation.Custom))
             {
