@@ -621,7 +621,7 @@ namespace Emby.Server.Implementations
             string contentRoot = ServerConfigurationManager.Configuration.DashboardSourcePath;
             if (string.IsNullOrEmpty(contentRoot))
             {
-                contentRoot = Path.Combine(ServerConfigurationManager.ApplicationPaths.WebPath, "src");
+                contentRoot = ServerConfigurationManager.ApplicationPaths.WebPath;
             }
 
             var host = new WebHostBuilder()

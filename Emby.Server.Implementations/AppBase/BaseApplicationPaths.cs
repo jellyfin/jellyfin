@@ -36,9 +36,9 @@ namespace Emby.Server.Implementations.AppBase
         public string ProgramDataPath { get; private set; }
 
         /// <summary>
-        /// Gets the path to the web resources folder
+        /// Gets the path to the web UI resources folder
         /// </summary>
-        /// <value>The web resources path.</value>
+        /// <value>The web UI resources path.</value>
         public string WebPath { get; set; }
 
         /// <summary>

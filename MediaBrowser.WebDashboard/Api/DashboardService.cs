@@ -149,7 +149,7 @@ namespace MediaBrowser.WebDashboard.Api
                     return _serverConfigurationManager.Configuration.DashboardSourcePath;
                 }
 
-                return Path.Combine(_serverConfigurationManager.ApplicationPaths.WebPath, "src");
+                return _serverConfigurationManager.ApplicationPaths.WebPath;
             }
         }
 

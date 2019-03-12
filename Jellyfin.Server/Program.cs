@@ -277,7 +277,7 @@ namespace Jellyfin.Server
                 if (string.IsNullOrEmpty(webDir))
                 {
                     // Use default location under ResourcesPath
-                    webDir = Path.Combine(AppContext.BaseDirectory, "jellyfin-web");
+                    webDir = Path.Combine(AppContext.BaseDirectory, "jellyfin-web", "src");
                 }
             }
 
