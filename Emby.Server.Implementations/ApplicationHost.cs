@@ -111,6 +111,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ServiceStack;
+using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations
 {
@@ -139,12 +140,8 @@ namespace Emby.Server.Implementations
                     return false;
                 }
 
-                if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
-                {
-                    return true;
-                }
-
-                if (EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.OSX)
+                if (OperatingSystem.Id == OperatingSystemId.Windows
+                    || OperatingSystem.Id == OperatingSystemId.Darwin)
                 {
                     return true;
                 }
@@ -214,8 +211,6 @@ namespace Emby.Server.Implementations
 
         public IFileSystem FileSystemManager { get; set; }
 
-        protected IEnvironmentInfo EnvironmentInfo { get; set; }
-
         public PackageVersionClass SystemUpdateLevel
         {
             get
@@ -234,15 +229,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value>The server configuration manager.</value>
         public IServerConfigurationManager ServerConfigurationManager => (IServerConfigurationManager)ConfigurationManager;
-
-        /// <summary>
-        /// Gets the configuration manager.
-        /// </summary>
-        /// <returns>IConfigurationManager.</returns>
-        protected IConfigurationManager GetConfigurationManager()
-        {
-            return new ServerConfigurationManager(ApplicationPaths, LoggerFactory, XmlSerializer, FileSystemManager);
-        }
 
         protected virtual IResourceFileManager CreateResourceFileManager()
         {
@@ -352,7 +338,6 @@ namespace Emby.Server.Implementations
             ILoggerFactory loggerFactory,
             IStartupOptions options,
             IFileSystem fileSystem,
-            IEnvironmentInfo environmentInfo,
             IImageEncoder imageEncoder,
             INetworkManager networkManager,
             IConfiguration configuration)
@@ -366,13 +351,12 @@ namespace Emby.Server.Implementations
 
             NetworkManager = networkManager;
             networkManager.LocalSubnetsFn = GetConfiguredLocalSubnets;
-            EnvironmentInfo = environmentInfo;
 
             ApplicationPaths = applicationPaths;
             LoggerFactory = loggerFactory;
             FileSystemManager = fileSystem;
 
-            ConfigurationManager = GetConfigurationManager();
+            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, XmlSerializer, FileSystemManager);
 
             Logger = LoggerFactory.CreateLogger("App");
 
@@ -528,7 +512,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
-        public async Task RunStartupTasks()
+        public async Task RunStartupTasksAsync()
         {
             Logger.LogInformation("Running startup tasks");
 
@@ -580,7 +564,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public async Task Init(IServiceCollection serviceCollection)
+        public async Task InitAsync(IServiceCollection serviceCollection)
         {
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
@@ -704,8 +688,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddLogging();
             serviceCollection.AddSingleton(Logger);
 
-            serviceCollection.AddSingleton(EnvironmentInfo);
-
             serviceCollection.AddSingleton(FileSystemManager);
             serviceCollection.AddSingleton<TvDbClientManager>();
 
@@ -779,7 +761,7 @@ namespace Emby.Server.Implementations
             var musicManager = new MusicManager(LibraryManager);
             serviceCollection.AddSingleton<IMusicManager>(new MusicManager(LibraryManager));
 
-            LibraryMonitor = new LibraryMonitor(LoggerFactory, LibraryManager, ServerConfigurationManager, FileSystemManager, EnvironmentInfo);
+            LibraryMonitor = new LibraryMonitor(LoggerFactory, LibraryManager, ServerConfigurationManager, FileSystemManager);
             serviceCollection.AddSingleton(LibraryMonitor);
 
             serviceCollection.AddSingleton<ISearchEngine>(new SearchEngine(LoggerFactory, LibraryManager, UserManager));
@@ -900,7 +882,7 @@ namespace Emby.Server.Implementations
 
         public virtual string PackageRuntime => "netcore";
 
-        public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths, EnvironmentInfo.EnvironmentInfo environmentInfo)
+        public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
         {
             // Distinct these to prevent users from reporting problems that aren't actually problems
             var commandLineArgs = Environment
@@ -908,8 +890,9 @@ namespace Emby.Server.Implementations
                 .Distinct();
 
             logger.LogInformation("Arguments: {Args}", commandLineArgs);
-            logger.LogInformation("Operating system: {OS} {OSVersion}", environmentInfo.OperatingSystemName, environmentInfo.OperatingSystemVersion);
-            logger.LogInformation("Architecture: {Architecture}", environmentInfo.SystemArchitecture);
+            // FIXME: @bond this logs the kernel version, not the OS version
+            logger.LogInformation("Operating system: {OS} {OSVersion}", OperatingSystem.Name, Environment.OSVersion.Version);
+            logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);
             logger.LogInformation("64-Bit Process: {Is64Bit}", Environment.Is64BitProcess);
             logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
             logger.LogInformation("Processor count: {ProcessorCount}", Environment.ProcessorCount);
@@ -1395,8 +1378,8 @@ namespace Emby.Server.Implementations
                 HttpServerPortNumber = HttpPort,
                 SupportsHttps = SupportsHttps,
                 HttpsPortNumber = HttpsPort,
-                OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
-                OperatingSystemDisplayName = EnvironmentInfo.OperatingSystemName,
+                OperatingSystem = OperatingSystem.Id.ToString(),
+                OperatingSystemDisplayName = OperatingSystem.Name,
                 CanSelfRestart = CanSelfRestart,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 WanAddress = wanAddress,
@@ -1406,7 +1389,7 @@ namespace Emby.Server.Implementations
                 LocalAddress = localAddress,
                 SupportsLibraryMonitor = true,
                 EncoderLocation = MediaEncoder.EncoderLocation,
-                SystemArchitecture = EnvironmentInfo.SystemArchitecture,
+                SystemArchitecture = RuntimeInformation.OSArchitecture,
                 SystemUpdateLevel = SystemUpdateLevel,
                 PackageName = StartupOptions.PackageName
             };
@@ -1430,7 +1413,7 @@ namespace Emby.Server.Implementations
             {
                 Version = ApplicationVersion,
                 Id = SystemId,
-                OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
+                OperatingSystem = OperatingSystem.Id.ToString(),
                 WanAddress = wanAddress,
                 ServerName = FriendlyName,
                 LocalAddress = localAddress

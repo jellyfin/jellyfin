@@ -8,6 +8,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
+using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -27,9 +28,8 @@ namespace MediaBrowser.Api.Playback.Progressive
         public bool AllowEndOfFile = true;
 
         private readonly IDirectStreamProvider _directStreamProvider;
-        private readonly IEnvironmentInfo _environment;
 
-        public ProgressiveFileCopier(IFileSystem fileSystem, string path, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, IEnvironmentInfo environment, CancellationToken cancellationToken)
+        public ProgressiveFileCopier(IFileSystem fileSystem, string path, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, CancellationToken cancellationToken)
         {
             _fileSystem = fileSystem;
             _path = path;
@@ -37,17 +37,15 @@ namespace MediaBrowser.Api.Playback.Progressive
             _job = job;
             _logger = logger;
             _cancellationToken = cancellationToken;
-            _environment = environment;
         }
 
-        public ProgressiveFileCopier(IDirectStreamProvider directStreamProvider, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, IEnvironmentInfo environment, CancellationToken cancellationToken)
+        public ProgressiveFileCopier(IDirectStreamProvider directStreamProvider, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, CancellationToken cancellationToken)
         {
             _directStreamProvider = directStreamProvider;
             _outputHeaders = outputHeaders;
             _job = job;
             _logger = logger;
             _cancellationToken = cancellationToken;
-            _environment = environment;
         }
 
         public IDictionary<string, string> Headers => _outputHeaders;
@@ -79,7 +77,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 var eofCount = 0;
 
                 // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
-                var allowAsyncFileRead = _environment.OperatingSystem != Model.System.OperatingSystem.Windows;
+                var allowAsyncFileRead = OperatingSystem.Id != OperatingSystemId.Windows;
 
                 using (var inputStream = GetInputStream(allowAsyncFileRead))
                 {

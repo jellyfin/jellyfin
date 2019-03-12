@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Events;
@@ -107,7 +106,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Inits this instance.
         /// </summary>
-        Task Init(IServiceCollection serviceCollection);
+        Task InitAsync(IServiceCollection serviceCollection);
 
         /// <summary>
         /// Creates the instance.
