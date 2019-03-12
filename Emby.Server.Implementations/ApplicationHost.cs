@@ -44,7 +44,6 @@ using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
-using Emby.Server.Implementations.Xml;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -97,7 +96,6 @@ using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
-using MediaBrowser.Model.Xml;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Subtitles;
@@ -754,8 +752,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ILocalizationManager>(LocalizationManager);
 
             serviceCollection.AddSingleton<IBlurayExaminer>(new BdInfoExaminer(FileSystemManager));
-
-            serviceCollection.AddSingleton<IXmlReaderSettingsFactory>(new XmlReaderSettingsFactory());
 
             UserDataManager = new UserDataManager(LoggerFactory, ServerConfigurationManager, () => UserManager);
             serviceCollection.AddSingleton(UserDataManager);

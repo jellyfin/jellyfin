@@ -7,7 +7,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Savers
@@ -66,9 +65,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
             ILibraryManager libraryManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
-            ILogger logger,
-            IXmlReaderSettingsFactory xmlReaderSettingsFactory)
-            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger, xmlReaderSettingsFactory)
+            ILogger logger)
+            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
         }
     }

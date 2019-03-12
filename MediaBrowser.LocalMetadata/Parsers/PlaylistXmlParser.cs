@@ -3,8 +3,6 @@ using System.Xml;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.LocalMetadata.Parsers
@@ -95,7 +93,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
             item.LinkedChildren = list.ToArray();
         }
 
-        public PlaylistXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem) : base(logger, providerManager, xmlReaderSettingsFactory, fileSystem)
+        public PlaylistXmlParser(ILogger logger, IProviderManager providerManager)
+            : base(logger, providerManager)
         {
         }
     }
