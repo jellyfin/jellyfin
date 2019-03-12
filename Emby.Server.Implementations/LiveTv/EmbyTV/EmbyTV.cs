@@ -33,7 +33,6 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
@@ -58,7 +57,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly IProviderManager _providerManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IProcessFactory _processFactory;
-        private readonly IAssemblyInfo _assemblyInfo;
         private IMediaSourceManager _mediaSourceManager;
 
         public static EmbyTV Current;
@@ -74,7 +72,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         public EmbyTV(IServerApplicationHost appHost,
             IStreamHelper streamHelper,
             IMediaSourceManager mediaSourceManager,
-            IAssemblyInfo assemblyInfo,
             ILogger logger,
             IJsonSerializer jsonSerializer,
             IHttpClient httpClient,
@@ -101,12 +98,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _processFactory = processFactory;
             _liveTvManager = (LiveTvManager)liveTvManager;
             _jsonSerializer = jsonSerializer;
-            _assemblyInfo = assemblyInfo;
             _mediaSourceManager = mediaSourceManager;
             _streamHelper = streamHelper;
 
-            _seriesTimerProvider = new SeriesTimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers"));
-            _timerProvider = new TimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "timers"), _logger);
+            _seriesTimerProvider = new SeriesTimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers.json"));
+            _timerProvider = new TimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "timers.json"), _logger);
             _timerProvider.TimerFired += _timerProvider_TimerFired;
 
             _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;

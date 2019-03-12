@@ -67,7 +67,7 @@ namespace Emby.Dlna.ContentDirectory
             }
         }
 
-        public string GetServiceXml(IDictionary<string, string> headers)
+        public string GetServiceXml()
         {
             return new ContentDirectoryXmlBuilder().GetXml();
         }

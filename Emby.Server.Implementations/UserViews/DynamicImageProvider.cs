@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.UserViews
             _libraryManager = libraryManager;
         }
 
-        protected override List<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
         {
             var view = (UserView)item;
 
@@ -46,8 +46,7 @@ namespace Emby.Server.Implementations.UserViews
 
             var items = result.Select(i =>
             {
-                var episode = i as Episode;
-                if (episode != null)
+                if (i is Episode episode)
                 {
                     var series = episode.Series;
                     if (series != null)
@@ -58,8 +57,7 @@ namespace Emby.Server.Implementations.UserViews
                     return episode;
                 }
 
-                var season = i as Season;
-                if (season != null)
+                if (i is Season season)
                 {
                     var series = season.Series;
                     if (series != null)
@@ -70,8 +68,7 @@ namespace Emby.Server.Implementations.UserViews
                     return season;
                 }
 
-                var audio = i as Audio;
-                if (audio != null)
+                if (i is Audio audio)
                 {
                     var album = audio.AlbumEntity;
                     if (album != null && album.HasImage(ImageType.Primary))
@@ -122,7 +119,7 @@ namespace Emby.Server.Implementations.UserViews
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
         }
 
-        protected override string CreateImage(BaseItem item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override string CreateImage(BaseItem item, IReadOnlyCollection<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             if (itemsWithImages.Count == 0)
             {

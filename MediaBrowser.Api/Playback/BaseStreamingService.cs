@@ -609,12 +609,12 @@ namespace MediaBrowser.Api.Playback
         {
             foreach (var param in Request.QueryString)
             {
-                if (char.IsLower(param.Name[0]))
+                if (char.IsLower(param.Key[0]))
                 {
                     // This was probably not parsed initially and should be a StreamOptions
                     // TODO: This should be incorporated either in the lower framework for parsing requests
                     // or the generated URL should correctly serialize it
-                    request.StreamOptions[param.Name] = param.Value;
+                    request.StreamOptions[param.Key] = param.Value;
                 }
             }
         }
@@ -867,7 +867,7 @@ namespace MediaBrowser.Api.Playback
 
         private void ApplyDeviceProfileSettings(StreamState state)
         {
-            var headers = Request.Headers.ToDictionary();
+            var headers = Request.Headers;
 
             if (!string.IsNullOrWhiteSpace(state.Request.DeviceProfileId))
             {

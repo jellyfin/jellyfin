@@ -38,9 +38,8 @@ namespace MediaBrowser.Api.System
         /// <summary>
         /// Gets the data to send.
         /// </summary>
-        /// <param name="state">The state.</param>
         /// <returns>Task{SystemInfo}.</returns>
-        protected override Task<List<ActivityLogEntry>> GetDataToSend(WebSocketListenerState state, CancellationToken CancellationToken)
+        protected override Task<List<ActivityLogEntry>> GetDataToSend()
         {
             return Task.FromResult(new List<ActivityLogEntry>());
         }

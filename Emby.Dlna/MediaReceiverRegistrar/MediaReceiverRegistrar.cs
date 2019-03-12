@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -16,7 +15,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             _config = config;
         }
 
-        public string GetServiceXml(IDictionary<string, string> headers)
+        public string GetServiceXml()
         {
             return new MediaReceiverRegistrarXmlBuilder().GetXml();
         }

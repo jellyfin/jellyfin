@@ -25,13 +25,10 @@ namespace DvdLib.Ifo
         public byte[] SubpictureStreamControl { get; private set; } // 32*4 entries
 
         private ushort _nextProgramNumber;
-        public readonly ProgramChain Next;
 
         private ushort _prevProgramNumber;
-        public readonly ProgramChain Previous;
 
         private ushort _goupProgramNumber;
-        public readonly ProgramChain Goup; // ?? maybe Group
 
         public ProgramPlaybackMode PlaybackMode { get; private set; }
         public uint ProgramCount { get; private set; }
@@ -40,7 +37,6 @@ namespace DvdLib.Ifo
         public byte[] Palette { get; private set; } // 16*4 entries
 
         private ushort _commandTableOffset;
-        public readonly ProgramChainCommandTable CommandTable;
 
         private ushort _programMapOffset;
         private ushort _cellPlaybackOffset;

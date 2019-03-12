@@ -29,6 +29,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace MediaBrowser.Api.Library
 {
@@ -827,7 +828,7 @@ namespace MediaBrowser.Api.Library
             var filename = (Path.GetFileName(path) ?? string.Empty).Replace("\"", string.Empty);
             if (!string.IsNullOrWhiteSpace(filename))
             {
-                headers["Content-Disposition"] = "attachment; filename=\"" + filename + "\"";
+                headers[HeaderNames.ContentDisposition] = "attachment; filename=\"" + filename + "\"";
             }
 
             return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions

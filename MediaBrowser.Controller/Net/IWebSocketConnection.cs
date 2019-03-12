@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -35,7 +36,7 @@ namespace MediaBrowser.Controller.Net
         /// Gets or sets the query string.
         /// </summary>
         /// <value>The query string.</value>
-        QueryParamCollection QueryString { get; set; }
+        IQueryCollection QueryString { get; set; }
 
         /// <summary>
         /// Gets or sets the receive action.

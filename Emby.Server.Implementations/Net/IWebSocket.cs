@@ -45,9 +45,4 @@ namespace Emby.Server.Implementations.Net
         /// <returns>Task.</returns>
         Task SendAsync(string text, bool endOfMessage, CancellationToken cancellationToken);
     }
-
-    public interface IMemoryWebSocket
-    {
-        Action<Memory<byte>, int> OnReceiveMemoryBytes { get; set; }
-    }
 }

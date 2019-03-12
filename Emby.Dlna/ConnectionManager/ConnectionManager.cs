@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -21,7 +20,7 @@ namespace Emby.Dlna.ConnectionManager
             _logger = logger;
         }
 
-        public string GetServiceXml(IDictionary<string, string> headers)
+        public string GetServiceXml()
         {
             return new ConnectionManagerXmlBuilder().GetXml();
         }

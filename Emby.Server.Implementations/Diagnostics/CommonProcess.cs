@@ -130,7 +130,7 @@ namespace Emby.Server.Implementations.Diagnostics
 
         public void Dispose()
         {
-            _process.Dispose();
+            _process?.Dispose();
         }
     }
 }

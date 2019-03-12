@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -25,7 +26,7 @@ namespace Emby.Server.Implementations.HttpServer
         public void FilterResponse(IRequest req, IResponse res, object dto)
         {
             // Try to prevent compatibility view
-            res.AddHeader("Access-Control-Allow-Headers", "Accept, Accept-Language, Authorization, Cache-Control, Content-Disposition, Content-Encoding, Content-Language, Content-Length, Content-MD5, Content-Range, Content-Type, Date, Host, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Origin, OriginToken, Pragma, Range, Slug, Transfer-Encoding, Want-Digest, X-MediaBrowser-Token, X-Emby-Authorization");
+            res.AddHeader("Access-Control-Allow-Headers", "Accept, Accept-Language, Authorization, Cache-Control, Content-Disposition, Content-Encoding, Content-Language, Content-MD5, Content-Range, Content-Type, Date, Host, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Origin, OriginToken, Pragma, Range, Slug, Transfer-Encoding, Want-Digest, X-MediaBrowser-Token, X-Emby-Authorization");
             res.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
             res.AddHeader("Access-Control-Allow-Origin", "*");
 
@@ -44,20 +45,19 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (dto is IHasHeaders hasHeaders)
             {
-                if (!hasHeaders.Headers.ContainsKey("Server"))
+                if (!hasHeaders.Headers.ContainsKey(HeaderNames.Server))
                 {
-                    hasHeaders.Headers["Server"] = "Microsoft-NetCore/2.0, UPnP/1.0 DLNADOC/1.50";
+                    hasHeaders.Headers[HeaderNames.Server] = "Microsoft-NetCore/2.0, UPnP/1.0 DLNADOC/1.50";
                 }
 
                 // Content length has to be explicitly set on on HttpListenerResponse or it won't be happy
-                if (hasHeaders.Headers.TryGetValue("Content-Length", out string contentLength)
+                if (hasHeaders.Headers.TryGetValue(HeaderNames.ContentLength, out string contentLength)
                     && !string.IsNullOrEmpty(contentLength))
                 {
                     var length = long.Parse(contentLength, UsCulture);
 
                     if (length > 0)
                     {
-                        res.SetContentLength(length);
                         res.SendChunked = false;
                     }
                 }

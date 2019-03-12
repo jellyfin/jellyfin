@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Emby.Dlna
 {
     public interface IUpnpService
@@ -7,9 +5,8 @@ namespace Emby.Dlna
         /// <summary>
         /// Gets the content directory XML.
         /// </summary>
-        /// <param name="headers">The headers.</param>
         /// <returns>System.String.</returns>
-        string GetServiceXml(IDictionary<string, string> headers);
+        string GetServiceXml();
 
         /// <summary>
         /// Processes the control request.

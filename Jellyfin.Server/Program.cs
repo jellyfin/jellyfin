@@ -20,6 +20,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -124,7 +125,7 @@ namespace Jellyfin.Server
             SQLitePCL.Batteries_V2.Init();
 
             // Allow all https requests
-            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; } );
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
             var fileSystem = new ManagedFileSystem(_loggerFactory, environmentInfo, appPaths);
 
@@ -143,8 +144,6 @@ namespace Jellyfin.Server
                 appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
 
                 await appHost.RunStartupTasks().ConfigureAwait(false);
-
-                // TODO: read input for a stop command
 
                 try
                 {
@@ -175,7 +174,7 @@ namespace Jellyfin.Server
         {
             // dataDir
             // IF      --datadir
-            // ELSE IF $JELLYFIN_DATA_PATH
+            // ELSE IF $JELLYFIN_DATA_DIR
             // ELSE IF windows, use <%APPDATA%>/jellyfin
             // ELSE IF $XDG_DATA_HOME then use $XDG_DATA_HOME/jellyfin
             // ELSE    use $HOME/.local/share/jellyfin
@@ -183,7 +182,7 @@ namespace Jellyfin.Server
 
             if (string.IsNullOrEmpty(dataDir))
             {
-                dataDir = Environment.GetEnvironmentVariable("JELLYFIN_DATA_PATH");
+                dataDir = Environment.GetEnvironmentVariable("JELLYFIN_DATA_DIR");
 
                 if (string.IsNullOrEmpty(dataDir))
                 {
@@ -191,8 +190,6 @@ namespace Jellyfin.Server
                     dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "jellyfin");
                 }
             }
-
-            Directory.CreateDirectory(dataDir);
 
             // configDir
             // IF      --configdir
@@ -286,6 +283,7 @@ namespace Jellyfin.Server
             // Ensure the main folders exist before we continue
             try
             {
+                Directory.CreateDirectory(dataDir);
                 Directory.CreateDirectory(logDir);
                 Directory.CreateDirectory(configDir);
                 Directory.CreateDirectory(cacheDir);

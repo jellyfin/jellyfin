@@ -136,7 +136,7 @@ namespace Emby.Dlna.Api
         {
             var url = Request.AbsoluteUri;
             var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
-            var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers.ToDictionary(), request.UuId, serverAddress);
+            var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, request.UuId, serverAddress);
 
             var cacheLength = TimeSpan.FromDays(1);
             var cacheKey = Request.RawUrl.GetMD5();
@@ -147,21 +147,21 @@ namespace Emby.Dlna.Api
 
         public object Get(GetContentDirectory request)
         {
-            var xml = ContentDirectory.GetServiceXml(Request.Headers.ToDictionary());
+            var xml = ContentDirectory.GetServiceXml();
 
             return _resultFactory.GetResult(Request, xml, XMLContentType);
         }
 
         public object Get(GetMediaReceiverRegistrar request)
         {
-            var xml = MediaReceiverRegistrar.GetServiceXml(Request.Headers.ToDictionary());
+            var xml = MediaReceiverRegistrar.GetServiceXml();
 
             return _resultFactory.GetResult(Request, xml, XMLContentType);
         }
 
         public object Get(GetConnnectionManager request)
         {
-            var xml = ConnectionManager.GetServiceXml(Request.Headers.ToDictionary());
+            var xml = ConnectionManager.GetServiceXml();
 
             return _resultFactory.GetResult(Request, xml, XMLContentType);
         }
@@ -193,7 +193,7 @@ namespace Emby.Dlna.Api
 
             return service.ProcessControlRequest(new ControlRequest
             {
-                Headers = Request.Headers.ToDictionary(),
+                Headers = Request.Headers,
                 InputXml = requestStream,
                 TargetServerUuId = id,
                 RequestedUrl = Request.AbsoluteUri

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Events;
@@ -213,22 +214,17 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public bool IsValidUsername(string username)
+        public static bool IsValidUsername(string username)
         {
-            // Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)
-            foreach (var currentChar in username)
-            {
-                if (!IsValidUsernameCharacter(currentChar))
-                {
-                    return false;
-                }
-            }
-            return true;
+            //This is some regex that matches only on unicode "word" characters, as well as -, _ and @
+            //In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
+            // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)
+            return Regex.IsMatch(username, "^[\\w-'._@]*$");
         }
 
         private static bool IsValidUsernameCharacter(char i)
         {
-            return !char.Equals(i, '<') && !char.Equals(i, '>');
+            return IsValidUsername(i.ToString());
         }
 
         public string MakeValidUsername(string username)
@@ -475,13 +471,8 @@ namespace Emby.Server.Implementations.Library
         private string GetLocalPasswordHash(User user)
         {
             return string.IsNullOrEmpty(user.EasyPassword)
-                ? _defaultAuthenticationProvider.GetEmptyHashedString(user)
+                ? null
                 : user.EasyPassword;
-        }
-
-        private bool IsPasswordEmpty(User user, string passwordHash)
-        {
-            return string.Equals(passwordHash, _defaultAuthenticationProvider.GetEmptyHashedString(user), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -526,14 +517,14 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user).Result;
-            var hasConfiguredEasyPassword = !IsPasswordEmpty(user, GetLocalPasswordHash(user));
+            bool hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user).Result;
+            bool hasConfiguredEasyPassword = string.IsNullOrEmpty(GetLocalPasswordHash(user));
 
-            var hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
+            bool hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
                 hasConfiguredEasyPassword :
                 hasConfiguredPassword;
 
-            var dto = new UserDto
+            UserDto dto = new UserDto
             {
                 Id = user.Id,
                 Name = user.Name,
@@ -552,7 +543,7 @@ namespace Emby.Server.Implementations.Library
                 dto.EnableAutoLogin = true;
             }
 
-            var image = user.GetImageInfo(ImageType.Primary, 0);
+            ItemImageInfo image = user.GetImageInfo(ImageType.Primary, 0);
 
             if (image != null)
             {
@@ -688,7 +679,7 @@ namespace Emby.Server.Implementations.Library
 
             if (!IsValidUsername(name))
             {
-                throw new ArgumentException("Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)");
+                throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)");
             }
 
             if (Users.Any(u => u.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))

@@ -15,6 +15,8 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Music
@@ -28,14 +30,22 @@ namespace MediaBrowser.Providers.Music
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
 
-        public static string MusicBrainzBaseUrl = "https://www.musicbrainz.org";
+        public readonly string MusicBrainzBaseUrl;
 
-        public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost, ILogger logger, IJsonSerializer json)
+        public MusicBrainzAlbumProvider(
+            IHttpClient httpClient,
+            IApplicationHost appHost,
+            ILogger logger,
+            IJsonSerializer json,
+            IConfiguration configuration)
         {
             _httpClient = httpClient;
             _appHost = appHost;
             _logger = logger;
             _json = json;
+
+            MusicBrainzBaseUrl = configuration["MusicBrainz:BaseUrl"];
+
             Current = this;
         }
 

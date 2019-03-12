@@ -43,7 +43,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Folder()
         {
-            LinkedChildren = EmptyLinkedChildArray;
+            LinkedChildren = Array.Empty<LinkedChild>();
         }
 
         [IgnoreDataMember]

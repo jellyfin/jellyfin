@@ -6,6 +6,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.System;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -14,7 +15,7 @@ namespace MediaBrowser.Controller.MediaEncoding
     /// </summary>
     public interface IMediaEncoder : ITranscoderSupport
     {
-        string EncoderLocationType { get; }
+        FFmpegLocation EncoderLocation { get; }
 
         /// <summary>
         /// Gets the encoder path.
@@ -73,7 +74,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="inputFiles">The input files.</param>
         /// <param name="protocol">The protocol.</param>
         /// <returns>System.String.</returns>
-        string GetInputArgument(string[] inputFiles, MediaProtocol protocol);
+        string GetInputArgument(IReadOnlyList<string> inputFiles, MediaProtocol protocol);
 
         /// <summary>
         /// Gets the time parameter.
@@ -91,7 +92,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>System.String.</returns>
         string EscapeSubtitleFilterPath(string path);
 
-        void Init();
+        void SetFFmpegPath();
 
         void UpdateEncoderPath(string path, string pathType);
         bool SupportsEncoder(string encoder);

@@ -3,17 +3,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Diagnostics;
@@ -22,6 +19,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
@@ -32,340 +30,223 @@ namespace MediaBrowser.MediaEncoding.Encoder
     public class MediaEncoder : IMediaEncoder, IDisposable
     {
         /// <summary>
-        /// The _logger
+        /// Gets the encoder path.
         /// </summary>
+        /// <value>The encoder path.</value>
+        public string EncoderPath => FFmpegPath;
+
+        /// <summary>
+        /// The location of the discovered FFmpeg tool.
+        /// </summary>
+        public FFmpegLocation EncoderLocation { get; private set; }
+
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// Gets the json serializer.
-        /// </summary>
-        /// <value>The json serializer.</value>
         private readonly IJsonSerializer _jsonSerializer;
-
-        /// <summary>
-        /// The _thumbnail resource pool
-        /// </summary>
-        private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(1, 1);
-
-        public string FFMpegPath { get; private set; }
-
-        public string FFProbePath { get; private set; }
-
+        private string FFmpegPath;
+        private string FFprobePath;
         protected readonly IServerConfigurationManager ConfigurationManager;
         protected readonly IFileSystem FileSystem;
-        protected readonly ILiveTvManager LiveTvManager;
-        protected readonly IIsoManager IsoManager;
-        protected readonly ILibraryManager LibraryManager;
-        protected readonly IChannelManager ChannelManager;
-        protected readonly ISessionManager SessionManager;
         protected readonly Func<ISubtitleEncoder> SubtitleEncoder;
         protected readonly Func<IMediaSourceManager> MediaSourceManager;
-        private readonly IHttpClient _httpClient;
-        private readonly IZipClient _zipClient;
         private readonly IProcessFactory _processFactory;
-
-        private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
-        private readonly bool _hasExternalEncoder;
-        private readonly string _originalFFMpegPath;
-        private readonly string _originalFFProbePath;
         private readonly int DefaultImageExtractionTimeoutMs;
+        private readonly string StartupOptionFFmpegPath;
+        private readonly string StartupOptionFFprobePath;
+
+        private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(1, 1);
+        private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
 
         public MediaEncoder(
             ILoggerFactory loggerFactory,
             IJsonSerializer jsonSerializer,
-            string ffMpegPath,
-            string ffProbePath,
-            bool hasExternalEncoder,
+            string startupOptionsFFmpegPath,
+            string startupOptionsFFprobePath,
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
-            ILiveTvManager liveTvManager,
-            IIsoManager isoManager,
-            ILibraryManager libraryManager,
-            IChannelManager channelManager,
-            ISessionManager sessionManager,
             Func<ISubtitleEncoder> subtitleEncoder,
             Func<IMediaSourceManager> mediaSourceManager,
-            IHttpClient httpClient,
-            IZipClient zipClient,
             IProcessFactory processFactory,
             int defaultImageExtractionTimeoutMs)
         {
             _logger = loggerFactory.CreateLogger(nameof(MediaEncoder));
             _jsonSerializer = jsonSerializer;
+            StartupOptionFFmpegPath = startupOptionsFFmpegPath;
+            StartupOptionFFprobePath = startupOptionsFFprobePath;
             ConfigurationManager = configurationManager;
             FileSystem = fileSystem;
-            LiveTvManager = liveTvManager;
-            IsoManager = isoManager;
-            LibraryManager = libraryManager;
-            ChannelManager = channelManager;
-            SessionManager = sessionManager;
             SubtitleEncoder = subtitleEncoder;
-            MediaSourceManager = mediaSourceManager;
-            _httpClient = httpClient;
-            _zipClient = zipClient;
             _processFactory = processFactory;
             DefaultImageExtractionTimeoutMs = defaultImageExtractionTimeoutMs;
-            FFProbePath = ffProbePath;
-            FFMpegPath = ffMpegPath;
-            _originalFFProbePath = ffProbePath;
-            _originalFFMpegPath = ffMpegPath;
-            _hasExternalEncoder = hasExternalEncoder;
         }
 
-        public string EncoderLocationType
+        /// <summary>
+        /// Run at startup or if the user removes a Custom path from transcode page.
+        /// Sets global variables FFmpegPath.
+        /// Precedence is: Config > CLI > $PATH
+        /// </summary>
+        public void SetFFmpegPath()
         {
-            get
+            // ToDo - Finalise removal of the --ffprobe switch
+            if (!string.IsNullOrEmpty(StartupOptionFFprobePath))
             {
-                if (_hasExternalEncoder)
-                {
-                    return "External";
-                }
-
-                if (string.IsNullOrWhiteSpace(FFMpegPath))
-                {
-                    return null;
-                }
-
-                if (IsSystemInstalledPath(FFMpegPath))
-                {
-                    return "System";
-                }
-
-                return "Custom";
-            }
-        }
-
-        private bool IsSystemInstalledPath(string path)
-        {
-            if (path.IndexOf("/", StringComparison.Ordinal) == -1 && path.IndexOf("\\", StringComparison.Ordinal) == -1)
-            {
-                return true;
+                _logger.LogWarning("--ffprobe switch is deprecated and shall be removed in the next release");
             }
 
-            return false;
-        }
-
-        public void Init()
-        {
-            InitPaths();
-
-            if (!string.IsNullOrWhiteSpace(FFMpegPath))
+            // 1) Custom path stored in config/encoding xml file under tag <EncoderAppPath> takes precedence
+            if (!ValidatePath(ConfigurationManager.GetConfiguration<EncodingOptions>("encoding").EncoderAppPath, FFmpegLocation.Custom))
             {
-                var result = new EncoderValidator(_logger, _processFactory).Validate(FFMpegPath);
+                // 2) Check if the --ffmpeg CLI switch has been given
+                if (!ValidatePath(StartupOptionFFmpegPath, FFmpegLocation.SetByArgument))
+                {
+                    // 3) Search system $PATH environment variable for valid FFmpeg
+                    if (!ValidatePath(ExistsOnSystemPath("ffmpeg"), FFmpegLocation.System))
+                    {
+                        EncoderLocation = FFmpegLocation.NotFound;
+                        FFmpegPath = null;
+                    }
+                }
+            }
+
+            // Write the FFmpeg path to the config/encoding.xml file as <EncoderAppPathDisplay> so it appears in UI
+            var config = ConfigurationManager.GetConfiguration<EncodingOptions>("encoding");
+            config.EncoderAppPathDisplay = FFmpegPath ?? string.Empty;
+            ConfigurationManager.SaveConfiguration("encoding", config);
+
+            // Only if mpeg path is set, try and set path to probe
+            if (FFmpegPath != null)
+            {
+                // Determine a probe path from the mpeg path
+                FFprobePath = Regex.Replace(FFmpegPath, @"[^\/\\]+?(\.[^\/\\\n.]+)?$", @"ffprobe$1");
+
+                // Interrogate to understand what coders are supported
+                var result = new EncoderValidator(_logger, _processFactory).GetAvailableCoders(FFmpegPath);
 
                 SetAvailableDecoders(result.decoders);
                 SetAvailableEncoders(result.encoders);
             }
+
+            _logger.LogInformation("FFmpeg: {0}: {1}", EncoderLocation.ToString(), FFmpegPath ?? string.Empty);
         }
 
-        private void InitPaths()
-        {
-            ConfigureEncoderPaths();
-
-            if (_hasExternalEncoder)
-            {
-                LogPaths();
-                return;
-            }
-
-            // If the path was passed in, save it into config now.
-            var encodingOptions = GetEncodingOptions();
-            var appPath = encodingOptions.EncoderAppPath;
-
-            var valueToSave = FFMpegPath;
-
-            if (!string.IsNullOrWhiteSpace(valueToSave))
-            {
-                // if using system variable, don't save this.
-                if (IsSystemInstalledPath(valueToSave) || _hasExternalEncoder)
-                {
-                    valueToSave = null;
-                }
-            }
-
-            if (!string.Equals(valueToSave, appPath, StringComparison.Ordinal))
-            {
-                encodingOptions.EncoderAppPath = valueToSave;
-                ConfigurationManager.SaveConfiguration("encoding", encodingOptions);
-            }
-        }
-
+        /// <summary>
+        /// Triggered from the Settings > Transcoding UI page when users submits Custom FFmpeg path to use.
+        /// Only write the new path to xml if it exists.  Do not perform validation checks on ffmpeg here.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="pathType"></param>
         public void UpdateEncoderPath(string path, string pathType)
         {
-            if (_hasExternalEncoder)
-            {
-                return;
-            }
+            string newPath;
 
             _logger.LogInformation("Attempting to update encoder path to {0}. pathType: {1}", path ?? string.Empty, pathType ?? string.Empty);
 
-            Tuple<string, string> newPaths;
-
-            if (string.Equals(pathType, "system", StringComparison.OrdinalIgnoreCase))
-            {
-                path = "ffmpeg";
-
-                newPaths = TestForInstalledVersions();
-            }
-            else if (string.Equals(pathType, "custom", StringComparison.OrdinalIgnoreCase))
-            {
-                if (string.IsNullOrWhiteSpace(path))
-                {
-                    throw new ArgumentNullException(nameof(path));
-                }
-
-                if (!File.Exists(path) && !Directory.Exists(path))
-                {
-                    throw new ResourceNotFoundException();
-                }
-                newPaths = GetEncoderPaths(path);
-            }
-            else
+            if (!string.Equals(pathType, "custom", StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Unexpected pathType value");
             }
-
-            if (string.IsNullOrWhiteSpace(newPaths.Item1))
+            else if (string.IsNullOrWhiteSpace(path))
             {
-                throw new ResourceNotFoundException("ffmpeg not found");
+                // User had cleared the custom path in UI
+                newPath = string.Empty;
             }
-            if (string.IsNullOrWhiteSpace(newPaths.Item2))
+            else if (File.Exists(path))
             {
-                throw new ResourceNotFoundException("ffprobe not found");
+                newPath = path;
             }
-
-            path = newPaths.Item1;
-
-            if (!ValidateVersion(path, true))
+            else if (Directory.Exists(path))
             {
-                throw new ResourceNotFoundException("ffmpeg version 3.0 or greater is required.");
+                // Given path is directory, so resolve down to filename
+                newPath = GetEncoderPathFromDirectory(path, "ffmpeg");
+            }
+            else
+            {
+                throw new ResourceNotFoundException();
             }
 
-            var config = GetEncodingOptions();
-            config.EncoderAppPath = path;
+            // Write the new ffmpeg path to the xml as <EncoderAppPath>
+            // This ensures its not lost on next startup
+            var config = ConfigurationManager.GetConfiguration<EncodingOptions>("encoding");
+            config.EncoderAppPath = newPath;
             ConfigurationManager.SaveConfiguration("encoding", config);
 
-            Init();
+            // Trigger SetFFmpegPath so we validate the new path and setup probe path
+            SetFFmpegPath();
         }
 
-        private bool ValidateVersion(string path, bool logOutput)
+        /// <summary>
+        /// Validates the supplied FQPN to ensure it is a ffmpeg utility.
+        /// If checks pass, global variable FFmpegPath and EncoderLocation are updated.
+        /// </summary>
+        /// <param name="path">FQPN to test</param>
+        /// <param name="location">Location (External, Custom, System) of tool</param>
+        /// <returns></returns>
+        private bool ValidatePath(string path, FFmpegLocation location)
         {
-            return new EncoderValidator(_logger, _processFactory).ValidateVersion(path, logOutput);
-        }
+            bool rc = false;
 
-        private void ConfigureEncoderPaths()
-        {
-            if (_hasExternalEncoder)
+            if (!string.IsNullOrEmpty(path))
             {
-                return;
-            }
-
-            var appPath = GetEncodingOptions().EncoderAppPath;
-
-            if (string.IsNullOrWhiteSpace(appPath))
-            {
-                appPath = Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "ffmpeg");
-            }
-
-            var newPaths = GetEncoderPaths(appPath);
-            if (string.IsNullOrWhiteSpace(newPaths.Item1) || string.IsNullOrWhiteSpace(newPaths.Item2) || IsSystemInstalledPath(appPath))
-            {
-                newPaths = TestForInstalledVersions();
-            }
-
-            if (!string.IsNullOrWhiteSpace(newPaths.Item1) && !string.IsNullOrWhiteSpace(newPaths.Item2))
-            {
-                FFMpegPath = newPaths.Item1;
-                FFProbePath = newPaths.Item2;
-            }
-
-            LogPaths();
-        }
-
-        private Tuple<string, string> GetEncoderPaths(string configuredPath)
-        {
-            var appPath = configuredPath;
-
-            if (!string.IsNullOrWhiteSpace(appPath))
-            {
-                if (Directory.Exists(appPath))
+                if (File.Exists(path))
                 {
-                    return GetPathsFromDirectory(appPath);
+                    rc = new EncoderValidator(_logger, _processFactory).ValidateVersion(path, true);
+
+                    if (!rc)
+                    {
+                        _logger.LogWarning("FFmpeg: {0}: Failed version check: {1}", location.ToString(), path);
+                    }
+
+                    // ToDo - Enable the ffmpeg validator.  At the moment any version can be used.
+                    rc = true;
+
+                    FFmpegPath = path;
+                    EncoderLocation = location;
                 }
-
-                if (File.Exists(appPath))
+                else
                 {
-                    return new Tuple<string, string>(appPath, GetProbePathFromEncoderPath(appPath));
+                    _logger.LogWarning("FFmpeg: {0}: File not found: {1}", location.ToString(), path);
                 }
             }
 
-            return new Tuple<string, string>(null, null);
+            return rc;
         }
 
-        private Tuple<string, string> TestForInstalledVersions()
+        private string GetEncoderPathFromDirectory(string path, string filename)
         {
-            string encoderPath = null;
-            string probePath = null;
-
-            if (_hasExternalEncoder && ValidateVersion(_originalFFMpegPath, true))
+            try
             {
-                encoderPath = _originalFFMpegPath;
-                probePath = _originalFFProbePath;
+                var files = FileSystem.GetFilePaths(path);
+
+                var excludeExtensions = new[] { ".c" };
+
+                return files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), filename, StringComparison.OrdinalIgnoreCase)
+                                                    && !excludeExtensions.Contains(Path.GetExtension(i) ?? string.Empty));
             }
-
-            if (string.IsNullOrWhiteSpace(encoderPath))
+            catch (Exception)
             {
-                if (ValidateVersion("ffmpeg", true) && ValidateVersion("ffprobe", false))
+                // Trap all exceptions, like DirNotExists, and return null
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Search the system $PATH environment variable looking for given filename.
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        private string ExistsOnSystemPath(string filename)
+        {
+            var values = Environment.GetEnvironmentVariable("PATH");
+
+            foreach (var path in values.Split(Path.PathSeparator))
+            {
+                var candidatePath = GetEncoderPathFromDirectory(path, filename);
+
+                if (!string.IsNullOrEmpty(candidatePath))
                 {
-                    encoderPath = "ffmpeg";
-                    probePath = "ffprobe";
+                    return candidatePath;
                 }
             }
-
-            return new Tuple<string, string>(encoderPath, probePath);
-        }
-
-        private Tuple<string, string> GetPathsFromDirectory(string path)
-        {
-            // Since we can't predict the file extension, first try directly within the folder
-            // If that doesn't pan out, then do a recursive search
-            var files = FileSystem.GetFilePaths(path);
-
-            var excludeExtensions = new[] { ".c" };
-
-            var ffmpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase) && !excludeExtensions.Contains(Path.GetExtension(i) ?? string.Empty));
-            var ffprobePath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffprobe", StringComparison.OrdinalIgnoreCase) && !excludeExtensions.Contains(Path.GetExtension(i) ?? string.Empty));
-
-            if (string.IsNullOrWhiteSpace(ffmpegPath) || !File.Exists(ffmpegPath))
-            {
-                files = FileSystem.GetFilePaths(path, true);
-
-                ffmpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase) && !excludeExtensions.Contains(Path.GetExtension(i) ?? string.Empty));
-
-                if (!string.IsNullOrWhiteSpace(ffmpegPath))
-                {
-                    ffprobePath = GetProbePathFromEncoderPath(ffmpegPath);
-                }
-            }
-
-            return new Tuple<string, string>(ffmpegPath, ffprobePath);
-        }
-
-        private string GetProbePathFromEncoderPath(string appPath)
-        {
-            return FileSystem.GetFilePaths(Path.GetDirectoryName(appPath))
-                .FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffprobe", StringComparison.OrdinalIgnoreCase));
-        }
-
-        private void LogPaths()
-        {
-            _logger.LogInformation("FFMpeg: {0}", FFMpegPath ?? "not found");
-            _logger.LogInformation("FFProbe: {0}", FFProbePath ?? "not found");
-        }
-
-        private EncodingOptions GetEncodingOptions()
-        {
-            return ConfigurationManager.GetConfiguration<EncodingOptions>("encoding");
+            return null;
         }
 
         private List<string> _encoders = new List<string>();
@@ -413,12 +294,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <summary>
-        /// Gets the encoder path.
-        /// </summary>
-        /// <value>The encoder path.</value>
-        public string EncoderPath => FFMpegPath;
-
-        /// <summary>
         /// Gets the media info.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -459,10 +334,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="protocol">The protocol.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="ArgumentException">Unrecognized InputType</exception>
-        public string GetInputArgument(string[] inputFiles, MediaProtocol protocol)
-        {
-            return EncodingUtils.GetInputArgument(inputFiles.ToList(), protocol);
-        }
+        public string GetInputArgument(IReadOnlyList<string> inputFiles, MediaProtocol protocol)
+            => EncodingUtils.GetInputArgument(inputFiles, protocol);
 
         /// <summary>
         /// Gets the media info internal.
@@ -479,8 +352,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             CancellationToken cancellationToken)
         {
             var args = extractChapters
-                ? "{0} -i {1} -threads 0 -v info -print_format json -show_streams -show_chapters -show_format"
-                : "{0} -i {1} -threads 0 -v info -print_format json -show_streams -show_format";
+                ? "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_chapters -show_format"
+                : "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_format";
+            args = string.Format(args, probeSizeArgument, inputPath).Trim();
 
             var process = _processFactory.Create(new ProcessOptions
             {
@@ -489,8 +363,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 // Must consume both or ffmpeg may hang due to deadlocks. See comments below.
                 RedirectStandardOutput = true,
-                FileName = FFProbePath,
-                Arguments = string.Format(args, probeSizeArgument, inputPath).Trim(),
+
+                FileName = FFprobePath,
+                Arguments = args,
+
 
                 IsHidden = true,
                 ErrorDialog = false,
@@ -508,36 +384,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
+                _logger.LogDebug("Starting ffprobe with args {Args}", args);
                 StartProcess(processWrapper);
 
+                InternalMediaInfoResult result;
                 try
                 {
-                    //process.BeginErrorReadLine();
-
-                    var result = await _jsonSerializer.DeserializeFromStreamAsync<InternalMediaInfoResult>(process.StandardOutput.BaseStream).ConfigureAwait(false);
-
-                    if (result == null || (result.streams == null && result.format == null))
-                    {
-                        throw new Exception("ffprobe failed - streams and format are both null.");
-                    }
-
-                    if (result.streams != null)
-                    {
-                        // Normalize aspect ratio if invalid
-                        foreach (var stream in result.streams)
-                        {
-                            if (string.Equals(stream.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
-                            {
-                                stream.display_aspect_ratio = string.Empty;
-                            }
-                            if (string.Equals(stream.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
-                            {
-                                stream.sample_aspect_ratio = string.Empty;
-                            }
-                        }
-                    }
-
-                    return new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
+                    result = await _jsonSerializer.DeserializeFromStreamAsync<InternalMediaInfoResult>(
+                                        process.StandardOutput.BaseStream).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -545,6 +399,30 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     throw;
                 }
+
+                if (result == null || (result.streams == null && result.format == null))
+                {
+                    throw new Exception("ffprobe failed - streams and format are both null.");
+                }
+
+                if (result.streams != null)
+                {
+                    // Normalize aspect ratio if invalid
+                    foreach (var stream in result.streams)
+                    {
+                        if (string.Equals(stream.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.display_aspect_ratio = string.Empty;
+                        }
+
+                        if (string.Equals(stream.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.sample_aspect_ratio = string.Empty;
+                        }
+                    }
+                }
+
+                return new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
             }
         }
 
@@ -691,7 +569,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
-                FileName = FFMpegPath,
+                FileName = FFmpegPath,
                 Arguments = args,
                 IsHidden = true,
                 ErrorDialog = false,
@@ -814,7 +692,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
-                FileName = FFMpegPath,
+                FileName = FFmpegPath,
                 Arguments = args,
                 IsHidden = true,
                 ErrorDialog = false,
