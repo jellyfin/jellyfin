@@ -17,12 +17,14 @@ namespace Emby.Server.Implementations.AppBase
             string programDataPath,
             string logDirectoryPath,
             string configurationDirectoryPath,
-            string cacheDirectoryPath)
+            string cacheDirectoryPath,
+            string webDirectoryPath)
         {
             ProgramDataPath = programDataPath;
             LogDirectoryPath = logDirectoryPath;
             ConfigurationDirectoryPath = configurationDirectoryPath;
             CachePath = cacheDirectoryPath;
+            WebPath = webDirectoryPath;
 
             DataPath = Path.Combine(ProgramDataPath, "data");
         }
@@ -32,6 +34,12 @@ namespace Emby.Server.Implementations.AppBase
         /// </summary>
         /// <value>The program data path.</value>
         public string ProgramDataPath { get; private set; }
+
+        /// <summary>
+        /// Gets the path to the web UI resources folder
+        /// </summary>
+        /// <value>The web UI resources path.</value>
+        public string WebPath { get; set; }
 
         /// <summary>
         /// Gets the path to the system folder

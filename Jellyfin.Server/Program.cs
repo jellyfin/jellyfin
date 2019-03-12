@@ -262,6 +262,23 @@ namespace Jellyfin.Server
                 }
             }
 
+            // webDir
+            // IF      --webdir
+            // ELSE IF $JELLYFIN_WEB_DIR
+            // ELSE    use <bindir>/jellyfin-web
+            var webDir = options.WebDir;
+
+            if (string.IsNullOrEmpty(webDir))
+            {
+                webDir = Environment.GetEnvironmentVariable("JELLYFIN_WEB_DIR");
+
+                if (string.IsNullOrEmpty(webDir))
+                {
+                    // Use default location under ResourcesPath
+                    webDir = Path.Combine(AppContext.BaseDirectory, "jellyfin-web", "src");
+                }
+            }
+
             // logDir
             // IF      --logdir
             // ELSE IF $JELLYFIN_LOG_DIR
@@ -295,7 +312,7 @@ namespace Jellyfin.Server
                 Environment.Exit(1);
             }
 
-            return new ServerApplicationPaths(dataDir, logDir, configDir, cacheDir);
+            return new ServerApplicationPaths(dataDir, logDir, configDir, cacheDir, webDir);
         }
 
         private static async Task<IConfiguration> CreateConfiguration(IApplicationPaths appPaths)
