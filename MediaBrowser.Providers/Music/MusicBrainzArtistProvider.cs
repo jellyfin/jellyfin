@@ -31,7 +31,7 @@ namespace MediaBrowser.Providers.Music
             {
                 var url = string.Format("/ws/2/artist/?query=arid:{0}", musicBrainzId);
 
-                using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, false, cancellationToken).ConfigureAwait(false))
+                using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
                 {
                     using (var stream = response.Content)
                     {
@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers.Music
 
                 var url = string.Format("/ws/2/artist/?query=\"{0}\"&dismax=true", UrlEncode(nameToSearch));
 
-                using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+                using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
                 {
                     using (var stream = response.Content)
                     {
@@ -64,7 +64,7 @@ namespace MediaBrowser.Providers.Music
                     // Try again using the search with accent characters url
                     url = string.Format("/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
 
-                    using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+                    using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
                     {
                         using (var stream = response.Content)
                         {

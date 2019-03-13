@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -28,6 +29,7 @@ namespace MediaBrowser.Providers.Music
         private readonly IApplicationHost _appHost;
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
+        private Stopwatch _stopWatchMusicBrainz = new Stopwatch();
 
         public readonly string MusicBrainzBaseUrl;
 
@@ -45,6 +47,9 @@ namespace MediaBrowser.Providers.Music
 
             MusicBrainzBaseUrl = configuration["MusicBrainz:BaseUrl"];
 
+            // Use a stopwatch to ensure we don't exceed the MusicBrainz rate limit
+            _stopWatchMusicBrainz.Start();
+
             Current = this;
         }
 
@@ -54,8 +59,6 @@ namespace MediaBrowser.Providers.Music
             var releaseGroupId = searchInfo.GetReleaseGroupId();
 
             string url;
-            var isNameSearch = false;
-            bool forceMusicBrainzProper = false;
 
             if (!string.IsNullOrEmpty(releaseId))
             {
@@ -64,7 +67,6 @@ namespace MediaBrowser.Providers.Music
             else if (!string.IsNullOrEmpty(releaseGroupId))
             {
                 url = string.Format("/ws/2/release?release-group={0}", releaseGroupId);
-                forceMusicBrainzProper = true;
             }
             else
             {
@@ -78,8 +80,6 @@ namespace MediaBrowser.Providers.Music
                 }
                 else
                 {
-                    isNameSearch = true;
-
                     // I'm sure there is a better way but for now it resolves search for 12" Mixes
                     var queryName = searchInfo.Name.Replace("\"", string.Empty);
 
@@ -91,7 +91,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrWhiteSpace(url))
             {
-                using (var response = await GetMusicBrainzResponse(url, isNameSearch, forceMusicBrainzProper, cancellationToken).ConfigureAwait(false))
+                using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
                 {
                     using (var stream = response.Content)
                     {
@@ -247,7 +247,7 @@ namespace MediaBrowser.Providers.Music
                 WebUtility.UrlEncode(albumName),
                 artistId);
 
-            using (var response = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+            using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
             using (var stream = response.Content)
             using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
@@ -272,7 +272,7 @@ namespace MediaBrowser.Providers.Music
                 WebUtility.UrlEncode(albumName),
                 WebUtility.UrlEncode(artistName));
 
-            using (var response = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+            using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
             using (var stream = response.Content)
             using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
@@ -589,7 +589,7 @@ namespace MediaBrowser.Providers.Music
         {
             var url = string.Format("/ws/2/release?release-group={0}", releaseGroupId);
 
-            using (var response = await GetMusicBrainzResponse(url, true, true, cancellationToken).ConfigureAwait(false))
+            using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
             using (var stream = response.Content)
             using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
@@ -625,7 +625,7 @@ namespace MediaBrowser.Providers.Music
         {
             var url = string.Format("/ws/2/release-group/?query=reid:{0}", releaseEntryId);
 
-            using (var response = await GetMusicBrainzResponse(url, false, cancellationToken).ConfigureAwait(false))
+            using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
             using (var stream = response.Content)
             using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
@@ -710,34 +710,32 @@ namespace MediaBrowser.Providers.Music
             return null;
         }
 
-        internal Task<HttpResponseInfo> GetMusicBrainzResponse(string url, bool isSearch, CancellationToken cancellationToken)
-        {
-            return GetMusicBrainzResponse(url, isSearch, false, cancellationToken);
-        }
-
         /// <summary>
-        /// Gets the music brainz response.
+        /// Makes request to MusicBrainz server and awaits a response.
         /// </summary>
-        internal async Task<HttpResponseInfo> GetMusicBrainzResponse(string url, bool isSearch, bool forceMusicBrainzProper, CancellationToken cancellationToken)
+        internal async Task<HttpResponseInfo> GetMusicBrainzResponse(string url, CancellationToken cancellationToken)
         {
-            var urlInfo = new MbzUrl(MusicBrainzBaseUrl, 1000);
-            var throttleMs = urlInfo.throttleMs;
+            // The Jellyfin user-agent is unrestricted but source IP must not exceed
+            // one request per second, therefore we rate limit to avoid throttling
+            // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting
+            const long QueryIntervalMs = 1000u;
 
-            if (throttleMs > 0)
+            // Only delay if necessary
+            if (_stopWatchMusicBrainz.ElapsedMilliseconds < QueryIntervalMs)
             {
-                // MusicBrainz is extremely adamant about limiting to one request per second
-                _logger.LogDebug("Throttling MusicBrainz by {0}ms", throttleMs.ToString(CultureInfo.InvariantCulture));
-                await Task.Delay(throttleMs, cancellationToken).ConfigureAwait(false);
+                var delayMs = QueryIntervalMs - _stopWatchMusicBrainz.ElapsedMilliseconds;
+                await Task.Delay((int)delayMs, cancellationToken).ConfigureAwait(false);
             }
 
-            url = urlInfo.url.TrimEnd('/') + url;
+            _logger.LogDebug("MusicBrainz time since previous request: {0}ms", _stopWatchMusicBrainz.ElapsedMilliseconds);
+            _stopWatchMusicBrainz.Restart();
 
             var options = new HttpRequestOptions
             {
-                Url = url,
+                Url = MusicBrainzBaseUrl.TrimEnd('/') + url,
                 CancellationToken = cancellationToken,
                 UserAgent = _appHost.ApplicationUserAgent,
-                BufferContent = throttleMs > 0
+                BufferContent = false
             };
 
             return await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
@@ -748,18 +746,6 @@ namespace MediaBrowser.Providers.Music
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
-        }
-
-        internal class MbzUrl
-        {
-            internal MbzUrl(string url, int throttleMs)
-            {
-                this.url = url;
-                this.throttleMs = throttleMs;
-            }
-
-            public string url { get; set; }
-            public int throttleMs { get; set; }
         }
     }
 }
