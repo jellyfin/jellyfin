@@ -127,9 +127,9 @@ jobs:
     - task: DownloadBuildArtifacts@0
       displayName: Download the Reference Assembly Build Artifact
       inputs:
-        buildType: 'current' # Options: current, specific
-        #project: # Required when buildType == Specific
-        #pipeline: # Required when buildType == Specific
+        buildType: 'specific' # Options: current, specific
+        project: jellyfin # Required when buildType == Specific
+        pipeline: Jellyfin CI # Required when buildType == Specific
         #specificBuildWithTriggering: false # Optional
         buildVersionToDownload: 'latestFromBranch' # Required when buildType == Specific# Options: latest, latestFromBranch, specific
         allowPartiallySucceededBuilds: false # Optional
