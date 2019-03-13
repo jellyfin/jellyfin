@@ -151,7 +151,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             });
         }
 
-        private static int RtpHeaderBytes = 12;
+        private const int RtpHeaderBytes = 12;
+
         private async Task CopyTo(MediaBrowser.Model.Net.ISocket udpClient, string file, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
             var bufferSize = 81920;
