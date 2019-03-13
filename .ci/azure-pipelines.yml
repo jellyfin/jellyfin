@@ -8,15 +8,9 @@ variables:
 
 pr:
   autoCancel: true
-  branches:
-    include:
-      - *
 
 trigger:
   batch: true
-  branches:
-    include:
-      - *
 
 jobs:
   - job: main_build
