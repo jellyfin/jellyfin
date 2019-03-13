@@ -128,8 +128,8 @@ jobs:
       displayName: Download the Reference Assembly Build Artifact
       inputs:
         buildType: 'specific' # Options: current, specific
-        project: jellyfin # Required when buildType == Specific
-        pipeline: 1 # Required when buildType == Specific, not sure if this will take a name too
+        project: $(System.TeamProjectId) # Required when buildType == Specific
+        pipeline: $(System.DefinitionId) # Required when buildType == Specific, not sure if this will take a name too
         #specificBuildWithTriggering: false # Optional
         buildVersionToDownload: 'latestFromBranch' # Required when buildType == Specific# Options: latest, latestFromBranch, specific
         allowPartiallySucceededBuilds: false # Optional
