@@ -10,13 +10,13 @@ pr:
   autoCancel: true
   branches:
     include:
-      - 'refs/*'
+      - *
 
 trigger:
   batch: true
   branches:
     include:
-      - 'refs/*'
+      - *
 
 jobs:
   - job: main_build
