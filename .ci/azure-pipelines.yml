@@ -99,7 +99,7 @@ jobs:
     pool:
       vmImage: ubuntu-16.04
     dependsOn: main_build
-    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber'])
+    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber']) # Only execute if the pullrequest numer is defined. (So not for normal CI builds)
     strategy:
       matrix:
         Naming:
@@ -126,7 +126,7 @@ jobs:
         pipeline: $(System.DefinitionId) # Required when buildType == Specific, not sure if this will take a name too
         #specificBuildWithTriggering: false # Optional
         buildVersionToDownload: 'latestFromBranch' # Required when buildType == Specific# Options: latest, latestFromBranch, specific
-        allowPartiallySucceededBuilds: true # Optional
+        allowPartiallySucceededBuilds: false # Optional
         branchName: '$(System.PullRequest.TargetBranch)' # Required when buildType == Specific && BuildVersionToDownload == LatestFromBranch
         #buildId: # Required when buildType == Specific && BuildVersionToDownload == Specific
         #tags: # Optional
