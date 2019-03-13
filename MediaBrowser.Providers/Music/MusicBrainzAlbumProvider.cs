@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.Music
             var releaseId = searchInfo.GetReleaseId();
             var releaseGroupId = searchInfo.GetReleaseGroupId();
 
-            string url = null;
+            string url;
             var isNameSearch = false;
             bool forceMusicBrainzProper = false;
 
@@ -100,10 +100,10 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            return new List<RemoteSearchResult>();
+            return Enumerable.Empty<RemoteSearchResult>();
         }
 
-        private List<RemoteSearchResult> GetResultsFromResponse(Stream stream)
+        private IEnumerable<RemoteSearchResult> GetResultsFromResponse(Stream stream)
         {
             using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
@@ -149,7 +149,7 @@ namespace MediaBrowser.Providers.Music
 
                         return result;
 
-                    }).ToList();
+                    });
                 }
             }
         }
@@ -301,7 +301,7 @@ namespace MediaBrowser.Providers.Music
 
             public List<ValueTuple<string, string>> Artists = new List<ValueTuple<string, string>>();
 
-            public static List<ReleaseResult> Parse(XmlReader reader)
+            public static IEnumerable<ReleaseResult> Parse(XmlReader reader)
             {
                 reader.MoveToContent();
                 reader.Read();
@@ -338,13 +338,11 @@ namespace MediaBrowser.Providers.Music
                     }
                 }
 
-                return new List<ReleaseResult>();
+                return Enumerable.Empty<ReleaseResult>();
             }
 
-            private static List<ReleaseResult> ParseReleaseList(XmlReader reader)
+            private static IEnumerable<ReleaseResult> ParseReleaseList(XmlReader reader)
             {
-                var list = new List<ReleaseResult>();
-
                 reader.MoveToContent();
                 reader.Read();
 
@@ -369,7 +367,7 @@ namespace MediaBrowser.Providers.Music
                                         var release = ParseRelease(subReader, releaseId);
                                         if (release != null)
                                         {
-                                            list.Add(release);
+                                            yield return release;
                                         }
                                     }
                                     break;
@@ -386,8 +384,6 @@ namespace MediaBrowser.Providers.Music
                         reader.Read();
                     }
                 }
-
-                return list;
             }
 
             private static ReleaseResult ParseRelease(XmlReader reader, string releaseId)
@@ -552,7 +548,7 @@ namespace MediaBrowser.Providers.Music
             return (null, null);
         }
 
-        private static ValueTuple<string, string> ParseArtistArtistCredit(XmlReader reader, string artistId)
+        private static (string name, string id) ParseArtistArtistCredit(XmlReader reader, string artistId)
         {
             reader.MoveToContent();
             reader.Read();
@@ -586,7 +582,7 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            return new ValueTuple<string, string>(name, artistId);
+            return (name, artistId);
         }
 
         private async Task<string> GetReleaseIdFromReleaseGroupId(string releaseGroupId, CancellationToken cancellationToken)
