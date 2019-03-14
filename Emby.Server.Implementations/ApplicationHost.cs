@@ -703,7 +703,7 @@ namespace Emby.Server.Implementations
             var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LoggerFactory, JsonSerializer, ApplicationPaths, FileSystemManager);
             serviceCollection.AddSingleton<IDisplayPreferencesRepository>(displayPreferencesRepo);
 
-            ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, JsonSerializer, LoggerFactory, assemblyInfo);
+            ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, JsonSerializer, LoggerFactory, assemblyInfo, LocalizationManager);
             serviceCollection.AddSingleton<IItemRepository>(ItemRepository);
 
             AuthenticationRepository = GetAuthenticationRepository();
@@ -979,7 +979,8 @@ namespace Emby.Server.Implementations
                 HttpClient,
                 ZipClient,
                 ProcessFactory,
-                5000);
+                5000,
+                LocalizationManager);
 
             MediaEncoder = mediaEncoder;
             serviceCollection.AddSingleton(MediaEncoder);

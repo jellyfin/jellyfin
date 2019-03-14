@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
@@ -20,11 +21,13 @@ namespace MediaBrowser.MediaEncoding.Probing
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
+        private readonly ILocalizationManager _localization;
 
-        public ProbeResultNormalizer(ILogger logger, IFileSystem fileSystem)
+        public ProbeResultNormalizer(ILogger logger, IFileSystem fileSystem, ILocalizationManager localization)
         {
             _logger = logger;
             _fileSystem = fileSystem;
+            _localization = localization;
         }
 
         public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType? videoType, bool isAudio, string path, MediaProtocol protocol)
@@ -599,6 +602,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 stream.Type = MediaStreamType.Subtitle;
                 stream.Codec = NormalizeSubtitleCodec(stream.Codec);
+                stream.localizedUndefined = _localization.GetLocalizedString("Undefined");
+                stream.localizedDefault = _localization.GetLocalizedString("Default");
+                stream.localizedForced = _localization.GetLocalizedString("Forced");
             }
             else if (string.Equals(streamInfo.codec_type, "video", StringComparison.OrdinalIgnoreCase))
             {

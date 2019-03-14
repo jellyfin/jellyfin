@@ -19,6 +19,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
@@ -69,6 +70,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly string _originalFFMpegPath;
         private readonly string _originalFFProbePath;
         private readonly int DefaultImageExtractionTimeoutMs;
+        private readonly ILocalizationManager _localization;
 
         public MediaEncoder(
             ILoggerFactory loggerFactory,
@@ -88,7 +90,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IHttpClient httpClient,
             IZipClient zipClient,
             IProcessFactory processFactory,
-            int defaultImageExtractionTimeoutMs)
+            int defaultImageExtractionTimeoutMs,
+            ILocalizationManager localization)
         {
             _logger = loggerFactory.CreateLogger(nameof(MediaEncoder));
             _jsonSerializer = jsonSerializer;
@@ -110,6 +113,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _originalFFProbePath = ffProbePath;
             _originalFFMpegPath = ffMpegPath;
             _hasExternalEncoder = hasExternalEncoder;
+            _localization = localization;
         }
 
         public string EncoderLocationType
@@ -537,7 +541,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         }
                     }
 
-                    return new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
+                    return new ProbeResultNormalizer(_logger, FileSystem, _localization).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
                 }
                 catch
                 {
