@@ -8,7 +8,7 @@ using System.Resources;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Jellyfin Project")]
-[assembly: AssemblyProduct("Jellyfin: The Free Software Media System")]
+[assembly: AssemblyProduct("Jellyfin Server")]
 [assembly: AssemblyCopyright("Copyright ©  2019 Jellyfin Contributors. Code released under the GNU General Public License Version 2")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
