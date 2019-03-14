@@ -33,6 +33,12 @@ namespace MediaBrowser.Providers.Music
 
         public readonly string MusicBrainzBaseUrl;
 
+        // The Jellyfin user-agent is unrestricted but source IP must not exceed
+        // one request per second, therefore we rate limit to avoid throttling.
+        // Be prudent, use a value slightly above the minimun required.
+        // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting
+        private const long MusicBrainzQueryIntervalMs = 1050u;
+
         public MusicBrainzAlbumProvider(
             IHttpClient httpClient,
             IApplicationHost appHost,
@@ -715,15 +721,10 @@ namespace MediaBrowser.Providers.Music
         /// </summary>
         internal async Task<HttpResponseInfo> GetMusicBrainzResponse(string url, CancellationToken cancellationToken)
         {
-            // The Jellyfin user-agent is unrestricted but source IP must not exceed
-            // one request per second, therefore we rate limit to avoid throttling
-            // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting
-            const long QueryIntervalMs = 1000u;
-
-            // Only delay if necessary
-            if (_stopWatchMusicBrainz.ElapsedMilliseconds < QueryIntervalMs)
+            if (_stopWatchMusicBrainz.ElapsedMilliseconds < MusicBrainzQueryIntervalMs)
             {
-                var delayMs = QueryIntervalMs - _stopWatchMusicBrainz.ElapsedMilliseconds;
+                // MusicBrainz is extremely adamant about limiting to one request per second
+                var delayMs = MusicBrainzQueryIntervalMs - _stopWatchMusicBrainz.ElapsedMilliseconds;
                 await Task.Delay((int)delayMs, cancellationToken).ConfigureAwait(false);
             }
 
