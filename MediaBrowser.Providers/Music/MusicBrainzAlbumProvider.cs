@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -735,7 +734,9 @@ namespace MediaBrowser.Providers.Music
             {
                 Url = MusicBrainzBaseUrl.TrimEnd('/') + url,
                 CancellationToken = cancellationToken,
-                UserAgent = _appHost.ApplicationUserAgent,
+                // MusicBrainz request a contact email address is supplied, as comment, in user agent field:
+                // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent
+                UserAgent = string.Format("{0} ( {1} )", _appHost.ApplicationUserAgent, _appHost.ApplicationUserAgentAddress),
                 BufferContent = false
             };
 
