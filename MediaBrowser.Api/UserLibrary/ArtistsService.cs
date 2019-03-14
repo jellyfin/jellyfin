@@ -87,11 +87,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetArtists request)
         {
-            if (string.IsNullOrWhiteSpace(request.IncludeItemTypes))
-            {
-                //request.IncludeItemTypes = "Audio,MusicVideo";
-            }
-
             return GetResultSlim(request);
         }
 
@@ -102,11 +97,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetAlbumArtists request)
         {
-            if (string.IsNullOrWhiteSpace(request.IncludeItemTypes))
-            {
-                //request.IncludeItemTypes = "Audio,MusicVideo";
-            }
-
             var result = GetResultSlim(request);
 
             return ToOptimizedResult(result);

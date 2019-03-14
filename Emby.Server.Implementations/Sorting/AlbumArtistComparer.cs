@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.Sorting
         {
             var audio = x as IHasAlbumArtist;
 
-            return audio != null ? audio.AlbumArtists.FirstOrDefault() : null;
+            return audio?.AlbumArtists.FirstOrDefault();
         }
 
         /// <summary>

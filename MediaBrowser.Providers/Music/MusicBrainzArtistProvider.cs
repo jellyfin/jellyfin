@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.Music
                 {
                     using (var stream = response.Content)
                     {
-                        var results = GetResultsFromResponse(stream);
+                        var results = GetResultsFromResponse(stream).ToList();
 
                         if (results.Count > 0)
                         {
@@ -74,10 +74,10 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            return new List<RemoteSearchResult>();
+            return Enumerable.Empty<RemoteSearchResult>();
         }
 
-        private List<RemoteSearchResult> GetResultsFromResponse(Stream stream)
+        private IEnumerable<RemoteSearchResult> GetResultsFromResponse(Stream stream)
         {
             using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
@@ -126,15 +126,13 @@ namespace MediaBrowser.Providers.Music
                         }
                     }
 
-                    return new List<RemoteSearchResult>();
+                    return Enumerable.Empty<RemoteSearchResult>();
                 }
             }
         }
 
-        private List<RemoteSearchResult> ParseArtistList(XmlReader reader)
+        private IEnumerable<RemoteSearchResult> ParseArtistList(XmlReader reader)
         {
-            var list = new List<RemoteSearchResult>();
-
             reader.MoveToContent();
             reader.Read();
 
@@ -159,7 +157,7 @@ namespace MediaBrowser.Providers.Music
                                     var artist = ParseArtist(subReader, mbzId);
                                     if (artist != null)
                                     {
-                                        list.Add(artist);
+                                        yield return artist;
                                     }
                                 }
                                 break;
@@ -176,8 +174,6 @@ namespace MediaBrowser.Providers.Music
                     reader.Read();
                 }
             }
-
-            return list;
         }
 
         private RemoteSearchResult ParseArtist(XmlReader reader, string artistId)
@@ -277,7 +273,7 @@ namespace MediaBrowser.Providers.Music
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>System.String.</returns>
-        private string UrlEncode(string name)
+        private static string UrlEncode(string name)
         {
             return WebUtility.UrlEncode(name);
         }
