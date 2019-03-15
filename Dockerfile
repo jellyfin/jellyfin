@@ -15,7 +15,7 @@ RUN apt-get update \
    libfontconfig1 \
  && apt-get clean autoclean \
  && apt-get autoremove \
- && rm -rf /var/lib/{apt,dpkg,cache,log} \
+ && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media
 COPY --from=ffmpeg / /
