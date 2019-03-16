@@ -3,7 +3,6 @@ using System.Reflection;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -16,7 +15,6 @@ namespace Jellyfin.Server
             ILoggerFactory loggerFactory,
             StartupOptions options,
             IFileSystem fileSystem,
-            IEnvironmentInfo environmentInfo,
             MediaBrowser.Controller.Drawing.IImageEncoder imageEncoder,
             MediaBrowser.Common.Net.INetworkManager networkManager,
             IConfiguration configuration)
@@ -25,7 +23,6 @@ namespace Jellyfin.Server
                 loggerFactory,
                 options,
                 fileSystem,
-                environmentInfo,
                 imageEncoder,
                 networkManager,
                 configuration)

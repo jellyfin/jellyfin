@@ -15,8 +15,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.WebDashboard",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.Providers", "MediaBrowser.Providers\MediaBrowser.Providers.csproj", "{442B5058-DCAF-4263-BB6A-F21E31120A1B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenSubtitlesHandler", "OpenSubtitlesHandler\OpenSubtitlesHandler.csproj", "{4A4402D4-E910-443B-B8FC-2C18286A2CA0}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.XbmcMetadata", "MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj", "{23499896-B135-4527-8574-C26E926EA99E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.LocalMetadata", "MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj", "{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}"
@@ -180,7 +178,7 @@ Global
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
 		$0.StandardHeader = $1
-		$1.Text = @### This header should be used to start new files.\n### It provides an explicit per-file license reference that should be present on all new files.\n### To use this header, delete these lines and the following empty line, modify <filename> to\n### the proper full path, and then add new code following the header and a single empty line.\n\n// ${FileName}\n// Part of the Jellyfin project (https://jellyfin.media)\n//\n//    All copyright belongs to the Jellyfin contributors; a full list can\n//    be found in the file CONTRIBUTORS.md\n//\n//    This program is free software: you can redistribute it and/or modify\n//    it under the terms of the GNU General Public License as published by\n//    the Free Software Foundation, version 2.\n//\n//    This program is distributed in the hope that it will be useful,\n//    but WITHOUT ANY WARRANTY; without even the implied warranty of\n//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n//    GNU General Public License for more details.\n//\n//    You should have received a copy of the GNU General Public License\n//    along with this program.  If not, see <https://www.gnu.org/licenses/>.\n
+		$1.IncludeInNewFiles = False
 		$0.DotNetNamingPolicy = $2
 		$2.DirectoryNamespaceAssociation = PrefixedHierarchical
 	EndGlobalSection

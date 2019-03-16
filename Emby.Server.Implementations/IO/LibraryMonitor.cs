@@ -10,8 +10,8 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
-using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations.IO
 {
@@ -127,7 +127,6 @@ namespace Emby.Server.Implementations.IO
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
         private readonly IFileSystem _fileSystem;
-        private readonly IEnvironmentInfo _environmentInfo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryMonitor" /> class.
@@ -136,14 +135,12 @@ namespace Emby.Server.Implementations.IO
             ILoggerFactory loggerFactory,
             ILibraryManager libraryManager,
             IServerConfigurationManager configurationManager,
-            IFileSystem fileSystem,
-            IEnvironmentInfo environmentInfo)
+            IFileSystem fileSystem)
         {
             LibraryManager = libraryManager;
             Logger = loggerFactory.CreateLogger(GetType().Name);
             ConfigurationManager = configurationManager;
             _fileSystem = fileSystem;
-            _environmentInfo = environmentInfo;
         }
 
         private bool IsLibraryMonitorEnabled(BaseItem item)
@@ -267,19 +264,13 @@ namespace Emby.Server.Implementations.IO
                 return;
             }
 
-            if (_environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
+            if (OperatingSystem.Id != OperatingSystemId.Windows)
             {
                 if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) || path.StartsWith("smb://", StringComparison.OrdinalIgnoreCase))
                 {
                     // not supported
                     return;
                 }
-            }
-
-            if (_environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Android)
-            {
-                // causing crashing
-                return;
             }
 
             // Already being watched

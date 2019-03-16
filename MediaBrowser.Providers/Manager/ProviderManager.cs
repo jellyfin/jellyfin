@@ -942,10 +942,7 @@ namespace MediaBrowser.Providers.Manager
                 _activeRefreshes[id] = 0;
             }
 
-            if (RefreshStarted != null)
-            {
-                RefreshStarted(this, new GenericEventArgs<BaseItem>(item));
-            }
+            RefreshStarted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
         }
 
         public void OnRefreshComplete(BaseItem item)
@@ -956,10 +953,7 @@ namespace MediaBrowser.Providers.Manager
                 _activeRefreshes.Remove(item.Id);
             }
 
-            if (RefreshCompleted != null)
-            {
-                RefreshCompleted(this, new GenericEventArgs<BaseItem>(item));
-            }
+            RefreshCompleted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
         }
 
         public double? GetRefreshProgress(Guid id)
@@ -986,10 +980,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     _activeRefreshes[id] = progress;
 
-                    if (RefreshProgress != null)
-                    {
-                        RefreshProgress(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
-                    }
+                    RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
                 }
                 else
                 {
@@ -1079,17 +1070,14 @@ namespace MediaBrowser.Providers.Manager
             await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
 
             // Collection folders don't validate their children so we'll have to simulate that here
-            var collectionFolder = item as CollectionFolder;
 
-            if (collectionFolder != null)
+            if (item is CollectionFolder collectionFolder)
             {
                 await RefreshCollectionFolderChildren(options, collectionFolder, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                var folder = item as Folder;
-
-                if (folder != null)
+                if (item is Folder folder)
                 {
                     await folder.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options).ConfigureAwait(false);
                 }
@@ -1098,16 +1086,11 @@ namespace MediaBrowser.Providers.Manager
 
         private async Task RefreshCollectionFolderChildren(MetadataRefreshOptions options, CollectionFolder collectionFolder, CancellationToken cancellationToken)
         {
-            foreach (var child in collectionFolder.GetPhysicalFolders().ToList())
+            foreach (var child in collectionFolder.GetPhysicalFolders())
             {
                 await child.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
 
-                if (child.IsFolder)
-                {
-                    var folder = (Folder)child;
-
-                    await folder.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options, true).ConfigureAwait(false);
-                }
+                await child.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options, true).ConfigureAwait(false);
             }
         }
 
@@ -1116,20 +1099,18 @@ namespace MediaBrowser.Providers.Manager
             var albums = _libraryManagerFactory()
                 .GetItemList(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+                    IncludeItemTypes = new[] { nameof(MusicAlbum) },
                     ArtistIds = new[] { item.Id },
                     DtoOptions = new DtoOptions(false)
                     {
                         EnableImages = false
                     }
                 })
-                .OfType<MusicAlbum>()
-                .ToList();
+                .OfType<MusicAlbum>();
 
             var musicArtists = albums
                 .Select(i => i.MusicArtist)
-                .Where(i => i != null)
-                .ToList();
+                .Where(i => i != null);
 
             var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options, true));
 

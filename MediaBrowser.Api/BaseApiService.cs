@@ -165,6 +165,7 @@ namespace MediaBrowser.Api
                 {
                     options.ImageTypeLimit = hasDtoOptions.ImageTypeLimit.Value;
                 }
+
                 if (hasDtoOptions.EnableUserData.HasValue)
                 {
                     options.EnableUserData = hasDtoOptions.EnableUserData.Value;
@@ -307,7 +308,7 @@ namespace MediaBrowser.Api
             return pathInfo[index];
         }
 
-        private string[] Parse(string pathUri)
+        private static string[] Parse(string pathUri)
         {
             var actionParts = pathUri.Split(new[] { "://" }, StringSplitOptions.None);
 
@@ -329,38 +330,32 @@ namespace MediaBrowser.Api
         /// </summary>
         protected BaseItem GetItemByName(string name, string type, ILibraryManager libraryManager, DtoOptions dtoOptions)
         {
-            BaseItem item;
-
-            if (type.IndexOf("Person", StringComparison.OrdinalIgnoreCase) == 0)
+            if (type.Equals("Person", StringComparison.OrdinalIgnoreCase))
             {
-                item = GetPerson(name, libraryManager, dtoOptions);
+                return GetPerson(name, libraryManager, dtoOptions);
             }
-            else if (type.IndexOf("Artist", StringComparison.OrdinalIgnoreCase) == 0)
+            else if (type.Equals("Artist", StringComparison.OrdinalIgnoreCase))
             {
-                item = GetArtist(name, libraryManager, dtoOptions);
+                return GetArtist(name, libraryManager, dtoOptions);
             }
-            else if (type.IndexOf("Genre", StringComparison.OrdinalIgnoreCase) == 0)
+            else if (type.Equals("Genre", StringComparison.OrdinalIgnoreCase))
             {
-                item = GetGenre(name, libraryManager, dtoOptions);
+                return GetGenre(name, libraryManager, dtoOptions);
             }
-            else if (type.IndexOf("MusicGenre", StringComparison.OrdinalIgnoreCase) == 0)
+            else if (type.Equals("MusicGenre", StringComparison.OrdinalIgnoreCase))
             {
-                item = GetMusicGenre(name, libraryManager, dtoOptions);
+                return GetMusicGenre(name, libraryManager, dtoOptions);
             }
-            else if (type.IndexOf("Studio", StringComparison.OrdinalIgnoreCase) == 0)
+            else if (type.Equals("Studio", StringComparison.OrdinalIgnoreCase))
             {
-                item = GetStudio(name, libraryManager, dtoOptions);
+                return GetStudio(name, libraryManager, dtoOptions);
             }
-            else if (type.IndexOf("Year", StringComparison.OrdinalIgnoreCase) == 0)
+            else if (type.Equals("Year", StringComparison.OrdinalIgnoreCase))
             {
-                item = libraryManager.GetYear(int.Parse(name));
-            }
-            else
-            {
-                throw new ArgumentException();
+                return libraryManager.GetYear(int.Parse(name));
             }
 
-            return item;
+            throw new ArgumentException("Invalid type", nameof(type));
         }
     }
 }

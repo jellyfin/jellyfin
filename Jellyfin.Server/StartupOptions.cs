@@ -11,6 +11,9 @@ namespace Jellyfin.Server
         [Option('d', "datadir", Required = false, HelpText = "Path to use for the data folder (database files, etc.).")]
         public string DataDir { get; set; }
 
+        [Option('w', "webdir", Required = false, HelpText = "Path to the Jellyfin web UI resources.")]
+        public string WebDir { get; set; }
+
         [Option('C', "cachedir", Required = false, HelpText = "Path to use for caching.")]
         public string CacheDir { get; set; }
 
@@ -22,9 +25,6 @@ namespace Jellyfin.Server
 
         [Option("ffmpeg", Required = false, HelpText = "Path to external FFmpeg executable to use in place of default found in PATH.")]
         public string FFmpegPath { get; set; }
-
-        [Option("ffprobe", Required = false, HelpText = "(deprecated) Option has no effect and shall be removed in next release.")]
-        public string FFprobePath { get; set; }
 
         [Option("service", Required = false, HelpText = "Run as headless service.")]
         public bool IsService { get; set; }

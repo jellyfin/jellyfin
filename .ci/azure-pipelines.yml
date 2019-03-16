@@ -11,9 +11,6 @@ pr:
 
 trigger:
   batch: true
-  branches:
-    include:
-      - master
 
 jobs:
   - job: main_build
@@ -71,28 +68,28 @@ jobs:
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact Naming'
-      condition: eq(variables['BuildConfiguration'], 'Release')
+      condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
         PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/Emby.Naming.dll'
         artifactName: 'Jellyfin.Naming'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact Controller'
-      condition: eq(variables['BuildConfiguration'], 'Release')
+      condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
         PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Controller.dll'
         artifactName: 'Jellyfin.Controller'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact Model'
-      condition: eq(variables['BuildConfiguration'], 'Release')
+      condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
         PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Model.dll'
         artifactName: 'Jellyfin.Model'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact Common'
-      condition: eq(variables['BuildConfiguration'], 'Release')
+      condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
         PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Common.dll'
         artifactName: 'Jellyfin.Common'
@@ -102,7 +99,7 @@ jobs:
     pool:
       vmImage: ubuntu-16.04
     dependsOn: main_build
-    condition: succeeded()
+    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber']) # Only execute if the pullrequest numer is defined. (So not for normal CI builds)
     strategy:
       matrix:
         Naming:
@@ -121,16 +118,28 @@ jobs:
     steps:
     - checkout: none
 
-    - task: NuGetCommand@2
-      displayName: 'Download $(NugetPackageName)'
+    - task: DownloadBuildArtifacts@0
+      displayName: Download the Reference Assembly Build Artifact
       inputs:
-        command: custom
-        arguments: 'install $(NugetPackageName) -OutputDirectory $(System.ArtifactsDirectory)/packages -ExcludeVersion -DirectDownload'
+        buildType: 'specific' # Options: current, specific
+        project: $(System.TeamProjectId) # Required when buildType == Specific
+        pipeline: $(System.DefinitionId) # Required when buildType == Specific, not sure if this will take a name too
+        #specificBuildWithTriggering: false # Optional
+        buildVersionToDownload: 'latestFromBranch' # Required when buildType == Specific# Options: latest, latestFromBranch, specific
+        allowPartiallySucceededBuilds: false # Optional
+        branchName: '$(System.PullRequest.TargetBranch)' # Required when buildType == Specific && BuildVersionToDownload == LatestFromBranch
+        #buildId: # Required when buildType == Specific && BuildVersionToDownload == Specific
+        #tags: # Optional
+        downloadType: 'single' # Options: single, specific
+        artifactName: '$(NugetPackageName)'# Required when downloadType == Single
+        #itemPattern: '**' # Optional
+        downloadPath: '$(System.ArtifactsDirectory)/current-artifacts'
+        #parallelizationLimit: '8' # Optional
 
     - task: CopyFiles@2
       displayName: Copy Nuget Assembly to current-release folder
       inputs:
-        sourceFolder: $(System.ArtifactsDirectory)/packages/$(NugetPackageName) # Optional
+        sourceFolder: $(System.ArtifactsDirectory)/current-artifacts # Optional
         contents: '**/*.dll'
         targetFolder: $(System.ArtifactsDirectory)/current-release
         cleanTargetFolder: true # Optional
@@ -138,7 +147,7 @@ jobs:
         flattenFolders: true # Optional
 
     - task: DownloadBuildArtifacts@0
-      displayName: Download the Assembly Build Artifact
+      displayName: Download the New Assembly Build Artifact
       inputs:
         buildType: 'current' # Options: current, specific
         allowPartiallySucceededBuilds: false # Optional

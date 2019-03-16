@@ -3,7 +3,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
@@ -11,7 +10,6 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.System;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -46,8 +44,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             IDeviceManager deviceManager,
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
-            IAuthorizationContext authorizationContext,
-            IEnvironmentInfo environmentInfo)
+            IAuthorizationContext authorizationContext)
                 : base(httpClient,
                     serverConfig,
                     userManager,
@@ -60,8 +57,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                     deviceManager,
                     mediaSourceManager,
                     jsonSerializer,
-                    authorizationContext,
-                    environmentInfo)
+                    authorizationContext)
         {
         }
 

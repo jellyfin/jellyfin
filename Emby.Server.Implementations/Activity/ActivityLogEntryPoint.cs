@@ -30,13 +30,10 @@ namespace Emby.Server.Implementations.Activity
     public class ActivityLogEntryPoint : IServerEntryPoint
     {
         private readonly IInstallationManager _installationManager;
-
-        //private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
         private readonly ITaskManager _taskManager;
         private readonly IActivityManager _activityManager;
         private readonly ILocalizationManager _localization;
-
         private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subManager;
         private readonly IUserManager _userManager;
@@ -61,41 +58,37 @@ namespace Emby.Server.Implementations.Activity
 
         public Task RunAsync()
         {
-            _taskManager.TaskCompleted += _taskManager_TaskCompleted;
+            _taskManager.TaskCompleted += OnTaskCompleted;
 
-            _installationManager.PluginInstalled += _installationManager_PluginInstalled;
-            _installationManager.PluginUninstalled += _installationManager_PluginUninstalled;
-            _installationManager.PluginUpdated += _installationManager_PluginUpdated;
-            _installationManager.PackageInstallationFailed += _installationManager_PackageInstallationFailed;
+            _installationManager.PluginInstalled += OnPluginInstalled;
+            _installationManager.PluginUninstalled += OnPluginUninstalled;
+            _installationManager.PluginUpdated += OnPluginUpdated;
+            _installationManager.PackageInstallationFailed += OnPackageInstallationFailed;
 
-            _sessionManager.SessionStarted += _sessionManager_SessionStarted;
-            _sessionManager.AuthenticationFailed += _sessionManager_AuthenticationFailed;
-            _sessionManager.AuthenticationSucceeded += _sessionManager_AuthenticationSucceeded;
-            _sessionManager.SessionEnded += _sessionManager_SessionEnded;
+            _sessionManager.SessionStarted += OnSessionStarted;
+            _sessionManager.AuthenticationFailed += OnAuthenticationFailed;
+            _sessionManager.AuthenticationSucceeded += OnAuthenticationSucceeded;
+            _sessionManager.SessionEnded += OnSessionEnded;
 
-            _sessionManager.PlaybackStart += _sessionManager_PlaybackStart;
-            _sessionManager.PlaybackStopped += _sessionManager_PlaybackStopped;
+            _sessionManager.PlaybackStart += OnPlaybackStart;
+            _sessionManager.PlaybackStopped += OnPlaybackStopped;
 
-            //_subManager.SubtitlesDownloaded += _subManager_SubtitlesDownloaded;
-            _subManager.SubtitleDownloadFailure += _subManager_SubtitleDownloadFailure;
+            _subManager.SubtitleDownloadFailure += OnSubtitleDownloadFailure;
 
-            _userManager.UserCreated += _userManager_UserCreated;
-            _userManager.UserPasswordChanged += _userManager_UserPasswordChanged;
-            _userManager.UserDeleted += _userManager_UserDeleted;
-            _userManager.UserPolicyUpdated += _userManager_UserPolicyUpdated;
-            _userManager.UserLockedOut += _userManager_UserLockedOut;
+            _userManager.UserCreated += OnUserCreated;
+            _userManager.UserPasswordChanged += OnUserPasswordChanged;
+            _userManager.UserDeleted += OnUserDeleted;
+            _userManager.UserPolicyUpdated += OnUserPolicyUpdated;
+            _userManager.UserLockedOut += OnUserLockedOut;
 
-            //_config.ConfigurationUpdated += _config_ConfigurationUpdated;
-            //_config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
+            _deviceManager.CameraImageUploaded += OnCameraImageUploaded;
 
-            _deviceManager.CameraImageUploaded += _deviceManager_CameraImageUploaded;
-
-            _appHost.ApplicationUpdated += _appHost_ApplicationUpdated;
+            _appHost.ApplicationUpdated += OnApplicationUpdated;
 
             return Task.CompletedTask;
         }
 
-        void _deviceManager_CameraImageUploaded(object sender, GenericEventArgs<CameraImageUploadInfo> e)
+        private void OnCameraImageUploaded(object sender, GenericEventArgs<CameraImageUploadInfo> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -104,7 +97,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _userManager_UserLockedOut(object sender, GenericEventArgs<User> e)
+        private void OnUserLockedOut(object sender, GenericEventArgs<User> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -114,7 +107,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _subManager_SubtitleDownloadFailure(object sender, SubtitleDownloadFailureEventArgs e)
+        private void OnSubtitleDownloadFailure(object sender, SubtitleDownloadFailureEventArgs e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -125,7 +118,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _sessionManager_PlaybackStopped(object sender, PlaybackStopEventArgs e)
+        private void OnPlaybackStopped(object sender, PlaybackStopEventArgs e)
         {
             var item = e.MediaInfo;
 
@@ -146,7 +139,7 @@ namespace Emby.Server.Implementations.Activity
                 return;
             }
 
-            var user = e.Users.First();
+            var user = e.Users[0];
 
             CreateLogEntry(new ActivityLogEntry
             {
@@ -156,7 +149,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _sessionManager_PlaybackStart(object sender, PlaybackProgressEventArgs e)
+        private void OnPlaybackStart(object sender, PlaybackProgressEventArgs e)
         {
             var item = e.MediaInfo;
 
@@ -232,7 +225,7 @@ namespace Emby.Server.Implementations.Activity
             return null;
         }
 
-        void _sessionManager_SessionEnded(object sender, SessionEventArgs e)
+        private void OnSessionEnded(object sender, SessionEventArgs e)
         {
             string name;
             var session = e.SessionInfo;
@@ -258,7 +251,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _sessionManager_AuthenticationSucceeded(object sender, GenericEventArgs<AuthenticationResult> e)
+        private void OnAuthenticationSucceeded(object sender, GenericEventArgs<AuthenticationResult> e)
         {
             var user = e.Argument.User;
 
@@ -271,7 +264,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _sessionManager_AuthenticationFailed(object sender, GenericEventArgs<AuthenticationRequest> e)
+        private void OnAuthenticationFailed(object sender, GenericEventArgs<AuthenticationRequest> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -282,7 +275,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _appHost_ApplicationUpdated(object sender, GenericEventArgs<PackageVersionInfo> e)
+        private void OnApplicationUpdated(object sender, GenericEventArgs<PackageVersionInfo> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -292,25 +285,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
-        {
-            CreateLogEntry(new ActivityLogEntry
-            {
-                Name = string.Format(_localization.GetLocalizedString("MessageNamedServerConfigurationUpdatedWithValue"), e.Key),
-                Type = "NamedConfigurationUpdated"
-            });
-        }
-
-        void _config_ConfigurationUpdated(object sender, EventArgs e)
-        {
-            CreateLogEntry(new ActivityLogEntry
-            {
-                Name = _localization.GetLocalizedString("MessageServerConfigurationUpdated"),
-                Type = "ServerConfigurationUpdated"
-            });
-        }
-
-        void _userManager_UserPolicyUpdated(object sender, GenericEventArgs<User> e)
+        private void OnUserPolicyUpdated(object sender, GenericEventArgs<User> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -320,7 +295,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _userManager_UserDeleted(object sender, GenericEventArgs<User> e)
+        private void OnUserDeleted(object sender, GenericEventArgs<User> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -329,7 +304,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _userManager_UserPasswordChanged(object sender, GenericEventArgs<User> e)
+        private void OnUserPasswordChanged(object sender, GenericEventArgs<User> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -339,7 +314,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _userManager_UserCreated(object sender, GenericEventArgs<User> e)
+        private void OnUserCreated(object sender, GenericEventArgs<User> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -349,18 +324,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _subManager_SubtitlesDownloaded(object sender, SubtitleDownloadEventArgs e)
-        {
-            CreateLogEntry(new ActivityLogEntry
-            {
-                Name = string.Format(_localization.GetLocalizedString("SubtitlesDownloadedForItem"), Notifications.Notifications.GetItemName(e.Item)),
-                Type = "SubtitlesDownloaded",
-                ItemId = e.Item.Id.ToString("N"),
-                ShortOverview = string.Format(_localization.GetLocalizedString("ProviderValue"), e.Provider)
-            });
-        }
-
-        void _sessionManager_SessionStarted(object sender, SessionEventArgs e)
+        private void OnSessionStarted(object sender, SessionEventArgs e)
         {
             string name;
             var session = e.SessionInfo;
@@ -386,7 +350,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _installationManager_PluginUpdated(object sender, GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> e)
+        private void OnPluginUpdated(object sender, GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -397,7 +361,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _installationManager_PluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
+        private void OnPluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -406,7 +370,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _installationManager_PluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> e)
+        private void OnPluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -416,7 +380,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _installationManager_PackageInstallationFailed(object sender, InstallationFailedEventArgs e)
+        private void OnPackageInstallationFailed(object sender, InstallationFailedEventArgs e)
         {
             var installationInfo = e.InstallationInfo;
 
@@ -429,7 +393,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        void _taskManager_TaskCompleted(object sender, TaskCompletionEventArgs e)
+        private void OnTaskCompleted(object sender, TaskCompletionEventArgs e)
         {
             var result = e.Result;
             var task = e.Task;
@@ -468,48 +432,36 @@ namespace Emby.Server.Implementations.Activity
         }
 
         private void CreateLogEntry(ActivityLogEntry entry)
-        {
-            try
-            {
-                _activityManager.Create(entry);
-            }
-            catch
-            {
-                // Logged at lower levels
-            }
-        }
+            => _activityManager.Create(entry);
 
         public void Dispose()
         {
-            _taskManager.TaskCompleted -= _taskManager_TaskCompleted;
+            _taskManager.TaskCompleted -= OnTaskCompleted;
 
-            _installationManager.PluginInstalled -= _installationManager_PluginInstalled;
-            _installationManager.PluginUninstalled -= _installationManager_PluginUninstalled;
-            _installationManager.PluginUpdated -= _installationManager_PluginUpdated;
-            _installationManager.PackageInstallationFailed -= _installationManager_PackageInstallationFailed;
+            _installationManager.PluginInstalled -= OnPluginInstalled;
+            _installationManager.PluginUninstalled -= OnPluginUninstalled;
+            _installationManager.PluginUpdated -= OnPluginUpdated;
+            _installationManager.PackageInstallationFailed -= OnPackageInstallationFailed;
 
-            _sessionManager.SessionStarted -= _sessionManager_SessionStarted;
-            _sessionManager.AuthenticationFailed -= _sessionManager_AuthenticationFailed;
-            _sessionManager.AuthenticationSucceeded -= _sessionManager_AuthenticationSucceeded;
-            _sessionManager.SessionEnded -= _sessionManager_SessionEnded;
+            _sessionManager.SessionStarted -= OnSessionStarted;
+            _sessionManager.AuthenticationFailed -= OnAuthenticationFailed;
+            _sessionManager.AuthenticationSucceeded -= OnAuthenticationSucceeded;
+            _sessionManager.SessionEnded -= OnSessionEnded;
 
-            _sessionManager.PlaybackStart -= _sessionManager_PlaybackStart;
-            _sessionManager.PlaybackStopped -= _sessionManager_PlaybackStopped;
+            _sessionManager.PlaybackStart -= OnPlaybackStart;
+            _sessionManager.PlaybackStopped -= OnPlaybackStopped;
 
-            _subManager.SubtitleDownloadFailure -= _subManager_SubtitleDownloadFailure;
+            _subManager.SubtitleDownloadFailure -= OnSubtitleDownloadFailure;
 
-            _userManager.UserCreated -= _userManager_UserCreated;
-            _userManager.UserPasswordChanged -= _userManager_UserPasswordChanged;
-            _userManager.UserDeleted -= _userManager_UserDeleted;
-            _userManager.UserPolicyUpdated -= _userManager_UserPolicyUpdated;
-            _userManager.UserLockedOut -= _userManager_UserLockedOut;
+            _userManager.UserCreated -= OnUserCreated;
+            _userManager.UserPasswordChanged -= OnUserPasswordChanged;
+            _userManager.UserDeleted -= OnUserDeleted;
+            _userManager.UserPolicyUpdated -= OnUserPolicyUpdated;
+            _userManager.UserLockedOut -= OnUserLockedOut;
 
-            _config.ConfigurationUpdated -= _config_ConfigurationUpdated;
-            _config.NamedConfigurationUpdated -= _config_NamedConfigurationUpdated;
+            _deviceManager.CameraImageUploaded -= OnCameraImageUploaded;
 
-            _deviceManager.CameraImageUploaded -= _deviceManager_CameraImageUploaded;
-
-            _appHost.ApplicationUpdated -= _appHost_ApplicationUpdated;
+            _appHost.ApplicationUpdated -= OnApplicationUpdated;
         }
 
         /// <summary>
@@ -531,6 +483,7 @@ namespace Emby.Server.Implementations.Activity
                 values.Add(CreateValueString(years, "year"));
                 days = days % DaysInYear;
             }
+
             // Number of months
             if (days >= DaysInMonth)
             {
@@ -538,25 +491,39 @@ namespace Emby.Server.Implementations.Activity
                 values.Add(CreateValueString(months, "month"));
                 days = days % DaysInMonth;
             }
+
             // Number of days
             if (days >= 1)
+            {
                 values.Add(CreateValueString(days, "day"));
+            }
+
             // Number of hours
             if (span.Hours >= 1)
+            {
                 values.Add(CreateValueString(span.Hours, "hour"));
+            }
             // Number of minutes
             if (span.Minutes >= 1)
+            {
                 values.Add(CreateValueString(span.Minutes, "minute"));
+            }
+
             // Number of seconds (include when 0 if no other components included)
             if (span.Seconds >= 1 || values.Count == 0)
+            {
                 values.Add(CreateValueString(span.Seconds, "second"));
+            }
 
             // Combine values into string
             var builder = new StringBuilder();
             for (int i = 0; i < values.Count; i++)
             {
                 if (builder.Length > 0)
+                {
                     builder.Append(i == values.Count - 1 ? " and " : ", ");
+                }
+
                 builder.Append(values[i]);
             }
             // Return result

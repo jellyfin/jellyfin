@@ -23,7 +23,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
     {
         internal static TvdbSeriesProvider Current { get; private set; }
         private readonly IHttpClient _httpClient;
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;
@@ -146,6 +145,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
 
         private async Task<string> GetSeriesByRemoteId(string id, string idType, string language, CancellationToken cancellationToken)
         {
+
             TvDbResponse<SeriesSearchResult[]> result = null;
 
             try
@@ -334,7 +334,6 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             result.ResultLanguage = metadataLanguage;
             series.AirDays = TVUtils.GetAirDays(tvdbSeries.AirsDayOfWeek);
             series.AirTime = tvdbSeries.AirsTime;
-
             series.CommunityRating = (float?)tvdbSeries.SiteRating;
             series.SetProviderId(MetadataProviders.Imdb, tvdbSeries.ImdbId);
             series.SetProviderId(MetadataProviders.Zap2It, tvdbSeries.Zap2itId);

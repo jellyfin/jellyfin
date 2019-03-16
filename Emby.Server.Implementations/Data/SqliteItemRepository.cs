@@ -24,7 +24,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
@@ -65,8 +64,7 @@ namespace Emby.Server.Implementations.Data
             IServerConfigurationManager config,
             IServerApplicationHost appHost,
             IJsonSerializer jsonSerializer,
-            ILoggerFactory loggerFactory,
-            IAssemblyInfo assemblyInfo)
+            ILoggerFactory loggerFactory)
             : base(loggerFactory.CreateLogger(nameof(SqliteItemRepository)))
         {
             if (config == null)
@@ -82,7 +80,7 @@ namespace Emby.Server.Implementations.Data
             _appHost = appHost;
             _config = config;
             _jsonSerializer = jsonSerializer;
-            _typeMapper = new TypeMapper(assemblyInfo);
+            _typeMapper = new TypeMapper();
 
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
         }
