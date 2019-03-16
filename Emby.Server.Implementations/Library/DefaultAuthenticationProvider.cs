@@ -52,7 +52,7 @@ namespace Emby.Server.Implementations.Library
             PasswordHash readyHash = new PasswordHash(resolvedUser.Password);
             byte[] calculatedHash;
             string calculatedHashString;
-            if (_cryptographyProvider.GetSupportedHashMethods().Contains(readyHash.Id))
+            if (_cryptographyProvider.GetSupportedHashMethods().Contains(readyHash.Id) || _cryptographyProvider.DefaultHashMethod == readyHash.Id)
             {
                 if (string.IsNullOrEmpty(readyHash.Salt))
                 {
