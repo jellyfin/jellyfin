@@ -63,6 +63,28 @@ public sealed class HttpPostedFile : IDisposable
             _position = offset;
         }
 
+        public override bool CanRead => true;
+
+        public override bool CanSeek => true;
+
+        public override bool CanWrite => false;
+
+        public override long Length => _end - _offset;
+
+        public override long Position
+        {
+            get => _position - _offset;
+            set
+            {
+                if (value > Length)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _position = Seek(value, SeekOrigin.Begin);
+            }
+        }
+
         public override void Flush()
         {
         }
@@ -177,28 +199,6 @@ public sealed class HttpPostedFile : IDisposable
         public override void Write(byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException();
-        }
-
-        public override bool CanRead => true;
-
-        public override bool CanSeek => true;
-
-        public override bool CanWrite => false;
-
-        public override long Length => _end - _offset;
-
-        public override long Position
-        {
-            get => _position - _offset;
-            set
-            {
-                if (value > Length)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value));
-                }
-
-                _position = Seek(value, SeekOrigin.Begin);
-            }
         }
     }
 }

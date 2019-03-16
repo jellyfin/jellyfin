@@ -192,6 +192,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     Type = PersonType.Director
                 });
             }
+
             foreach (var person in episode.GuestStars)
             {
                 var index = person.IndexOf('(');
@@ -212,6 +213,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     Role = role
                 });
             }
+
             foreach (var writer in episode.Writers)
             {
                 result.AddPerson(new PersonInfo

@@ -23,7 +23,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.System;
 using Microsoft.Net.Http.Headers;
 
 namespace MediaBrowser.Api.LiveTv
@@ -695,29 +694,36 @@ namespace MediaBrowser.Api.LiveTv
         private readonly IHttpClient _httpClient;
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
-        private readonly IFileSystem _fileSystem;
         private readonly IAuthorizationContext _authContext;
         private readonly ISessionContext _sessionContext;
-        private readonly IEnvironmentInfo _environment;
-        private ICryptoProvider _cryptographyProvider;
-        private IStreamHelper _streamHelper;
-        private IMediaSourceManager _mediaSourceManager;
+        private readonly ICryptoProvider _cryptographyProvider;
+        private readonly IStreamHelper _streamHelper;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
-        public LiveTvService(ICryptoProvider crypto, IMediaSourceManager mediaSourceManager, IStreamHelper streamHelper, ILiveTvManager liveTvManager, IUserManager userManager, IServerConfigurationManager config, IHttpClient httpClient, ILibraryManager libraryManager, IDtoService dtoService, IFileSystem fileSystem, IAuthorizationContext authContext, ISessionContext sessionContext, IEnvironmentInfo environment)
+        public LiveTvService(
+            ICryptoProvider crypto,
+            IMediaSourceManager mediaSourceManager,
+            IStreamHelper streamHelper,
+            ILiveTvManager liveTvManager,
+            IUserManager userManager,
+            IServerConfigurationManager config,
+            IHttpClient httpClient,
+            ILibraryManager libraryManager,
+            IDtoService dtoService,
+            IAuthorizationContext authContext,
+            ISessionContext sessionContext)
         {
+            _cryptographyProvider = crypto;
+            _mediaSourceManager = mediaSourceManager;
+            _streamHelper = streamHelper;
             _liveTvManager = liveTvManager;
             _userManager = userManager;
             _config = config;
             _httpClient = httpClient;
             _libraryManager = libraryManager;
             _dtoService = dtoService;
-            _fileSystem = fileSystem;
             _authContext = authContext;
             _sessionContext = sessionContext;
-            _environment = environment;
-            _cryptographyProvider = crypto;
-            _streamHelper = streamHelper;
-            _mediaSourceManager = mediaSourceManager;
         }
 
         public object Get(GetTunerHostTypes request)
@@ -731,7 +737,7 @@ namespace MediaBrowser.Api.LiveTv
             var user = request.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(request.UserId);
             var folders = _liveTvManager.GetRecordingFolders(user);
 
-            var returnArray = _dtoService.GetBaseItemDtos(folders.ToArray(), new DtoOptions(), user);
+            var returnArray = _dtoService.GetBaseItemDtos(folders, new DtoOptions(), user);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -756,7 +762,7 @@ namespace MediaBrowser.Api.LiveTv
                 [HeaderNames.ContentType] = Model.Net.MimeTypes.GetMimeType(path)
             };
 
-            return new ProgressiveFileCopier(_fileSystem, _streamHelper, path, outputHeaders, Logger, _environment)
+            return new ProgressiveFileCopier(_streamHelper, path, outputHeaders, Logger)
             {
                 AllowEndOfFile = false
             };
@@ -779,7 +785,7 @@ namespace MediaBrowser.Api.LiveTv
                 [HeaderNames.ContentType] = Model.Net.MimeTypes.GetMimeType("file." + request.Container)
             };
 
-            return new ProgressiveFileCopier(directStreamProvider, _streamHelper, outputHeaders, Logger, _environment)
+            return new ProgressiveFileCopier(directStreamProvider, _streamHelper, outputHeaders, Logger)
             {
                 AllowEndOfFile = false
             };

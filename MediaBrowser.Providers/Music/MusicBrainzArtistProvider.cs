@@ -13,17 +13,14 @@ using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
     public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>
     {
-        private readonly IXmlReaderSettingsFactory _xmlSettings;
-
-        public MusicBrainzArtistProvider(IXmlReaderSettingsFactory xmlSettings)
+        public MusicBrainzArtistProvider()
         {
-            _xmlSettings = xmlSettings;
+
         }
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
@@ -34,7 +31,7 @@ namespace MediaBrowser.Providers.Music
             {
                 var url = string.Format("/ws/2/artist/?query=arid:{0}", musicBrainzId);
 
-                using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, false, cancellationToken).ConfigureAwait(false))
+                using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
                 {
                     using (var stream = response.Content)
                     {
@@ -49,11 +46,11 @@ namespace MediaBrowser.Providers.Music
 
                 var url = string.Format("/ws/2/artist/?query=\"{0}\"&dismax=true", UrlEncode(nameToSearch));
 
-                using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+                using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
                 {
                     using (var stream = response.Content)
                     {
-                        var results = GetResultsFromResponse(stream);
+                        var results = GetResultsFromResponse(stream).ToList();
 
                         if (results.Count > 0)
                         {
@@ -67,7 +64,7 @@ namespace MediaBrowser.Providers.Music
                     // Try again using the search with accent characters url
                     url = string.Format("/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
 
-                    using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+                    using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
                     {
                         using (var stream = response.Content)
                         {
@@ -77,18 +74,20 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            return new List<RemoteSearchResult>();
+            return Enumerable.Empty<RemoteSearchResult>();
         }
 
-        private List<RemoteSearchResult> GetResultsFromResponse(Stream stream)
+        private IEnumerable<RemoteSearchResult> GetResultsFromResponse(Stream stream)
         {
             using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
-                var settings = _xmlSettings.Create(false);
-
-                settings.CheckCharacters = false;
-                settings.IgnoreProcessingInstructions = true;
-                settings.IgnoreComments = true;
+                var settings = new XmlReaderSettings()
+                {
+                    ValidationType = ValidationType.None,
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true
+                };
 
                 using (var reader = XmlReader.Create(oReader, settings))
                 {
@@ -127,15 +126,13 @@ namespace MediaBrowser.Providers.Music
                         }
                     }
 
-                    return new List<RemoteSearchResult>();
+                    return Enumerable.Empty<RemoteSearchResult>();
                 }
             }
         }
 
-        private List<RemoteSearchResult> ParseArtistList(XmlReader reader)
+        private IEnumerable<RemoteSearchResult> ParseArtistList(XmlReader reader)
         {
-            var list = new List<RemoteSearchResult>();
-
             reader.MoveToContent();
             reader.Read();
 
@@ -160,7 +157,7 @@ namespace MediaBrowser.Providers.Music
                                     var artist = ParseArtist(subReader, mbzId);
                                     if (artist != null)
                                     {
-                                        list.Add(artist);
+                                        yield return artist;
                                     }
                                 }
                                 break;
@@ -177,8 +174,6 @@ namespace MediaBrowser.Providers.Music
                     reader.Read();
                 }
             }
-
-            return list;
         }
 
         private RemoteSearchResult ParseArtist(XmlReader reader, string artistId)
@@ -278,7 +273,7 @@ namespace MediaBrowser.Providers.Music
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>System.String.</returns>
-        private string UrlEncode(string name)
+        private static string UrlEncode(string name)
         {
             return WebUtility.UrlEncode(name);
         }

@@ -12,7 +12,8 @@
     <!-- We need C# 7.1 for async main-->
     <LangVersion>latest</LangVersion>
     <!-- Disable documentation warnings (for now) -->
-    <NoWarn>SA1600;CS1591</NoWarn>
+    <NoWarn>SA1600;SA1601;CS1591</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,10 +23,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources/Configuration/*" />
   </ItemGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
 
   <!-- Code analysers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">

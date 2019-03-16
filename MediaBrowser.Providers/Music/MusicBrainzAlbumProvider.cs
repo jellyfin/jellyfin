@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -15,7 +15,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Xml;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Music
@@ -28,17 +28,42 @@ namespace MediaBrowser.Providers.Music
         private readonly IApplicationHost _appHost;
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
-        private readonly IXmlReaderSettingsFactory _xmlSettings;
+        private Stopwatch _stopWatchMusicBrainz = new Stopwatch();
 
-        public static string MusicBrainzBaseUrl = "https://www.musicbrainz.org";
+        public readonly string MusicBrainzBaseUrl;
 
-        public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost, ILogger logger, IJsonSerializer json, IXmlReaderSettingsFactory xmlSettings)
+        /// <summary>
+        /// The Jellyfin user-agent is unrestricted but source IP must not exceed
+        /// one request per second, therefore we rate limit to avoid throttling.
+        /// Be prudent, use a value slightly above the minimun required.
+        /// https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting
+        /// </summary>
+        private const long MusicBrainzQueryIntervalMs = 1050u;
+
+        /// <summary>
+        /// For each single MB lookup/search, this is the maximum number of
+        /// attempts that shall be made whilst receiving a 503 Server
+        /// Unavailable (indicating throttled) response.
+        /// </summary>
+        private const uint MusicBrainzQueryAttempts = 5u;
+
+        public MusicBrainzAlbumProvider(
+            IHttpClient httpClient,
+            IApplicationHost appHost,
+            ILogger logger,
+            IJsonSerializer json,
+            IConfiguration configuration)
         {
             _httpClient = httpClient;
             _appHost = appHost;
             _logger = logger;
             _json = json;
-            _xmlSettings = xmlSettings;
+
+            MusicBrainzBaseUrl = configuration["MusicBrainz:BaseUrl"];
+
+            // Use a stopwatch to ensure we don't exceed the MusicBrainz rate limit
+            _stopWatchMusicBrainz.Start();
+
             Current = this;
         }
 
@@ -47,9 +72,7 @@ namespace MediaBrowser.Providers.Music
             var releaseId = searchInfo.GetReleaseId();
             var releaseGroupId = searchInfo.GetReleaseGroupId();
 
-            string url = null;
-            var isNameSearch = false;
-            bool forceMusicBrainzProper = false;
+            string url;
 
             if (!string.IsNullOrEmpty(releaseId))
             {
@@ -58,7 +81,6 @@ namespace MediaBrowser.Providers.Music
             else if (!string.IsNullOrEmpty(releaseGroupId))
             {
                 url = string.Format("/ws/2/release?release-group={0}", releaseGroupId);
-                forceMusicBrainzProper = true;
             }
             else
             {
@@ -72,8 +94,6 @@ namespace MediaBrowser.Providers.Music
                 }
                 else
                 {
-                    isNameSearch = true;
-
                     // I'm sure there is a better way but for now it resolves search for 12" Mixes
                     var queryName = searchInfo.Name.Replace("\"", string.Empty);
 
@@ -85,7 +105,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrWhiteSpace(url))
             {
-                using (var response = await GetMusicBrainzResponse(url, isNameSearch, forceMusicBrainzProper, cancellationToken).ConfigureAwait(false))
+                using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
                 {
                     using (var stream = response.Content)
                     {
@@ -94,18 +114,20 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            return new List<RemoteSearchResult>();
+            return Enumerable.Empty<RemoteSearchResult>();
         }
 
-        private List<RemoteSearchResult> GetResultsFromResponse(Stream stream)
+        private IEnumerable<RemoteSearchResult> GetResultsFromResponse(Stream stream)
         {
             using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
-                var settings = _xmlSettings.Create(false);
-
-                settings.CheckCharacters = false;
-                settings.IgnoreProcessingInstructions = true;
-                settings.IgnoreComments = true;
+                var settings = new XmlReaderSettings()
+                {
+                    ValidationType = ValidationType.None,
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true
+                };
 
                 using (var reader = XmlReader.Create(oReader, settings))
                 {
@@ -141,7 +163,7 @@ namespace MediaBrowser.Providers.Music
 
                         return result;
 
-                    }).ToList();
+                    });
                 }
             }
         }
@@ -239,23 +261,21 @@ namespace MediaBrowser.Providers.Music
                 WebUtility.UrlEncode(albumName),
                 artistId);
 
-            using (var response = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+            using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
+            using (var stream = response.Content)
+            using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
-                using (var stream = response.Content)
+                var settings = new XmlReaderSettings()
                 {
-                    using (var oReader = new StreamReader(stream, Encoding.UTF8))
-                    {
-                        var settings = _xmlSettings.Create(false);
+                    ValidationType = ValidationType.None,
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true
+                };
 
-                        settings.CheckCharacters = false;
-                        settings.IgnoreProcessingInstructions = true;
-                        settings.IgnoreComments = true;
-
-                        using (var reader = XmlReader.Create(oReader, settings))
-                        {
-                            return ReleaseResult.Parse(reader).FirstOrDefault();
-                        }
-                    }
+                using (var reader = XmlReader.Create(oReader, settings))
+                {
+                    return ReleaseResult.Parse(reader).FirstOrDefault();
                 }
             }
         }
@@ -266,23 +286,21 @@ namespace MediaBrowser.Providers.Music
                 WebUtility.UrlEncode(albumName),
                 WebUtility.UrlEncode(artistName));
 
-            using (var response = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+            using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
+            using (var stream = response.Content)
+            using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
-                using (var stream = response.Content)
+                var settings = new XmlReaderSettings()
                 {
-                    using (var oReader = new StreamReader(stream, Encoding.UTF8))
-                    {
-                        var settings = _xmlSettings.Create(false);
+                    ValidationType = ValidationType.None,
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true
+                };
 
-                        settings.CheckCharacters = false;
-                        settings.IgnoreProcessingInstructions = true;
-                        settings.IgnoreComments = true;
-
-                        using (var reader = XmlReader.Create(oReader, settings))
-                        {
-                            return ReleaseResult.Parse(reader).FirstOrDefault();
-                        }
-                    }
+                using (var reader = XmlReader.Create(oReader, settings))
+                {
+                    return ReleaseResult.Parse(reader).FirstOrDefault();
                 }
             }
         }
@@ -297,7 +315,7 @@ namespace MediaBrowser.Providers.Music
 
             public List<ValueTuple<string, string>> Artists = new List<ValueTuple<string, string>>();
 
-            public static List<ReleaseResult> Parse(XmlReader reader)
+            public static IEnumerable<ReleaseResult> Parse(XmlReader reader)
             {
                 reader.MoveToContent();
                 reader.Read();
@@ -334,13 +352,11 @@ namespace MediaBrowser.Providers.Music
                     }
                 }
 
-                return new List<ReleaseResult>();
+                return Enumerable.Empty<ReleaseResult>();
             }
 
-            private static List<ReleaseResult> ParseReleaseList(XmlReader reader)
+            private static IEnumerable<ReleaseResult> ParseReleaseList(XmlReader reader)
             {
-                var list = new List<ReleaseResult>();
-
                 reader.MoveToContent();
                 reader.Read();
 
@@ -365,7 +381,7 @@ namespace MediaBrowser.Providers.Music
                                         var release = ParseRelease(subReader, releaseId);
                                         if (release != null)
                                         {
-                                            list.Add(release);
+                                            yield return release;
                                         }
                                     }
                                     break;
@@ -382,8 +398,6 @@ namespace MediaBrowser.Providers.Music
                         reader.Read();
                     }
                 }
-
-                return list;
             }
 
             private static ReleaseResult ParseRelease(XmlReader reader, string releaseId)
@@ -548,7 +562,7 @@ namespace MediaBrowser.Providers.Music
             return (null, null);
         }
 
-        private static ValueTuple<string, string> ParseArtistArtistCredit(XmlReader reader, string artistId)
+        private static (string name, string id) ParseArtistArtistCredit(XmlReader reader, string artistId)
         {
             reader.MoveToContent();
             reader.Read();
@@ -582,34 +596,32 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            return new ValueTuple<string, string>(name, artistId);
+            return (name, artistId);
         }
 
         private async Task<string> GetReleaseIdFromReleaseGroupId(string releaseGroupId, CancellationToken cancellationToken)
         {
             var url = string.Format("/ws/2/release?release-group={0}", releaseGroupId);
 
-            using (var response = await GetMusicBrainzResponse(url, true, true, cancellationToken).ConfigureAwait(false))
+            using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
+            using (var stream = response.Content)
+            using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
-                using (var stream = response.Content)
+                var settings = new XmlReaderSettings()
                 {
-                    using (var oReader = new StreamReader(stream, Encoding.UTF8))
+                    ValidationType = ValidationType.None,
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true
+                };
+
+                using (var reader = XmlReader.Create(oReader, settings))
+                {
+                    var result = ReleaseResult.Parse(reader).FirstOrDefault();
+
+                    if (result != null)
                     {
-                        var settings = _xmlSettings.Create(false);
-
-                        settings.CheckCharacters = false;
-                        settings.IgnoreProcessingInstructions = true;
-                        settings.IgnoreComments = true;
-
-                        using (var reader = XmlReader.Create(oReader, settings))
-                        {
-                            var result = ReleaseResult.Parse(reader).FirstOrDefault();
-
-                            if (result != null)
-                            {
-                                return result.ReleaseId;
-                            }
-                        }
+                        return result.ReleaseId;
                     }
                 }
             }
@@ -627,57 +639,55 @@ namespace MediaBrowser.Providers.Music
         {
             var url = string.Format("/ws/2/release-group/?query=reid:{0}", releaseEntryId);
 
-            using (var response = await GetMusicBrainzResponse(url, false, cancellationToken).ConfigureAwait(false))
+            using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
+            using (var stream = response.Content)
+            using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
-                using (var stream = response.Content)
+                var settings = new XmlReaderSettings()
                 {
-                    using (var oReader = new StreamReader(stream, Encoding.UTF8))
+                    ValidationType = ValidationType.None,
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true
+                };
+
+                using (var reader = XmlReader.Create(oReader, settings))
+                {
+                    reader.MoveToContent();
+                    reader.Read();
+
+                    // Loop through each element
+                    while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                     {
-                        var settings = _xmlSettings.Create(false);
-
-                        settings.CheckCharacters = false;
-                        settings.IgnoreProcessingInstructions = true;
-                        settings.IgnoreComments = true;
-
-                        using (var reader = XmlReader.Create(oReader, settings))
+                        if (reader.NodeType == XmlNodeType.Element)
                         {
-                            reader.MoveToContent();
-                            reader.Read();
-
-                            // Loop through each element
-                            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                            switch (reader.Name)
                             {
-                                if (reader.NodeType == XmlNodeType.Element)
-                                {
-                                    switch (reader.Name)
+                                case "release-group-list":
                                     {
-                                        case "release-group-list":
-                                            {
-                                                if (reader.IsEmptyElement)
-                                                {
-                                                    reader.Read();
-                                                    continue;
-                                                }
-                                                using (var subReader = reader.ReadSubtree())
-                                                {
-                                                    return GetFirstReleaseGroupId(subReader);
-                                                }
-                                            }
-                                        default:
-                                            {
-                                                reader.Skip();
-                                                break;
-                                            }
+                                        if (reader.IsEmptyElement)
+                                        {
+                                            reader.Read();
+                                            continue;
+                                        }
+                                        using (var subReader = reader.ReadSubtree())
+                                        {
+                                            return GetFirstReleaseGroupId(subReader);
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    reader.Read();
-                                }
+                                default:
+                                    {
+                                        reader.Skip();
+                                        break;
+                                    }
                             }
-                            return null;
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                     }
+                    return null;
                 }
             }
         }
@@ -714,37 +724,56 @@ namespace MediaBrowser.Providers.Music
             return null;
         }
 
-        internal Task<HttpResponseInfo> GetMusicBrainzResponse(string url, bool isSearch, CancellationToken cancellationToken)
-        {
-            return GetMusicBrainzResponse(url, isSearch, false, cancellationToken);
-        }
-
         /// <summary>
-        /// Gets the music brainz response.
+        /// Makes request to MusicBrainz server and awaits a response.
+        /// A 503 Service Unavailable response indicates throttling to maintain a rate limit.
+        /// A number of retries shall be made in order to try and satisfy the request before
+        /// giving up and returning null.
         /// </summary>
-        internal async Task<HttpResponseInfo> GetMusicBrainzResponse(string url, bool isSearch, bool forceMusicBrainzProper, CancellationToken cancellationToken)
+        internal async Task<HttpResponseInfo> GetMusicBrainzResponse(string url, CancellationToken cancellationToken)
         {
-            var urlInfo = new MbzUrl(MusicBrainzBaseUrl, 1000);
-            var throttleMs = urlInfo.throttleMs;
-
-            if (throttleMs > 0)
-            {
-                // MusicBrainz is extremely adamant about limiting to one request per second
-                _logger.LogDebug("Throttling MusicBrainz by {0}ms", throttleMs.ToString(CultureInfo.InvariantCulture));
-                await Task.Delay(throttleMs, cancellationToken).ConfigureAwait(false);
-            }
-
-            url = urlInfo.url.TrimEnd('/') + url;
-
             var options = new HttpRequestOptions
             {
-                Url = url,
+                Url = MusicBrainzBaseUrl.TrimEnd('/') + url,
                 CancellationToken = cancellationToken,
-                UserAgent = _appHost.ApplicationUserAgent,
-                BufferContent = throttleMs > 0
+                // MusicBrainz request a contact email address is supplied, as comment, in user agent field:
+                // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent
+                UserAgent = string.Format("{0} ( {1} )", _appHost.ApplicationUserAgent, _appHost.ApplicationUserAgentAddress),
+                BufferContent = false
             };
 
-            return await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
+            HttpResponseInfo response;
+            var attempts = 0u;
+
+            do
+            {
+                attempts++;
+
+                if (_stopWatchMusicBrainz.ElapsedMilliseconds < MusicBrainzQueryIntervalMs)
+                {
+                    // MusicBrainz is extremely adamant about limiting to one request per second
+                    var delayMs = MusicBrainzQueryIntervalMs - _stopWatchMusicBrainz.ElapsedMilliseconds;
+                    await Task.Delay((int)delayMs, cancellationToken).ConfigureAwait(false);
+                }
+
+                // Write time since last request to debug log as evidence we're meeting rate limit
+                // requirement, before resetting stopwatch back to zero.
+                _logger.LogDebug("GetMusicBrainzResponse: Time since previous request: {0} ms", _stopWatchMusicBrainz.ElapsedMilliseconds);
+                _stopWatchMusicBrainz.Restart();
+
+                response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
+
+                // We retry a finite number of times, and only whilst MB is indcating 503 (throttling)
+            }
+            while (attempts < MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable);
+
+            // Log error if unable to query MB database due to throttling
+            if (attempts == MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable )
+            {
+                _logger.LogError("GetMusicBrainzResponse: 503 Service Unavailable (throttled) response received {0} times whilst requesting {1}", attempts, options.Url);
+            }
+
+            return response;
         }
 
         public int Order => 0;
@@ -752,18 +781,6 @@ namespace MediaBrowser.Providers.Music
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
-        }
-
-        internal class MbzUrl
-        {
-            internal MbzUrl(string url, int throttleMs)
-            {
-                this.url = url;
-                this.throttleMs = throttleMs;
-            }
-
-            public string url { get; set; }
-            public int throttleMs { get; set; }
         }
     }
 }

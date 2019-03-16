@@ -1,8 +1,8 @@
 {
-    "Albums": "Albums",
+    "Albums": "אלבומים",
     "AppDeviceValues": "App: {0}, Device: {1}",
-    "Application": "Application",
-    "Artists": "Artists",
+    "Application": "אפליקציה",
+    "Artists": "אמנים",
     "AuthenticationSucceededWithUserName": "{0} successfully authenticated",
     "Books": "ספרים",
     "CameraImageUploadedFrom": "A new camera image has been uploaded from {0}",

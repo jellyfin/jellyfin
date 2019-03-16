@@ -13,7 +13,6 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
-using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
@@ -117,20 +116,26 @@ namespace MediaBrowser.WebDashboard.Api
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IAssemblyInfo _assemblyInfo;
         private IResourceFileManager _resourceFileManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
         /// </summary>
-        public DashboardService(IServerApplicationHost appHost, IResourceFileManager resourceFileManager, IServerConfigurationManager serverConfigurationManager, IFileSystem fileSystem, ILocalizationManager localization, IJsonSerializer jsonSerializer, IAssemblyInfo assemblyInfo, ILogger logger, IHttpResultFactory resultFactory)
+        public DashboardService(
+            IServerApplicationHost appHost,
+            IResourceFileManager resourceFileManager,
+            IServerConfigurationManager serverConfigurationManager,
+            IFileSystem fileSystem,
+            ILocalizationManager localization,
+            IJsonSerializer jsonSerializer,
+            ILogger logger,
+            IHttpResultFactory resultFactory)
         {
             _appHost = appHost;
             _serverConfigurationManager = serverConfigurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
             _jsonSerializer = jsonSerializer;
-            _assemblyInfo = assemblyInfo;
             _logger = logger;
             _resultFactory = resultFactory;
             _resourceFileManager = resourceFileManager;
@@ -149,7 +154,7 @@ namespace MediaBrowser.WebDashboard.Api
                     return _serverConfigurationManager.Configuration.DashboardSourcePath;
                 }
 
-                return Path.Combine(_serverConfigurationManager.ApplicationPaths.ApplicationResourcesPath, "jellyfin-web", "src");
+                return _serverConfigurationManager.ApplicationPaths.WebPath;
             }
         }
 
@@ -187,7 +192,7 @@ namespace MediaBrowser.WebDashboard.Api
                 if (altPage != null)
                 {
                     plugin = altPage.Item2;
-                    stream = _assemblyInfo.GetManifestResourceStream(plugin.GetType(), altPage.Item1.EmbeddedResourcePath);
+                    stream = plugin.GetType().Assembly.GetManifestResourceStream(altPage.Item1.EmbeddedResourcePath);
 
                     isJs = string.Equals(Path.GetExtension(altPage.Item1.EmbeddedResourcePath), ".js", StringComparison.OrdinalIgnoreCase);
                     isTemplate = altPage.Item1.EmbeddedResourcePath.EndsWith(".template.html");

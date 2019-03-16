@@ -8,11 +8,6 @@ namespace Emby.Server.Implementations
         string FFmpegPath { get; }
 
         /// <summary>
-        /// --ffprobe
-        /// </summary>
-        string FFprobePath { get; }
-
-        /// <summary>
         /// --service
         /// </summary>
         bool IsService { get; }
