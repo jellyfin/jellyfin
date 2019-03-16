@@ -15,6 +15,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpClientManager
 {
@@ -179,11 +180,11 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             foreach (var header in options.RequestHeaders)
             {
-                if (string.Equals(header.Key, "Accept", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(header.Key, HeaderNames.Accept, StringComparison.OrdinalIgnoreCase))
                 {
                     request.Accept = header.Value;
                 }
-                else if (string.Equals(header.Key, "User-Agent", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(header.Key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase))
                 {
                     SetUserAgent(request, header.Value);
                     hasUserAgent = true;
@@ -327,7 +328,6 @@ namespace Emby.Server.Implementations.HttpClientManager
                     }
 
                     httpWebRequest.ContentType = contentType;
-                    httpWebRequest.ContentLength = bytes.Length;
                     (await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false)).Write(bytes, 0, bytes.Length);
                 }
                 catch (Exception ex)

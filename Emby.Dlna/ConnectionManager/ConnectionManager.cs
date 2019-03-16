@@ -1,9 +1,7 @@
-using System.Collections.Generic;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.ConnectionManager
@@ -13,18 +11,16 @@ namespace Emby.Dlna.ConnectionManager
         private readonly IDlnaManager _dlna;
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
-        protected readonly IXmlReaderSettingsFactory XmlReaderSettingsFactory;
 
-        public ConnectionManager(IDlnaManager dlna, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
+        public ConnectionManager(IDlnaManager dlna, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient)
             : base(logger, httpClient)
         {
             _dlna = dlna;
             _config = config;
             _logger = logger;
-            XmlReaderSettingsFactory = xmlReaderSettingsFactory;
         }
 
-        public string GetServiceXml(IDictionary<string, string> headers)
+        public string GetServiceXml()
         {
             return new ConnectionManagerXmlBuilder().GetXml();
         }
@@ -34,7 +30,7 @@ namespace Emby.Dlna.ConnectionManager
             var profile = _dlna.GetProfile(request.Headers) ??
                          _dlna.GetDefaultProfile();
 
-            return new ControlHandler(_config, _logger, XmlReaderSettingsFactory, profile).ProcessControlRequest(request);
+            return new ControlHandler(_config, _logger, profile).ProcessControlRequest(request);
         }
     }
 }

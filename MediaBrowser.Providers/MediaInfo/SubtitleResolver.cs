@@ -16,7 +16,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILocalizationManager _localization;
         private readonly IFileSystem _fileSystem;
 
-        private string[] SubtitleExtensions = new[]
+        private static readonly HashSet<string> SubtitleExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             ".srt",
             ".ssa",
@@ -49,9 +49,16 @@ namespace MediaBrowser.Providers.MediaInfo
 
             startIndex += streams.Count;
 
+            string folder = video.GetInternalMetadataPath();
+
+            if (!Directory.Exists(folder))
+            {
+                return streams;
+            }
+
             try
             {
-                AddExternalSubtitleStreams(streams, video.GetInternalMetadataPath(), video.Path, startIndex, directoryService, clearCache);
+                AddExternalSubtitleStreams(streams, folder, video.Path, startIndex, directoryService, clearCache);
             }
             catch (IOException)
             {
@@ -105,7 +112,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 var extension = Path.GetExtension(fullName);
 
-                if (!SubtitleExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+                if (!SubtitleExtensions.Contains(extension))
                 {
                     continue;
                 }

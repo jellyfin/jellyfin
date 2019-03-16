@@ -7,8 +7,8 @@ using System.Text;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations.IO
 {
@@ -25,22 +25,19 @@ namespace Emby.Server.Implementations.IO
 
         private readonly string _tempPath;
 
-        private readonly IEnvironmentInfo _environmentInfo;
         private readonly bool _isEnvironmentCaseInsensitive;
 
         public ManagedFileSystem(
             ILoggerFactory loggerFactory,
-            IEnvironmentInfo environmentInfo,
             IApplicationPaths applicationPaths)
         {
             Logger = loggerFactory.CreateLogger("FileSystem");
             _supportsAsyncFileStreams = true;
             _tempPath = applicationPaths.TempDirectory;
-            _environmentInfo = environmentInfo;
 
-            SetInvalidFileNameChars(environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows);
+            SetInvalidFileNameChars(OperatingSystem.Id == OperatingSystemId.Windows);
 
-            _isEnvironmentCaseInsensitive = environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows;
+            _isEnvironmentCaseInsensitive = OperatingSystem.Id == OperatingSystemId.Windows;
         }
 
         public virtual void AddShortcutHandler(IShortcutHandler handler)
@@ -469,7 +466,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetHidden(string path, bool isHidden)
         {
-            if (_environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
+            if (OperatingSystem.Id != MediaBrowser.Model.System.OperatingSystemId.Windows)
             {
                 return;
             }
@@ -493,7 +490,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetReadOnly(string path, bool isReadOnly)
         {
-            if (_environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
+            if (OperatingSystem.Id != MediaBrowser.Model.System.OperatingSystemId.Windows)
             {
                 return;
             }
@@ -517,7 +514,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetAttributes(string path, bool isHidden, bool isReadOnly)
         {
-            if (_environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
+            if (OperatingSystem.Id != MediaBrowser.Model.System.OperatingSystemId.Windows)
             {
                 return;
             }
@@ -711,20 +708,20 @@ namespace Emby.Server.Implementations.IO
             return GetFiles(path, null, false, recursive);
         }
 
-        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
+        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string> extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
             var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
             // On linux and osx the search pattern is case sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
-            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions != null && extensions.Length == 1)
+            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions != null && extensions.Count == 1)
             {
                 return ToMetadata(new DirectoryInfo(path).EnumerateFiles("*" + extensions[0], searchOption));
             }
 
             var files = new DirectoryInfo(path).EnumerateFiles("*", searchOption);
 
-            if (extensions != null && extensions.Length > 0)
+            if (extensions != null && extensions.Count > 0)
             {
                 files = files.Where(i =>
                 {
@@ -802,7 +799,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetExecutable(string path)
         {
-            if (_environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.OSX)
+            if (OperatingSystem.Id == MediaBrowser.Model.System.OperatingSystemId.Darwin)
             {
                 RunProcess("chmod", "+x \"" + path + "\"", Path.GetDirectoryName(path));
             }

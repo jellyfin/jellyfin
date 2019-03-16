@@ -18,17 +18,17 @@ namespace Emby.Server.Implementations.Sorting
             return string.Compare(GetValue(x), GetValue(y), StringComparison.CurrentCultureIgnoreCase);
         }
 
-        private static string GetValue(BaseItem item)
-        {
-            var hasSeries = item as IHasSeries;
-
-            return hasSeries != null ? hasSeries.FindSeriesSortName() : null;
-        }
-
         /// <summary>
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
         public string Name => ItemSortBy.SeriesSortName;
+
+        private static string GetValue(BaseItem item)
+        {
+            var hasSeries = item as IHasSeries;
+
+            return hasSeries?.FindSeriesSortName();
+        }
     }
 }

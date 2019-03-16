@@ -7,11 +7,11 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
+using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations.Networking
 {
@@ -22,14 +22,12 @@ namespace Emby.Server.Implementations.Networking
         public event EventHandler NetworkChanged;
         public Func<string[]> LocalSubnetsFn { get; set; }
 
-        public NetworkManager(
-            ILoggerFactory loggerFactory,
-            IEnvironmentInfo environment)
+        public NetworkManager(ILoggerFactory loggerFactory)
         {
             Logger = loggerFactory.CreateLogger(nameof(NetworkManager));
 
             // In FreeBSD these events cause a crash
-            if (environment.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.BSD)
+            if (OperatingSystem.Id != OperatingSystemId.BSD)
             {
                 try
                 {

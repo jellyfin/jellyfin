@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
@@ -36,8 +35,8 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             };
         }
 
-        public ControlHandler(IServerConfigurationManager config, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
-            : base(config, logger, xmlReaderSettingsFactory)
+        public ControlHandler(IServerConfigurationManager config, ILogger logger)
+            : base(config, logger)
         {
         }
     }

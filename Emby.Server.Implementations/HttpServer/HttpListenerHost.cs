@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Services;
+using Emby.Server.Implementations.SocketSharp;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -20,6 +21,9 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Text.Jsv;
@@ -29,11 +33,7 @@ namespace Emby.Server.Implementations.HttpServer
     public class HttpListenerHost : IHttpServer, IDisposable
     {
         private string DefaultRedirectPath { get; set; }
-
-        private readonly ILogger _logger;
         public string[] UrlPrefixes { get; private set; }
-
-        private IHttpListener _listener;
 
         public event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
 
@@ -42,6 +42,7 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly IServerApplicationHost _appHost;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IXmlSerializer _xmlSerializer;
+        private readonly IHttpListener _socketListener;
         private readonly Func<Type, Func<string, object>> _funcParseFn;
 
         public Action<IRequest, IResponse, object>[] ResponseFilters { get; set; }
@@ -59,15 +60,18 @@ namespace Emby.Server.Implementations.HttpServer
             IConfiguration configuration,
             INetworkManager networkManager,
             IJsonSerializer jsonSerializer,
-            IXmlSerializer xmlSerializer)
+            IXmlSerializer xmlSerializer,
+            IHttpListener socketListener)
         {
             _appHost = applicationHost;
-            _logger = loggerFactory.CreateLogger("HttpServer");
+            Logger = loggerFactory.CreateLogger("HttpServer");
             _config = config;
             DefaultRedirectPath = configuration["HttpListenerHost:DefaultRedirectPath"];
             _networkManager = networkManager;
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
+            _socketListener = socketListener;
+            _socketListener.WebSocketConnected = OnWebSocketConnected;
 
             _funcParseFn = t => s => JsvReader.GetParseFn(t)(s);
 
@@ -77,7 +81,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public string GlobalResponse { get; set; }
 
-        protected ILogger Logger => _logger;
+        protected ILogger Logger { get; }
 
         public object CreateInstance(Type type)
         {
@@ -143,11 +147,11 @@ namespace Emby.Server.Implementations.HttpServer
                 return;
             }
 
-            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger)
+            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, Logger)
             {
                 OnReceive = ProcessWebSocketMessageReceived,
                 Url = e.Url,
-                QueryString = e.QueryString ?? new QueryParamCollection()
+                QueryString = e.QueryString ?? new QueryCollection()
             };
 
             connection.Closed += Connection_Closed;
@@ -212,16 +216,16 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (logExceptionStackTrace)
                 {
-                    _logger.LogError(ex, "Error processing request");
+                    Logger.LogError(ex, "Error processing request");
                 }
                 else if (logExceptionMessage)
                 {
-                    _logger.LogError(ex.Message);
+                    Logger.LogError(ex.Message);
                 }
 
                 var httpRes = httpReq.Response;
 
-                if (httpRes.IsClosed)
+                if (httpRes.OriginalResponse.HasStarted)
                 {
                     return;
                 }
@@ -234,7 +238,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (Exception errorEx)
             {
-                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response)");
+                Logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response)");
             }
         }
 
@@ -277,14 +281,6 @@ namespace Emby.Server.Implementations.HttpServer
 
                 }
             }
-
-            if (_listener != null)
-            {
-                _logger.LogInformation("Stopping HttpListener...");
-                var task = _listener.Stop();
-                Task.WaitAll(task);
-                _logger.LogInformation("HttpListener stopped");
-            }
         }
 
         public static string RemoveQueryStringByKey(string url, string key)
@@ -292,7 +288,7 @@ namespace Emby.Server.Implementations.HttpServer
             var uri = new Uri(url);
 
             // this gets all the query string key value pairs as a collection
-            var newQueryString = MyHttpUtility.ParseQueryString(uri.Query);
+            var newQueryString = QueryHelpers.ParseQuery(uri.Query);
 
             var originalCount = newQueryString.Count;
 
@@ -313,7 +309,7 @@ namespace Emby.Server.Implementations.HttpServer
             string pagePathWithoutQueryString = url.Split(new[] { '?' }, StringSplitOptions.RemoveEmptyEntries)[0];
 
             return newQueryString.Count > 0
-                ? string.Format("{0}?{1}", pagePathWithoutQueryString, newQueryString)
+                ? QueryHelpers.AddQueryString(pagePathWithoutQueryString, newQueryString.ToDictionary(kv => kv.Key, kv => kv.Value.ToString()))
                 : pagePathWithoutQueryString;
         }
 
@@ -422,7 +418,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
-        protected async Task RequestHandler(IHttpRequest httpReq, string urlString, string host, string localPath, CancellationToken cancellationToken)
+        public async Task RequestHandler(IHttpRequest httpReq, string urlString, string host, string localPath, CancellationToken cancellationToken)
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
@@ -599,17 +595,15 @@ namespace Emby.Server.Implementations.HttpServer
             }
             finally
             {
-                httpRes.Close();
-
                 stopWatch.Stop();
                 var elapsed = stopWatch.Elapsed;
                 if (elapsed.TotalMilliseconds > 500)
                 {
-                    _logger.LogWarning("HTTP Response {StatusCode} to {RemoteIp}. Time (slow): {Elapsed:g}. {Url}", httpRes.StatusCode, remoteIp, elapsed, urlToLog);
+                    Logger.LogWarning("HTTP Response {StatusCode} to {RemoteIp}. Time (slow): {Elapsed:g}. {Url}", httpRes.StatusCode, remoteIp, elapsed, urlToLog);
                 }
                 else
                 {
-                    _logger.LogDebug("HTTP Response {StatusCode} to {RemoteIp}. Time: {Elapsed:g}. {Url}", httpRes.StatusCode, remoteIp, elapsed, urlToLog);
+                    Logger.LogDebug("HTTP Response {StatusCode} to {RemoteIp}. Time: {Elapsed:g}. {Url}", httpRes.StatusCode, remoteIp, elapsed, urlToLog);
                 }
             }
         }
@@ -622,7 +616,7 @@ namespace Emby.Server.Implementations.HttpServer
             var pathParts = pathInfo.TrimStart('/').Split('/');
             if (pathParts.Length == 0)
             {
-                _logger.LogError("Path parts empty for PathInfo: {PathInfo}, Url: {RawUrl}", pathInfo, httpReq.RawUrl);
+                Logger.LogError("Path parts empty for PathInfo: {PathInfo}, Url: {RawUrl}", pathInfo, httpReq.RawUrl);
                 return null;
             }
 
@@ -636,15 +630,13 @@ namespace Emby.Server.Implementations.HttpServer
                 };
             }
 
-            _logger.LogError("Could not find handler for {PathInfo}", pathInfo);
+            Logger.LogError("Could not find handler for {PathInfo}", pathInfo);
             return null;
         }
 
         private static Task Write(IResponse response, string text)
         {
             var bOutput = Encoding.UTF8.GetBytes(text);
-            response.SetContentLength(bOutput.Length);
-
             return response.OutputStream.WriteAsync(bOutput, 0, bOutput.Length);
         }
 
@@ -663,6 +655,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             else
             {
+                // TODO what is this?
                 var httpsUrl = url
                     .Replace("http://", "https://", StringComparison.OrdinalIgnoreCase)
                     .Replace(":" + _config.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture), ":" + _config.Configuration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
@@ -683,13 +676,15 @@ namespace Emby.Server.Implementations.HttpServer
         /// Adds the rest handlers.
         /// </summary>
         /// <param name="services">The services.</param>
-        public void Init(IEnumerable<IService> services, IEnumerable<IWebSocketListener> listeners)
+        /// <param name="listeners"></param>
+        /// <param name="urlPrefixes"></param>
+        public void Init(IEnumerable<IService> services, IEnumerable<IWebSocketListener> listeners, IEnumerable<string> urlPrefixes)
         {
             _webSocketListeners = listeners.ToArray();
-
+            UrlPrefixes = urlPrefixes.ToArray();
             ServiceController = new ServiceController();
 
-            _logger.LogInformation("Calling ServiceStack AppHost.Init");
+            Logger.LogInformation("Calling ServiceStack AppHost.Init");
 
             var types = services.Select(r => r.GetType()).ToArray();
 
@@ -697,7 +692,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             ResponseFilters = new Action<IRequest, IResponse, object>[]
             {
-                new ResponseFilter(_logger).FilterResponse
+                new ResponseFilter(Logger).FilterResponse
             };
         }
 
@@ -759,8 +754,12 @@ namespace Emby.Server.Implementations.HttpServer
             return _jsonSerializer.DeserializeFromStreamAsync(stream, type);
         }
 
-        //TODO Add Jellyfin Route Path Normalizer
+        public Task ProcessWebSocketRequest(HttpContext context)
+        {
+            return _socketListener.ProcessWebSocketRequest(context);
+        }
 
+        //TODO Add Jellyfin Route Path Normalizer
         private static string NormalizeEmbyRoutePath(string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
@@ -793,6 +792,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         private bool _disposed;
         private readonly object _disposeLock = new object();
+
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed) return;
@@ -821,7 +821,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return Task.CompletedTask;
             }
 
-            _logger.LogDebug("Websocket message received: {0}", result.MessageType);
+            Logger.LogDebug("Websocket message received: {0}", result.MessageType);
 
             var tasks = _webSocketListeners.Select(i => Task.Run(async () =>
             {
@@ -831,7 +831,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "{0} failed processing WebSocket message {1}", i.GetType().Name, result.MessageType ?? string.Empty);
+                    Logger.LogError(ex, "{0} failed processing WebSocket message {1}", i.GetType().Name, result.MessageType ?? string.Empty);
                 }
             }));
 
@@ -841,19 +841,6 @@ namespace Emby.Server.Implementations.HttpServer
         public void Dispose()
         {
             Dispose(true);
-        }
-
-        public void StartServer(string[] urlPrefixes, IHttpListener httpListener)
-        {
-            UrlPrefixes = urlPrefixes;
-
-            _listener = httpListener;
-
-            _listener.WebSocketConnected = OnWebSocketConnected;
-            _listener.ErrorHandler = ErrorHandler;
-            _listener.RequestHandler = RequestHandler;
-
-            _listener.Start(UrlPrefixes);
         }
     }
 }

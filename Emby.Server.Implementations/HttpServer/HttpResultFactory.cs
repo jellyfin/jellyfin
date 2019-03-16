@@ -16,6 +16,8 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using IRequest = MediaBrowser.Model.Services.IRequest;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
@@ -32,17 +34,16 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
-
-        private IBrotliCompressor _brotliCompressor;
+        private readonly IStreamHelper _streamHelper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpResultFactory" /> class.
         /// </summary>
-        public HttpResultFactory(ILoggerFactory loggerfactory, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IBrotliCompressor brotliCompressor)
+        public HttpResultFactory(ILoggerFactory loggerfactory, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IStreamHelper streamHelper)
         {
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
-            _brotliCompressor = brotliCompressor;
+            _streamHelper = streamHelper;
             _logger = loggerfactory.CreateLogger("HttpResultFactory");
         }
 
@@ -76,7 +77,7 @@ namespace Emby.Server.Implementations.HttpServer
         public object GetRedirectResult(string url)
         {
             var responseHeaders = new Dictionary<string, string>();
-            responseHeaders["Location"] = url;
+            responseHeaders[HeaderNames.Location] = url;
 
             var result = new HttpResult(Array.Empty<byte>(), "text/plain", HttpStatusCode.Redirect);
 
@@ -97,9 +98,9 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out string expires))
             {
-                responseHeaders["Expires"] = "-1";
+                responseHeaders[HeaderNames.Expires] = "-1";
             }
 
             AddResponseHeaders(result, responseHeaders);
@@ -131,7 +132,7 @@ namespace Emby.Server.Implementations.HttpServer
                     content = Array.Empty<byte>();
                 }
 
-                result = new StreamWriter(content, contentType, contentLength);
+                result = new StreamWriter(content, contentType);
             }
             else
             {
@@ -143,9 +144,9 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string _))
+            if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out string _))
             {
-                responseHeaders["Expires"] = "-1";
+                responseHeaders[HeaderNames.Expires] = "-1";
             }
 
             AddResponseHeaders(result, responseHeaders);
@@ -175,7 +176,7 @@ namespace Emby.Server.Implementations.HttpServer
                     bytes = Array.Empty<byte>();
                 }
 
-                result = new StreamWriter(bytes, contentType, contentLength);
+                result = new StreamWriter(bytes, contentType);
             }
             else
             {
@@ -187,9 +188,9 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out string _))
+            if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out string _))
             {
-                responseHeaders["Expires"] = "-1";
+                responseHeaders[HeaderNames.Expires] = "-1";
             }
 
             AddResponseHeaders(result, responseHeaders);
@@ -214,7 +215,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             }
 
-            responseHeaders["Expires"] = "-1";
+            responseHeaders[HeaderNames.Expires] = "-1";
 
             return ToOptimizedResultInternal(requestContext, result, responseHeaders);
         }
@@ -246,9 +247,9 @@ namespace Emby.Server.Implementations.HttpServer
 
         private static string GetCompressionType(IRequest request)
         {
-            var acceptEncoding = request.Headers["Accept-Encoding"];
+            var acceptEncoding = request.Headers[HeaderNames.AcceptEncoding].ToString();
 
-            if (acceptEncoding != null)
+            if (string.IsNullOrEmpty(acceptEncoding))
             {
                 //if (_brotliCompressor != null && acceptEncoding.IndexOf("br", StringComparison.OrdinalIgnoreCase) != -1)
                 //    return "br";
@@ -326,21 +327,21 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             content = Compress(content, requestedCompressionType);
-            responseHeaders["Content-Encoding"] = requestedCompressionType;
+            responseHeaders[HeaderNames.ContentEncoding] = requestedCompressionType;
 
-            responseHeaders["Vary"] = "Accept-Encoding";
+            responseHeaders[HeaderNames.Vary] = HeaderNames.AcceptEncoding;
 
             var contentLength = content.Length;
 
             if (isHeadRequest)
             {
-                var result = new StreamWriter(Array.Empty<byte>(), contentType, contentLength);
+                var result = new StreamWriter(Array.Empty<byte>(), contentType);
                 AddResponseHeaders(result, responseHeaders);
                 return result;
             }
             else
             {
-                var result = new StreamWriter(content, contentType, contentLength);
+                var result = new StreamWriter(content, contentType);
                 AddResponseHeaders(result, responseHeaders);
                 return result;
             }
@@ -348,11 +349,6 @@ namespace Emby.Server.Implementations.HttpServer
 
         private byte[] Compress(byte[] bytes, string compressionType)
         {
-            if (string.Equals(compressionType, "br", StringComparison.OrdinalIgnoreCase))
-            {
-                return CompressBrotli(bytes);
-            }
-
             if (string.Equals(compressionType, "deflate", StringComparison.OrdinalIgnoreCase))
             {
                 return Deflate(bytes);
@@ -364,11 +360,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             throw new NotSupportedException(compressionType);
-        }
-
-        private byte[] CompressBrotli(byte[] bytes)
-        {
-            return _brotliCompressor.Compress(bytes);
         }
 
         private static byte[] Deflate(byte[] bytes)
@@ -424,12 +415,12 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         private object GetCachedResult(IRequest requestContext, IDictionary<string, string> responseHeaders, StaticResultOptions options)
         {
-            bool noCache = (requestContext.Headers.Get("Cache-Control") ?? string.Empty).IndexOf("no-cache", StringComparison.OrdinalIgnoreCase) != -1;
+            bool noCache = (requestContext.Headers[HeaderNames.CacheControl].ToString()).IndexOf("no-cache", StringComparison.OrdinalIgnoreCase) != -1;
             AddCachingHeaders(responseHeaders, options.CacheDuration, noCache, options.DateLastModified);
 
             if (!noCache)
             {
-                DateTime.TryParse(requestContext.Headers.Get("If-Modified-Since"), out var ifModifiedSinceHeader);
+                DateTime.TryParse(requestContext.Headers[HeaderNames.IfModifiedSince], out var ifModifiedSinceHeader);
 
                 if (IsNotModified(ifModifiedSinceHeader, options.CacheDuration, options.DateLastModified))
                 {
@@ -530,7 +521,7 @@ namespace Emby.Server.Implementations.HttpServer
             options.ResponseHeaders = options.ResponseHeaders ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var contentType = options.ContentType;
-            if (!string.IsNullOrEmpty(requestContext.Headers.Get("If-Modified-Since")))
+            if (!StringValues.IsNullOrEmpty(requestContext.Headers[HeaderNames.IfModifiedSince]))
             {
                 // See if the result is already cached in the browser
                 var result = GetCachedResult(requestContext, options.ResponseHeaders, options);
@@ -548,11 +539,11 @@ namespace Emby.Server.Implementations.HttpServer
             AddCachingHeaders(responseHeaders, options.CacheDuration, false, options.DateLastModified);
             AddAgeHeader(responseHeaders, options.DateLastModified);
 
-            var rangeHeader = requestContext.Headers.Get("Range");
+            var rangeHeader = requestContext.Headers[HeaderNames.Range];
 
             if (!isHeadRequest && !string.IsNullOrEmpty(options.Path))
             {
-                var hasHeaders = new FileWriter(options.Path, contentType, rangeHeader, _logger, _fileSystem)
+                var hasHeaders = new FileWriter(options.Path, contentType, rangeHeader, _logger, _fileSystem, _streamHelper)
                 {
                     OnComplete = options.OnComplete,
                     OnError = options.OnError,
@@ -590,11 +581,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
             else
             {
-                if (totalContentLength.HasValue)
-                {
-                    responseHeaders["Content-Length"] = totalContentLength.Value.ToString(UsCulture);
-                }
-
                 if (isHeadRequest)
                 {
                     using (stream)
@@ -615,11 +601,6 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <summary>
-        /// The us culture
-        /// </summary>
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        /// <summary>
         /// Adds the caching responseHeaders.
         /// </summary>
         private void AddCachingHeaders(IDictionary<string, string> responseHeaders, TimeSpan? cacheDuration,
@@ -627,23 +608,23 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (noCache)
             {
-                responseHeaders["Cache-Control"] = "no-cache, no-store, must-revalidate";
-                responseHeaders["pragma"] = "no-cache, no-store, must-revalidate";
+                responseHeaders[HeaderNames.CacheControl] = "no-cache, no-store, must-revalidate";
+                responseHeaders[HeaderNames.Pragma] = "no-cache, no-store, must-revalidate";
                 return;
             }
 
             if (cacheDuration.HasValue)
             {
-                responseHeaders["Cache-Control"] = "public, max-age=" + cacheDuration.Value.TotalSeconds;
+                responseHeaders[HeaderNames.CacheControl] = "public, max-age=" + cacheDuration.Value.TotalSeconds;
             }
             else
             {
-                responseHeaders["Cache-Control"] = "public";
+                responseHeaders[HeaderNames.CacheControl] = "public";
             }
 
             if (lastModifiedDate.HasValue)
             {
-                responseHeaders["Last-Modified"] = lastModifiedDate.ToString();
+                responseHeaders[HeaderNames.LastModified] = lastModifiedDate.ToString();
             }
         }
 
@@ -656,7 +637,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (lastDateModified.HasValue)
             {
-                responseHeaders["Age"] = Convert.ToInt64((DateTime.UtcNow - lastDateModified.Value).TotalSeconds).ToString(CultureInfo.InvariantCulture);
+                responseHeaders[HeaderNames.Age] = Convert.ToInt64((DateTime.UtcNow - lastDateModified.Value).TotalSeconds).ToString(CultureInfo.InvariantCulture);
             }
         }
 
@@ -713,10 +694,5 @@ namespace Emby.Server.Implementations.HttpServer
                 hasHeaders.Headers[item.Key] = item.Value;
             }
         }
-    }
-
-    public interface IBrotliCompressor
-    {
-        byte[] Compress(byte[] content);
     }
 }

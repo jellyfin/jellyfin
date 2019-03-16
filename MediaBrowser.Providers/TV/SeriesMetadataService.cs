@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.TV.TheTVDB;
 using Microsoft.Extensions.Logging;
@@ -18,7 +17,6 @@ namespace MediaBrowser.Providers.TV
     public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     {
         private readonly ILocalizationManager _localization;
-        private readonly IXmlReaderSettingsFactory _xmlSettings;
         private readonly TvDbClientManager _tvDbClientManager;
 
         public SeriesMetadataService(
@@ -29,13 +27,11 @@ namespace MediaBrowser.Providers.TV
             IUserDataManager userDataManager,
             ILibraryManager libraryManager,
             ILocalizationManager localization,
-            IXmlReaderSettingsFactory xmlSettings,
             TvDbClientManager tvDbClientManager
             )
             : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
         {
             _localization = localization;
-            _xmlSettings = xmlSettings;
             _tvDbClientManager = tvDbClientManager;
         }
 

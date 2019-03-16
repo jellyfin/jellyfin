@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.Net.Http.Headers;
 
 namespace MediaBrowser.Common.Net
 {
@@ -24,8 +25,8 @@ namespace MediaBrowser.Common.Net
         /// <value>The accept header.</value>
         public string AcceptHeader
         {
-            get => GetHeaderValue("Accept");
-            set => RequestHeaders["Accept"] = value;
+            get => GetHeaderValue(HeaderNames.Accept);
+            set => RequestHeaders[HeaderNames.Accept] = value;
         }
         /// <summary>
         /// Gets or sets the cancellation token.
@@ -45,8 +46,8 @@ namespace MediaBrowser.Common.Net
         /// <value>The user agent.</value>
         public string UserAgent
         {
-            get => GetHeaderValue("User-Agent");
-            set => RequestHeaders["User-Agent"] = value;
+            get => GetHeaderValue(HeaderNames.UserAgent);
+            set => RequestHeaders[HeaderNames.UserAgent] = value;
         }
 
         /// <summary>

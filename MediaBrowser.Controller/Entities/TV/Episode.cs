@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.Entities.TV
     {
         public Episode()
         {
-            RemoteTrailers = EmptyMediaUrlArray;
+            RemoteTrailers = Array.Empty<MediaUrl>();
             LocalTrailerIds = Array.Empty<Guid>();
             RemoteTrailerIds = Array.Empty<Guid>();
         }

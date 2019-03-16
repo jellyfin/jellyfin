@@ -2,9 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.HttpServer;
-using Jellyfin.Server.SocketSharp;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +15,6 @@ namespace Jellyfin.Server
             ILoggerFactory loggerFactory,
             StartupOptions options,
             IFileSystem fileSystem,
-            IEnvironmentInfo environmentInfo,
             MediaBrowser.Controller.Drawing.IImageEncoder imageEncoder,
             MediaBrowser.Common.Net.INetworkManager networkManager,
             IConfiguration configuration)
@@ -26,7 +23,6 @@ namespace Jellyfin.Server
                 loggerFactory,
                 options,
                 fileSystem,
-                environmentInfo,
                 imageEncoder,
                 networkManager,
                 configuration)
@@ -34,8 +30,6 @@ namespace Jellyfin.Server
         }
 
         public override bool CanSelfRestart => StartupOptions.RestartPath != null;
-
-        protected override bool SupportsDualModeSockets => true;
 
         protected override void RestartInternal() => Program.Restart();
 
@@ -45,17 +39,5 @@ namespace Jellyfin.Server
         }
 
         protected override void ShutdownInternal() => Program.Shutdown();
-
-        protected override IHttpListener CreateHttpListener()
-            => new WebSocketSharpListener(
-                Logger,
-                Certificate,
-                StreamHelper,
-                NetworkManager,
-                SocketFactory,
-                CryptographyProvider,
-                SupportsDualModeSockets,
-                FileSystemManager,
-                EnvironmentInfo);
     }
 }

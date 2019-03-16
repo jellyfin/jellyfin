@@ -5,15 +5,19 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer
 {
     public class FileWriter : IHttpResult
     {
+        private readonly IStreamHelper _streamHelper;
         private ILogger Logger { get; set; }
+        private readonly IFileSystem _fileSystem;
 
         private string RangeHeader { get; set; }
         private bool IsHeadRequest { get; set; }
@@ -42,25 +46,27 @@ namespace Emby.Server.Implementations.HttpServer
 
         public string Path { get; set; }
 
-        public FileWriter(string path, string contentType, string rangeHeader, ILogger logger, IFileSystem fileSystem)
+        public FileWriter(string path, string contentType, string rangeHeader, ILogger logger, IFileSystem fileSystem, IStreamHelper streamHelper)
         {
             if (string.IsNullOrEmpty(contentType))
             {
                 throw new ArgumentNullException(nameof(contentType));
             }
 
+            _streamHelper = streamHelper;
+            _fileSystem = fileSystem;
+
             Path = path;
             Logger = logger;
             RangeHeader = rangeHeader;
 
-            Headers["Content-Type"] = contentType;
+            Headers[HeaderNames.ContentType] = contentType;
 
             TotalContentLength = fileSystem.GetFileInfo(path).Length;
-            Headers["Accept-Ranges"] = "bytes";
+            Headers[HeaderNames.AcceptRanges] = "bytes";
 
             if (string.IsNullOrWhiteSpace(rangeHeader))
             {
-                Headers["Content-Length"] = TotalContentLength.ToString(UsCulture);
                 StatusCode = HttpStatusCode.OK;
             }
             else
@@ -93,13 +99,10 @@ namespace Emby.Server.Implementations.HttpServer
             RangeStart = requestedRange.Key;
             RangeLength = 1 + RangeEnd - RangeStart;
 
-            // Content-Length is the length of what we're serving, not the original content
-            var lengthString = RangeLength.ToString(UsCulture);
-            Headers["Content-Length"] = lengthString;
-            var rangeString = string.Format("bytes {0}-{1}/{2}", RangeStart, RangeEnd, TotalContentLength);
-            Headers["Content-Range"] = rangeString;
+            var rangeString = $"bytes {RangeStart}-{RangeEnd}/{TotalContentLength}";
+            Headers[HeaderNames.ContentRange] = rangeString;
 
-            Logger.LogInformation("Setting range response values for {0}. RangeRequest: {1} Content-Length: {2}, Content-Range: {3}", Path, RangeHeader, lengthString, rangeString);
+            Logger.LogInformation("Setting range response values for {0}. RangeRequest: {1} Content-Range: {2}", Path, RangeHeader, rangeString);
         }
 
         /// <summary>
@@ -145,8 +148,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private string[] SkipLogExtensions = new string[]
-        {
+        private static readonly string[] SkipLogExtensions = {
             ".js",
             ".html",
             ".css"
@@ -163,8 +165,10 @@ namespace Emby.Server.Implementations.HttpServer
                 }
 
                 var path = Path;
+                var offset = RangeStart;
+                var count = RangeLength;
 
-                if (string.IsNullOrWhiteSpace(RangeHeader) || (RangeStart <= 0 && RangeEnd >= TotalContentLength - 1))
+                if (string.IsNullOrWhiteSpace(RangeHeader) || RangeStart <= 0 && RangeEnd >= TotalContentLength - 1)
                 {
                     var extension = System.IO.Path.GetExtension(path);
 
@@ -173,20 +177,15 @@ namespace Emby.Server.Implementations.HttpServer
                         Logger.LogDebug("Transmit file {0}", path);
                     }
 
-                    //var count = FileShare == FileShareMode.ReadWrite ? TotalContentLength : 0;
-
-                    await response.TransmitFile(path, 0, 0, FileShare, cancellationToken).ConfigureAwait(false);
-                    return;
+                    offset = 0;
+                    count = 0;
                 }
 
-                await response.TransmitFile(path, RangeStart, RangeLength, FileShare, cancellationToken).ConfigureAwait(false);
+                await response.TransmitFile(path, offset, count, FileShare, _fileSystem, _streamHelper, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                if (OnComplete != null)
-                {
-                    OnComplete();
-                }
+                OnComplete?.Invoke();
             }
         }
 
@@ -203,8 +202,5 @@ namespace Emby.Server.Implementations.HttpServer
             get => (HttpStatusCode)Status;
             set => Status = (int)value;
         }
-
-        public string StatusDescription { get; set; }
-
     }
 }

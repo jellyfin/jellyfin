@@ -9,14 +9,14 @@ namespace Emby.Server.Implementations.Diagnostics
 {
     public class CommonProcess : IProcess
     {
-        public event EventHandler Exited;
-
-        private readonly ProcessOptions _options;
         private readonly Process _process;
+
+        private bool _disposed = false;
+        private bool _hasExited;
 
         public CommonProcess(ProcessOptions options)
         {
-            _options = options;
+            StartInfo = options;
 
             var startInfo = new ProcessStartInfo
             {
@@ -27,10 +27,10 @@ namespace Emby.Server.Implementations.Diagnostics
                 CreateNoWindow = options.CreateNoWindow,
                 RedirectStandardError = options.RedirectStandardError,
                 RedirectStandardInput = options.RedirectStandardInput,
-                RedirectStandardOutput = options.RedirectStandardOutput
+                RedirectStandardOutput = options.RedirectStandardOutput,
+                ErrorDialog = options.ErrorDialog
             };
 
-            startInfo.ErrorDialog = options.ErrorDialog;
 
             if (options.IsHidden)
             {
@@ -45,11 +45,22 @@ namespace Emby.Server.Implementations.Diagnostics
             if (options.EnableRaisingEvents)
             {
                 _process.EnableRaisingEvents = true;
-                _process.Exited += _process_Exited;
+                _process.Exited += OnProcessExited;
             }
         }
 
-        private bool _hasExited;
+        public event EventHandler Exited;
+
+        public ProcessOptions StartInfo { get; }
+
+        public StreamWriter StandardInput => _process.StandardInput;
+
+        public StreamReader StandardError => _process.StandardError;
+
+        public StreamReader StandardOutput => _process.StandardOutput;
+
+        public int ExitCode => _process.ExitCode;
+
         private bool HasExited
         {
             get
@@ -72,25 +83,6 @@ namespace Emby.Server.Implementations.Diagnostics
             }
         }
 
-        private void _process_Exited(object sender, EventArgs e)
-        {
-            _hasExited = true;
-            if (Exited != null)
-            {
-                Exited(this, e);
-            }
-        }
-
-        public ProcessOptions StartInfo => _options;
-
-        public StreamWriter StandardInput => _process.StandardInput;
-
-        public StreamReader StandardError => _process.StandardError;
-
-        public StreamReader StandardOutput => _process.StandardOutput;
-
-        public int ExitCode => _process.ExitCode;
-
         public void Start()
         {
             _process.Start();
@@ -108,7 +100,7 @@ namespace Emby.Server.Implementations.Diagnostics
 
         public Task<bool> WaitForExitAsync(int timeMs)
         {
-            //Note: For this function to work correctly, the option EnableRisingEvents needs to be set to true.
+            // Note: For this function to work correctly, the option EnableRisingEvents needs to be set to true.
 
             if (HasExited)
             {
@@ -130,7 +122,29 @@ namespace Emby.Server.Implementations.Diagnostics
 
         public void Dispose()
         {
-            _process.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _process?.Dispose();
+            }
+
+            _disposed = true;
+        }
+
+        private void OnProcessExited(object sender, EventArgs e)
+        {
+            _hasExited = true;
+            Exited?.Invoke(this, e);
         }
     }
 }

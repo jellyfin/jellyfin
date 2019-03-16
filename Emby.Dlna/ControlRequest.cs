@@ -1,11 +1,11 @@
-using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace Emby.Dlna
 {
     public class ControlRequest
     {
-        public IDictionary<string, string> Headers { get; set; }
+        public IHeaderDictionary Headers { get; set; }
 
         public Stream InputXml { get; set; }
 
@@ -15,7 +15,7 @@ namespace Emby.Dlna
 
         public ControlRequest()
         {
-            Headers = new Dictionary<string, string>();
+            Headers = new HeaderDictionary();
         }
     }
 }

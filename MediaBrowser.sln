@@ -1,4 +1,5 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.3
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -13,8 +14,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.WebDashboard", "MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj", "{5624B7B5-B5A7-41D8-9F10-CC5611109619}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.Providers", "MediaBrowser.Providers\MediaBrowser.Providers.csproj", "{442B5058-DCAF-4263-BB6A-F21E31120A1B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenSubtitlesHandler", "OpenSubtitlesHandler\OpenSubtitlesHandler.csproj", "{4A4402D4-E910-443B-B8FC-2C18286A2CA0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.XbmcMetadata", "MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj", "{23499896-B135-4527-8574-C26E926EA99E}"
 EndProject
@@ -36,8 +35,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Dlna", "Emby.Dlna\Emby
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mono.Nat", "Mono.Nat\Mono.Nat.csproj", "{CB7F2326-6497-4A3D-BA03-48513B17A7BE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocketHttpListener", "SocketHttpListener\SocketHttpListener.csproj", "{1D74413B-E7CF-455B-B021-F52BDF881542}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Notifications", "Emby.Notifications\Emby.Notifications.csproj", "{2E030C33-6923-4530-9E54-FA29FA6AD1A9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Naming", "Emby.Naming\Emby.Naming.csproj", "{E5AF7B26-2239-4CE0-B477-0AA2018EDAA2}"
@@ -56,7 +53,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		SharedVersion.cs = SharedVersion.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Drawing.Skia", "Jellyfin.Drawing.Skia\Jellyfin.Drawing.Skia.csproj", "{154872D9-6C12-4007-96E3-8F70A58386CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Drawing.Skia", "Jellyfin.Drawing.Skia\Jellyfin.Drawing.Skia.csproj", "{154872D9-6C12-4007-96E3-8F70A58386CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -132,10 +129,6 @@ Global
 		{CB7F2326-6497-4A3D-BA03-48513B17A7BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB7F2326-6497-4A3D-BA03-48513B17A7BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CB7F2326-6497-4A3D-BA03-48513B17A7BE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1D74413B-E7CF-455B-B021-F52BDF881542}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1D74413B-E7CF-455B-B021-F52BDF881542}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1D74413B-E7CF-455B-B021-F52BDF881542}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1D74413B-E7CF-455B-B021-F52BDF881542}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2E030C33-6923-4530-9E54-FA29FA6AD1A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2E030C33-6923-4530-9E54-FA29FA6AD1A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E030C33-6923-4530-9E54-FA29FA6AD1A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -185,7 +178,7 @@ Global
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
 		$0.StandardHeader = $1
-		$1.Text = @### This header should be used to start new files.\n### It provides an explicit per-file license reference that should be present on all new files.\n### To use this header, delete these lines and the following empty line, modify <filename> to\n### the proper full path, and then add new code following the header and a single empty line.\n\n// ${FileName}\n// Part of the Jellyfin project (https://jellyfin.media)\n//\n//    All copyright belongs to the Jellyfin contributors; a full list can\n//    be found in the file CONTRIBUTORS.md\n//\n//    This program is free software: you can redistribute it and/or modify\n//    it under the terms of the GNU General Public License as published by\n//    the Free Software Foundation, version 2.\n//\n//    This program is distributed in the hope that it will be useful,\n//    but WITHOUT ANY WARRANTY; without even the implied warranty of\n//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n//    GNU General Public License for more details.\n//\n//    You should have received a copy of the GNU General Public License\n//    along with this program.  If not, see <https://www.gnu.org/licenses/>.\n
+		$1.IncludeInNewFiles = False
 		$0.DotNetNamingPolicy = $2
 		$2.DirectoryNamespaceAssociation = PrefixedHierarchical
 	EndGlobalSection

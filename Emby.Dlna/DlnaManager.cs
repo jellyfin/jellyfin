@@ -17,7 +17,9 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace Emby.Dlna
 {
@@ -203,15 +205,12 @@ namespace Emby.Dlna
             }
         }
 
-        public DeviceProfile GetProfile(IDictionary<string, string> headers)
+        public DeviceProfile GetProfile(IHeaderDictionary headers)
         {
             if (headers == null)
             {
                 throw new ArgumentNullException(nameof(headers));
             }
-
-            // Convert to case insensitive
-            headers = new Dictionary<string, string>(headers, StringComparer.OrdinalIgnoreCase);
 
             var profile = GetProfiles().FirstOrDefault(i => i.Identification != null && IsMatch(headers, i.Identification));
 
@@ -228,12 +227,12 @@ namespace Emby.Dlna
             return profile;
         }
 
-        private bool IsMatch(IDictionary<string, string> headers, DeviceIdentification profileInfo)
+        private bool IsMatch(IHeaderDictionary headers, DeviceIdentification profileInfo)
         {
             return profileInfo.Headers.Any(i => IsMatch(headers, i));
         }
 
-        private bool IsMatch(IDictionary<string, string> headers, HttpHeaderInfo header)
+        private bool IsMatch(IHeaderDictionary headers, HttpHeaderInfo header)
         {
             // Handle invalid user setup
             if (string.IsNullOrEmpty(header.Name))
@@ -241,14 +240,14 @@ namespace Emby.Dlna
                 return false;
             }
 
-            if (headers.TryGetValue(header.Name, out string value))
+            if (headers.TryGetValue(header.Name, out StringValues value))
             {
                 switch (header.Match)
                 {
                     case HeaderMatchType.Equals:
                         return string.Equals(value, header.Value, StringComparison.OrdinalIgnoreCase);
                     case HeaderMatchType.Substring:
-                        var isMatch = value.IndexOf(header.Value, StringComparison.OrdinalIgnoreCase) != -1;
+                        var isMatch = value.ToString().IndexOf(header.Value, StringComparison.OrdinalIgnoreCase) != -1;
                         //_logger.LogDebug("IsMatch-Substring value: {0} testValue: {1} isMatch: {2}", value, header.Value, isMatch);
                         return isMatch;
                     case HeaderMatchType.Regex:
@@ -494,7 +493,7 @@ namespace Emby.Dlna
             internal string Path { get; set; }
         }
 
-        public string GetServerDescriptionXml(IDictionary<string, string> headers, string serverUuId, string serverAddress)
+        public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress)
         {
             var profile = GetProfile(headers) ??
                           GetDefaultProfile();

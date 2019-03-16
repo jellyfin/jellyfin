@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,15 +7,13 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Services;
-using MediaBrowser.Model.System;
+using Microsoft.Net.Http.Headers;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -25,7 +22,6 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public abstract class BaseProgressiveStreamingService : BaseStreamingService
     {
-        protected readonly IEnvironmentInfo EnvironmentInfo;
         protected IHttpClient HttpClient { get; private set; }
 
         public BaseProgressiveStreamingService(
@@ -41,8 +37,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             IDeviceManager deviceManager,
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
-            IAuthorizationContext authorizationContext,
-            IEnvironmentInfo environmentInfo)
+            IAuthorizationContext authorizationContext)
             : base(serverConfig,
                 userManager,
                 libraryManager,
@@ -56,7 +51,6 @@ namespace MediaBrowser.Api.Playback.Progressive
                 jsonSerializer,
                 authorizationContext)
         {
-            EnvironmentInfo = environmentInfo;
             HttpClient = httpClient;
         }
 
@@ -154,9 +148,9 @@ namespace MediaBrowser.Api.Playback.Progressive
                     var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                     // TODO: Don't hardcode this
-                    outputHeaders["Content-Type"] = MediaBrowser.Model.Net.MimeTypes.GetMimeType("file.ts");
+                    outputHeaders[HeaderNames.ContentType] = Model.Net.MimeTypes.GetMimeType("file.ts");
 
-                    return new ProgressiveFileCopier(state.DirectStreamProvider, outputHeaders, null, Logger, EnvironmentInfo, CancellationToken.None)
+                    return new ProgressiveFileCopier(state.DirectStreamProvider, outputHeaders, null, Logger, CancellationToken.None)
                     {
                         AllowEndOfFile = false
                     };
@@ -196,11 +190,13 @@ namespace MediaBrowser.Api.Playback.Progressive
                 {
                     if (state.MediaSource.IsInfiniteStream)
                     {
-                        var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                        var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            [HeaderNames.ContentType] = contentType
+                        };
 
-                        outputHeaders["Content-Type"] = contentType;
 
-                        return new ProgressiveFileCopier(FileSystem, state.MediaPath, outputHeaders, null, Logger, EnvironmentInfo, CancellationToken.None)
+                        return new ProgressiveFileCopier(FileSystem, state.MediaPath, outputHeaders, null, Logger, CancellationToken.None)
                         {
                             AllowEndOfFile = false
                         };
@@ -298,16 +294,16 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (trySupportSeek)
             {
-                if (!string.IsNullOrWhiteSpace(Request.QueryString["Range"]))
+                if (!string.IsNullOrWhiteSpace(Request.QueryString[HeaderNames.Range]))
                 {
-                    options.RequestHeaders["Range"] = Request.QueryString["Range"];
+                    options.RequestHeaders[HeaderNames.Range] = Request.QueryString[HeaderNames.Range];
                 }
             }
             var response = await HttpClient.GetResponse(options).ConfigureAwait(false);
 
             if (trySupportSeek)
             {
-                foreach (var name in new[] { "Content-Range", "Accept-Ranges" })
+                foreach (var name in new[] { HeaderNames.ContentRange, HeaderNames.AcceptRanges })
                 {
                     var val = response.Headers[name];
                     if (!string.IsNullOrWhiteSpace(val))
@@ -318,13 +314,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
             else
             {
-                responseHeaders["Accept-Ranges"] = "none";
-            }
-
-            // Seeing cases of -1 here
-            if (response.ContentLength.HasValue && response.ContentLength.Value >= 0)
-            {
-                responseHeaders["Content-Length"] = response.ContentLength.Value.ToString(UsCulture);
+                responseHeaders[HeaderNames.AcceptRanges] = "none";
             }
 
             if (isHeadRequest)
@@ -337,7 +327,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var result = new StaticRemoteStreamWriter(response);
 
-            result.Headers["Content-Type"] = response.ContentType;
+            result.Headers[HeaderNames.ContentType] = response.ContentType;
 
             // Add the response headers to the result object
             foreach (var header in responseHeaders)
@@ -361,41 +351,15 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Use the command line args with a dummy playlist path
             var outputPath = state.OutputFilePath;
 
-            responseHeaders["Accept-Ranges"] = "none";
+            responseHeaders[HeaderNames.AcceptRanges] = "none";
 
             var contentType = state.GetMimeType(outputPath);
 
             // TODO: The isHeadRequest is only here because ServiceStack will add Content-Length=0 to the response
-            // What we really want to do is hunt that down and remove that
-            var contentLength = state.EstimateContentLength || isHeadRequest ? GetEstimatedContentLength(state) : null;
-
-            if (contentLength.HasValue)
-            {
-                responseHeaders["Content-Length"] = contentLength.Value.ToString(UsCulture);
-            }
-
             // Headers only
             if (isHeadRequest)
             {
-                var streamResult = ResultFactory.GetResult(null, new byte[] { }, contentType, responseHeaders);
-
-                var hasHeaders = streamResult as IHasHeaders;
-                if (hasHeaders != null)
-                {
-                    if (contentLength.HasValue)
-                    {
-                        hasHeaders.Headers["Content-Length"] = contentLength.Value.ToString(CultureInfo.InvariantCulture);
-                    }
-                    else
-                    {
-                        if (hasHeaders.Headers.ContainsKey("Content-Length"))
-                        {
-                            hasHeaders.Headers.Remove("Content-Length");
-                        }
-                    }
-                }
-
-                return streamResult;
+                return ResultFactory.GetResult(null, Array.Empty<byte>(), contentType, responseHeaders);
             }
 
             var transcodingLock = ApiEntryPoint.Instance.GetTranscodingLock(outputPath);
@@ -414,9 +378,11 @@ namespace MediaBrowser.Api.Playback.Progressive
                     state.Dispose();
                 }
 
-                var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    [HeaderNames.ContentType] = contentType
+                };
 
-                outputHeaders["Content-Type"] = contentType;
 
                 // Add the response headers to the result object
                 foreach (var item in responseHeaders)
@@ -424,29 +390,12 @@ namespace MediaBrowser.Api.Playback.Progressive
                     outputHeaders[item.Key] = item.Value;
                 }
 
-                return new ProgressiveFileCopier(FileSystem, outputPath, outputHeaders, job, Logger, EnvironmentInfo, CancellationToken.None);
+                return new ProgressiveFileCopier(FileSystem, outputPath, outputHeaders, job, Logger, CancellationToken.None);
             }
             finally
             {
                 transcodingLock.Release();
             }
-        }
-
-        /// <summary>
-        /// Gets the length of the estimated content.
-        /// </summary>
-        /// <param name="state">The state.</param>
-        /// <returns>System.Nullable{System.Int64}.</returns>
-        private long? GetEstimatedContentLength(StreamState state)
-        {
-            var totalBitrate = state.TotalOutputBitrate ?? 0;
-
-            if (totalBitrate > 0 && state.RunTimeTicks.HasValue)
-            {
-                return Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds / 8);
-            }
-
-            return null;
         }
     }
 }

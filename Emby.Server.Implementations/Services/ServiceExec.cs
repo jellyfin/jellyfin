@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.Services
                     foreach (var requestFilter in actionContext.RequestFilters)
                     {
                         requestFilter.RequestFilter(request, request.Response, requestDto);
-                        if (request.Response.IsClosed)
+                        if (request.Response.OriginalResponse.HasStarted)
                         {
                             Task.FromResult<object>(null);
                         }

@@ -18,6 +18,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace MediaBrowser.Api.Images
 {
@@ -311,35 +312,35 @@ namespace MediaBrowser.Api.Images
 
         private ImageInfo GetImageInfo(BaseItem item, ItemImageInfo info, int? imageIndex)
         {
+            int? width = null;
+            int? height = null;
+            long length = 0;
+
             try
             {
-                int? width = null;
-                int? height = null;
-                long length = 0;
-
-                try
+                if (info.IsLocalFile)
                 {
-                    if (info.IsLocalFile)
+                    var fileInfo = _fileSystem.GetFileInfo(info.Path);
+                    length = fileInfo.Length;
+
+                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, info, true);
+                    width = size.Width;
+                    height = size.Height;
+
+                    if (width <= 0 || height <= 0)
                     {
-                        var fileInfo = _fileSystem.GetFileInfo(info.Path);
-                        length = fileInfo.Length;
-
-                        ImageDimensions size = _imageProcessor.GetImageDimensions(item, info, true);
-                        width = size.Width;
-                        height = size.Height;
-
-                        if (width <= 0 || height <= 0)
-                        {
-                            width = null;
-                            height = null;
-                        }
-
+                        width = null;
+                        height = null;
                     }
                 }
-                catch
-                {
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error getting image information for {Item}", item.Name);
+            }
 
-                }
+            try
+            {
                 return new ImageInfo
                 {
                     Path = info.Path,
@@ -353,7 +354,7 @@ namespace MediaBrowser.Api.Images
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error getting image information for {path}", info.Path);
+                Logger.LogError(ex, "Error getting image information for {Path}", info.Path);
 
                 return null;
             }
@@ -518,16 +519,16 @@ namespace MediaBrowser.Api.Images
                     request.AddPlayedIndicator = true;
                 }
             }
+
             if (request.PercentPlayed.HasValue)
             {
                 request.UnplayedCount = null;
             }
-            if (request.UnplayedCount.HasValue)
+
+            if (request.UnplayedCount.HasValue
+                && request.UnplayedCount.Value <= 0)
             {
-                if (request.UnplayedCount.Value <= 0)
-                {
-                    request.UnplayedCount = null;
-                }
+                request.UnplayedCount = null;
             }
 
             if (item == null)
@@ -541,7 +542,6 @@ namespace MediaBrowser.Api.Images
             }
 
             var imageInfo = GetImageInfo(request, item);
-
             if (imageInfo == null)
             {
                 var displayText = item == null ? itemId.ToString() : item.Name;
@@ -549,7 +549,6 @@ namespace MediaBrowser.Api.Images
             }
 
             IImageEnhancer[] supportedImageEnhancers;
-
             if (_imageProcessor.ImageEnhancers.Length > 0)
             {
                 if (item == null)
@@ -564,12 +563,14 @@ namespace MediaBrowser.Api.Images
                 supportedImageEnhancers = Array.Empty<IImageEnhancer>();
             }
 
-            var cropwhitespace = request.Type == ImageType.Logo ||
-                request.Type == ImageType.Art;
-
+            bool cropwhitespace;
             if (request.CropWhitespace.HasValue)
             {
                 cropwhitespace = request.CropWhitespace.Value;
+            }
+            else
+            {
+                cropwhitespace = request.Type == ImageType.Logo || request.Type == ImageType.Art;
             }
 
             var outputFormats = GetOutputFormats(request);
@@ -634,7 +635,7 @@ namespace MediaBrowser.Api.Images
 
             var imageResult = await _imageProcessor.ProcessImage(options).ConfigureAwait(false);
 
-            headers["Vary"] = "Accept";
+            headers[HeaderNames.Vary] = HeaderNames.Accept;
 
             return await ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {
@@ -652,12 +653,10 @@ namespace MediaBrowser.Api.Images
 
         private ImageFormat[] GetOutputFormats(ImageRequest request)
         {
-            if (!string.IsNullOrWhiteSpace(request.Format))
+            if (!string.IsNullOrWhiteSpace(request.Format)
+                && Enum.TryParse(request.Format, true, out ImageFormat format))
             {
-                if (Enum.TryParse(request.Format, true, out ImageFormat format))
-                {
-                    return new ImageFormat[] { format };
-                }
+                return new ImageFormat[] { format };
             }
 
             return GetClientSupportedFormats();
@@ -665,8 +664,19 @@ namespace MediaBrowser.Api.Images
 
         private ImageFormat[] GetClientSupportedFormats()
         {
-            //logger.LogDebug("Request types: {0}", string.Join(",", Request.AcceptTypes ?? Array.Empty<string>()));
-            var supportedFormats = (Request.AcceptTypes ?? Array.Empty<string>()).Select(i => i.Split(';')[0]).ToArray();
+            var supportedFormats = Request.AcceptTypes ?? Array.Empty<string>();
+            if (supportedFormats.Length > 0)
+            {
+                for (int i = 0; i < supportedFormats.Length; i++)
+                {
+                    int index = supportedFormats[i].IndexOf(';');
+                    if (index != -1)
+                    {
+                        supportedFormats[i] = supportedFormats[i].Substring(0, index);
+                    }
+                }
+            }
+
             var acceptParam = Request.QueryString["accept"];
 
             var supportsWebP = SupportsFormat(supportedFormats, acceptParam, "webp", false);
@@ -699,7 +709,7 @@ namespace MediaBrowser.Api.Images
             return formats.ToArray();
         }
 
-        private bool SupportsFormat(string[] requestAcceptTypes, string acceptParam, string format, bool acceptAll)
+        private bool SupportsFormat(IEnumerable<string> requestAcceptTypes, string acceptParam, string format, bool acceptAll)
         {
             var mimeType = "image/" + format;
 

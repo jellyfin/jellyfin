@@ -11,7 +11,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
@@ -35,7 +34,6 @@ namespace Emby.Server.Implementations.Localization
         private readonly Dictionary<string, Dictionary<string, ParentalRating>> _allParentalRatings =
             new Dictionary<string, Dictionary<string, ParentalRating>>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly ILogger _logger;
         private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
@@ -44,129 +42,64 @@ namespace Emby.Server.Implementations.Localization
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="fileSystem">The file system.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="loggerFactory">The logger factory</param>
         public LocalizationManager(
             IServerConfigurationManager configurationManager,
-            IFileSystem fileSystem,
             IJsonSerializer jsonSerializer,
             ILoggerFactory loggerFactory)
         {
             _configurationManager = configurationManager;
-            _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
             _logger = loggerFactory.CreateLogger(nameof(LocalizationManager));
         }
 
         public async Task LoadAll()
         {
-            const string ratingsResource = "Emby.Server.Implementations.Localization.Ratings.";
-
-            Directory.CreateDirectory(LocalizationPath);
-
-            var existingFiles = GetRatingsFiles(LocalizationPath).Select(Path.GetFileName);
+            const string RatingsResource = "Emby.Server.Implementations.Localization.Ratings.";
 
             // Extract from the assembly
             foreach (var resource in _assembly.GetManifestResourceNames())
             {
-                if (!resource.StartsWith(ratingsResource))
+                if (!resource.StartsWith(RatingsResource, StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                string filename = "ratings-" + resource.Substring(ratingsResource.Length);
+                string countryCode = resource.Substring(RatingsResource.Length, 2);
+                var dict = new Dictionary<string, ParentalRating>(StringComparer.OrdinalIgnoreCase);
 
-                if (existingFiles.Contains(filename))
+                using (var str = _assembly.GetManifestResourceStream(resource))
+                using (var reader = new StreamReader(str))
                 {
-                    continue;
-                }
-
-                using (var stream = _assembly.GetManifestResourceStream(resource))
-                {
-                    string target = Path.Combine(LocalizationPath, filename);
-                    _logger.LogInformation("Extracting ratings to {0}", target);
-
-                    using (var fs = _fileSystem.GetFileStream(target, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+                    string line;
+                    while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
                     {
-                        await stream.CopyToAsync(fs);
+                        if (string.IsNullOrWhiteSpace(line))
+                        {
+                            continue;
+                        }
+
+                        string[] parts = line.Split(',');
+                        if (parts.Length == 2
+                            && int.TryParse(parts[1], NumberStyles.Integer, UsCulture, out var value))
+                        {
+                            dict.Add(parts[0], new ParentalRating { Name = parts[0], Value = value });
+                        }
+#if DEBUG
+                        else
+                        {
+                            _logger.LogWarning("Malformed line in ratings file for country {CountryCode}", countryCode);
+                        }
+#endif
                     }
                 }
+
+                _allParentalRatings[countryCode] = dict;
             }
 
-            foreach (var file in GetRatingsFiles(LocalizationPath))
-            {
-                await LoadRatings(file);
-            }
-
-            LoadAdditionalRatings();
-
-            await LoadCultures();
+            await LoadCultures().ConfigureAwait(false);
         }
-
-        private void LoadAdditionalRatings()
-        {
-            LoadRatings("au", new[]
-            {
-                new ParentalRating("AU-G", 1),
-                new ParentalRating("AU-PG", 5),
-                new ParentalRating("AU-M", 6),
-                new ParentalRating("AU-MA15+", 7),
-                new ParentalRating("AU-M15+", 8),
-                new ParentalRating("AU-R18+", 9),
-                new ParentalRating("AU-X18+", 10),
-                new ParentalRating("AU-RC", 11)
-            });
-
-            LoadRatings("be", new[]
-            {
-                new ParentalRating("BE-AL", 1),
-                new ParentalRating("BE-MG6", 2),
-                new ParentalRating("BE-6", 3),
-                new ParentalRating("BE-9", 5),
-                new ParentalRating("BE-12", 6),
-                new ParentalRating("BE-16", 8)
-            });
-
-            LoadRatings("de", new[]
-            {
-                new ParentalRating("DE-0", 1),
-                new ParentalRating("FSK-0", 1),
-                new ParentalRating("DE-6", 5),
-                new ParentalRating("FSK-6", 5),
-                new ParentalRating("DE-12", 7),
-                new ParentalRating("FSK-12", 7),
-                new ParentalRating("DE-16", 8),
-                new ParentalRating("FSK-16", 8),
-                new ParentalRating("DE-18", 9),
-                new ParentalRating("FSK-18", 9)
-            });
-
-            LoadRatings("ru", new[]
-            {
-                new ParentalRating("RU-0+", 1),
-                new ParentalRating("RU-6+", 3),
-                new ParentalRating("RU-12+", 7),
-                new ParentalRating("RU-16+", 9),
-                new ParentalRating("RU-18+", 10)
-            });
-        }
-
-        private void LoadRatings(string country, ParentalRating[] ratings)
-        {
-            _allParentalRatings[country] = ratings.ToDictionary(i => i.Name);
-        }
-
-        private IEnumerable<string> GetRatingsFiles(string directory)
-            => _fileSystem.GetFilePaths(directory, false)
-                .Where(i => string.Equals(Path.GetExtension(i), ".csv", StringComparison.OrdinalIgnoreCase))
-                .Where(i => Path.GetFileName(i).StartsWith("ratings-", StringComparison.OrdinalIgnoreCase));
-
-        /// <summary>
-        /// Gets the localization path.
-        /// </summary>
-        /// <value>The localization path.</value>
-        public string LocalizationPath
-            => Path.Combine(_configurationManager.ApplicationPaths.ProgramDataPath, "localization");
 
         public string NormalizeFormKD(string text)
             => text.Normalize(NormalizationForm.FormKD);
@@ -184,14 +117,14 @@ namespace Emby.Server.Implementations.Localization
         {
             List<CultureDto> list = new List<CultureDto>();
 
-            const string path = "Emby.Server.Implementations.Localization.iso6392.txt";
+            const string ResourcePath = "Emby.Server.Implementations.Localization.iso6392.txt";
 
-            using (var stream = _assembly.GetManifestResourceStream(path))
+            using (var stream = _assembly.GetManifestResourceStream(ResourcePath))
             using (var reader = new StreamReader(stream))
             {
                 while (!reader.EndOfStream)
                 {
-                    var line = await reader.ReadLineAsync();
+                    var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
                     if (string.IsNullOrWhiteSpace(line))
                     {
@@ -217,11 +150,11 @@ namespace Emby.Server.Implementations.Localization
                         string[] threeletterNames;
                         if (string.IsNullOrWhiteSpace(parts[1]))
                         {
-                            threeletterNames = new [] { parts[0] };
+                            threeletterNames = new[] { parts[0] };
                         }
                         else
                         {
-                            threeletterNames = new [] { parts[0], parts[1] };
+                            threeletterNames = new[] { parts[0], parts[1] };
                         }
 
                         list.Add(new CultureDto
@@ -281,6 +214,7 @@ namespace Emby.Server.Implementations.Localization
         /// Gets the ratings.
         /// </summary>
         /// <param name="countryCode">The country code.</param>
+        /// <returns>The ratings</returns>
         private Dictionary<string, ParentalRating> GetRatings(string countryCode)
         {
             _allParentalRatings.TryGetValue(countryCode, out var value);
@@ -288,52 +222,14 @@ namespace Emby.Server.Implementations.Localization
             return value;
         }
 
-        /// <summary>
-        /// Loads the ratings.
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <returns>Dictionary{System.StringParentalRating}.</returns>
-        private async Task LoadRatings(string file)
-        {
-            Dictionary<string, ParentalRating> dict
-                = new Dictionary<string, ParentalRating>(StringComparer.OrdinalIgnoreCase);
-
-            using (var str = File.OpenRead(file))
-            using (var reader = new StreamReader(str))
-            {
-                string line;
-                while ((line = await reader.ReadLineAsync()) != null)
-                {
-                    if (string.IsNullOrWhiteSpace(line))
-                    {
-                        continue;
-                    }
-
-                    string[] parts = line.Split(',');
-                    if (parts.Length == 2
-                        && int.TryParse(parts[1], NumberStyles.Integer, UsCulture, out var value))
-                    {
-                        dict.Add(parts[0], (new ParentalRating { Name = parts[0], Value = value }));
-                    }
-#if DEBUG
-                    else
-                    {
-                        _logger.LogWarning("Misformed line in {Path}", file);
-                    }
-#endif
-                }
-            }
-
-            var countryCode = Path.GetFileNameWithoutExtension(file).Split('-')[1];
-
-            _allParentalRatings[countryCode] = dict;
-        }
-
         private static readonly string[] _unratedValues = { "n/a", "unrated", "not rated" };
 
+        /// <inheritdoc />
         /// <summary>
         /// Gets the rating level.
         /// </summary>
+        /// <param name="rating">Rating field</param>
+        /// <returns>The rating level</returns>&gt;
         public int? GetRatingLevel(string rating)
         {
             if (string.IsNullOrEmpty(rating))
@@ -405,6 +301,7 @@ namespace Emby.Server.Implementations.Localization
             {
                 culture = _configurationManager.Configuration.UICulture;
             }
+
             if (string.IsNullOrEmpty(culture))
             {
                 culture = DefaultCulture;
@@ -450,8 +347,8 @@ namespace Emby.Server.Implementations.Localization
 
             var namespaceName = GetType().Namespace + "." + prefix;
 
-            await CopyInto(dictionary, namespaceName + "." + baseFilename);
-            await CopyInto(dictionary, namespaceName + "." + GetResourceFilename(culture));
+            await CopyInto(dictionary, namespaceName + "." + baseFilename).ConfigureAwait(false);
+            await CopyInto(dictionary, namespaceName + "." + GetResourceFilename(culture)).ConfigureAwait(false);
 
             return dictionary;
         }
@@ -463,7 +360,7 @@ namespace Emby.Server.Implementations.Localization
                 // If a Culture doesn't have a translation the stream will be null and it defaults to en-us further up the chain
                 if (stream != null)
                 {
-                    var dict = await _jsonSerializer.DeserializeFromStreamAsync<Dictionary<string, string>>(stream);
+                    var dict = await _jsonSerializer.DeserializeFromStreamAsync<Dictionary<string, string>>(stream).ConfigureAwait(false);
 
                     foreach (var key in dict.Keys)
                     {

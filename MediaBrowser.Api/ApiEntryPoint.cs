@@ -172,6 +172,11 @@ namespace MediaBrowser.Api
         {
             var path = _config.ApplicationPaths.GetTranscodingTempPath();
 
+            if (!Directory.Exists(path))
+            {
+                return;
+            }
+
             foreach (var file in _fileSystem.GetFilePaths(path, true))
             {
                 _fileSystem.DeleteFile(file);

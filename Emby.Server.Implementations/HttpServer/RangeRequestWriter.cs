@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer
 {
@@ -66,8 +67,8 @@ namespace Emby.Server.Implementations.HttpServer
             this._logger = logger;
 
             ContentType = contentType;
-            Headers["Content-Type"] = contentType;
-            Headers["Accept-Ranges"] = "bytes";
+            Headers[HeaderNames.ContentType] = contentType;
+            Headers[HeaderNames.AcceptRanges] = "bytes";
             StatusCode = HttpStatusCode.PartialContent;
 
             SetRangeValues(contentLength);
@@ -95,9 +96,7 @@ namespace Emby.Server.Implementations.HttpServer
             RangeStart = requestedRange.Key;
             RangeLength = 1 + RangeEnd - RangeStart;
 
-            // Content-Length is the length of what we're serving, not the original content
-            Headers["Content-Length"] = RangeLength.ToString(UsCulture);
-            Headers["Content-Range"] = string.Format("bytes {0}-{1}/{2}", RangeStart, RangeEnd, TotalContentLength);
+            Headers[HeaderNames.ContentRange] = $"bytes {RangeStart}-{RangeEnd}/{TotalContentLength}";
 
             if (RangeStart > 0 && SourceStream.CanSeek)
             {

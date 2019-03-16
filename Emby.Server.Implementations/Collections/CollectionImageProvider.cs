@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.Collections
             return base.Supports(item);
         }
 
-        protected override List<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
         {
             var playlist = (BoxSet)item;
 
@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.Collections
                 .ToList();
         }
 
-        protected override string CreateImage(BaseItem item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override string CreateImage(BaseItem item, IReadOnlyCollection<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             return CreateSingleImage(itemsWithImages, outputPathWithoutExtension, ImageType.Primary);
         }

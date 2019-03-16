@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     {
         public BoxSet()
         {
-            RemoteTrailers = EmptyMediaUrlArray;
+            RemoteTrailers = Array.Empty<MediaUrl>();
             LocalTrailerIds = Array.Empty<Guid>();
             RemoteTrailerIds = Array.Empty<Guid>();
 

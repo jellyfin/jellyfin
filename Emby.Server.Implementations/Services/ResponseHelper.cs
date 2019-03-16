@@ -20,8 +20,6 @@ namespace Emby.Server.Implementations.Services
                 {
                     response.StatusCode = (int)HttpStatusCode.NoContent;
                 }
-
-                response.SetContentLength(0);
                 return Task.CompletedTask;
             }
 
@@ -55,7 +53,6 @@ namespace Emby.Server.Implementations.Services
                 {
                     if (string.Equals(responseHeaders.Key, "Content-Length", StringComparison.OrdinalIgnoreCase))
                     {
-                        response.SetContentLength(long.Parse(responseHeaders.Value));
                         continue;
                     }
 
@@ -104,7 +101,6 @@ namespace Emby.Server.Implementations.Services
             if (bytes != null)
             {
                 response.ContentType = "application/octet-stream";
-                response.SetContentLength(bytes.Length);
 
                 if (bytes.Length > 0)
                 {
@@ -117,7 +113,6 @@ namespace Emby.Server.Implementations.Services
             if (responseText != null)
             {
                 bytes = Encoding.UTF8.GetBytes(responseText);
-                response.SetContentLength(bytes.Length);
                 if (bytes.Length > 0)
                 {
                     return response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
@@ -148,8 +143,6 @@ namespace Emby.Server.Implementations.Services
                 ms.Position = 0;
 
                 var contentLength = ms.Length;
-
-                response.SetContentLength(contentLength);
 
                 if (contentLength > 0)
                 {
