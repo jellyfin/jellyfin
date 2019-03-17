@@ -22,6 +22,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
@@ -55,6 +56,8 @@ namespace Emby.Server.Implementations.Data
         private readonly IServerConfigurationManager _config;
         private IServerApplicationHost _appHost;
 
+        private readonly ILocalizationManager _localization;
+
         public IImageProcessor ImageProcessor { get; set; }
 
         /// <summary>
@@ -64,7 +67,8 @@ namespace Emby.Server.Implementations.Data
             IServerConfigurationManager config,
             IServerApplicationHost appHost,
             IJsonSerializer jsonSerializer,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            ILocalizationManager localization)
             : base(loggerFactory.CreateLogger(nameof(SqliteItemRepository)))
         {
             if (config == null)
@@ -81,6 +85,7 @@ namespace Emby.Server.Implementations.Data
             _config = config;
             _jsonSerializer = jsonSerializer;
             _typeMapper = new TypeMapper();
+            _localization = localization;
 
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
         }
@@ -6185,6 +6190,12 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             if (reader[34].SQLiteType != SQLiteType.Null)
             {
                 item.ColorTransfer = reader[34].ToString();
+            }
+
+            if (item.Type == MediaStreamType.Subtitle){
+                item.localizedUndefined = _localization.GetLocalizedString("Undefined");
+                item.localizedDefault = _localization.GetLocalizedString("Default");
+                item.localizedForced = _localization.GetLocalizedString("Forced");
             }
 
             return item;

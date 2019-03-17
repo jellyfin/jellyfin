@@ -770,7 +770,7 @@ namespace Emby.Server.Implementations
             var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LoggerFactory, JsonSerializer, ApplicationPaths, FileSystemManager);
             serviceCollection.AddSingleton<IDisplayPreferencesRepository>(displayPreferencesRepo);
 
-            ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, JsonSerializer, LoggerFactory);
+            ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, JsonSerializer, LoggerFactory, LocalizationManager);
             serviceCollection.AddSingleton<IItemRepository>(ItemRepository);
 
             AuthenticationRepository = GetAuthenticationRepository();
@@ -870,7 +870,8 @@ namespace Emby.Server.Implementations
                 () => SubtitleEncoder,
                 () => MediaSourceManager,
                 ProcessFactory,
-                5000);
+                5000,
+                LocalizationManager);
             serviceCollection.AddSingleton(MediaEncoder);
 
             EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, LoggerFactory, MediaEncoder, ChapterManager, LibraryManager);
