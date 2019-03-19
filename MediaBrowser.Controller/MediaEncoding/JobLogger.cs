@@ -10,7 +10,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 {
     public class JobLogger
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
         private readonly ILogger _logger;
 
         public JobLogger(ILogger logger)
@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 using (var reader = new StreamReader(source))
                 {
-                    while (!reader.EndOfStream)
+                    while (!reader.EndOfStream && reader.BaseStream.CanRead)
                     {
                         var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
@@ -39,6 +39,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                         }
 
                         await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+
+                        // Check again, the stream could have been closed
+                        if (!target.CanWrite)
+                        {
+                            break;
+                        }
+
                         await target.FlushAsync().ConfigureAwait(false);
                     }
                 }
