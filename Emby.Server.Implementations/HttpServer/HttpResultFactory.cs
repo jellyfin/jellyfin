@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out string expires))
             {
-                responseHeaders[HeaderNames.Expires] = "-1";
+                responseHeaders[HeaderNames.Expires] = "0";
             }
 
             AddResponseHeaders(result, responseHeaders);
@@ -146,7 +146,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out string _))
             {
-                responseHeaders[HeaderNames.Expires] = "-1";
+                responseHeaders[HeaderNames.Expires] = "0";
             }
 
             AddResponseHeaders(result, responseHeaders);
@@ -190,7 +190,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out string _))
             {
-                responseHeaders[HeaderNames.Expires] = "-1";
+                responseHeaders[HeaderNames.Expires] = "0";
             }
 
             AddResponseHeaders(result, responseHeaders);
@@ -215,7 +215,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             }
 
-            responseHeaders[HeaderNames.Expires] = "-1";
+            responseHeaders[HeaderNames.Expires] = "0";
 
             return ToOptimizedResultInternal(requestContext, result, responseHeaders);
         }
