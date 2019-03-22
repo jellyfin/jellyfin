@@ -245,6 +245,12 @@ namespace MediaBrowser.Api.Session
     {
     }
 
+    [Route("/Auth/PasswordResetProviders", "GET")]
+    [Authenticated(Roles = "Admin")]
+    public class GetPasswordResetProviders : IReturn<NameIdPair[]>
+    {
+    }
+
     [Route("/Auth/Keys/{Key}", "DELETE")]
     [Authenticated(Roles = "Admin")]
     public class RevokeKey
@@ -292,6 +298,11 @@ namespace MediaBrowser.Api.Session
         public object Get(GetAuthProviders request)
         {
             return _userManager.GetAuthenticationProviders();
+        }
+
+        public object Get(GetPasswordResetProviders request)
+        {
+            return _userManager.GetPasswordResetProviders();
         }
 
         public void Delete(RevokeKey request)
