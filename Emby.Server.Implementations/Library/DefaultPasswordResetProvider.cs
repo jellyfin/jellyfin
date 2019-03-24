@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.Library
             foreach (var resetfile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{_passwordResetFileBaseName}*"))
             {
                 var spr = (SerializablePasswordReset) _jsonSerializer.DeserializeFromFile(typeof(SerializablePasswordReset), resetfile);
-                if (spr.ExpirationDate > DateTime.Now)
+                if (spr.ExpirationDate < DateTime.Now)
                 {
                     File.Delete(resetfile);
                 }
