@@ -1375,7 +1375,7 @@ namespace Emby.Server.Implementations
             var wanAddress = ServerConfigurationManager.Configuration.WanDdns;
             
             if (string.IsNullOrEmpty(wanAddress)){
-                var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
+                wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
             }
 
             return new SystemInfo
@@ -1426,7 +1426,11 @@ namespace Emby.Server.Implementations
         public async Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken)
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-            var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
+            var wanAddress = ServerConfigurationManager.Configuration.WanDdns;
+            
+            if (string.IsNullOrEmpty(wanAddress)){
+                wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
+            }
             return new PublicSystemInfo
             {
                 Version = ApplicationVersion,
