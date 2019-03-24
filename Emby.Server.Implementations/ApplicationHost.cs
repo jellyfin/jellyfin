@@ -1476,7 +1476,7 @@ namespace Emby.Server.Implementations
                     CancellationToken = cancellationToken
                 }).ConfigureAwait(false))
                 {
-                    return GetLocalApiUrl(response.ReadToEnd().Trim());
+                    return GetWanApiUrl(response.ReadToEnd().Trim());
                 }
             }
             catch (Exception ex)
@@ -1493,16 +1493,45 @@ namespace Emby.Server.Implementations
                 return GetLocalApiUrl("[" + ipAddress.Address + "]");
             }
 
-            return GetLocalApiUrl(ipAddress.Address);
+            return GetLocalApiUrlWithPort(ipAddress.Address);
         }
 
-        public string GetLocalApiUrl(string host)
+        public string GetLocalApiUrlWithPort(string host)
         {
+            if (EnableHttps)
+            {
+                return string.Format("http://{0}:{1}",
+                    host,
+                    HttpsPort.ToString(CultureInfo.InvariantCulture));
+            }
             return string.Format("http://{0}:{1}",
-                host,
-                HttpPort.ToString(CultureInfo.InvariantCulture));
+                    host,
+                    HttpPort.ToString(CultureInfo.InvariantCulture));      
         }
 
+        public string GetWanApiUrl(IpAddressInfo ipAddress)
+        {
+            if (ipAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
+            {
+                return GetLocalApiUrl("[" + ipAddress.Address + "]");
+            }
+
+            return GetWanApiUrlWithPort(ipAddress.Address);
+        }
+
+        public string GetWanApiUrlWithPort(string host)
+        {
+            if (EnableHttps)
+            {
+                return string.Format("http://{0}:{1}",
+                    host,
+                    ServerConfiguration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture));
+            }
+            return string.Format("http://{0}:{1}",
+                    host,
+                    ServerConfiguration.PublicPort.ToString(CultureInfo.InvariantCulture));      
+        }
+        
         public Task<List<IpAddressInfo>> GetLocalIpAddresses(CancellationToken cancellationToken)
         {
             return GetLocalIpAddressesInternal(true, 0, cancellationToken);
