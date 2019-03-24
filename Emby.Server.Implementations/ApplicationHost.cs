@@ -1372,7 +1372,15 @@ namespace Emby.Server.Implementations
         public async Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken)
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-            var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
+            
+            if ( String.IsNullOrEmpty(ServerConfiguration.WanDdns) ){
+                var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
+            } else {
+                // Use the (dynmic) domain name set in the configuration if available instead of querying 
+                // an external service to get the IP address
+                // The domain resolution to the ip should be part of the client, not the server.
+                var wanAddress = ServerConfiguration.WanDdns;
+            }
 
             return new SystemInfo
             {
