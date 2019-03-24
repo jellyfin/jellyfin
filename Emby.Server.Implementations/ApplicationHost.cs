@@ -1531,7 +1531,7 @@ namespace Emby.Server.Implementations
         {
             if (EnableHttps)
             {
-                return string.Format("http://{0}:{1}",
+                return string.Format("https://{0}:{1}",
                     host,
                     ServerConfiguration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture));
             }
