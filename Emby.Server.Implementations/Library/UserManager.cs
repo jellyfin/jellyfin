@@ -81,7 +81,6 @@ namespace Emby.Server.Implementations.Library
 
         private IPasswordResetProvider[] _passwordResetProviders;
         private DefaultPasswordResetProvider _defaultPasswordResetProvider;
-        private Dictionary<string, IPasswordResetProvider> _activeResets = new Dictionary<string, IPasswordResetProvider>();
 
         public UserManager(
             ILoggerFactory loggerFactory,
@@ -908,7 +907,6 @@ namespace Emby.Server.Implementations.Library
             if (user != null && isInNetwork)
             {
                 var passwordResetProvider = GetPasswordResetProvider(user);
-                _activeResets.Add(user.Name, passwordResetProvider);
                 return await passwordResetProvider.StartForgotPasswordProcess(user, isInNetwork).ConfigureAwait(false);
             }
             else
