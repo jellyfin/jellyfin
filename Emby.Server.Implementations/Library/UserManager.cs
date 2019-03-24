@@ -398,7 +398,7 @@ namespace Emby.Server.Implementations.Library
 
         private IPasswordResetProvider[] GetPasswordResetProviders(User user)
         {
-            var passwordResetProviderId = user == null ? null : user.Policy.PasswordResetProviderId;
+            var passwordResetProviderId = user?.Policy.PasswordResetProviderId;
 
             var providers = _passwordResetProviders.Where(i => i.IsEnabled).ToArray();
 
