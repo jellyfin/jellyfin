@@ -1376,9 +1376,6 @@ namespace Emby.Server.Implementations
             if (string.IsNullOrEmpty(ServerConfiguration.WanDdns)){
                 var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
             } else {
-                // Use the (dynmic) domain name set in the configuration if available instead of querying 
-                // an external service to get the IP address
-                // The domain resolution to the ip should be part of the client, not the server.
                 var wanAddress = ServerConfiguration.WanDdns;
             }
 
@@ -1498,13 +1495,13 @@ namespace Emby.Server.Implementations
         {
             if (ipAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
             {
-                return GetLocalApiUrlWithPort("[" + ipAddress.Address + "]");
+                return GetLocalApiUrl("[" + ipAddress.Address + "]");
             }
 
-            return GetLocalApiUrlWithPort(ipAddress.Address);
+            return GetLocalApiUrl(ipAddress.Address);
         }
 
-        public string GetLocalApiUrlWithPort(string host)
+        public string GetLocalApiUrl(string host)
         {
             if (EnableHttps)
             {
@@ -1521,13 +1518,13 @@ namespace Emby.Server.Implementations
         {
             if (ipAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
             {
-                return GetWanApiUrlWithPort("[" + ipAddress.Address + "]");
+                return GetWanApiUrl("[" + ipAddress.Address + "]");
             }
 
-            return GetWanApiUrlWithPort(ipAddress.Address);
+            return GetWanApiUrl(ipAddress.Address);
         }
 
-        public string GetWanApiUrlWithPort(string host)
+        public string GetWanApiUrl(string host)
         {
             if (EnableHttps)
             {
