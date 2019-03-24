@@ -266,3 +266,6 @@ deployment/collect-dist/
 jellyfin_version.ini
 
 ci/
+
+# Doxygen
+doc/
