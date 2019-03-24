@@ -1372,11 +1372,10 @@ namespace Emby.Server.Implementations
         public async Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken)
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+            var wanAddress = ServerConfigurationManager.Configuration.WanDdns;
             
-            if (string.IsNullOrEmpty(ServerConfiguration.WanDdns)){
+            if (string.IsNullOrEmpty(wanAddress)){
                 var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
-            } else {
-                var wanAddress = ServerConfiguration.WanDdns;
             }
 
             return new SystemInfo
@@ -1530,11 +1529,11 @@ namespace Emby.Server.Implementations
             {
                 return string.Format("https://{0}:{1}",
                     host,
-                    ServerConfiguration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture));
+                    ServerConfigurationManager.Configuration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture));
             }
             return string.Format("http://{0}:{1}",
                     host,
-                    ServerConfiguration.PublicPort.ToString(CultureInfo.InvariantCulture));      
+                    ServerConfigurationManager.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture));      
         }
         
         public Task<List<IpAddressInfo>> GetLocalIpAddresses(CancellationToken cancellationToken)
