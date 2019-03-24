@@ -1373,7 +1373,7 @@ namespace Emby.Server.Implementations
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
             
-            if ( String.IsNullOrEmpty(ServerConfiguration.WanDdns) ){
+            if (string.IsNullOrEmpty(ServerConfiguration.WanDdns)){
                 var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
             } else {
                 // Use the (dynmic) domain name set in the configuration if available instead of querying 
