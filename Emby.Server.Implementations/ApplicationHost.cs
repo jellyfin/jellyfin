@@ -1498,7 +1498,7 @@ namespace Emby.Server.Implementations
         {
             if (ipAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
             {
-                return GetLocalApiUrl("[" + ipAddress.Address + "]");
+                return GetLocalApiUrlWithPort("[" + ipAddress.Address + "]");
             }
 
             return GetLocalApiUrlWithPort(ipAddress.Address);
@@ -1521,7 +1521,7 @@ namespace Emby.Server.Implementations
         {
             if (ipAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
             {
-                return GetLocalApiUrl("[" + ipAddress.Address + "]");
+                return GetWanApiUrlWithPort("[" + ipAddress.Address + "]");
             }
 
             return GetWanApiUrlWithPort(ipAddress.Address);
