@@ -1372,15 +1372,14 @@ namespace Emby.Server.Implementations
         public async Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken)
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-            var wanAddress = string.Empty;
             
             if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
             {
-                wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
+                var wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
+                var wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
             }
 
             return new SystemInfo
@@ -1431,15 +1430,14 @@ namespace Emby.Server.Implementations
         public async Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken)
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);            
-            var wanAddress = string.Empty;
             
             if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
             {
-                wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
+                var wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
+                var wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
             }
             return new PublicSystemInfo
             {
