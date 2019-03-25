@@ -200,7 +200,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// The disposable parts
         /// </summary>
-        protected readonly List<IDisposable> _disposableParts = new List<IDisposable>();
+        private readonly List<IDisposable> _disposableParts = new List<IDisposable>();
 
         /// <summary>
         /// Gets the configuration manager.
@@ -216,8 +216,9 @@ namespace Emby.Server.Implementations
             {
 #if BETA
                 return PackageVersionClass.Beta;
-#endif
+#else
                 return PackageVersionClass.Release;
+#endif
             }
         }
 
@@ -340,7 +341,6 @@ namespace Emby.Server.Implementations
 
         protected IProcessFactory ProcessFactory { get; private set; }
 
-        protected ICryptoProvider CryptographyProvider = new CryptographyProvider();
         protected readonly IXmlSerializer XmlSerializer;
 
         protected ISocketFactory SocketFactory { get; private set; }
@@ -368,9 +368,6 @@ namespace Emby.Server.Implementations
             IConfiguration configuration)
         {
             _configuration = configuration;
-
-            // hack alert, until common can target .net core
-            BaseExtensions.CryptographyProvider = CryptographyProvider;
 
             XmlSerializer = new MyXmlSerializer(fileSystem, loggerFactory);
 
@@ -735,13 +732,12 @@ namespace Emby.Server.Implementations
             ApplicationHost.StreamHelper = new StreamHelper();
             serviceCollection.AddSingleton(StreamHelper);
 
-            serviceCollection.AddSingleton(CryptographyProvider);
+            serviceCollection.AddSingleton(typeof(ICryptoProvider), typeof(CryptographyProvider));
 
             SocketFactory = new SocketFactory();
             serviceCollection.AddSingleton(SocketFactory);
 
-            InstallationManager = new InstallationManager(LoggerFactory, this, ApplicationPaths, HttpClient, JsonSerializer, ServerConfigurationManager, FileSystemManager, CryptographyProvider, ZipClient, PackageRuntime);
-            serviceCollection.AddSingleton(InstallationManager);
+            serviceCollection.AddSingleton(typeof(IInstallationManager), typeof(InstallationManager));
 
             ZipClient = new ZipClient();
             serviceCollection.AddSingleton(ZipClient);
@@ -908,8 +904,6 @@ namespace Emby.Server.Implementations
             _serviceProvider = serviceCollection.BuildServiceProvider();
         }
 
-        public virtual string PackageRuntime => "netcore";
-
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
         {
             // Distinct these to prevent users from reporting problems that aren't actually problems
@@ -1049,6 +1043,8 @@ namespace Emby.Server.Implementations
         /// </summary>
         protected void FindParts()
         {
+            InstallationManager = _serviceProvider.GetService<IInstallationManager>();
+
             if (!ServerConfigurationManager.Configuration.IsPortAuthorized)
             {
                 ServerConfigurationManager.Configuration.IsPortAuthorized = true;

@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             // This code is executed before the service
             var auth = AuthorizationContext.GetAuthorizationInfo(request);
 
-            if (!IsExemptFromAuthenticationToken(auth, authAttribtues, request))
+            if (!IsExemptFromAuthenticationToken(authAttribtues, request))
             {
                 ValidateSecurityToken(request, auth.Token);
             }
@@ -122,7 +122,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             }
         }
 
-        private bool IsExemptFromAuthenticationToken(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues, IRequest request)
+        private bool IsExemptFromAuthenticationToken(IAuthenticationAttributes authAttribtues, IRequest request)
         {
             if (!_config.Configuration.IsStartupWizardCompleted && authAttribtues.AllowBeforeStartupWizard)
             {
