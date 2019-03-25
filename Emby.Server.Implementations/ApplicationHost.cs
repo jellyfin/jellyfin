@@ -1376,7 +1376,7 @@ namespace Emby.Server.Implementations
             
             if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
             {
-                wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
+                wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -1435,7 +1435,7 @@ namespace Emby.Server.Implementations
             
             if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
             {
-                wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
+                wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -1478,7 +1478,7 @@ namespace Emby.Server.Implementations
             return null;
         }
 
-        public async Task<string> GetWanApiUrl(CancellationToken cancellationToken)
+        public async Task<string> GetWanApiUrlFromExternal(CancellationToken cancellationToken)
         {
             const string Url = "http://ipv4.icanhazip.com";
             try
@@ -1524,7 +1524,7 @@ namespace Emby.Server.Implementations
             }
             return string.Format("http://{0}:{1}",
                     host,
-                    HttpPort.ToString(CultureInfo.InvariantCulture));      
+                    HttpPort.ToString(CultureInfo.InvariantCulture));
         }
 
         public string GetWanApiUrl(IpAddressInfo ipAddress)
