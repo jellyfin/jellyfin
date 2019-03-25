@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.Services
 
             foreach (var propertyInfo in RestPath.GetSerializableProperties(type))
             {
-                var propertySetFn = TypeAccessor.GetSetPropertyMethod(type, propertyInfo);
+                var propertySetFn = TypeAccessor.GetSetPropertyMethod(propertyInfo);
                 var propertyType = propertyInfo.PropertyType;
                 var propertyParseStringFn = GetParseFn(propertyType);
                 var propertySerializer = new PropertySerializerEntry(propertySetFn, propertyParseStringFn, propertyType);
@@ -110,9 +110,9 @@ namespace Emby.Server.Implementations.Services
         }
     }
 
-    internal class TypeAccessor
+    internal static class TypeAccessor
     {
-        public static Action<object, object> GetSetPropertyMethod(Type type, PropertyInfo propertyInfo)
+        public static Action<object, object> GetSetPropertyMethod(PropertyInfo propertyInfo)
         {
             if (!propertyInfo.CanWrite || propertyInfo.GetIndexParameters().Length > 0)
             {

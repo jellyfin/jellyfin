@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Devices;
@@ -25,7 +24,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -53,8 +51,6 @@ namespace Emby.Server.Implementations.Session
         private readonly IImageProcessor _imageProcessor;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        private readonly IHttpClient _httpClient;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationHost _appHost;
 
         private readonly IAuthenticationRepository _authRepo;
@@ -96,9 +92,7 @@ namespace Emby.Server.Implementations.Session
             IMusicManager musicManager,
             IDtoService dtoService,
             IImageProcessor imageProcessor,
-            IJsonSerializer jsonSerializer,
             IServerApplicationHost appHost,
-            IHttpClient httpClient,
             IAuthenticationRepository authRepo,
             IDeviceManager deviceManager,
             IMediaSourceManager mediaSourceManager)
@@ -110,9 +104,7 @@ namespace Emby.Server.Implementations.Session
             _musicManager = musicManager;
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
-            _jsonSerializer = jsonSerializer;
             _appHost = appHost;
-            _httpClient = httpClient;
             _authRepo = authRepo;
             _deviceManager = deviceManager;
             _mediaSourceManager = mediaSourceManager;
@@ -347,8 +339,7 @@ namespace Emby.Server.Implementations.Session
                     var runtimeTicks = libraryItem.RunTimeTicks;
 
                     MediaSourceInfo mediaSource = null;
-                    var hasMediaSources = libraryItem as IHasMediaSources;
-                    if (hasMediaSources != null)
+                    if (libraryItem is IHasMediaSources hasMediaSources)
                     {
                         mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId, info.LiveStreamId).ConfigureAwait(false);
 
@@ -1841,64 +1832,49 @@ namespace Emby.Server.Implementations.Session
 
             var data = dataFn();
 
-            var tasks = sessions.Select(session => Task.Run(async () =>
+            IEnumerable<Task> GetTasks()
             {
-                try
+                foreach (var session in sessions)
                 {
-                    await SendMessageToSession(session, name, data, cancellationToken).ConfigureAwait(false);
+                    yield return SendMessageToSession(session, name, data, cancellationToken);
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error sending message", ex);
-                }
+            }
 
-            }, cancellationToken)).ToArray();
-
-            return Task.WhenAll(tasks);
+            return Task.WhenAll(GetTasks());
         }
 
         public Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, T data, CancellationToken cancellationToken)
         {
             CheckDisposed();
 
-            var sessions = Sessions.Where(i => userIds.Any(i.ContainsUser)).ToList();
+            var sessions = Sessions.Where(i => userIds.Any(i.ContainsUser));
 
-            var tasks = sessions.Select(session => Task.Run(async () =>
+            IEnumerable<Task> GetTasks()
             {
-                try
+                foreach (var session in sessions)
                 {
-                    await SendMessageToSession(session, name, data, cancellationToken).ConfigureAwait(false);
+                    yield return SendMessageToSession(session, name, data, cancellationToken);
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error sending message", ex);
-                }
+            }
 
-            }, cancellationToken)).ToArray();
-
-            return Task.WhenAll(tasks);
+            return Task.WhenAll(GetTasks());
         }
 
         public Task SendMessageToUserDeviceSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken)
         {
             CheckDisposed();
 
-            var sessions = Sessions.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase)).ToList();
+            var sessions = Sessions.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
 
-            var tasks = sessions.Select(session => Task.Run(async () =>
+            IEnumerable<Task> GetTasks()
             {
-                try
+                foreach (var session in sessions)
                 {
-                    await SendMessageToSession(session, name, data, cancellationToken).ConfigureAwait(false);
+                    yield return SendMessageToSession(session, name, data, cancellationToken);
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error sending message", ex);
-                }
+            }
 
-            }, cancellationToken)).ToArray();
-
-            return Task.WhenAll(tasks);
+            return Task.WhenAll(GetTasks());
         }
 
         public Task SendMessageToUserDeviceAndAdminSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken)
@@ -1906,23 +1882,17 @@ namespace Emby.Server.Implementations.Session
             CheckDisposed();
 
             var sessions = Sessions
-                .Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase) || IsAdminSession(i))
-                .ToList();
+                .Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase) || IsAdminSession(i));
 
-            var tasks = sessions.Select(session => Task.Run(async () =>
+            IEnumerable<Task> GetTasks()
             {
-                try
+                foreach (var session in sessions)
                 {
-                    await SendMessageToSession(session, name, data, cancellationToken).ConfigureAwait(false);
+                    yield return SendMessageToSession(session, name, data, cancellationToken);
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error sending message", ex);
-                }
+            }
 
-            }, cancellationToken)).ToArray();
-
-            return Task.WhenAll(tasks);
+            return Task.WhenAll(GetTasks());
         }
 
         private bool IsAdminSession(SessionInfo s)
