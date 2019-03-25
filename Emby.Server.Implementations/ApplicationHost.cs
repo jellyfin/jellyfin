@@ -1373,13 +1373,15 @@ namespace Emby.Server.Implementations
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
             
+            string wanAddress; 
+            
             if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
             {
-                var wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
+                wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                var wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
+                wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
             }
 
             return new SystemInfo
@@ -1431,13 +1433,15 @@ namespace Emby.Server.Implementations
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);            
             
+            string wanAddress;
+            
             if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
             {
-                var wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
+                wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                var wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
+                wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
             }
             return new PublicSystemInfo
             {
