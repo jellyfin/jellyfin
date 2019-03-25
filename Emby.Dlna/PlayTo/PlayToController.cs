@@ -607,22 +607,34 @@ namespace Emby.Dlna.PlayTo
 
         public void Dispose()
         {
-            if (!_disposed)
-            {
-                _disposed = true;
-
-                _device.PlaybackStart -= _device_PlaybackStart;
-                _device.PlaybackProgress -= _device_PlaybackProgress;
-                _device.PlaybackStopped -= _device_PlaybackStopped;
-                _device.MediaChanged -= _device_MediaChanged;
-                //_deviceDiscovery.DeviceLeft -= _deviceDiscovery_DeviceLeft;
-                _device.OnDeviceUnavailable = null;
-
-                _device.Dispose();
-            }
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _device.Dispose();
+            }
+
+            _device.PlaybackStart -= _device_PlaybackStart;
+            _device.PlaybackProgress -= _device_PlaybackProgress;
+            _device.PlaybackStopped -= _device_PlaybackStopped;
+            _device.MediaChanged -= _device_MediaChanged;
+            _deviceDiscovery.DeviceLeft -= _deviceDiscovery_DeviceLeft;
+            _device.OnDeviceUnavailable = null;
+            _device = null;
+
+            _disposed = true;
+        }
+
+        private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
 
         private Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
         {
