@@ -1433,7 +1433,8 @@ namespace Emby.Server.Implementations
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);            
             var wanAddress = string.Empty;
             
-            if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns)){
+            if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
+            {
                 wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
             } else 
             {
