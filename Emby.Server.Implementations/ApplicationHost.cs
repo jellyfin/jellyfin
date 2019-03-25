@@ -1376,7 +1376,8 @@ namespace Emby.Server.Implementations
             
             if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns)){
                 wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
-            } else 
+            }
+            else
             {
                 wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
             }
