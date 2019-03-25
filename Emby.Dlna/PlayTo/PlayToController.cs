@@ -102,9 +102,10 @@ namespace Emby.Dlna.PlayTo
             {
                 _sessionManager.ReportSessionEnded(_session.Id);
             }
-            catch
+            catch (Exception ex)
             {
                 // Could throw if the session is already gone
+                _logger.LogError(ex, "Error reporting the end of session {Id}", _session.Id);
             }
         }
 
@@ -112,20 +113,14 @@ namespace Emby.Dlna.PlayTo
         {
             var info = e.Argument;
 
-            info.Headers.TryGetValue("NTS", out string nts);
-
-            if (!info.Headers.TryGetValue("USN", out string usn)) usn = string.Empty;
-
-            if (!info.Headers.TryGetValue("NT", out string nt)) nt = string.Empty;
-
-            if (usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
-                !_disposed)
+            if (!_disposed
+                && info.Headers.TryGetValue("USN", out string usn)
+                && usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1
+                && (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1
+                    || (info.Headers.TryGetValue("NT", out string nt)
+                        && nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1)))
             {
-                if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1 ||
-                    nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    OnDeviceUnavailable();
-                }
+                OnDeviceUnavailable();
             }
         }
 
