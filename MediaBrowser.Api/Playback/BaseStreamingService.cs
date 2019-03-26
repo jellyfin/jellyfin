@@ -686,7 +686,7 @@ namespace MediaBrowser.Api.Playback
             var enableDlnaHeaders = !string.IsNullOrWhiteSpace(request.Params) /*||
                                     string.Equals(Request.Headers.Get("GetContentFeatures.DLNA.ORG"), "1", StringComparison.OrdinalIgnoreCase)*/;
 
-            var state = new StreamState(MediaSourceManager, Logger, TranscodingJobType)
+            var state = new StreamState(MediaSourceManager, TranscodingJobType)
             {
                 Request = request,
                 RequestedUrl = url,
@@ -756,11 +756,11 @@ namespace MediaBrowser.Api.Playback
 
                     mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
                        ? mediaSources[0]
-                       : mediaSources.FirstOrDefault(i => string.Equals(i.Id, request.MediaSourceId));
+                       : mediaSources.Find(i => string.Equals(i.Id, request.MediaSourceId));
 
                     if (mediaSource == null && request.MediaSourceId.Equals(request.Id))
                     {
-                        mediaSource = mediaSources.First();
+                        mediaSource = mediaSources[0];
                     }
                 }
             }

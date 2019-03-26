@@ -2,13 +2,11 @@ using System;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
 {
     public class StreamState : EncodingJobInfo, IDisposable
     {
-        private readonly ILogger _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
         private bool _disposed = false;
 
@@ -99,11 +97,10 @@ namespace MediaBrowser.Api.Playback
 
         public TranscodingJob TranscodingJob { get; set; }
 
-        public StreamState(IMediaSourceManager mediaSourceManager, ILogger logger, TranscodingJobType transcodingType)
+        public StreamState(IMediaSourceManager mediaSourceManager, TranscodingJobType transcodingType)
             : base(transcodingType)
         {
             _mediaSourceManager = mediaSourceManager;
-            _logger = logger;
         }
 
         public override void ReportTranscodingProgress(TimeSpan? transcodingPosition, float framerate, double? percentComplete, long bytesTranscoded, int? bitRate)
