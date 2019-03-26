@@ -373,7 +373,7 @@ namespace Emby.Server.Implementations.Library
 
         private IPasswordResetProvider GetPasswordResetProvider(User user)
         {
-            return GetPasswordResetProviders(user).First();
+            return GetPasswordResetProviders(user)[0];
         }
 
         private IAuthenticationProvider[] GetAuthenticationProviders(User user)

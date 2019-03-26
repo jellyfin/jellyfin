@@ -70,6 +70,7 @@ namespace Emby.Server.Implementations.Library
                     UsersReset = usersreset.ToArray()
                 };
             }
+
             throw new System.NotImplementedException();
         }
 
@@ -92,7 +93,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception e)
             {
-                throw new Exception($"Error serializing or writing password reset for {user.Name} to location:{filePath}", e);
+                throw new Exception($"Error serializing or writing password reset for {user.Name} to location: {filePath}", e);
             }
 
             return new ForgotPasswordResult
