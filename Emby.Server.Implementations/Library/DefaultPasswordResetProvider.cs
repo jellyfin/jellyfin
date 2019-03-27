@@ -40,7 +40,10 @@ namespace Emby.Server.Implementations.Library
             HashSet<string> usersreset = new HashSet<string>();
             foreach (var resetfile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{_passwordResetFileBaseName}*"))
             {
-                var spr = await _jsonSerializer.DeserializeFromStreamAsync<SerializablePasswordReset>(File.OpenRead(resetfile)).ConfigureAwait(false);
+                using (var str = File.OpenRead(resetfile))
+                {
+                    var spr = await _jsonSerializer.DeserializeFromStreamAsync<SerializablePasswordReset>(str).ConfigureAwait(false);
+                }
                 if (spr.ExpirationDate < DateTime.Now)
                 {
                     File.Delete(resetfile);
