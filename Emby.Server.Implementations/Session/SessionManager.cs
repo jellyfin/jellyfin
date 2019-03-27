@@ -1041,11 +1041,10 @@ namespace Emby.Server.Implementations.Session
         {
             IEnumerable<Task> GetTasks()
             {
+                var messageId = Guid.NewGuid().ToString("N");
                 foreach (var session in sessions)
                 {
                     var controllers = session.SessionControllers;
-                    var messageId = Guid.NewGuid().ToString("N");
-
                     foreach (var controller in controllers)
                     {
                         yield return controller.SendMessage(name, messageId, data, controllers, cancellationToken);
