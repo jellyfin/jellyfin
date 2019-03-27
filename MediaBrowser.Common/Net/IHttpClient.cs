@@ -24,7 +24,7 @@ namespace MediaBrowser.Common.Net
         Task<Stream> Get(HttpRequestOptions options);
 
         /// <summary>
-        /// Warning: Depricated function,
+        /// Warning: Deprecated function,
         /// use 'Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, HttpMethod httpMethod);' instead
         /// Sends the asynchronous.
         /// </summary>
