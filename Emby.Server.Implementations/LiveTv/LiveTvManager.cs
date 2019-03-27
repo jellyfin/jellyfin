@@ -1087,8 +1087,8 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (coreService != null)
             {
-                await coreService.RefreshSeriesTimers(cancellationToken, new SimpleProgress<double>()).ConfigureAwait(false);
-                await coreService.RefreshTimers(cancellationToken, new SimpleProgress<double>()).ConfigureAwait(false);
+                await coreService.RefreshSeriesTimers(cancellationToken).ConfigureAwait(false);
+                await coreService.RefreshTimers(cancellationToken).ConfigureAwait(false);
             }
 
             // Load these now which will prefetch metadata

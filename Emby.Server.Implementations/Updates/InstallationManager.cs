@@ -12,7 +12,6 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
@@ -39,11 +38,10 @@ namespace Emby.Server.Implementations.Updates
         /// <summary>
         /// The completed installations
         /// </summary>
-        private ConcurrentBag<InstallationInfo> CompletedInstallationsInternal { get; set; }
+        private ConcurrentBag<InstallationInfo> _completedInstallationsInternal;
 
-        public IEnumerable<InstallationInfo> CompletedInstallations => CompletedInstallationsInternal;
+        public IEnumerable<InstallationInfo> CompletedInstallations => _completedInstallationsInternal;
 
-        #region PluginUninstalled Event
         /// <summary>
         /// Occurs when [plugin uninstalled].
         /// </summary>
@@ -57,9 +55,7 @@ namespace Emby.Server.Implementations.Updates
         {
             PluginUninstalled?.Invoke(this, new GenericEventArgs<IPlugin> { Argument = plugin });
         }
-        #endregion
 
-        #region PluginUpdated Event
         /// <summary>
         /// Occurs when [plugin updated].
         /// </summary>
@@ -77,9 +73,7 @@ namespace Emby.Server.Implementations.Updates
 
             _applicationHost.NotifyPendingRestart();
         }
-        #endregion
 
-        #region PluginInstalled Event
         /// <summary>
         /// Occurs when [plugin updated].
         /// </summary>
@@ -96,7 +90,6 @@ namespace Emby.Server.Implementations.Updates
 
             _applicationHost.NotifyPendingRestart();
         }
-        #endregion
 
         /// <summary>
         /// The _logger
@@ -115,11 +108,7 @@ namespace Emby.Server.Implementations.Updates
         /// <value>The application host.</value>
         private readonly IApplicationHost _applicationHost;
 
-        private readonly ICryptoProvider _cryptographyProvider;
         private readonly IZipClient _zipClient;
-
-        // netframework or netcore
-        private readonly string _packageRuntime;
 
         public InstallationManager(
             ILoggerFactory loggerFactory,
@@ -129,9 +118,7 @@ namespace Emby.Server.Implementations.Updates
             IJsonSerializer jsonSerializer,
             IServerConfigurationManager config,
             IFileSystem fileSystem,
-            ICryptoProvider cryptographyProvider,
-            IZipClient zipClient,
-            string packageRuntime)
+            IZipClient zipClient)
         {
             if (loggerFactory == null)
             {
@@ -139,18 +126,16 @@ namespace Emby.Server.Implementations.Updates
             }
 
             CurrentInstallations = new List<Tuple<InstallationInfo, CancellationTokenSource>>();
-            CompletedInstallationsInternal = new ConcurrentBag<InstallationInfo>();
+            _completedInstallationsInternal = new ConcurrentBag<InstallationInfo>();
 
+            _logger = loggerFactory.CreateLogger(nameof(InstallationManager));
             _applicationHost = appHost;
             _appPaths = appPaths;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
             _config = config;
             _fileSystem = fileSystem;
-            _cryptographyProvider = cryptographyProvider;
             _zipClient = zipClient;
-            _packageRuntime = packageRuntime;
-            _logger = loggerFactory.CreateLogger(nameof(InstallationManager));
         }
 
         private static Version GetPackageVersion(PackageVersionInfo version)
@@ -218,11 +203,6 @@ namespace Emby.Server.Implementations.Updates
                 foreach (var version in package.versions)
                 {
                     if (string.IsNullOrEmpty(version.sourceUrl))
-                    {
-                        continue;
-                    }
-
-                    if (string.IsNullOrEmpty(version.runtimes) || version.runtimes.IndexOf(_packageRuntime, StringComparison.OrdinalIgnoreCase) == -1)
                     {
                         continue;
                     }
@@ -448,7 +428,7 @@ namespace Emby.Server.Implementations.Updates
                     CurrentInstallations.Remove(tuple);
                 }
 
-                CompletedInstallationsInternal.Add(installationInfo);
+                _completedInstallationsInternal.Add(installationInfo);
 
                 PackageInstallationCompleted?.Invoke(this, installationEventArgs);
             }
