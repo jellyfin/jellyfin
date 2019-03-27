@@ -99,7 +99,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         var currentMs = startMs + val.TotalMilliseconds;
 
-                        percent = 100 * currentMs / totalMs;
+                        percent = 100.0 * currentMs / totalMs;
 
                         transcodingPosition = val;
                     }

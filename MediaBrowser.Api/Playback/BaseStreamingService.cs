@@ -32,6 +32,8 @@ namespace MediaBrowser.Api.Playback
     {
         protected static readonly CultureInfo UsCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
 
+        protected virtual bool EnableOutputInSubFolder => false;
+
         /// <summary>
         /// Gets or sets the application paths.
         /// </summary>
@@ -142,10 +144,16 @@ namespace MediaBrowser.Api.Playback
             data += "-" + (state.Request.DeviceId ?? string.Empty)
                  + "-" + (state.Request.PlaySessionId ?? string.Empty);
 
-            var filename = data.GetMD5().ToString("N") + outputFileExtension.ToLowerInvariant();
+            var filename = data.GetMD5().ToString("N");
+            var ext = outputFileExtension.ToLowerInvariant();
             var folder = ServerConfigurationManager.ApplicationPaths.TranscodingTempPath;
 
-            return Path.Combine(folder, filename);
+            if (EnableOutputInSubFolder)
+            {
+                return Path.Combine(folder, filename, filename + ext);
+            }
+
+            return Path.Combine(folder, filename + ext);
         }
 
         protected virtual string GetDefaultH264Preset() => "superfast";
