@@ -11,8 +11,6 @@ namespace Emby.Server.Implementations.Services
 {
     public class ServiceHandler
     {
-        private readonly ServiceController _serviceController;
-
         public RestPath RestPath { get; }
 
         public string ResponseContentType { get; }
@@ -28,20 +26,10 @@ namespace Emby.Server.Implementations.Services
             if (!string.IsNullOrEmpty(contentType) && httpReq.ContentLength > 0)
             {
                 var deserializer = RequestHelper.GetRequestReader(host, contentType);
-                if (deserializer != null)
-                {
-                    return deserializer(requestType, httpReq.InputStream);
-                }
+                return deserializer?.Invoke(requestType, httpReq.InputStream);
             }
 
             return Task.FromResult(host.CreateInstance(requestType));
-        }
-
-        public RestPath FindMatchingRestPath(string httpMethod, string pathInfo, out string contentType)
-        {
-            pathInfo = GetSanitizedPathInfo(pathInfo, out contentType);
-
-            return _serviceController.GetRestPathForRequest(httpMethod, pathInfo);
         }
 
         public static string GetSanitizedPathInfo(string pathInfo, out string contentType)
