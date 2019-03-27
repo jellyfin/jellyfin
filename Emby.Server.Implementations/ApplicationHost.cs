@@ -1369,7 +1369,17 @@ namespace Emby.Server.Implementations
         public async Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken)
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-            var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
+            
+            string wanAddress; 
+            
+            if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
+            {
+                wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
+            }
 
             return new SystemInfo
             {
@@ -1418,8 +1428,18 @@ namespace Emby.Server.Implementations
 
         public async Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken)
         {
-            var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-            var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
+            var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);            
+            
+            string wanAddress;
+            
+            if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
+            {
+                wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
+            }
             return new PublicSystemInfo
             {
                 Version = ApplicationVersion,
@@ -1457,7 +1477,7 @@ namespace Emby.Server.Implementations
             return null;
         }
 
-        public async Task<string> GetWanApiUrl(CancellationToken cancellationToken)
+        public async Task<string> GetWanApiUrlFromExternal(CancellationToken cancellationToken)
         {
             const string Url = "http://ipv4.icanhazip.com";
             try
@@ -1473,7 +1493,7 @@ namespace Emby.Server.Implementations
                 }).ConfigureAwait(false))
                 {
                     string res = await response.ReadToEndAsync().ConfigureAwait(false);
-                    return GetLocalApiUrl(res.Trim());
+                    return GetWanApiUrl(res.Trim());
                 }
             }
             catch (Exception ex)
@@ -1495,11 +1515,40 @@ namespace Emby.Server.Implementations
 
         public string GetLocalApiUrl(string host)
         {
+            if (EnableHttps)
+            {
+                return string.Format("https://{0}:{1}",
+                    host,
+                    HttpsPort.ToString(CultureInfo.InvariantCulture));
+            }
             return string.Format("http://{0}:{1}",
-                host,
-                HttpPort.ToString(CultureInfo.InvariantCulture));
+                    host,
+                    HttpPort.ToString(CultureInfo.InvariantCulture));
         }
 
+        public string GetWanApiUrl(IpAddressInfo ipAddress)
+        {
+            if (ipAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
+            {
+                return GetWanApiUrl("[" + ipAddress.Address + "]");
+            }
+
+            return GetWanApiUrl(ipAddress.Address);
+        }
+
+        public string GetWanApiUrl(string host)
+        {
+            if (EnableHttps)
+            {
+                return string.Format("https://{0}:{1}",
+                    host,
+                    ServerConfigurationManager.Configuration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture));
+            }
+            return string.Format("http://{0}:{1}",
+                    host,
+                    ServerConfigurationManager.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture));      
+        }
+        
         public Task<List<IpAddressInfo>> GetLocalIpAddresses(CancellationToken cancellationToken)
         {
             return GetLocalIpAddressesInternal(true, 0, cancellationToken);
