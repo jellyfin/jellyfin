@@ -1242,12 +1242,13 @@ namespace Emby.Server.Implementations.Session
             return SendMessageToSession(session, "Playstate", command, cancellationToken);
         }
 
-        private void AssertCanControl(SessionInfo session, SessionInfo controllingSession)
+        private static void AssertCanControl(SessionInfo session, SessionInfo controllingSession)
         {
             if (session == null)
             {
                 throw new ArgumentNullException(nameof(session));
             }
+
             if (controllingSession == null)
             {
                 throw new ArgumentNullException(nameof(controllingSession));
@@ -1259,26 +1260,11 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task SendRestartRequiredNotification(CancellationToken cancellationToken)
+        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
         {
             CheckDisposed();
 
-            var sessions = Sessions.ToList();
-
-            var tasks = sessions.Select(session => Task.Run(async () =>
-            {
-                try
-                {
-                    await SendMessageToSession(session, "RestartRequired", string.Empty, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error in SendRestartRequiredNotification.", ex);
-                }
-
-            }, cancellationToken)).ToArray();
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            return SendMessageToSessions(Sessions, "RestartRequired", string.Empty, cancellationToken);
         }
 
         /// <summary>
@@ -1290,22 +1276,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            var sessions = Sessions.ToList();
-
-            var tasks = sessions.Select(session => Task.Run(async () =>
-            {
-                try
-                {
-                    await SendMessageToSession(session, "ServerShuttingDown", string.Empty, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error in SendServerShutdownNotification.", ex);
-                }
-
-            }, cancellationToken)).ToArray();
-
-            return Task.WhenAll(tasks);
+            return SendMessageToSessions(Sessions, "ServerShuttingDown", string.Empty, cancellationToken);
         }
 
         /// <summary>
@@ -1319,22 +1290,7 @@ namespace Emby.Server.Implementations.Session
 
             _logger.LogDebug("Beginning SendServerRestartNotification");
 
-            var sessions = Sessions.ToList();
-
-            var tasks = sessions.Select(session => Task.Run(async () =>
-            {
-                try
-                {
-                    await SendMessageToSession(session, "ServerRestarting", string.Empty, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error in SendServerRestartNotification.", ex);
-                }
-
-            }, cancellationToken)).ToArray();
-
-            return Task.WhenAll(tasks);
+            return SendMessageToSessions(Sessions, "ServerRestarting", string.Empty, cancellationToken);
         }
 
         /// <summary>
