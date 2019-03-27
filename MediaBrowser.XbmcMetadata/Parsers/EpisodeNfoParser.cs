@@ -8,8 +8,6 @@ using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
@@ -29,53 +27,48 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         protected override void Fetch(MetadataResult<Episode> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
             using (var fileStream = File.OpenRead(metadataFile))
+            using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
             {
-                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
+                item.ResetPeople();
+
+                var xml = streamReader.ReadToEnd();
+
+                var srch = "</episodedetails>";
+                var index = xml.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
+
+                if (index != -1)
                 {
-                    item.ResetPeople();
+                    xml = xml.Substring(0, index + srch.Length);
+                }
 
-                    var xml = streamReader.ReadToEnd();
-
-                    var srch = "</episodedetails>";
-                    var index = xml.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
-
-                    if (index != -1)
+                // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
+                try
+                {
+                    using (var stringReader = new StringReader(xml))
+                    using (var reader = XmlReader.Create(stringReader, settings))
                     {
-                        xml = xml.Substring(0, index + srch.Length);
-                    }
+                        reader.MoveToContent();
+                        reader.Read();
 
-                    // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
-                    try
-                    {
-                        using (var stringReader = new StringReader(xml))
+                        // Loop through each element
+                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                         {
-                            // Use XmlReader for best performance
-                            using (var reader = XmlReader.Create(stringReader, settings))
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            if (reader.NodeType == XmlNodeType.Element)
                             {
-                                reader.MoveToContent();
+                                FetchDataFromXmlNode(reader, item);
+                            }
+                            else
+                            {
                                 reader.Read();
-
-                                // Loop through each element
-                                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                                {
-                                    cancellationToken.ThrowIfCancellationRequested();
-
-                                    if (reader.NodeType == XmlNodeType.Element)
-                                    {
-                                        FetchDataFromXmlNode(reader, item);
-                                    }
-                                    else
-                                    {
-                                        reader.Read();
-                                    }
-                                }
                             }
                         }
                     }
-                    catch (XmlException)
-                    {
+                }
+                catch (XmlException)
+                {
 
-                    }
                 }
             }
         }
@@ -220,7 +213,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
-        public EpisodeNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(logger, config, providerManager, fileSystem, xmlReaderSettingsFactory)
+        public EpisodeNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
+            : base(logger, config, providerManager)
         {
         }
     }

@@ -33,7 +33,6 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
@@ -58,7 +57,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly IProviderManager _providerManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IProcessFactory _processFactory;
-        private readonly IAssemblyInfo _assemblyInfo;
         private IMediaSourceManager _mediaSourceManager;
 
         public static EmbyTV Current;
@@ -74,7 +72,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         public EmbyTV(IServerApplicationHost appHost,
             IStreamHelper streamHelper,
             IMediaSourceManager mediaSourceManager,
-            IAssemblyInfo assemblyInfo,
             ILogger logger,
             IJsonSerializer jsonSerializer,
             IHttpClient httpClient,
@@ -101,7 +98,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _processFactory = processFactory;
             _liveTvManager = (LiveTvManager)liveTvManager;
             _jsonSerializer = jsonSerializer;
-            _assemblyInfo = assemblyInfo;
             _mediaSourceManager = mediaSourceManager;
             _streamHelper = streamHelper;
 
@@ -265,7 +261,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public string HomePageUrl => "https://github.com/jellyfin/jellyfin";
 
-        public async Task RefreshSeriesTimers(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task RefreshSeriesTimers(CancellationToken cancellationToken)
         {
             var seriesTimers = await GetSeriesTimersAsync(cancellationToken).ConfigureAwait(false);
 
@@ -275,7 +271,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        public async Task RefreshTimers(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task RefreshTimers(CancellationToken cancellationToken)
         {
             var timers = await GetTimersAsync(cancellationToken).ConfigureAwait(false);
 

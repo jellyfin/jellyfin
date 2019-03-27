@@ -90,9 +90,10 @@ namespace Emby.Server.Implementations.Data
             {
                 throw new ArgumentNullException(nameof(displayPreferences));
             }
+
             if (string.IsNullOrEmpty(displayPreferences.Id))
             {
-                throw new ArgumentNullException(nameof(displayPreferences.Id));
+                throw new ArgumentException("Display preferences has an invalid Id", nameof(displayPreferences));
             }
 
             cancellationToken.ThrowIfCancellationRequested();

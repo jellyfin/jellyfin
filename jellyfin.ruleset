@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RuleSet Name="Rules for Jellyfin.Server" Description="Code analysis rules for Jellyfin.Server.csproj" ToolsVersion="14.0">
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <!-- disable warning SA1202: 'public' members must come before 'private' members -->
+    <Rule Id="SA1202" Action="Info" />
+    <!-- disable warning SA1204: Static members must appear before non-static members -->
+    <Rule Id="SA1204" Action="Info" />
+
     <!-- disable warning SA1101: Prefix local calls with 'this.' -->
     <Rule Id="SA1101" Action="None" />
     <!-- disable warning SA1130: Use lambda syntax -->
@@ -15,6 +20,9 @@
     <Rule Id="SA1633" Action="None" />
   </Rules>
   <Rules AnalyzerId="Microsoft.CodeAnalysis.FxCopAnalyzers" RuleNamespace="Microsoft.Design">
+    <!-- disable warning CA1822: Member does not access instance data and can be marked as static -->
+    <Rule Id="CA1822" Action="Info" />
+
     <!-- disable warning CA1054: Change the type of parameter url from string to System.Uri -->
     <Rule Id="CA1054" Action="None" />
   </Rules>

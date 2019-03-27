@@ -14,7 +14,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.LocalMetadata.Savers
@@ -23,7 +22,7 @@ namespace MediaBrowser.LocalMetadata.Savers
     {
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
+        public BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
         {
             FileSystem = fileSystem;
             ConfigurationManager = configurationManager;
@@ -31,7 +30,6 @@ namespace MediaBrowser.LocalMetadata.Savers
             UserManager = userManager;
             UserDataManager = userDataManager;
             Logger = logger;
-            XmlReaderSettingsFactory = xmlReaderSettingsFactory;
         }
 
         protected IFileSystem FileSystem { get; private set; }
@@ -40,9 +38,6 @@ namespace MediaBrowser.LocalMetadata.Savers
         protected IUserManager UserManager { get; private set; }
         protected IUserDataManager UserDataManager { get; private set; }
         protected ILogger Logger { get; private set; }
-        protected IXmlReaderSettingsFactory XmlReaderSettingsFactory { get; private set; }
-
-        protected ItemUpdateType MinimumUpdateType => ItemUpdateType.MetadataDownload;
 
         public string Name => XmlProviderUtils.Name;
 

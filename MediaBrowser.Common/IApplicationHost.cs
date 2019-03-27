@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Events;
@@ -73,6 +72,12 @@ namespace MediaBrowser.Common
         string ApplicationUserAgent { get; }
 
         /// <summary>
+        /// Gets the email address for use within a comment section of a user agent field.
+        /// Presently used to provide contact information to MusicBrainz service.
+        /// </summary>
+        string ApplicationUserAgentAddress { get; }
+
+        /// <summary>
         /// Gets the exports.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -107,7 +112,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Inits this instance.
         /// </summary>
-        Task Init(IServiceCollection serviceCollection);
+        Task InitAsync(IServiceCollection serviceCollection);
 
         /// <summary>
         /// Creates the instance.

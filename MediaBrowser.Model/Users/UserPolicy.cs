@@ -66,6 +66,7 @@ namespace MediaBrowser.Model.Users
         public bool EnableAllFolders { get; set; }
 
         public int InvalidLoginAttemptCount { get; set; }
+        public int? LoginAttemptsBeforeLockout { get; set; }
 
         public bool EnablePublicSharing { get; set; }
 
@@ -103,6 +104,8 @@ namespace MediaBrowser.Model.Users
             EnableUserPreferenceAccess = true;
 
             AccessSchedules = Array.Empty<AccessSchedule>();
+
+            LoginAttemptsBeforeLockout = -1;
 
             EnableAllChannels = true;
             EnabledChannels = Array.Empty<string>();

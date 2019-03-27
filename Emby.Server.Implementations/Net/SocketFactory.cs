@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Sockets;
 using Emby.Server.Implementations.Networking;
 using MediaBrowser.Model.Net;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Net
 {
@@ -19,7 +18,10 @@ namespace Emby.Server.Implementations.Net
 
         public ISocket CreateTcpSocket(IpAddressInfo remoteAddress, int remotePort)
         {
-            if (remotePort < 0) throw new ArgumentException("remotePort cannot be less than zero.", nameof(remotePort));
+            if (remotePort < 0)
+            {
+                throw new ArgumentException("remotePort cannot be less than zero.", nameof(remotePort));
+            }
 
             var addressFamily = remoteAddress.AddressFamily == IpAddressFamily.InterNetwork
                 ? AddressFamily.InterNetwork
@@ -42,8 +44,7 @@ namespace Emby.Server.Implementations.Net
             }
             catch
             {
-                if (retVal != null)
-                    retVal.Dispose();
+                retVal?.Dispose();
 
                 throw;
             }
@@ -55,7 +56,10 @@ namespace Emby.Server.Implementations.Net
         /// <param name="localPort">An integer specifying the local port to bind the acceptSocket to.</param>
         public ISocket CreateUdpSocket(int localPort)
         {
-            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
+            if (localPort < 0)
+            {
+                throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
+            }
 
             var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
             try
@@ -65,8 +69,7 @@ namespace Emby.Server.Implementations.Net
             }
             catch
             {
-                if (retVal != null)
-                    retVal.Dispose();
+                retVal?.Dispose();
 
                 throw;
             }
@@ -74,7 +77,10 @@ namespace Emby.Server.Implementations.Net
 
         public ISocket CreateUdpBroadcastSocket(int localPort)
         {
-            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
+            if (localPort < 0)
+            {
+                throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
+            }
 
             var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
             try
@@ -86,8 +92,7 @@ namespace Emby.Server.Implementations.Net
             }
             catch
             {
-                if (retVal != null)
-                    retVal.Dispose();
+                retVal?.Dispose();
 
                 throw;
             }
@@ -99,7 +104,10 @@ namespace Emby.Server.Implementations.Net
         /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
         public ISocket CreateSsdpUdpSocket(IpAddressInfo localIpAddress, int localPort)
         {
-            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
+            if (localPort < 0)
+            {
+                throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
+            }
 
             var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
             try
@@ -114,8 +122,7 @@ namespace Emby.Server.Implementations.Net
             }
             catch
             {
-                if (retVal != null)
-                    retVal.Dispose();
+                retVal?.Dispose();
 
                 throw;
             }
@@ -130,10 +137,25 @@ namespace Emby.Server.Implementations.Net
         /// <returns></returns>
         public ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort)
         {
-            if (ipAddress == null) throw new ArgumentNullException(nameof(ipAddress));
-            if (ipAddress.Length == 0) throw new ArgumentException("ipAddress cannot be an empty string.", nameof(ipAddress));
-            if (multicastTimeToLive <= 0) throw new ArgumentException("multicastTimeToLive cannot be zero or less.", nameof(multicastTimeToLive));
-            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
+            if (ipAddress == null)
+            {
+                throw new ArgumentNullException(nameof(ipAddress));
+            }
+
+            if (ipAddress.Length == 0)
+            {
+                throw new ArgumentException("ipAddress cannot be an empty string.", nameof(ipAddress));
+            }
+
+            if (multicastTimeToLive <= 0)
+            {
+                throw new ArgumentException("multicastTimeToLive cannot be zero or less.", nameof(multicastTimeToLive));
+            }
+
+            if (localPort < 0)
+            {
+                throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
+            }
 
             var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
 
@@ -172,87 +194,13 @@ namespace Emby.Server.Implementations.Net
             }
             catch
             {
-                if (retVal != null)
-                    retVal.Dispose();
+                retVal?.Dispose();
 
                 throw;
             }
         }
 
         public Stream CreateNetworkStream(ISocket socket, bool ownsSocket)
-        {
-            var netSocket = (UdpSocket)socket;
-
-            return new SocketStream(netSocket.Socket, ownsSocket);
-        }
+            => new NetworkStream(((UdpSocket)socket).Socket, ownsSocket);
     }
-
-    public class SocketStream : Stream
-    {
-        private readonly Socket _socket;
-
-        public SocketStream(Socket socket, bool ownsSocket)
-        {
-            _socket = socket;
-        }
-
-        public override void Flush()
-        {
-        }
-
-        public override bool CanRead => true;
-
-        public override bool CanSeek => false;
-
-        public override bool CanWrite => true;
-
-        public override long Length => throw new NotImplementedException();
-
-        public override long Position
-        {
-            get => throw new NotImplementedException();
-            set => throw new NotImplementedException();
-        }
-
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            _socket.Send(buffer, offset, count, SocketFlags.None);
-        }
-
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            return _socket.BeginSend(buffer, offset, count, SocketFlags.None, callback, state);
-        }
-
-        public override void EndWrite(IAsyncResult asyncResult)
-        {
-            _socket.EndSend(asyncResult);
-        }
-
-        public override void SetLength(long value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            return _socket.Receive(buffer, offset, count, SocketFlags.None);
-        }
-
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            return _socket.BeginReceive(buffer, offset, count, SocketFlags.None, callback, state);
-        }
-
-        public override int EndRead(IAsyncResult asyncResult)
-        {
-            return _socket.EndReceive(asyncResult);
-        }
-    }
-
 }

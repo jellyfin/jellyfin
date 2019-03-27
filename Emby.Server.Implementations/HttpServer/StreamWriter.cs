@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
-using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer
@@ -15,8 +13,6 @@ namespace Emby.Server.Implementations.HttpServer
     /// </summary>
     public class StreamWriter : IAsyncStreamWriter, IHasHeaders
     {
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
         /// <summary>
         /// Gets or sets the source stream.
         /// </summary>

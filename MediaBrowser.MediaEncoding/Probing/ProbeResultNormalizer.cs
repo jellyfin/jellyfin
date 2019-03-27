@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
@@ -20,11 +21,13 @@ namespace MediaBrowser.MediaEncoding.Probing
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
+        private readonly ILocalizationManager _localization;
 
-        public ProbeResultNormalizer(ILogger logger, IFileSystem fileSystem)
+        public ProbeResultNormalizer(ILogger logger, IFileSystem fileSystem, ILocalizationManager localization)
         {
             _logger = logger;
             _fileSystem = fileSystem;
+            _localization = localization;
         }
 
         public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType? videoType, bool isAudio, string path, MediaProtocol protocol)
@@ -246,52 +249,49 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             // <?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>cast</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Blender Foundation</string>\n\t\t</dict>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Janus Bager Kristensen</string>\n\t\t</dict>\n\t</array>\n\t<key>directors</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Sacha Goedegebure</string>\n\t\t</dict>\n\t</array>\n\t<key>studio</key>\n\t<string>Blender Foundation</string>\n</dict>\n</plist>\n
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml)))
+            using (var streamReader = new StreamReader(stream))
             {
-                using (var streamReader = new StreamReader(stream))
+                try
                 {
-                    try
+                    using (var reader = XmlReader.Create(streamReader))
                     {
-                        // Use XmlReader for best performance
-                        using (var reader = XmlReader.Create(streamReader))
-                        {
-                            reader.MoveToContent();
-                            reader.Read();
+                        reader.MoveToContent();
+                        reader.Read();
 
-                            // Loop through each element
-                            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                        // Loop through each element
+                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                        {
+                            if (reader.NodeType == XmlNodeType.Element)
                             {
-                                if (reader.NodeType == XmlNodeType.Element)
+                                switch (reader.Name)
                                 {
-                                    switch (reader.Name)
-                                    {
-                                        case "dict":
-                                            if (reader.IsEmptyElement)
-                                            {
-                                                reader.Read();
-                                                continue;
-                                            }
-                                            using (var subtree = reader.ReadSubtree())
-                                            {
-                                                ReadFromDictNode(subtree, info);
-                                            }
-                                            break;
-                                        default:
-                                            reader.Skip();
-                                            break;
-                                    }
+                                    case "dict":
+                                        if (reader.IsEmptyElement)
+                                        {
+                                            reader.Read();
+                                            continue;
+                                        }
+                                        using (var subtree = reader.ReadSubtree())
+                                        {
+                                            ReadFromDictNode(subtree, info);
+                                        }
+                                        break;
+                                    default:
+                                        reader.Skip();
+                                        break;
                                 }
-                                else
-                                {
-                                    reader.Read();
-                                }
+                            }
+                            else
+                            {
+                                reader.Read();
                             }
                         }
                     }
-                    catch (XmlException)
-                    {
-                        // I've seen probe examples where the iTunMOVI value is just "<"
-                        // So we should not allow this to fail the entire probing operation
-                    }
+                }
+                catch (XmlException)
+                {
+                    // I've seen probe examples where the iTunMOVI value is just "<"
+                    // So we should not allow this to fail the entire probing operation
                 }
             }
         }
@@ -599,6 +599,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 stream.Type = MediaStreamType.Subtitle;
                 stream.Codec = NormalizeSubtitleCodec(stream.Codec);
+                stream.localizedUndefined = _localization.GetLocalizedString("Undefined");
+                stream.localizedDefault = _localization.GetLocalizedString("Default");
+                stream.localizedForced = _localization.GetLocalizedString("Forced");
             }
             else if (string.Equals(streamInfo.codec_type, "video", StringComparison.OrdinalIgnoreCase))
             {

@@ -4,7 +4,6 @@ using Emby.Dlna.Service;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.ConnectionManager
@@ -32,7 +31,8 @@ namespace Emby.Dlna.ConnectionManager
             };
         }
 
-        public ControlHandler(IServerConfigurationManager config, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory, DeviceProfile profile) : base(config, logger, xmlReaderSettingsFactory)
+        public ControlHandler(IServerConfigurationManager config, ILogger logger, DeviceProfile profile)
+            : base(config, logger)
         {
             _profile = profile;
         }

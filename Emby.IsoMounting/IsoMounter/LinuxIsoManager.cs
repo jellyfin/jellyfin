@@ -7,6 +7,7 @@ using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
+using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace IsoMounter
 {
@@ -17,7 +18,6 @@ namespace IsoMounter
 
         #region Private Fields
 
-        private readonly IEnvironmentInfo EnvironmentInfo;
         private readonly bool ExecutablesAvailable;
         private readonly ILogger _logger;
         private readonly string MountCommand;
@@ -30,10 +30,8 @@ namespace IsoMounter
 
         #region Constructor(s)
 
-        public LinuxIsoManager(ILogger logger, IEnvironmentInfo environment, IProcessFactory processFactory)
+        public LinuxIsoManager(ILogger logger, IProcessFactory processFactory)
         {
-
-            EnvironmentInfo = environment;
             _logger = logger;
             ProcessFactory = processFactory;
 
@@ -109,7 +107,7 @@ namespace IsoMounter
         public bool CanMount(string path)
         {
 
-            if (EnvironmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Linux)
+            if (OperatingSystem.Id != OperatingSystemId.Linux)
             {
                 return false;
             }
@@ -118,7 +116,7 @@ namespace IsoMounter
                 Name,
                 path,
                 Path.GetExtension(path),
-                EnvironmentInfo.OperatingSystem,
+                OperatingSystem.Name,
                 ExecutablesAvailable
             );
 

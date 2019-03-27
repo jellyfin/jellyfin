@@ -180,6 +180,12 @@ namespace Emby.Drawing
 
             var supportedImageInfo = await GetSupportedImage(originalImagePath, dateModified).ConfigureAwait(false);
             originalImagePath = supportedImageInfo.path;
+
+            if (!File.Exists(originalImagePath))
+            {
+                return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
+            }
+
             dateModified = supportedImageInfo.dateModified;
             bool requiresTransparency = TransparentImageTypes.Contains(Path.GetExtension(originalImagePath));
 
@@ -265,8 +271,6 @@ namespace Emby.Drawing
             {
                 // If it fails for whatever reason, return the original image
                 _logger.LogError(ex, "Error encoding image");
-
-                // Just spit out the original file if all the options are default
                 return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
             finally

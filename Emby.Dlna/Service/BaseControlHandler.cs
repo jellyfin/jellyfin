@@ -7,7 +7,6 @@ using System.Xml;
 using Emby.Dlna.Didl;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Service
@@ -18,13 +17,11 @@ namespace Emby.Dlna.Service
 
         protected readonly IServerConfigurationManager Config;
         protected readonly ILogger _logger;
-        protected readonly IXmlReaderSettingsFactory XmlReaderSettingsFactory;
 
-        protected BaseControlHandler(IServerConfigurationManager config, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
+        protected BaseControlHandler(IServerConfigurationManager config, ILogger logger)
         {
             Config = config;
             _logger = logger;
-            XmlReaderSettingsFactory = xmlReaderSettingsFactory;
         }
 
         public ControlResponse ProcessControlRequest(ControlRequest request)
@@ -61,11 +58,13 @@ namespace Emby.Dlna.Service
 
             using (var streamReader = new StreamReader(request.InputXml))
             {
-                var readerSettings = XmlReaderSettingsFactory.Create(false);
-
-                readerSettings.CheckCharacters = false;
-                readerSettings.IgnoreProcessingInstructions = true;
-                readerSettings.IgnoreComments = true;
+                var readerSettings = new XmlReaderSettings()
+                {
+                    ValidationType = ValidationType.None,
+                    CheckCharacters = false,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreComments = true
+                };
 
                 using (var reader = XmlReader.Create(streamReader, readerSettings))
                 {

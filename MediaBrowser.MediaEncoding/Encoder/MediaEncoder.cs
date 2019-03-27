@@ -16,6 +16,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
@@ -51,32 +52,32 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IProcessFactory _processFactory;
         private readonly int DefaultImageExtractionTimeoutMs;
         private readonly string StartupOptionFFmpegPath;
-        private readonly string StartupOptionFFprobePath;
 
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(1, 1);
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
+        private readonly ILocalizationManager _localization;
 
         public MediaEncoder(
             ILoggerFactory loggerFactory,
             IJsonSerializer jsonSerializer,
             string startupOptionsFFmpegPath,
-            string startupOptionsFFprobePath,
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
             Func<ISubtitleEncoder> subtitleEncoder,
             Func<IMediaSourceManager> mediaSourceManager,
             IProcessFactory processFactory,
-            int defaultImageExtractionTimeoutMs)
+            int defaultImageExtractionTimeoutMs,
+            ILocalizationManager localization)
         {
             _logger = loggerFactory.CreateLogger(nameof(MediaEncoder));
             _jsonSerializer = jsonSerializer;
             StartupOptionFFmpegPath = startupOptionsFFmpegPath;
-            StartupOptionFFprobePath = startupOptionsFFprobePath;
             ConfigurationManager = configurationManager;
             FileSystem = fileSystem;
             SubtitleEncoder = subtitleEncoder;
             _processFactory = processFactory;
             DefaultImageExtractionTimeoutMs = defaultImageExtractionTimeoutMs;
+            _localization = localization;
         }
 
         /// <summary>
@@ -86,12 +87,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         public void SetFFmpegPath()
         {
-            // ToDo - Finalise removal of the --ffprobe switch
-            if (!string.IsNullOrEmpty(StartupOptionFFprobePath))
-            {
-                _logger.LogWarning("--ffprobe switch is deprecated and shall be removed in the next release");
-            }
-
             // 1) Custom path stored in config/encoding xml file under tag <EncoderAppPath> takes precedence
             if (!ValidatePath(ConfigurationManager.GetConfiguration<EncodingOptions>("encoding").EncoderAppPath, FFmpegLocation.Custom))
             {
@@ -422,7 +417,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     }
                 }
 
-                return new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
+                return new ProbeResultNormalizer(_logger, FileSystem, _localization).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
             }
         }
 

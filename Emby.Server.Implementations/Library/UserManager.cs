@@ -216,10 +216,10 @@ namespace Emby.Server.Implementations.Library
 
         public static bool IsValidUsername(string username)
         {
-            //This is some regex that matches only on unicode "word" characters, as well as -, _ and @
-            //In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
-            // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)
-            return Regex.IsMatch(username, "^[\\w-'._@]*$");
+            // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
+            // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
+             // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), and periods (.)
+            return Regex.IsMatch(username, @"^[\w\-'._@]*$");
         }
 
         private static bool IsValidUsernameCharacter(char i)
@@ -448,11 +448,19 @@ namespace Emby.Server.Implementations.Library
 
             user.Policy.InvalidLoginAttemptCount = newValue;
 
-            var maxCount = user.Policy.IsAdministrator ? 3 : 5;
+            // Check for users without a value here and then fill in the default value
+            // also protect from an always lockout if misconfigured
+            if (user.Policy.LoginAttemptsBeforeLockout == null || user.Policy.LoginAttemptsBeforeLockout == 0)
+            {
+                user.Policy.LoginAttemptsBeforeLockout = user.Policy.IsAdministrator ? 5 : 3;
+            }
+
+            var maxCount = user.Policy.LoginAttemptsBeforeLockout;
 
             var fireLockout = false;
 
-            if (newValue >= maxCount)
+            // -1 can be used to specify no lockout value
+            if (maxCount != -1 && newValue >= maxCount)
             {
                 _logger.LogDebug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue);
                 user.Policy.IsDisabled = true;
