@@ -622,18 +622,19 @@ namespace MediaBrowser.Api.Playback
                 return null;
             }
 
-            if (!value.StartsWith("npt=", StringComparison.OrdinalIgnoreCase))
+            const string Npt = "npt=";
+            if (!value.StartsWith(Npt, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Invalid timeseek header");
             }
             int index = value.IndexOf('-');
             if (index == -1)
             {
-                value = value.Substring(4);
+                value = value.Substring(Npt.Length);
             }
             else
             {
-                value = value.Substring(4, index);
+                value = value.Substring(Npt.Length, index);
             }
 
             if (value.IndexOf(':') == -1)
