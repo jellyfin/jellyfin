@@ -1037,6 +1037,25 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
+        private static Task SendMessageToSessions<T>(IEnumerable<SessionInfo> sessions, string name, T data, CancellationToken cancellationToken)
+        {
+            IEnumerable<Task> GetTasks()
+            {
+                foreach (var session in sessions)
+                {
+                    var controllers = session.SessionControllers;
+                    var messageId = Guid.NewGuid().ToString("N");
+
+                    foreach (var controller in controllers)
+                    {
+                        yield return controller.SendMessage(name, messageId, data, controllers, cancellationToken);
+                    }
+                }
+            }
+
+            return Task.WhenAll(GetTasks());
+        }
+
         public async Task SendPlayCommand(string controllingSessionId, string sessionId, PlayRequest command, CancellationToken cancellationToken)
         {
             CheckDisposed();
@@ -1832,15 +1851,7 @@ namespace Emby.Server.Implementations.Session
 
             var data = dataFn();
 
-            IEnumerable<Task> GetTasks()
-            {
-                foreach (var session in sessions)
-                {
-                    yield return SendMessageToSession(session, name, data, cancellationToken);
-                }
-            }
-
-            return Task.WhenAll(GetTasks());
+            return SendMessageToSessions(sessions, name, data, cancellationToken);
         }
 
         public Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, T data, CancellationToken cancellationToken)
@@ -1848,16 +1859,7 @@ namespace Emby.Server.Implementations.Session
             CheckDisposed();
 
             var sessions = Sessions.Where(i => userIds.Any(i.ContainsUser));
-
-            IEnumerable<Task> GetTasks()
-            {
-                foreach (var session in sessions)
-                {
-                    yield return SendMessageToSession(session, name, data, cancellationToken);
-                }
-            }
-
-            return Task.WhenAll(GetTasks());
+            return SendMessageToSessions(sessions, name, data, cancellationToken);
         }
 
         public Task SendMessageToUserDeviceSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken)
@@ -1865,16 +1867,7 @@ namespace Emby.Server.Implementations.Session
             CheckDisposed();
 
             var sessions = Sessions.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
-
-            IEnumerable<Task> GetTasks()
-            {
-                foreach (var session in sessions)
-                {
-                    yield return SendMessageToSession(session, name, data, cancellationToken);
-                }
-            }
-
-            return Task.WhenAll(GetTasks());
+            return SendMessageToSessions(sessions, name, data, cancellationToken);
         }
 
         public Task SendMessageToUserDeviceAndAdminSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken)
@@ -1883,16 +1876,7 @@ namespace Emby.Server.Implementations.Session
 
             var sessions = Sessions
                 .Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase) || IsAdminSession(i));
-
-            IEnumerable<Task> GetTasks()
-            {
-                foreach (var session in sessions)
-                {
-                    yield return SendMessageToSession(session, name, data, cancellationToken);
-                }
-            }
-
-            return Task.WhenAll(GetTasks());
+            return SendMessageToSessions(sessions, name, data, cancellationToken);
         }
 
         private bool IsAdminSession(SessionInfo s)
