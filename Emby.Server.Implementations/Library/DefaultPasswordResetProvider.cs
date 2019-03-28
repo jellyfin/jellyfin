@@ -8,6 +8,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
@@ -25,13 +26,15 @@ namespace Emby.Server.Implementations.Library
 
         private IJsonSerializer _jsonSerializer;
         private IUserManager _userManager;
+        private ICryptoProvider _crypto;
 
-        public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IUserManager userManager)
+        public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IUserManager userManager, ICryptoProvider cryptoProvider)
         {
             _passwordResetFileBaseDir = configurationManager.ApplicationPaths.ProgramDataPath;
             _passwordResetFileBase = Path.Combine(_passwordResetFileBaseDir, _passwordResetFileBaseName);
             _jsonSerializer = jsonSerializer;
             _userManager = userManager;
+            _crypto = cryptoProvider;
         }
 
         public async Task<PinRedeemResult> RedeemPasswordResetPin(string pin)
@@ -49,7 +52,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     File.Delete(resetfile);
                 }
-                else if (spr.Pin == pin)
+                else if (spr.Pin.Equals(pin, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var resetUser = _userManager.GetUserByName(spr.UserName);
                     if (resetUser == null)
@@ -79,7 +82,14 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<ForgotPasswordResult> StartForgotPasswordProcess(MediaBrowser.Controller.Entities.User user, bool isInNetwork)
         {
-            string pin = new Random().Next(99999999).ToString("00000000", CultureInfo.InvariantCulture);
+            string pin = string.Empty;
+            using (var cryptoRandom = System.Security.Cryptography.RandomNumberGenerator.Create())
+            {
+                byte[] bytes = new byte[4];
+                cryptoRandom.GetBytes(bytes);
+                pin = bytes.ToString();
+            }
+
             DateTime expireTime = DateTime.Now.AddMinutes(30);
             string filePath = _passwordResetFileBase + user.InternalId + ".json";
             SerializablePasswordReset spr = new SerializablePasswordReset
