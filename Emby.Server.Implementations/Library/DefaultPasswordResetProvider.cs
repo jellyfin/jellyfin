@@ -10,7 +10,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
-using Microsoft.Win32.SafeHandles;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -37,13 +36,15 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<PinRedeemResult> RedeemPasswordResetPin(string pin)
         {
+            SerializablePasswordReset spr;
             HashSet<string> usersreset = new HashSet<string>();
             foreach (var resetfile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{_passwordResetFileBaseName}*"))
             {
                 using (var str = File.OpenRead(resetfile))
                 {
-                    var spr = await _jsonSerializer.DeserializeFromStreamAsync<SerializablePasswordReset>(str).ConfigureAwait(false);
+                    spr = await _jsonSerializer.DeserializeFromStreamAsync<SerializablePasswordReset>(str).ConfigureAwait(false);
                 }
+
                 if (spr.ExpirationDate < DateTime.Now)
                 {
                     File.Delete(resetfile);
@@ -51,12 +52,14 @@ namespace Emby.Server.Implementations.Library
                 else if (spr.Pin == pin)
                 {
                     var resetUser = _userManager.GetUserByName(spr.UserName);
-                    if (resetUser != null)
+                    if (resetUser == null)
                     {
-                        await _userManager.ChangePassword(resetUser, pin).ConfigureAwait(false);
-                        usersreset.Add(resetUser.Name);
-                        File.Delete(resetfile);
+                        throw new Exception($"User with a username of {spr.UserName} not found");
                     }
+
+                    await _userManager.ChangePassword(resetUser, pin).ConfigureAwait(false);
+                    usersreset.Add(resetUser.Name);
+                    File.Delete(resetfile);
                 }
             }
 
@@ -76,7 +79,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<ForgotPasswordResult> StartForgotPasswordProcess(MediaBrowser.Controller.Entities.User user, bool isInNetwork)
         {
-            string pin = new Random().Next(99999999).ToString("00000000",CultureInfo.InvariantCulture);
+            string pin = new Random().Next(99999999).ToString("00000000", CultureInfo.InvariantCulture);
             DateTime expireTime = DateTime.Now.AddMinutes(30);
             string filePath = _passwordResetFileBase + user.InternalId + ".json";
             SerializablePasswordReset spr = new SerializablePasswordReset
@@ -89,9 +92,11 @@ namespace Emby.Server.Implementations.Library
 
             try
             {
-                FileStream fileStream = File.OpenWrite(filePath);
-                _jsonSerializer.SerializeToStream(spr,fileStream);
-                await fileStream.FlushAsync().ConfigureAwait(false);
+                using (FileStream fileStream = File.OpenWrite(filePath))
+                {
+                    _jsonSerializer.SerializeToStream(spr, fileStream);
+                    await fileStream.FlushAsync().ConfigureAwait(false);
+                }
             }
             catch (Exception e)
             {
