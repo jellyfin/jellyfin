@@ -78,14 +78,11 @@ namespace Emby.Server.Implementations.IO
 
         public virtual string MakeAbsolutePath(string folderPath, string filePath)
         {
-            if (string.IsNullOrWhiteSpace(filePath))
+            if (string.IsNullOrWhiteSpace(filePath)
+                // stream
+                || filePath.Contains("://"))
             {
                 return filePath;
-            }
-
-            if (filePath.Contains("://"))
-            {
-                return filePath; // stream
             }
 
             if (filePath.Length > 3 && filePath[1] == ':' && filePath[2] == '/')
