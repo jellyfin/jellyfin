@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
@@ -87,7 +88,7 @@ namespace Emby.Server.Implementations.Library
             {
                 byte[] bytes = new byte[4];
                 cryptoRandom.GetBytes(bytes);
-                pin = bytes.ToString();
+                pin = BitConverter.ToString(bytes);
             }
 
             DateTime expireTime = DateTime.Now.AddMinutes(30);
