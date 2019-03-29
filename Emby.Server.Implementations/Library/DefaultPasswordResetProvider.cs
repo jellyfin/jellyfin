@@ -25,9 +25,9 @@ namespace Emby.Server.Implementations.Library
         private readonly string _passwordResetFileBaseDir;
         private readonly string _passwordResetFileBaseName = "passwordreset";
 
-        private IJsonSerializer _jsonSerializer;
-        private IUserManager _userManager;
-        private ICryptoProvider _crypto;
+        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IUserManager _userManager;
+        private readonly ICryptoProvider _crypto;
 
         public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IUserManager userManager, ICryptoProvider cryptoProvider)
         {
