@@ -1124,7 +1124,7 @@ namespace Emby.Server.Implementations
             MediaSourceManager.AddParts(GetExports<IMediaSourceProvider>());
 
             NotificationManager.AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
-            UserManager.AddParts(GetExports<IAuthenticationProvider>());
+            UserManager.AddParts(GetExports<IAuthenticationProvider>(), GetExports<IPasswordResetProvider>());
 
             IsoManager.AddParts(GetExports<IIsoMounter>());
         }
