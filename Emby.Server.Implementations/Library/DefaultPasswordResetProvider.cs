@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     File.Delete(resetfile);
                 }
-                else if (spr.Pin.Replace('-', '').Equals(pin.Replace('-', ''), StringComparison.InvariantCultureIgnoreCase))
+                else if (spr.Pin.Replace("-", "").Equals(pin.Replace("-", ""), StringComparison.InvariantCultureIgnoreCase))
                 {
                     var resetUser = _userManager.GetUserByName(spr.UserName);
                     if (resetUser == null)
