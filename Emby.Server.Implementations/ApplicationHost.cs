@@ -1042,8 +1042,6 @@ namespace Emby.Server.Implementations
             CollectionFolder.JsonSerializer = JsonSerializer;
             CollectionFolder.ApplicationHost = this;
             AuthenticatedAttribute.AuthService = AuthService;
-
-            InstallationManager.PluginInstalled += PluginInstalled;
         }
 
         private async void PluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> args)
@@ -1085,6 +1083,7 @@ namespace Emby.Server.Implementations
         protected void FindParts()
         {
             InstallationManager = _serviceProvider.GetService<IInstallationManager>();
+            InstallationManager.PluginInstalled += PluginInstalled;
 
             if (!ServerConfigurationManager.Configuration.IsPortAuthorized)
             {
