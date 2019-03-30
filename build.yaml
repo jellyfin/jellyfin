@@ -6,6 +6,7 @@ packages:
   - debian-package-x64
   - debian-package-armhf
   - ubuntu-package-x64
+  - ubuntu-package-armhf
   - fedora-package-x64
   - centos-package-x64
   - linux-x64
