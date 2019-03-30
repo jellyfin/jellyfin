@@ -66,7 +66,6 @@ old_version="$(
 )"
 
 old_version_sed="$( sed 's/\./\\./g' <<<"${old_version}" )" # Escape the '.' chars
-new_version_sed="$( cut -f1 -d'-' <<<"${new_version}" )"
 sed -i "s/${old_version_sed}/${new_version}/g" ${build_file}
 
 if [[ ${new_version} == *"-"* ]]; then
