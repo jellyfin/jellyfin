@@ -9,7 +9,7 @@ usage() {
     echo -e "bump_version - increase the shared version and generate changelogs"
     echo -e ""
     echo -e "Usage:"
-    echo -e " $ bump_version [-b/--web-branch <web_branch>] <new_version>"
+    echo -e " $ bump_version <new_version>"
     echo -e ""
     echo -e "The web_branch defaults to the same branch name as the current main branch."
     echo -e "This helps facilitate releases where both branches would be called release-X.Y.Z"
@@ -22,14 +22,9 @@ if [[ -z $1 ]]; then
 fi
 
 shared_version_file="./SharedVersion.cs"
+build_file="./build.yaml"
 
-# Parse branch option
-if [[ $1 == '-b' || $1 == '--web-branch' ]]; then
-	web_branch="$2"
-	shift 2
-else
-    web_branch="$( git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/' )"
-fi
+web_branch="$( git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/' )"
 
 # Initialize submodules
 git submodule update --init --recursive
@@ -47,21 +42,10 @@ if ! git diff-index --quiet HEAD --; then
 fi
 
 git fetch --all
-# If this is an official branch name, fetch it from origin
-official_branches_regex="^master$|^dev$|^release-.*$|^hotfix-.*$"
-if [[ ${web_branch} =~ ${official_branches_regex} ]]; then
-    git checkout origin/${web_branch} || {
-        echo "ERROR: 'jellyfin-web' branch 'origin/${web_branch}' is invalid."
-        exit 1
-    }
-# Otherwise, just check out the local branch (for testing, etc.)
-else
-    git checkout ${web_branch} || {
-        echo "ERROR: 'jellyfin-web' branch '${web_branch}' is invalid."
-        exit 1
-    }
-fi
+git checkout origin/${web_branch}
 popd
+
+git add MediaBrowser.WebDashboard/jellyfin-web
 
 new_version="$1"
 
@@ -73,91 +57,31 @@ old_version="$(
 
 # Set the shared version to the specified new_version
 old_version_sed="$( sed 's/\./\\./g' <<<"${old_version}" )" # Escape the '.' chars
-sed -i "s/${old_version_sed}/${new_version}/g" ${shared_version_file}
+new_version_sed="$( cut -f1 -d'-' <<<"${new_version}" )"
+sed -i "s/${old_version_sed}/${new_version_sed}/g" ${shared_version_file}
 
-declare -a pr_merges_since_last_master
-declare changelog_string_github
-declare changelog_string_deb
-declare changelog_string_yum
+old_version="$(
+    grep "version:" ${build_file} \
+        | sed -E 's/version: "([0-9\.]+)"/\1/'
+)"
 
-# Build up a changelog from merge commits
-for repo in ./ MediaBrowser.WebDashboard/jellyfin-web/; do
-    last_master_merge_commit=""
-    pr_merges_since_last_master=()
-    git_show_details=""
-    pull_request_id=""
-    pull_request_description=""
-    changelog_strings_repo_github=""
-    changelog_strings_repo_deb=""
-    changelog_strings_repo_yum=""
+old_version_sed="$( sed 's/\./\\./g' <<<"${old_version}" )" # Escape the '.' chars
+sed -i "s/${old_version_sed}/${new_version}/g" ${build_file}
 
-    case $repo in
-        *jellyfin-web*)
-            repo_name="jellyfin-web"
-        ;;
-        *)
-            repo_name="jellyfin"
-        ;;
-    esac
-
-    pushd ${repo}
-
-    # Find the last release commit, so we know what's happened since
-    last_master_branch="release-${old_version}"
-    last_master_merge_commit="$(
-        git log --merges --pretty=oneline \
-            | grep -F "${last_master_branch}" \
-            | awk '{ print $1 }' \
-            || true # Don't die here with errexit
-    )"
-    if [[ -z ${last_master_merge_commit} ]]; then
-        # This repo has no last proper commit, so just skip it
-        popd
-        continue
-    fi
-    # Get all the PR merge commits since the last master merge commit in `jellyfin`
-    pr_merges_since_last_master+=( $(
-        git log --merges --pretty=oneline ${last_master_merge_commit}..HEAD \
-            | grep -F "Merge pull request" \
-            | awk '{ print $1 }'
-    ) )
-
-    for commit_hash in ${pr_merges_since_last_master[@]}; do
-        git_show_details="$( git show ${commit_hash} )"
-        pull_request_id="$(
-            awk '
-                /Merge pull request/{ print $4 }
-                { next }
-            ' <<<"${git_show_details}"
-        )"
-        pull_request_description="$(
-            awk '
-                /^[a-zA-Z]/{ next }
-                /^    Merge/{ next }
-                /^$/{ next }
-                { print $0 }
-            ' <<<"${git_show_details}"
-        )"
-        pull_request_description="$( sed ':a;N;$!ba;s/\n//g; s/  \+//g' <<<"${pull_request_description}" )"
-        changelog_strings_repo_github="${changelog_strings_repo_github}\n* ${pull_request_id}: ${pull_request_description}"
-        changelog_strings_repo_deb="${changelog_strings_repo_deb}\n  * $( sed 's/#/PR/' <<<"${pull_request_id}" ) ${pull_request_description}"
-        changelog_strings_repo_yum="${changelog_strings_repo_yum}\n- $( sed 's/#/PR/' <<<"${pull_request_id}" ) ${pull_request_description}"
-    done
-
-    changelog_string_github="${changelog_string_github}\n#### ${repo_name}:\n$( echo -e "${changelog_strings_repo_github}" | sort -nk2 )\n"
-    changelog_string_deb="${changelog_string_deb}\n  * ${repo_name}:$( echo -e "${changelog_strings_repo_deb}" | sort -nk2 )"
-    changelog_string_yum="${changelog_string_yum}\n- ${repo_name}:$( echo -e "${changelog_strings_repo_yum}" | sort -nk2 )"
-
-    popd
-done
+if [[ ${new_version} == *"-"* ]]; then
+    new_version_deb="$( sed 's/-/~/g' <<<"${new_version}" )"
+else
+    new_version_deb="${new_version}-1"
+fi
 
 # Write out a temporary Debian changelog with our new stuff appended and some templated formatting
 debian_changelog_file="deployment/debian-package-x64/pkg-src/changelog"
 debian_changelog_temp="$( mktemp )"
 # Create new temp file with our changelog
 echo -e "### DEBIAN PACKAGE CHANGELOG: Verify this file looks correct or edit accordingly, then delete this line, write, and exit.
-jellyfin (${new_version}-1) unstable; urgency=medium
-${changelog_string_deb}
+jellyfin (${new_version_deb}) unstable; urgency=medium
+
+  * New upstream version ${new_version}; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v${new_version}
 
  -- Jellyfin Packaging Team <packaging@jellyfin.org>  $( date --rfc-2822 )
 " >> ${debian_changelog_temp}
@@ -180,13 +104,14 @@ pushd ${fedora_spec_temp_dir}
 # Split out the stuff before and after changelog
 csplit jellyfin.spec  "/^%changelog/" # produces xx00 xx01
 # Update the version in xx00
-sed -i "s/${old_version_sed}/${new_version}/g" xx00
+sed -i "s/${old_version_sed}/${new_version_sed}/g" xx00
 # Remove the header from xx01
 sed -i '/^%changelog/d' xx01
 # Create new temp file with our changelog
 echo -e "### YUM SPEC CHANGELOG: Verify this file looks correct or edit accordingly, then delete this line, write, and exit.
 %changelog
-* $( LANG=C date '+%a %b %d %Y' ) Jellyfin Packaging Team <packaging@jellyfin.org>${changelog_string_yum}" >> ${fedora_changelog_temp}
+* $( LANG=C date '+%a %b %d %Y' ) Jellyfin Packaging Team <packaging@jellyfin.org>
+- New upstream version ${new_version}; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v${new_version}" >> ${fedora_changelog_temp}
 cat xx01 >> ${fedora_changelog_temp}
 # Edit the file to verify
 $EDITOR ${fedora_changelog_temp}
@@ -199,10 +124,5 @@ mv ${fedora_spec_temp} ${fedora_spec_file}
 rm -rf ${fedora_changelog_temp} ${fedora_spec_temp_dir}
 
 # Stage the changed files for commit
-git add ${shared_version_file} ${debian_changelog_file} ${fedora_spec_file}
+git add ${shared_version_file} ${build_file} ${debian_changelog_file} ${fedora_spec_file}
 git status
-
-# Write out the GitHub-formatted changelog for the merge request/release pages
-echo ""
-echo "=== The GitHub-formatted changelog follows ==="
-echo -e "${changelog_string_github}"
