@@ -24,8 +24,14 @@ RUN wget https://download.visualstudio.microsoft.com/download/pr/69937b49-a877-4
 # Prepare the cross-toolchain
 RUN rm /etc/apt/sources.list \
  && export CODENAME="$( lsb_release -c -s )" \
- && echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ ${CODENAME} main restricted universe multiverse\ndeb [arch=amd64] http://archive.ubuntu.com/ubuntu/ ${CODENAME}-updates main restricted universe multiverse\ndeb [arch=amd64] http://archive.ubuntu.com/ubuntu/ ${CODENAME}-backports main restricted universe multiverse\ndeb [arch=amd64] http://archive.ubuntu.com/ubuntu/ ${CODENAME}-security main restricted universe multiverse" >/etc/apt/sources.list.d/amd64.list \
- && echo "deb [arch=armhf] http://ports.ubuntu.com/ ${CODENAME} main restricted universe multiverse\ndeb [arch=armhf] http://ports.ubuntu.com/ ${CODENAME}-updates main restricted universe multiverse\ndeb [arch=armhf] http://ports.ubuntu.com/ ${CODENAME}-backports main restricted universe multiverse\ndeb [arch=armhf] http://ports.ubuntu.com/ ${CODENAME}-security main restricted universe multiverse" >/etc/apt/sources.list.d/armhf.list \
+ && echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ ${CODENAME} main restricted universe multiverse" >>/etc/apt/sources.list.d/amd64.list \
+ && echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ ${CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/amd64.list \
+ && echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ ${CODENAME}-backports main restricted universe multiverse" >>/etc/apt/sources.list.d/amd64.list \
+ && echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ ${CODENAME}-security main restricted universe multiverse" >>/etc/apt/sources.list.d/amd64.list \
+ && echo "deb [arch=armhf] http://ports.ubuntu.com/ ${CODENAME} main restricted universe multiverse" >>/etc/apt/sources.list.d/armhf.list \
+ && echo "deb [arch=armhf] http://ports.ubuntu.com/ ${CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/armhf.list \
+ && echo "deb [arch=armhf] http://ports.ubuntu.com/ ${CODENAME}-backports main restricted universe multiverse" >>/etc/apt/sources.list.d/armhf.list \
+ && echo "deb [arch=armhf] http://ports.ubuntu.com/ ${CODENAME}-security main restricted universe multiverse" >>/etc/apt/sources.list.d/armhf.list \
  && dpkg --add-architecture armhf \
  && apt-get update \
  && apt-get install -y cross-gcc-dev \
