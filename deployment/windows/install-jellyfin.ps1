@@ -82,7 +82,7 @@ if($Quiet.IsPresent -or $Quiet -eq $true){
     }else{
         $Script:InstallServiceAsUser = $true
         $Script:UserCredentials = $ServiceUser
-        $Script:JellyfinDataDir = "$env:HOMEDRIVE\Users\$($Script:UserCredentials.UserName)\Appdata\Roaming\jellyfin\"}
+        $Script:JellyfinDataDir = "$env:HOMEDRIVE\Users\$($Script:UserCredentials.UserName)\Appdata\Local\jellyfin\"}
     if($CreateDesktopShorcut.IsPresent -or $CreateDesktopShorcut -eq $true) {$Script:CreateShortcut = $true}else{$Script:CreateShortcut = $false}
     if($MigrateEmbyLibrary.IsPresent -or $MigrateEmbyLibrary -eq $true){$Script:MigrateLibrary = $true}else{$Script:MigrateLibrary = $false}
     if($LaunchJellyfin.IsPresent -or $LaunchJellyfin -eq $true){$Script:StartJellyfin = $true}else{$Script:StartJellyfin = $false}
