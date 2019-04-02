@@ -15,7 +15,7 @@ namespace Emby.Server.Implementations.Activity
 {
     public class ActivityRepository : BaseSqliteRepository, IActivityRepository
     {
-        private static readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
         private readonly IFileSystem _fileSystem;
 
         public ActivityRepository(ILoggerFactory loggerFactory, IServerApplicationPaths appPaths, IFileSystem fileSystem)
