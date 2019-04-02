@@ -348,9 +348,9 @@ namespace Emby.Server.Implementations.Security
         {
             using (var connection = GetConnection(true))
             {
-                return connection.RunInTransaction(db =>
+                return connection.RunInTransaction((Func<IDatabaseConnection, DeviceOptions>)(db =>
                 {
-                    using (var statement = PrepareStatementSafe(db, "select CustomName from Devices where Id=@DeviceId"))
+                    using (var statement = base.PrepareStatement((IDatabaseConnection)db, (string)"select CustomName from Devices where Id=@DeviceId"))
                     {
                         statement.TryBind("@DeviceId", deviceId);
 
@@ -367,7 +367,7 @@ namespace Emby.Server.Implementations.Security
                         return result;
                     }
 
-                }, ReadTransactionMode);
+                }), ReadTransactionMode);
             }
         }
 

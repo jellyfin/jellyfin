@@ -317,7 +317,7 @@ namespace Emby.Server.Implementations.Data
                 connection.RunQueries(postQueries);
             }
 
-            userDataRepo.Initialize(userManager);
+            userDataRepo.Initialize(userManager, WriteLock, WriteConnection);
         }
 
         private static readonly string[] _retriveItemColumns =
@@ -551,16 +551,16 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction((Action<IDatabaseConnection>)(db =>
                 {
-                    using (var saveImagesStatement = PrepareStatement(db, "Update TypedBaseItems set Images=@Images where guid=@Id"))
+                    using (var saveImagesStatement = base.PrepareStatement((IDatabaseConnection)db, (string)"Update TypedBaseItems set Images=@Images where guid=@Id"))
                     {
                         saveImagesStatement.TryBind("@Id", item.Id.ToGuidBlob());
                         saveImagesStatement.TryBind("@Images", SerializeImages(item));
 
                         saveImagesStatement.MoveNext();
                     }
-                }, TransactionMode);
+                }), TransactionMode);
             }
         }
 
@@ -1186,7 +1186,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection(true))
             {
-                using (var statement = PrepareStatementSafe(connection, "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems where guid = @guid"))
+                using (var statement = PrepareStatement(connection, "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems where guid = @guid"))
                 {
                     statement.TryBind("@guid", id);
 
@@ -1901,7 +1901,7 @@ namespace Emby.Server.Implementations.Data
             {
                 var list = new List<ChapterInfo>();
 
-                using (var statement = PrepareStatementSafe(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc"))
+                using (var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc"))
                 {
                     statement.TryBind("@ItemId", item.Id);
 
@@ -1928,7 +1928,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection(true))
             {
-                using (var statement = PrepareStatementSafe(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex"))
+                using (var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex"))
                 {
                     statement.TryBind("@ItemId", item.Id);
                     statement.TryBind("@ChapterIndex", index);
@@ -2028,7 +2028,7 @@ namespace Emby.Server.Implementations.Data
                 }
                 insertText.Length -= 1; // Remove last ,
 
-                using (var statement = PrepareStatementSafe(db, insertText.ToString()))
+                using (var statement = PrepareStatement(db, insertText.ToString()))
                 {
                     statement.TryBind("@ItemId", idBlob);
 
@@ -2533,7 +2533,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection(true))
             {
-                using (var statement = PrepareStatementSafe(connection, commandText))
+                using (var statement = PrepareStatement(connection, commandText))
                 {
                     if (EnableJoinUserData(query))
                     {
@@ -2604,7 +2604,7 @@ namespace Emby.Server.Implementations.Data
             {
                 var list = new List<BaseItem>();
 
-                using (var statement = PrepareStatementSafe(connection, commandText))
+                using (var statement = PrepareStatement(connection, commandText))
                 {
                     if (EnableJoinUserData(query))
                     {
@@ -3054,7 +3054,7 @@ namespace Emby.Server.Implementations.Data
             {
                 var list = new List<Guid>();
 
-                using (var statement = PrepareStatementSafe(connection, commandText))
+                using (var statement = PrepareStatement(connection, commandText))
                 {
                     if (EnableJoinUserData(query))
                     {
@@ -3119,7 +3119,7 @@ namespace Emby.Server.Implementations.Data
             var list = new List<Tuple<Guid, string>>();
             using (var connection = GetConnection(true))
             {
-                using (var statement = PrepareStatementSafe(connection, commandText))
+                using (var statement = PrepareStatement(connection, commandText))
                 {
                     if (EnableJoinUserData(query))
                     {
@@ -4983,7 +4983,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             using (var connection = GetConnection(true))
             {
                 var list = new List<string>();
-                using (var statement = PrepareStatementSafe(connection, commandText))
+                using (var statement = PrepareStatement(connection, commandText))
                 {
                     // Run this again to bind the params
                     GetPeopleWhereClauses(query, statement);
@@ -5021,7 +5021,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             {
                 var list = new List<PersonInfo>();
 
-                using (var statement = PrepareStatementSafe(connection, commandText))
+                using (var statement = PrepareStatement(connection, commandText))
                 {
                     // Run this again to bind the params
                     GetPeopleWhereClauses(query, statement);
@@ -5146,7 +5146,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 insertText.AppendFormat("(@ItemId, @AncestorId{0}, @AncestorIdText{0})", i.ToString(CultureInfo.InvariantCulture));
             }
 
-            using (var statement = PrepareStatementSafe(db, insertText.ToString()))
+            using (var statement = PrepareStatement(db, insertText.ToString()))
             {
                 statement.TryBind("@ItemId", itemIdBlob);
 
@@ -5247,7 +5247,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             {
                 var list = new List<string>();
 
-                using (var statement = PrepareStatementSafe(connection, commandText))
+                using (var statement = PrepareStatement(connection, commandText))
                 {
                     foreach (var row in statement.ExecuteQuery())
                     {
@@ -5651,7 +5651,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     isSubsequentRow = true;
                 }
 
-                using (var statement = PrepareStatementSafe(db, insertText.ToString()))
+                using (var statement = PrepareStatement(db, insertText.ToString()))
                 {
                     statement.TryBind("@ItemId", idBlob);
 
@@ -5735,7 +5735,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     isSubsequentRow = true;
                 }
 
-                using (var statement = PrepareStatementSafe(db, insertText.ToString()))
+                using (var statement = PrepareStatement(db, insertText.ToString()))
                 {
                     statement.TryBind("@ItemId", idBlob);
 
@@ -5817,7 +5817,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             {
                 var list = new List<MediaStream>();
 
-                using (var statement = PrepareStatementSafe(connection, cmdText))
+                using (var statement = PrepareStatement(connection, cmdText))
                 {
                     statement.TryBind("@ItemId", query.ItemId.ToGuidBlob());
 
@@ -5902,7 +5902,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     insertText.Append(")");
                 }
 
-                using (var statement = PrepareStatementSafe(db, insertText.ToString()))
+                using (var statement = PrepareStatement(db, insertText.ToString()))
                 {
                     statement.TryBind("@ItemId", idBlob);
 

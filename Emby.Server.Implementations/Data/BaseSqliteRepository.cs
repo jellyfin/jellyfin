@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using SQLitePCL;
 using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
@@ -23,23 +22,23 @@ namespace Emby.Server.Implementations.Data
 
         protected TransactionMode ReadTransactionMode => TransactionMode.Deferred;
 
-        protected virtual ConnectionFlags DefaultConnectionFlags => ConnectionFlags.SharedCached | ConnectionFlags.NoMutex;
+        protected virtual ConnectionFlags DefaultConnectionFlags => ConnectionFlags.NoMutex;
 
-        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
+        protected SemaphoreSlim WriteLock = new SemaphoreSlim(1, 1);
 
-        private SQLiteDatabaseConnection _writeConnection;
+        protected SQLiteDatabaseConnection WriteConnection;
 
         private string _defaultWal;
 
         protected ManagedConnection GetConnection(bool _ = false)
         {
-            _writeLock.Wait();
-            if (_writeConnection != null)
+            WriteLock.Wait();
+            if (WriteConnection != null)
             {
-                return new ManagedConnection(_writeConnection, _writeLock);
+                return new ManagedConnection(WriteConnection, WriteLock);
             }
 
-            _writeConnection = SQLite3.Open(
+            WriteConnection = SQLite3.Open(
                 DbFilePath,
                 DefaultConnectionFlags | ConnectionFlags.Create | ConnectionFlags.ReadWrite,
                 null);
@@ -47,37 +46,28 @@ namespace Emby.Server.Implementations.Data
 
             if (string.IsNullOrWhiteSpace(_defaultWal))
             {
-                _defaultWal = _writeConnection.Query("PRAGMA journal_mode").SelectScalarString().First();
+                _defaultWal = WriteConnection.Query("PRAGMA journal_mode").SelectScalarString().First();
 
                 Logger.LogInformation("Default journal_mode for {0} is {1}", DbFilePath, _defaultWal);
             }
 
             if (EnableTempStoreMemory)
             {
-                _writeConnection.Execute("PRAGMA temp_store = memory");
+                WriteConnection.Execute("PRAGMA temp_store = memory");
             }
             else
             {
-                _writeConnection.Execute("PRAGMA temp_store = file");
+                WriteConnection.Execute("PRAGMA temp_store = file");
             }
 
-            return new ManagedConnection(_writeConnection, _writeLock);
+            return new ManagedConnection(WriteConnection, WriteLock);
         }
 
         public IStatement PrepareStatement(ManagedConnection connection, string sql)
             => connection.PrepareStatement(sql);
 
-        public IStatement PrepareStatementSafe(ManagedConnection connection, string sql)
-            => connection.PrepareStatement(sql);
-
         public IStatement PrepareStatement(IDatabaseConnection connection, string sql)
             => connection.PrepareStatement(sql);
-
-        public IStatement PrepareStatementSafe(IDatabaseConnection connection, string sql)
-            => connection.PrepareStatement(sql);
-
-        public IEnumerable<IStatement> PrepareAll(IDatabaseConnection connection, IEnumerable<string> sql)
-            => PrepareAllSafe(connection, sql);
 
         public IEnumerable<IStatement> PrepareAllSafe(IDatabaseConnection connection, IEnumerable<string> sql)
             => sql.Select(connection.PrepareStatement);
@@ -145,6 +135,7 @@ namespace Emby.Server.Implementations.Data
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private readonly object _disposeLock = new object();
@@ -162,20 +153,21 @@ namespace Emby.Server.Implementations.Data
 
             if (dispose)
             {
-                _writeLock.Wait();
+                WriteLock.Wait();
                 try
                 {
-                    _writeConnection.Dispose();
+                    WriteConnection.Dispose();
                 }
                 finally
                 {
-                    _writeLock.Release();
+                    WriteLock.Release();
                 }
 
-                _writeLock.Dispose();
+                WriteLock.Dispose();
             }
 
-            _writeConnection = null;
+            WriteConnection = null;
+            WriteLock = null;
 
             _disposed = true;
         }
