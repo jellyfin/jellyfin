@@ -64,21 +64,31 @@ namespace MediaBrowser.Controller.Entities
         where T : BaseItem
         where TU : BaseItem
         {
-            var sourceProps = typeof(T).GetProperties().Where(x => x.CanRead).ToList();
-            var destProps = typeof(TU).GetProperties()
-                    .Where(x => x.CanWrite)
-                    .ToList();
+            var destProps = typeof(TU).GetProperties().Where(x => x.CanWrite).ToList();
 
-            foreach (var sourceProp in sourceProps)
+            foreach (var sourceProp in typeof(T).GetProperties())
             {
-                if (destProps.Any(x => x.Name == sourceProp.Name))
+                // We should be able to write to the property
+                // for both the source and destination type
+                // This is only false when the derived type hides the base member
+                // (which we shouldn't copy anyway)
+                if (!sourceProp.CanRead || !sourceProp.CanWrite)
                 {
-                    var p = destProps.First(x => x.Name == sourceProp.Name);
-                    p.SetValue(dest, sourceProp.GetValue(source, null), null);
+                    continue;
                 }
 
-            }
+                var v = sourceProp.GetValue(source);
+                if (v == null)
+                {
+                    continue;
+                }
 
+                var p = destProps.Find(x => x.Name == sourceProp.Name);
+                if (p != null)
+                {
+                    p.SetValue(dest, v);
+                }
+            }
         }
 
         /// <summary>
@@ -93,7 +103,5 @@ namespace MediaBrowser.Controller.Entities
             source.DeepCopy(dest);
             return dest;
         }
-
-
     }
 }
