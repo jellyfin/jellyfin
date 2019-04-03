@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.Data
                     TryMigrateToLocalUsersTable(connection);
                 }
 
-                RemoveEmptyPasswordHashes();
+                RemoveEmptyPasswordHashes(connection);
             }
         }
 
@@ -75,10 +75,12 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void RemoveEmptyPasswordHashes()
+        private void RemoveEmptyPasswordHashes(ManagedConnection connection)
         {
-            foreach (var user in RetrieveAllUsers())
+            foreach (var row in connection.Query("select id,guid,data from LocalUsersv2"))
             {
+                var user = GetUser(row);
+
                 // If the user password is the sha1 hash of the empty string, remove it
                 if (!string.Equals(user.Password, "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709", StringComparison.Ordinal)
                     && !string.Equals(user.Password, "$SHA1$DA39A3EE5E6B4B0D3255BFEF95601890AFD80709", StringComparison.Ordinal))
@@ -89,21 +91,16 @@ namespace Emby.Server.Implementations.Data
                 user.Password = null;
                 var serialized = _jsonSerializer.SerializeToBytes(user);
 
-                using (var connection = GetConnection())
+                connection.RunInTransaction(db =>
                 {
-                    connection.RunInTransaction(db =>
+                    using (var statement = db.PrepareStatement("update LocalUsersv2 set data=@data where Id=@InternalId"))
                     {
-                        using (var statement = db.PrepareStatement("update LocalUsersv2 set data=@data where Id=@InternalId"))
-                        {
-                            statement.TryBind("@InternalId", user.InternalId);
-                            statement.TryBind("@data", serialized);
-                            statement.MoveNext();
-                        }
-
-                    }, TransactionMode);
-                }
+                        statement.TryBind("@InternalId", user.InternalId);
+                        statement.TryBind("@data", serialized);
+                        statement.MoveNext();
+                    }
+                }, TransactionMode);
             }
-
         }
 
         /// <summary>

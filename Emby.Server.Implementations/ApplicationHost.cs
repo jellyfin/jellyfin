@@ -754,10 +754,6 @@ namespace Emby.Server.Implementations
             UserDataManager = new UserDataManager(LoggerFactory, ServerConfigurationManager, () => UserManager);
             serviceCollection.AddSingleton(UserDataManager);
 
-            UserRepository = GetUserRepository();
-            // This is only needed for disposal purposes. If removing this, make sure to have the manager handle disposing it
-            serviceCollection.AddSingleton(UserRepository);
-
             var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LoggerFactory, JsonSerializer, ApplicationPaths, FileSystemManager);
             serviceCollection.AddSingleton<IDisplayPreferencesRepository>(displayPreferencesRepo);
 
@@ -766,6 +762,8 @@ namespace Emby.Server.Implementations
 
             AuthenticationRepository = GetAuthenticationRepository();
             serviceCollection.AddSingleton(AuthenticationRepository);
+
+            UserRepository = GetUserRepository();
 
             UserManager = new UserManager(LoggerFactory, ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, this, JsonSerializer, FileSystemManager);
             serviceCollection.AddSingleton(UserManager);
@@ -807,7 +805,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(TVSeriesManager);
 
             DeviceManager = new DeviceManager(AuthenticationRepository, JsonSerializer, LibraryManager, LocalizationManager, UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager);
-
             serviceCollection.AddSingleton(DeviceManager);
 
             MediaSourceManager = new MediaSourceManager(ItemRepository, ApplicationPaths, LocalizationManager, UserManager, LibraryManager, LoggerFactory, JsonSerializer, FileSystemManager, UserDataManager, () => MediaEncoder);
@@ -1893,7 +1890,11 @@ namespace Emby.Server.Implementations
                         Logger.LogError(ex, "Error disposing {Type}", part.GetType().Name);
                     }
                 }
+
+                UserRepository.Dispose();
             }
+
+            UserRepository = null;
 
             _disposed = true;
         }
