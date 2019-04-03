@@ -258,7 +258,7 @@ namespace Emby.Server.Implementations.Security
                     statementTexts.Add(commandText);
                     statementTexts.Add("select count (Id) from Tokens" + whereTextWithoutPaging);
 
-                    var statements = PrepareAllSafe(db, statementTexts)
+                    var statements = PrepareAll(db, statementTexts)
                         .ToList();
 
                     using (var statement = statements[0])
@@ -348,9 +348,9 @@ namespace Emby.Server.Implementations.Security
         {
             using (var connection = GetConnection(true))
             {
-                return connection.RunInTransaction((Func<IDatabaseConnection, DeviceOptions>)(db =>
+                return connection.RunInTransaction(db =>
                 {
-                    using (var statement = base.PrepareStatement((IDatabaseConnection)db, (string)"select CustomName from Devices where Id=@DeviceId"))
+                    using (var statement = base.PrepareStatement(db, "select CustomName from Devices where Id=@DeviceId"))
                     {
                         statement.TryBind("@DeviceId", deviceId);
 
@@ -367,7 +367,7 @@ namespace Emby.Server.Implementations.Security
                         return result;
                     }
 
-                }), ReadTransactionMode);
+                }, ReadTransactionMode);
             }
         }
 

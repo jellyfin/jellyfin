@@ -518,10 +518,11 @@ namespace Emby.Server.Implementations.Data
                 {
                     saveItemCommandCommandText += ",";
                 }
+
                 saveItemCommandCommandText += "@" + saveColumns[i];
             }
-            saveItemCommandCommandText += ")";
-            return saveItemCommandCommandText;
+
+            return saveItemCommandCommandText + ")";
         }
 
         /// <summary>
@@ -551,16 +552,16 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction((Action<IDatabaseConnection>)(db =>
+                connection.RunInTransaction(db =>
                 {
-                    using (var saveImagesStatement = base.PrepareStatement((IDatabaseConnection)db, (string)"Update TypedBaseItems set Images=@Images where guid=@Id"))
+                    using (var saveImagesStatement = base.PrepareStatement(db, "Update TypedBaseItems set Images=@Images where guid=@Id"))
                     {
                         saveImagesStatement.TryBind("@Id", item.Id.ToGuidBlob());
                         saveImagesStatement.TryBind("@Images", SerializeImages(item));
 
                         saveImagesStatement.MoveNext();
                     }
-                }), TransactionMode);
+                }, TransactionMode);
             }
         }
 
@@ -611,7 +612,7 @@ namespace Emby.Server.Implementations.Data
 
         private void SaveItemsInTranscation(IDatabaseConnection db, IEnumerable<(BaseItem, List<Guid>, BaseItem, string, List<string>)> tuples)
         {
-            var statements = PrepareAllSafe(db, new string[]
+            var statements = PrepareAll(db, new string[]
             {
                 GetSaveItemCommandText(),
                 "delete from AncestorIds where ItemId=@ItemId"
@@ -990,6 +991,7 @@ namespace Emby.Server.Implementations.Data
             {
                 albumArtists = string.Join("|", hasAlbumArtists.AlbumArtists);
             }
+
             saveItemStatement.TryBind("@AlbumArtists", albumArtists);
             saveItemStatement.TryBind("@ExternalId", item.ExternalId);
 
@@ -1026,6 +1028,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     continue;
                 }
+
                 str.Append($"{i.Key}={i.Value}|");
             }
 
@@ -1033,6 +1036,7 @@ namespace Emby.Server.Implementations.Data
             {
                 return null;
             }
+
             str.Length -= 1; // Remove last |
             return str.ToString();
         }
@@ -1070,6 +1074,7 @@ namespace Emby.Server.Implementations.Data
             {
                 return null;
             }
+
             StringBuilder str = new StringBuilder();
             foreach (var i in images)
             {
@@ -1079,6 +1084,7 @@ namespace Emby.Server.Implementations.Data
                 }
                 str.Append(ToValueString(i) + "|");
             }
+
             str.Length -= 1; // Remove last |
             return str.ToString();
         }
@@ -2823,7 +2829,7 @@ namespace Emby.Server.Implementations.Data
                 return connection.RunInTransaction(db =>
                 {
                     var result = new QueryResult<BaseItem>();
-                    var statements = PrepareAllSafe(db, statementTexts).ToList();
+                    var statements = PrepareAll(db, statementTexts).ToList();
 
                     if (!isReturningZeroItems)
                     {
@@ -3235,7 +3241,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     var result = new QueryResult<Guid>();
 
-                    var statements = PrepareAllSafe(db, statementTexts).ToList();
+                    var statements = PrepareAll(db, statementTexts).ToList();
 
                     if (!isReturningZeroItems)
                     {
@@ -5436,7 +5442,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     var list = new List<(BaseItem, ItemCounts)>();
                     var result = new QueryResult<(BaseItem, ItemCounts)>();
 
-                    var statements = PrepareAllSafe(db, statementTexts).ToList();
+                    var statements = PrepareAll(db, statementTexts).ToList();
 
                     if (!isReturningZeroItems)
                     {

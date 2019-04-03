@@ -380,10 +380,5 @@ namespace Emby.Server.Implementations.Data
 
             return userData;
         }
-
-        protected override void Dispose(bool dispose)
-        {
-            // handled by library database
-        }
     }
 }

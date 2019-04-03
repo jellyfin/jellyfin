@@ -69,7 +69,7 @@ namespace Emby.Server.Implementations.Data
         public IStatement PrepareStatement(IDatabaseConnection connection, string sql)
             => connection.PrepareStatement(sql);
 
-        public IEnumerable<IStatement> PrepareAllSafe(IDatabaseConnection connection, IEnumerable<string> sql)
+        public IEnumerable<IStatement> PrepareAll(IDatabaseConnection connection, IEnumerable<string> sql)
             => sql.Select(connection.PrepareStatement);
 
         protected bool TableExists(ManagedConnection connection, string name)
