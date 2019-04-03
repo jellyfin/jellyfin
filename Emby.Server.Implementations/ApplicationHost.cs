@@ -1046,7 +1046,7 @@ namespace Emby.Server.Implementations
 
         private async void PluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> args)
         {
-            string dir = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(args.Argument.targetFilename));
+            string dir = Path.Combine(ApplicationPaths.PluginsPath, args.Argument.name);
             var types = Directory.EnumerateFiles(dir, "*.dll", SearchOption.AllDirectories)
                         .Select(x => Assembly.LoadFrom(x))
                         .SelectMany(x => x.ExportedTypes)
