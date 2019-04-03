@@ -107,6 +107,33 @@ namespace Emby.Server.Implementations.Data
             }, ReadTransactionMode);
         }
 
+        protected List<string> GetColumnNames(IDatabaseConnection connection, string table)
+        {
+            var list = new List<string>();
+
+            foreach (var row in connection.Query("PRAGMA table_info(" + table + ")"))
+            {
+                if (row[1].SQLiteType != SQLiteType.Null)
+                {
+                    var name = row[1].ToString();
+
+                    list.Add(name);
+                }
+            }
+
+            return list;
+        }
+
+        protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
+        {
+            if (existingColumnNames.Contains(columnName, StringComparer.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            connection.Execute("alter table " + table + " add column " + columnName + " " + type + " NULL");
+        }
+
         protected void CheckDisposed()
         {
             if (_disposed)
@@ -120,8 +147,6 @@ namespace Emby.Server.Implementations.Data
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
-        private readonly object _disposeLock = new object();
 
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
@@ -153,33 +178,6 @@ namespace Emby.Server.Implementations.Data
             WriteLock = null;
 
             _disposed = true;
-        }
-
-        protected List<string> GetColumnNames(IDatabaseConnection connection, string table)
-        {
-            var list = new List<string>();
-
-            foreach (var row in connection.Query("PRAGMA table_info(" + table + ")"))
-            {
-                if (row[1].SQLiteType != SQLiteType.Null)
-                {
-                    var name = row[1].ToString();
-
-                    list.Add(name);
-                }
-            }
-
-            return list;
-        }
-
-        protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
-        {
-            if (existingColumnNames.Contains(columnName, StringComparer.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            connection.Execute("alter table " + table + " add column " + columnName + " " + type + " NULL");
         }
     }
 
