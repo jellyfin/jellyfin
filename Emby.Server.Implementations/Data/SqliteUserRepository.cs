@@ -75,10 +75,8 @@ namespace Emby.Server.Implementations.Data
 
         private void RemoveEmptyPasswordHashes(ManagedConnection connection)
         {
-            foreach (var row in connection.Query("select id,guid,data from LocalUsersv2"))
+            foreach (var user in RetrieveAllUsers(connection))
             {
-                var user = GetUser(row);
-
                 // If the user password is the sha1 hash of the empty string, remove it
                 if (!string.Equals(user.Password, "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709", StringComparison.Ordinal)
                     && !string.Equals(user.Password, "$SHA1$DA39A3EE5E6B4B0D3255BFEF95601890AFD80709", StringComparison.Ordinal))
@@ -198,17 +196,22 @@ namespace Emby.Server.Implementations.Data
         /// <returns>IEnumerable{User}.</returns>
         public List<User> RetrieveAllUsers()
         {
-            var list = new List<User>();
-
             using (var connection = GetConnection(true))
             {
-                foreach (var row in connection.Query("select id,guid,data from LocalUsersv2"))
-                {
-                    list.Add(GetUser(row));
-                }
+                return new List<User>(RetrieveAllUsers(connection));
             }
+        }
 
-            return list;
+        /// <summary>
+        /// Retrieve all users from the database
+        /// </summary>
+        /// <returns>IEnumerable{User}.</returns>
+        private IEnumerable<User> RetrieveAllUsers(ManagedConnection connection)
+        {
+            foreach (var row in connection.Query("select id,guid,data from LocalUsersv2"))
+            {
+                yield return GetUser(row);
+            }
         }
 
         /// <summary>
