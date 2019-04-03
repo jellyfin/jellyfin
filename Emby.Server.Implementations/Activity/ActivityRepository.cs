@@ -45,8 +45,6 @@ namespace Emby.Server.Implementations.Activity
         {
             using (var connection = GetConnection())
             {
-                RunDefaultInitialization(connection);
-
                 connection.RunQueries(new[]
                 {
                     "create table if not exists ActivityLog (Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Overview TEXT, ShortOverview TEXT, Type TEXT NOT NULL, ItemId TEXT, UserId TEXT, DateCreated DATETIME NOT NULL, LogSeverity TEXT NOT NULL)",

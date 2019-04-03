@@ -42,8 +42,6 @@ namespace Emby.Server.Implementations.Data
         {
             using (var connection = GetConnection())
             {
-                RunDefaultInitialization(connection);
-
                 var localUsersTableExists = TableExists(connection, "LocalUsersv2");
 
                 connection.RunQueries(new[] {

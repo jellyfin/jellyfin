@@ -128,8 +128,6 @@ namespace Emby.Server.Implementations.Data
             return list;
         }
 
-        protected override bool EnableTempStoreMemory => true;
-
         /// <summary>
         /// Saves the user data.
         /// </summary>

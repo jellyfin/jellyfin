@@ -9,26 +9,36 @@ namespace Emby.Server.Implementations.Data
 {
     public abstract class BaseSqliteRepository : IDisposable
     {
-        protected string DbFilePath { get; set; }
-
-        protected ILogger Logger { get; }
+        private bool _disposed = false;
 
         protected BaseSqliteRepository(ILogger logger)
         {
             Logger = logger;
         }
 
+        protected string DbFilePath { get; set; }
+
+        protected ILogger Logger { get; }
+
+        protected virtual ConnectionFlags DefaultConnectionFlags => ConnectionFlags.NoMutex;
+
         protected TransactionMode TransactionMode => TransactionMode.Deferred;
 
         protected TransactionMode ReadTransactionMode => TransactionMode.Deferred;
 
-        protected virtual ConnectionFlags DefaultConnectionFlags => ConnectionFlags.NoMutex;
+        protected virtual int? CacheSize => null;
+
+        protected virtual string JournalMode => "WAL";
+
+        protected virtual int? PageSize => null;
+
+        protected virtual TempStoreMode TempStore => TempStoreMode.Default;
+
+        protected virtual SynchronousMode? Synchronous => null;
 
         protected SemaphoreSlim WriteLock = new SemaphoreSlim(1, 1);
 
         protected SQLiteDatabaseConnection WriteConnection;
-
-        private string _defaultWal;
 
         protected ManagedConnection GetConnection(bool _ = false)
         {
@@ -43,22 +53,27 @@ namespace Emby.Server.Implementations.Data
                 DefaultConnectionFlags | ConnectionFlags.Create | ConnectionFlags.ReadWrite,
                 null);
 
-
-            if (string.IsNullOrWhiteSpace(_defaultWal))
+            if (CacheSize.HasValue)
             {
-                _defaultWal = WriteConnection.Query("PRAGMA journal_mode").SelectScalarString().First();
-
-                Logger.LogInformation("Default journal_mode for {0} is {1}", DbFilePath, _defaultWal);
+                WriteConnection.Execute("PRAGMA cache_size=" + (int)CacheSize.Value);
             }
 
-            if (EnableTempStoreMemory)
+            if (!string.IsNullOrWhiteSpace(JournalMode))
             {
-                WriteConnection.Execute("PRAGMA temp_store = memory");
+                WriteConnection.Execute("PRAGMA journal_mode=" + JournalMode);
             }
-            else
+
+            if (Synchronous.HasValue)
             {
-                WriteConnection.Execute("PRAGMA temp_store = file");
+                WriteConnection.Execute("PRAGMA synchronous=" + (int)Synchronous.Value);
             }
+
+            if (PageSize.HasValue)
+            {
+                WriteConnection.Execute("PRAGMA page_size=" + (int)PageSize.Value);
+            }
+
+            WriteConnection.Execute("PRAGMA temp_store=" + (int)TempStore);
 
             return new ManagedConnection(WriteConnection, WriteLock);
         }
@@ -92,38 +107,6 @@ namespace Emby.Server.Implementations.Data
             }, ReadTransactionMode);
         }
 
-        protected void RunDefaultInitialization(ManagedConnection db)
-        {
-            var queries = new List<string>
-            {
-                "PRAGMA journal_mode=WAL",
-                "PRAGMA page_size=4096",
-                "PRAGMA synchronous=Normal"
-            };
-
-            if (EnableTempStoreMemory)
-            {
-                queries.AddRange(new List<string>
-                {
-                    "pragma default_temp_store = memory",
-                    "pragma temp_store = memory"
-                });
-            }
-            else
-            {
-                queries.AddRange(new List<string>
-                {
-                    "pragma temp_store = file"
-                });
-            }
-
-            db.ExecuteAll(string.Join(";", queries));
-            Logger.LogInformation("PRAGMA synchronous=" + db.Query("PRAGMA synchronous").SelectScalarString().First());
-        }
-
-        protected virtual bool EnableTempStoreMemory => true;
-
-        private bool _disposed;
         protected void CheckDisposed()
         {
             if (_disposed)
@@ -198,5 +181,20 @@ namespace Emby.Server.Implementations.Data
 
             connection.Execute("alter table " + table + " add column " + columnName + " " + type + " NULL");
         }
+    }
+
+    public enum SynchronousMode
+    {
+        Off = 0,
+        Normal = 1,
+        Full = 2,
+        Extra = 3
+    }
+
+    public enum TempStoreMode
+    {
+        Default = 0,
+        File = 1,
+        Memory = 2
     }
 }

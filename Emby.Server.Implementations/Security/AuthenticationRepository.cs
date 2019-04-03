@@ -25,8 +25,6 @@ namespace Emby.Server.Implementations.Security
         {
             using (var connection = GetConnection())
             {
-                RunDefaultInitialization(connection);
-
                 var tableNewlyCreated = !TableExists(connection, "Tokens");
 
                 string[] queries = {

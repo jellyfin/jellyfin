@@ -63,8 +63,6 @@ namespace Emby.Server.Implementations.Data
         {
             using (var connection = GetConnection())
             {
-                RunDefaultInitialization(connection);
-
                 string[] queries = {
 
                     "create table if not exists userdisplaypreferences (id GUID NOT NULL, userId GUID NOT NULL, client text NOT NULL, data BLOB NOT NULL)",
