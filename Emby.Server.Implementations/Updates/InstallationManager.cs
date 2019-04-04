@@ -509,6 +509,8 @@ namespace Emby.Server.Implementations.Updates
 
         private async Task PerformPackageInstallation(IProgress<double> progress, string target, PackageVersionInfo package, CancellationToken cancellationToken)
         {
+            // TODO: Remove the `string target` argument as it is not used any longer
+
             var extension = Path.GetExtension(package.targetFilename);
             var isArchive = string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase);
 
