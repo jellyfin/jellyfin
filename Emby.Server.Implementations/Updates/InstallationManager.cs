@@ -85,11 +85,9 @@ namespace Emby.Server.Implementations.Updates
         private void OnPluginInstalled(PackageVersionInfo package)
         {
             _logger.LogInformation("New plugin installed: {0} {1} {2}", package.name, package.versionStr ?? string.Empty, package.classification);
-            _logger.LogDebug("{String}", package.name);
 
             PluginInstalled?.Invoke(this, new GenericEventArgs<PackageVersionInfo> { Argument = package });
 
-            _logger.LogDebug("{String}", package.name);
             _applicationHost.NotifyPendingRestart();
         }
 
@@ -585,17 +583,12 @@ namespace Emby.Server.Implementations.Updates
             _applicationHost.RemovePlugin(plugin);
 
             var path = plugin.AssemblyFilePath;
-            bool is_path_directory = false;
+            bool isDirectory = false;
             // Check if we have a plugin directory we should remove too
             if (Path.GetDirectoryName(plugin.AssemblyFilePath) != _appPaths.PluginsPath)
             {
                 path = Path.GetDirectoryName(plugin.AssemblyFilePath);
-                is_path_directory = true;
-                _logger.LogInformation("Deleting plugin directory {0}", path);
-            }
-            else
-            {
-                _logger.LogInformation("Deleting plugin file {0}", path);
+                isDirectory = true;
             }
 
             // Make this case-insensitive to account for possible incorrect assembly naming
@@ -607,12 +600,14 @@ namespace Emby.Server.Implementations.Updates
                 path = file;
             }
 
-            if (is_path_directory)
+            if (isDirectory)
             {
+                _logger.LogInformation("Deleting plugin directory {0}", path);
                 Directory.Delete(path, true);
             }
             else
             {
+                _logger.LogInformation("Deleting plugin file {0}", path);
                 _fileSystem.DeleteFile(path);
             }
 
