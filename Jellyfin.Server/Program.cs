@@ -76,9 +76,6 @@ namespace Jellyfin.Server
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
 
-            // As far as Jellyfin is concerned the Environment path should also include wherever Jellyfin is running from
-            Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + Path.PathSeparator + Environment.CurrentDirectory);
-
             appConfig = await CreateConfiguration(appPaths).ConfigureAwait(false);
 
             CreateLogger(appConfig, appPaths);
