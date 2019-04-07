@@ -327,10 +327,7 @@ namespace Emby.Server.Implementations.SocketSharp
                     if (pos != -1)
                     {
                         var path = RawUrl.Substring(0, pos);
-                        this.pathInfo = GetPathInfo(
-                            path,
-                            mode,
-                            mode ?? string.Empty);
+                        this.pathInfo = path;
                     }
                     else
                     {
@@ -343,65 +340,6 @@ namespace Emby.Server.Implementations.SocketSharp
 
                 return this.pathInfo;
             }
-        }
-
-        private static string GetPathInfo(string fullPath, string mode, string appPath)
-        {
-            var pathInfo = ResolvePathInfoFromMappedPath(fullPath, mode);
-            if (!string.IsNullOrEmpty(pathInfo))
-            {
-                return pathInfo;
-            }
-
-            // Wildcard mode relies on this to work out the handlerPath
-            pathInfo = ResolvePathInfoFromMappedPath(fullPath, appPath);
-            if (!string.IsNullOrEmpty(pathInfo))
-            {
-                return pathInfo;
-            }
-
-            return fullPath;
-        }
-
-        private static string ResolvePathInfoFromMappedPath(string fullPath, string mappedPathRoot)
-        {
-            if (mappedPathRoot == null)
-            {
-                return null;
-            }
-
-            var sbPathInfo = new StringBuilder();
-            var fullPathParts = fullPath.Split('/');
-            var mappedPathRootParts = mappedPathRoot.Split('/');
-            var fullPathIndexOffset = mappedPathRootParts.Length - 1;
-            var pathRootFound = false;
-
-            for (var fullPathIndex = 0; fullPathIndex < fullPathParts.Length; fullPathIndex++)
-            {
-                if (pathRootFound)
-                {
-                    sbPathInfo.Append("/" + fullPathParts[fullPathIndex]);
-                }
-                else if (fullPathIndex - fullPathIndexOffset >= 0)
-                {
-                    pathRootFound = true;
-                    for (var mappedPathRootIndex = 0; mappedPathRootIndex < mappedPathRootParts.Length; mappedPathRootIndex++)
-                    {
-                        if (!string.Equals(fullPathParts[fullPathIndex - fullPathIndexOffset + mappedPathRootIndex], mappedPathRootParts[mappedPathRootIndex], StringComparison.OrdinalIgnoreCase))
-                        {
-                            pathRootFound = false;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!pathRootFound)
-            {
-                return null;
-            }
-
-            return sbPathInfo.Length > 1 ? sbPathInfo.ToString().TrimEnd('/') : "/";
         }
 
         public string UserAgent => request.Headers[HeaderNames.UserAgent];
