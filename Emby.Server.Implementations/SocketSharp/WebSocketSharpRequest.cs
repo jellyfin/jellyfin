@@ -335,7 +335,6 @@ namespace Emby.Server.Implementations.SocketSharp
                     }
 
                     this.pathInfo = WebUtility.UrlDecode(pathInfo);
-                    this.pathInfo = NormalizePathInfo(pathInfo, mode).ToString();
                 }
 
                 return this.pathInfo;
@@ -437,20 +436,6 @@ namespace Emby.Server.Implementations.SocketSharp
 
                 return httpFiles;
             }
-        }
-
-        public static ReadOnlySpan<char> NormalizePathInfo(string pathInfo, string handlerPath)
-        {
-            if (handlerPath != null)
-            {
-                var trimmed = pathInfo.AsSpan().TrimStart('/');
-                if (trimmed.StartsWith(handlerPath.AsSpan(), StringComparison.OrdinalIgnoreCase))
-                {
-                    return trimmed.Slice(handlerPath.Length).ToString().AsSpan();
-                }
-            }
-
-            return pathInfo.AsSpan();
         }
     }
 }
