@@ -319,23 +319,8 @@ namespace Emby.Server.Implementations.SocketSharp
         {
             get
             {
-                if (this.pathInfo == null)
-                {
-                    var mode = HandlerFactoryPath;
-
-                    var pos = RawUrl.IndexOf("?", StringComparison.Ordinal);
-                    if (pos != -1)
-                    {
-                        var path = RawUrl.Substring(0, pos);
-                        this.pathInfo = path;
-                    }
-                    else
-                    {
-                        this.pathInfo = RawUrl;
-                    }
-
-                    this.pathInfo = WebUtility.UrlDecode(pathInfo);
-                }
+                if (this.pathInfo is null)
+                    this.pathInfo = this.request.Path.Value;
 
                 return this.pathInfo;
             }
