@@ -277,24 +277,35 @@ namespace Emby.Server.Implementations.Library
                 .FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
 
             var success = false;
+            string updatedUsername = null;
             IAuthenticationProvider authenticationProvider = null;
 
             if (user != null)
             {
                 var authResult = await AuthenticateLocalUser(username, password, hashedPassword, user, remoteEndPoint).ConfigureAwait(false);
                 authenticationProvider = authResult.Item1;
-                success = authResult.Item2;
+                updatedUsername = authResult.Item2;
+                success = authResult.Item3;
             }
             else
             {
                 // user is null
                 var authResult = await AuthenticateLocalUser(username, password, hashedPassword, null, remoteEndPoint).ConfigureAwait(false);
                 authenticationProvider = authResult.Item1;
-                success = authResult.Item2;
+                updatedUsername = authResult.Item2;
+                success = authResult.Item3;
 
                 if (success && authenticationProvider != null && !(authenticationProvider is DefaultAuthenticationProvider))
                 {
-                    user = await CreateUser(username).ConfigureAwait(false);
+                    // We should trust the user that the authprovider says, not what was typed
+                    if (updatedUsername != username)
+                    {
+                        username = updatedUsername;
+                    }
+
+                    // Search the database for the user again; the authprovider might have created it
+                    user = Users
+                        .FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
 
                     var hasNewUserPolicy = authenticationProvider as IHasNewUserPolicy;
                     if (hasNewUserPolicy != null)
@@ -414,32 +425,40 @@ namespace Emby.Server.Implementations.Library
             return providers;
         }
 
-        private async Task<bool> AuthenticateWithProvider(IAuthenticationProvider provider, string username, string password, User resolvedUser)
+        private async Task<Tuple<string, bool>> AuthenticateWithProvider(IAuthenticationProvider provider, string username, string password, User resolvedUser)
         {
             try
             {
                 var requiresResolvedUser = provider as IRequiresResolvedUser;
+                ProviderAuthenticationResult authenticationResult = null;
                 if (requiresResolvedUser != null)
                 {
-                    await requiresResolvedUser.Authenticate(username, password, resolvedUser).ConfigureAwait(false);
+                    authenticationResult = await requiresResolvedUser.Authenticate(username, password, resolvedUser).ConfigureAwait(false);
                 }
                 else
                 {
-                    await provider.Authenticate(username, password).ConfigureAwait(false);
+                    authenticationResult = await provider.Authenticate(username, password).ConfigureAwait(false);
                 }
 
-                return true;
+                if(authenticationResult.Username != username)
+                {
+                    _logger.LogDebug("Authentication provider provided updated username {1}", authenticationResult.Username);
+                    username = authenticationResult.Username;
+                }
+
+                return new Tuple<string, bool>(username, true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error authenticating with provider {provider}", provider.Name);
 
-                return false;
+                return new Tuple<string, bool>(username, false);
             }
         }
 
-        private async Task<Tuple<IAuthenticationProvider, bool>> AuthenticateLocalUser(string username, string password, string hashedPassword, User user, string remoteEndPoint)
+        private async Task<Tuple<IAuthenticationProvider, string, bool>> AuthenticateLocalUser(string username, string password, string hashedPassword, User user, string remoteEndPoint)
         {
+            string updatedUsername = null;
             bool success = false;
             IAuthenticationProvider authenticationProvider = null;
 
@@ -458,11 +477,14 @@ namespace Emby.Server.Implementations.Library
             {
                 foreach (var provider in GetAuthenticationProviders(user))
                 {
-                    success = await AuthenticateWithProvider(provider, username, password, user).ConfigureAwait(false);
+                    var providerAuthResult = await AuthenticateWithProvider(provider, username, password, user).ConfigureAwait(false);
+                    updatedUsername = providerAuthResult.Item1;
+                    success = providerAuthResult.Item2;
 
                     if (success)
                     {
                         authenticationProvider = provider;
+                        username = updatedUsername;
                         break;
                     }
                 }
@@ -484,7 +506,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            return new Tuple<IAuthenticationProvider, bool>(authenticationProvider, success);
+            return new Tuple<IAuthenticationProvider, string, bool>(authenticationProvider, username, success);
         }
 
         private void UpdateInvalidLoginAttemptCount(User user, int newValue)
