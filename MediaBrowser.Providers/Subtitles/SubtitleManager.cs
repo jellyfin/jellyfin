@@ -363,7 +363,6 @@ namespace MediaBrowser.Providers.Subtitles
                 {
                     Name = i.Name,
                     Id = GetProviderId(i.Name)
-
                 }).ToArray();
         }
 
