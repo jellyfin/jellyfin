@@ -509,6 +509,8 @@ namespace Emby.Server.Implementations.Updates
 
         private async Task PerformPackageInstallation(IProgress<double> progress, string target, PackageVersionInfo package, CancellationToken cancellationToken)
         {
+            // TODO: Remove the `string target` argument as it is not used any longer
+
             var extension = Path.GetExtension(package.targetFilename);
             var isArchive = string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase);
 
@@ -518,12 +520,12 @@ namespace Emby.Server.Implementations.Updates
                 return;
             }
 
-            if (target == null)
-            {
-                target = Path.Combine(_appPaths.PluginsPath, Path.GetFileNameWithoutExtension(package.targetFilename));
-            }
+            // Always override the passed-in target (which is a file) and figure it out again
+            target = Path.Combine(_appPaths.PluginsPath, package.name);
+            _logger.LogDebug("Installing plugin to {Filename}.", target);
 
             // Download to temporary file so that, if interrupted, it won't destroy the existing installation
+            _logger.LogDebug("Downloading ZIP.");
             var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
             {
                 Url = package.sourceUrl,
@@ -536,9 +538,17 @@ namespace Emby.Server.Implementations.Updates
 
             // TODO: Validate with a checksum, *properly*
 
+            // Check if the target directory already exists, and remove it if so
+            if (Directory.Exists(target))
+            {
+                _logger.LogDebug("Deleting existing plugin at {Filename}.", target);
+                Directory.Delete(target, true);
+            }
+
             // Success - move it to the real target
             try
             {
+                _logger.LogDebug("Extracting ZIP {TempFile} to {Filename}.", tempFile, target);
                 using (var stream = File.OpenRead(tempFile))
                 {
                     _zipClient.ExtractAllFromZip(stream, target, true);
@@ -552,6 +562,7 @@ namespace Emby.Server.Implementations.Updates
 
             try
             {
+                _logger.LogDebug("Deleting temporary file {Filename}.", tempFile);
                 _fileSystem.DeleteFile(tempFile);
             }
             catch (IOException ex)
@@ -574,7 +585,13 @@ namespace Emby.Server.Implementations.Updates
             _applicationHost.RemovePlugin(plugin);
 
             var path = plugin.AssemblyFilePath;
-            _logger.LogInformation("Deleting plugin file {0}", path);
+            bool isDirectory = false;
+            // Check if we have a plugin directory we should remove too
+            if (Path.GetDirectoryName(plugin.AssemblyFilePath) != _appPaths.PluginsPath)
+            {
+                path = Path.GetDirectoryName(plugin.AssemblyFilePath);
+                isDirectory = true;
+            }
 
             // Make this case-insensitive to account for possible incorrect assembly naming
             var file = _fileSystem.GetFilePaths(Path.GetDirectoryName(path))
@@ -585,7 +602,16 @@ namespace Emby.Server.Implementations.Updates
                 path = file;
             }
 
-            _fileSystem.DeleteFile(path);
+            if (isDirectory)
+            {
+                _logger.LogInformation("Deleting plugin directory {0}", path);
+                Directory.Delete(path, true);
+            }
+            else
+            {
+                _logger.LogInformation("Deleting plugin file {0}", path);
+                _fileSystem.DeleteFile(path);
+            }
 
             var list = _config.Configuration.UninstalledPlugins.ToList();
             var filename = Path.GetFileName(path);

@@ -1046,8 +1046,8 @@ namespace Emby.Server.Implementations
 
         private async void PluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> args)
         {
-            string dir = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(args.Argument.targetFilename));
-            var types = Directory.EnumerateFiles(dir, "*.dll", SearchOption.TopDirectoryOnly)
+            string dir = Path.Combine(ApplicationPaths.PluginsPath, args.Argument.name);
+            var types = Directory.EnumerateFiles(dir, "*.dll", SearchOption.AllDirectories)
                         .Select(x => Assembly.LoadFrom(x))
                         .SelectMany(x => x.ExportedTypes)
                         .Where(x => x.IsClass && !x.IsAbstract && !x.IsInterface && !x.IsGenericType)
@@ -1346,7 +1346,7 @@ namespace Emby.Server.Implementations
         {
             if (Directory.Exists(ApplicationPaths.PluginsPath))
             {
-                foreach (var file in Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly))
+                foreach (var file in Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.AllDirectories))
                 {
                     Logger.LogInformation("Loading assembly {Path}", file);
                     yield return Assembly.LoadFrom(file);
