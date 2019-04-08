@@ -46,6 +46,6 @@
     </Volume>
   </Data>
   <WebUI>http://[IP]:[PORT:8096]/</WebUI>
-  <Icon>https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/emby-icon.png</Icon>
+  <Icon>https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/jellyfin-icon.png</Icon>
   <ExtraParams></ExtraParams>
 </Containers>
