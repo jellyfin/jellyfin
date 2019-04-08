@@ -28,7 +28,7 @@ For more information about the project, please see our [about page](https://jell
 
 <p align="center">
 <strong>Want to get started?</strong>
-<em>Choose from <a href="https://jellyfin.readthedocs.io/en/latest/administrator-docs/installing/">Prebuilt Packages</a> or <a href="https://jellyfin.readthedocs.io/en/latest/administrator-docs/building/">Build from Source</a>, then see our <a href="https://jellyfin.readthedocs.io/en/latest/administrator-docs/first-time/">first-time setup guide</a>.</em>
+<em>Choose from <a href="https://jellyfin.readthedocs.io/en/latest/administrator-docs/installing/">Prebuilt Packages</a> or <a href="https://jellyfin.readthedocs.io/en/latest/administrator-docs/building/">Build from Source</a>, then see our <a href="https://jellyfin.readthedocs.io/en/latest/administrator-docs/quick-start/">quick start guide</a>.</em>
 </p>
 <p align="center">
 <strong>Want to contribute?</strong>
