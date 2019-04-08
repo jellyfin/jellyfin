@@ -58,7 +58,7 @@ function Elevate-Window {
 
 if($Quiet.IsPresent -or $Quiet -eq $true){
     if([string]::IsNullOrEmpty($JellyfinLibraryLocation)){
-        $Script:JellyfinDataDir = "$env:AppData\jellyfin\"
+        $Script:JellyfinDataDir = "$env:LOCALAPPDATA\jellyfin\"
     }else{
         $Script:JellyfinDataDir = $JellyfinLibraryLocation
     }
@@ -82,7 +82,7 @@ if($Quiet.IsPresent -or $Quiet -eq $true){
     }else{
         $Script:InstallServiceAsUser = $true
         $Script:UserCredentials = $ServiceUser
-        $Script:JellyfinDataDir = "C:\Users\$($Script:UserCredentials.UserName)\Appdata\Roaming\jellyfin\"}
+        $Script:JellyfinDataDir = "$env:HOMEDRIVE\Users\$($Script:UserCredentials.UserName)\Appdata\Local\jellyfin\"}
     if($CreateDesktopShorcut.IsPresent -or $CreateDesktopShorcut -eq $true) {$Script:CreateShortcut = $true}else{$Script:CreateShortcut = $false}
     if($MigrateEmbyLibrary.IsPresent -or $MigrateEmbyLibrary -eq $true){$Script:MigrateLibrary = $true}else{$Script:MigrateLibrary = $false}
     if($LaunchJellyfin.IsPresent -or $LaunchJellyfin -eq $true){$Script:StartJellyfin = $true}else{$Script:StartJellyfin = $false}
@@ -131,7 +131,7 @@ if($Quiet.IsPresent -or $Quiet -eq $true){
 Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
-$Script:JellyFinDataDir = "$env:AppData\jellyfin\"
+$Script:JellyFinDataDir = "$env:LOCALAPPDATA\jellyfin\"
 $Script:DefaultJellyfinInstallDirectory = "$env:Appdata\jellyfin\"
 $Script:defaultEmbyDataDir = "$env:Appdata\Emby-Server\"
 $Script:InstallAsService = $False
@@ -392,7 +392,7 @@ $ServiceUserBox.DropDownStyle    = [System.Windows.Forms.ComboBoxStyle]::DropDow
 $GUIElementsCollection += $ServiceUserBox
 
 $MigrateLibraryCheck                       = New-Object system.Windows.Forms.CheckBox
-$MigrateLibraryCheck.text                  = "Import Emby Library"
+$MigrateLibraryCheck.text                  = "Import Emby/Old JF Library"
 $MigrateLibraryCheck.AutoSize              = $false
 $MigrateLibraryCheck.width                 = 160
 $MigrateLibraryCheck.height                = 20
@@ -401,7 +401,7 @@ $MigrateLibraryCheck.Font                  = 'Microsoft Sans Serif,10'
 $GUIElementsCollection += $MigrateLibraryCheck
 
 $LibraryMigrationLabel            = New-Object system.Windows.Forms.Label
-$LibraryMigrationLabel.text       = "Emby Library Path"
+$LibraryMigrationLabel.text       = "Emby/Old JF Library Path"
 $LibraryMigrationLabel.TextAlign  = [System.Drawing.ContentAlignment]::MiddleLeft
 $LibraryMigrationLabel.AutoSize   = $false
 $LibraryMigrationLabel.width      = 120
