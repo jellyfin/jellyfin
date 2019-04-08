@@ -99,7 +99,7 @@ jobs:
     pool:
       vmImage: ubuntu-16.04
     dependsOn: main_build
-    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber']) # Only execute if the pullrequest numer is defined. (So not for normal CI builds)
+    condition: false #and(succeeded(), variables['System.PullRequest.PullRequestNumber']) # Only execute if the pullrequest numer is defined. (So not for normal CI builds)
     strategy:
       matrix:
         Naming:
