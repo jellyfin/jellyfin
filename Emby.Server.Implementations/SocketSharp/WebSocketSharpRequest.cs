@@ -98,46 +98,40 @@ namespace Emby.Server.Implementations.SocketSharp
                 switch (crlf)
                 {
                     case 0:
+                        if (c == '\r')
                         {
-                            if (c == '\r')
-                            {
-                                crlf = 1;
-                            }
-                            else if (c == '\n')
-                            {
-                                // Technically this is bad HTTP.  But it would be a breaking change to throw here.
-                                // Is there an exploit?
-                                crlf = 2;
-                            }
-                            else if (c == 127 || (c < ' ' && c != '\t'))
-                            {
-                                throw new ArgumentException("net_WebHeaderInvalidControlChars", nameof(name));
-                            }
+                            crlf = 1;
+                        }
+                        else if (c == '\n')
+                        {
+                            // Technically this is bad HTTP.  But it would be a breaking change to throw here.
+                            // Is there an exploit?
+                            crlf = 2;
+                        }
+                        else if (c == 127 || (c < ' ' && c != '\t'))
+                        {
+                            throw new ArgumentException("net_WebHeaderInvalidControlChars", nameof(name));
+                        }
 
+                        break;
+
+                    case 1:
+                        if (c == '\n')
+                        {
+                            crlf = 2;
                             break;
                         }
 
-                    case 1:
-                        {
-                            if (c == '\n')
-                            {
-                                crlf = 2;
-                                break;
-                            }
-
-                            throw new ArgumentException("net_WebHeaderInvalidCRLFChars", nameof(name));
-                        }
+                        throw new ArgumentException("net_WebHeaderInvalidCRLFChars", nameof(name));
 
                     case 2:
+                        if (c == ' ' || c == '\t')
                         {
-                            if (c == ' ' || c == '\t')
-                            {
-                                crlf = 0;
-                                break;
-                            }
-
-                            throw new ArgumentException("net_WebHeaderInvalidCRLFChars", nameof(name));
+                            crlf = 0;
+                            break;
                         }
+
+                        throw new ArgumentException("net_WebHeaderInvalidCRLFChars", nameof(name));
                 }
             }
 
