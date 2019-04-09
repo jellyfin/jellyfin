@@ -310,16 +310,9 @@ namespace Emby.Server.Implementations.SocketSharp
             return pos == -1 ? strVal : strVal.Slice(0, pos);
         }
 
-        private string pathInfo;
         public string PathInfo
         {
-            get
-            {
-                if (this.pathInfo is null)
-                    this.pathInfo = this.request.Path.Value;
-
-                return this.pathInfo;
-            }
+            get => this.request.Path.Value;
         }
 
         public string UserAgent => request.Headers[HeaderNames.UserAgent];
