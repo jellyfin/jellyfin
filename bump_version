@@ -54,6 +54,7 @@ old_version="$(
     grep "AssemblyVersion" ${shared_version_file} \
         | sed -E 's/\[assembly: ?AssemblyVersion\("([0-9\.]+)"\)\]/\1/'
 )"
+echo $old_version
 
 # Set the shared version to the specified new_version
 old_version_sed="$( sed 's/\./\\./g' <<<"${old_version}" )" # Escape the '.' chars
@@ -62,9 +63,11 @@ sed -i "s/${old_version_sed}/${new_version_sed}/g" ${shared_version_file}
 
 old_version="$(
     grep "version:" ${build_file} \
-        | sed -E 's/version: "([0-9\.]+)"/\1/'
+        | sed -E 's/version: "([0-9\.]+[-a-z0-9]*)"/\1/'
 )"
+echo $old_version
 
+# Set the build.yaml version to the specified new_version
 old_version_sed="$( sed 's/\./\\./g' <<<"${old_version}" )" # Escape the '.' chars
 sed -i "s/${old_version_sed}/${new_version}/g" ${build_file}
 
@@ -73,6 +76,16 @@ if [[ ${new_version} == *"-"* ]]; then
 else
     new_version_deb="${new_version}-1"
 fi
+
+# Set the Dockerfile web version to the specified new_version
+old_version="$(
+    grep "JELLYFIN_WEB_VERSION=" Dockerfile \
+        | sed -E 's/ARG JELLYFIN_WEB_VERSION=([0-9\.]+[-a-z0-9]*)/\1/'
+)"
+echo $old_version
+
+old_version_sed="$( sed 's/\./\\./g' <<<"${old_version}" )" # Escape the '.' chars
+sed -i "s/${old_version_sed}/${new_version}/g" Dockerfile*
 
 # Write out a temporary Debian changelog with our new stuff appended and some templated formatting
 debian_changelog_file="deployment/debian-package-x64/pkg-src/changelog"
@@ -124,5 +137,5 @@ mv ${fedora_spec_temp} ${fedora_spec_file}
 rm -rf ${fedora_changelog_temp} ${fedora_spec_temp_dir}
 
 # Stage the changed files for commit
-git add ${shared_version_file} ${build_file} ${debian_changelog_file} ${fedora_spec_file}
+git add ${shared_version_file} ${build_file} ${debian_changelog_file} ${fedora_spec_file} Dockerfile*
 git status
