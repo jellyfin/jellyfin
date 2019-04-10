@@ -36,7 +36,7 @@
   </Networking>
   <Data>
     <Volume>
-      <HostDir>/mnt/user/appdata/jellyfin</HostDir>
+      <HostDir>/mnt/user/appdata/Jellyfin</HostDir>
       <ContainerDir>/config</ContainerDir>
       <Mode>rw</Mode>
     </Volume>
@@ -46,7 +46,7 @@
       <Mode>rw</Mode>
     </Volume>
     <Volume>
-      <HostDir>/mnt/user/appdata/jellyfin/cache/</HostDir>
+      <HostDir>/mnt/user/appdata/Jellyfin/cache/</HostDir>
       <ContainerDir>/cache</ContainerDir>
       <Mode>rw</Mode>
     </Volume>
