@@ -29,7 +29,7 @@ usage() {
     echo -e "The web_branch defaults to the same branch name as the current main branch or can be 'local' to not touch the submodule branching."
     echo -e "To build all platforms, use 'all'."
     echo -e "To perform all build actions, use 'all'."
-    echo -e "Build output files are collected at '../jellyfin-build/<platform>'."
+    echo -e "Build output files are collected at '../bin/<platform>'."
 }
 
 # Show usage on stderr with exit 1 on argless
