@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using HeaderNames = MediaBrowser.Common.Net.MoreHeaderNames;
 using IHttpFile = MediaBrowser.Model.Services.IHttpFile;
 using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
 using IResponse = MediaBrowser.Model.Services.IResponse;
@@ -38,16 +39,9 @@ namespace Emby.Server.Implementations.SocketSharp
         public string RawUrl => request.GetEncodedPathAndQuery();
 
         public string AbsoluteUri => request.GetDisplayUrl().TrimEnd('/');
+        // Header[name] returns "" when undefined
 
-        public string XForwardedFor
-            => StringValues.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"].ToString();
-
-        public int? XForwardedPort
-            => StringValues.IsNullOrEmpty(request.Headers["X-Forwarded-Port"]) ? (int?)null : int.Parse(request.Headers["X-Forwarded-Port"], CultureInfo.InvariantCulture);
-
-        public string XForwardedProtocol => StringValues.IsNullOrEmpty(request.Headers["X-Forwarded-Proto"]) ? null : request.Headers["X-Forwarded-Proto"].ToString();
-
-        public string XRealIp => StringValues.IsNullOrEmpty(request.Headers["X-Real-IP"]) ? null : request.Headers["X-Real-IP"].ToString();
+        private string GetHeader(string name) => request.Headers[name].ToString();
 
         private string remoteIp;
         public string RemoteIp
@@ -59,13 +53,13 @@ namespace Emby.Server.Implementations.SocketSharp
                     return remoteIp;
                 }
 
-                var temp = CheckBadChars(XForwardedFor.AsSpan());
+                var temp = CheckBadChars(GetHeader(HeaderNames.XForwardedFor).AsSpan());
                 if (temp.Length != 0)
                 {
                     return remoteIp = temp.ToString();
                 }
 
-                temp = CheckBadChars(XRealIp.AsSpan());
+                temp = CheckBadChars(GetHeader(HeaderNames.XRealIP).AsSpan());
                 if (temp.Length != 0)
                 {
                     return remoteIp = NormalizeIp(temp).ToString();
