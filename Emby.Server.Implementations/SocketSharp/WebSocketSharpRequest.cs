@@ -62,10 +62,10 @@ namespace Emby.Server.Implementations.SocketSharp
                 temp = CheckBadChars(GetHeader(HeaderNames.XRealIP).AsSpan());
                 if (temp.Length != 0)
                 {
-                    return remoteIp = NormalizeIp(temp).ToString();
+                    return remoteIp = NormalizeIp(temp.ToString()).ToString();
                 }
 
-                return remoteIp = NormalizeIp(request.HttpContext.Connection.RemoteIpAddress.ToString().AsSpan()).ToString();
+                return remoteIp = NormalizeIp(request.HttpContext.Connection.RemoteIpAddress).ToString();
             }
         }
 
@@ -137,20 +137,19 @@ namespace Emby.Server.Implementations.SocketSharp
             return name;
         }
 
-        private ReadOnlySpan<char> NormalizeIp(ReadOnlySpan<char> ip)
+        private IPAddress NormalizeIp(IPAddress ip)
         {
-            if (ip.Length != 0 && !ip.IsWhiteSpace())
+            if (ip.IsIPv4MappedToIPv6)
             {
-                // Handle ipv4 mapped to ipv6
-                const string srch = "::ffff:";
-                var index = ip.IndexOf(srch.AsSpan(), StringComparison.OrdinalIgnoreCase);
-                if (index == 0)
-                {
-                    ip = ip.Slice(srch.Length);
-                }
+                return ip.MapToIPv4();
             }
 
             return ip;
+        }
+
+        private IPAddress NormalizeIp(string sip)
+        {
+            return NormalizeIp(IPAddress.Parse(sip));
         }
 
         public string[] AcceptTypes => request.Headers.GetCommaSeparatedValues(HeaderNames.Accept);
