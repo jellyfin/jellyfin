@@ -4,13 +4,13 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using HeaderNames = MediaBrowser.Common.Net.MoreHeaderNames;
 using IHttpFile = MediaBrowser.Model.Services.IHttpFile;
 using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
 using IResponse = MediaBrowser.Model.Services.IResponse;
@@ -57,9 +57,9 @@ namespace Emby.Server.Implementations.SocketSharp
 
                 // "Real" remote ip might be in X-Forwarded-For of X-Real-Ip
                 // (if the server is behind a reverse proxy for example)
-                if (!IPAddress.TryParse(GetHeader(HeaderNames.XForwardedFor), out ip))
+                if (!IPAddress.TryParse(GetHeader(CustomHeaderNames.XForwardedFor), out ip))
                 {
-                    if (!IPAddress.TryParse(GetHeader(HeaderNames.XRealIP), out ip))
+                    if (!IPAddress.TryParse(GetHeader(CustomHeaderNames.XRealIP), out ip))
                     {
                         ip = request.HttpContext.Connection.RemoteIpAddress;
                     }
