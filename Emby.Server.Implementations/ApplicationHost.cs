@@ -1425,7 +1425,6 @@ namespace Emby.Server.Implementations
                 HasPendingRestart = HasPendingRestart,
                 IsShuttingDown = IsShuttingDown,
                 Version = ApplicationVersion,
-                ProductName = ApplicationProductName,
                 WebSocketPortNumber = HttpPort,
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
                 Id = SystemId,
@@ -1482,6 +1481,7 @@ namespace Emby.Server.Implementations
             return new PublicSystemInfo
             {
                 Version = ApplicationVersion,
+                ProductName = ApplicationProductName,
                 Id = SystemId,
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 WanAddress = wanAddress,
