@@ -30,8 +30,6 @@ namespace MediaBrowser.Api.Playback
     /// </summary>
     public abstract class BaseStreamingService : BaseApiService
     {
-        protected static readonly CultureInfo UsCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
-
         protected virtual bool EnableOutputInSubFolder => false;
 
         /// <summary>
@@ -418,55 +416,55 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.AudioStreamIndex = int.Parse(val, UsCulture);
+                        videoRequest.AudioStreamIndex = int.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 7)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.SubtitleStreamIndex = int.Parse(val, UsCulture);
+                        videoRequest.SubtitleStreamIndex = int.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 8)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.VideoBitRate = int.Parse(val, UsCulture);
+                        videoRequest.VideoBitRate = int.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 9)
                 {
-                    request.AudioBitRate = int.Parse(val, UsCulture);
+                    request.AudioBitRate = int.Parse(val, CultureInfo.InvariantCulture);
                 }
                 else if (i == 10)
                 {
-                    request.MaxAudioChannels = int.Parse(val, UsCulture);
+                    request.MaxAudioChannels = int.Parse(val, CultureInfo.InvariantCulture);
                 }
                 else if (i == 11)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.MaxFramerate = float.Parse(val, UsCulture);
+                        videoRequest.MaxFramerate = float.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 12)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.MaxWidth = int.Parse(val, UsCulture);
+                        videoRequest.MaxWidth = int.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 13)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.MaxHeight = int.Parse(val, UsCulture);
+                        videoRequest.MaxHeight = int.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 14)
                 {
-                    request.StartTimeTicks = long.Parse(val, UsCulture);
+                    request.StartTimeTicks = long.Parse(val, CultureInfo.InvariantCulture);
                 }
                 else if (i == 15)
                 {
@@ -479,14 +477,14 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.MaxRefFrames = int.Parse(val, UsCulture);
+                        videoRequest.MaxRefFrames = int.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 17)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.MaxVideoBitDepth = int.Parse(val, UsCulture);
+                        videoRequest.MaxVideoBitDepth = int.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 18)
@@ -535,7 +533,7 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 26)
                 {
-                    request.TranscodingMaxAudioChannels = int.Parse(val, UsCulture);
+                    request.TranscodingMaxAudioChannels = int.Parse(val, CultureInfo.InvariantCulture);
                 }
                 else if (i == 27)
                 {
@@ -640,7 +638,7 @@ namespace MediaBrowser.Api.Playback
             if (value.IndexOf(':') == -1)
             {
                 // Parses npt times in the format of '417.33'
-                if (double.TryParse(value, NumberStyles.Any, UsCulture, out var seconds))
+                if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var seconds))
                 {
                     return TimeSpan.FromSeconds(seconds).Ticks;
                 }
@@ -655,7 +653,7 @@ namespace MediaBrowser.Api.Playback
 
             foreach (var time in tokens)
             {
-                if (double.TryParse(time, NumberStyles.Any, UsCulture, out var digit))
+                if (double.TryParse(time, NumberStyles.Any, CultureInfo.InvariantCulture, out var digit))
                 {
                     secondsSum += digit * timeFactor;
                 }
@@ -1027,8 +1025,8 @@ namespace MediaBrowser.Api.Playback
 
         private void AddTimeSeekResponseHeaders(StreamState state, IDictionary<string, string> responseHeaders)
         {
-            var runtimeSeconds = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds.ToString(UsCulture);
-            var startSeconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds.ToString(UsCulture);
+            var runtimeSeconds = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds.ToString(CultureInfo.InvariantCulture);
+            var startSeconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
             responseHeaders["TimeSeekRange.dlna.org"] = string.Format("npt={0}-{1}/{1}", startSeconds, runtimeSeconds);
             responseHeaders["X-AvailableSeekRange"] = string.Format("1 npt={0}-{1}", startSeconds, runtimeSeconds);
