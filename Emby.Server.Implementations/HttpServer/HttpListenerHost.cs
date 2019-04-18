@@ -203,6 +203,7 @@ namespace Emby.Server.Implementations.HttpServer
                 case DirectoryNotFoundException _:
                 case FileNotFoundException _:
                 case ResourceNotFoundException _: return 404;
+                case MethodNotAllowedException _: return 405;
                 case RemoteServiceUnavailableException _: return 502;
                 default: return 500;
             }
