@@ -379,7 +379,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            if (!string.IsNullOrEmpty(request.Password) || string.IsNullOrEmpty(request.Pw))
+            if (!string.IsNullOrEmpty(request.Password) && string.IsNullOrEmpty(request.Pw))
             {
                 throw new MethodNotAllowedException("Hashed-only passwords are not valid for this API.");
             }
@@ -387,7 +387,7 @@ namespace MediaBrowser.Api
             return Post(new AuthenticateUserByName
             {
                 Username = user.Name,
-                Password = request.Password,
+                Password = null, // This should always be null
                 Pw = request.Pw
             });
         }
