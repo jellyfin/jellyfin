@@ -379,7 +379,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            if (request.Pw == "")
+            if (!string.IsNullOrEmpty(request.Password) || string.IsNullOrEmpty(request.Pw))
             {
                 throw new MethodNotAllowedException("Hashed-only passwords are not valid for this API.");
             }
