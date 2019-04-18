@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
@@ -148,15 +149,9 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 // Ignore samples
-                var sampleFilename = " " + filename.Replace(".", " ", StringComparison.OrdinalIgnoreCase)
-                    .Replace("-", " ", StringComparison.OrdinalIgnoreCase)
-                    .Replace("_", " ", StringComparison.OrdinalIgnoreCase)
-                    .Replace("!", " ", StringComparison.OrdinalIgnoreCase);
+                Match m = Regex.Match(filename,"\bsample\b",RegexOptions.IgnoreCase);
 
-                if (sampleFilename.IndexOf(" sample ", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    return true;
-                }
+                return m.Success;
             }
 
             return false;
