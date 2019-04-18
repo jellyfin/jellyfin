@@ -155,11 +155,6 @@ namespace Emby.Server.Implementations
         public event EventHandler HasPendingRestartChanged;
 
         /// <summary>
-        /// Occurs when [application updated].
-        /// </summary>
-        public event EventHandler<GenericEventArgs<PackageVersionInfo>> ApplicationUpdated;
-
-        /// <summary>
         /// Gets a value indicating whether this instance has changes that require the entire application to restart.
         /// </summary>
         /// <value><c>true</c> if this instance has pending application restart; otherwise, <c>false</c>.</value>
@@ -1392,9 +1387,9 @@ namespace Emby.Server.Implementations
         public async Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken)
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-            
-            string wanAddress; 
-            
+
+            string wanAddress;
+
             if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
             {
                 wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
@@ -1451,10 +1446,10 @@ namespace Emby.Server.Implementations
 
         public async Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken)
         {
-            var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);            
-            
+            var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+
             string wanAddress;
-            
+
             if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
             {
                 wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
@@ -1570,9 +1565,9 @@ namespace Emby.Server.Implementations
             }
             return string.Format("http://{0}:{1}",
                     host,
-                    ServerConfigurationManager.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture));      
+                    ServerConfigurationManager.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture));
         }
-        
+
         public Task<List<IpAddressInfo>> GetLocalIpAddresses(CancellationToken cancellationToken)
         {
             return GetLocalIpAddressesInternal(true, 0, cancellationToken);
