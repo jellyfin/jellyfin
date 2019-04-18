@@ -1,26 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.Services;
 
 namespace Emby.Server.Implementations.Services
 {
-    public delegate Task<object> InstanceExecFn(IRequest requestContext, object intance, object request);
     public delegate object ActionInvokerFn(object intance, object request);
     public delegate void VoidActionInvokerFn(object intance, object request);
 
     public class ServiceController
     {
-        public static ServiceController Instance;
-
-        public ServiceController()
-        {
-            Instance = this;
-        }
-
-        public void Init(HttpListenerHost appHost, Type[] serviceTypes)
+        public void Init(HttpListenerHost appHost, IEnumerable<Type> serviceTypes)
         {
             foreach (var serviceType in serviceTypes)
             {
@@ -37,7 +28,11 @@ namespace Emby.Server.Implementations.Services
             foreach (var mi in serviceType.GetActions())
             {
                 var requestType = mi.GetParameters()[0].ParameterType;
-                if (processedReqs.Contains(requestType)) continue;
+                if (processedReqs.Contains(requestType))
+                {
+                    continue;
+                }
+
                 processedReqs.Add(requestType);
 
                 ServiceExecGeneral.CreateServiceRunnersFor(requestType, actions);
@@ -53,18 +48,6 @@ namespace Emby.Server.Implementations.Services
 
                 appHost.AddServiceInfo(serviceType, requestType);
             }
-        }
-
-        public static Type FirstGenericType(Type type)
-        {
-            while (type != null)
-            {
-                if (type.GetTypeInfo().IsGenericType)
-                    return type;
-
-                type = type.GetTypeInfo().BaseType;
-            }
-            return null;
         }
 
         public readonly RestPath.RestPathMap RestPathMap = new RestPath.RestPathMap();
@@ -84,17 +67,24 @@ namespace Emby.Server.Implementations.Services
 
         public void RegisterRestPath(RestPath restPath)
         {
-            if (!restPath.Path.StartsWith("/"))
-                throw new ArgumentException(string.Format("Route '{0}' on '{1}' must start with a '/'", restPath.Path, restPath.RequestType.GetMethodName()));
-            if (restPath.Path.IndexOfAny(InvalidRouteChars) != -1)
-                throw new ArgumentException(string.Format("Route '{0}' on '{1}' contains invalid chars. ", restPath.Path, restPath.RequestType.GetMethodName()));
-
-            if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out List<RestPath> pathsAtFirstMatch))
+            if (restPath.Path[0] != '/')
             {
-                pathsAtFirstMatch = new List<RestPath>();
-                RestPathMap[restPath.FirstMatchHashKey] = pathsAtFirstMatch;
+                throw new ArgumentException(string.Format("Route '{0}' on '{1}' must start with a '/'", restPath.Path, restPath.RequestType.GetMethodName()));
             }
-            pathsAtFirstMatch.Add(restPath);
+
+            if (restPath.Path.IndexOfAny(InvalidRouteChars) != -1)
+            {
+                throw new ArgumentException(string.Format("Route '{0}' on '{1}' contains invalid chars. ", restPath.Path, restPath.RequestType.GetMethodName()));
+            }
+
+            if (RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out List<RestPath> pathsAtFirstMatch))
+            {
+                pathsAtFirstMatch.Add(restPath);
+            }
+            else
+            {
+                RestPathMap[restPath.FirstMatchHashKey] = new List<RestPath>() { restPath };
+            }
         }
 
         public RestPath GetRestPathForRequest(string httpMethod, string pathInfo)
@@ -155,17 +145,15 @@ namespace Emby.Server.Implementations.Services
             return null;
         }
 
-        public Task<object> Execute(HttpListenerHost appHost, object requestDto, IRequest req)
+        public Task<object> Execute(HttpListenerHost httpHost, object requestDto, IRequest req)
         {
             req.Dto = requestDto;
             var requestType = requestDto.GetType();
             req.OperationName = requestType.Name;
 
-            var serviceType = appHost.GetServiceTypeByRequest(requestType);
+            var serviceType = httpHost.GetServiceTypeByRequest(requestType);
 
-            var service = appHost.CreateInstance(serviceType);
-
-            //var service = typeFactory.CreateInstance(serviceType);
+            var service = httpHost.CreateInstance(serviceType);
 
             var serviceRequiresContext = service as IRequiresRequest;
             if (serviceRequiresContext != null)

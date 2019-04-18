@@ -118,6 +118,10 @@ namespace Jellyfin.Server
 
             SQLitePCL.Batteries_V2.Init();
 
+            // Increase the max http request limit
+            // The default connection limit is 10 for ASP.NET hosted applications and 2 for all others.
+            ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
+
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 

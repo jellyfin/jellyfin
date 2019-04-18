@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -11,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Services;
-using Emby.Server.Implementations.SocketSharp;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -127,12 +125,12 @@ namespace Emby.Server.Implementations.HttpServer
 
         private List<IHasRequestFilter> GetRequestFilterAttributes(Type requestDtoType)
         {
-            var attributes = requestDtoType.GetTypeInfo().GetCustomAttributes(true).OfType<IHasRequestFilter>().ToList();
+            var attributes = requestDtoType.GetCustomAttributes(true).OfType<IHasRequestFilter>().ToList();
 
             var serviceType = GetServiceTypeByRequest(requestDtoType);
             if (serviceType != null)
             {
-                attributes.AddRange(serviceType.GetTypeInfo().GetCustomAttributes(true).OfType<IHasRequestFilter>());
+                attributes.AddRange(serviceType.GetCustomAttributes(true).OfType<IHasRequestFilter>());
             }
 
             attributes.Sort((x, y) => x.Priority - y.Priority);
@@ -154,7 +152,7 @@ namespace Emby.Server.Implementations.HttpServer
                 QueryString = e.QueryString ?? new QueryCollection()
             };
 
-            connection.Closed += Connection_Closed;
+            connection.Closed += OnConnectionClosed;
 
             lock (_webSocketConnections)
             {
@@ -164,7 +162,7 @@ namespace Emby.Server.Implementations.HttpServer
             WebSocketConnected?.Invoke(this, new GenericEventArgs<IWebSocketConnection>(connection));
         }
 
-        private void Connection_Closed(object sender, EventArgs e)
+        private void OnConnectionClosed(object sender, EventArgs e)
         {
             lock (_webSocketConnections)
             {
@@ -322,14 +320,14 @@ namespace Emby.Server.Implementations.HttpServer
 
         private static string NormalizeConfiguredLocalAddress(string address)
         {
-            var index = address.Trim('/').IndexOf('/');
-
+            var add = address.AsSpan().Trim('/');
+            int index = add.IndexOf('/');
             if (index != -1)
             {
-                address = address.Substring(index + 1);
+                add = add.Slice(index + 1);
             }
 
-            return address.Trim('/');
+            return add.TrimStart('/').ToString();
         }
 
         private bool ValidateHost(string host)
@@ -399,8 +397,8 @@ namespace Emby.Server.Implementations.HttpServer
                 if (urlString.IndexOf("https://", StringComparison.OrdinalIgnoreCase) == -1)
                 {
                     // These are hacks, but if these ever occur on ipv6 in the local network they could be incorrectly redirected
-                    if (urlString.IndexOf("system/ping", StringComparison.OrdinalIgnoreCase) != -1 ||
-                        urlString.IndexOf("dlna/", StringComparison.OrdinalIgnoreCase) != -1)
+                    if (urlString.IndexOf("system/ping", StringComparison.OrdinalIgnoreCase) != -1
+                        || urlString.IndexOf("dlna/", StringComparison.OrdinalIgnoreCase) != -1)
                     {
                         return true;
                     }
@@ -572,7 +570,7 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (handler != null)
                 {
-                    await handler.ProcessRequestAsync(this, httpReq, httpRes, Logger, httpReq.OperationName, cancellationToken).ConfigureAwait(false);
+                    await handler.ProcessRequestAsync(this, httpReq, httpRes, Logger, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -613,21 +611,11 @@ namespace Emby.Server.Implementations.HttpServer
         {
             var pathInfo = httpReq.PathInfo;
 
-            var pathParts = pathInfo.TrimStart('/').Split('/');
-            if (pathParts.Length == 0)
-            {
-                Logger.LogError("Path parts empty for PathInfo: {PathInfo}, Url: {RawUrl}", pathInfo, httpReq.RawUrl);
-                return null;
-            }
-
-            var restPath = ServiceHandler.FindMatchingRestPath(httpReq.HttpMethod, pathInfo, out string contentType);
+            pathInfo = ServiceHandler.GetSanitizedPathInfo(pathInfo, out string contentType);
+            var restPath = ServiceController.GetRestPathForRequest(httpReq.HttpMethod, pathInfo);
             if (restPath != null)
             {
-                return new ServiceHandler
-                {
-                    RestPath = restPath,
-                    ResponseContentType = contentType
-                };
+                return new ServiceHandler(restPath, contentType);
             }
 
             Logger.LogError("Could not find handler for {PathInfo}", pathInfo);
@@ -655,11 +643,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
             else
             {
-                // TODO what is this?
-                var httpsUrl = url
-                    .Replace("http://", "https://", StringComparison.OrdinalIgnoreCase)
-                    .Replace(":" + _config.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture), ":" + _config.Configuration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
-
                 RedirectToUrl(httpRes, url);
             }
         }
@@ -684,10 +667,7 @@ namespace Emby.Server.Implementations.HttpServer
             UrlPrefixes = urlPrefixes.ToArray();
             ServiceController = new ServiceController();
 
-            Logger.LogInformation("Calling ServiceStack AppHost.Init");
-
-            var types = services.Select(r => r.GetType()).ToArray();
-
+            var types = services.Select(r => r.GetType());
             ServiceController.Init(this, types);
 
             ResponseFilters = new Action<IRequest, IResponse, object>[]

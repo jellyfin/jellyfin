@@ -11,31 +11,32 @@ namespace Emby.Server.Implementations.Services
 {
     public class ServiceHandler
     {
+        public RestPath RestPath { get; }
+
+        public string ResponseContentType { get; }
+
+        internal ServiceHandler(RestPath restPath, string responseContentType)
+        {
+            RestPath = restPath;
+            ResponseContentType = responseContentType;
+        }
+
         protected static Task<object> CreateContentTypeRequest(HttpListenerHost host, IRequest httpReq, Type requestType, string contentType)
         {
             if (!string.IsNullOrEmpty(contentType) && httpReq.ContentLength > 0)
             {
                 var deserializer = RequestHelper.GetRequestReader(host, contentType);
-                if (deserializer != null)
-                {
-                    return deserializer(requestType, httpReq.InputStream);
-                }
+                return deserializer?.Invoke(requestType, httpReq.InputStream);
             }
+
             return Task.FromResult(host.CreateInstance(requestType));
-        }
-
-        public static RestPath FindMatchingRestPath(string httpMethod, string pathInfo, out string contentType)
-        {
-            pathInfo = GetSanitizedPathInfo(pathInfo, out contentType);
-
-            return ServiceController.Instance.GetRestPathForRequest(httpMethod, pathInfo);
         }
 
         public static string GetSanitizedPathInfo(string pathInfo, out string contentType)
         {
             contentType = null;
             var pos = pathInfo.LastIndexOf('.');
-            if (pos >= 0)
+            if (pos != -1)
             {
                 var format = pathInfo.Substring(pos + 1);
                 contentType = GetFormatContentType(format);
@@ -44,58 +45,38 @@ namespace Emby.Server.Implementations.Services
                     pathInfo = pathInfo.Substring(0, pos);
                 }
             }
+
             return pathInfo;
         }
 
         private static string GetFormatContentType(string format)
         {
             //built-in formats
-            if (format == "json")
-                return "application/json";
-            if (format == "xml")
-                return "application/xml";
-
-            return null;
+            switch (format)
+            {
+                case "json": return "application/json";
+                case "xml": return "application/xml";
+                default: return null;
+            }
         }
 
-        public RestPath GetRestPath(string httpMethod, string pathInfo)
+        public async Task ProcessRequestAsync(HttpListenerHost httpHost, IRequest httpReq, IResponse httpRes, ILogger logger, CancellationToken cancellationToken)
         {
-            if (this.RestPath == null)
-            {
-                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, out string contentType);
-
-                if (contentType != null)
-                    ResponseContentType = contentType;
-            }
-            return this.RestPath;
-        }
-
-        public RestPath RestPath { get; set; }
-
-        // Set from SSHHF.GetHandlerForPathInfo()
-        public string ResponseContentType { get; set; }
-
-        public async Task ProcessRequestAsync(HttpListenerHost appHost, IRequest httpReq, IResponse httpRes, ILogger logger, string operationName, CancellationToken cancellationToken)
-        {
-            var restPath = GetRestPath(httpReq.Verb, httpReq.PathInfo);
-            if (restPath == null)
-            {
-                throw new NotSupportedException("No RestPath found for: " + httpReq.Verb + " " + httpReq.PathInfo);
-            }
-
-            SetRoute(httpReq, restPath);
+            httpReq.Items["__route"] = RestPath;
 
             if (ResponseContentType != null)
+            {
                 httpReq.ResponseContentType = ResponseContentType;
+            }
 
-            var request = httpReq.Dto = await CreateRequest(appHost, httpReq, restPath, logger).ConfigureAwait(false);
+            var request = httpReq.Dto = await CreateRequest(httpHost, httpReq, RestPath, logger).ConfigureAwait(false);
 
-            appHost.ApplyRequestFilters(httpReq, httpRes, request);
+            httpHost.ApplyRequestFilters(httpReq, httpRes, request);
 
-            var response = await appHost.ServiceController.Execute(appHost, request, httpReq).ConfigureAwait(false);
+            var response = await httpHost.ServiceController.Execute(httpHost, request, httpReq).ConfigureAwait(false);
 
             // Apply response filters
-            foreach (var responseFilter in appHost.ResponseFilters)
+            foreach (var responseFilter in httpHost.ResponseFilters)
             {
                 responseFilter(httpReq, httpRes, response);
             }
@@ -152,7 +133,11 @@ namespace Emby.Server.Implementations.Services
 
             foreach (var name in request.QueryString.Keys)
             {
-                if (name == null) continue; //thank you ASP.NET
+                if (name == null)
+                {
+                    // thank you ASP.NET
+                    continue;
+                }
 
                 var values = request.QueryString[name];
                 if (values.Count == 1)
@@ -175,7 +160,11 @@ namespace Emby.Server.Implementations.Services
                 {
                     foreach (var name in formData.Keys)
                     {
-                        if (name == null) continue; //thank you ASP.NET
+                        if (name == null)
+                        {
+                            // thank you ASP.NET
+                            continue;
+                        }
 
                         var values = formData.GetValues(name);
                         if (values.Count == 1)
@@ -210,7 +199,12 @@ namespace Emby.Server.Implementations.Services
 
             foreach (var name in request.QueryString.Keys)
             {
-                if (name == null) continue; //thank you ASP.NET
+                if (name == null)
+                {
+                    // thank you ASP.NET
+                    continue;
+                }
+
                 map[name] = request.QueryString[name];
             }
 
@@ -221,7 +215,12 @@ namespace Emby.Server.Implementations.Services
                 {
                     foreach (var name in formData.Keys)
                     {
-                        if (name == null) continue; //thank you ASP.NET
+                        if (name == null)
+                        {
+                            // thank you ASP.NET
+                            continue;
+                        }
+
                         map[name] = formData[name];
                     }
                 }
@@ -229,17 +228,5 @@ namespace Emby.Server.Implementations.Services
 
             return map;
         }
-
-        private static void SetRoute(IRequest req, RestPath route)
-        {
-            req.Items["__route"] = route;
-        }
-
-        private static RestPath GetRoute(IRequest req)
-        {
-            req.Items.TryGetValue("__route", out var route);
-            return route as RestPath;
-        }
     }
-
 }
