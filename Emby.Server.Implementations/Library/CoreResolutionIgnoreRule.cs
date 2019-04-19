@@ -149,7 +149,7 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 // Ignore samples
-                Match m = Regex.Match(filename,"\bsample\b",RegexOptions.IgnoreCase);
+                Match m = Regex.Match(filename,@"\bsample\b",RegexOptions.IgnoreCase);
 
                 return m.Success;
             }
