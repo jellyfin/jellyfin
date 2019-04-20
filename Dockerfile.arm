@@ -8,7 +8,7 @@ FROM alpine as qemu_extract
 COPY --from=qemu /usr/bin qemu-arm-static.tar.gz
 RUN tar -xzvf qemu-arm-static.tar.gz
 
-FROM microsoft/dotnet:${DOTNET_VERSION}-sdk-stretch as builder
+FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION} as builder
 WORKDIR /repo
 COPY . .
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
@@ -21,7 +21,7 @@ RUN bash -c "source deployment/common.build.sh && \
     build_jellyfin Jellyfin.Server Release linux-arm /jellyfin"
 
 
-FROM microsoft/dotnet:${DOTNET_VERSION}-runtime-stretch-slim-arm32v7
+FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}-stretch-slim-arm32v7
 COPY --from=qemu_extract qemu-arm-static /usr/bin
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg \
@@ -30,7 +30,7 @@ RUN apt-get update \
  && chmod 777 /cache /config /media
 COPY --from=builder /jellyfin /jellyfin
 
-ARG JELLYFIN_WEB_VERSION=10.2.2
+ARG JELLYFIN_WEB_VERSION=10.3.0
 RUN curl -L https://github.com/jellyfin/jellyfin-web/archive/v${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && rm -rf /jellyfin/jellyfin-web \
  && mv jellyfin-web-${JELLYFIN_WEB_VERSION} /jellyfin/jellyfin-web

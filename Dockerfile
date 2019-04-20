@@ -1,6 +1,6 @@
-ARG DOTNET_VERSION=2
+ARG DOTNET_VERSION=2.2
 
-FROM microsoft/dotnet:${DOTNET_VERSION}-sdk as builder
+FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION} as builder
 WORKDIR /repo
 COPY . .
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
@@ -8,7 +8,7 @@ RUN bash -c "source deployment/common.build.sh && \
     build_jellyfin Jellyfin.Server Release linux-x64 /jellyfin"
 
 FROM jellyfin/ffmpeg as ffmpeg
-FROM microsoft/dotnet:${DOTNET_VERSION}-runtime
+FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}
 # libfontconfig1 is required for Skia
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y \
@@ -21,7 +21,7 @@ RUN apt-get update \
 COPY --from=ffmpeg / /
 COPY --from=builder /jellyfin /jellyfin
 
-ARG JELLYFIN_WEB_VERSION=10.2.2
+ARG JELLYFIN_WEB_VERSION=10.3.0
 RUN curl -L https://github.com/jellyfin/jellyfin-web/archive/v${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && rm -rf /jellyfin/jellyfin-web \
  && mv jellyfin-web-${JELLYFIN_WEB_VERSION} /jellyfin/jellyfin-web

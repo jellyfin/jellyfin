@@ -230,6 +230,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns></returns>
         private string ExistsOnSystemPath(string filename)
         {
+            string inJellyfinPath = GetEncoderPathFromDirectory(System.AppContext.BaseDirectory, filename);
+            if (!string.IsNullOrEmpty(inJellyfinPath))
+            {
+                return inJellyfinPath;
+            }
             var values = Environment.GetEnvironmentVariable("PATH");
 
             foreach (var path in values.Split(Path.PathSeparator))
