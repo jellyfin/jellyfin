@@ -1167,7 +1167,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error loading plugin {pluginName}", plugin.GetType().FullName);
+                Logger.LogError(ex, "Error loading plugin {PluginName}", plugin.GetType().FullName);
                 return null;
             }
 
@@ -1348,8 +1348,19 @@ namespace Emby.Server.Implementations
             {
                 foreach (var file in Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.AllDirectories))
                 {
-                    Logger.LogInformation("Loading assembly {Path}", file);
-                    yield return Assembly.LoadFrom(file);
+                    Assembly plugAss;
+                    try
+                    {
+                        plugAss = Assembly.LoadFrom(file);
+                    }
+                    catch (TypeLoadException ex)
+                    {
+                        Logger.LogError(ex, "Failed to load assembly {Path}", file);
+                        continue;
+                    }
+
+                    Logger.LogInformation("Loaded assembly {Assembly} from {Path}", plugAss.FullName, file);
+                    yield return plugAss;
                 }
             }
 
