@@ -1,3 +1,9 @@
+jellyfin (10.3.1-1) unstable; urgency=medium
+
+  * New upstream version 10.3.1; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.1
+
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  Sat, 20 Apr 2019 14:24:07 -0400
+
 jellyfin (10.3.0-1) unstable; urgency=medium
 
   * New upstream version 10.3.0; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.0
