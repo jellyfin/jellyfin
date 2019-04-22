@@ -1,4 +1,4 @@
-[submodule "Jellyfin.WebDashboard/jellyfin-web"]
-	path = Jellyfin.WebDashboard/jellyfin-web
+[submodule "Jellyfin.WebDashboard/jellyin-web"]
+	path = Jellyfin.WebDashboard/jellyin-web
 	url = https://github.com/jellyfin/jellyfin-web.git
 	branch = .
