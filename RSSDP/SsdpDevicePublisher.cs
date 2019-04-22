@@ -6,8 +6,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Common.Net;
+using Jellyfin.Model.Net;
+using Jellyfin.Common.Net;
 using Rssdp;
 
 namespace Rssdp.Infrastructure

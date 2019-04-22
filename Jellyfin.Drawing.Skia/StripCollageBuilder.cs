@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.IO;
+using Jellyfin.Common.Configuration;
+using Jellyfin.Model.IO;
 using SkiaSharp;
 
 namespace Jellyfin.Drawing.Skia

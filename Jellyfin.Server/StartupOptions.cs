@@ -1,5 +1,5 @@
 using CommandLine;
-using Emby.Server.Implementations;
+using Jellyfin.Server.Implementations;
 
 namespace Jellyfin.Server
 {

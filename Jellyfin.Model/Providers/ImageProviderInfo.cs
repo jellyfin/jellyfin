@@ -1,0 +1,23 @@
+using Jellyfin.Model.Entities;
+
+namespace Jellyfin.Model.Providers
+{
+    /// <summary>
+    /// Class ImageProviderInfo.
+    /// </summary>
+    public class ImageProviderInfo
+    {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name { get; set; }
+
+        public ImageType[] SupportedImages { get; set; }
+
+        public ImageProviderInfo()
+        {
+            SupportedImages = new ImageType[] { };
+        }
+    }
+}

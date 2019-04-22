@@ -1,0 +1,71 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jellyfin.Naming\Jellyfin.Naming.csproj" />
+    <ProjectReference Include="..\Jellyfin.Notifications\Jellyfin.Notifications.csproj" />
+    <ProjectReference Include="..\Jellyfin.Model\Jellyfin.Model.csproj" />
+    <ProjectReference Include="..\Jellyfin.Common\Jellyfin.Common.csproj" />
+    <ProjectReference Include="..\Jellyfin.Controller\Jellyfin.Controller.csproj" />
+    <ProjectReference Include="..\Jellyfin.Providers\Jellyfin.Providers.csproj" />
+    <ProjectReference Include="..\Jellyfin.WebDashboard\Jellyfin.WebDashboard.csproj" />
+    <ProjectReference Include="..\Jellyfin.XbmcMetadata\Jellyfin.XbmcMetadata.csproj" />
+    <ProjectReference Include="..\Jellyfin.Dlna\Jellyfin.Dlna.csproj" />
+    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj" />
+    <ProjectReference Include="..\Jellyfin.Api\Jellyfin.Api.csproj" />
+    <ProjectReference Include="..\Jellyfin.LocalMetadata\Jellyfin.LocalMetadata.csproj" />
+    <ProjectReference Include="..\Jellyfin.Photos\Jellyfin.Photos.csproj" />
+    <ProjectReference Include="..\Jellyfin.Drawing\Jellyfin.Drawing.csproj" />
+    <ProjectReference Include="..\Jellyfin.XmlTv\Jellyfin.XmlTv\Jellyfin.XmlTv.csproj" />
+    <ProjectReference Include="..\Jellyfin.MediaEncoding\Jellyfin.MediaEncoding.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.2.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="5.4.0" />
+    <PackageReference Include="sharpcompress" Version="0.22.0" />
+    <PackageReference Include="SQLitePCL.pretty.netstandard" Version="1.0.0" />
+    <PackageReference Include="UTF.Unknown" Version="1.0.0-beta1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\SharedVersion.cs" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- Code analysers-->
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.3" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
+    <PackageReference Include="SerilogAnalyzer" Version="0.15.0" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\iso6392.txt" />
+    <EmbeddedResource Include="Localization\countries.json" />
+    <EmbeddedResource Include="Localization\Core\*.json" />
+    <EmbeddedResource Include="Localization\Ratings\*.csv" />
+  </ItemGroup>
+
+</Project>

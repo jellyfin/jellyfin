@@ -31,7 +31,7 @@ using System.Net;
 using System.IO;
 using System.Text;
 using System.Globalization;
-using MediaBrowser.Common.Net;
+using Jellyfin.Common.Net;
 
 namespace Mono.Nat.Upnp
 {

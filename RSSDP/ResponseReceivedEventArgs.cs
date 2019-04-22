@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
+using Jellyfin.Model.Net;
 
 namespace Rssdp.Infrastructure
 {

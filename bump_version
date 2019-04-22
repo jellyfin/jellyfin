@@ -30,7 +30,7 @@ web_branch="$( git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/' )"
 git submodule update --init --recursive
 
 # configure branch
-pushd MediaBrowser.WebDashboard/jellyfin-web
+pushd Jellyfin.WebDashboard/jellyfin-web
 
 if ! git diff-index --quiet HEAD --; then
     popd
@@ -45,7 +45,7 @@ git fetch --all
 git checkout origin/${web_branch}
 popd
 
-git add MediaBrowser.WebDashboard/jellyfin-web
+git add Jellyfin.WebDashboard/jellyfin-web
 
 new_version="$1"
 

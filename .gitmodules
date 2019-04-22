@@ -1,4 +1,4 @@
-[submodule "MediaBrowser.WebDashboard/jellyfin-web"]
-	path = MediaBrowser.WebDashboard/jellyfin-web
+[submodule "Jellyfin.WebDashboard/jellyfin-web"]
+	path = Jellyfin.WebDashboard/jellyfin-web
 	url = https://github.com/jellyfin/jellyfin-web.git
 	branch = .

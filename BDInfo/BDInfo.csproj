@@ -5,7 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
+    <ProjectReference Include="..\Jellyfin.Model\Jellyfin.Model.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\SharedVersion.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BDInfo\BDInfo.csproj" />
+    <ProjectReference Include="..\Jellyfin.Common\Jellyfin.Common.csproj" />
+    <ProjectReference Include="..\Jellyfin.Controller\Jellyfin.Controller.csproj" />
+    <ProjectReference Include="..\Jellyfin.Model\Jellyfin.Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.5.1" />
+    <PackageReference Include="UTF.Unknown" Version="1.0.0-beta1" />
+  </ItemGroup>
+
+</Project>

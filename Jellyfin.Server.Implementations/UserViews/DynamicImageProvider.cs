@@ -1,0 +1,134 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Jellyfin.Server.Implementations.Images;
+using Jellyfin.Common.Configuration;
+using Jellyfin.Controller.Drawing;
+using Jellyfin.Controller.Dto;
+using Jellyfin.Controller.Entities;
+using Jellyfin.Controller.Entities.Audio;
+using Jellyfin.Controller.Entities.TV;
+using Jellyfin.Controller.Library;
+using Jellyfin.Controller.Providers;
+using Jellyfin.Model.Entities;
+using Jellyfin.Model.IO;
+
+namespace Jellyfin.Server.Implementations.UserViews
+{
+    public class DynamicImageProvider : BaseDynamicImageProvider<UserView>
+    {
+        private readonly IUserManager _userManager;
+        private readonly ILibraryManager _libraryManager;
+
+        public DynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, IUserManager userManager, ILibraryManager libraryManager)
+            : base(fileSystem, providerManager, applicationPaths, imageProcessor)
+        {
+            _userManager = userManager;
+            _libraryManager = libraryManager;
+        }
+
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
+        {
+            var view = (UserView)item;
+
+            var isUsingCollectionStrip = IsUsingCollectionStrip(view);
+            var recursive = isUsingCollectionStrip && !new[] { CollectionType.BoxSets, CollectionType.Playlists }.Contains(view.ViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+
+            var result = view.GetItemList(new InternalItemsQuery
+            {
+                User = view.UserId.HasValue ? _userManager.GetUserById(view.UserId.Value) : null,
+                CollapseBoxSetItems = false,
+                Recursive = recursive,
+                ExcludeItemTypes = new[] { "UserView", "CollectionFolder", "Person" },
+                DtoOptions = new DtoOptions(false)
+            });
+
+            var items = result.Select(i =>
+            {
+                if (i is Episode episode)
+                {
+                    var series = episode.Series;
+                    if (series != null)
+                    {
+                        return series;
+                    }
+
+                    return episode;
+                }
+
+                if (i is Season season)
+                {
+                    var series = season.Series;
+                    if (series != null)
+                    {
+                        return series;
+                    }
+
+                    return season;
+                }
+
+                if (i is Audio audio)
+                {
+                    var album = audio.AlbumEntity;
+                    if (album != null && album.HasImage(ImageType.Primary))
+                    {
+                        return album;
+                    }
+                }
+
+                return i;
+
+            }).GroupBy(x => x.Id)
+            .Select(x => x.First());
+
+            if (isUsingCollectionStrip)
+            {
+                return items
+                    .Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb))
+                    .OrderBy(i => Guid.NewGuid())
+                    .ToList();
+            }
+
+            return items
+                .Where(i => i.HasImage(ImageType.Primary))
+                .OrderBy(i => Guid.NewGuid())
+                .ToList();
+        }
+
+        protected override bool Supports(BaseItem item)
+        {
+            var view = item as UserView;
+            if (view != null)
+            {
+                return IsUsingCollectionStrip(view);
+            }
+
+            return false;
+        }
+
+        private static bool IsUsingCollectionStrip(UserView view)
+        {
+            string[] collectionStripViewTypes =
+            {
+                CollectionType.Movies,
+                CollectionType.TvShows,
+                CollectionType.Playlists
+            };
+
+            return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
+        }
+
+        protected override string CreateImage(BaseItem item, IReadOnlyCollection<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        {
+            if (itemsWithImages.Count == 0)
+            {
+                return null;
+            }
+
+            var outputPath = Path.ChangeExtension(outputPathWithoutExtension, ".png");
+
+            return CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540);
+        }
+    }
+}

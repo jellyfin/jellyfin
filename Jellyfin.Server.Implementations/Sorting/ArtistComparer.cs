@@ -1,0 +1,48 @@
+using System;
+using Jellyfin.Controller.Entities;
+using Jellyfin.Controller.Entities.Audio;
+using Jellyfin.Controller.Sorting;
+using Jellyfin.Model.Querying;
+
+namespace Jellyfin.Server.Implementations.Sorting
+{
+    /// <summary>
+    /// Class ArtistComparer
+    /// </summary>
+    public class ArtistComparer : IBaseItemComparer
+    {
+        /// <summary>
+        /// Compares the specified x.
+        /// </summary>
+        /// <param name="x">The x.</param>
+        /// <param name="y">The y.</param>
+        /// <returns>System.Int32.</returns>
+        public int Compare(BaseItem x, BaseItem y)
+        {
+            return string.Compare(GetValue(x), GetValue(y), StringComparison.CurrentCultureIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <param name="x">The x.</param>
+        /// <returns>System.String.</returns>
+        private static string GetValue(BaseItem x)
+        {
+            var audio = x as Audio;
+
+            if (audio == null)
+            {
+                return string.Empty;
+            }
+
+            return audio.Artists.Length == 0 ? null : audio.Artists[0];
+        }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.Artist;
+    }
+}

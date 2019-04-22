@@ -1,5 +1,5 @@
 using System;
-using MediaBrowser.Model.Drawing;
+using Jellyfin.Model.Drawing;
 using SkiaSharp;
 
 namespace Jellyfin.Drawing.Skia

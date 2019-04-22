@@ -36,9 +36,9 @@ using Mono.Nat.Upnp;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Net.NetworkInformation;
-using MediaBrowser.Common.Net;
+using Jellyfin.Common.Net;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Dlna;
+using Jellyfin.Model.Dlna;
 using System.Threading.Tasks;
 
 namespace Mono.Nat

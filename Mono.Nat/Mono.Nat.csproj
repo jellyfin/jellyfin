@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
+    <ProjectReference Include="..\Jellyfin.Common\Jellyfin.Common.csproj" />
+    <ProjectReference Include="..\Jellyfin.Model\Jellyfin.Model.csproj" />
   </ItemGroup>
 
   <ItemGroup>

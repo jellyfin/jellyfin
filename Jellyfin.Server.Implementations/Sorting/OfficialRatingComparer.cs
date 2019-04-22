@@ -1,0 +1,44 @@
+using System;
+using Jellyfin.Controller.Entities;
+using Jellyfin.Controller.Sorting;
+using Jellyfin.Model.Globalization;
+using Jellyfin.Model.Querying;
+
+namespace Jellyfin.Server.Implementations.Sorting
+{
+    public class OfficialRatingComparer : IBaseItemComparer
+    {
+        private readonly ILocalizationManager _localization;
+
+        public OfficialRatingComparer(ILocalizationManager localization)
+        {
+            _localization = localization;
+        }
+
+        /// <summary>
+        /// Compares the specified x.
+        /// </summary>
+        /// <param name="x">The x.</param>
+        /// <param name="y">The y.</param>
+        /// <returns>System.Int32.</returns>
+        public int Compare(BaseItem x, BaseItem y)
+        {
+            if (x == null)
+                throw new ArgumentNullException(nameof(x));
+
+            if (y == null)
+                throw new ArgumentNullException(nameof(y));
+
+            var levelX = string.IsNullOrEmpty(x.OfficialRating) ? 0 : _localization.GetRatingLevel(x.OfficialRating) ?? 0;
+            var levelY = string.IsNullOrEmpty(y.OfficialRating) ? 0 : _localization.GetRatingLevel(y.OfficialRating) ?? 0;
+
+            return levelX.CompareTo(levelY);
+        }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.OfficialRating;
+    }
+}

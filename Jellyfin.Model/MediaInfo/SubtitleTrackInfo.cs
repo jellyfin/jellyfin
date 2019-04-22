@@ -1,0 +1,12 @@
+namespace Jellyfin.Model.MediaInfo
+{
+    public class SubtitleTrackInfo
+    {
+        public SubtitleTrackEvent[] TrackEvents { get; set; }
+
+        public SubtitleTrackInfo()
+        {
+            TrackEvents = new SubtitleTrackEvent[] { };
+        }
+    }
+}

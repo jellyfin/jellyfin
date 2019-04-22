@@ -6,10 +6,10 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
+using Jellyfin.Common.Net;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Controller.Configuration;
+using Jellyfin.Model.Net;
+using Jellyfin.Controller.Configuration;
 
 namespace Rssdp.Infrastructure
 {

@@ -33,9 +33,9 @@ using System.Xml;
 using System.Text;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
+using Jellyfin.Common.Net;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Dlna;
+using Jellyfin.Model.Dlna;
 
 namespace Mono.Nat.Upnp
 {

@@ -27,7 +27,7 @@
 using System;
 using System.Diagnostics;
 using System.Net;
-using MediaBrowser.Common.Net;
+using Jellyfin.Common.Net;
 using Microsoft.Extensions.Logging;
 
 namespace Mono.Nat.Upnp

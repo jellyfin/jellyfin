@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\SharedVersion.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jellyfin.Model\Jellyfin.Model.csproj" />
+    <ProjectReference Include="..\Jellyfin.Controller\Jellyfin.Controller.csproj" />
+    <ProjectReference Include="..\Jellyfin.Common\Jellyfin.Common.csproj" />
+  </ItemGroup>
+
+</Project>

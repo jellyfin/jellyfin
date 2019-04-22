@@ -31,7 +31,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Extensions;
+using Jellyfin.Model.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Mono.Nat.Pmp

@@ -4,12 +4,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Extensions;
-using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
+using Jellyfin.Common.Configuration;
+using Jellyfin.Controller.Drawing;
+using Jellyfin.Controller.Extensions;
+using Jellyfin.Model.Drawing;
+using Jellyfin.Model.Globalization;
+using Jellyfin.Model.IO;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
 

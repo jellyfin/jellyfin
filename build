@@ -169,7 +169,7 @@ if [[ ${web_branch} != 'local' ]]; then
     git submodule update --init --recursive
 
     # configure branch
-    pushd MediaBrowser.WebDashboard/jellyfin-web
+    pushd Jellyfin.WebDashboard/jellyfin-web
 
     if ! git diff-index --quiet HEAD --; then
         popd

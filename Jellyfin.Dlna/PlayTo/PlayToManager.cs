@@ -1,0 +1,247 @@
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Jellyfin.Common.Extensions;
+using Jellyfin.Common.Net;
+using Jellyfin.Controller;
+using Jellyfin.Controller.Configuration;
+using Jellyfin.Controller.Dlna;
+using Jellyfin.Controller.Drawing;
+using Jellyfin.Controller.Library;
+using Jellyfin.Controller.MediaEncoding;
+using Jellyfin.Controller.Session;
+using Jellyfin.Model.Dlna;
+using Jellyfin.Model.Events;
+using Jellyfin.Model.Globalization;
+using Jellyfin.Model.Net;
+using Jellyfin.Model.Session;
+using Microsoft.Extensions.Logging;
+
+namespace Jellyfin.Dlna.PlayTo
+{
+    class PlayToManager : IDisposable
+    {
+        private readonly ILogger _logger;
+        private readonly ISessionManager _sessionManager;
+
+        private readonly ILibraryManager _libraryManager;
+        private readonly IUserManager _userManager;
+        private readonly IDlnaManager _dlnaManager;
+        private readonly IServerApplicationHost _appHost;
+        private readonly IImageProcessor _imageProcessor;
+        private readonly IHttpClient _httpClient;
+        private readonly IServerConfigurationManager _config;
+        private readonly IUserDataManager _userDataManager;
+        private readonly ILocalizationManager _localization;
+
+        private readonly IDeviceDiscovery _deviceDiscovery;
+        private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IMediaEncoder _mediaEncoder;
+
+        private bool _disposed;
+        private SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
+        private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
+
+        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
+        {
+            _logger = logger;
+            _sessionManager = sessionManager;
+            _libraryManager = libraryManager;
+            _userManager = userManager;
+            _dlnaManager = dlnaManager;
+            _appHost = appHost;
+            _imageProcessor = imageProcessor;
+            _deviceDiscovery = deviceDiscovery;
+            _httpClient = httpClient;
+            _config = config;
+            _userDataManager = userDataManager;
+            _localization = localization;
+            _mediaSourceManager = mediaSourceManager;
+            _mediaEncoder = mediaEncoder;
+        }
+
+        public void Start()
+        {
+            _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
+        }
+
+        async void _deviceDiscovery_DeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            var info = e.Argument;
+
+            if (!info.Headers.TryGetValue("USN", out string usn)) usn = string.Empty;
+
+            if (!info.Headers.TryGetValue("NT", out string nt)) nt = string.Empty;
+
+            string location = info.Location.ToString();
+
+            // It has to report that it's a media renderer
+            if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
+                     nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                //_logger.LogDebug("Upnp device {0} does not contain a MediaRenderer device (0).", location);
+                return;
+            }
+
+            var cancellationToken = _disposeCancellationTokenSource.Token;
+
+            await _sessionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                if (_sessionManager.Sessions.Any(i => usn.IndexOf(i.DeviceId, StringComparison.OrdinalIgnoreCase) != -1))
+                {
+                    return;
+                }
+
+                await AddDevice(info, location, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating PlayTo device.");
+            }
+            finally
+            {
+                _sessionLock.Release();
+            }
+        }
+
+        private string GetUuid(string usn)
+        {
+            var found = false;
+            var index = usn.IndexOf("uuid:", StringComparison.OrdinalIgnoreCase);
+            if (index != -1)
+            {
+                usn = usn.Substring(index);
+                found = true;
+            }
+            index = usn.IndexOf("::", StringComparison.OrdinalIgnoreCase);
+            if (index != -1)
+            {
+                usn = usn.Substring(0, index);
+            }
+
+            if (found)
+            {
+                return usn;
+            }
+
+            return usn.GetMD5().ToString("N");
+        }
+
+        private async Task AddDevice(UpnpDeviceInfo info, string location, CancellationToken cancellationToken)
+        {
+            var uri = info.Location;
+            _logger.LogDebug("Attempting to create PlayToController from location {0}", location);
+
+            _logger.LogDebug("Logging session activity from location {0}", location);
+            if (info.Headers.TryGetValue("USN", out string uuid))
+            {
+                uuid = GetUuid(uuid);
+            }
+            else
+            {
+                uuid = location.GetMD5().ToString("N");
+            }
+
+            var sessionInfo = _sessionManager.LogSessionActivity("DLNA", _appHost.ApplicationVersion, uuid, null, uri.OriginalString, null);
+
+            var controller = sessionInfo.SessionControllers.OfType<PlayToController>().FirstOrDefault();
+
+            if (controller == null)
+            {
+                var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger, cancellationToken).ConfigureAwait(false);
+
+                string deviceName = device.Properties.Name;
+
+                _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
+
+                string serverAddress;
+                if (info.LocalIpAddress == null || info.LocalIpAddress.Equals(IpAddressInfo.Any) || info.LocalIpAddress.Equals(IpAddressInfo.IPv6Any))
+                {
+                    serverAddress = await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    serverAddress = _appHost.GetLocalApiUrl(info.LocalIpAddress);
+                }
+
+                controller = new PlayToController(sessionInfo,
+                   _sessionManager,
+                   _libraryManager,
+                   _logger,
+                   _dlnaManager,
+                   _userManager,
+                   _imageProcessor,
+                   serverAddress,
+                   null,
+                   _deviceDiscovery,
+                   _userDataManager,
+                   _localization,
+                   _mediaSourceManager,
+                   _config,
+                   _mediaEncoder);
+
+                sessionInfo.AddController(controller);
+
+                controller.Init(device);
+
+                var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
+                              _dlnaManager.GetDefaultProfile();
+
+                _sessionManager.ReportCapabilities(sessionInfo.Id, new ClientCapabilities
+                {
+                    PlayableMediaTypes = profile.GetSupportedMediaTypes(),
+
+                    SupportedCommands = new string[]
+                    {
+                            GeneralCommandType.VolumeDown.ToString(),
+                            GeneralCommandType.VolumeUp.ToString(),
+                            GeneralCommandType.Mute.ToString(),
+                            GeneralCommandType.Unmute.ToString(),
+                            GeneralCommandType.ToggleMute.ToString(),
+                            GeneralCommandType.SetVolume.ToString(),
+                            GeneralCommandType.SetAudioStreamIndex.ToString(),
+                            GeneralCommandType.SetSubtitleStreamIndex.ToString(),
+                            GeneralCommandType.PlayMediaSource.ToString()
+                    },
+
+                    SupportsMediaControl = true
+                });
+
+                _logger.LogInformation("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
+            }
+        }
+
+        public void Dispose()
+        {
+            _deviceDiscovery.DeviceDiscovered -= _deviceDiscovery_DeviceDiscovered;
+
+            try
+            {
+                _disposeCancellationTokenSource.Cancel();
+            }
+            catch
+            {
+
+            }
+
+            _disposed = true;
+        }
+    }
+}

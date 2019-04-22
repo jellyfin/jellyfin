@@ -50,9 +50,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
-    <ProjectReference Include="..\Emby.IsoMounting\IsoMounter\IsoMounter.csproj" />
-    <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
+    <ProjectReference Include="..\Jellyfin.Drawing\Jellyfin.Drawing.csproj" />
+    <ProjectReference Include="..\Jellyfin.IsoMounting\IsoMounter\IsoMounter.csproj" />
+    <ProjectReference Include="..\Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj" />
     <ProjectReference Include="..\Jellyfin.Drawing.Skia\Jellyfin.Drawing.Skia.csproj" />
   </ItemGroup>
 

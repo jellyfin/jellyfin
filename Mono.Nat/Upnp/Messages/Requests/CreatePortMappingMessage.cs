@@ -29,7 +29,7 @@ using System.IO;
 using System.Globalization;
 using System.Text;
 using System.Xml;
-using MediaBrowser.Common.Net;
+using Jellyfin.Common.Net;
 
 namespace Mono.Nat.Upnp
 {

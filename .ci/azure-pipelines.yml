@@ -70,28 +70,28 @@ jobs:
       displayName: 'Publish Artifact Naming'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/Emby.Naming.dll'
+        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/Jellyfin.Naming.dll'
         artifactName: 'Jellyfin.Naming'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact Controller'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Controller.dll'
+        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/Jellyfin.Controller.dll'
         artifactName: 'Jellyfin.Controller'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact Model'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Model.dll'
+        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/Jellyfin.Model.dll'
         artifactName: 'Jellyfin.Model'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact Common'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Common.dll'
+        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/Jellyfin.Common.dll'
         artifactName: 'Jellyfin.Common'
 
   - job: dotnet_compat
@@ -104,16 +104,16 @@ jobs:
       matrix:
         Naming:
           NugetPackageName: Jellyfin.Naming
-          AssemblyFileName: Emby.Naming.dll
+          AssemblyFileName: Jellyfin.Naming.dll
         Controller:
           NugetPackageName: Jellyfin.Controller
-          AssemblyFileName: MediaBrowser.Controller.dll
+          AssemblyFileName: Jellyfin.Controller.dll
         Model:
           NugetPackageName: Jellyfin.Model
-          AssemblyFileName: MediaBrowser.Model.dll
+          AssemblyFileName: Jellyfin.Model.dll
         Common:
           NugetPackageName: Jellyfin.Common
-          AssemblyFileName: MediaBrowser.Common.dll
+          AssemblyFileName: Jellyfin.Common.dll
       maxParallel: 2
     steps:
     - checkout: none

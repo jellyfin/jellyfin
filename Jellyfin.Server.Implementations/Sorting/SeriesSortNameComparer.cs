@@ -1,0 +1,34 @@
+using System;
+using Jellyfin.Controller.Entities;
+using Jellyfin.Controller.Sorting;
+using Jellyfin.Model.Querying;
+
+namespace Jellyfin.Server.Implementations.Sorting
+{
+    public class SeriesSortNameComparer : IBaseItemComparer
+    {
+        /// <summary>
+        /// Compares the specified x.
+        /// </summary>
+        /// <param name="x">The x.</param>
+        /// <param name="y">The y.</param>
+        /// <returns>System.Int32.</returns>
+        public int Compare(BaseItem x, BaseItem y)
+        {
+            return string.Compare(GetValue(x), GetValue(y), StringComparison.CurrentCultureIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.SeriesSortName;
+
+        private static string GetValue(BaseItem item)
+        {
+            var hasSeries = item as IHasSeries;
+
+            return hasSeries?.FindSeriesSortName();
+        }
+    }
+}

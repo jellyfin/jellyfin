@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Reflection;
-using Emby.Server.Implementations;
-using Emby.Server.Implementations.HttpServer;
-using MediaBrowser.Model.IO;
+using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Implementations.HttpServer;
+using Jellyfin.Model.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -15,8 +15,8 @@ namespace Jellyfin.Server
             ILoggerFactory loggerFactory,
             StartupOptions options,
             IFileSystem fileSystem,
-            MediaBrowser.Controller.Drawing.IImageEncoder imageEncoder,
-            MediaBrowser.Common.Net.INetworkManager networkManager,
+            Jellyfin.Controller.Drawing.IImageEncoder imageEncoder,
+            Jellyfin.Common.Net.INetworkManager networkManager,
             IConfiguration configuration)
             : base(
                 applicationPaths,

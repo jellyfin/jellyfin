@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using Rssdp.Infrastructure;
-using MediaBrowser.Model.Net;
+using Jellyfin.Model.Net;
 
 namespace Rssdp
 {

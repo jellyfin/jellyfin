@@ -2,8 +2,8 @@ using System;
 using System.Net;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Model.Dlna;
+using Jellyfin.Common.Net;
+using Jellyfin.Model.Dlna;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 

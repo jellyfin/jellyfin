@@ -1,0 +1,17 @@
+using System;
+
+namespace Jellyfin.Server.Implementations.Services
+{
+    public class ServiceMethod
+    {
+        public string Id { get; set; }
+
+        public ActionInvokerFn ServiceAction { get; set; }
+        public Jellyfin.Model.Services.IHasRequestFilter[] RequestFilters { get; set; }
+
+        public static string Key(Type serviceType, string method, string requestDtoName)
+        {
+            return serviceType.FullName + " " + method.ToUpperInvariant() + " " + requestDtoName;
+        }
+    }
+}
