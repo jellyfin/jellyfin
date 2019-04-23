@@ -281,10 +281,9 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <returns>Task{System.Object}.</returns>
         private async Task<object> GetStaticRemoteStreamResult(StreamState state, Dictionary<string, string> responseHeaders, bool isHeadRequest, CancellationTokenSource cancellationTokenSource)
         {
-            string useragent = null;
-            state.RemoteHttpHeaders.TryGetValue("User-Agent", out useragent);
+            state.RemoteHttpHeaders.TryGetValue(HeaderNames.UserAgent, out var useragent);
 
-            var trySupportSeek = false;
+            const bool trySupportSeek = false;
 
             var options = new HttpRequestOptions
             {
@@ -322,7 +321,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Seeing cases of -1 here
             if (response.ContentLength.HasValue && response.ContentLength.Value >= 0)
             {
-                responseHeaders[HeaderNames.ContentLength] = response.ContentLength.Value.ToString(UsCulture);
+                responseHeaders[HeaderNames.ContentLength] = response.ContentLength.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             if (isHeadRequest)
@@ -368,7 +367,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (contentLength.HasValue)
             {
-                responseHeaders[HeaderNames.ContentLength] = contentLength.Value.ToString(UsCulture);
+                responseHeaders[HeaderNames.ContentLength] = contentLength.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             // Headers only
@@ -382,12 +381,9 @@ namespace MediaBrowser.Api.Playback.Progressive
                     {
                         hasHeaders.Headers[HeaderNames.ContentLength] = contentLength.Value.ToString(CultureInfo.InvariantCulture);
                     }
-                    else
+                    else if (hasHeaders.Headers.ContainsKey(HeaderNames.ContentLength))
                     {
-                        if (hasHeaders.Headers.ContainsKey(HeaderNames.ContentLength))
-                        {
-                            hasHeaders.Headers.Remove(HeaderNames.ContentLength);
-                        }
+                        hasHeaders.Headers.Remove(HeaderNames.ContentLength);
                     }
                 }
 
