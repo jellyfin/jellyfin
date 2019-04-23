@@ -82,32 +82,26 @@ namespace Emby.Server.Implementations.Services
                     return fileWriter.WriteToAsync(response, cancellationToken);
                 case Stream stream:
                     return CopyStream(stream, response.OutputStream);
-            }
+                case byte[] bytes:
+                    response.ContentType = "application/octet-stream";
+                    response.OriginalResponse.ContentLength = bytes.Length;
 
-            if (result is byte[] bytes)
-            {
-                response.ContentType = "application/octet-stream";
-                response.OriginalResponse.ContentLength = bytes.Length;
+                    if (bytes.Length > 0)
+                    {
+                        return response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
+                    }
 
-                if (bytes.Length > 0)
-                {
-                    return response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
-                }
+                    return Task.CompletedTask;
+                case string responseText:
+                    var responseTextAsBytes = Encoding.UTF8.GetBytes(responseText);
+                    response.OriginalResponse.ContentLength = responseTextAsBytes.Length;
 
-                return Task.CompletedTask;
-            }
+                    if (responseTextAsBytes.Length > 0)
+                    {
+                        return response.OutputStream.WriteAsync(responseTextAsBytes, 0, responseTextAsBytes.Length, cancellationToken);
+                    }
 
-            if (result is string responseText)
-            {
-                bytes = Encoding.UTF8.GetBytes(responseText);
-                response.OriginalResponse.ContentLength = bytes.Length;
-
-                if (bytes.Length > 0)
-                {
-                    return response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
-                }
-
-                return Task.CompletedTask;
+                    return Task.CompletedTask;
             }
 
             return WriteObject(request, result, response);
