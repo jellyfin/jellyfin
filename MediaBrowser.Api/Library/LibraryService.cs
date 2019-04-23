@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Api.Movies;
@@ -828,7 +830,16 @@ namespace MediaBrowser.Api.Library
             var filename = (Path.GetFileName(path) ?? string.Empty).Replace("\"", string.Empty);
             if (!string.IsNullOrWhiteSpace(filename))
             {
-                headers[HeaderNames.ContentDisposition] = "attachment; filename=\"" + filename + "\"";
+                // Kestrel doesn't support non-ASCII characters in headers
+                if (Regex.IsMatch(filename, "[^[:ascii:]]"))
+                {
+                    // Manually encoding non-ASCII characters, following https://tools.ietf.org/html/rfc5987#section-3.2.2
+                    headers[HeaderNames.ContentDisposition] = "attachment; filename*=UTF-8''" + WebUtility.UrlEncode(filename);
+                }
+                else
+                {
+                    headers[HeaderNames.ContentDisposition] = "attachment; filename=\"" + filename + "\"";
+                }
             }
 
             return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
