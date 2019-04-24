@@ -38,6 +38,8 @@ namespace Jellyfin.Server
 
         public static async Task Main(string[] args)
         {
+            Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+
             // For backwards compatibility.
             // Modify any input arguments now which start with single-hyphen to POSIX standard
             // double-hyphen to allow parsing by CommandLineParser package.
