@@ -2741,15 +2741,16 @@ namespace Emby.Server.Implementations.Data
         {
             var elapsed = (DateTime.UtcNow - startDate).TotalMilliseconds;
 
-            int slowThreshold = 100;
-
 #if DEBUG
-            slowThreshold = 10;
+            const int SlowThreshold = 100;
+#else
+            const int SlowThreshold = 10;
 #endif
 
-            if (elapsed >= slowThreshold)
+            if (elapsed >= SlowThreshold)
             {
-                Logger.LogWarning("{0} query time (slow): {1:g}. Query: {2}",
+                Logger.LogWarning(
+                    "{Method} query time (slow): {ElapsedMs}ms. Query: {Query}",
                     methodName,
                     elapsed,
                     commandText);
