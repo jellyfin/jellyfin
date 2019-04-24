@@ -40,9 +40,7 @@ namespace Jellyfin.Server
 
         public static async Task Main(string[] args)
         {
-            // for encoding issue  to register codepages by azraelrabbit
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
             Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
 
             // For backwards compatibility.
