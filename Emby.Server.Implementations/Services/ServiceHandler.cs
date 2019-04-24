@@ -26,15 +26,10 @@ namespace Emby.Server.Implementations.Services
             if (!string.IsNullOrEmpty(contentType) && httpReq.ContentLength > 0)
             {
                 var deserializer = RequestHelper.GetRequestReader(host, contentType);
-                var invokedDeserializer = deserializer?.Invoke(requestType, httpReq.InputStream);
-
-                if (invokedDeserializer == null)
+ 
+                if (deserializer != null)
                 {
-                    return Task.FromResult(host.CreateInstance(requestType));
-                }
-                else
-                {
-                    return invokedDeserializer;
+                    return deserializer.Invoke(requestType, httpReq.InputStream); 
                 }
             }
 
