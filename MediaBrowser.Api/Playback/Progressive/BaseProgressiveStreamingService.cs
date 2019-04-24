@@ -381,7 +381,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                     {
                         hasHeaders.Headers[HeaderNames.ContentLength] = contentLength.Value.ToString(CultureInfo.InvariantCulture);
                     }
-                    else if (hasHeaders.Headers.ContainsKey(HeaderNames.ContentLength))
+                    else
                     {
                         hasHeaders.Headers.Remove(HeaderNames.ContentLength);
                     }
