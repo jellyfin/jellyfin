@@ -629,7 +629,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (lastModifiedDate.HasValue)
             {
-                responseHeaders[HeaderNames.LastModified] = lastModifiedDate.ToString();
+                responseHeaders[HeaderNames.LastModified] = lastModifiedDate.Value.ToString(CultureInfo.InvariantCulture);
             }
         }
 
