@@ -1,11 +1,13 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,6 +40,11 @@ namespace Jellyfin.Server
 
         public static async Task Main(string[] args)
         {
+            // for encoding issue  to register codepages by azraelrabbit
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+
             // For backwards compatibility.
             // Modify any input arguments now which start with single-hyphen to POSIX standard
             // double-hyphen to allow parsing by CommandLineParser package.
