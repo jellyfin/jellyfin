@@ -283,8 +283,6 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             state.RemoteHttpHeaders.TryGetValue(HeaderNames.UserAgent, out var useragent);
 
-            const bool trySupportSeek = false;
-
             var options = new HttpRequestOptions
             {
                 Url = state.MediaPath,
@@ -293,30 +291,9 @@ namespace MediaBrowser.Api.Playback.Progressive
                 CancellationToken = cancellationTokenSource.Token
             };
 
-            if (trySupportSeek)
-            {
-                if (!string.IsNullOrWhiteSpace(Request.QueryString[HeaderNames.Range]))
-                {
-                    options.RequestHeaders[HeaderNames.Range] = Request.QueryString[HeaderNames.Range];
-                }
-            }
             var response = await HttpClient.GetResponse(options).ConfigureAwait(false);
 
-            if (trySupportSeek)
-            {
-                foreach (var name in new[] { HeaderNames.ContentRange, HeaderNames.AcceptRanges })
-                {
-                    var val = response.Headers[name];
-                    if (!string.IsNullOrWhiteSpace(val))
-                    {
-                        responseHeaders[name] = val;
-                    }
-                }
-            }
-            else
-            {
-                responseHeaders[HeaderNames.AcceptRanges] = "none";
-            }
+            responseHeaders[HeaderNames.AcceptRanges] = "none";
 
             // Seeing cases of -1 here
             if (response.ContentLength.HasValue && response.ContentLength.Value >= 0)
