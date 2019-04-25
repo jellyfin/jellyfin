@@ -626,6 +626,7 @@ namespace Emby.Server.Implementations.HttpServer
         private static Task Write(IResponse response, string text)
         {
             var bOutput = Encoding.UTF8.GetBytes(text);
+            response.OriginalResponse.ContentLength = bOutput.Length;
             return response.OutputStream.WriteAsync(bOutput, 0, bOutput.Length);
         }
 

@@ -96,6 +96,7 @@ namespace Emby.Server.Implementations.HttpServer
             RangeStart = requestedRange.Key;
             RangeLength = 1 + RangeEnd - RangeStart;
 
+            Headers[HeaderNames.ContentLength] = RangeLength.ToString(CultureInfo.InvariantCulture);
             Headers[HeaderNames.ContentRange] = $"bytes {RangeStart}-{RangeEnd}/{TotalContentLength}";
 
             if (RangeStart > 0 && SourceStream.CanSeek)

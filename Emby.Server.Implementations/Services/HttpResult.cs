@@ -43,6 +43,11 @@ namespace Emby.Server.Implementations.Services
             {
                 var contentLength = bytesResponse.Length;
 
+                if (response != null)
+                {
+                    response.OriginalResponse.ContentLength = contentLength;
+                }
+
                 if (contentLength > 0)
                 {
                     await responseStream.WriteAsync(bytesResponse, 0, contentLength, cancellationToken).ConfigureAwait(false);

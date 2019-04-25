@@ -1146,7 +1146,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error loading plugin {pluginName}", plugin.GetType().FullName);
+                Logger.LogError(ex, "Error loading plugin {PluginName}", plugin.GetType().FullName);
                 return null;
             }
 
@@ -1160,10 +1160,32 @@ namespace Emby.Server.Implementations
         {
             Logger.LogInformation("Loading assemblies");
 
-            AllConcreteTypes = GetComposablePartAssemblies()
-                .SelectMany(x => x.ExportedTypes)
-                .Where(type => type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsGenericType)
-                .ToArray();
+            AllConcreteTypes = GetTypes(GetComposablePartAssemblies()).ToArray();
+        }
+
+        private IEnumerable<Type> GetTypes(IEnumerable<Assembly> assemblies)
+        {
+            foreach (var ass in assemblies)
+            {
+                Type[] exportedTypes;
+                try
+                {
+                    exportedTypes = ass.GetExportedTypes();
+                }
+                catch (TypeLoadException ex)
+                {
+                    Logger.LogError(ex, "Error getting exported types from {Assembly}", ass.FullName);
+                    continue;
+                }
+
+                foreach (Type type in exportedTypes)
+                {
+                    if (type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsGenericType)
+                    {
+                        yield return type;
+                    }
+                }
+            }
         }
 
         private CertificateInfo CertificateInfo { get; set; }
@@ -1327,8 +1349,19 @@ namespace Emby.Server.Implementations
             {
                 foreach (var file in Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.AllDirectories))
                 {
-                    Logger.LogInformation("Loading assembly {Path}", file);
-                    yield return Assembly.LoadFrom(file);
+                    Assembly plugAss;
+                    try
+                    {
+                        plugAss = Assembly.LoadFrom(file);
+                    }
+                    catch (FileLoadException ex)
+                    {
+                        Logger.LogError(ex, "Failed to load assembly {Path}", file);
+                        continue;
+                    }
+
+                    Logger.LogInformation("Loaded assembly {Assembly} from {Path}", plugAss.FullName, file);
+                    yield return plugAss;
                 }
             }
 

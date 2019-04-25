@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,6 +50,13 @@ namespace Emby.Server.Implementations.HttpServer
 
             SourceStream = source;
 
+            Headers["Content-Type"] = contentType;
+
+            if (source.CanSeek)
+            {
+                Headers[HeaderNames.ContentLength] = source.Length.ToString(CultureInfo.InvariantCulture);
+            }
+
             Headers[HeaderNames.ContentType] = contentType;
         }
 
@@ -57,7 +65,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="contentType">Type of the content.</param>
-        public StreamWriter(byte[] source, string contentType)
+        public StreamWriter(byte[] source, string contentType, int contentLength)
         {
             if (string.IsNullOrEmpty(contentType))
             {
@@ -66,6 +74,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             SourceBytes = source;
 
+            Headers[HeaderNames.ContentLength] = contentLength.ToString(CultureInfo.InvariantCulture);
             Headers[HeaderNames.ContentType] = contentType;
         }
 
