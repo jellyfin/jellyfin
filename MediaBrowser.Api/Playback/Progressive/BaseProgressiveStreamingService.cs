@@ -293,6 +293,9 @@ namespace MediaBrowser.Api.Playback.Progressive
                 CancellationToken = cancellationTokenSource.Token
             };
 
+// warning CS0162: Unreachable code detected
+#pragma warning disable CS0162
+
             if (trySupportSeek)
             {
                 if (!string.IsNullOrWhiteSpace(Request.QueryString[HeaderNames.Range]))
@@ -300,6 +303,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                     options.RequestHeaders[HeaderNames.Range] = Request.QueryString[HeaderNames.Range];
                 }
             }
+
             var response = await HttpClient.GetResponse(options).ConfigureAwait(false);
 
             if (trySupportSeek)
@@ -317,6 +321,8 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 responseHeaders[HeaderNames.AcceptRanges] = "none";
             }
+
+#pragma warning restore CS0162
 
             // Seeing cases of -1 here
             if (response.ContentLength.HasValue && response.ContentLength.Value >= 0)
