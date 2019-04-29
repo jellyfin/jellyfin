@@ -5,8 +5,10 @@ version: "10.3.1"
 packages:
   - debian-package-x64
   - debian-package-armhf
+  - debian-package-arm64
   - ubuntu-package-x64
   - ubuntu-package-armhf
+  - ubuntu-package-arm64
   - fedora-package-x64
   - centos-package-x64
   - linux-x64
