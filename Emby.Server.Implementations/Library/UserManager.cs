@@ -596,7 +596,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             bool hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user).Result;
-            bool hasConfiguredEasyPassword = string.IsNullOrEmpty(GetLocalPasswordHash(user));
+            bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(GetLocalPasswordHash(user));
 
             bool hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
                 hasConfiguredEasyPassword :
