@@ -71,7 +71,7 @@ namespace Emby.Server.Implementations.Services
                 string propertyName = pair.Key;
                 string propertyTextValue = pair.Value;
 
-                if (string.IsNullOrEmpty(propertyTextValue)
+                if (propertyTextValue == null
                     || !propertySetterMap.TryGetValue(propertyName, out propertySerializerEntry)
                     || propertySerializerEntry.PropertySetFn == null)
                 {
