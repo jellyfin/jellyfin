@@ -35,7 +35,6 @@ RUN curl -L https://github.com/jellyfin/jellyfin-web/archive/v${JELLYFIN_WEB_VER
  && rm -rf /jellyfin/jellyfin-web \
  && mv jellyfin-web-${JELLYFIN_WEB_VERSION} /jellyfin/jellyfin-web
 
-EXPOSE 8096
 VOLUME /cache /config /media
 ENTRYPOINT dotnet /jellyfin/jellyfin.dll \
     --datadir /config \
