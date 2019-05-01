@@ -1481,7 +1481,10 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<bool> RefreshExtras(BaseItem item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newExtras = LoadExtras(fileSystemChildren, options.DirectoryService).Concat(LoadThemeVideos(fileSystemChildren, options.DirectoryService)).Concat(LoadThemeSongs(fileSystemChildren, options.DirectoryService));
+            var newExtras = LoadExtras(fileSystemChildren, options.DirectoryService)
+                .Concat(LoadThemeVideos(fileSystemChildren, options.DirectoryService))
+                .Concat(LoadThemeSongs(fileSystemChildren, options.DirectoryService))
+                .ToArray();
 
             var newExtraIds = newExtras.Select(i => i.Id).ToArray();
 
@@ -1493,7 +1496,17 @@ namespace MediaBrowser.Controller.Entities
 
                 var tasks = newExtras.Select(i =>
                 {
-                    return RefreshMetadataForOwnedItem(i, true, new MetadataRefreshOptions(options), cancellationToken);
+                    var subOptions = new MetadataRefreshOptions(options);
+                    if (!i.ExtraType.HasValue ||
+                        i.OwnerId != ownerId ||
+                        !i.ParentId.Equals(Guid.Empty))
+                    {
+                        i.OwnerId = ownerId;
+                        i.ParentId = Guid.Empty;
+                        subOptions.ForceSave = true;
+                    }
+
+                    return RefreshMetadataForOwnedItem(i, true, subOptions, cancellationToken);
                 });
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
