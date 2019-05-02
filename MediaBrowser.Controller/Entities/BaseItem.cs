@@ -82,6 +82,21 @@ namespace MediaBrowser.Controller.Entities
         public static string ThemeSongsFolderName = "theme-music";
         public static string ThemeSongFilename = "theme";
         public static string ThemeVideosFolderName = "backdrops";
+        public static string ExtrasFolderName = "extras";
+        public static string BehindTheScenesFolderName = "behind the scenes";
+        public static string DeletedScenesFolderName = "deleted scenes";
+        public static string InterviewFolderName = "interviews";
+        public static string SceneFolderName = "scenes";
+        public static string SampleFolderName = "samples";
+
+        public static string[] AllExtrasTypesFolderNames = {
+            ExtrasFolderName,
+            BehindTheScenesFolderName,
+            DeletedScenesFolderName,
+            InterviewFolderName,
+            SceneFolderName,
+            SampleFolderName
+        };
 
         [IgnoreDataMember]
         public Guid[] ThemeSongIds { get; set; }
@@ -1276,16 +1291,15 @@ namespace MediaBrowser.Controller.Entities
                 .Select(item =>
                 {
                     // Try to retrieve it from the db. If we don't find it, use the resolved version
-                    var dbItem = LibraryManager.GetItemById(item.Id) as Video;
 
-                    if (dbItem != null)
+                    if (LibraryManager.GetItemById(item.Id) is Video dbItem)
                     {
                         item = dbItem;
                     }
                     else
                     {
                         // item is new
-                        item.ExtraType = MediaBrowser.Model.Entities.ExtraType.ThemeVideo;
+                        item.ExtraType = Model.Entities.ExtraType.ThemeVideo;
                     }
 
                     return item;
@@ -1296,32 +1310,36 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual BaseItem[] LoadExtras(List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
-            var files = fileSystemChildren.Where(i => i.IsDirectory)
-                .SelectMany(i => FileSystem.GetFiles(i.FullName));
+            var extras = new List<Video>();
 
-            return LibraryManager.ResolvePaths(files, directoryService, null, new LibraryOptions())
-                .OfType<Video>()
-                .Select(item =>
-                {
-                    // Try to retrieve it from the db. If we don't find it, use the resolved version
-                    var dbItem = LibraryManager.GetItemById(item.Id) as Video;
+            foreach (var extraFolderName in AllExtrasTypesFolderNames)
+            {
+                var files = fileSystemChildren.Where(i => i.IsDirectory)
+                    .Where(i => string.Equals(i.Name, extraFolderName, StringComparison.OrdinalIgnoreCase))
+                    .SelectMany(i => FileSystem.GetFiles(i.FullName));
 
-                    if (dbItem != null)
+                extras.AddRange(LibraryManager.ResolvePaths(files, directoryService, null, new LibraryOptions())
+                    .OfType<Video>()
+                    .Select(item =>
                     {
-                        item = dbItem;
-                    }
-                    else
-                    {
-                        // item is new
-                        item.ExtraType = MediaBrowser.Model.Entities.ExtraType.Clip;
-                    }
+                        // Try to retrieve it from the db. If we don't find it, use the resolved version
+                        if (LibraryManager.GetItemById(item.Id) is Video dbItem)
+                        {
+                            item = dbItem;
+                        }
 
-                    return item;
+                        // Use some hackery to get the extra type based on foldername
+                        Enum.TryParse(extraFolderName.Replace(" ", ""), true, out ExtraType extraType);
+                        item.ExtraType = extraType;
 
-                    // Sort them so that the list can be easily compared for changes
-                }).OrderBy(i => i.Path).ToArray();
+                        return item;
+
+                        // Sort them so that the list can be easily compared for changes
+                    }).OrderBy(i => i.Path));
+            }
+
+            return extras.ToArray();
         }
-
 
         public Task RefreshMetadata(CancellationToken cancellationToken)
         {
@@ -1497,8 +1515,7 @@ namespace MediaBrowser.Controller.Entities
                 var tasks = newExtras.Select(i =>
                 {
                     var subOptions = new MetadataRefreshOptions(options);
-                    if (!i.ExtraType.HasValue ||
-                        i.OwnerId != ownerId ||
+                    if (i.OwnerId != ownerId ||
                         !i.ParentId.Equals(Guid.Empty))
                     {
                         i.OwnerId = ownerId;
