@@ -12,7 +12,7 @@ FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}
 # libfontconfig1 is required for Skia
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y \
-   libfontconfig1 \
+   libfontconfig1 acl \
  && apt-get clean autoclean \
  && apt-get autoremove \
  && rm -rf /var/lib/apt/lists/* \
@@ -28,7 +28,5 @@ RUN curl -L https://github.com/jellyfin/jellyfin-web/archive/v${JELLYFIN_WEB_VER
 
 EXPOSE 8096
 VOLUME /cache /config /media
-ENTRYPOINT dotnet /jellyfin/jellyfin.dll \
-    --datadir /config \
-    --cachedir /cache \
-    --ffmpeg /usr/local/bin/ffmpeg
+COPY deployment/docker/entrypoint.sh /entrypoint.sh
+ENTRYPOINT /entrypoint.sh

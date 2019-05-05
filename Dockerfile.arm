@@ -24,7 +24,7 @@ RUN bash -c "source deployment/common.build.sh && \
 FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}-stretch-slim-arm32v7
 COPY --from=qemu_extract qemu-arm-static /usr/bin
 RUN apt-get update \
- && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg \
+ && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg acl \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media
@@ -37,7 +37,5 @@ RUN curl -L https://github.com/jellyfin/jellyfin-web/archive/v${JELLYFIN_WEB_VER
 
 EXPOSE 8096
 VOLUME /cache /config /media
-ENTRYPOINT dotnet /jellyfin/jellyfin.dll \
-    --datadir /config \
-    --cachedir /cache \
-    --ffmpeg /usr/bin/ffmpeg
+COPY deployment/docker/entrypoint.sh /entrypoint.sh
+ENTRYPOINT /entrypoint.sh
