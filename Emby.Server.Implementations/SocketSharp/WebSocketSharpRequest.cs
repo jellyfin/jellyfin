@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -38,16 +39,9 @@ namespace Emby.Server.Implementations.SocketSharp
         public string RawUrl => request.GetEncodedPathAndQuery();
 
         public string AbsoluteUri => request.GetDisplayUrl().TrimEnd('/');
+        // Header[name] returns "" when undefined
 
-        public string XForwardedFor
-            => StringValues.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"].ToString();
-
-        public int? XForwardedPort
-            => StringValues.IsNullOrEmpty(request.Headers["X-Forwarded-Port"]) ? (int?)null : int.Parse(request.Headers["X-Forwarded-Port"], CultureInfo.InvariantCulture);
-
-        public string XForwardedProtocol => StringValues.IsNullOrEmpty(request.Headers["X-Forwarded-Proto"]) ? null : request.Headers["X-Forwarded-Proto"].ToString();
-
-        public string XRealIp => StringValues.IsNullOrEmpty(request.Headers["X-Real-IP"]) ? null : request.Headers["X-Real-IP"].ToString();
+        private string GetHeader(string name) => request.Headers[name].ToString();
 
         private string remoteIp;
         public string RemoteIp
@@ -59,101 +53,27 @@ namespace Emby.Server.Implementations.SocketSharp
                     return remoteIp;
                 }
 
-                var temp = CheckBadChars(XForwardedFor.AsSpan());
-                if (temp.Length != 0)
+                IPAddress ip;
+
+                // "Real" remote ip might be in X-Forwarded-For of X-Real-Ip
+                // (if the server is behind a reverse proxy for example)
+                if (!IPAddress.TryParse(GetHeader(CustomHeaderNames.XForwardedFor), out ip))
                 {
-                    return remoteIp = temp.ToString();
+                    if (!IPAddress.TryParse(GetHeader(CustomHeaderNames.XRealIP), out ip))
+                    {
+                        ip = request.HttpContext.Connection.RemoteIpAddress;
+                    }
                 }
 
-                temp = CheckBadChars(XRealIp.AsSpan());
-                if (temp.Length != 0)
-                {
-                    return remoteIp = NormalizeIp(temp).ToString();
-                }
-
-                return remoteIp = NormalizeIp(request.HttpContext.Connection.RemoteIpAddress.ToString().AsSpan()).ToString();
+                return remoteIp = NormalizeIp(ip).ToString();
             }
         }
 
-        private static readonly char[] HttpTrimCharacters = new char[] { (char)0x09, (char)0xA, (char)0xB, (char)0xC, (char)0xD, (char)0x20 };
-
-        // CheckBadChars - throws on invalid chars to be not found in header name/value
-        internal static ReadOnlySpan<char> CheckBadChars(ReadOnlySpan<char> name)
+        private static IPAddress NormalizeIp(IPAddress ip)
         {
-            if (name.Length == 0)
+            if (ip.IsIPv4MappedToIPv6)
             {
-                return name;
-            }
-
-            // VALUE check
-            // Trim spaces from both ends
-            name = name.Trim(HttpTrimCharacters);
-
-            // First, check for correctly formed multi-line value
-            // Second, check for absence of CTL characters
-            int crlf = 0;
-            for (int i = 0; i < name.Length; ++i)
-            {
-                char c = (char)(0x000000ff & (uint)name[i]);
-                switch (crlf)
-                {
-                    case 0:
-                        if (c == '\r')
-                        {
-                            crlf = 1;
-                        }
-                        else if (c == '\n')
-                        {
-                            // Technically this is bad HTTP.  But it would be a breaking change to throw here.
-                            // Is there an exploit?
-                            crlf = 2;
-                        }
-                        else if (c == 127 || (c < ' ' && c != '\t'))
-                        {
-                            throw new ArgumentException("net_WebHeaderInvalidControlChars", nameof(name));
-                        }
-
-                        break;
-
-                    case 1:
-                        if (c == '\n')
-                        {
-                            crlf = 2;
-                            break;
-                        }
-
-                        throw new ArgumentException("net_WebHeaderInvalidCRLFChars", nameof(name));
-
-                    case 2:
-                        if (c == ' ' || c == '\t')
-                        {
-                            crlf = 0;
-                            break;
-                        }
-
-                        throw new ArgumentException("net_WebHeaderInvalidCRLFChars", nameof(name));
-                }
-            }
-
-            if (crlf != 0)
-            {
-                throw new ArgumentException("net_WebHeaderInvalidCRLFChars", nameof(name));
-            }
-
-            return name;
-        }
-
-        private ReadOnlySpan<char> NormalizeIp(ReadOnlySpan<char> ip)
-        {
-            if (ip.Length != 0 && !ip.IsWhiteSpace())
-            {
-                // Handle ipv4 mapped to ipv6
-                const string srch = "::ffff:";
-                var index = ip.IndexOf(srch.AsSpan(), StringComparison.OrdinalIgnoreCase);
-                if (index == 0)
-                {
-                    ip = ip.Slice(srch.Length);
-                }
+                return ip.MapToIPv4();
             }
 
             return ip;
