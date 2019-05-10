@@ -12,7 +12,7 @@
     <!-- We need C# 7.1 for async main-->
     <LangVersion>latest</LangVersion>
     <!-- Disable documentation warnings (for now) -->
-    <NoWarn>SA1600;SA1601;CS1591</NoWarn>
+    <NoWarn>SA1600;SA1601;SA1629;CS1591</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -26,8 +26,8 @@
 
   <!-- Code analysers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.3" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.2" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
     <PackageReference Include="SerilogAnalyzer" Version="0.15.0" />
   </ItemGroup>
 

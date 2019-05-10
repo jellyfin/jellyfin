@@ -122,8 +122,12 @@ namespace Jellyfin.Server
             // The default connection limit is 10 for ASP.NET hosted applications and 2 for all others.
             ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
 
+// CA5359: Do Not Disable Certificate Validation
+#pragma warning disable CA5359
+
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
+#pragma warning restore CA5359
 
             var fileSystem = new ManagedFileSystem(_loggerFactory, appPaths);
 
@@ -368,7 +372,7 @@ namespace Jellyfin.Server
             }
             catch (Exception ex)
             {
-                _logger.LogInformation(ex, "Skia not available. Will fallback to NullIMageEncoder. {0}");
+                _logger.LogInformation(ex, "Skia not available. Will fallback to NullIMageEncoder.");
             }
 
             return new NullImageEncoder();

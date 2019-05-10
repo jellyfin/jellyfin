@@ -9,24 +9,32 @@ namespace Emby.Naming.Video
     {
         public static StubResult ResolveFile(string path, NamingOptions options)
         {
-            var result = new StubResult();
-            var extension = Path.GetExtension(path) ?? string.Empty;
-
-            if (options.StubFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+            if (path == null)
             {
-                result.IsStub = true;
+                return default(StubResult);
+            }
 
-                path = Path.GetFileNameWithoutExtension(path);
+            var extension = Path.GetExtension(path);
 
-                var token = (Path.GetExtension(path) ?? string.Empty).TrimStart('.');
+            if (!options.StubFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+            {
+                return default(StubResult);
+            }
 
-                foreach (var rule in options.StubTypes)
+            var result = new StubResult()
+            {
+                IsStub = true
+            };
+
+            path = Path.GetFileNameWithoutExtension(path);
+            var token = Path.GetExtension(path).TrimStart('.');
+
+            foreach (var rule in options.StubTypes)
+            {
+                if (string.Equals(rule.Token, token, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(rule.Token, token, StringComparison.OrdinalIgnoreCase))
-                    {
-                        result.StubType = rule.StubType;
-                        break;
-                    }
+                    result.StubType = rule.StubType;
+                    break;
                 }
             }
 

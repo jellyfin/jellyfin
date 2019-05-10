@@ -15,12 +15,12 @@ namespace Emby.Naming.TV
             _options = options;
         }
 
-        public EpisodePathParserResult Parse(string path, bool IsDirectory, bool? isNamed = null, bool? isOptimistic = null, bool? supportsAbsoluteNumbers = null, bool fillExtendedInfo = true)
+        public EpisodePathParserResult Parse(string path, bool isDirectory, bool? isNamed = null, bool? isOptimistic = null, bool? supportsAbsoluteNumbers = null, bool fillExtendedInfo = true)
         {
             // Added to be able to use regex patterns which require a file extension.
             // There were no failed tests without this block, but to be safe, we can keep it until
             // the regex which require file extensions are modified so that they don't need them.
-            if (IsDirectory)
+            if (isDirectory)
             {
                 path += ".mp4";
             }
@@ -29,28 +29,20 @@ namespace Emby.Naming.TV
 
             foreach (var expression in _options.EpisodeExpressions)
             {
-                if (supportsAbsoluteNumbers.HasValue)
+                if (supportsAbsoluteNumbers.HasValue
+                    && expression.SupportsAbsoluteEpisodeNumbers != supportsAbsoluteNumbers.Value)
                 {
-                    if (expression.SupportsAbsoluteEpisodeNumbers != supportsAbsoluteNumbers.Value)
-                    {
-                        continue;
-                    }
+                    continue;
                 }
 
-                if (isNamed.HasValue)
+                if (isNamed.HasValue && expression.IsNamed != isNamed.Value)
                 {
-                    if (expression.IsNamed != isNamed.Value)
-                    {
-                        continue;
-                    }
+                    continue;
                 }
 
-                if (isOptimistic.HasValue)
+                if (isOptimistic.HasValue && expression.IsOptimistic != isOptimistic.Value)
                 {
-                    if (expression.IsOptimistic != isOptimistic.Value)
-                    {
-                        continue;
-                    }
+                    continue;
                 }
 
                 var currentResult = Parse(path, expression);
@@ -97,7 +89,8 @@ namespace Emby.Naming.TV
                     DateTime date;
                     if (expression.DateTimeFormats.Length > 0)
                     {
-                        if (DateTime.TryParseExact(match.Groups[0].Value,
+                        if (DateTime.TryParseExact(
+                            match.Groups[0].Value,
                             expression.DateTimeFormats,
                             CultureInfo.InvariantCulture,
                             DateTimeStyles.None,
@@ -109,16 +102,14 @@ namespace Emby.Naming.TV
                             result.Success = true;
                         }
                     }
-                    else
+                    else if (DateTime.TryParse(match.Groups[0].Value, out date))
                     {
-                        if (DateTime.TryParse(match.Groups[0].Value, out date))
-                        {
-                            result.Year = date.Year;
-                            result.Month = date.Month;
-                            result.Day = date.Day;
-                            result.Success = true;
-                        }
+                        result.Year = date.Year;
+                        result.Month = date.Month;
+                        result.Day = date.Day;
+                        result.Success = true;
                     }
+
 
                     // TODO: Only consider success if date successfully parsed?
                     result.Success = true;
@@ -142,7 +133,8 @@ namespace Emby.Naming.TV
                         // or a 'p' or 'i' as what you would get with a pixel resolution specification.
                         // It avoids erroneous parsing of something like "series-s09e14-1080p.mkv" as a multi-episode from E14 to E108
                         int nextIndex = endingNumberGroup.Index + endingNumberGroup.Length;
-                        if (nextIndex >= name.Length || "0123456789iIpP".IndexOf(name[nextIndex]) == -1)
+                        if (nextIndex >= name.Length
+                            || "0123456789iIpP".IndexOf(name[nextIndex]) == -1)
                         {
                             if (int.TryParse(endingNumberGroup.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out num))
                             {
@@ -160,6 +152,7 @@ namespace Emby.Naming.TV
                     {
                         result.SeasonNumber = num;
                     }
+
                     if (int.TryParse(match.Groups[2].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out num))
                     {
                         result.EpisodeNumber = num;
@@ -171,8 +164,11 @@ namespace Emby.Naming.TV
                 // Invalidate match when the season is 200 through 1927 or above 2500
                 // because it is an error unless the TV show is intentionally using false season numbers.
                 // It avoids erroneous parsing of something like "Series Special (1920x1080).mkv" as being season 1920 episode 1080.
-                if (result.SeasonNumber >= 200 && result.SeasonNumber < 1928 || result.SeasonNumber > 2500)
+                if ((result.SeasonNumber >= 200 && result.SeasonNumber < 1928)
+                    || result.SeasonNumber > 2500)
+                {
                     result.Success = false;
+                }
 
                 result.IsByDate = expression.IsByDate;
             }

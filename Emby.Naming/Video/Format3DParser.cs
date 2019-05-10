@@ -15,10 +15,12 @@ namespace Emby.Naming.Video
 
         public Format3DResult Parse(string path)
         {
-            var delimeters = _options.VideoFlagDelimiters.ToList();
-            delimeters.Add(' ');
+            int oldLen = _options.VideoFlagDelimiters.Length;
+            var delimeters = new char[oldLen + 1];
+            _options.VideoFlagDelimiters.CopyTo(delimeters, 0);
+            delimeters[oldLen] = ' ';
 
-            return Parse(new FlagParser(_options).GetFlags(path, delimeters.ToArray()));
+            return Parse(new FlagParser(_options).GetFlags(path, delimeters));
         }
 
         internal Format3DResult Parse(string[] videoFlags)
@@ -66,8 +68,10 @@ namespace Emby.Naming.Video
                             format = flag;
                             result.Tokens.Add(rule.Token);
                         }
+
                         break;
                     }
+
                     foundPrefix = string.Equals(flag, rule.PreceedingToken, StringComparison.OrdinalIgnoreCase);
                 }
 

@@ -6,10 +6,12 @@ namespace Emby.Naming.Common
         /// The audio
         /// </summary>
         Audio = 0,
+
         /// <summary>
         /// The photo
         /// </summary>
         Photo = 1,
+
         /// <summary>
         /// The video
         /// </summary>

@@ -56,7 +56,6 @@ namespace Emby.Naming.Video
                     result.Rule = rule;
                 }
             }
-
             else if (rule.RuleType == ExtraRuleType.Suffix)
             {
                 var filename = Path.GetFileNameWithoutExtension(path);
@@ -67,7 +66,6 @@ namespace Emby.Naming.Video
                     result.Rule = rule;
                 }
             }
-
             else if (rule.RuleType == ExtraRuleType.Regex)
             {
                 var filename = Path.GetFileName(path);
