@@ -207,6 +207,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "hevc_omx",
                 "h264_vaapi",
                 "hevc_vaapi",
+                "h264_v4l2m2m",
                 "ac3"
             };
 
