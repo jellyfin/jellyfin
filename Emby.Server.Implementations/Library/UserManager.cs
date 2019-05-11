@@ -550,7 +550,7 @@ namespace Emby.Server.Implementations.Library
         {
             return string.IsNullOrEmpty(user.EasyPassword)
                 ? null
-                : user.EasyPassword;
+                : (new PasswordHash(user.EasyPassword)).Hash;
         }
 
         /// <summary>
