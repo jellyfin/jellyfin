@@ -78,18 +78,18 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The trailer folder name
         /// </summary>
-        public static string TrailerFolderName = "trailers";
-        public static string ThemeSongsFolderName = "theme-music";
-        public static string ThemeSongFilename = "theme";
-        public static string ThemeVideosFolderName = "backdrops";
-        public static string ExtrasFolderName = "extras";
-        public static string BehindTheScenesFolderName = "behind the scenes";
-        public static string DeletedScenesFolderName = "deleted scenes";
-        public static string InterviewFolderName = "interviews";
-        public static string SceneFolderName = "scenes";
-        public static string SampleFolderName = "samples";
+        public const string TrailerFolderName = "trailers";
+        public const string ThemeSongsFolderName = "theme-music";
+        public const string ThemeSongFilename = "theme";
+        public const string ThemeVideosFolderName = "backdrops";
+        public const string ExtrasFolderName = "extras";
+        public const string BehindTheScenesFolderName = "behind the scenes";
+        public const string DeletedScenesFolderName = "deleted scenes";
+        public const string InterviewFolderName = "interviews";
+        public const string SceneFolderName = "scenes";
+        public const string SampleFolderName = "samples";
 
-        public static string[] AllExtrasTypesFolderNames = {
+        public static readonly string[] AllExtrasTypesFolderNames = {
             ExtrasFolderName,
             BehindTheScenesFolderName,
             DeletedScenesFolderName,
@@ -1312,9 +1312,10 @@ namespace MediaBrowser.Controller.Entities
         {
             var extras = new List<Video>();
 
+            var folders = fileSystemChildren.Where(i => i.IsDirectory).ToArray();
             foreach (var extraFolderName in AllExtrasTypesFolderNames)
             {
-                var files = fileSystemChildren.Where(i => i.IsDirectory)
+                var files = folders
                     .Where(i => string.Equals(i.Name, extraFolderName, StringComparison.OrdinalIgnoreCase))
                     .SelectMany(i => FileSystem.GetFiles(i.FullName));
 
@@ -1499,10 +1500,13 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<bool> RefreshExtras(BaseItem item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newExtras = LoadExtras(fileSystemChildren, options.DirectoryService)
-                .Concat(LoadThemeVideos(fileSystemChildren, options.DirectoryService))
-                .Concat(LoadThemeSongs(fileSystemChildren, options.DirectoryService))
-                .ToArray();
+            var extras = LoadExtras(fileSystemChildren, options.DirectoryService);
+            var themeVideos = LoadThemeVideos(fileSystemChildren, options.DirectoryService);
+            var themeSongs = LoadThemeSongs(fileSystemChildren, options.DirectoryService);
+            var newExtras = new BaseItem[extras.Length + themeVideos.Length + themeSongs.Length];
+            extras.CopyTo(newExtras, 0);
+            themeVideos.CopyTo(newExtras, extras.Length);
+            themeSongs.CopyTo(newExtras, extras.Length + themeVideos.Length);
 
             var newExtraIds = newExtras.Select(i => i.Id).ToArray();
 
@@ -1515,8 +1519,7 @@ namespace MediaBrowser.Controller.Entities
                 var tasks = newExtras.Select(i =>
                 {
                     var subOptions = new MetadataRefreshOptions(options);
-                    if (i.OwnerId != ownerId ||
-                        !i.ParentId.Equals(Guid.Empty))
+                    if (i.OwnerId != ownerId || i.ParentId != Guid.Empty)
                     {
                         i.OwnerId = ownerId;
                         i.ParentId = Guid.Empty;
