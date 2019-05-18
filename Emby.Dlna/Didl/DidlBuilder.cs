@@ -920,8 +920,6 @@ namespace Emby.Dlna.Didl
                 }
             }
 
-            AddImageResElement(item, writer, 160, 160, "jpg", "JPEG_TN");
-
             if (!_profile.EnableSingleAlbumArtLimit || string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase))
             {
                 AddImageResElement(item, writer, 4096, 4096, "jpg", "JPEG_LRG");
@@ -930,6 +928,9 @@ namespace Emby.Dlna.Didl
                 AddImageResElement(item, writer, 4096, 4096, "png", "PNG_LRG");
                 AddImageResElement(item, writer, 160, 160, "png", "PNG_TN");
             }
+
+            AddImageResElement(item, writer, 160, 160, "jpg", "JPEG_TN");
+
         }
 
         private void AddEmbeddedImageAsCover(string name, XmlWriter writer)
