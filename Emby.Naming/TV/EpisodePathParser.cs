@@ -110,7 +110,6 @@ namespace Emby.Naming.TV
                         result.Success = true;
                     }
 
-
                     // TODO: Only consider success if date successfully parsed?
                     result.Success = true;
                 }
