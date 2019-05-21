@@ -266,6 +266,7 @@ namespace Emby.Server.Implementations.Library
                     builder.Append(c);
                 }
             }
+
             return builder.ToString();
         }
 
@@ -286,17 +287,17 @@ namespace Emby.Server.Implementations.Library
             if (user != null)
             {
                 var authResult = await AuthenticateLocalUser(username, password, hashedPassword, user, remoteEndPoint).ConfigureAwait(false);
-                authenticationProvider = authResult.Item1;
-                updatedUsername = authResult.Item2;
-                success = authResult.Item3;
+                authenticationProvider = authResult.authenticationProvider;
+                updatedUsername = authResult.username;
+                success = authResult.success;
             }
             else
             {
                 // user is null
                 var authResult = await AuthenticateLocalUser(username, password, hashedPassword, null, remoteEndPoint).ConfigureAwait(false);
-                authenticationProvider = authResult.Item1;
-                updatedUsername = authResult.Item2;
-                success = authResult.Item3;
+                authenticationProvider = authResult.authenticationProvider;
+                updatedUsername = authResult.username;
+                success = authResult.success;
 
                 if (success && authenticationProvider != null && !(authenticationProvider is DefaultAuthenticationProvider))
                 {
@@ -331,22 +332,25 @@ namespace Emby.Server.Implementations.Library
 
             if (user == null)
             {
-                throw new SecurityException("Invalid username or password entered.");
+                throw new AuthenticationException("Invalid username or password entered.");
             }
 
             if (user.Policy.IsDisabled)
             {
-                throw new SecurityException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
+                throw new AuthenticationException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "The {0} account is currently disabled. Please consult with your administrator.",
+                    user.Name));
             }
 
             if (!user.Policy.EnableRemoteAccess && !_networkManager.IsInLocalNetwork(remoteEndPoint))
             {
-                throw new SecurityException("Forbidden.");
+                throw new AuthenticationException("Forbidden.");
             }
 
             if (!user.IsParentalScheduleAllowed())
             {
-                throw new SecurityException("User is not allowed access at this time.");
+                throw new AuthenticationException("User is not allowed access at this time.");
             }
 
             // Update LastActivityDate and LastLoginDate, then save
@@ -357,6 +361,7 @@ namespace Emby.Server.Implementations.Library
                     user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
                     UpdateUser(user);
                 }
+
                 UpdateInvalidLoginAttemptCount(user, 0);
             }
             else
@@ -429,7 +434,7 @@ namespace Emby.Server.Implementations.Library
             return providers;
         }
 
-        private async Task<Tuple<string, bool>> AuthenticateWithProvider(IAuthenticationProvider provider, string username, string password, User resolvedUser)
+        private async Task<(string username, bool success)> AuthenticateWithProvider(IAuthenticationProvider provider, string username, string password, User resolvedUser)
         {
             try
             {
@@ -444,23 +449,23 @@ namespace Emby.Server.Implementations.Library
                     authenticationResult = await provider.Authenticate(username, password).ConfigureAwait(false);
                 }
 
-                if(authenticationResult.Username != username)
+                if (authenticationResult.Username != username)
                 {
                     _logger.LogDebug("Authentication provider provided updated username {1}", authenticationResult.Username);
                     username = authenticationResult.Username;
                 }
 
-                return new Tuple<string, bool>(username, true);
+                return (username, true);
             }
-            catch (Exception ex)
+            catch (AuthenticationException ex)
             {
-                _logger.LogError(ex, "Error authenticating with provider {provider}", provider.Name);
+                _logger.LogError(ex, "Error authenticating with provider {Provider}", provider.Name);
 
-                return new Tuple<string, bool>(username, false);
+                return (username, false);
             }
         }
 
-        private async Task<Tuple<IAuthenticationProvider, string, bool>> AuthenticateLocalUser(string username, string password, string hashedPassword, User user, string remoteEndPoint)
+        private async Task<(IAuthenticationProvider authenticationProvider, string username, bool success)> AuthenticateLocalUser(string username, string password, string hashedPassword, User user, string remoteEndPoint)
         {
             string updatedUsername = null;
             bool success = false;
@@ -475,15 +480,15 @@ namespace Emby.Server.Implementations.Library
             if (password == null)
             {
                 // legacy
-                success = string.Equals(GetAuthenticationProvider(user).GetPasswordHash(user), hashedPassword.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+                success = string.Equals(user.Password, hashedPassword.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
             }
             else
             {
                 foreach (var provider in GetAuthenticationProviders(user))
                 {
                     var providerAuthResult = await AuthenticateWithProvider(provider, username, password, user).ConfigureAwait(false);
-                    updatedUsername = providerAuthResult.Item1;
-                    success = providerAuthResult.Item2;
+                    updatedUsername = providerAuthResult.username;
+                    success = providerAuthResult.success;
 
                     if (success)
                     {
@@ -510,7 +515,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            return new Tuple<IAuthenticationProvider, string, bool>(authenticationProvider, username, success);
+            return (authenticationProvider, username, success);
         }
 
         private void UpdateInvalidLoginAttemptCount(User user, int newValue)
@@ -593,7 +598,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(user));
             }
 
-            bool hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user).Result;
+            bool hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user);
             bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(GetAuthenticationProvider(user).GetEasyPasswordHash(user));
 
             bool hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?

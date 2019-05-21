@@ -8,7 +8,7 @@ using MediaBrowser.Model.Cryptography;
 
 namespace Emby.Server.Implementations.Cryptography
 {
-    public class CryptographyProvider : ICryptoProvider
+    public class CryptographyProvider : ICryptoProvider, IDisposable
     {
         private static readonly HashSet<string> _supportedHashMethods = new HashSet<string>()
             {
@@ -28,26 +28,28 @@ namespace Emby.Server.Implementations.Cryptography
                 "System.Security.Cryptography.SHA512"
             };
 
-        public string DefaultHashMethod => "PBKDF2";
-
         private RandomNumberGenerator _randomNumberGenerator;
 
         private const int _defaultIterations = 1000;
 
+        private bool _disposed = false;
+
         public CryptographyProvider()
         {
-            //FIXME: When we get DotNet Standard 2.1 we need to revisit how we do the crypto
-            //Currently supported hash methods from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptoconfig?view=netcore-2.1
-            //there might be a better way to autogenerate this list as dotnet updates, but I couldn't find one
-            //Please note the default method of PBKDF2 is not included, it cannot be used to generate hashes cleanly as it is actually a pbkdf with sha1
+            // FIXME: When we get DotNet Standard 2.1 we need to revisit how we do the crypto
+            // Currently supported hash methods from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptoconfig?view=netcore-2.1
+            // there might be a better way to autogenerate this list as dotnet updates, but I couldn't find one
+            // Please note the default method of PBKDF2 is not included, it cannot be used to generate hashes cleanly as it is actually a pbkdf with sha1
             _randomNumberGenerator = RandomNumberGenerator.Create();
         }
 
-        public Guid GetMD5(string str)
-        {
-            return new Guid(ComputeMD5(Encoding.Unicode.GetBytes(str)));
-        }
+        public string DefaultHashMethod => "PBKDF2";
 
+        [Obsolete("Use System.Security.Cryptography.MD5 directly")]
+        public Guid GetMD5(string str)
+            => new Guid(ComputeMD5(Encoding.Unicode.GetBytes(str)));
+
+        [Obsolete("Use System.Security.Cryptography.SHA1 directly")]
         public byte[] ComputeSHA1(byte[] bytes)
         {
             using (var provider = SHA1.Create())
@@ -56,6 +58,7 @@ namespace Emby.Server.Implementations.Cryptography
             }
         }
 
+        [Obsolete("Use System.Security.Cryptography.MD5 directly")]
         public byte[] ComputeMD5(Stream str)
         {
             using (var provider = MD5.Create())
@@ -64,6 +67,7 @@ namespace Emby.Server.Implementations.Cryptography
             }
         }
 
+        [Obsolete("Use System.Security.Cryptography.MD5 directly")]
         public byte[] ComputeMD5(byte[] bytes)
         {
             using (var provider = MD5.Create())
@@ -73,9 +77,7 @@ namespace Emby.Server.Implementations.Cryptography
         }
 
         public IEnumerable<string> GetSupportedHashMethods()
-        {
-            return _supportedHashMethods;
-        }
+            => _supportedHashMethods;
 
         private byte[] PBKDF2(string method, byte[] bytes, byte[] salt, int iterations)
         {
@@ -93,14 +95,10 @@ namespace Emby.Server.Implementations.Cryptography
         }
 
         public byte[] ComputeHash(string hashMethod, byte[] bytes)
-        {
-            return ComputeHash(hashMethod, bytes, Array.Empty<byte>());
-        }
+            => ComputeHash(hashMethod, bytes, Array.Empty<byte>());
 
         public byte[] ComputeHashWithDefaultMethod(byte[] bytes)
-        {
-            return ComputeHash(DefaultHashMethod, bytes);
-        }
+            => ComputeHash(DefaultHashMethod, bytes);
 
         public byte[] ComputeHash(string hashMethod, byte[] bytes, byte[] salt)
         {
@@ -125,37 +123,27 @@ namespace Emby.Server.Implementations.Cryptography
                     }
                 }
             }
-            else
-            {
-                throw new CryptographicException($"Requested hash method is not supported: {hashMethod}");
-            }
+
+            throw new CryptographicException($"Requested hash method is not supported: {hashMethod}");
+
         }
 
         public byte[] ComputeHashWithDefaultMethod(byte[] bytes, byte[] salt)
-        {
-            return PBKDF2(DefaultHashMethod, bytes, salt, _defaultIterations);
-        }
+            => PBKDF2(DefaultHashMethod, bytes, salt, _defaultIterations);
 
         public byte[] ComputeHash(PasswordHash hash)
         {
             int iterations = _defaultIterations;
             if (!hash.Parameters.ContainsKey("iterations"))
             {
-                hash.Parameters.Add("iterations", _defaultIterations.ToString(CultureInfo.InvariantCulture));
+                hash.Parameters.Add("iterations", iterations.ToString(CultureInfo.InvariantCulture));
             }
-            else
+            else if (!int.TryParse(hash.Parameters["iterations"], out iterations))
             {
-                try
-                {
-                    iterations = int.Parse(hash.Parameters["iterations"]);
-                }
-                catch (Exception e)
-                {
-                    throw new InvalidDataException($"Couldn't successfully parse iterations value from string: {hash.Parameters["iterations"]}", e);
-                }
+                throw new InvalidDataException($"Couldn't successfully parse iterations value from string: {hash.Parameters["iterations"]}");
             }
 
-            return PBKDF2(hash.Id, hash.HashBytes, hash.SaltBytes, iterations);
+            return PBKDF2(hash.Id, hash.Hash, hash.Salt, iterations);
         }
 
         public byte[] GenerateSalt()
@@ -163,6 +151,30 @@ namespace Emby.Server.Implementations.Cryptography
             byte[] salt = new byte[64];
             _randomNumberGenerator.GetBytes(salt);
             return salt;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _randomNumberGenerator.Dispose();
+            }
+
+            _randomNumberGenerator = null;
+
+            _disposed = true;
         }
     }
 }

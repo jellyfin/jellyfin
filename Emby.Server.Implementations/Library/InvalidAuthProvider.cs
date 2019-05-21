@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Entities;
@@ -16,12 +13,12 @@ namespace Emby.Server.Implementations.Library
 
         public Task<ProviderAuthenticationResult> Authenticate(string username, string password)
         {
-            throw new SecurityException("User Account cannot login with this provider. The Normal provider for this user cannot be found");
+            throw new AuthenticationException("User Account cannot login with this provider. The Normal provider for this user cannot be found");
         }
 
-        public Task<bool> HasPassword(User user)
+        public bool HasPassword(User user)
         {
-            return Task.FromResult(true);
+            return true;
         }
 
         public Task ChangePassword(User user, string newPassword)
@@ -31,7 +28,7 @@ namespace Emby.Server.Implementations.Library
 
         public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
         {
-            // Nothing here   
+            // Nothing here
         }
 
         public string GetPasswordHash(User user)

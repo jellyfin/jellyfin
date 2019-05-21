@@ -101,17 +101,10 @@ namespace Emby.Server.Implementations.Library
                 UserName = user.Name
             };
 
-            try
+            using (FileStream fileStream = File.OpenWrite(filePath))
             {
-                using (FileStream fileStream = File.OpenWrite(filePath))
-                {
-                    _jsonSerializer.SerializeToStream(spr, fileStream);
-                    await fileStream.FlushAsync().ConfigureAwait(false);
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Error serializing or writing password reset for {user.Name} to location: {filePath}", e);
+                _jsonSerializer.SerializeToStream(spr, fileStream);
+                await fileStream.FlushAsync().ConfigureAwait(false);
             }
 
             return new ForgotPasswordResult
