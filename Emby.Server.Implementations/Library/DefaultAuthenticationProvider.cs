@@ -165,6 +165,34 @@ namespace Emby.Server.Implementations.Library
             return user.Password;
         }
 
+        public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
+        {
+            ConvertPasswordFormat(user);
+
+            if (newPassword != null)
+            {
+                newPasswordHash = string.Format("$SHA1${0}", GetHashedString(user, newPassword));
+            }
+
+            if (string.IsNullOrWhiteSpace(newPasswordHash))
+            {
+                throw new ArgumentNullException(nameof(newPasswordHash));
+            }
+
+            user.EasyPassword = newPasswordHash;
+        }
+
+        public string GetEasyPasswordHash(User user)
+        {
+            // This should be removed in the future. This was added to let user login after
+            // Jellyfin 10.3.3 failed to save a well formatted PIN.
+            ConvertPasswordFormat(user);
+
+            return string.IsNullOrEmpty(user.EasyPassword)
+                ? null
+                : (new PasswordHash(user.EasyPassword)).Hash;
+        }
+
         public string GetHashedStringChangeAuth(string newPassword, PasswordHash passwordHash)
         {
             passwordHash.HashBytes = Encoding.UTF8.GetBytes(newPassword);

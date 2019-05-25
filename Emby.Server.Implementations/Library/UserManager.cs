@@ -471,7 +471,7 @@ namespace Emby.Server.Implementations.Library
             if (password == null)
             {
                 // legacy
-                success = string.Equals(_defaultAuthenticationProvider.GetPasswordHash(user), hashedPassword.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+                success = string.Equals(GetAuthenticationProvider(user).GetPasswordHash(user), hashedPassword.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
             }
             else
             {
@@ -497,11 +497,11 @@ namespace Emby.Server.Implementations.Library
                     if (password == null)
                     {
                         // legacy
-                        success = string.Equals(GetLocalPasswordHash(user), hashedPassword.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+                        success = string.Equals(GetAuthenticationProvider(user).GetEasyPasswordHash(user), hashedPassword.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
                     }
                     else
                     {
-                        success = string.Equals(GetLocalPasswordHash(user), _defaultAuthenticationProvider.GetHashedString(user, password), StringComparison.OrdinalIgnoreCase);
+                        success = string.Equals(GetAuthenticationProvider(user).GetEasyPasswordHash(user), _defaultAuthenticationProvider.GetHashedString(user, password), StringComparison.OrdinalIgnoreCase);
                     }
                 }
             }
@@ -544,13 +544,6 @@ namespace Emby.Server.Implementations.Library
             {
                 UserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
             }
-        }
-
-        private string GetLocalPasswordHash(User user)
-        {
-            return string.IsNullOrEmpty(user.EasyPassword)
-                ? null
-                : (new PasswordHash(user.EasyPassword)).Hash;
         }
 
         /// <summary>
@@ -596,7 +589,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             bool hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user).Result;
-            bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(GetLocalPasswordHash(user));
+            bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(GetAuthenticationProvider(user).GetEasyPasswordHash(user));
 
             bool hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
                 hasConfiguredEasyPassword :
@@ -884,17 +877,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(user));
             }
 
-            if (newPassword != null)
-            {
-                newPasswordHash = _defaultAuthenticationProvider.GetHashedString(user, newPassword);
-            }
-
-            if (string.IsNullOrWhiteSpace(newPasswordHash))
-            {
-                throw new ArgumentNullException(nameof(newPasswordHash));
-            }
-
-            user.EasyPassword = newPasswordHash;
+            GetAuthenticationProvider(user).ChangeEasyPassword(user, newPassword, newPasswordHash);
 
             UpdateUser(user);
 
