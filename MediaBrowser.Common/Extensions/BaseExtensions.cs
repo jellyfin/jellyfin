@@ -1,6 +1,7 @@
 using System;
+using System.Text;
 using System.Text.RegularExpressions;
-using MediaBrowser.Model.Cryptography;
+using System.Security.Cryptography;
 
 namespace MediaBrowser.Common.Extensions
 {
@@ -9,8 +10,6 @@ namespace MediaBrowser.Common.Extensions
     /// </summary>
     public static class BaseExtensions
     {
-        public static ICryptoProvider CryptographyProvider { get; set; }
-
         /// <summary>
         /// Strips the HTML.
         /// </summary>
@@ -31,7 +30,10 @@ namespace MediaBrowser.Common.Extensions
         /// <returns>Guid.</returns>
         public static Guid GetMD5(this string str)
         {
-            return CryptographyProvider.GetMD5(str);
+            using (var provider = MD5.Create())
+            {
+                return new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(str)));
+            }
         }
     }
 }

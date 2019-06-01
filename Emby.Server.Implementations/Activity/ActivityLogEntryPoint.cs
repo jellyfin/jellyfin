@@ -83,8 +83,6 @@ namespace Emby.Server.Implementations.Activity
 
             _deviceManager.CameraImageUploaded += OnCameraImageUploaded;
 
-            _appHost.ApplicationUpdated += OnApplicationUpdated;
-
             return Task.CompletedTask;
         }
 
@@ -275,16 +273,6 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        private void OnApplicationUpdated(object sender, GenericEventArgs<PackageVersionInfo> e)
-        {
-            CreateLogEntry(new ActivityLogEntry
-            {
-                Name = string.Format(_localization.GetLocalizedString("MessageApplicationUpdatedTo"), e.Argument.versionStr),
-                Type = NotificationType.ApplicationUpdateInstalled.ToString(),
-                Overview = e.Argument.description
-            });
-        }
-
         private void OnUserPolicyUpdated(object sender, GenericEventArgs<User> e)
         {
             CreateLogEntry(new ActivityLogEntry
@@ -460,8 +448,6 @@ namespace Emby.Server.Implementations.Activity
             _userManager.UserLockedOut -= OnUserLockedOut;
 
             _deviceManager.CameraImageUploaded -= OnCameraImageUploaded;
-
-            _appHost.ApplicationUpdated -= OnApplicationUpdated;
         }
 
         /// <summary>

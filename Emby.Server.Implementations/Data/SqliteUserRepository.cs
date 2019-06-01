@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.Data
             {
                 // If the user password is the sha1 hash of the empty string, remove it
                 if (!string.Equals(user.Password, "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709", StringComparison.Ordinal)
-                    || !string.Equals(user.Password, "$SHA1$DA39A3EE5E6B4B0D3255BFEF95601890AFD80709", StringComparison.Ordinal))
+                    && !string.Equals(user.Password, "$SHA1$DA39A3EE5E6B4B0D3255BFEF95601890AFD80709", StringComparison.Ordinal))
                 {
                     continue;
                 }

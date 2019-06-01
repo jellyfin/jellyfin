@@ -19,7 +19,7 @@ namespace Emby.Server.Implementations.Library
         public string Name => "Default";
 
         public bool IsEnabled => true;
-        
+
         // This is dumb and an artifact of the backwards way auth providers were designed.
         // This version of authenticate was never meant to be called, but needs to be here for interface compat
         // Only the providers that don't provide local user support use this
@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.Library
         {
             throw new NotImplementedException();
         }
-        
+
         // This is the verson that we need to use for local users. Because reasons.
         public Task<ProviderAuthenticationResult> Authenticate(string username, string password, User resolvedUser)
         {
@@ -103,7 +103,7 @@ namespace Emby.Server.Implementations.Library
                 string hash = user.Password;
                 user.Password = string.Format("$SHA1${0}", hash);
             }
-            
+
             if (user.EasyPassword != null && !user.EasyPassword.Contains("$"))
             {
                 string hash = user.EasyPassword;

@@ -78,10 +78,25 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The trailer folder name
         /// </summary>
-        public static string TrailerFolderName = "trailers";
-        public static string ThemeSongsFolderName = "theme-music";
-        public static string ThemeSongFilename = "theme";
-        public static string ThemeVideosFolderName = "backdrops";
+        public const string TrailerFolderName = "trailers";
+        public const string ThemeSongsFolderName = "theme-music";
+        public const string ThemeSongFilename = "theme";
+        public const string ThemeVideosFolderName = "backdrops";
+        public const string ExtrasFolderName = "extras";
+        public const string BehindTheScenesFolderName = "behind the scenes";
+        public const string DeletedScenesFolderName = "deleted scenes";
+        public const string InterviewFolderName = "interviews";
+        public const string SceneFolderName = "scenes";
+        public const string SampleFolderName = "samples";
+
+        public static readonly string[] AllExtrasTypesFolderNames = {
+            ExtrasFolderName,
+            BehindTheScenesFolderName,
+            DeletedScenesFolderName,
+            InterviewFolderName,
+            SceneFolderName,
+            SampleFolderName
+        };
 
         [IgnoreDataMember]
         public Guid[] ThemeSongIds { get; set; }
@@ -1276,16 +1291,15 @@ namespace MediaBrowser.Controller.Entities
                 .Select(item =>
                 {
                     // Try to retrieve it from the db. If we don't find it, use the resolved version
-                    var dbItem = LibraryManager.GetItemById(item.Id) as Video;
 
-                    if (dbItem != null)
+                    if (LibraryManager.GetItemById(item.Id) is Video dbItem)
                     {
                         item = dbItem;
                     }
                     else
                     {
                         // item is new
-                        item.ExtraType = MediaBrowser.Model.Entities.ExtraType.ThemeVideo;
+                        item.ExtraType = Model.Entities.ExtraType.ThemeVideo;
                     }
 
                     return item;
@@ -1296,32 +1310,37 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual BaseItem[] LoadExtras(List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
-            var files = fileSystemChildren.Where(i => i.IsDirectory)
-                .SelectMany(i => FileSystem.GetFiles(i.FullName));
+            var extras = new List<Video>();
 
-            return LibraryManager.ResolvePaths(files, directoryService, null, new LibraryOptions())
-                .OfType<Video>()
-                .Select(item =>
-                {
-                    // Try to retrieve it from the db. If we don't find it, use the resolved version
-                    var dbItem = LibraryManager.GetItemById(item.Id) as Video;
+            var folders = fileSystemChildren.Where(i => i.IsDirectory).ToArray();
+            foreach (var extraFolderName in AllExtrasTypesFolderNames)
+            {
+                var files = folders
+                    .Where(i => string.Equals(i.Name, extraFolderName, StringComparison.OrdinalIgnoreCase))
+                    .SelectMany(i => FileSystem.GetFiles(i.FullName));
 
-                    if (dbItem != null)
+                extras.AddRange(LibraryManager.ResolvePaths(files, directoryService, null, new LibraryOptions())
+                    .OfType<Video>()
+                    .Select(item =>
                     {
-                        item = dbItem;
-                    }
-                    else
-                    {
-                        // item is new
-                        item.ExtraType = MediaBrowser.Model.Entities.ExtraType.Clip;
-                    }
+                        // Try to retrieve it from the db. If we don't find it, use the resolved version
+                        if (LibraryManager.GetItemById(item.Id) is Video dbItem)
+                        {
+                            item = dbItem;
+                        }
 
-                    return item;
+                        // Use some hackery to get the extra type based on foldername
+                        Enum.TryParse(extraFolderName.Replace(" ", ""), true, out ExtraType extraType);
+                        item.ExtraType = extraType;
 
-                    // Sort them so that the list can be easily compared for changes
-                }).OrderBy(i => i.Path).ToArray();
+                        return item;
+
+                        // Sort them so that the list can be easily compared for changes
+                    }).OrderBy(i => i.Path));
+            }
+
+            return extras.ToArray();
         }
-
 
         public Task RefreshMetadata(CancellationToken cancellationToken)
         {
@@ -1481,7 +1500,13 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<bool> RefreshExtras(BaseItem item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newExtras = LoadExtras(fileSystemChildren, options.DirectoryService).Concat(LoadThemeVideos(fileSystemChildren, options.DirectoryService)).Concat(LoadThemeSongs(fileSystemChildren, options.DirectoryService));
+            var extras = LoadExtras(fileSystemChildren, options.DirectoryService);
+            var themeVideos = LoadThemeVideos(fileSystemChildren, options.DirectoryService);
+            var themeSongs = LoadThemeSongs(fileSystemChildren, options.DirectoryService);
+            var newExtras = new BaseItem[extras.Length + themeVideos.Length + themeSongs.Length];
+            extras.CopyTo(newExtras, 0);
+            themeVideos.CopyTo(newExtras, extras.Length);
+            themeSongs.CopyTo(newExtras, extras.Length + themeVideos.Length);
 
             var newExtraIds = newExtras.Select(i => i.Id).ToArray();
 
@@ -1493,7 +1518,15 @@ namespace MediaBrowser.Controller.Entities
 
                 var tasks = newExtras.Select(i =>
                 {
-                    return RefreshMetadataForOwnedItem(i, true, new MetadataRefreshOptions(options), cancellationToken);
+                    var subOptions = new MetadataRefreshOptions(options);
+                    if (i.OwnerId != ownerId || i.ParentId != Guid.Empty)
+                    {
+                        i.OwnerId = ownerId;
+                        i.ParentId = Guid.Empty;
+                        subOptions.ForceSave = true;
+                    }
+
+                    return RefreshMetadataForOwnedItem(i, true, subOptions, cancellationToken);
                 });
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);

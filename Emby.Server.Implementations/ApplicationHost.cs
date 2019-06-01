@@ -155,11 +155,6 @@ namespace Emby.Server.Implementations
         public event EventHandler HasPendingRestartChanged;
 
         /// <summary>
-        /// Occurs when [application updated].
-        /// </summary>
-        public event EventHandler<GenericEventArgs<PackageVersionInfo>> ApplicationUpdated;
-
-        /// <summary>
         /// Gets a value indicating whether this instance has changes that require the entire application to restart.
         /// </summary>
         /// <value><c>true</c> if this instance has pending application restart; otherwise, <c>false</c>.</value>
@@ -173,11 +168,17 @@ namespace Emby.Server.Implementations
         /// <value>The logger.</value>
         protected ILogger Logger { get; set; }
 
+        private IPlugin[] _plugins;
+
         /// <summary>
         /// Gets the plugins.
         /// </summary>
         /// <value>The plugins.</value>
-        public IPlugin[] Plugins { get; protected set; }
+        public IPlugin[] Plugins
+        {
+            get => _plugins;
+            protected set => _plugins = value;
+        }
 
         /// <summary>
         /// Gets or sets the logger factory.
@@ -200,7 +201,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// The disposable parts
         /// </summary>
-        protected readonly List<IDisposable> _disposableParts = new List<IDisposable>();
+        private readonly List<IDisposable> _disposableParts = new List<IDisposable>();
 
         /// <summary>
         /// Gets the configuration manager.
@@ -216,8 +217,9 @@ namespace Emby.Server.Implementations
             {
 #if BETA
                 return PackageVersionClass.Beta;
-#endif
+#else
                 return PackageVersionClass.Release;
+#endif
             }
         }
 
@@ -340,7 +342,6 @@ namespace Emby.Server.Implementations
 
         protected IProcessFactory ProcessFactory { get; private set; }
 
-        protected ICryptoProvider CryptographyProvider = new CryptographyProvider();
         protected readonly IXmlSerializer XmlSerializer;
 
         protected ISocketFactory SocketFactory { get; private set; }
@@ -368,9 +369,6 @@ namespace Emby.Server.Implementations
             IConfiguration configuration)
         {
             _configuration = configuration;
-
-            // hack alert, until common can target .net core
-            BaseExtensions.CryptographyProvider = CryptographyProvider;
 
             XmlSerializer = new MyXmlSerializer(fileSystem, loggerFactory);
 
@@ -617,8 +615,6 @@ namespace Emby.Server.Implementations
 
             DiscoverTypes();
 
-            SetHttpLimit();
-
             await RegisterResources(serviceCollection).ConfigureAwait(false);
 
             FindParts();
@@ -735,13 +731,12 @@ namespace Emby.Server.Implementations
             ApplicationHost.StreamHelper = new StreamHelper();
             serviceCollection.AddSingleton(StreamHelper);
 
-            serviceCollection.AddSingleton(CryptographyProvider);
+            serviceCollection.AddSingleton(typeof(ICryptoProvider), typeof(CryptographyProvider));
 
             SocketFactory = new SocketFactory();
             serviceCollection.AddSingleton(SocketFactory);
 
-            InstallationManager = new InstallationManager(LoggerFactory, this, ApplicationPaths, HttpClient, JsonSerializer, ServerConfigurationManager, FileSystemManager, CryptographyProvider, ZipClient, PackageRuntime);
-            serviceCollection.AddSingleton(InstallationManager);
+            serviceCollection.AddSingleton(typeof(IInstallationManager), typeof(InstallationManager));
 
             ZipClient = new ZipClient();
             serviceCollection.AddSingleton(ZipClient);
@@ -908,8 +903,6 @@ namespace Emby.Server.Implementations
             _serviceProvider = serviceCollection.BuildServiceProvider();
         }
 
-        public virtual string PackageRuntime => "netcore";
-
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
         {
             // Distinct these to prevent users from reporting problems that aren't actually problems
@@ -918,8 +911,7 @@ namespace Emby.Server.Implementations
                 .Distinct();
 
             logger.LogInformation("Arguments: {Args}", commandLineArgs);
-            // FIXME: @bond this logs the kernel version, not the OS version
-            logger.LogInformation("Operating system: {OS} {OSVersion}", OperatingSystem.Name, Environment.OSVersion.Version);
+            logger.LogInformation("Operating system: {OS}", OperatingSystem.Name);
             logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);
             logger.LogInformation("64-Bit Process: {Is64Bit}", Environment.Is64BitProcess);
             logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
@@ -927,19 +919,6 @@ namespace Emby.Server.Implementations
             logger.LogInformation("Program data path: {ProgramDataPath}", appPaths.ProgramDataPath);
             logger.LogInformation("Web resources path: {WebPath}", appPaths.WebPath);
             logger.LogInformation("Application directory: {ApplicationPath}", appPaths.ProgramSystemPath);
-        }
-
-        private void SetHttpLimit()
-        {
-            try
-            {
-                // Increase the max http request limit
-                ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error setting http limit");
-            }
         }
 
         private X509Certificate2 GetCertificate(CertificateInfo info)
@@ -1044,11 +1023,47 @@ namespace Emby.Server.Implementations
             AuthenticatedAttribute.AuthService = AuthService;
         }
 
+        private async void PluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> args)
+        {
+            string dir = Path.Combine(ApplicationPaths.PluginsPath, args.Argument.name);
+            var types = Directory.EnumerateFiles(dir, "*.dll", SearchOption.AllDirectories)
+                        .Select(x => Assembly.LoadFrom(x))
+                        .SelectMany(x => x.ExportedTypes)
+                        .Where(x => x.IsClass && !x.IsAbstract && !x.IsInterface && !x.IsGenericType)
+                        .ToList();
+
+            types.AddRange(types);
+
+            var plugins = types.Where(x => x.IsAssignableFrom(typeof(IPlugin)))
+                    .Select(CreateInstanceSafe)
+                    .Where(x => x != null)
+                    .Cast<IPlugin>()
+                    .Select(LoadPlugin)
+                    .Where(x => x != null)
+                    .ToArray();
+
+            int oldLen = _plugins.Length;
+            Array.Resize<IPlugin>(ref _plugins, _plugins.Length + plugins.Length);
+            plugins.CopyTo(_plugins, oldLen);
+
+            var entries = types.Where(x => x.IsAssignableFrom(typeof(IServerEntryPoint)))
+                .Select(CreateInstanceSafe)
+                .Where(x => x != null)
+                .Cast<IServerEntryPoint>()
+                .ToList();
+
+            await Task.WhenAll(StartEntryPoints(entries, true));
+            await Task.WhenAll(StartEntryPoints(entries, false));
+        }
+
         /// <summary>
         /// Finds the parts.
         /// </summary>
         protected void FindParts()
         {
+            InstallationManager = _serviceProvider.GetService<IInstallationManager>();
+            InstallationManager.PluginInstalled += PluginInstalled;
+
             if (!ServerConfigurationManager.Configuration.IsPortAuthorized)
             {
                 ServerConfigurationManager.Configuration.IsPortAuthorized = true;
@@ -1088,7 +1103,7 @@ namespace Emby.Server.Implementations
             MediaSourceManager.AddParts(GetExports<IMediaSourceProvider>());
 
             NotificationManager.AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
-            UserManager.AddParts(GetExports<IAuthenticationProvider>());
+            UserManager.AddParts(GetExports<IAuthenticationProvider>(), GetExports<IPasswordResetProvider>());
 
             IsoManager.AddParts(GetExports<IIsoMounter>());
         }
@@ -1131,7 +1146,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error loading plugin {pluginName}", plugin.GetType().FullName);
+                Logger.LogError(ex, "Error loading plugin {PluginName}", plugin.GetType().FullName);
                 return null;
             }
 
@@ -1145,10 +1160,32 @@ namespace Emby.Server.Implementations
         {
             Logger.LogInformation("Loading assemblies");
 
-            AllConcreteTypes = GetComposablePartAssemblies()
-                .SelectMany(x => x.ExportedTypes)
-                .Where(type => type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsGenericType)
-                .ToArray();
+            AllConcreteTypes = GetTypes(GetComposablePartAssemblies()).ToArray();
+        }
+
+        private IEnumerable<Type> GetTypes(IEnumerable<Assembly> assemblies)
+        {
+            foreach (var ass in assemblies)
+            {
+                Type[] exportedTypes;
+                try
+                {
+                    exportedTypes = ass.GetExportedTypes();
+                }
+                catch (TypeLoadException ex)
+                {
+                    Logger.LogError(ex, "Error getting exported types from {Assembly}", ass.FullName);
+                    continue;
+                }
+
+                foreach (Type type in exportedTypes)
+                {
+                    if (type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsGenericType)
+                    {
+                        yield return type;
+                    }
+                }
+            }
         }
 
         private CertificateInfo CertificateInfo { get; set; }
@@ -1310,10 +1347,21 @@ namespace Emby.Server.Implementations
         {
             if (Directory.Exists(ApplicationPaths.PluginsPath))
             {
-                foreach (var file in Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly))
+                foreach (var file in Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.AllDirectories))
                 {
-                    Logger.LogInformation("Loading assembly {Path}", file);
-                    yield return Assembly.LoadFrom(file);
+                    Assembly plugAss;
+                    try
+                    {
+                        plugAss = Assembly.LoadFrom(file);
+                    }
+                    catch (FileLoadException ex)
+                    {
+                        Logger.LogError(ex, "Failed to load assembly {Path}", file);
+                        continue;
+                    }
+
+                    Logger.LogInformation("Loaded assembly {Assembly} from {Path}", plugAss.FullName, file);
+                    yield return plugAss;
                 }
             }
 
@@ -1372,14 +1420,23 @@ namespace Emby.Server.Implementations
         public async Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken)
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-            var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
+
+            string wanAddress;
+
+            if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
+            {
+                wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
+            }
 
             return new SystemInfo
             {
                 HasPendingRestart = HasPendingRestart,
                 IsShuttingDown = IsShuttingDown,
                 Version = ApplicationVersion,
-                ProductName = ApplicationProductName,
                 WebSocketPortNumber = HttpPort,
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
                 Id = SystemId,
@@ -1422,10 +1479,21 @@ namespace Emby.Server.Implementations
         public async Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken)
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-            var wanAddress = await GetWanApiUrl(cancellationToken).ConfigureAwait(false);
+
+            string wanAddress;
+
+            if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
+            {
+                wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
+            }
             return new PublicSystemInfo
             {
                 Version = ApplicationVersion,
+                ProductName = ApplicationProductName,
                 Id = SystemId,
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 WanAddress = wanAddress,
@@ -1460,7 +1528,7 @@ namespace Emby.Server.Implementations
             return null;
         }
 
-        public async Task<string> GetWanApiUrl(CancellationToken cancellationToken)
+        public async Task<string> GetWanApiUrlFromExternal(CancellationToken cancellationToken)
         {
             const string Url = "http://ipv4.icanhazip.com";
             try
@@ -1476,13 +1544,14 @@ namespace Emby.Server.Implementations
                     CancellationToken = cancellationToken
                 }).ConfigureAwait(false))
                 {
-                    return GetLocalApiUrl(response.ReadToEnd().Trim());
+                    return GetWanApiUrl(response.ReadToEnd().Trim());
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error getting WAN Ip address information");
             }
+
             return null;
         }
 
@@ -1498,9 +1567,38 @@ namespace Emby.Server.Implementations
 
         public string GetLocalApiUrl(string host)
         {
+            if (EnableHttps)
+            {
+                return string.Format("https://{0}:{1}",
+                    host,
+                    HttpsPort.ToString(CultureInfo.InvariantCulture));
+            }
             return string.Format("http://{0}:{1}",
-                host,
-                HttpPort.ToString(CultureInfo.InvariantCulture));
+                    host,
+                    HttpPort.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public string GetWanApiUrl(IpAddressInfo ipAddress)
+        {
+            if (ipAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
+            {
+                return GetWanApiUrl("[" + ipAddress.Address + "]");
+            }
+
+            return GetWanApiUrl(ipAddress.Address);
+        }
+
+        public string GetWanApiUrl(string host)
+        {
+            if (EnableHttps)
+            {
+                return string.Format("https://{0}:{1}",
+                    host,
+                    ServerConfigurationManager.Configuration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture));
+            }
+            return string.Format("http://{0}:{1}",
+                    host,
+                    ServerConfigurationManager.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture));
         }
 
         public Task<List<IpAddressInfo>> GetLocalIpAddresses(CancellationToken cancellationToken)
@@ -1754,24 +1852,6 @@ namespace Emby.Server.Implementations
 
         public virtual void EnableLoopback(string appName)
         {
-        }
-
-        /// <summary>
-        /// Called when [application updated].
-        /// </summary>
-        /// <param name="package">The package.</param>
-        protected void OnApplicationUpdated(PackageVersionInfo package)
-        {
-            Logger.LogInformation("Application has been updated to version {0}", package.versionStr);
-
-            ApplicationUpdated?.Invoke(
-                this,
-                new GenericEventArgs<PackageVersionInfo>()
-                {
-                    Argument = package
-                });
-
-            NotifyPendingRestart();
         }
 
         private bool _disposed = false;

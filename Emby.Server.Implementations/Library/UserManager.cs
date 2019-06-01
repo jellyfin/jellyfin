@@ -79,6 +79,9 @@ namespace Emby.Server.Implementations.Library
         private IAuthenticationProvider[] _authenticationProviders;
         private DefaultAuthenticationProvider _defaultAuthenticationProvider;
 
+        private IPasswordResetProvider[] _passwordResetProviders;
+        private DefaultPasswordResetProvider _defaultPasswordResetProvider;
+
         public UserManager(
             ILoggerFactory loggerFactory,
             IServerConfigurationManager configurationManager,
@@ -102,8 +105,6 @@ namespace Emby.Server.Implementations.Library
             _fileSystem = fileSystem;
             ConfigurationManager = configurationManager;
             _users = Array.Empty<User>();
-
-            DeletePinFile();
         }
 
         public NameIdPair[] GetAuthenticationProviders()
@@ -120,11 +121,29 @@ namespace Emby.Server.Implementations.Library
                 .ToArray();
         }
 
-        public void AddParts(IEnumerable<IAuthenticationProvider> authenticationProviders)
+        public NameIdPair[] GetPasswordResetProviders()
+        {
+            return _passwordResetProviders
+                .Where(i => i.IsEnabled)
+                .OrderBy(i => i is DefaultPasswordResetProvider ? 0 : 1)
+                .ThenBy(i => i.Name)
+                .Select(i => new NameIdPair
+                {
+                    Name = i.Name,
+                    Id = GetPasswordResetProviderId(i)
+                })
+                .ToArray();
+        }
+
+        public void AddParts(IEnumerable<IAuthenticationProvider> authenticationProviders,IEnumerable<IPasswordResetProvider> passwordResetProviders)
         {
             _authenticationProviders = authenticationProviders.ToArray();
 
             _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
+
+            _passwordResetProviders = passwordResetProviders.ToArray();
+
+            _defaultPasswordResetProvider = passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
         }
 
         #region UserUpdated Event
@@ -258,24 +277,35 @@ namespace Emby.Server.Implementations.Library
                 .FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
 
             var success = false;
+            string updatedUsername = null;
             IAuthenticationProvider authenticationProvider = null;
 
             if (user != null)
             {
                 var authResult = await AuthenticateLocalUser(username, password, hashedPassword, user, remoteEndPoint).ConfigureAwait(false);
                 authenticationProvider = authResult.Item1;
-                success = authResult.Item2;
+                updatedUsername = authResult.Item2;
+                success = authResult.Item3;
             }
             else
             {
                 // user is null
                 var authResult = await AuthenticateLocalUser(username, password, hashedPassword, null, remoteEndPoint).ConfigureAwait(false);
                 authenticationProvider = authResult.Item1;
-                success = authResult.Item2;
+                updatedUsername = authResult.Item2;
+                success = authResult.Item3;
 
                 if (success && authenticationProvider != null && !(authenticationProvider is DefaultAuthenticationProvider))
                 {
-                    user = await CreateUser(username).ConfigureAwait(false);
+                    // We should trust the user that the authprovider says, not what was typed
+                    if (updatedUsername != username)
+                    {
+                        username = updatedUsername;
+                    }
+
+                    // Search the database for the user again; the authprovider might have created it
+                    user = Users
+                        .FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
 
                     var hasNewUserPolicy = authenticationProvider as IHasNewUserPolicy;
                     if (hasNewUserPolicy != null)
@@ -342,9 +372,19 @@ namespace Emby.Server.Implementations.Library
             return provider.GetType().FullName;
         }
 
+        private static string GetPasswordResetProviderId(IPasswordResetProvider provider)
+        {
+            return provider.GetType().FullName;
+        }
+
         private IAuthenticationProvider GetAuthenticationProvider(User user)
         {
             return GetAuthenticationProviders(user).First();
+        }
+
+        private IPasswordResetProvider GetPasswordResetProvider(User user)
+        {
+            return GetPasswordResetProviders(user)[0];
         }
 
         private IAuthenticationProvider[] GetAuthenticationProviders(User user)
@@ -366,32 +406,59 @@ namespace Emby.Server.Implementations.Library
             return providers;
         }
 
-        private async Task<bool> AuthenticateWithProvider(IAuthenticationProvider provider, string username, string password, User resolvedUser)
+        private IPasswordResetProvider[] GetPasswordResetProviders(User user)
+        {
+            var passwordResetProviderId = user?.Policy.PasswordResetProviderId;
+
+            var providers = _passwordResetProviders.Where(i => i.IsEnabled).ToArray();
+
+            if (!string.IsNullOrEmpty(passwordResetProviderId))
+            {
+                providers = providers.Where(i => string.Equals(passwordResetProviderId, GetPasswordResetProviderId(i), StringComparison.OrdinalIgnoreCase)).ToArray();
+            }
+
+            if (providers.Length == 0)
+            {
+                providers = new IPasswordResetProvider[] { _defaultPasswordResetProvider };
+            }
+
+            return providers;
+        }
+
+        private async Task<Tuple<string, bool>> AuthenticateWithProvider(IAuthenticationProvider provider, string username, string password, User resolvedUser)
         {
             try
             {
                 var requiresResolvedUser = provider as IRequiresResolvedUser;
+                ProviderAuthenticationResult authenticationResult = null;
                 if (requiresResolvedUser != null)
                 {
-                    await requiresResolvedUser.Authenticate(username, password, resolvedUser).ConfigureAwait(false);
+                    authenticationResult = await requiresResolvedUser.Authenticate(username, password, resolvedUser).ConfigureAwait(false);
                 }
                 else
                 {
-                    await provider.Authenticate(username, password).ConfigureAwait(false);
+                    authenticationResult = await provider.Authenticate(username, password).ConfigureAwait(false);
                 }
 
-                return true;
+                if(authenticationResult.Username != username)
+                {
+                    _logger.LogDebug("Authentication provider provided updated username {1}", authenticationResult.Username);
+                    username = authenticationResult.Username;
+                }
+
+                return new Tuple<string, bool>(username, true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error authenticating with provider {provider}", provider.Name);
 
-                return false;
+                return new Tuple<string, bool>(username, false);
             }
         }
 
-        private async Task<Tuple<IAuthenticationProvider, bool>> AuthenticateLocalUser(string username, string password, string hashedPassword, User user, string remoteEndPoint)
+        private async Task<Tuple<IAuthenticationProvider, string, bool>> AuthenticateLocalUser(string username, string password, string hashedPassword, User user, string remoteEndPoint)
         {
+            string updatedUsername = null;
             bool success = false;
             IAuthenticationProvider authenticationProvider = null;
 
@@ -410,11 +477,14 @@ namespace Emby.Server.Implementations.Library
             {
                 foreach (var provider in GetAuthenticationProviders(user))
                 {
-                    success = await AuthenticateWithProvider(provider, username, password, user).ConfigureAwait(false);
+                    var providerAuthResult = await AuthenticateWithProvider(provider, username, password, user).ConfigureAwait(false);
+                    updatedUsername = providerAuthResult.Item1;
+                    success = providerAuthResult.Item2;
 
                     if (success)
                     {
                         authenticationProvider = provider;
+                        username = updatedUsername;
                         break;
                     }
                 }
@@ -436,7 +506,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            return new Tuple<IAuthenticationProvider, bool>(authenticationProvider, success);
+            return new Tuple<IAuthenticationProvider, string, bool>(authenticationProvider, username, success);
         }
 
         private void UpdateInvalidLoginAttemptCount(User user, int newValue)
@@ -480,7 +550,7 @@ namespace Emby.Server.Implementations.Library
         {
             return string.IsNullOrEmpty(user.EasyPassword)
                 ? null
-                : user.EasyPassword;
+                : (new PasswordHash(user.EasyPassword)).Hash;
         }
 
         /// <summary>
@@ -526,7 +596,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             bool hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user).Result;
-            bool hasConfiguredEasyPassword = string.IsNullOrEmpty(GetLocalPasswordHash(user));
+            bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(GetLocalPasswordHash(user));
 
             bool hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
                 hasConfiguredEasyPassword :
@@ -844,157 +914,49 @@ namespace Emby.Server.Implementations.Library
                 Id = Guid.NewGuid(),
                 DateCreated = DateTime.UtcNow,
                 DateModified = DateTime.UtcNow,
-                UsesIdForConfigurationPath = true,
-                //Salt = BCrypt.GenerateSalt()
+                UsesIdForConfigurationPath = true
             };
-        }
-
-        private string PasswordResetFile => Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "passwordreset.txt");
-
-        private string _lastPin;
-        private PasswordPinCreationResult _lastPasswordPinCreationResult;
-        private int _pinAttempts;
-
-        private async Task<PasswordPinCreationResult> CreatePasswordResetPin()
-        {
-            var num = new Random().Next(1, 9999);
-
-            var path = PasswordResetFile;
-
-            var pin = num.ToString("0000", CultureInfo.InvariantCulture);
-            _lastPin = pin;
-
-            var time = TimeSpan.FromMinutes(5);
-            var expiration = DateTime.UtcNow.Add(time);
-
-            var text = new StringBuilder();
-
-            var localAddress = (await _appHost.GetLocalApiUrl(CancellationToken.None).ConfigureAwait(false)) ?? string.Empty;
-
-            text.AppendLine("Use your web browser to visit:");
-            text.AppendLine(string.Empty);
-            text.AppendLine(localAddress + "/web/index.html#!/forgotpasswordpin.html");
-            text.AppendLine(string.Empty);
-            text.AppendLine("Enter the following pin code:");
-            text.AppendLine(string.Empty);
-            text.AppendLine(pin);
-            text.AppendLine(string.Empty);
-
-            var localExpirationTime = expiration.ToLocalTime();
-            // Tuesday, 22 August 2006 06:30 AM
-            text.AppendLine("The pin code will expire at " + localExpirationTime.ToString("f1", CultureInfo.CurrentCulture));
-
-            File.WriteAllText(path, text.ToString(), Encoding.UTF8);
-
-            var result = new PasswordPinCreationResult
-            {
-                PinFile = path,
-                ExpirationDate = expiration
-            };
-
-            _lastPasswordPinCreationResult = result;
-            _pinAttempts = 0;
-
-            return result;
         }
 
         public async Task<ForgotPasswordResult> StartForgotPasswordProcess(string enteredUsername, bool isInNetwork)
         {
-            DeletePinFile();
-
             var user = string.IsNullOrWhiteSpace(enteredUsername) ?
                 null :
                 GetUserByName(enteredUsername);
 
             var action = ForgotPasswordAction.InNetworkRequired;
-            string pinFile = null;
-            DateTime? expirationDate = null;
 
-            if (user != null && !user.Policy.IsAdministrator)
+            if (user != null && isInNetwork)
             {
-                action = ForgotPasswordAction.ContactAdmin;
+                var passwordResetProvider = GetPasswordResetProvider(user);
+                return await passwordResetProvider.StartForgotPasswordProcess(user, isInNetwork).ConfigureAwait(false);
             }
             else
             {
-                if (isInNetwork)
+                return new ForgotPasswordResult
                 {
-                    action = ForgotPasswordAction.PinCode;
-                }
-
-                var result = await CreatePasswordResetPin().ConfigureAwait(false);
-                pinFile = result.PinFile;
-                expirationDate = result.ExpirationDate;
+                    Action = action,
+                    PinFile = string.Empty
+                };
             }
-
-            return new ForgotPasswordResult
-            {
-                Action = action,
-                PinFile = pinFile,
-                PinExpirationDate = expirationDate
-            };
         }
 
         public async Task<PinRedeemResult> RedeemPasswordResetPin(string pin)
         {
-            DeletePinFile();
-
-            var usersReset = new List<string>();
-
-            var valid = !string.IsNullOrWhiteSpace(_lastPin) &&
-                string.Equals(_lastPin, pin, StringComparison.OrdinalIgnoreCase) &&
-                _lastPasswordPinCreationResult != null &&
-                _lastPasswordPinCreationResult.ExpirationDate > DateTime.UtcNow;
-
-            if (valid)
+            foreach (var provider in _passwordResetProviders)
             {
-                _lastPin = null;
-                _lastPasswordPinCreationResult = null;
-
-                foreach (var user in Users)
+                var result = await provider.RedeemPasswordResetPin(pin).ConfigureAwait(false);
+                if (result.Success)
                 {
-                    await ResetPassword(user).ConfigureAwait(false);
-
-                    if (user.Policy.IsDisabled)
-                    {
-                        user.Policy.IsDisabled = false;
-                        UpdateUserPolicy(user, user.Policy, true);
-                    }
-                    usersReset.Add(user.Name);
-                }
-            }
-            else
-            {
-                _pinAttempts++;
-                if (_pinAttempts >= 3)
-                {
-                    _lastPin = null;
-                    _lastPasswordPinCreationResult = null;
+                    return result;
                 }
             }
 
             return new PinRedeemResult
             {
-                Success = valid,
-                UsersReset = usersReset.ToArray()
+                Success = false,
+                UsersReset = Array.Empty<string>()
             };
-        }
-
-        private void DeletePinFile()
-        {
-            try
-            {
-                _fileSystem.DeleteFile(PasswordResetFile);
-            }
-            catch
-            {
-
-            }
-        }
-
-        class PasswordPinCreationResult
-        {
-            public string PinFile { get; set; }
-            public DateTime ExpirationDate { get; set; }
         }
 
         public UserPolicy GetUserPolicy(User user)

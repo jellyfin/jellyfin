@@ -17,12 +17,12 @@ DEFAULT_PKG_DIR="pkg-dist"
 DEFAULT_DOCKERFILE="Dockerfile"
 DEFAULT_ARCHIVE_CMD="tar -xvzf"
 
-# Parse the version from the AssemblyVersion
+# Parse the version from the build.yaml version
 get_version()
 (
     local ROOT=${1-$DEFAULT_ROOT}
-    grep "AssemblyVersion" ${ROOT}/SharedVersion.cs \
-        | sed -E 's/\[assembly: ?AssemblyVersion\("([0-9\.]+)"\)\]/\1/' 
+    grep "version:" ${ROOT}/build.yaml \
+        | sed -E 's/version: "([0-9\.]+.*)"/\1/' 
 )
 
 # Run a build

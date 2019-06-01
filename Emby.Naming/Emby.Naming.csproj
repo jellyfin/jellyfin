@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
