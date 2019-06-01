@@ -78,6 +78,8 @@ namespace Emby.XmlTv.Classes
                 }
             }
 
+            list.Sort(((c1, c2) => string.Compare(c1.DisplayName, c2.DisplayName, StringComparison.Ordinal)));
+
             return list;
         }
 
@@ -522,7 +524,7 @@ namespace Emby.XmlTv.Classes
                 if (int.TryParse(res.Groups[2].Value, out parsedInt))
                 {
                     result.Episode.Episode = parsedInt;
-                }   
+                }
             }
         }
 
