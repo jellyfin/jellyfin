@@ -77,7 +77,8 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 var videoCodec = state.VideoRequest.VideoCodec;
 
-                if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(videoCodec, "h265", StringComparison.OrdinalIgnoreCase))
                 {
                     return ".ts";
                 }

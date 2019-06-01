@@ -154,7 +154,7 @@ namespace MediaBrowser.Api.Playback
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        protected virtual string GetDefaultH264Preset()
+        protected virtual string GetDefaultEncoderPreset()
         {
             return "superfast";
         }

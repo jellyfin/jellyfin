@@ -24,6 +24,7 @@
  - [Lynxy](https://github.com/Lynxy)
  - [fasheng](https://github.com/fasheng)
  - [ploughpuff](https://github.com/ploughpuff) 
+ - [fhriley](https://github.com/fhriley)
 
 # Emby Contributors
 

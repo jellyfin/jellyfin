@@ -18,7 +18,8 @@ namespace MediaBrowser.Model.Configuration
         public string EncoderAppPathDisplay { get; set; }
         public string VaapiDevice { get; set; }
         public int H264Crf { get; set; }
-        public string H264Preset { get; set; }
+        public int H265Crf { get; set; }
+        public string EncoderPreset { get; set; }
         public string DeinterlaceMethod { get; set; }
         public bool EnableHardwareEncoding { get; set; }
         public bool EnableSubtitleExtraction { get; set; }
@@ -34,6 +35,7 @@ namespace MediaBrowser.Model.Configuration
             // This is a DRM device that is almost guaranteed to be there on every intel platform, plus it's the default one in ffmpeg if you don't specify anything
             VaapiDevice = "/dev/dri/renderD128";
             H264Crf = 23;
+            H265Crf = 28;
             EnableHardwareEncoding = true;
             EnableSubtitleExtraction = true;
             HardwareDecodingCodecs = new string[] { "h264", "vc1" };
