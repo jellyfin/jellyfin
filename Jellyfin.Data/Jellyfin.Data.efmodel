@@ -127,7 +127,7 @@
       </modelClass>
     </modelRootHasClasses>
     <modelRootHasClasses Id="3cb6313a-45a6-4157-b23d-35b4dae6f3d2">
-      <modelClass Id="443c920c-ba7c-4ab8-b2e5-42b46668399a" tableName="LibraryItem" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="LibraryItem" name="LibraryItem" outputDirectory="Entities">
+      <modelClass Id="443c920c-ba7c-4ab8-b2e5-42b46668399a" isAbstract="true" tableName="LibraryItem" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="LibraryItem" name="LibraryItem" outputDirectory="Entities">
         <unidirectionalTargets>
           <unidirectionalAssociation Id="d2291a45-4600-4d36-90b5-2d9de2dce5be" targetPropertyName="Library" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
             <modelClassMoniker Id="68c60175-eab8-4d70-bb11-0bf48d3a27b7" />
@@ -148,13 +148,13 @@
           <generalization Id="034662ef-a37c-4e94-8ed1-dd7e0cbb8986">
             <modelClassMoniker Id="c17418f9-3dc0-4782-9e67-40b14074d280" />
           </generalization>
-          <generalization Id="a73328a6-6a1e-425c-85c3-e62e15510b37">
+          <generalization Id="08949503-2cec-40f0-8ddd-6b2715958b80">
             <modelClassMoniker Id="aae43516-5dc1-4e8b-9d49-767646006865" />
           </generalization>
-          <generalization Id="83eb6c27-cc8c-4ba3-b11d-3e94acda2a37">
+          <generalization Id="387e1834-5de4-413c-89a6-bef003970526">
             <modelClassMoniker Id="e9cb5b65-ef8c-4021-a2c1-fa5600f98b50" />
           </generalization>
-          <generalization Id="c8890c04-71e5-4a3e-ada9-a4072886fd6f">
+          <generalization Id="aa22e5df-b194-466a-8a81-56d336f9bff1">
             <modelClassMoniker Id="2518ea14-6282-4da5-b4ae-43b3dbdfe198" />
           </generalization>
         </subclasses>
@@ -169,7 +169,7 @@
       </modelClass>
     </modelRootHasClasses>
     <modelRootHasClasses Id="f0822126-cb61-44f6-8fcf-26d7c693582f">
-      <modelClass Id="445ce9a4-3da0-4cdd-9456-e58d12ceef38" tableName="Metadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Metadata" name="Metadata" outputDirectory="Entities">
+      <modelClass Id="445ce9a4-3da0-4cdd-9456-e58d12ceef38" isAbstract="true" tableName="Metadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Metadata" name="Metadata" outputDirectory="Entities">
         <unidirectionalTargets>
           <unidirectionalAssociation Id="41839e2f-eeee-4630-89a8-887c47cbfeaf" targetMultiplicity="ZeroOne" targetPropertyName="Source" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
             <modelClassMoniker Id="67ffe714-b86d-496a-8e99-de20c8d245fc" />
@@ -193,16 +193,16 @@
           <generalization Id="c488c083-7693-4a5c-95d3-8bb81bdd5e62">
             <modelClassMoniker Id="1856fbb6-16c6-47d4-baaf-6dcd8b5e0b50" />
           </generalization>
-          <generalization Id="0f236d50-f2f1-4803-ab15-547625dede82">
+          <generalization Id="ae6fc0c0-4a9a-42cc-aad7-88e915db2795">
             <modelClassMoniker Id="726b10fc-10ee-4c38-b755-e4f50457d1d7" />
           </generalization>
-          <generalization Id="78cc5fee-c616-4971-8e3a-bee77bb4f06d">
+          <generalization Id="dd99bac4-e92a-4973-9de0-1aa547d11c94">
             <modelClassMoniker Id="c92a5225-512d-43a7-9197-b30a10c50f45" />
           </generalization>
-          <generalization Id="039cbdb3-d0ab-4741-9737-bf15ef23f15d">
+          <generalization Id="e7565f70-9981-41f5-9168-47cfa5ecd92f">
             <modelClassMoniker Id="c8943a8b-d7ce-4b3c-8eb0-2517cb098bdf" />
           </generalization>
-          <generalization Id="93833bf5-f325-4403-bf4a-24db1782b70b">
+          <generalization Id="00c3f819-1622-4dbf-8143-67362a4b5de5">
             <modelClassMoniker Id="c7ce359f-434d-4516-8682-d5ad16d74625" />
           </generalization>
         </subclasses>
