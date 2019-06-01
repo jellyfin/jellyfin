@@ -272,3 +272,6 @@ dist
 
 # BenchmarkDotNet artifacts
 BenchmarkDotNet.Artifacts
+
+# EFCore generated code
+Jellyfin.Data/**/*.g.cs
