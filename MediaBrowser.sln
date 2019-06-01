@@ -1,4 +1,4 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.3
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -59,6 +59,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Api.Tests", "tests\Jellyfin.Api.Tests\Jellyfin.Api.Tests.csproj", "{A2FD0A10-8F62-4F9D-B171-FFDF9F0AFA9D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Server.Implementations.Tests", "tests\Jellyfin.Server.Implementations.Tests\Jellyfin.Server.Implementations.Tests.csproj", "{2E3A1B4B-4225-4AAA-8B29-0181A84E7AEE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Data", "Jellyfin.Data\Jellyfin.Data.csproj", "{F03299F2-469F-40EF-A655-3766F97A5702}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -170,23 +172,16 @@ Global
 		{2E3A1B4B-4225-4AAA-8B29-0181A84E7AEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E3A1B4B-4225-4AAA-8B29-0181A84E7AEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E3A1B4B-4225-4AAA-8B29-0181A84E7AEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F03299F2-469F-40EF-A655-3766F97A5702}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F03299F2-469F-40EF-A655-3766F97A5702}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F03299F2-469F-40EF-A655-3766F97A5702}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F03299F2-469F-40EF-A655-3766F97A5702}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3448830C-EBDC-426C-85CD-7BBB9651A7FE}
-	EndGlobalSection
-	GlobalSection(AutomaticVersions) = postSolution
-		UpdateAssemblyVersion = True
-		UpdateAssemblyFileVersion = True
-		UpdateAssemblyInfoVersion = True
-		AssemblyVersionSettings = None.None.None.None
-		AssemblyFileVersionSettings = None.None.None.None
-		AssemblyInfoVersionSettings = None.None.None.None
-		UpdatePackageVersion = False
-		AssemblyInfoVersionType = SettingsVersion
-		InheritWinAppVersionFrom = None
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
