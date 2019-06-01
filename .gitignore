@@ -264,3 +264,6 @@ ci/
 
 # Doxygen
 doc/
+
+# EFCore generated code
+Jellyfin.Data/**/*.g.cs
