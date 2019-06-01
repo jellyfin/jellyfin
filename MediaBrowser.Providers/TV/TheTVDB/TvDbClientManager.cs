@@ -33,7 +33,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             get
             {
                 // Refresh if necessary
-                if (_tokenCreatedAt > DateTime.Now.Subtract(TimeSpan.FromHours(20)))
+                if (_tokenCreatedAt < DateTime.Now.Subtract(TimeSpan.FromHours(20)))
                 {
                     try
                     {
