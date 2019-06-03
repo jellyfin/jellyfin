@@ -647,7 +647,6 @@ namespace Emby.Server.Implementations.IO
         public virtual bool IsPathFile(string path)
         {
             // Cannot use Path.IsPathRooted because it returns false under mono when using windows-based paths, e.g. C:\\
-
             if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) != -1 &&
                 !path.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
             {
@@ -655,8 +654,6 @@ namespace Emby.Server.Implementations.IO
             }
 
             return true;
-
-            //return Path.IsPathRooted(path);
         }
 
         public virtual void DeleteFile(string path)
@@ -669,7 +666,8 @@ namespace Emby.Server.Implementations.IO
         {
             // check for ready state to avoid waiting for drives to timeout
             // some drives on linux have no actual size or are used for other purposes
-            return DriveInfo.GetDrives().Where(d => d.IsReady && d.TotalSize != 0 && d.DriveType != DriveType.Ram).Select(d => new FileSystemMetadata
+            return DriveInfo.GetDrives().Where(d => d.IsReady && d.TotalSize != 0 && d.DriveType != DriveType.Ram)
+                .Select(d => new FileSystemMetadata
             {
                 Name = d.Name,
                 FullName = d.RootDirectory.FullName,
