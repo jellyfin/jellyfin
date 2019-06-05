@@ -14,12 +14,17 @@
     <Rule Id="SA1200" Action="None" />
     <!-- disable warning SA1309: Fields must not begin with an underscore -->
     <Rule Id="SA1309" Action="None" />
+    <!-- disable warning SA1413: Use trailing comma in multi-line initializers -->
+    <Rule Id="SA1413" Action="None" />
     <!-- disable warning SA1512: Single-line comments must not be followed by blank line -->
     <Rule Id="SA1512" Action="None" />
     <!-- disable warning SA1633: The file header is missing or not located at the top of the file -->
     <Rule Id="SA1633" Action="None" />
   </Rules>
+
   <Rules AnalyzerId="Microsoft.CodeAnalysis.FxCopAnalyzers" RuleNamespace="Microsoft.Design">
+    <!-- disable warning CA1031: Do not catch general exception types -->
+    <Rule Id="CA1031" Action="Info" />
     <!-- disable warning CA1822: Member does not access instance data and can be marked as static -->
     <Rule Id="CA1822" Action="Info" />
 

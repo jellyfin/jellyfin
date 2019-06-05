@@ -8,19 +8,25 @@ namespace Emby.Naming.Common
     public class NamingOptions
     {
         public string[] AudioFileExtensions { get; set; }
+
         public string[] AlbumStackingPrefixes { get; set; }
 
         public string[] SubtitleFileExtensions { get; set; }
+
         public char[] SubtitleFlagDelimiters { get; set; }
 
         public string[] SubtitleForcedFlags { get; set; }
+
         public string[] SubtitleDefaultFlags { get; set; }
 
         public EpisodeExpression[] EpisodeExpressions { get; set; }
+
         public string[] EpisodeWithoutSeasonExpressions { get; set; }
+
         public string[] EpisodeMultiPartExpressions { get; set; }
 
         public string[] VideoFileExtensions { get; set; }
+
         public string[] StubFileExtensions { get; set; }
 
         public string[] AudioBookPartsExpressions { get; set; }
@@ -28,12 +34,14 @@ namespace Emby.Naming.Common
         public StubTypeRule[] StubTypes { get; set; }
 
         public char[] VideoFlagDelimiters { get; set; }
+
         public Format3DRule[] Format3DRules { get; set; }
 
         public string[] VideoFileStackingExpressions { get; set; }
-        public string[] CleanDateTimes { get; set; }
-        public string[] CleanStrings { get; set; }
 
+        public string[] CleanDateTimes { get; set; }
+
+        public string[] CleanStrings { get; set; }
 
         public EpisodeExpression[] MultipleEpisodeExpressions { get; set; }
 
@@ -41,7 +49,7 @@ namespace Emby.Naming.Common
 
         public NamingOptions()
         {
-            VideoFileExtensions = new string[]
+            VideoFileExtensions = new[]
             {
                 ".m4v",
                 ".3gp",
@@ -106,53 +114,53 @@ namespace Emby.Naming.Common
             {
                 new StubTypeRule
                 {
-                     StubType = "dvd",
-                     Token = "dvd"
+                    StubType = "dvd",
+                    Token = "dvd"
                 },
                 new StubTypeRule
                 {
-                     StubType = "hddvd",
-                     Token = "hddvd"
+                    StubType = "hddvd",
+                    Token = "hddvd"
                 },
                 new StubTypeRule
                 {
-                     StubType = "bluray",
-                     Token = "bluray"
+                    StubType = "bluray",
+                    Token = "bluray"
                 },
                 new StubTypeRule
                 {
-                     StubType = "bluray",
-                     Token = "brrip"
+                    StubType = "bluray",
+                    Token = "brrip"
                 },
                 new StubTypeRule
                 {
-                     StubType = "bluray",
-                     Token = "bd25"
+                    StubType = "bluray",
+                    Token = "bd25"
                 },
                 new StubTypeRule
                 {
-                     StubType = "bluray",
-                     Token = "bd50"
+                    StubType = "bluray",
+                    Token = "bd50"
                 },
                 new StubTypeRule
                 {
-                     StubType = "vhs",
-                     Token = "vhs"
+                    StubType = "vhs",
+                    Token = "vhs"
                 },
                 new StubTypeRule
                 {
-                     StubType = "tv",
-                     Token = "HDTV"
+                    StubType = "tv",
+                    Token = "HDTV"
                 },
                 new StubTypeRule
                 {
-                     StubType = "tv",
-                     Token = "PDTV"
+                    StubType = "tv",
+                    Token = "PDTV"
                 },
                 new StubTypeRule
                 {
-                     StubType = "tv",
-                     Token = "DSR"
+                    StubType = "tv",
+                    Token = "DSR"
                 }
             };
 
@@ -286,7 +294,7 @@ namespace Emby.Naming.Common
                 new EpisodeExpression(@"[\._ -]()[Ee][Pp]_?([0-9]+)([^\\/]*)$"),
                 new EpisodeExpression("([0-9]{4})[\\.-]([0-9]{2})[\\.-]([0-9]{2})", true)
                 {
-                    DateTimeFormats = new []
+                    DateTimeFormats = new[]
                     {
                         "yyyy.MM.dd",
                         "yyyy-MM-dd",
@@ -295,7 +303,7 @@ namespace Emby.Naming.Common
                 },
                 new EpisodeExpression("([0-9]{2})[\\.-]([0-9]{2})[\\.-]([0-9]{4})", true)
                 {
-                    DateTimeFormats = new []
+                    DateTimeFormats = new[]
                     {
                         "dd.MM.yyyy",
                         "dd-MM-yyyy",
@@ -348,9 +356,7 @@ namespace Emby.Naming.Common
                 },
 
                 // "1-12 episode title"
-                new EpisodeExpression(@"([0-9]+)-([0-9]+)")
-                {
-                },
+                new EpisodeExpression(@"([0-9]+)-([0-9]+)"),
 
                 // "01 - blah.avi", "01-blah.avi"
                 new EpisodeExpression(@".*(\\|\/)(?<epnumber>\d{1,3})(-(?<endingepnumber>\d{2,3}))*\s?-\s?[^\\\/]*$")
@@ -427,7 +433,7 @@ namespace Emby.Naming.Common
                     Token = "_trailer",
                     MediaType = MediaType.Video
                 },
-                 new ExtraRule
+                new ExtraRule
                 {
                     ExtraType = "trailer",
                     RuleType = ExtraRuleType.Suffix,
@@ -462,7 +468,7 @@ namespace Emby.Naming.Common
                     Token = "_sample",
                     MediaType = MediaType.Video
                 },
-                 new ExtraRule
+                new ExtraRule
                 {
                     ExtraType = "sample",
                     RuleType = ExtraRuleType.Suffix,
@@ -476,7 +482,6 @@ namespace Emby.Naming.Common
                     Token = "theme",
                     MediaType = MediaType.Audio
                 },
-
                 new ExtraRule
                 {
                     ExtraType = "scene",
@@ -526,8 +531,8 @@ namespace Emby.Naming.Common
                     Token = "-short",
                     MediaType = MediaType.Video
                 }
-
             };
+
             Format3DRules = new[]
             {
                 // Kodi rules:
@@ -648,12 +653,10 @@ namespace Emby.Naming.Common
                 @".*(\\|\/)(?<seriesname>((?![sS]?\d{1,4}[xX]\d{1,3})[^\\\/])*)?([sS]?(?<seasonnumber>\d{1,4})[xX](?<epnumber>\d{1,3}))(-[xX]?[eE]?(?<endingepnumber>\d{1,3}))+[^\\\/]*$",
                 @".*(\\|\/)(?<seriesname>[^\\\/]*)[sS](?<seasonnumber>\d{1,4})[xX\.]?[eE](?<epnumber>\d{1,3})((-| - )?[xXeE](?<endingepnumber>\d{1,3}))+[^\\\/]*$",
                 @".*(\\|\/)(?<seriesname>[^\\\/]*)[sS](?<seasonnumber>\d{1,4})[xX\.]?[eE](?<epnumber>\d{1,3})(-[xX]?[eE]?(?<endingepnumber>\d{1,3}))+[^\\\/]*$"
-
             }.Select(i => new EpisodeExpression(i)
-            {
-                IsNamed = true
-
-            }).ToArray();
+                {
+                    IsNamed = true
+                }).ToArray();
 
             VideoFileExtensions = extensions
                 .Distinct(StringComparer.OrdinalIgnoreCase)

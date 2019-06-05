@@ -24,19 +24,21 @@ namespace Emby.Naming.AudioBook
             return Resolve(path, true);
         }
 
-        public AudioBookFileInfo Resolve(string path, bool IsDirectory = false)
+        public AudioBookFileInfo Resolve(string path, bool isDirectory = false)
         {
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException(nameof(path));
             }
 
-            if (IsDirectory) // TODO
+            // TODO
+            if (isDirectory)
             {
                 return null;
             }
 
             var extension = Path.GetExtension(path);
+
             // Check supported extensions
             if (!_options.AudioFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
             {
@@ -45,8 +47,7 @@ namespace Emby.Naming.AudioBook
 
             var container = extension.TrimStart('.');
 
-            var parsingResult = new AudioBookFilePathParser(_options)
-                .Parse(path, IsDirectory);
+            var parsingResult = new AudioBookFilePathParser(_options).Parse(path);
 
             return new AudioBookFileInfo
             {
@@ -54,7 +55,7 @@ namespace Emby.Naming.AudioBook
                 Container = container,
                 PartNumber = parsingResult.PartNumber,
                 ChapterNumber = parsingResult.ChapterNumber,
-                IsDirectory = IsDirectory
+                IsDirectory = isDirectory
             };
         }
     }

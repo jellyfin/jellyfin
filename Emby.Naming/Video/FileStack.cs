@@ -15,9 +15,9 @@ namespace Emby.Naming.Video
             Files = new List<string>();
         }
 
-        public bool ContainsFile(string file, bool IsDirectory)
+        public bool ContainsFile(string file, bool isDirectory)
         {
-            if (IsDirectoryStack == IsDirectory)
+            if (IsDirectoryStack == isDirectory)
             {
                 return Files.Contains(file, StringComparer.OrdinalIgnoreCase);
             }

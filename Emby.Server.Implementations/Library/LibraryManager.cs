@@ -2368,7 +2368,7 @@ namespace Emby.Server.Implementations.Library
 
         public int? GetSeasonNumberFromPath(string path)
         {
-            return new SeasonPathParser(GetNamingOptions()).Parse(path, true, true).SeasonNumber;
+            return new SeasonPathParser().Parse(path, true, true).SeasonNumber;
         }
 
         public bool FillMissingEpisodeNumbersFromPath(Episode episode, bool forceRefresh)
