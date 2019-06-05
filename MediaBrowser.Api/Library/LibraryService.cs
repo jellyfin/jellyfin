@@ -490,18 +490,6 @@ namespace MediaBrowser.Api.Library
                 {
                     return false;
                 }
-                else if (string.Equals(name, "FanArt", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    if (string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    return true;
-                }
                 else if (string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
