@@ -177,7 +177,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
-            var requestedIndex = int.Parse(segmentId, NumberStyles.Integer, UsCulture);
+            var requestedIndex = int.Parse(segmentId, NumberStyles.Integer, CultureInfo.InvariantCulture);
 
             var state = await GetState(request, cancellationToken).ConfigureAwait(false);
 
@@ -364,7 +364,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var indexString = Path.GetFileNameWithoutExtension(file.Name).Substring(playlistFilename.Length);
 
-            return int.Parse(indexString, NumberStyles.Integer, UsCulture);
+            return int.Parse(indexString, NumberStyles.Integer, CultureInfo.InvariantCulture);
         }
 
         private void DeleteLastFile(string playlistPath, string segmentExtension, int retryCount)
@@ -438,7 +438,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 segmentId = segmentRequest.SegmentId;
             }
 
-            return int.Parse(segmentId, NumberStyles.Integer, UsCulture);
+            return int.Parse(segmentId, NumberStyles.Integer, CultureInfo.InvariantCulture);
         }
 
         private string GetSegmentPath(StreamState state, string playlist, int index)
@@ -447,7 +447,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var filename = Path.GetFileNameWithoutExtension(playlist);
 
-            return Path.Combine(folder, filename + index.ToString(UsCulture) + GetSegmentFileExtension(state.Request));
+            return Path.Combine(folder, filename + index.ToString(CultureInfo.InvariantCulture) + GetSegmentFileExtension(state.Request));
         }
 
         private async Task<object> GetSegmentResult(StreamState state,
@@ -628,8 +628,8 @@ namespace MediaBrowser.Api.Playback.Hls
         private string ReplaceBitrate(string url, int oldValue, int newValue)
         {
             return url.Replace(
-                "videobitrate=" + oldValue.ToString(UsCulture),
-                "videobitrate=" + newValue.ToString(UsCulture),
+                "videobitrate=" + oldValue.ToString(CultureInfo.InvariantCulture),
+                "videobitrate=" + newValue.ToString(CultureInfo.InvariantCulture),
                 StringComparison.OrdinalIgnoreCase);
         }
 
@@ -648,8 +648,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 var url = string.Format("{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&api_key={3}",
                     state.Request.MediaSourceId,
-                    stream.Index.ToString(UsCulture),
-                    30.ToString(UsCulture),
+                    stream.Index.ToString(CultureInfo.InvariantCulture),
+                    30.ToString(CultureInfo.InvariantCulture),
                     AuthorizationContext.GetAuthorizationInfo(Request).Token);
 
                 var line = string.Format(format,
@@ -705,7 +705,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private void AppendPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string subtitleGroup)
         {
-            var header = "#EXT-X-STREAM-INF:BANDWIDTH=" + bitrate.ToString(UsCulture) + ",AVERAGE-BANDWIDTH=" + bitrate.ToString(UsCulture);
+            var header = "#EXT-X-STREAM-INF:BANDWIDTH=" + bitrate.ToString(CultureInfo.InvariantCulture) + ",AVERAGE-BANDWIDTH=" + bitrate.ToString(CultureInfo.InvariantCulture);
 
             // tvos wants resolution, codecs, framerate
             //if (state.TargetFramerate.HasValue)
@@ -770,7 +770,7 @@ namespace MediaBrowser.Api.Playback.Hls
             builder.AppendLine("#EXTM3U");
             builder.AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
             builder.AppendLine("#EXT-X-VERSION:3");
-            builder.AppendLine("#EXT-X-TARGETDURATION:" + Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength).ToString(UsCulture));
+            builder.AppendLine("#EXT-X-TARGETDURATION:" + Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength).ToString(CultureInfo.InvariantCulture));
             builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
 
             var queryStringIndex = Request.RawUrl.IndexOf('?');
@@ -785,12 +785,12 @@ namespace MediaBrowser.Api.Playback.Hls
 
             foreach (var length in segmentLengths)
             {
-                builder.AppendLine("#EXTINF:" + length.ToString("0.0000", UsCulture) + ", nodesc");
+                builder.AppendLine("#EXTINF:" + length.ToString("0.0000", CultureInfo.InvariantCulture) + ", nodesc");
 
                 builder.AppendLine(string.Format("hls1/{0}/{1}{2}{3}",
 
                     name,
-                    index.ToString(UsCulture),
+                    index.ToString(CultureInfo.InvariantCulture),
                     GetSegmentFileExtension(request),
                     queryString));
 
@@ -821,17 +821,17 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 if (state.OutputAudioBitrate.HasValue)
                 {
-                    audioTranscodeParams.Add("-ab " + state.OutputAudioBitrate.Value.ToString(UsCulture));
+                    audioTranscodeParams.Add("-ab " + state.OutputAudioBitrate.Value.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (state.OutputAudioChannels.HasValue)
                 {
-                    audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(UsCulture));
+                    audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (state.OutputAudioSampleRate.HasValue)
                 {
-                    audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(UsCulture));
+                    audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture));
                 }
 
                 audioTranscodeParams.Add("-vn");
@@ -863,12 +863,12 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (bitrate.HasValue)
             {
-                args += " -ab " + bitrate.Value.ToString(UsCulture);
+                args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             if (state.OutputAudioSampleRate.HasValue)
             {
-                args += " -ar " + state.OutputAudioSampleRate.Value.ToString(UsCulture);
+                args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             args += " " + EncodingHelper.GetAudioFilterParam(state, encodingOptions, true);
@@ -905,7 +905,7 @@ namespace MediaBrowser.Api.Playback.Hls
             else
             {
                 var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
-                    state.SegmentLength.ToString(UsCulture));
+                    state.SegmentLength.ToString(CultureInfo.InvariantCulture));
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
@@ -953,7 +953,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             // If isEncoding is true we're actually starting ffmpeg
             var startNumber = GetStartNumber(state);
-            var startNumberParam = isEncoding ? startNumber.ToString(UsCulture) : "0";
+            var startNumberParam = isEncoding ? startNumber.ToString(CultureInfo.InvariantCulture) : "0";
 
             var mapArgs = state.IsOutputVideo ? EncodingHelper.GetMapArgs(state) : string.Empty;
 
@@ -984,7 +984,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 mapArgs,
                 GetVideoArguments(state, encodingOptions),
                 GetAudioArguments(state, encodingOptions),
-                state.SegmentLength.ToString(UsCulture),
+                state.SegmentLength.ToString(CultureInfo.InvariantCulture),
                 startNumberParam,
                 outputPath,
                 outputTsArg,
