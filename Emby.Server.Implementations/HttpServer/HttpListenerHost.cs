@@ -805,19 +805,15 @@ namespace Emby.Server.Implementations.HttpServer
 
             Logger.LogDebug("Websocket message received: {0}", result.MessageType);
 
-            var tasks = _webSocketListeners.Select(i => Task.Run(async () =>
+            IEnumerable<Task> GetTasks()
             {
-                try
+                foreach (var x in _webSocketListeners)
                 {
-                    await i.ProcessMessage(result).ConfigureAwait(false);
+                    yield return x.ProcessMessageAsync(result);
                 }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "{0} failed processing WebSocket message {1}", i.GetType().Name, result.MessageType ?? string.Empty);
-                }
-            }));
+            }
 
-            return Task.WhenAll(tasks);
+            return Task.WhenAll(GetTasks());
         }
 
         public void Dispose()

@@ -57,7 +57,7 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>Task.</returns>
-        public Task ProcessMessage(WebSocketMessageInfo message)
+        public Task ProcessMessageAsync(WebSocketMessageInfo message)
         {
             if (message == null)
             {
@@ -74,7 +74,7 @@ namespace MediaBrowser.Controller.Net
                 Stop(message);
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");

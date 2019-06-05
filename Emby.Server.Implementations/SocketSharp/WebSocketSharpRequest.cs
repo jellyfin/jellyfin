@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Linq;
 using System.Text;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Services;
@@ -296,27 +297,28 @@ namespace Emby.Server.Implementations.SocketSharp
         {
             get
             {
-                if (httpFiles == null)
+                if (httpFiles != null)
                 {
-                    if (files == null)
-                    {
-                        return httpFiles = Array.Empty<IHttpFile>();
-                    }
+                    return httpFiles;
+                }
 
-                    httpFiles = new IHttpFile[files.Count];
-                    var i = 0;
-                    foreach (var pair in files)
+                if (files == null)
+                {
+                    return httpFiles = Array.Empty<IHttpFile>();
+                }
+
+                var values = files.Values;
+                httpFiles = new IHttpFile[values.Count];
+                for (int i = 0; i < values.Count; i++)
+                {
+                    var reqFile = values.ElementAt(i);
+                    httpFiles[i] = new HttpFile
                     {
-                        var reqFile = pair.Value;
-                        httpFiles[i] = new HttpFile
-                        {
-                            ContentType = reqFile.ContentType,
-                            ContentLength = reqFile.ContentLength,
-                            FileName = reqFile.FileName,
-                            InputStream = reqFile.InputStream,
-                        };
-                        i++;
-                    }
+                        ContentType = reqFile.ContentType,
+                        ContentLength = reqFile.ContentLength,
+                        FileName = reqFile.FileName,
+                        InputStream = reqFile.InputStream,
+                    };
                 }
 
                 return httpFiles;

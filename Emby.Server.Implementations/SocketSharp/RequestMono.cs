@@ -86,8 +86,7 @@ namespace Emby.Server.Implementations.SocketSharp
                     else
                     {
                         // We use a substream, as in 2.x we will support large uploads streamed to disk,
-                        var sub = new HttpPostedFile(e.Filename, e.ContentType, input, e.Start, e.Length);
-                        files[e.Name] = sub;
+                        files[e.Name] = new HttpPostedFile(e.Filename, e.ContentType, input, e.Start, e.Length);
                     }
                 }
             }
@@ -374,7 +373,7 @@ namespace Emby.Server.Implementations.SocketSharp
 
                 var elem = new Element();
                 ReadOnlySpan<char> header;
-                while ((header = ReadHeaders().AsSpan()) != null)
+                while ((header = ReadLine().AsSpan()).Length != 0)
                 {
                     if (header.StartsWith("Content-Disposition:".AsSpan(), StringComparison.OrdinalIgnoreCase))
                     {
@@ -511,17 +510,6 @@ namespace Emby.Server.Implementations.SocketSharp
                 }
 
                 return false;
-            }
-
-            private string ReadHeaders()
-            {
-                string s = ReadLine();
-                if (s.Length == 0)
-                {
-                    return null;
-                }
-
-                return s;
             }
 
             private static bool CompareBytes(byte[] orig, byte[] other)

@@ -36,7 +36,7 @@ namespace Jellyfin.Server
         private static bool _restartOnShutdown;
         private static IConfiguration appConfig;
 
-        public static async Task Main(string[] args)
+        public static Task Main(string[] args)
         {
             // For backwards compatibility.
             // Modify any input arguments now which start with single-hyphen to POSIX standard
@@ -50,8 +50,8 @@ namespace Jellyfin.Server
             }
 
             // Parse the command line arguments and either start the app or exit indicating error
-            await Parser.Default.ParseArguments<StartupOptions>(args)
-                .MapResult(StartApp, _ => Task.CompletedTask).ConfigureAwait(false);
+            return Parser.Default.ParseArguments<StartupOptions>(args)
+                .MapResult(StartApp, _ => Task.CompletedTask);
         }
 
         public static void Shutdown()
