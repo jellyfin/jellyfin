@@ -407,9 +407,8 @@ namespace Emby.Server.Implementations.Library
 
             if (providers.Length == 0)
             {
-                // this function used to assign any user without an auth provider to the default.
-                // we're going to have it use a new function now.
-                _logger.LogWarning($"The user {user.Name} was found but no Authentication Provider with ID: {user.Policy.AuthenticationProviderId} was found. Assigning user to InvalidAuthProvider temporarily");
+                // Assign the user to the InvalidAuthProvider since no configured auth provider was valid/found
+                _logger.LogWarning("User {0} was found with invalid/missing Authentication Provider {1}. Assigning user to InvalidAuthProvider until this is corrected", user.Name, user.Policy.AuthenticationProviderId);
                 providers = new IAuthenticationProvider[] { _invalidAuthProvider };
             }
 
