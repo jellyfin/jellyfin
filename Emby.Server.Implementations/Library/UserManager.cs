@@ -422,6 +422,11 @@ namespace Emby.Server.Implementations.Library
                 providers = providers.Where(i => string.Equals(passwordResetProviderId, GetPasswordResetProviderId(i), StringComparison.OrdinalIgnoreCase)).ToArray();
             }
 
+            if (providers.Length == 0)
+            {
+                providers = new IPasswordResetProvider[] { _defaultPasswordResetProvider };
+            }
+
             return providers;
         }
 
