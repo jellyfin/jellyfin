@@ -79,6 +79,8 @@ namespace Emby.Server.Implementations.Library
         private IAuthenticationProvider[] _authenticationProviders;
         private DefaultAuthenticationProvider _defaultAuthenticationProvider;
 
+        private InvalidAuthProvider _invalidAuthProvider;
+
         private IPasswordResetProvider[] _passwordResetProviders;
         private DefaultPasswordResetProvider _defaultPasswordResetProvider;
 
@@ -140,6 +142,8 @@ namespace Emby.Server.Implementations.Library
             _authenticationProviders = authenticationProviders.ToArray();
 
             _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
+
+            _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
 
             _passwordResetProviders = passwordResetProviders.ToArray();
 
@@ -307,11 +311,14 @@ namespace Emby.Server.Implementations.Library
                     user = Users
                         .FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
 
-                    var hasNewUserPolicy = authenticationProvider as IHasNewUserPolicy;
-                    if (hasNewUserPolicy != null)
+                    if (authenticationProvider.GetType() != typeof(InvalidAuthProvider))
                     {
-                        var policy = hasNewUserPolicy.GetNewUserPolicy();
-                        UpdateUserPolicy(user, policy, true);
+                        var hasNewUserPolicy = authenticationProvider as IHasNewUserPolicy;
+                        if (hasNewUserPolicy != null)
+                        {
+                            var policy = hasNewUserPolicy.GetNewUserPolicy();
+                            UpdateUserPolicy(user, policy, true);
+                        }
                     }
                 }
             }
@@ -400,7 +407,10 @@ namespace Emby.Server.Implementations.Library
 
             if (providers.Length == 0)
             {
-                providers = new IAuthenticationProvider[] { _defaultAuthenticationProvider };
+                // this function used to assign any user without an auth provider to the default.
+                // we're going to have it use a new function now.
+                _logger.LogWarning($"The user {user.Name} was found but no Authentication Provider with ID: {user.Policy.AuthenticationProviderId} was found. Assigning user to InvalidAuthProvider temporarily");
+                providers = new IAuthenticationProvider[] { _invalidAuthProvider };
             }
 
             return providers;
