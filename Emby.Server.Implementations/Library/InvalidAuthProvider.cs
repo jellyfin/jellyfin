@@ -9,7 +9,7 @@ namespace Emby.Server.Implementations.Library
 {
     public class InvalidAuthProvider : IAuthenticationProvider
     {
-        public string Name => "InvalidorMissingAuthenticationProvider";
+        public string Name => "InvalidOrMissingAuthenticationProvider";
 
         public bool IsEnabled => true;
 
@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.Library
 
         public Task ChangePassword(User user, string newPassword)
         {
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
@@ -35,12 +35,12 @@ namespace Emby.Server.Implementations.Library
 
         public string GetPasswordHash(User user)
         {
-            return "";
+            return string.Empty;
         }
 
         public string GetEasyPasswordHash(User user)
         {
-            return "";
+            return string.Empty;
         }
     }
 }

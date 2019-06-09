@@ -313,8 +313,7 @@ namespace Emby.Server.Implementations.Library
 
                     if (authenticationProvider.GetType() != typeof(InvalidAuthProvider))
                     {
-                        var hasNewUserPolicy = authenticationProvider as IHasNewUserPolicy;
-                        if (hasNewUserPolicy != null)
+                        if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy)
                         {
                             var policy = hasNewUserPolicy.GetNewUserPolicy();
                             UpdateUserPolicy(user, policy, true);
@@ -408,7 +407,7 @@ namespace Emby.Server.Implementations.Library
             if (providers.Length == 0)
             {
                 // Assign the user to the InvalidAuthProvider since no configured auth provider was valid/found
-                _logger.LogWarning("User {0} was found with invalid/missing Authentication Provider {1}. Assigning user to InvalidAuthProvider until this is corrected", user.Name, user.Policy.AuthenticationProviderId);
+                _logger.LogWarning("User {UserName} was found with invalid/missing Authentication Provider {AuthenticationProviderId}. Assigning user to InvalidAuthProvider until this is corrected", user.Name, user.Policy.AuthenticationProviderId);
                 providers = new IAuthenticationProvider[] { _invalidAuthProvider };
             }
 
