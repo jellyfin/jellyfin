@@ -22,6 +22,7 @@ assignees: ''
  - Reverse proxy: [e.g. no, nginx, apache, etc.]
  
 **Client System (please complete the following information):**
+ - Device: [e.g. Apple iPhone XS, Xbox One S, LG OLED55C8, Samsung Galaxy Note9, Custom HTPC]
  - OS: [e.g. iOS, Android, Windows, macOS]
  - Client: [e.g. Web/Browser, webOS, Android, Android TV, Electron]
  - Browser (if Web client): [e.g. Firefox, Chrome, Safari]
