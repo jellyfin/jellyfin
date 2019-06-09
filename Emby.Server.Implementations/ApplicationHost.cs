@@ -231,11 +231,6 @@ namespace Emby.Server.Implementations
         /// <value>The server configuration manager.</value>
         public IServerConfigurationManager ServerConfigurationManager => (IServerConfigurationManager)ConfigurationManager;
 
-        protected virtual IResourceFileManager CreateResourceFileManager()
-        {
-            return new ResourceFileManager(HttpResultFactory, LoggerFactory, FileSystemManager);
-        }
-
         /// <summary>
         /// Gets or sets the user manager.
         /// </summary>
@@ -886,7 +881,7 @@ namespace Emby.Server.Implementations
             SubtitleEncoder = new MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder(LibraryManager, LoggerFactory, ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, ProcessFactory);
             serviceCollection.AddSingleton(SubtitleEncoder);
 
-            serviceCollection.AddSingleton(CreateResourceFileManager());
+            serviceCollection.AddSingleton(typeof(IResourceFileManager), typeof(ResourceFileManager));
 
             displayPreferencesRepo.Initialize();
 
