@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Net;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -15,7 +16,7 @@ namespace Emby.Server.Implementations.Library
 
         public Task<ProviderAuthenticationResult> Authenticate(string username, string password)
         {
-            throw new Exception("User Account cannot login with this provider. The Normal provider for this user cannot be found");
+            throw new SecurityException("User Account cannot login with this provider. The Normal provider for this user cannot be found");
         }
 
         public Task<bool> HasPassword(User user)
