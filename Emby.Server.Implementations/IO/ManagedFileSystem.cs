@@ -20,16 +20,14 @@ namespace Emby.Server.Implementations.IO
         protected ILogger Logger;
 
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
-
         private readonly string _tempPath;
-
         private readonly bool _isEnvironmentCaseInsensitive;
 
         public ManagedFileSystem(
-            ILoggerFactory loggerFactory,
+            ILogger<ManagedFileSystem> logger,
             IApplicationPaths applicationPaths)
         {
-            Logger = loggerFactory.CreateLogger("FileSystem");
+            Logger = logger;
             _tempPath = applicationPaths.TempDirectory;
 
             _isEnvironmentCaseInsensitive = OperatingSystem.Id == OperatingSystemId.Windows;
