@@ -1,4 +1,5 @@
 using System;
+
 namespace MediaBrowser.Controller.Authentication
 {
     /// <summary>

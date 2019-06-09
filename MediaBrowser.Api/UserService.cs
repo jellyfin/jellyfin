@@ -365,8 +365,8 @@ namespace MediaBrowser.Api
             }
 
             _sessionMananger.RevokeUserTokens(user.Id, null);
-
-            return _userManager.DeleteUser(user);
+            _userManager.DeleteUser(user);
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -503,9 +503,14 @@ namespace MediaBrowser.Api
             }
         }
 
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
         public async Task<object> Post(CreateUserByName request)
         {
-            var newUser = await _userManager.CreateUser(request.Name).ConfigureAwait(false);
+            var newUser = _userManager.CreateUser(request.Name);
 
             // no need to authenticate password for new user
             if (request.Password != null)
