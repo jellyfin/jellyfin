@@ -311,13 +311,10 @@ namespace Emby.Server.Implementations.Library
                     user = Users
                         .FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
 
-                    if (authenticationProvider.GetType() != typeof(InvalidAuthProvider))
+                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy)
                     {
-                        if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy)
-                        {
-                            var policy = hasNewUserPolicy.GetNewUserPolicy();
-                            UpdateUserPolicy(user, policy, true);
-                        }
+                        var policy = hasNewUserPolicy.GetNewUserPolicy();
+                        UpdateUserPolicy(user, policy, true);
                     }
                 }
             }
