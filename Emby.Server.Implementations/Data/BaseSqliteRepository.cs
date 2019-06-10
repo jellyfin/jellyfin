@@ -203,6 +203,7 @@ namespace Emby.Server.Implementations.Data
         {
             var queries = new List<string>
             {
+                "VACUUM",
                 "PRAGMA journal_mode=WAL",
                 "PRAGMA page_size=4096",
                 "PRAGMA synchronous=Normal"
