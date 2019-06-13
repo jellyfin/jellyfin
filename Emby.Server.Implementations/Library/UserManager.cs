@@ -79,6 +79,8 @@ namespace Emby.Server.Implementations.Library
         private IAuthenticationProvider[] _authenticationProviders;
         private DefaultAuthenticationProvider _defaultAuthenticationProvider;
 
+        private InvalidAuthProvider _invalidAuthProvider;
+
         private IPasswordResetProvider[] _passwordResetProviders;
         private DefaultPasswordResetProvider _defaultPasswordResetProvider;
 
@@ -140,6 +142,8 @@ namespace Emby.Server.Implementations.Library
             _authenticationProviders = authenticationProviders.ToArray();
 
             _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
+
+            _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
 
             _passwordResetProviders = passwordResetProviders.ToArray();
 
@@ -307,8 +311,7 @@ namespace Emby.Server.Implementations.Library
                     user = Users
                         .FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
 
-                    var hasNewUserPolicy = authenticationProvider as IHasNewUserPolicy;
-                    if (hasNewUserPolicy != null)
+                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy)
                     {
                         var policy = hasNewUserPolicy.GetNewUserPolicy();
                         UpdateUserPolicy(user, policy, true);
@@ -400,7 +403,9 @@ namespace Emby.Server.Implementations.Library
 
             if (providers.Length == 0)
             {
-                providers = new IAuthenticationProvider[] { _defaultAuthenticationProvider };
+                // Assign the user to the InvalidAuthProvider since no configured auth provider was valid/found
+                _logger.LogWarning("User {UserName} was found with invalid/missing Authentication Provider {AuthenticationProviderId}. Assigning user to InvalidAuthProvider until this is corrected", user.Name, user.Policy.AuthenticationProviderId);
+                providers = new IAuthenticationProvider[] { _invalidAuthProvider };
             }
 
             return providers;
@@ -471,7 +476,7 @@ namespace Emby.Server.Implementations.Library
             if (password == null)
             {
                 // legacy
-                success = string.Equals(_defaultAuthenticationProvider.GetPasswordHash(user), hashedPassword.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+                success = string.Equals(GetAuthenticationProvider(user).GetPasswordHash(user), hashedPassword.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
             }
             else
             {
@@ -497,11 +502,11 @@ namespace Emby.Server.Implementations.Library
                     if (password == null)
                     {
                         // legacy
-                        success = string.Equals(GetLocalPasswordHash(user), hashedPassword.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+                        success = string.Equals(GetAuthenticationProvider(user).GetEasyPasswordHash(user), hashedPassword.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
                     }
                     else
                     {
-                        success = string.Equals(GetLocalPasswordHash(user), _defaultAuthenticationProvider.GetHashedString(user, password), StringComparison.OrdinalIgnoreCase);
+                        success = string.Equals(GetAuthenticationProvider(user).GetEasyPasswordHash(user), _defaultAuthenticationProvider.GetHashedString(user, password), StringComparison.OrdinalIgnoreCase);
                     }
                 }
             }
@@ -544,13 +549,6 @@ namespace Emby.Server.Implementations.Library
             {
                 UserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
             }
-        }
-
-        private string GetLocalPasswordHash(User user)
-        {
-            return string.IsNullOrEmpty(user.EasyPassword)
-                ? null
-                : (new PasswordHash(user.EasyPassword)).Hash;
         }
 
         /// <summary>
@@ -596,7 +594,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             bool hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user).Result;
-            bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(GetLocalPasswordHash(user));
+            bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(GetAuthenticationProvider(user).GetEasyPasswordHash(user));
 
             bool hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
                 hasConfiguredEasyPassword :
@@ -884,17 +882,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(user));
             }
 
-            if (newPassword != null)
-            {
-                newPasswordHash = _defaultAuthenticationProvider.GetHashedString(user, newPassword);
-            }
-
-            if (string.IsNullOrWhiteSpace(newPasswordHash))
-            {
-                throw new ArgumentNullException(nameof(newPasswordHash));
-            }
-
-            user.EasyPassword = newPasswordHash;
+            GetAuthenticationProvider(user).ChangeEasyPassword(user, newPassword, newPasswordHash);
 
             UpdateUser(user);
 
