@@ -310,38 +310,28 @@ namespace Emby.Server.Implementations.HttpClientManager
                 || !string.IsNullOrEmpty(options.RequestContent)
                 || httpMethod == HttpMethod.Post)
             {
-                try
-                {
-                    if (options.RequestContentBytes != null)
-                    {
-                        httpWebRequest.Content = new ByteArrayContent(options.RequestContentBytes);
-                    }
-                    else if (options.RequestContent != null)
-                    {
-                        httpWebRequest.Content = new StringContent(options.RequestContent);
-                    }
-                    else
-                    {
-                        httpWebRequest.Content = new ByteArrayContent(Array.Empty<byte>());
-                    }
-                    /*
-                    var contentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
 
-                    if (options.AppendCharsetToMimeType)
-                    {
-                        contentType = contentType.TrimEnd(';') + "; charset=\"utf-8\"";
-                    }
-
-                    httpWebRequest.Headers.Add(HeaderNames.ContentType, contentType);*/
-                    using (var response = await client.SendAsync(httpWebRequest).ConfigureAwait(false))
-                    {
-                        return await HandleResponseAsync(response, options).ConfigureAwait(false);
-                    }
-                }
-                catch (Exception ex)
+                if (options.RequestContentBytes != null)
                 {
-                    throw new HttpException(ex.Message) { IsTimedOut = true };
+                    httpWebRequest.Content = new ByteArrayContent(options.RequestContentBytes);
                 }
+                else if (options.RequestContent != null)
+                {
+                    httpWebRequest.Content = new StringContent(options.RequestContent);
+                }
+                else
+                {
+                    httpWebRequest.Content = new ByteArrayContent(Array.Empty<byte>());
+                }
+                /*
+                var contentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
+
+                if (options.AppendCharsetToMimeType)
+                {
+                    contentType = contentType.TrimEnd(';') + "; charset=\"utf-8\"";
+                }
+
+                httpWebRequest.Headers.Add(HeaderNames.ContentType, contentType);*/
             }
 
             if (options.LogRequest)
@@ -349,54 +339,42 @@ namespace Emby.Server.Implementations.HttpClientManager
                 _logger.LogDebug("HttpClientManager {0}: {1}", httpMethod.ToString(), options.Url);
             }
 
-            try
-            {
-                options.CancellationToken.ThrowIfCancellationRequested();
-
-                /*if (!options.BufferContent)
-                {
-                    var response = await client.HttpClient.SendAsync(httpWebRequest).ConfigureAwait(false);
-
-                    await EnsureSuccessStatusCode(client, response, options).ConfigureAwait(false);
-
-                    options.CancellationToken.ThrowIfCancellationRequested();
-
-                    return GetResponseInfo(response, await response.Content.ReadAsStreamAsync().ConfigureAwait(false), response.Content.Headers.ContentLength, response);
-                }*/
-
-                using (var response = await client.SendAsync(httpWebRequest).ConfigureAwait(false))
-                {
-                    return await HandleResponseAsync(response, options).ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException ex)
-            {
-                throw GetCancellationException(options, options.CancellationToken, ex);
-            }
-        }
-
-        private async Task<HttpResponseInfo> HandleResponseAsync(HttpResponseMessage response, HttpRequestOptions options)
-        {
-            await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
-
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+            /*if (!options.BufferContent)
             {
-                var memoryStream = new MemoryStream();
-                await stream.CopyToAsync(memoryStream, 81920, options.CancellationToken).ConfigureAwait(false);
-                memoryStream.Position = 0;
+                var response = await client.HttpClient.SendAsync(httpWebRequest).ConfigureAwait(false);
 
-                var responseInfo = new HttpResponseInfo(response.Headers)
+                await EnsureSuccessStatusCode(client, response, options).ConfigureAwait(false);
+
+                options.CancellationToken.ThrowIfCancellationRequested();
+
+                return GetResponseInfo(response, await response.Content.ReadAsStreamAsync().ConfigureAwait(false), response.Content.Headers.ContentLength, response);
+            }*/
+
+            using (var response = await client.SendAsync(httpWebRequest, options.CancellationToken).ConfigureAwait(false))
+            {
+                await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
+
+                options.CancellationToken.ThrowIfCancellationRequested();
+
+                using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                 {
-                    Content = memoryStream,
-                    StatusCode = response.StatusCode,
-                    ContentType = response.Content.Headers.ContentType?.MediaType,
-                    ContentLength = memoryStream.Length,
-                    ResponseUrl = response.Content.Headers.ContentLocation?.ToString()
-                };
+                    var memoryStream = new MemoryStream();
+                    await stream.CopyToAsync(memoryStream, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
+                    memoryStream.Position = 0;
 
-                return responseInfo;
+                    var responseInfo = new HttpResponseInfo(response.Headers)
+                    {
+                        Content = memoryStream,
+                        StatusCode = response.StatusCode,
+                        ContentType = response.Content.Headers.ContentType?.MediaType,
+                        ContentLength = memoryStream.Length,
+                        ResponseUrl = response.Content.Headers.ContentLocation?.ToString()
+                    };
+
+                    return responseInfo;
+                }
             }
         }
 
@@ -603,7 +581,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             }
 
             var msg = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            _logger.LogError(msg);
+            _logger.LogError("HTTP request failed with message: {Message}", msg);
 
             throw new HttpException(response.ReasonPhrase)
             {
