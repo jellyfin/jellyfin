@@ -24,11 +24,6 @@ namespace Emby.Server.Implementations.HttpClientManager
     public class HttpClientManager : IHttpClient
     {
         /// <summary>
-        /// When one request to a host times out, we'll ban all other requests for this period of time, to prevent scans from stalling
-        /// </summary>
-        private const int TimeoutSeconds = 30;
-
-        /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
@@ -46,7 +41,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// </summary>
         public HttpClientManager(
             IApplicationPaths appPaths,
-            ILoggerFactory loggerFactory,
+            ILogger<HttpClientManager> logger,
             IFileSystem fileSystem,
             Func<string> defaultUserAgentFn)
         {
@@ -55,18 +50,15 @@ namespace Emby.Server.Implementations.HttpClientManager
                 throw new ArgumentNullException(nameof(appPaths));
             }
 
-            if (loggerFactory == null)
+            if (logger == null)
             {
-                throw new ArgumentNullException(nameof(loggerFactory));
+                throw new ArgumentNullException(nameof(logger));
             }
 
-            _logger = loggerFactory.CreateLogger(nameof(HttpClientManager));
+            _logger = logger;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
             _defaultUserAgentFn = defaultUserAgentFn;
-
-            // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
-            ServicePointManager.Expect100Continue = false;
         }
 
         /// <summary>
@@ -83,13 +75,12 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// <param name="enableHttpCompression">if set to <c>true</c> [enable HTTP compression].</param>
         /// <returns>HttpClient.</returns>
         /// <exception cref="ArgumentNullException">host</exception>
-        private HttpClient GetHttpClient(string url, bool enableHttpCompression)
+        private HttpClient GetHttpClient(string url)
         {
-            var key = GetHostFromUrl(url) + enableHttpCompression;
+            var key = GetHostFromUrl(url);
 
             if (!_httpClients.TryGetValue(key, out var client))
             {
-
                 client = new HttpClient()
                 {
                     BaseAddress = new Uri(url)
@@ -109,24 +100,27 @@ namespace Emby.Server.Implementations.HttpClientManager
             if (!string.IsNullOrWhiteSpace(userInfo))
             {
                 _logger.LogWarning("Found userInfo in url: {0} ... url: {1}", userInfo, url);
-                url = url.Replace(userInfo + "@", string.Empty);
+                url = url.Replace(userInfo + '@', string.Empty);
             }
 
             var request = new HttpRequestMessage(method, url);
 
             AddRequestHeaders(request, options);
 
-            if (options.EnableHttpCompression)
+            switch (options.DecompressionMethod)
             {
-                if (options.DecompressionMethod.HasValue
-                    && options.DecompressionMethod.Value == CompressionMethod.Gzip)
-                {
+                case CompressionMethod.Deflate | CompressionMethod.Gzip:
                     request.Headers.Add(HeaderNames.AcceptEncoding, new[] { "gzip", "deflate" });
-                }
-                else
-                {
+                    break;
+                case CompressionMethod.Deflate:
                     request.Headers.Add(HeaderNames.AcceptEncoding, "deflate");
-                }
+                    break;
+                case CompressionMethod.Gzip:
+                    request.Headers.Add(HeaderNames.AcceptEncoding, "gzip");
+                    break;
+                case 0:
+                default:
+                    break;
             }
 
             if (options.EnableKeepAlive)
@@ -134,19 +128,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                 request.Headers.Add(HeaderNames.Connection, "Keep-Alive");
             }
 
-            if (!string.IsNullOrEmpty(options.Host))
-            {
-                request.Headers.Add(HeaderNames.Host, options.Host);
-            }
-
-            if (!string.IsNullOrEmpty(options.Referer))
-            {
-                request.Headers.Add(HeaderNames.Referer, options.Referer);
-            }
-
             //request.Headers.Add(HeaderNames.CacheControl, "no-cache");
-
-            //request.Headers.Add(HeaderNames., options.TimeoutMs;
 
             /*
             if (!string.IsNullOrWhiteSpace(userInfo))
@@ -188,9 +170,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// <param name="options">The options.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
         public Task<HttpResponseInfo> GetResponse(HttpRequestOptions options)
-        {
-            return SendAsync(options, HttpMethod.Get);
-        }
+            => SendAsync(options, HttpMethod.Get);
 
         /// <summary>
         /// Performs a GET request and returns the resulting stream
@@ -324,18 +304,29 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            var client = GetHttpClient(options.Url, options.EnableHttpCompression);
+            var client = GetHttpClient(options.Url);
 
             var httpWebRequest = GetRequestMessage(options, httpMethod);
 
-            if (options.RequestContentBytes != null ||
-                !string.IsNullOrEmpty(options.RequestContent) ||
-                httpMethod == HttpMethod.Post)
+            if (options.RequestContentBytes != null
+                || !string.IsNullOrEmpty(options.RequestContent)
+                || httpMethod == HttpMethod.Post)
             {
                 try
                 {
-                    httpWebRequest.Content = new StringContent(Encoding.UTF8.GetString(options.RequestContentBytes) ?? options.RequestContent ?? string.Empty);
-
+                    if (options.RequestContentBytes != null)
+                    {
+                        httpWebRequest.Content = new ByteArrayContent(options.RequestContentBytes);
+                    }
+                    else if (options.RequestContent != null)
+                    {
+                        httpWebRequest.Content = new StringContent(options.RequestContent);
+                    }
+                    else
+                    {
+                        httpWebRequest.Content = new ByteArrayContent(Array.Empty<byte>());
+                    }
+                    /*
                     var contentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
 
                     if (options.AppendCharsetToMimeType)
@@ -343,8 +334,11 @@ namespace Emby.Server.Implementations.HttpClientManager
                         contentType = contentType.TrimEnd(';') + "; charset=\"utf-8\"";
                     }
 
-                    httpWebRequest.Headers.Add(HeaderNames.ContentType, contentType);
-                    await client.SendAsync(httpWebRequest).ConfigureAwait(false);
+                    httpWebRequest.Headers.Add(HeaderNames.ContentType, contentType);*/
+                    using (var response = await client.SendAsync(httpWebRequest).ConfigureAwait(false))
+                    {
+                        return await HandleResponseAsync(response, options).ConfigureAwait(false);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -374,18 +368,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
                 using (var response = await client.SendAsync(httpWebRequest).ConfigureAwait(false))
                 {
-                    await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
-
-                    options.CancellationToken.ThrowIfCancellationRequested();
-
-                    using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                    {
-                        var memoryStream = new MemoryStream();
-                        await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-                        memoryStream.Position = 0;
-
-                        return GetResponseInfo(response, memoryStream, memoryStream.Length, null);
-                    }
+                    return await HandleResponseAsync(response, options).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException ex)
@@ -394,9 +377,25 @@ namespace Emby.Server.Implementations.HttpClientManager
             }
         }
 
-        private HttpResponseInfo GetResponseInfo(HttpResponseMessage httpResponse, Stream content, long? contentLength, IDisposable disposable)
+        private async Task<HttpResponseInfo> HandleResponseAsync(HttpResponseMessage response, HttpRequestOptions options)
         {
-            var responseInfo = new HttpResponseInfo(disposable)
+            await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
+
+            options.CancellationToken.ThrowIfCancellationRequested();
+
+            using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+            {
+                var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream, 81920, options.CancellationToken).ConfigureAwait(false);
+                memoryStream.Position = 0;
+
+                return GetResponseInfo(response, memoryStream, memoryStream.Length);
+            }
+        }
+
+        private HttpResponseInfo GetResponseInfo(HttpResponseMessage httpResponse, Stream content, long? contentLength)
+        {
+            var responseInfo = new HttpResponseInfo()
             {
                 Content = content,
                 StatusCode = httpResponse.StatusCode,
@@ -433,16 +432,14 @@ namespace Emby.Server.Implementations.HttpClientManager
 
         private static void SetHeaders(HttpContentHeaders headers, HttpResponseInfo responseInfo)
         {
-            foreach (var key in headers)
+            foreach (var header in headers)
             {
-                responseInfo.Headers[key.Key] = string.Join(", ", key.Value);
+                responseInfo.Headers[header.Key] = string.Join(", ", header.Value);
             }
         }
 
         public Task<HttpResponseInfo> Post(HttpRequestOptions options)
-        {
-            return SendAsync(options, HttpMethod.Post);
-        }
+            => SendAsync(options, HttpMethod.Post);
 
         /// <summary>
         /// Downloads the contents of a given url into a temporary location
@@ -451,10 +448,8 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// <returns>Task{System.String}.</returns>
         public async Task<string> GetTempFile(HttpRequestOptions options)
         {
-            using (var response = await GetTempFileResponse(options).ConfigureAwait(false))
-            {
-                return response.TempFilePath;
-            }
+            var response = await GetTempFileResponse(options).ConfigureAwait(false);
+            return response.TempFilePath;
         }
 
         public async Task<HttpResponseInfo> GetTempFileResponse(HttpRequestOptions options)
@@ -481,13 +476,13 @@ namespace Emby.Server.Implementations.HttpClientManager
                 _logger.LogDebug("HttpClientManager.GetTempFileResponse url: {0}", options.Url);
             }
 
-            var client = GetHttpClient(options.Url, options.EnableHttpCompression);
+            var client = GetHttpClient(options.Url);
 
             try
             {
                 options.CancellationToken.ThrowIfCancellationRequested();
 
-                using (var response = (await client.SendAsync(httpWebRequest).ConfigureAwait(false)))
+                using (var response = (await client.SendAsync(httpWebRequest, options.CancellationToken).ConfigureAwait(false)))
                 {
                     await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
 
@@ -530,7 +525,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             {
                 if (options.LogErrors)
                 {
-                    _logger.LogError(webException, "Error {status} getting response from {url}", webException.Status, options.Url);
+                    _logger.LogError(webException, "Error {Status} getting response from {Url}", webException.Status, options.Url);
                 }
 
                 var exception = new HttpException(webException.Message, webException);
@@ -565,7 +560,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (options.LogErrors)
             {
-                _logger.LogError(ex, "Error getting response from {url}", options.Url);
+                _logger.LogError(ex, "Error getting response from {Url}", options.Url);
             }
 
             return ex;

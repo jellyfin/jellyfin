@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Microsoft.Net.Http.Headers;
 
@@ -17,7 +16,7 @@ namespace MediaBrowser.Common.Net
         /// <value>The URL.</value>
         public string Url { get; set; }
 
-        public CompressionMethod? DecompressionMethod { get; set; }
+        public CompressionMethod DecompressionMethod { get; set; }
 
         /// <summary>
         /// Gets or sets the accept header.
@@ -49,25 +48,27 @@ namespace MediaBrowser.Common.Net
         /// Gets or sets the referrer.
         /// </summary>
         /// <value>The referrer.</value>
-        public string Referer { get; set; }
+        public string Referer
+        {
+            get => GetHeaderValue(HeaderNames.Referer);
+            set => RequestHeaders[HeaderNames.Referer] = value;
+        }
 
         /// <summary>
         /// Gets or sets the host.
         /// </summary>
         /// <value>The host.</value>
-        public string Host { get; set; }
+        public string Host
+        {
+            get => GetHeaderValue(HeaderNames.Host);
+            set => RequestHeaders[HeaderNames.Host] = value;
+        }
 
         /// <summary>
         /// Gets or sets the progress.
         /// </summary>
         /// <value>The progress.</value>
         public IProgress<double> Progress { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable HTTP compression].
-        /// </summary>
-        /// <value><c>true</c> if [enable HTTP compression]; otherwise, <c>false</c>.</value>
-        public bool EnableHttpCompression { get; set; }
 
         public Dictionary<string, string> RequestHeaders { get; private set; }
 
@@ -104,13 +105,12 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         public HttpRequestOptions()
         {
-            EnableHttpCompression = true;
-
             RequestHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             LogRequest = true;
             LogErrors = true;
             CacheMode = CacheMode.None;
+            DecompressionMethod = CompressionMethod.Deflate;
         }
     }
 
@@ -122,7 +122,8 @@ namespace MediaBrowser.Common.Net
 
     public enum CompressionMethod
     {
-        Deflate,
-        Gzip
+        None = 0b00000001,
+        Deflate = 0b00000010,
+        Gzip = 0b00000100
     }
 }
