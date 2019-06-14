@@ -25,10 +25,14 @@
   <Rules AnalyzerId="Microsoft.CodeAnalysis.FxCopAnalyzers" RuleNamespace="Microsoft.Design">
     <!-- disable warning CA1031: Do not catch general exception types -->
     <Rule Id="CA1031" Action="Info" />
+    <!-- disable warning CA1062: Validate arguments of public methods -->
+    <Rule Id="CA1062" Action="Info" />
     <!-- disable warning CA1822: Member does not access instance data and can be marked as static -->
     <Rule Id="CA1822" Action="Info" />
 
     <!-- disable warning CA1054: Change the type of parameter url from string to System.Uri -->
     <Rule Id="CA1054" Action="None" />
+    <!-- disable warning CA1303: Do not pass literals as localized parameters -->
+    <Rule Id="CA1303" Action="None" />
   </Rules>
 </RuleSet>
