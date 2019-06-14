@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -389,52 +387,16 @@ namespace Emby.Server.Implementations.HttpClientManager
                 await stream.CopyToAsync(memoryStream, 81920, options.CancellationToken).ConfigureAwait(false);
                 memoryStream.Position = 0;
 
-                return GetResponseInfo(response, memoryStream, memoryStream.Length);
-            }
-        }
+                var responseInfo = new HttpResponseInfo(response.Headers)
+                {
+                    Content = memoryStream,
+                    StatusCode = response.StatusCode,
+                    ContentType = response.Content.Headers.ContentType?.MediaType,
+                    ContentLength = memoryStream.Length,
+                    ResponseUrl = response.Content.Headers.ContentLocation?.ToString()
+                };
 
-        private HttpResponseInfo GetResponseInfo(HttpResponseMessage httpResponse, Stream content, long? contentLength)
-        {
-            var responseInfo = new HttpResponseInfo()
-            {
-                Content = content,
-                StatusCode = httpResponse.StatusCode,
-                ContentType = httpResponse.Content.Headers.ContentType?.MediaType,
-                ContentLength = contentLength,
-                ResponseUrl = httpResponse.Content.Headers.ContentLocation?.ToString()
-            };
-
-            if (httpResponse.Headers != null)
-            {
-                SetHeaders(httpResponse.Content.Headers, responseInfo);
-            }
-
-            return responseInfo;
-        }
-
-        private HttpResponseInfo GetResponseInfo(HttpResponseMessage httpResponse, string tempFile, long? contentLength)
-        {
-            var responseInfo = new HttpResponseInfo
-            {
-                TempFilePath = tempFile,
-                StatusCode = httpResponse.StatusCode,
-                ContentType = httpResponse.Content.Headers.ContentType?.MediaType,
-                ContentLength = contentLength
-            };
-
-            if (httpResponse.Headers != null)
-            {
-                SetHeaders(httpResponse.Content.Headers, responseInfo);
-            }
-
-            return responseInfo;
-        }
-
-        private static void SetHeaders(HttpContentHeaders headers, HttpResponseInfo responseInfo)
-        {
-            foreach (var header in headers)
-            {
-                responseInfo.Headers[header.Key] = string.Join(", ", header.Value);
+                return responseInfo;
             }
         }
 
@@ -496,8 +458,15 @@ namespace Emby.Server.Implementations.HttpClientManager
 
                     options.Progress.Report(100);
 
-                    var contentLength = response.Content.Headers.ContentLength;
-                    return GetResponseInfo(response, tempFile, contentLength);
+                    var responseInfo = new HttpResponseInfo(response.Headers)
+                    {
+                        TempFilePath = tempFile,
+                        StatusCode = response.StatusCode,
+                        ContentType = response.Content.Headers.ContentType?.MediaType,
+                        ContentLength = response.Content.Headers.ContentLength
+                    };
+
+                    return responseInfo;
                 }
             }
             catch (Exception ex)
