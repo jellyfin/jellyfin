@@ -71,7 +71,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 UserAgent = "Emby/3.0",
 
                 // Shouldn't matter but may cause issues
-                EnableHttpCompression = false
+                DecompressionMethod = CompressionMethod.None
             };
 
             using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false))

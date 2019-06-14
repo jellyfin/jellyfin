@@ -52,13 +52,6 @@ namespace MediaBrowser.Common.Net
         /// <value>The headers.</value>
         public Dictionary<string, string> Headers { get; set; }
 
-        private readonly IDisposable _disposable;
-
-        public HttpResponseInfo(IDisposable disposable)
-        {
-            _disposable = disposable;
-            Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
         public HttpResponseInfo()
         {
             Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -66,10 +59,7 @@ namespace MediaBrowser.Common.Net
 
         public void Dispose()
         {
-            if (_disposable != null)
-            {
-                _disposable.Dispose();
-            }
+            // Only IDisposable for backwards compatibility
         }
     }
 }
