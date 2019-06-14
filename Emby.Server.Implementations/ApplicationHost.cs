@@ -1643,7 +1643,7 @@ namespace Emby.Server.Implementations
                     {
                         Url = apiUrl,
                         LogErrorResponseBody = false,
-                        LogErrors = logPing,
+                        LogErrors = LogPing,
                         LogRequest = logPing,
                         BufferContent = false,
 
