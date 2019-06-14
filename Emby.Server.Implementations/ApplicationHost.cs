@@ -1644,7 +1644,7 @@ namespace Emby.Server.Implementations
                         Url = apiUrl,
                         LogErrorResponseBody = false,
                         LogErrors = LogPing,
-                        LogRequest = logPing,
+                        LogRequest = LogPing,
                         BufferContent = false,
 
                         CancellationToken = cancellationToken
