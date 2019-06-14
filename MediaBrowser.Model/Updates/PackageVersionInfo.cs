@@ -30,23 +30,25 @@ namespace MediaBrowser.Model.Updates
         /// The _version
         /// </summary>
         private Version _version;
+
         /// <summary>
         /// Gets or sets the version.
         /// Had to make this an interpreted property since Protobuf can't handle Version
         /// </summary>
         /// <value>The version.</value>
         [IgnoreDataMember]
-        public Version version => _version ?? (_version = new Version(ValueOrDefault(versionStr, "0.0.0.1")));
-
-        /// <summary>
-        /// Values the or default.
-        /// </summary>
-        /// <param name="str">The STR.</param>
-        /// <param name="def">The def.</param>
-        /// <returns>System.String.</returns>
-        private static string ValueOrDefault(string str, string def)
+        public Version Version
         {
-            return string.IsNullOrEmpty(str) ? def : str;
+            get
+            {
+                if (_version == null)
+                {
+                    var ver = versionStr;
+                    _version = new Version(string.IsNullOrEmpty(ver) ? "0.0.0.1" : ver);
+                }
+
+                return _version;
+            }
         }
 
         /// <summary>

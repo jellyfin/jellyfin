@@ -16,11 +16,6 @@ namespace MediaBrowser.Common.Updates
         event EventHandler<InstallationEventArgs> PackageInstallationCancelled;
 
         /// <summary>
-        /// The current installations
-        /// </summary>
-        List<Tuple<InstallationInfo, CancellationTokenSource>> CurrentInstallations { get; set; }
-
-        /// <summary>
         /// The completed installations
         /// </summary>
         IEnumerable<InstallationInfo> CompletedInstallations { get; }
@@ -33,7 +28,7 @@ namespace MediaBrowser.Common.Updates
         /// <summary>
         /// Occurs when [plugin updated].
         /// </summary>
-        event EventHandler<GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>>> PluginUpdated;
+        event EventHandler<GenericEventArgs<(IPlugin, PackageVersionInfo)>> PluginUpdated;
 
         /// <summary>
         /// Occurs when [plugin updated].
@@ -107,7 +102,7 @@ namespace MediaBrowser.Common.Updates
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">package</exception>
-        Task InstallPackage(PackageVersionInfo package, bool isPlugin, IProgress<double> progress, CancellationToken cancellationToken);
+        Task InstallPackage(PackageVersionInfo package, IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Uninstalls a plugin
@@ -115,5 +110,12 @@ namespace MediaBrowser.Common.Updates
         /// <param name="plugin">The plugin.</param>
         /// <exception cref="ArgumentException"></exception>
         void UninstallPlugin(IPlugin plugin);
+
+        /// <summary>
+        /// Cancels the installation
+        /// </summary>
+        /// <param name="id">The id of the package that is being installed</param>
+        /// <returns>Returns true if the install was cancelled</returns>
+        bool CancelInstallation(Guid id);
     }
 }
