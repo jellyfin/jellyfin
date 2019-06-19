@@ -19,7 +19,7 @@ assignees: ''
 **Server System (please complete the following information):**
  - OS: [e.g. Docker on Linux, Docker on Windows, Debian, Windows]
  - Jellyfin Version: [e.g. 10.0.1]
- - Hardware settings & device: [e.g. NVENC on GTX1060, VAAPI on Intel i7 87000K]
+ - Hardware settings & device: [e.g. NVENC on GTX1060, VAAPI on Intel i7 8700K]
  - Reverse proxy: [e.g. no, nginx, apache, etc.]
  - Other hardware notes: [e.g. Media mounted in CIFS/SMB share, Media mounted from Google Drive]
  
