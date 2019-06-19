@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 **Media Info of the file**
-<!-- Use the Media Info tool (set to text format) or copy the info from the web ui for the file with the playback issue. -->
+<!-- Use the Media Info tool (set to text format, download here: https://mediaarea.net/en/MediaInfo) or copy the info from the web ui for the file with the playback issue. -->
 
 **Logs**
 <!-- Please paste any log message from during the playback issue, for example the ffmpeg command line can be very useful. -->
@@ -17,9 +17,11 @@ assignees: ''
 <!-- If available, add screenshots of the stats for nerds screen to help show the issue problem. -->
 
 **Server System (please complete the following information):**
- - OS: [e.g. Docker, Debian, Windows]
+ - OS: [e.g. Docker on Linux, Docker on Windows, Debian, Windows]
  - Jellyfin Version: [e.g. 10.0.1]
+ - Hardware settings & device: [e.g. NVENC on GTX1060, VAAPI on Intel i7 87000K]
  - Reverse proxy: [e.g. no, nginx, apache, etc.]
+ - Other hardware notes: [e.g. Media mounted in CIFS/SMB share, Media mounted from Google Drive]
  
 **Client System (please complete the following information):**
  - Device: [e.g. Apple iPhone XS, Xbox One S, LG OLED55C8, Samsung Galaxy Note9, Custom HTPC]
