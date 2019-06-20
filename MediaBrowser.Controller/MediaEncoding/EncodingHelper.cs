@@ -1086,7 +1086,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (videoStream != null)
             {
                 var isUpscaling = request.Height.HasValue && videoStream.Height.HasValue &&
-                                   request.Height.Value > videoStream.Height.Value && request.Width.HasValue && videoStream.Width.HasValue &&
+                    request.Height.Value > videoStream.Height.Value && request.Width.HasValue && videoStream.Width.HasValue &&
                     request.Width.Value > videoStream.Width.Value;
 
                 // Don't allow bitrate increases unless upscaling
@@ -1116,6 +1116,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private int GetMinBitrate(int sourceBitrate, int requestedBitrate)
         {
+            // these values were chosen from testing to improve low bitrate streams
             if (sourceBitrate <= 2000000)
             {
                 sourceBitrate = Convert.ToInt32(sourceBitrate * 2.5);
