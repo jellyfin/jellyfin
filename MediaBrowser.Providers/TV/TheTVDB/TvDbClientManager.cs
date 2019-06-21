@@ -24,24 +24,28 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         {
             _cache = memoryCache;
             _tvDbClient = new TvDbClient();
-            _tvDbClient.Authentication.AuthenticateAsync(TvdbUtils.TvdbApiKey);
-            _tokenCreatedAt = DateTime.Now;
         }
 
-        public TvDbClient TvDbClient
+        private TvDbClient TvDbClient
         {
             get
             {
+                if (string.IsNullOrEmpty(_tvDbClient.Authentication.Token))
+                {
+                    _tvDbClient.Authentication.AuthenticateAsync(TvdbUtils.TvdbApiKey).GetAwaiter().GetResult();
+                    _tokenCreatedAt = DateTime.Now;
+                }
+
                 // Refresh if necessary
                 if (_tokenCreatedAt < DateTime.Now.Subtract(TimeSpan.FromHours(20)))
                 {
                     try
                     {
-                        _tvDbClient.Authentication.RefreshTokenAsync();
+                        _tvDbClient.Authentication.RefreshTokenAsync().GetAwaiter().GetResult();
                     }
                     catch
                     {
-                        _tvDbClient.Authentication.AuthenticateAsync(TvdbUtils.TvdbApiKey);
+                        _tvDbClient.Authentication.AuthenticateAsync(TvdbUtils.TvdbApiKey).GetAwaiter().GetResult();
                     }
 
                     _tokenCreatedAt = DateTime.Now;
