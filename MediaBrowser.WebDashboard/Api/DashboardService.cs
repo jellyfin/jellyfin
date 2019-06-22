@@ -114,8 +114,6 @@ namespace MediaBrowser.WebDashboard.Api
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         private readonly IFileSystem _fileSystem;
-        private readonly ILocalizationManager _localization;
-        private readonly IJsonSerializer _jsonSerializer;
         private IResourceFileManager _resourceFileManager;
 
         /// <summary>
@@ -126,16 +124,12 @@ namespace MediaBrowser.WebDashboard.Api
             IResourceFileManager resourceFileManager,
             IServerConfigurationManager serverConfigurationManager,
             IFileSystem fileSystem,
-            ILocalizationManager localization,
-            IJsonSerializer jsonSerializer,
             ILogger logger,
             IHttpResultFactory resultFactory)
         {
             _appHost = appHost;
             _serverConfigurationManager = serverConfigurationManager;
             _fileSystem = fileSystem;
-            _localization = localization;
-            _jsonSerializer = jsonSerializer;
             _logger = logger;
             _resultFactory = resultFactory;
             _resourceFileManager = resourceFileManager;
@@ -205,6 +199,7 @@ namespace MediaBrowser.WebDashboard.Api
                 {
                     return _resultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.js"), () => Task.FromResult(stream));
                 }
+
                 if (isTemplate)
                 {
                     return _resultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => Task.FromResult(stream));
@@ -316,7 +311,7 @@ namespace MediaBrowser.WebDashboard.Api
             // Bounce them to the startup wizard if it hasn't been completed yet
             if (!_serverConfigurationManager.Configuration.IsStartupWizardCompleted &&
                 Request.RawUrl.IndexOf("wizard", StringComparison.OrdinalIgnoreCase) == -1 &&
-                GetPackageCreator(basePath).IsCoreHtml(path))
+                PackageCreator.IsCoreHtml(path))
             {
                 // But don't redirect if an html import is being requested.
                 if (path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
@@ -355,7 +350,7 @@ namespace MediaBrowser.WebDashboard.Api
                 return await _resultFactory.GetStaticResult(Request, cacheKey, null, cacheDuration, contentType, () => GetResourceStream(basePath, path, localizationCulture)).ConfigureAwait(false);
             }
 
-            return await _resourceFileManager.GetStaticFileResult(Request, basePath, path, contentType, cacheDuration);
+            return await _resultFactory.GetStaticFileResult(Request, _resourceFileManager.GetResourcePath(basePath, path));
         }
 
         private string GetLocalizationCulture()
@@ -374,7 +369,7 @@ namespace MediaBrowser.WebDashboard.Api
 
         private PackageCreator GetPackageCreator(string basePath)
         {
-            return new PackageCreator(basePath, _fileSystem, _logger, _serverConfigurationManager, _resourceFileManager);
+            return new PackageCreator(basePath, _resourceFileManager);
         }
 
         public async Task<object> Get(GetDashboardPackage request)
