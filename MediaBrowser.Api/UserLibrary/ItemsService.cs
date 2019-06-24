@@ -224,7 +224,17 @@ namespace MediaBrowser.Api.UserLibrary
                 request.IncludeItemTypes = "Playlist";
             }
 
-            if (!(item is UserRootFolder) && !user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id))
+            bool isInEnabledFolder = user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id);
+            var collectionFolders = _libraryManager.GetCollectionFolders(item);
+            foreach (var collectionFolder in collectionFolders)
+            {
+                if (user.Policy.EnabledFolders.Contains(collectionFolder.Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+                {
+                    isInEnabledFolder = true;
+                }
+            }
+
+            if (!(item is UserRootFolder) && !user.Policy.EnableAllFolders && !isInEnabledFolder)
             {
                 Logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Name, item.Name);
                 return new QueryResult<BaseItem>
