@@ -185,6 +185,11 @@ namespace Jellyfin.Drawing.Skia
 
         public ImageDimensions GetImageSize(string path)
         {
+            if (!File.Exists(path))
+            {
+                throw new FileNotFoundException("File not found", path);
+            }
+
             using (var s = new SKFileStream(path))
             using (var codec = SKCodec.Create(s))
             {
