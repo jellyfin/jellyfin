@@ -433,7 +433,6 @@ namespace Emby.Server.Implementations.Updates
             IPlugin plugin = _applicationHost.Plugins.FirstOrDefault(p => string.Equals(p.Id.ToString(), package.guid, StringComparison.OrdinalIgnoreCase))
                            ?? _applicationHost.Plugins.FirstOrDefault(p => p.Name.Equals(package.name, StringComparison.OrdinalIgnoreCase));
 
-
             string targetPath = plugin == null ? null : plugin.AssemblyFilePath;
 
             // Do the install
