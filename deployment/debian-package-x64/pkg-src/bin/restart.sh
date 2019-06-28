@@ -21,7 +21,7 @@ get_service_command() {
 }
 
 cmd="$( get_service_command )"
-echo "Using system control command '$cmd' to restart Jellyfin..."
+echo "Detected service control platform '$cmd'; using it to restart Jellyfin..."
 case $cmd in
     'systemctl')
         echo "sleep 2; /usr/bin/sudo /usr/bin/systemctl restart jellyfin" | at now 
