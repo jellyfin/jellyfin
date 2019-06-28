@@ -128,6 +128,10 @@ namespace Jellyfin.Server
 #pragma warning restore CA5359
 
             Batteries_V2.Init();
+            if (raw.sqlite3_enable_shared_cache(1) != raw.SQLITE_OK)
+            {
+                Console.WriteLine("WARN: Failed to enable shared cache for SQLite");
+            }
 
             using (var appHost = new CoreAppHost(
                 appPaths,
