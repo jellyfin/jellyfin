@@ -120,6 +120,7 @@ namespace MediaBrowser.Common.Net
         Unconditional = 1
     }
 
+    [Flags]
     public enum CompressionMethod
     {
         None = 0b00000001,

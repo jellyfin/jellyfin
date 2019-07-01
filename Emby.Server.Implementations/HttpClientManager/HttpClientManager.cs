@@ -21,18 +21,17 @@ namespace Emby.Server.Implementations.HttpClientManager
     /// </summary>
     public class HttpClientManager : IHttpClient
     {
-        /// <summary>
-        /// The _logger
-        /// </summary>
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// The _app paths
-        /// </summary>
         private readonly IApplicationPaths _appPaths;
-
         private readonly IFileSystem _fileSystem;
         private readonly Func<string> _defaultUserAgentFn;
+
+        /// <summary>
+        /// Holds a dictionary of http clients by host.  Use GetHttpClient(host) to retrieve or create a client for web requests.
+        /// DON'T dispose it after use.
+        /// </summary>
+        /// <value>The HTTP clients.</value>
+        private readonly ConcurrentDictionary<string, HttpClient> _httpClients = new ConcurrentDictionary<string, HttpClient>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
@@ -60,19 +59,10 @@ namespace Emby.Server.Implementations.HttpClientManager
         }
 
         /// <summary>
-        /// Holds a dictionary of http clients by host.  Use GetHttpClient(host) to retrieve or create a client for web requests.
-        /// DON'T dispose it after use.
+        /// Gets the correct http client for the given url.
         /// </summary>
-        /// <value>The HTTP clients.</value>
-        private readonly ConcurrentDictionary<string, HttpClient> _httpClients = new ConcurrentDictionary<string, HttpClient>();
-
-        /// <summary>
-        /// Gets
-        /// </summary>
-        /// <param name="url">The host.</param>
-        /// <param name="enableHttpCompression">if set to <c>true</c> [enable HTTP compression].</param>
+        /// <param name="url">The url.</param>
         /// <returns>HttpClient.</returns>
-        /// <exception cref="ArgumentNullException">host</exception>
         private HttpClient GetHttpClient(string url)
         {
             var key = GetHostFromUrl(url);
@@ -116,7 +106,6 @@ namespace Emby.Server.Implementations.HttpClientManager
                 case CompressionMethod.Gzip:
                     request.Headers.Add(HeaderNames.AcceptEncoding, "gzip");
                     break;
-                case 0:
                 default:
                     break;
             }
@@ -187,8 +176,6 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// <param name="options">The options.</param>
         /// <param name="httpMethod">The HTTP method.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
-        /// <exception cref="HttpException">
-        /// </exception>
         public Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, string httpMethod)
         {
             var httpMethod2 = GetHttpMethod(httpMethod);
@@ -201,8 +188,6 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// <param name="options">The options.</param>
         /// <param name="httpMethod">The HTTP method.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
-        /// <exception cref="HttpException">
-        /// </exception>
         public async Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, HttpMethod httpMethod)
         {
             if (options.CacheMode == CacheMode.None)
@@ -310,7 +295,6 @@ namespace Emby.Server.Implementations.HttpClientManager
                 || !string.IsNullOrEmpty(options.RequestContent)
                 || httpMethod == HttpMethod.Post)
             {
-
                 if (options.RequestContentBytes != null)
                 {
                     httpWebRequest.Content = new ByteArrayContent(options.RequestContentBytes);
@@ -323,6 +307,8 @@ namespace Emby.Server.Implementations.HttpClientManager
                 {
                     httpWebRequest.Content = new ByteArrayContent(Array.Empty<byte>());
                 }
+
+                // TODO: add correct content type
                 /*
                 var contentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
 
@@ -341,16 +327,24 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            /*if (!options.BufferContent)
+            if (!options.BufferContent)
             {
-                var response = await client.HttpClient.SendAsync(httpWebRequest).ConfigureAwait(false);
+                var response = await client.SendAsync(httpWebRequest, options.CancellationToken).ConfigureAwait(false);
 
-                await EnsureSuccessStatusCode(client, response, options).ConfigureAwait(false);
+                await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
 
                 options.CancellationToken.ThrowIfCancellationRequested();
 
-                return GetResponseInfo(response, await response.Content.ReadAsStreamAsync().ConfigureAwait(false), response.Content.Headers.ContentLength, response);
-            }*/
+                var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                return new HttpResponseInfo(response.Headers)
+                {
+                    Content = stream,
+                    StatusCode = response.StatusCode,
+                    ContentType = response.Content.Headers.ContentType?.MediaType,
+                    ContentLength = stream.Length,
+                    ResponseUrl = response.Content.Headers.ContentLocation?.ToString()
+                };
+            }
 
             using (var response = await client.SendAsync(httpWebRequest, options.CancellationToken).ConfigureAwait(false))
             {
@@ -364,7 +358,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                     await stream.CopyToAsync(memoryStream, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
                     memoryStream.Position = 0;
 
-                    var responseInfo = new HttpResponseInfo(response.Headers)
+                    return new HttpResponseInfo(response.Headers)
                     {
                         Content = memoryStream,
                         StatusCode = response.StatusCode,
@@ -372,8 +366,6 @@ namespace Emby.Server.Implementations.HttpClientManager
                         ContentLength = memoryStream.Length,
                         ResponseUrl = response.Content.Headers.ContentLocation?.ToString()
                     };
-
-                    return responseInfo;
                 }
             }
         }
