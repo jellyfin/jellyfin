@@ -16,28 +16,78 @@ namespace Emby.Server.Implementations.Data
             Logger = logger;
         }
 
+        /// <summary>
+        /// Gets or sets the path to the DB file.
+        /// </summary>
+        /// <value>Path to the DB file.</value>
         protected string DbFilePath { get; set; }
 
+        /// <summary>
+        /// Gets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
         protected ILogger Logger { get; }
 
+        /// <summary>
+        /// Gets the default connection flags.
+        /// </summary>
+        /// <value>The default connection flags.</value>
         protected virtual ConnectionFlags DefaultConnectionFlags => ConnectionFlags.NoMutex;
 
+        /// <summary>
+        /// Gets the transaction mode.
+        /// </summary>
+        /// <value>The transaction mode.</value>>
         protected TransactionMode TransactionMode => TransactionMode.Deferred;
 
+        /// <summary>
+        /// Gets the transaction mode for read-only operations.
+        /// </summary>
+        /// <value>The transaction mode.</value>
         protected TransactionMode ReadTransactionMode => TransactionMode.Deferred;
 
+        /// <summary>
+        /// Gets the cache size.
+        /// </summary>
+        /// <value>The cache size or null.</value>
         protected virtual int? CacheSize => null;
 
+        /// <summary>
+        /// Gets the journal mode.
+        /// </summary>
+        /// <value>The journal mode.</value>
         protected virtual string JournalMode => "WAL";
 
+        /// <summary>
+        /// Gets the page size.
+        /// </summary>
+        /// <value>The page size or null.</value>
         protected virtual int? PageSize => null;
 
+        /// <summary>
+        /// Gets the temp store mode.
+        /// </summary>
+        /// <value>The temp store mode.</value>
+        /// <see cref="TempStoreMode"/>
         protected virtual TempStoreMode TempStore => TempStoreMode.Default;
 
+        /// <summary>
+        /// Gets the synchronous mode.
+        /// </summary>
+        /// <value>The synchronous mode or null.</value>
+        /// <see cref="SynchronousMode"/>
         protected virtual SynchronousMode? Synchronous => null;
 
+        /// <summary>
+        /// Gets or sets the write lock.
+        /// </summary>
+        /// <value>The write lock.</value>
         protected SemaphoreSlim WriteLock { get; set; } = new SemaphoreSlim(1, 1);
 
+        /// <summary>
+        /// Gets or sets the write connection.
+        /// </summary>
+        /// <value>The write connection.</value>
         protected SQLiteDatabaseConnection WriteConnection { get; set; }
 
         protected ManagedConnection GetConnection(bool _ = false)
@@ -182,18 +232,54 @@ namespace Emby.Server.Implementations.Data
         }
     }
 
+    /// <summary>
+    /// The disk synchronization mode, controls how aggressively SQLite will write data
+    /// all the way out to physical storage.
+    /// </summary>
     public enum SynchronousMode
     {
+        /// <summary>
+        /// SQLite continues without syncing as soon as it has handed data off to the operating system
+        /// </summary>
         Off = 0,
+
+        /// <summary>
+        /// SQLite database engine will still sync at the most critical moments
+        /// </summary>
         Normal = 1,
+
+        /// <summary>
+        /// SQLite database engine will use the xSync method of the VFS
+        /// to ensure that all content is safely written to the disk surface prior to continuing.
+        /// </summary>
         Full = 2,
+
+        /// <summary>
+        /// EXTRA synchronous is like FULL with the addition that the directory containing a rollback journal
+        /// is synced after that journal is unlinked to commit a transaction in DELETE mode.
+        /// </summary>
         Extra = 3
     }
 
+    /// <summary>
+    /// Storage mode used by temporary database files.
+    /// </summary>
     public enum TempStoreMode
     {
+        /// <summary>
+        /// The compile-time C preprocessor macro SQLITE_TEMP_STORE
+        /// is used to determine where temporary tables and indices are stored.
+        /// </summary>
         Default = 0,
+
+        /// <summary>
+        /// Temporary tables and indices are stored in a file.
+        /// </summary>
         File = 1,
+
+        /// <summary>
+        /// Temporary tables and indices are kept in as if they were pure in-memory databases memory.
+        /// </summary>
         Memory = 2
     }
 }
