@@ -36,13 +36,9 @@ namespace Emby.Server.Implementations.Data
     /// </summary>
     public class SqliteItemRepository : BaseSqliteRepository, IItemRepository
     {
-        private readonly TypeMapper _typeMapper;
+        private const string ChaptersTableName = "Chapters2";
 
-        /// <summary>
-        /// Gets the name of the repository
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => "SQLite";
+        private readonly TypeMapper _typeMapper;
 
         /// <summary>
         /// Gets the json serializer.
@@ -54,11 +50,8 @@ namespace Emby.Server.Implementations.Data
         /// The _app paths
         /// </summary>
         private readonly IServerConfigurationManager _config;
-        private IServerApplicationHost _appHost;
-
+        private readonly IServerApplicationHost _appHost;
         private readonly ILocalizationManager _localization;
-
-        public IImageProcessor ImageProcessor { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -90,9 +83,16 @@ namespace Emby.Server.Implementations.Data
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
         }
 
-        private const string ChaptersTableName = "Chapters2";
+        /// <inheritdoc />
+        public string Name => "SQLite";
 
+        /// <inheritdoc />
+        protected override int? CacheSize => 20000;
+
+        /// <inheritdoc />
         protected override TempStoreMode TempStore => TempStoreMode.Memory;
+
+        public IImageProcessor ImageProcessor { get; set; }
 
         /// <summary>
         /// Opens the connection to the database
@@ -1903,7 +1903,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection(true))
             {
-                var list = new List<ChapterInfo>();
+                var chapters = new List<ChapterInfo>();
 
                 using (var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc"))
                 {
@@ -1911,11 +1911,11 @@ namespace Emby.Server.Implementations.Data
 
                     foreach (var row in statement.ExecuteQuery())
                     {
-                        list.Add(GetChapter(row, item));
+                        chapters.Add(GetChapter(row, item));
                     }
                 }
 
-                return list;
+                return chapters;
             }
         }
 
@@ -2606,7 +2606,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection(true))
             {
-                var list = new List<BaseItem>();
+                var items = new List<BaseItem>();
 
                 using (var statement = PrepareStatement(connection, commandText))
                 {
@@ -2634,7 +2634,7 @@ namespace Emby.Server.Implementations.Data
                         var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields);
                         if (item != null)
                         {
-                            list.Add(item);
+                            items.Add(item);
                         }
                     }
                 }
@@ -2646,7 +2646,7 @@ namespace Emby.Server.Implementations.Data
                     limit -= 4;
                     var newList = new List<BaseItem>();
 
-                    foreach (var item in list)
+                    foreach (var item in items)
                     {
                         AddItem(newList, item);
 
@@ -2656,12 +2656,12 @@ namespace Emby.Server.Implementations.Data
                         }
                     }
 
-                    list = newList;
+                    items = newList;
                 }
 
                 LogQueryTime("GetItemList", commandText, now);
 
-                return list;
+                return items;
             }
         }
 

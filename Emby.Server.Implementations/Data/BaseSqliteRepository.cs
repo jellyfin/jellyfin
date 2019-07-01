@@ -36,9 +36,9 @@ namespace Emby.Server.Implementations.Data
 
         protected virtual SynchronousMode? Synchronous => null;
 
-        protected SemaphoreSlim WriteLock = new SemaphoreSlim(1, 1);
+        protected SemaphoreSlim WriteLock { get; set; } = new SemaphoreSlim(1, 1);
 
-        protected SQLiteDatabaseConnection WriteConnection;
+        protected SQLiteDatabaseConnection WriteConnection { get; set; }
 
         protected ManagedConnection GetConnection(bool _ = false)
         {
@@ -55,7 +55,7 @@ namespace Emby.Server.Implementations.Data
 
             if (CacheSize.HasValue)
             {
-                WriteConnection.Execute("PRAGMA cache_size=" + (int)CacheSize.Value);
+                WriteConnection.Execute("PRAGMA cache_size=" + CacheSize.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(JournalMode))
@@ -70,7 +70,7 @@ namespace Emby.Server.Implementations.Data
 
             if (PageSize.HasValue)
             {
-                WriteConnection.Execute("PRAGMA page_size=" + (int)PageSize.Value);
+                WriteConnection.Execute("PRAGMA page_size=" + PageSize.Value);
             }
 
             WriteConnection.Execute("PRAGMA temp_store=" + (int)TempStore);
@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.Data
 
         protected List<string> GetColumnNames(IDatabaseConnection connection, string table)
         {
-            var list = new List<string>();
+            var columnNames = new List<string>();
 
             foreach (var row in connection.Query("PRAGMA table_info(" + table + ")"))
             {
@@ -117,11 +117,11 @@ namespace Emby.Server.Implementations.Data
                 {
                     var name = row[1].ToString();
 
-                    list.Add(name);
+                    columnNames.Add(name);
                 }
             }
 
-            return list;
+            return columnNames;
         }
 
         protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
@@ -142,6 +142,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);
