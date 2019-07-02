@@ -108,6 +108,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -611,8 +612,6 @@ namespace Emby.Server.Implementations
 
             await RegisterResources(serviceCollection).ConfigureAwait(false);
 
-            FindParts();
-
             string contentRoot = ServerConfigurationManager.Configuration.DashboardSourcePath;
             if (string.IsNullOrEmpty(contentRoot))
             {
@@ -657,6 +656,14 @@ namespace Emby.Server.Implementations
                 {
                     services.AddResponseCompression();
                     services.AddHttpContextAccessor();
+                    services.AddMvc(opts =>
+                        {
+                            opts.UseGeneralRoutePrefix("emby", "emby/emby", "api/v{version:apiVersion}");
+                        })
+                        .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                        .AddApplicationPart(Assembly.Load("Jellyfin.Api"));
+                    services.AddApiVersioning(opt => opt.ReportApiVersions = true);
+                    services.TryAdd(serviceCollection);
                 })
                 .Configure(app =>
                 {
@@ -666,9 +673,13 @@ namespace Emby.Server.Implementations
 
                     // TODO app.UseMiddleware<WebSocketMiddleware>();
                     app.Use(ExecuteWebsocketHandlerAsync);
+                    app.UseMvc();
                     app.Use(ExecuteHttpHandlerAsync);
                 })
                 .Build();
+
+            _serviceProvider = host.Services;
+            FindParts();
 
             try
             {
