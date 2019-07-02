@@ -25,7 +25,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Activity
 {
-    public class ActivityLogEntryPoint : IServerEntryPoint
+    public class ActivityLogEntryPoint : ILongRunningTask
     {
         private readonly ILogger _logger;
         private readonly IInstallationManager _installationManager;
@@ -62,6 +62,7 @@ namespace Emby.Server.Implementations.Activity
             _appHost = appHost;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             _taskManager.TaskCompleted += OnTaskCompleted;
@@ -431,6 +432,7 @@ namespace Emby.Server.Implementations.Activity
         private void CreateLogEntry(ActivityLogEntry entry)
             => _activityManager.Create(entry);
 
+        /// <inheritdoc />
         public void Dispose()
         {
             _taskManager.TaskCompleted -= OnTaskCompleted;

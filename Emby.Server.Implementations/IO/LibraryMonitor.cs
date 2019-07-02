@@ -574,14 +574,11 @@ namespace Emby.Server.Implementations.IO
             _monitor = monitor;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             _monitor.Start();
             return Task.CompletedTask;
-        }
-
-        public void Dispose()
-        {
         }
     }
 }

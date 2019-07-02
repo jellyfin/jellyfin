@@ -552,32 +552,33 @@ namespace Emby.Server.Implementations
 
             Logger.LogInformation("ServerId: {0}", SystemId);
 
-            var entryPoints = GetExports<IServerEntryPoint>().ToList();
-
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-            await Task.WhenAll(StartEntryPoints(entryPoints, true)).ConfigureAwait(false);
-            Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
+            await Task.WhenAll(StartLongRunningTasks()).ConfigureAwait(false);
 
             Logger.LogInformation("Core startup complete");
             HttpServer.GlobalResponse = null;
 
-            stopWatch.Restart();
-            await Task.WhenAll(StartEntryPoints(entryPoints, false)).ConfigureAwait(false);
-            Logger.LogInformation("Executed all post-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            await Task.WhenAll(StartEntryPoints()).ConfigureAwait(false);
+            Logger.LogInformation("Executed all entry points in {Elapsed:g}", stopWatch.Elapsed);
             stopWatch.Stop();
         }
 
-        private IEnumerable<Task> StartEntryPoints(IEnumerable<IServerEntryPoint> entryPoints, bool isBeforeStartup)
+        private IEnumerable<Task> StartEntryPoints()
         {
-            foreach (var entryPoint in entryPoints)
+            foreach (var entryPoint in GetExports<IServerEntryPoint>())
             {
-                if (isBeforeStartup != (entryPoint is IRunBeforeStartup))
-                {
-                    continue;
-                }
+                Logger.LogDebug("Running entry point {Type}", entryPoint.GetType());
 
-                Logger.LogDebug("Starting entry point {Type}", entryPoint.GetType());
+                yield return entryPoint.RunAsync();
+            }
+        }
+
+        private IEnumerable<Task> StartLongRunningTasks()
+        {
+            foreach (var entryPoint in GetExports<ILongRunningTask>())
+            {
+                Logger.LogDebug("Starting {Type}", entryPoint.GetType());
 
                 yield return entryPoint.RunAsync();
             }
@@ -1044,11 +1045,23 @@ namespace Emby.Server.Implementations
             var entries = types.Where(x => x.IsAssignableFrom(typeof(IServerEntryPoint)))
                 .Select(CreateInstanceSafe)
                 .Where(x => x != null)
-                .Cast<IServerEntryPoint>()
+                .Cast<IServerEntryPoint>();
+
+            await Task.WhenAll(entries.Select(x => x.RunAsync()));
+
+            var tasks = types.Where(x => x.IsAssignableFrom(typeof(ILongRunningTask)))
+                .Select(CreateInstanceSafe)
+                .Where(x => x != null)
+                .Cast<ILongRunningTask>()
                 .ToList();
 
-            await Task.WhenAll(StartEntryPoints(entries, true));
-            await Task.WhenAll(StartEntryPoints(entries, false));
+            await Task.WhenAll(tasks.Select(x => x.RunAsync()));
+
+            lock (_disposableParts)
+            {
+                // All ILongRunningTasks are disposable
+                _disposableParts.AddRange(tasks);
+            }
         }
 
         /// <summary>

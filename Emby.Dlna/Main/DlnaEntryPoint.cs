@@ -26,7 +26,7 @@ using OperatingSystem =  MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Dlna.Main
 {
-    public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
+    public class DlnaEntryPoint : ILongRunningTask
     {
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
@@ -59,8 +59,11 @@ namespace Emby.Dlna.Main
 
         public static DlnaEntryPoint Current;
 
-        public DlnaEntryPoint(IServerConfigurationManager config,
-            ILoggerFactory loggerFactory,
+        private readonly object _syncLock = new object();
+
+        public DlnaEntryPoint(
+            IServerConfigurationManager config,
+            ILogger<DlnaManager> logger,
             IServerApplicationHost appHost,
             ISessionManager sessionManager,
             IHttpClient httpClient,
@@ -79,6 +82,7 @@ namespace Emby.Dlna.Main
             ITVSeriesManager tvSeriesManager)
         {
             _config = config;
+            _logger = logger;
             _appHost = appHost;
             _sessionManager = sessionManager;
             _httpClient = httpClient;
@@ -93,7 +97,7 @@ namespace Emby.Dlna.Main
             _mediaEncoder = mediaEncoder;
             _socketFactory = socketFactory;
             _networkManager = networkManager;
-            _logger = loggerFactory.CreateLogger("Dlna");
+
 
             ContentDirectory = new ContentDirectory.ContentDirectory(
                 dlnaManager,
@@ -116,16 +120,17 @@ namespace Emby.Dlna.Main
             Current = this;
         }
 
+        /// <inheritdoc />
         public async Task RunAsync()
         {
             await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
 
             ReloadComponents();
 
-            _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
+            _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
         }
 
-        void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
@@ -164,10 +169,15 @@ namespace Emby.Dlna.Main
             {
                 if (_communicationsServer == null)
                 {
-                    var enableMultiSocketBinding = OperatingSystem.Id == OperatingSystemId.Windows ||
-                                                   OperatingSystem.Id == OperatingSystemId.Linux;
+                    var enableMultiSocketBinding = OperatingSystem.Id == OperatingSystemId.Windows
+                        ||OperatingSystem.Id == OperatingSystemId.Linux;
 
-                    _communicationsServer = new SsdpCommunicationsServer(_config, _socketFactory, _networkManager, _logger, enableMultiSocketBinding)
+                    _communicationsServer = new SsdpCommunicationsServer(
+                        _config,
+                        _socketFactory,
+                        _networkManager,
+                        _logger,
+                        enableMultiSocketBinding)
                     {
                         IsShared = true
                     };
@@ -179,11 +189,6 @@ namespace Emby.Dlna.Main
             {
                 _logger.LogError(ex, "Error starting ssdp handlers");
             }
-        }
-
-        private void LogMessage(string msg)
-        {
-            _logger.LogDebug(msg);
         }
 
         private void StartDeviceDiscovery(ISsdpCommunicationsServer communicationsServer)
@@ -226,7 +231,7 @@ namespace Emby.Dlna.Main
             try
             {
                 _Publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost);
-                _Publisher.LogFunction = LogMessage;
+                _Publisher.LogFunction = msg => _logger.LogDebug(msg);
                 _Publisher.SupportPnpRootDevice = false;
 
                 await RegisterServerEndpoints().ConfigureAwait(false);
@@ -321,8 +326,6 @@ namespace Emby.Dlna.Main
             device.DeviceClass = serviceParts[1];
             device.DeviceType = serviceParts[2];
         }
-
-        private readonly object _syncLock = new object();
         private void StartPlayToManager()
         {
             lock (_syncLock)
@@ -378,6 +381,7 @@ namespace Emby.Dlna.Main
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             DisposeDevicePublisher();

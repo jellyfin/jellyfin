@@ -23,7 +23,7 @@ namespace Emby.Notifications
     /// <summary>
     /// Creates notifications for various system events
     /// </summary>
-    public class Notifications : IServerEntryPoint
+    public class Notifications : ILongRunningTask
     {
         private readonly ILogger _logger;
 
@@ -40,6 +40,8 @@ namespace Emby.Notifications
         private readonly IActivityManager _activityManager;
 
         private string[] _coreNotificationTypes;
+
+        private readonly List<BaseItem> _itemsAdded = new List<BaseItem>();
 
         public Notifications(
             IActivityManager activityManager,
@@ -61,6 +63,7 @@ namespace Emby.Notifications
             _coreNotificationTypes = new CoreNotificationTypes(localization).GetNotificationTypes().Select(i => i.Type).ToArray();
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             _libraryManager.ItemAdded += _libraryManager_ItemAdded;
@@ -136,7 +139,6 @@ namespace Emby.Notifications
             await SendNotification(notification, null).ConfigureAwait(false);
         }
 
-        private readonly List<BaseItem> _itemsAdded = new List<BaseItem>();
         private void _libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
         {
             if (!FilterItem(e.Item))
@@ -268,6 +270,7 @@ namespace Emby.Notifications
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             DisposeLibraryUpdateTimer();

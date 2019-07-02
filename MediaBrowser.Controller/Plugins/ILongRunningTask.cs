@@ -1,11 +1,12 @@
+using System;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Plugins
 {
     /// <summary>
-    /// Interface IServerEntryPoint
+    /// Interface ILongRunningTask
     /// </summary>
-    public interface IServerEntryPoint
+    public interface ILongRunningTask: IDisposable
     {
         /// <summary>
         /// Runs this instance.

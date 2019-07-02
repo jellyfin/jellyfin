@@ -30,9 +30,5 @@ namespace MediaBrowser.WebDashboard
 
             return Task.CompletedTask;
         }
-
-        public void Dispose()
-        {
-        }
     }
 }

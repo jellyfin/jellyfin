@@ -1113,7 +1113,7 @@ namespace Emby.Server.Implementations.Library
         }
     }
 
-    public class DeviceAccessEntryPoint : IServerEntryPoint
+    public class DeviceAccessEntryPoint : ILongRunningTask
     {
         private IUserManager _userManager;
         private IAuthenticationRepository _authRepo;
@@ -1128,6 +1128,7 @@ namespace Emby.Server.Implementations.Library
             _sessionManager = sessionManager;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             _userManager.UserPolicyUpdated += _userManager_UserPolicyUpdated;
@@ -1161,9 +1162,10 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
-
+            _userManager.UserPolicyUpdated -= _userManager_UserPolicyUpdated;
         }
     }
 }

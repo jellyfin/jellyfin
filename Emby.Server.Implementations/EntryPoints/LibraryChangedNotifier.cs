@@ -13,12 +13,11 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
-    public class LibraryChangedNotifier : IServerEntryPoint
+    public class LibraryChangedNotifier : ILongRunningTask
     {
         /// <summary>
         /// The _library manager
@@ -54,6 +53,8 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private readonly IProviderManager _providerManager;
 
+        private Dictionary<Guid, DateTime> _lastProgressMessageTimes = new Dictionary<Guid, DateTime>();
+
         public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IUserManager userManager, ILogger logger, IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
@@ -63,6 +64,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _providerManager = providerManager;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             _libraryManager.ItemAdded += libraryManager_ItemAdded;
@@ -75,8 +77,6 @@ namespace Emby.Server.Implementations.EntryPoints
 
             return Task.CompletedTask;
         }
-
-        private Dictionary<Guid, DateTime> _lastProgressMessageTimes = new Dictionary<Guid, DateTime>();
 
         private void _providerManager_RefreshProgress(object sender, GenericEventArgs<Tuple<BaseItem, double>> e)
         {
@@ -177,7 +177,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        void libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
+        private void libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
         {
             if (!FilterItem(e.Item))
             {
@@ -211,7 +211,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        void libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
+        private void libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
         {
             if (!FilterItem(e.Item))
             {
@@ -239,7 +239,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        void libraryManager_ItemRemoved(object sender, ItemChangeEventArgs e)
+        private void libraryManager_ItemRemoved(object sender, ItemChangeEventArgs e)
         {
             if (!FilterItem(e.Item))
             {
@@ -293,7 +293,7 @@ namespace Emby.Server.Implementations.EntryPoints
                                     .Select(x => x.First())
                                     .ToList();
 
-                SendChangeNotifications(_itemsAdded.ToList(), itemsUpdated, _itemsRemoved.ToList(), foldersAddedTo, foldersRemovedFrom, CancellationToken.None);
+                SendChangeNotifications(_itemsAdded.ToList(), itemsUpdated, _itemsRemoved.ToList(), foldersAddedTo, foldersRemovedFrom, CancellationToken.None).GetAwaiter().GetResult();
 
                 if (LibraryUpdateTimer != null)
                 {
@@ -318,7 +318,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="foldersAddedTo">The folders added to.</param>
         /// <param name="foldersRemovedFrom">The folders removed from.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private async void SendChangeNotifications(List<BaseItem> itemsAdded, List<BaseItem> itemsUpdated, List<BaseItem> itemsRemoved, List<Folder> foldersAddedTo, List<Folder> foldersRemovedFrom, CancellationToken cancellationToken)
+        private async Task SendChangeNotifications(List<BaseItem> itemsAdded, List<BaseItem> itemsUpdated, List<BaseItem> itemsRemoved, List<Folder> foldersAddedTo, List<Folder> foldersRemovedFrom, CancellationToken cancellationToken)
         {
             var userIds = _sessionManager.Sessions
                 .Select(i => i.UserId)
@@ -452,15 +452,14 @@ namespace Emby.Server.Implementations.EntryPoints
                 return new[] { item };
             }
 
-            return new T[] { };
+            return Enumerable.Empty<T>();
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

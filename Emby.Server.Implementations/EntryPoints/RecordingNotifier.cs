@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
-    public class RecordingNotifier : IServerEntryPoint
+    public class RecordingNotifier : ILongRunningTask
     {
         private readonly ILiveTvManager _liveTvManager;
         private readonly ISessionManager _sessionManager;
@@ -25,6 +25,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _liveTvManager = liveTvManager;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             _liveTvManager.TimerCancelled += _liveTvManager_TimerCancelled;
@@ -73,6 +74,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             _liveTvManager.TimerCancelled -= _liveTvManager_TimerCancelled;

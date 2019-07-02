@@ -5,13 +5,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
     public class EntryPoint : IServerEntryPoint
     {
+        /// <inheritdoc />
         public Task RunAsync()
         {
             return EmbyTV.Current.Start();
-        }
-
-        public void Dispose()
-        {
         }
     }
 }

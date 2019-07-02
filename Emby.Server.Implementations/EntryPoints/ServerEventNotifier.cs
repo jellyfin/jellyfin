@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.EntryPoints
     /// <summary>
     /// Class WebSocketEvents
     /// </summary>
-    public class ServerEventNotifier : IServerEntryPoint
+    public class ServerEventNotifier : ILongRunningTask
     {
         /// <summary>
         /// The _user manager
@@ -50,6 +50,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _sessionManager = sessionManager;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             _userManager.UserDeleted += userManager_UserDeleted;
@@ -70,27 +71,27 @@ namespace Emby.Server.Implementations.EntryPoints
             return Task.CompletedTask;
         }
 
-        void _installationManager_PackageInstalling(object sender, InstallationEventArgs e)
+        private void _installationManager_PackageInstalling(object sender, InstallationEventArgs e)
         {
             SendMessageToAdminSessions("PackageInstalling", e.InstallationInfo);
         }
 
-        void _installationManager_PackageInstallationCancelled(object sender, InstallationEventArgs e)
+        private void _installationManager_PackageInstallationCancelled(object sender, InstallationEventArgs e)
         {
             SendMessageToAdminSessions("PackageInstallationCancelled", e.InstallationInfo);
         }
 
-        void _installationManager_PackageInstallationCompleted(object sender, InstallationEventArgs e)
+        private void _installationManager_PackageInstallationCompleted(object sender, InstallationEventArgs e)
         {
             SendMessageToAdminSessions("PackageInstallationCompleted", e.InstallationInfo);
         }
 
-        void _installationManager_PackageInstallationFailed(object sender, InstallationFailedEventArgs e)
+        private void _installationManager_PackageInstallationFailed(object sender, InstallationFailedEventArgs e)
         {
             SendMessageToAdminSessions("PackageInstallationFailed", e.InstallationInfo);
         }
 
-        void _taskManager_TaskCompleted(object sender, TaskCompletionEventArgs e)
+        private void _taskManager_TaskCompleted(object sender, TaskCompletionEventArgs e)
         {
             SendMessageToAdminSessions("ScheduledTaskEnded", e.Result);
         }
@@ -100,7 +101,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void InstallationManager_PluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
+        private void InstallationManager_PluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
         {
             SendMessageToAdminSessions("PluginUninstalled", e.Argument.GetPluginInfo());
         }
@@ -110,7 +111,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void kernel_HasPendingRestartChanged(object sender, EventArgs e)
+        private void kernel_HasPendingRestartChanged(object sender, EventArgs e)
         {
             _sessionManager.SendRestartRequiredNotification(CancellationToken.None);
         }
@@ -120,7 +121,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void userManager_UserUpdated(object sender, GenericEventArgs<User> e)
+        private void userManager_UserUpdated(object sender, GenericEventArgs<User> e)
         {
             var dto = _userManager.GetUserDto(e.Argument);
 
@@ -132,19 +133,19 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void userManager_UserDeleted(object sender, GenericEventArgs<User> e)
+        private void userManager_UserDeleted(object sender, GenericEventArgs<User> e)
         {
             SendMessageToUserSession(e.Argument, "UserDeleted", e.Argument.Id.ToString("N"));
         }
 
-        void _userManager_UserPolicyUpdated(object sender, GenericEventArgs<User> e)
+        private void _userManager_UserPolicyUpdated(object sender, GenericEventArgs<User> e)
         {
             var dto = _userManager.GetUserDto(e.Argument);
 
             SendMessageToUserSession(e.Argument, "UserPolicyUpdated", dto);
         }
 
-        void _userManager_UserConfigurationUpdated(object sender, GenericEventArgs<User> e)
+        private void _userManager_UserConfigurationUpdated(object sender, GenericEventArgs<User> e)
         {
             var dto = _userManager.GetUserDto(e.Argument);
 
@@ -175,12 +176,11 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

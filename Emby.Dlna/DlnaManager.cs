@@ -532,9 +532,11 @@ namespace Emby.Dlna
             _xmlSerializer = xmlSerializer;
         }
 
-        public void Run()
+        /// <inheritdoc />
+        public Task RunAsync()
         {
             DumpProfiles();
+            return Task.CompletedTask;
         }
 
         private void DumpProfiles()
@@ -579,10 +581,6 @@ namespace Emby.Dlna
 
                 _xmlSerializer.SerializeToFile(item, path);
             }
-        }
-
-        public void Dispose()
-        {
         }
     }*/
 }

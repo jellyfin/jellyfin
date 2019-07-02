@@ -16,12 +16,12 @@ namespace Emby.Server.Implementations.EntryPoints
         /// The _app host
         /// </summary>
         private readonly IServerApplicationHost _appHost;
+
         /// <summary>
         /// The _user manager
         /// </summary>
         private readonly ILogger _logger;
-
-        private IServerConfigurationManager _config;
+        private readonly IServerConfigurationManager _config;
 
         public StartupWizard(IServerApplicationHost appHost, ILogger logger, IServerConfigurationManager config)
         {
@@ -30,9 +30,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _config = config;
         }
 
-        /// <summary>
-        /// Runs this instance.
-        /// </summary>
+        /// <inheritdoc />
         public Task RunAsync()
         {
             if (!_appHost.CanLaunchWebBrowser)
@@ -55,13 +53,6 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 
             return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
         }
     }
 }

@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
-    public class AutomaticRestartEntryPoint : IServerEntryPoint
+    public class AutomaticRestartEntryPoint : ILongRunningTask
     {
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger _logger;
@@ -34,6 +34,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _liveTvManager = liveTvManager;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             if (_appHost.CanSelfRestart)
@@ -106,6 +107,7 @@ namespace Emby.Server.Implementations.EntryPoints
             return !_sessionManager.Sessions.Any(i => (now - i.LastActivityDate).TotalMinutes < 30);
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             _appHost.HasPendingRestartChanged -= _appHost_HasPendingRestartChanged;

@@ -25,7 +25,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class ServerEntryPoint
     /// </summary>
-    public class ApiEntryPoint : IServerEntryPoint
+    public class ApiEntryPoint : ILongRunningTask
     {
         /// <summary>
         /// The instance
@@ -127,7 +127,7 @@ namespace MediaBrowser.Api
             }
         }
 
-        void _sessionManager_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
+        private void _sessionManager_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(e.PlaySessionId))
             {
@@ -135,9 +135,7 @@ namespace MediaBrowser.Api
             }
         }
 
-        /// <summary>
-        /// Runs this instance.
-        /// </summary>
+        /// <inheritdoc />
         public Task RunAsync()
         {
             try
@@ -183,9 +181,7 @@ namespace MediaBrowser.Api
             }
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);

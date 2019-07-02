@@ -8,13 +8,12 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
-    public class UserDataChangeNotifier : IServerEntryPoint
+    public class UserDataChangeNotifier : ILongRunningTask
     {
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
@@ -35,6 +34,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _userManager = userManager;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             _userDataManager.UserDataSaved += _userDataManager_UserDataSaved;
@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.EntryPoints
             return Task.CompletedTask;
         }
 
-        void _userDataManager_UserDataSaved(object sender, UserDataSaveEventArgs e)
+        private void _userDataManager_UserDataSaved(object sender, UserDataSaveEventArgs e)
         {
             if (e.SaveReason == UserDataSaveReason.PlaybackProgress)
             {
@@ -140,6 +140,7 @@ namespace Emby.Server.Implementations.EntryPoints
             };
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             if (UpdateTimer != null)

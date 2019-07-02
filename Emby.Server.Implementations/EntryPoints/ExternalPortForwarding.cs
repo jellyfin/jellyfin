@@ -15,7 +15,7 @@ using Mono.Nat;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
-    public class ExternalPortForwarding : IServerEntryPoint
+    public class ExternalPortForwarding : ILongRunningTask
     {
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger _logger;
@@ -26,6 +26,11 @@ namespace Emby.Server.Implementations.EntryPoints
         private Timer _timer;
 
         private NatManager _natManager;
+
+        private List<string> _createdRules = new List<string>();
+        private List<string> _usnsHandled = new List<string>();
+
+        private bool _disposed = false;
 
         public ExternalPortForwarding(ILoggerFactory loggerFactory, IServerApplicationHost appHost, IServerConfigurationManager config, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient)
         {
@@ -68,6 +73,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             if (_config.Configuration.EnableUPnP && _config.Configuration.EnableRemoteAccess)
@@ -196,7 +202,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
-        void NatUtility_DeviceFound(object sender, DeviceEventArgs e)
+        private void NatUtility_DeviceFound(object sender, DeviceEventArgs e)
         {
             if (_disposed)
             {
@@ -216,8 +222,6 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
-        private List<string> _createdRules = new List<string>();
-        private List<string> _usnsHandled = new List<string>();
         private async void CreateRules(INatDevice device)
         {
             if (_disposed)
@@ -273,7 +277,7 @@ namespace Emby.Server.Implementations.EntryPoints
             });
         }
 
-        private bool _disposed = false;
+        /// <inheritdoc />
         public void Dispose()
         {
             _disposed = true;
