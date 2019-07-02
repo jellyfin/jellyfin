@@ -663,6 +663,7 @@ namespace Emby.Server.Implementations
                         .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                         .AddApplicationPart(Assembly.Load("Jellyfin.Api"));
                     services.AddApiVersioning(opt => opt.ReportApiVersions = true);
+                    // Merge the external ServiceCollection into ASP.NET DI
                     services.TryAdd(serviceCollection);
                 })
                 .Configure(app =>
@@ -929,8 +930,6 @@ namespace Emby.Server.Implementations
             ((UserDataManager)UserDataManager).Repository = userDataRepo;
             ItemRepository.Initialize(userDataRepo, UserManager);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
-
-            _serviceProvider = serviceCollection.BuildServiceProvider();
         }
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
