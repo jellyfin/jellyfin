@@ -97,7 +97,7 @@ namespace Emby.Server.Implementations.Security
                         statement.TryBind("@AppName", info.AppName);
                         statement.TryBind("@AppVersion", info.AppVersion);
                         statement.TryBind("@DeviceName", info.DeviceName);
-                        statement.TryBind("@UserId", (info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N")));
+                        statement.TryBind("@UserId", (info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N", CultureInfo.InvariantCulture)));
                         statement.TryBind("@UserName", info.UserName);
                         statement.TryBind("@IsActive", true);
                         statement.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
@@ -131,7 +131,7 @@ namespace Emby.Server.Implementations.Security
                         statement.TryBind("@AppName", info.AppName);
                         statement.TryBind("@AppVersion", info.AppVersion);
                         statement.TryBind("@DeviceName", info.DeviceName);
-                        statement.TryBind("@UserId", (info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N")));
+                        statement.TryBind("@UserId", (info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N", CultureInfo.InvariantCulture)));
                         statement.TryBind("@UserName", info.UserName);
                         statement.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
                         statement.TryBind("@DateLastActivity", info.DateLastActivity.ToDateTimeParamValue());

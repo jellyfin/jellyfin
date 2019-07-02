@@ -1041,7 +1041,7 @@ namespace Emby.Server.Implementations.Session
         {
             IEnumerable<Task> GetTasks()
             {
-                var messageId = Guid.NewGuid().ToString("N");
+                var messageId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
                 foreach (var session in sessions)
                 {
                     var controllers = session.SessionControllers;

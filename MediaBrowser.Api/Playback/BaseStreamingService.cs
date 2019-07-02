@@ -215,12 +215,6 @@ namespace MediaBrowser.Api.Playback
 
             var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
 
-<<<<<<< HEAD
-=======
-            var transcodingId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-            var commandLineArgs = GetCommandLineArguments(outputPath, encodingOptions, state, true);
-
->>>>>>> Use CultureInvariant string conversion for Guids
             var process = new Process()
             {
                 StartInfo = new ProcessStartInfo()
@@ -246,7 +240,7 @@ namespace MediaBrowser.Api.Playback
             var transcodingJob = ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath,
                 state.Request.PlaySessionId,
                 state.MediaSource.LiveStreamId,
-                Guid.NewGuid().ToString("N"),
+                Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
                 TranscodingJobType,
                 process,
                 state.Request.DeviceId,
