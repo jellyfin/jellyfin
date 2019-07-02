@@ -113,7 +113,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using ServiceStack;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations
@@ -663,11 +665,36 @@ namespace Emby.Server.Implementations
                         .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                         .AddApplicationPart(Assembly.Load("Jellyfin.Api"));
                     services.AddApiVersioning(opt => opt.ReportApiVersions = true);
+                    services.AddSwaggerGen(c =>
+                    {
+                        c.SwaggerDoc("v1", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
+                        c.DocInclusionPredicate((docName, apiDesc) =>
+                        {
+                            if (!apiDesc.TryGetMethodInfo(out var methodInfo))
+                            {
+                                return false;
+                            }
+
+                            // A bit of a hack to make Swagger pick the versioned endpoints instead of the legacy emby endpoints
+                            return methodInfo.DeclaringType?.BaseType == typeof(ControllerBase) &&
+                                   apiDesc.RelativePath.Contains("api/v");
+                        });
+                    });
+
                     // Merge the external ServiceCollection into ASP.NET DI
                     services.TryAdd(serviceCollection);
                 })
                 .Configure(app =>
                 {
+                    app.UseSwagger();
+
+                    // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+                    // specifying the Swagger JSON endpoint.
+                    app.UseSwaggerUI(c =>
+                    {
+                        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Jellyfin API V1");
+                    });
+
                     app.UseWebSockets();
 
                     app.UseResponseCompression();

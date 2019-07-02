@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Jellyfin.Api.Controllers
 {
     [ApiVersion("1")]
-    [Route("[controller]")]
     public class StartupController : ControllerBase
     {
         private readonly IServerConfigurationManager _config;
@@ -21,7 +20,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         [HttpPost("Complete")]
-        public void Post()
+        public void CompleteWizard()
         {
             _config.Configuration.IsStartupWizardCompleted = true;
             _config.SetOptimalValues();
@@ -71,7 +70,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         [HttpPost("User")]
-        public async Task Post([FromForm] StartupUser startupUser)
+        public async Task UpdateUser([FromForm] StartupUser startupUser)
         {
             var user = _userManager.Users.First();
 

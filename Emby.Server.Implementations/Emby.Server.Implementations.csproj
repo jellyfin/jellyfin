@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Emby.Naming\Emby.Naming.csproj" />
@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="IPNetwork2" Version="2.4.0.126" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
@@ -37,6 +38,7 @@
     <PackageReference Include="ServiceStack.Text.Core" Version="5.6.0" />
     <PackageReference Include="sharpcompress" Version="0.24.0" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" Version="2.0.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0-rc2" />
   </ItemGroup>
 
   <ItemGroup>
