@@ -24,6 +24,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.AspNetCore;
+using SQLitePCL;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server
@@ -126,7 +127,11 @@ namespace Jellyfin.Server
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 #pragma warning restore CA5359
 
-            SQLitePCL.Batteries_V2.Init();
+            Batteries_V2.Init();
+            if (raw.sqlite3_enable_shared_cache(1) != raw.SQLITE_OK)
+            {
+                Console.WriteLine("WARN: Failed to enable shared cache for SQLite");
+            }
 
             using (var appHost = new CoreAppHost(
                 appPaths,
