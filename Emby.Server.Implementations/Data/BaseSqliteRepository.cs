@@ -202,7 +202,7 @@ namespace Emby.Server.Implementations.Data
         protected void RunDefaultInitialization(ManagedConnection db)
         {
             var queries = new List<string>
-            {                
+            {
                 "PRAGMA journal_mode=WAL",
                 "PRAGMA page_size=4096",
                 "PRAGMA synchronous=Normal"
