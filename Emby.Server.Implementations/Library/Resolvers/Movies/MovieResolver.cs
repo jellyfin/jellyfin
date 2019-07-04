@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Emby.Naming.Video;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -167,17 +168,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         private static bool IsIgnored(string filename)
         {
             // Ignore samples
-            var sampleFilename = " " + filename.Replace(".", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("-", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("_", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("!", " ", StringComparison.OrdinalIgnoreCase);
+            Match m = Regex.Match(filename,@"\bsample\b",RegexOptions.IgnoreCase);
 
-            if (sampleFilename.IndexOf(" sample ", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                return true;
-            }
-
-            return false;
+            return m.Success;
         }
 
         private bool ContainsFile(List<VideoInfo> result, FileSystemMetadata file)
