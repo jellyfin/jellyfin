@@ -138,7 +138,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     Url = string.Format("{0}/discover.json", GetApiUrl(info)),
                     CancellationToken = cancellationToken,
-                    TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(10).TotalMilliseconds),
                     BufferContent = false
 
                 }, "GET").ConfigureAwait(false))
@@ -191,7 +190,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 Url = string.Format("{0}/tuners.html", GetApiUrl(info)),
                 CancellationToken = cancellationToken,
-                TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds),
                 BufferContent = false
             }))
             {

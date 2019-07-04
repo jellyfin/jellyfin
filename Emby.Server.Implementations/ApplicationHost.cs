@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -1560,12 +1561,12 @@ namespace Emby.Server.Implementations
                     LogErrorResponseBody = false,
                     LogErrors = false,
                     LogRequest = false,
-                    TimeoutMs = 10000,
                     BufferContent = false,
                     CancellationToken = cancellationToken
                 }).ConfigureAwait(false))
                 {
-                    return GetWanApiUrl(response.ReadToEnd().Trim());
+                    string res = await response.ReadToEndAsync().ConfigureAwait(false);
+                    return GetWanApiUrl(res.Trim());
                 }
             }
             catch (Exception ex)
@@ -1717,15 +1718,15 @@ namespace Emby.Server.Implementations
                         LogErrorResponseBody = false,
                         LogErrors = LogPing,
                         LogRequest = LogPing,
-                        TimeoutMs = 5000,
                         BufferContent = false,
 
                         CancellationToken = cancellationToken
-                    }, "POST").ConfigureAwait(false))
+                    }, HttpMethod.Post).ConfigureAwait(false))
+
                 {
                     using (var reader = new StreamReader(response.Content))
                     {
-                        var result = reader.ReadToEnd();
+                        var result = await reader.ReadToEndAsync().ConfigureAwait(false);
                         var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
 
                         _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
