@@ -66,32 +66,32 @@ jobs:
     #     artifactName: 'jellyfin-build-$(BuildConfiguration)'
     #     zipAfterPublish: true
 
-    - task: PublishBuildArtifacts@1
+    - task: PublishPipelineArtifact@0
       displayName: 'Publish Artifact Naming'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/Emby.Naming.dll'
+        targetPath: '$(build.artifactstagingdirectory)/Jellyfin.Server/Emby.Naming.dll'
         artifactName: 'Jellyfin.Naming'
 
-    - task: PublishBuildArtifacts@1
+    - task: PublishPipelineArtifact@0
       displayName: 'Publish Artifact Controller'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Controller.dll'
+        targetPath: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Controller.dll'
         artifactName: 'Jellyfin.Controller'
 
-    - task: PublishBuildArtifacts@1
+    - task: PublishPipelineArtifact@0
       displayName: 'Publish Artifact Model'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Model.dll'
+        targetPath: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Model.dll'
         artifactName: 'Jellyfin.Model'
 
-    - task: PublishBuildArtifacts@1
+    - task: PublishPipelineArtifact@0
       displayName: 'Publish Artifact Common'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Common.dll'
+        targetPath: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Common.dll'
         artifactName: 'Jellyfin.Common'
 
   - job: dotnet_compat
@@ -118,18 +118,20 @@ jobs:
     steps:
     - checkout: none
 
-    - task: DownloadBuildArtifacts@0
+    - task: DownloadPipelineArtifact@2
       displayName: Download the Reference Assembly Build Artifact
       inputs:
-        buildType: 'specific' # Options: current, specific
-        project: 'jellyfin' #$(System.TeamProjectId)' # Required when buildType == Specific
-        pipeline: 'Jellyfin CI' #'$(System.DefinitionId)' # Required when buildType == Specific, not sure if this will take a name too
-        #specificBuildWithTriggering: false # Optional
-        buildVersionToDownload: 'latestFromBranch' # Required when buildType == Specific# Options: latest, latestFromBranch, specific
-        branchName: '$(System.PullRequest.TargetBranch)' # Required when buildType == Specific && BuildVersionToDownload == LatestFromBranch
-        downloadType: 'specific' # Options: single, specific
-        artifactName: '$(NugetPackageName)' # Required when downloadType == Single
-        downloadPath: '$(System.ArtifactsDirectory)/current-artifacts'
+        source: 'specific' # Options: current, specific
+        #preferTriggeringPipeline: false # Optional
+        #tags: # Optional
+        artifact: '$(NugetPackageName)' # Optional
+        #patterns: '**' # Optional
+        path: '$(System.ArtifactsDirectory)/current-artifacts'
+        project: '$(System.TeamProjectId)' # Required when source == Specific
+        pipeline: '$(System.DefinitionId)' # Required when source == Specific
+        runVersion: 'latestFromBranch' # Required when source == Specific. Options: latest, latestFromBranch, specific
+        runBranch: 'refs/heads/$(System.PullRequest.TargetBranch)' # Required when source == Specific && runVersion == LatestFromBranch
+        #runId: # Required when source == Specific && runVersion == Specific
 
     - task: CopyFiles@2
       displayName: Copy Nuget Assembly to current-release folder
@@ -139,16 +141,22 @@ jobs:
         targetFolder: $(System.ArtifactsDirectory)/current-release
         cleanTargetFolder: true # Optional
         overWrite: true # Optional
-        flattenFolders: true # Optional
+        flattenFolders: true # Optional    
 
-    - task: DownloadBuildArtifacts@0
+    - task: DownloadPipelineArtifact@2
       displayName: Download the New Assembly Build Artifact
       inputs:
-        buildType: 'current' # Options: current, specific
-        allowPartiallySucceededBuilds: false # Optional
-        downloadType: 'single' # Options: single, specific
-        artifactName: '$(NugetPackageName)' # Required when downloadType == Single
-        downloadPath: '$(System.ArtifactsDirectory)/new-artifacts'
+        source: 'current' # Options: current, specific
+        #preferTriggeringPipeline: false # Optional
+        #tags: # Optional
+        artifact: '$(NugetPackageName)' # Optional
+        #patterns: '**' # Optional
+        path: '$(System.ArtifactsDirectory)/new-artifacts'
+        #project: # Required when source == Specific
+        #pipeline: # Required when source == Specific
+        runVersion: 'latest' # Required when source == Specific. Options: latest, latestFromBranch, specific
+        #runBranch: 'refs/heads/master' # Required when source == Specific && runVersion == LatestFromBranch
+        #runId: # Required when source == Specific && runVersion == Specific
 
     - task: CopyFiles@2
       displayName: Copy Artifact Assembly to new-release folder
