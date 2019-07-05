@@ -35,12 +35,14 @@ jobs:
       inputs:
         command: restore
         projects: '$(RestoreBuildProjects)'
+      enabled: false
 
     - task: DotNetCoreCLI@2
       displayName: Build
       inputs:
         projects: '$(RestoreBuildProjects)'
         arguments: '--configuration $(BuildConfiguration)'
+      enabled: false
 
     - task: DotNetCoreCLI@2
       displayName: Test
