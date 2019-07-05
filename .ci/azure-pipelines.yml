@@ -136,7 +136,7 @@ jobs:
         #runId: # Required when source == Specific && runVersion == Specific
 
     - task: CopyFiles@2
-      displayName: Copy Artifact Assembly to new-release folder
+      displayName: Copy New Assembly to new-release folder
       inputs:
         sourceFolder: $(System.ArtifactsDirectory)/new-artifacts # Optional
         contents: '**/*.dll'
@@ -161,7 +161,7 @@ jobs:
         #runId: # Required when source == Specific && runVersion == Specific
 
     - task: CopyFiles@2
-      displayName: Copy Nuget Assembly to current-release folder
+      displayName: Copy Reference Assembly to current-release folder
       inputs:
         sourceFolder: $(System.ArtifactsDirectory)/current-artifacts # Optional
         contents: '**/*.dll'
