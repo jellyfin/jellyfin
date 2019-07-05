@@ -121,31 +121,6 @@ jobs:
     - checkout: none
 
     - task: DownloadPipelineArtifact@2
-      displayName: Download the Reference Assembly Build Artifact
-      inputs:
-        source: 'specific' # Options: current, specific
-        #preferTriggeringPipeline: false # Optional
-        #tags: # Optional
-        artifact: '$(NugetPackageName)' # Optional
-        #patterns: '**' # Optional
-        path: '$(System.ArtifactsDirectory)/current-artifacts'
-        project: '$(System.TeamProjectId)' # Required when source == Specific
-        pipeline: '$(System.DefinitionId)' # Required when source == Specific
-        runVersion: 'latestFromBranch' # Required when source == Specific. Options: latest, latestFromBranch, specific
-        runBranch: 'refs/heads/$(System.PullRequest.TargetBranch)' # Required when source == Specific && runVersion == LatestFromBranch
-        #runId: # Required when source == Specific && runVersion == Specific
-
-    - task: CopyFiles@2
-      displayName: Copy Nuget Assembly to current-release folder
-      inputs:
-        sourceFolder: $(System.ArtifactsDirectory)/current-artifacts # Optional
-        contents: '**/*.dll'
-        targetFolder: $(System.ArtifactsDirectory)/current-release
-        cleanTargetFolder: true # Optional
-        overWrite: true # Optional
-        flattenFolders: true # Optional    
-
-    - task: DownloadPipelineArtifact@2
       displayName: Download the New Assembly Build Artifact
       inputs:
         source: 'current' # Options: current, specific
@@ -166,6 +141,31 @@ jobs:
         sourceFolder: $(System.ArtifactsDirectory)/new-artifacts # Optional
         contents: '**/*.dll'
         targetFolder: $(System.ArtifactsDirectory)/new-release
+        cleanTargetFolder: true # Optional
+        overWrite: true # Optional
+        flattenFolders: true # Optional
+
+    - task: DownloadPipelineArtifact@2
+      displayName: Download the Reference Assembly Build Artifact
+      inputs:
+        source: 'specific' # Options: current, specific
+        #preferTriggeringPipeline: false # Optional
+        #tags: # Optional
+        artifact: '$(NugetPackageName)' # Optional
+        #patterns: '**' # Optional
+        path: '$(System.ArtifactsDirectory)/current-artifacts'
+        project: '$(System.TeamProjectId)' # Required when source == Specific
+        pipeline: '$(System.DefinitionId)' # Required when source == Specific
+        runVersion: 'latestFromBranch' # Required when source == Specific. Options: latest, latestFromBranch, specific
+        runBranch: 'refs/heads/$(System.PullRequest.TargetBranch)' # Required when source == Specific && runVersion == LatestFromBranch
+        #runId: # Required when source == Specific && runVersion == Specific
+
+    - task: CopyFiles@2
+      displayName: Copy Nuget Assembly to current-release folder
+      inputs:
+        sourceFolder: $(System.ArtifactsDirectory)/current-artifacts # Optional
+        contents: '**/*.dll'
+        targetFolder: $(System.ArtifactsDirectory)/current-release
         cleanTargetFolder: true # Optional
         overWrite: true # Optional
         flattenFolders: true # Optional
