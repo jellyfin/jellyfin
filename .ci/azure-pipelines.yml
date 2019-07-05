@@ -126,8 +126,8 @@ jobs:
         pipeline: 'Jellyfin CI' #'$(System.DefinitionId)' # Required when buildType == Specific, not sure if this will take a name too
         #specificBuildWithTriggering: false # Optional
         buildVersionToDownload: 'latestFromBranch' # Required when buildType == Specific# Options: latest, latestFromBranch, specific
-        branchName: 'refs/heads/$(System.PullRequest.TargetBranch)' # Required when buildType == Specific && BuildVersionToDownload == LatestFromBranch
-        downloadType: 'single' # Options: single, specific
+        branchName: '$(System.PullRequest.TargetBranch)' # Required when buildType == Specific && BuildVersionToDownload == LatestFromBranch
+        downloadType: 'specific' # Options: single, specific
         artifactName: '$(NugetPackageName)' # Required when downloadType == Single
         downloadPath: '$(System.ArtifactsDirectory)/current-artifacts'
 
