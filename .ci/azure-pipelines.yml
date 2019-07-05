@@ -16,7 +16,7 @@ jobs:
   - job: main_build
     displayName: Main Build
     pool:
-      vmImage: ubuntu-16.04
+      vmImage: ubuntu-latest
     strategy:
       matrix:
         release:
@@ -97,9 +97,9 @@ jobs:
   - job: dotnet_compat
     displayName: Compatibility Check
     pool:
-      vmImage: ubuntu-16.04
+      vmImage: ubuntu-latest
     dependsOn: main_build
-    condition: false #and(succeeded(), variables['System.PullRequest.PullRequestNumber']) # Only execute if the pullrequest numer is defined. (So not for normal CI builds)
+    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber']) # Only execute if the pullrequest numer is defined. (So not for normal CI builds)
     strategy:
       matrix:
         Naming:
@@ -122,8 +122,8 @@ jobs:
       displayName: Download the Reference Assembly Build Artifact
       inputs:
         buildType: 'specific' # Options: current, specific
-        project: '$(System.TeamProjectId)' # Required when buildType == Specific
-        pipeline: '$(System.DefinitionId)' # Required when buildType == Specific, not sure if this will take a name too
+        project: 'jellyfin' #$(System.TeamProjectId)' # Required when buildType == Specific
+        pipeline: 1 #'$(System.DefinitionId)' # Required when buildType == Specific, not sure if this will take a name too
         #specificBuildWithTriggering: false # Optional
         buildVersionToDownload: 'latestFromBranch' # Required when buildType == Specific# Options: latest, latestFromBranch, specific
         branchName: 'refs/heads/$(System.PullRequest.TargetBranch)' # Required when buildType == Specific && BuildVersionToDownload == LatestFromBranch
