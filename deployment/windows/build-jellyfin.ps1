@@ -30,7 +30,7 @@ function Build-JellyFin {
     Write-Verbose "windowsversion-Architecture: $windowsversion-$Architecture"
     Write-Verbose "InstallLocation: $InstallLocation"
     Write-Verbose "DotNetVerbosity: $DotNetVerbosity"
-#    dotnet publish -c $BuildType -r `"$windowsversion-$Architecture`" MediaBrowser.sln -o $InstallLocation -v $DotNetVerbosity
+    dotnet publish -c $BuildType -r `"$windowsversion-$Architecture`" MediaBrowser.sln -o $InstallLocation -v $DotNetVerbosity
 }
 
 function Install-FFMPEG {
