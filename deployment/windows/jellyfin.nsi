@@ -6,7 +6,7 @@
 
     !include "MUI2.nsh"
     Var _JELLYFINVERSION_
-    Var _DEFAULTEMBYDATADIR_
+;    Var _DEFAULTEMBYDATADIR_
     Var _JELLYFINDATADIR_
     Var _SERVICEINSTALLED_
 ;--------------------------------
@@ -40,20 +40,20 @@
 ;--------------------------------
 ;Pages
 
-;TODO
-;find a license to displayed before installer is started
-;    !insertmacro MUI_PAGE_LICENSE "<PATH TO LICENSE TXT FILE"
+    !insertmacro MUI_PAGE_LICENSE "$%InstallLocation%\LICENSE"
     !insertmacro MUI_PAGE_COMPONENTS
     !insertmacro MUI_PAGE_DIRECTORY
 
 ; Custom Directory page to ask for Emby Library location in case its needed
-    !define MUI_PAGE_HEADER_TEXT "Emby Library locaton"
-    !define MUI_PAGE_HEADER_SUBTEXT  ""
-    !define MUI_DIRECTORYPAGE_TEXT_TOP "Please select the folder where Emby library is present. This will have Enby folders like config, cache, data, metadata, etc."
-    !define MUI_DIRECTORYPAGE_TEXT_DESTINATION "Emby Library location"
-    !define MUI_PAGE_CUSTOMFUNCTION_PRE ShowEmbyLibraryPage
-    !define MUI_DIRECTORYPAGE_VARIABLE $_DEFAULTEMBYDATADIR_
-    !insertmacro MUI_PAGE_DIRECTORY
+; Commented for now to avoid showing this. 
+; This can be uncommented in case Emby Migration is planned later
+;    !define MUI_PAGE_HEADER_TEXT "Emby Library locaton"
+;    !define MUI_PAGE_HEADER_SUBTEXT  ""
+;    !define MUI_DIRECTORYPAGE_TEXT_TOP "Please select the folder where Emby library is present. This will have Enby folders like config, cache, data, metadata, etc."
+;    !define MUI_DIRECTORYPAGE_TEXT_DESTINATION "Emby Library location"
+;    !define MUI_PAGE_CUSTOMFUNCTION_PRE ShowEmbyLibraryPage
+;    !define MUI_DIRECTORYPAGE_VARIABLE $_DEFAULTEMBYDATADIR_
+;    !insertmacro MUI_PAGE_DIRECTORY
 	
     !insertmacro MUI_PAGE_INSTFILES
 
@@ -124,17 +124,16 @@ Section /o "Start Jellyfin after installation" LaunchJellyfin
 
 SectionEnd
 
-;TODO
-; This section hasn't been tested completely
-Section /o "Migrate Emby Library" MigrateEmbyLibrary
-    DetailPrint "Migrating Emby Library"
-    CopyFiles $_DEFAULTEMBYDATADIR_/config $_JELLYFINDATADIR_
-    CopyFiles $_DEFAULTEMBYDATADIR_/cache $_JELLYFINDATADIR_
-    CopyFiles $_DEFAULTEMBYDATADIR_/data $_JELLYFINDATADIR_
-    CopyFiles $_DEFAULTEMBYDATADIR_/metadata $_JELLYFINDATADIR_
-    CopyFiles $_DEFAULTEMBYDATADIR_/root $_JELLYFINDATADIR_
+; This can be uncommented in case Emby Migration is planned later
+;Section /o "Migrate Emby Library" MigrateEmbyLibrary
+;    DetailPrint "Migrating Emby Library"
+;    CopyFiles $_DEFAULTEMBYDATADIR_/config $_JELLYFINDATADIR_
+;    CopyFiles $_DEFAULTEMBYDATADIR_/cache $_JELLYFINDATADIR_
+;    CopyFiles $_DEFAULTEMBYDATADIR_/data $_JELLYFINDATADIR_
+;    CopyFiles $_DEFAULTEMBYDATADIR_/metadata $_JELLYFINDATADIR_
+;    CopyFiles $_DEFAULTEMBYDATADIR_/root $_JELLYFINDATADIR_
 
-SectionEnd
+;SectionEnd
 
 
 ;--------------------------------
@@ -145,7 +144,7 @@ SectionEnd
     LangString DESC_InstallService ${LANG_ENGLISH} "Install As a Service"
     LangString DESC_DesktopShortcut ${LANG_ENGLISH} "Create a desktop shortcut"
     LangString DESC_LaunchJellyfin ${LANG_ENGLISH} "Start Jellyfin after Install"
-    LangString DESC_MigrateEmbyLibrary ${LANG_ENGLISH} "Migrate existing Emby Library"
+;    LangString DESC_MigrateEmbyLibrary ${LANG_ENGLISH} "Migrate existing Emby Library"
 
   ;Assign language strings to sections
     !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
@@ -153,7 +152,7 @@ SectionEnd
     !insertmacro MUI_DESCRIPTION_TEXT ${DesktopShortcut} $(DESC_DesktopShortcut)
     !insertmacro MUI_DESCRIPTION_TEXT ${InstallService} $(DESC_InstallService)
     !insertmacro MUI_DESCRIPTION_TEXT ${LaunchJellyfin} $(DESC_LaunchJellyfin)
-    !insertmacro MUI_DESCRIPTION_TEXT ${MigrateEmbyLibrary} $(DESC_MigrateEmbyLibrary)
+;    !insertmacro MUI_DESCRIPTION_TEXT ${MigrateEmbyLibrary} $(DESC_MigrateEmbyLibrary)
     !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;--------------------------------
@@ -191,12 +190,13 @@ Function .onInit
     SectionSetFlags ${InstallJellyfin} 17 ; this makes the InstallJellyfin section mandatory
 FunctionEnd
 
-Function ShowEmbyLibraryPage
-    SectionGetFlags ${MigrateEmbyLibrary} $R0 
-    IntOp $R0 $R0 & ${SF_SELECTED} 
-    IntCmp $R0 ${SF_SELECTED} show 
+; This can be uncommented in case Emby Migration is planned later
+;Function ShowEmbyLibraryPage
+;    SectionGetFlags ${MigrateEmbyLibrary} $R0 
+;    IntOp $R0 $R0 & ${SF_SELECTED} 
+;    IntCmp $R0 ${SF_SELECTED} show 
     
-    Abort ; Dont show the Emby folder selection window if Emby migrartion is not selected
+;    Abort ; Dont show the Emby folder selection window if Emby migrartion is not selected
 
-    show: 
-FunctionEnd
+;    show: 
+;FunctionEnd
