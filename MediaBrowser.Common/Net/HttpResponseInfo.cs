@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Http.Headers;
 
 namespace MediaBrowser.Common.Net
 {
@@ -50,26 +50,21 @@ namespace MediaBrowser.Common.Net
         /// Gets or sets the headers.
         /// </summary>
         /// <value>The headers.</value>
-        public Dictionary<string, string> Headers { get; set; }
+        public HttpResponseHeaders Headers { get; set; }
 
-        private readonly IDisposable _disposable;
-
-        public HttpResponseInfo(IDisposable disposable)
-        {
-            _disposable = disposable;
-            Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
         public HttpResponseInfo()
         {
-            Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        }
+
+        public HttpResponseInfo(HttpResponseHeaders headers)
+        {
+            Headers = headers;
         }
 
         public void Dispose()
         {
-            if (_disposable != null)
-            {
-                _disposable.Dispose();
-            }
+            // Only IDisposable for backwards compatibility
         }
     }
 }

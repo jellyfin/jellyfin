@@ -73,11 +73,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 CancellationToken = cancellationToken,
                 Url = path,
                 Progress = new SimpleProgress<double>(),
-                DecompressionMethod = CompressionMethod.Gzip,
-
                 // It's going to come back gzipped regardless of this value
                 // So we need to make sure the decompression method is set to gzip
-                EnableHttpCompression = true,
+                DecompressionMethod = CompressionMethod.Gzip,
 
                 UserAgent = "Emby/3.0"
 

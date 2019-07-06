@@ -23,8 +23,10 @@
  - [fruhnow](https://github.com/fruhnow)
  - [Lynxy](https://github.com/Lynxy)
  - [fasheng](https://github.com/fasheng)
- - [ploughpuff](https://github.com/ploughpuff) 
+ - [ploughpuff](https://github.com/ploughpuff)
  - [pjeanjean](https://github.com/pjeanjean)
+ - [DrPandemic](https://github.com/drpandemic)
+ - [joern-h](https://github.com/joern-h)
 
 # Emby Contributors
 

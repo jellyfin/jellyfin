@@ -170,6 +170,8 @@ namespace Emby.Server.Implementations.Data
                     columnNames.Add(name);
                 }
             }
+            // Configuration and pragmas can affect VACUUM so it needs to be last.
+            queries.Add("VACUUM");
 
             return columnNames;
         }
