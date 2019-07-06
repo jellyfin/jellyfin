@@ -173,7 +173,7 @@ jobs:
     - task: DownloadGitHubRelease@0
       displayName: Download ABI compatibility check tool from GitHub
       inputs:
-        connection: Jellyfin GitHub
+        connection: jellyfin
         userRepository: EraYaN/dotnet-compatibility
         defaultVersionType: 'latest' # Options: latest, specificVersion, specificTag
         #version: # Required when defaultVersionType != Latest
