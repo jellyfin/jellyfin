@@ -70,6 +70,8 @@
 
 Section "Install Jellyfin (required)" InstallJellyfin
     SetOutPath "$INSTDIR"
+    SetShellVarContext current
+    StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\jellyfin\"
 
 ; Pack all the files that were just compiled
     File /r $%InstallLocation%\* 
@@ -92,31 +94,27 @@ Section "Install Jellyfin (required)" InstallJellyfin
 
 SectionEnd
 
-;TODO
-; This section hasn't been tested completely
-Section /o "Jellyfin Service" InstallService
-    ExecWait '"$INSTDIR"\nssm.exe install Jellyfin "$INSTDIR"\jellyfin.exe --datadir "$_JELLYFINDATADIR_"' $0
-    DetailPrint "Jellyfin Service install, $0"
-    Sleep 3000
-    ExecWait '"$INSTDIR"\nssm.exe set Jellyfin Start SERVICE_DELAYED_AUTO_START' $0
-    DetailPrint "Jellyfin Service setting, $0"
-    StrCpy $_SERVICEINSTALLED_ "YES"
-SectionEnd
-
 Section "Jellyfin desktop shortcut" DesktopShortcut
     SetShellVarContext current
     DetailPrint "Creating desktop shortcut"
     CreateShortCut "$DESKTOP\Jellyfin.lnk" "$INSTDIR\jellyfin.exe"
 SectionEnd
 
-;TODO
-; This section hasn't been tested completely.
+Section /o "Jellyfin Service" InstallService
+    ExecWait '"$INSTDIR\nssm.exe" install Jellyfin "$INSTDIR\jellyfin.exe" --datadir "$_JELLYFINDATADIR_"' $0
+    DetailPrint "Jellyfin Service install, $0"
+    Sleep 3000
+    ExecWait '"$INSTDIR\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START' $0
+    DetailPrint "Jellyfin Service setting, $0"
+    StrCpy $_SERVICEINSTALLED_ "YES"
+SectionEnd
+
 Section /o "Start Jellyfin after installation" LaunchJellyfin
 ; either start the service or launch jellyfin standalone
     StrCmp $_SERVICEINSTALLED_ "YES" ServiceStart Standalone
     
     ServiceStart:
-    ExecWait 'C:\Windows\System32\sc.exe start Jellyfin' $0
+    ExecWait '"$INSTDIR\nssm.exe" start Jellyfin' $0
     DetailPrint "Jellyfin service start, $0"
     Return
     
@@ -162,9 +160,14 @@ SectionEnd
 ;Uninstaller Section
 
 Section "Uninstall"
+    SetShellVarContext current
+    StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\jellyfin\"
 ;TODO
-; stop service or running instance
-; Figure out a way to stop Jellyfin - either standalone or service when uninstaller is invoked
+; stop running instance
+    ExecWait '"$INSTDIR\nssm.exe" stop Jellyfin' $0
+    DetailPrint "Jellyfin service stop, $0"
+    ExecWait '"$INSTDIR\nssm.exe" remove Jellyfin confirm' $0
+    DetailPrint "Jellyfin Service remove, $0"
 
     Delete "$INSTDIR\Uninstall.exe"
     RMDir /r "$INSTDIR"
@@ -181,7 +184,9 @@ Function .onInit
 ; Align installer version with jellyfin.dll version
     !getdllversion "$%InstallLocation%\jellyfin.dll" ver_
     StrCpy $_JELLYFINVERSION_ "${ver_1}.${ver_2}.${ver_3}.${ver_4}"
-    StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\jellyfin\"    
+    SetShellVarContext current
+    StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\jellyfin\"
+	DetailPrint "_JELLYFINDATADIR_ : $_JELLYFINDATADIR_"
     StrCpy $_SERVICEINSTALLED_ "NO"
     SectionSetFlags ${InstallJellyfin} 17 ; this makes the InstallJellyfin section mandatory
 FunctionEnd
