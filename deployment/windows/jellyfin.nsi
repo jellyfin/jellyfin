@@ -1,25 +1,30 @@
+; Shows a lot of debug information while compiling
+; This can be removed once stable.
 !verbose 4
 ;--------------------------------
 ;Include Modern UI
 
     !include "MUI2.nsh"
-    Var JellyfinVersion
-    Var defaultEmbyDataDir
-    Var JELLYFINDATADIR
-    Var ServiceInstalled
+    Var _JELLYFINVERSION_
+    Var _DEFAULTEMBYDATADIR_
+    Var _JELLYFINDATADIR_
+    Var _SERVICEINSTALLED_
 ;--------------------------------
 ;General
 
-  ;Name and file
-    !getdllversion "$%InstallLocation%\jellyfin.dll" expv_
-    !echo "jellyfin.dll version is ${expv_1}.${expv_2}.${expv_3}.${expv_4}"
-    Name "Jellyfin ${expv_1}.${expv_2}.${expv_3}.${expv_4}"
-    OutFile "Jellyfin.Installer.${expv_1}.${expv_2}.${expv_3}.${expv_4}.exe"
-    BrandingText "Jellyfin ${expv_1}.${expv_2}.${expv_3}.${expv_4} Installer"
-    VIProductVersion "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
-    VIFileVersion "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
+; Align installer version with jellyfin.dll version
+    !getdllversion "$%InstallLocation%\jellyfin.dll" ver_
+    !echo "jellyfin.dll version is ${ver_1}.${ver_2}.${ver_3}.${ver_4}" ;!echo will print it while building
+
+    Name "Jellyfin ${ver_1}.${ver_2}.${ver_3}.${ver_4}"
+    OutFile "Jellyfin.Installer.${ver_1}.${ver_2}.${ver_3}.${ver_4}.exe"
+    BrandingText "Jellyfin ${ver_1}.${ver_2}.${ver_3}.${ver_4} Installer"
+
+; installer attributes
+    VIProductVersion "${ver_1}.${ver_2}.${ver_3}.${ver_4}"
+    VIFileVersion "${ver_1}.${ver_2}.${ver_3}.${ver_4}"
     VIAddVersionKey "ProductName" "Jellyfin"
-    VIAddVersionKey "FileVersion" "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
+    VIAddVersionKey "FileVersion" "${ver_1}.${ver_2}.${ver_3}.${ver_4}"
   
   ;Default installation folder
     InstallDir "$APPDATA\Jellyfin"
@@ -35,19 +40,21 @@
 ;--------------------------------
 ;Pages
 
-;    !insertmacro MUI_PAGE_LICENSE "${NSISDIR}\Docs\Modern UI\License.txt"
+;TODO
+;find a license to displayed before installer is started
+;    !insertmacro MUI_PAGE_LICENSE "<PATH TO LICENSE TXT FILE"
     !insertmacro MUI_PAGE_COMPONENTS
     !insertmacro MUI_PAGE_DIRECTORY
 
-    !define MUI_PAGE_HEADER_TEXT "MUI_PAGE_HEADER_TEXT"
-    !define MUI_PAGE_HEADER_SUBTEXT  "MUI_PAGE_HEADER_SUBTEXT"
-    !define MUI_DIRECTORYPAGE_TEXT_TOP "MUI_DIRECTORYPAGE_TEXT_TOP"  
-    !define MUI_DIRECTORYPAGE_TEXT_DESTINATION "APP Folder"
+; Custom Directory page to ask for Emby Library location in case its needed
+    !define MUI_PAGE_HEADER_TEXT "Emby Library locaton"
+    !define MUI_PAGE_HEADER_SUBTEXT  ""
+    !define MUI_DIRECTORYPAGE_TEXT_TOP "Please select the folder where Emby library is present. This will have Enby folders like config, cache, data, metadata, etc."
+    !define MUI_DIRECTORYPAGE_TEXT_DESTINATION "Emby Library location"
     !define MUI_PAGE_CUSTOMFUNCTION_PRE ShowEmbyLibraryPage
-    !define MUI_DIRECTORYPAGE_VARIABLE $defaultEmbyDataDir
+    !define MUI_DIRECTORYPAGE_VARIABLE $_DEFAULTEMBYDATADIR_
     !insertmacro MUI_PAGE_DIRECTORY
-
-
+	
     !insertmacro MUI_PAGE_INSTFILES
 
     !insertmacro MUI_UNPAGE_CONFIRM
@@ -58,71 +65,76 @@
  
     !insertmacro MUI_LANGUAGE "English"
 
-
 ;--------------------------------
 ;Installer Sections
 
 Section "Install Jellyfin (required)" InstallJellyfin
     SetOutPath "$INSTDIR"
-;Create uninstaller
 
+; Pack all the files that were just compiled
     File /r $%InstallLocation%\* 
+	
 ; Write the installation path into the registry
     WriteRegStr HKLM "Software\Jellyfin" "InstallLocation" "$INSTDIR"
 
 ; Write the uninstall keys for Windows
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Jellyfin" "DisplayName" "Jellyfin $JellyfinVersion"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Jellyfin" "DisplayName" "Jellyfin $_JELLYFINVERSION_"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Jellyfin" "UninstallString" '"$INSTDIR\Uninstall.exe"'
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Jellyfin" "DisplayIcon" '"$INSTDIR\Jellyfin.exe",0'
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Jellyfin" "Publisher" "The Jellyfin project"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Jellyfin" "URLInfoAbout" "https://jellyfin.github.io/"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Jellyfin" "DisplayVersion" "$JellyfinVersion"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Jellyfin" "DisplayVersion" "$_JELLYFINVERSION_"
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Jellyfin" "NoModify" 1
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Jellyfin" "NoRepair" 1
+
+;Create uninstaller
     WriteUninstaller "$INSTDIR\Uninstall.exe"
 
 SectionEnd
 
-
-Section "Jellyfin Service" InstallService
-    ExecWait '"$INSTDIR"\nssm.exe install Jellyfin "$INSTDIR"\jellyfin.exe --datadir "$JELLYFINDATADIR"' $0
-    MessageBox MB_OK "Service install Error : $0"
+;TODO
+; This section hasn't been tested completely
+Section /o "Jellyfin Service" InstallService
+    ExecWait '"$INSTDIR"\nssm.exe install Jellyfin "$INSTDIR"\jellyfin.exe --datadir "$_JELLYFINDATADIR_"' $0
+    DetailPrint "Jellyfin Service install, $0"
     Sleep 3000
     ExecWait '"$INSTDIR"\nssm.exe set Jellyfin Start SERVICE_DELAYED_AUTO_START' $0
-    MessageBox MB_OK "Service setting Error : $0"
-    StrCpy $ServiceInstalled "YES"
+    DetailPrint "Jellyfin Service setting, $0"
+    StrCpy $_SERVICEINSTALLED_ "YES"
 SectionEnd
 
-Section "Desktop shortcut" DesktopShortcut
+Section "Jellyfin desktop shortcut" DesktopShortcut
     SetShellVarContext current
+    DetailPrint "Creating desktop shortcut"
     CreateShortCut "$DESKTOP\Jellyfin.lnk" "$INSTDIR\jellyfin.exe"
 SectionEnd
 
 ;TODO
-Section "Launch Jellyfin" LaunchJellyfin
-    !echo "Binaries at : $%InstallLocation%"
+; This section hasn't been tested completely.
+Section /o "Start Jellyfin after installation" LaunchJellyfin
 ; either start the service or launch jellyfin standalone
-    StrCmp $ServiceInstalled "YES" ServiceStart Standalone
+    StrCmp $_SERVICEINSTALLED_ "YES" ServiceStart Standalone
     
     ServiceStart:
     ExecWait 'C:\Windows\System32\sc.exe start Jellyfin' $0
-    MessageBox MB_OK "Service start Error : $0"
+    DetailPrint "Jellyfin service start, $0"
     Return
     
     Standalone:
     ExecWait '"$INSTDIR"\jellyfin.exe' $0
-    MessageBox MB_OK "start Error : $0"
+    DetailPrint "$INSTDIR\jellyfin.exe start, $0"
 
 SectionEnd
 
 ;TODO
-Section "Migrate Emby Library" MigrateEmbyLibrary
-
-    CopyFiles $defaultEmbyDataDir/config $JELLYFINDATADIR
-    CopyFiles $defaultEmbyDataDir/cache $JELLYFINDATADIR
-    CopyFiles $defaultEmbyDataDir/data $JELLYFINDATADIR
-    CopyFiles $defaultEmbyDataDir/metadata $JELLYFINDATADIR
-    CopyFiles $defaultEmbyDataDir/root $JELLYFINDATADIR
+; This section hasn't been tested completely
+Section /o "Migrate Emby Library" MigrateEmbyLibrary
+    DetailPrint "Migrating Emby Library"
+    CopyFiles $_DEFAULTEMBYDATADIR_/config $_JELLYFINDATADIR_
+    CopyFiles $_DEFAULTEMBYDATADIR_/cache $_JELLYFINDATADIR_
+    CopyFiles $_DEFAULTEMBYDATADIR_/data $_JELLYFINDATADIR_
+    CopyFiles $_DEFAULTEMBYDATADIR_/metadata $_JELLYFINDATADIR_
+    CopyFiles $_DEFAULTEMBYDATADIR_/root $_JELLYFINDATADIR_
 
 SectionEnd
 
@@ -140,6 +152,7 @@ SectionEnd
   ;Assign language strings to sections
     !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
     !insertmacro MUI_DESCRIPTION_TEXT ${InstallJellyfin} $(DESC_InstallJellyfin)
+    !insertmacro MUI_DESCRIPTION_TEXT ${DesktopShortcut} $(DESC_DesktopShortcut)
     !insertmacro MUI_DESCRIPTION_TEXT ${InstallService} $(DESC_InstallService)
     !insertmacro MUI_DESCRIPTION_TEXT ${LaunchJellyfin} $(DESC_LaunchJellyfin)
     !insertmacro MUI_DESCRIPTION_TEXT ${MigrateEmbyLibrary} $(DESC_MigrateEmbyLibrary)
@@ -149,15 +162,13 @@ SectionEnd
 ;Uninstaller Section
 
 Section "Uninstall"
-
-
 ;TODO
 ; stop service or running instance
-    MessageBox MB_OK "uninstall $INSTDIR, $JELLYFINDATADIR"
+; Figure out a way to stop Jellyfin - either standalone or service when uninstaller is invoked
 
     Delete "$INSTDIR\Uninstall.exe"
     RMDir /r "$INSTDIR"
-    RMDir /r "$JELLYFINDATADIR"
+    RMDir /r "$_JELLYFINDATADIR_"
     DeleteRegKey HKLM "Software\Jellyfin"
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Jellyfin"
     Delete "$DESKTOP\Jellyfin.lnk"
@@ -167,11 +178,12 @@ SectionEnd
 
 Function .onInit
     SetShellVarContext all
-    !getdllversion "$%InstallLocation%\jellyfin.dll" expv_
-    StrCpy $JellyfinVersion "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
-    StrCpy $JELLYFINDATADIR "$LOCALAPPDATA\jellyfin\"    
-    StrCpy $ServiceInstalled "NO"
-    SectionSetFlags ${InstallJellyfin} 17
+; Align installer version with jellyfin.dll version
+    !getdllversion "$%InstallLocation%\jellyfin.dll" ver_
+    StrCpy $_JELLYFINVERSION_ "${ver_1}.${ver_2}.${ver_3}.${ver_4}"
+    StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\jellyfin\"    
+    StrCpy $_SERVICEINSTALLED_ "NO"
+    SectionSetFlags ${InstallJellyfin} 17 ; this makes the InstallJellyfin section mandatory
 FunctionEnd
 
 Function ShowEmbyLibraryPage
