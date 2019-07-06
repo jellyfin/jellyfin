@@ -32,7 +32,7 @@
   ;Get installation folder from registry if available
     InstallDirRegKey HKLM "Software\Jellyfin" "InstallLocation"
   
-  ;Request application privileges for Windows Vista
+  ;Request application privileges for service installation
     RequestExecutionLevel admin
     CRCCheck on	    
     !define MUI_ABORTWARNING
