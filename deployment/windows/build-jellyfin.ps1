@@ -127,6 +127,7 @@ if($InstallNSSM.IsPresent -or ($InstallNSSM -eq $true)){
 }
 Copy-Item .\deployment\windows\install-jellyfin.ps1 $InstallLocation\install-jellyfin.ps1
 Copy-Item .\deployment\windows\install.bat $InstallLocation\install.bat
+Copy-Item .\LICENSE $InstallLocation\LICENSE
 if($MakeNSIS.IsPresent -or ($MakeNSIS -eq $true)){
     Write-Verbose "Starting NSIS Package creation"
     Make-NSIS $InstallLocation
