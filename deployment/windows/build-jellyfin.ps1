@@ -30,7 +30,7 @@ function Build-JellyFin {
     Write-Verbose "windowsversion-Architecture: $windowsversion-$Architecture"
     Write-Verbose "InstallLocation: $InstallLocation"
     Write-Verbose "DotNetVerbosity: $DotNetVerbosity"
-    dotnet publish -c $BuildType -r `"$windowsversion-$Architecture`" MediaBrowser.sln -o $InstallLocation -v $DotNetVerbosity
+#    dotnet publish -c $BuildType -r `"$windowsversion-$Architecture`" MediaBrowser.sln -o $InstallLocation -v $DotNetVerbosity
 }
 
 function Install-FFMPEG {
@@ -105,7 +105,7 @@ function Make-NSIS {
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 	Invoke-WebRequest -Uri https://nchc.dl.sourceforge.net/project/nsis/NSIS%203/3.04/nsis-3.04.zip -UseBasicParsing -OutFile "$tempdir/nsis.zip" | Write-Verbose
 
-    Expand-Archive "$tempdir/nsis.zip" -DestinationPath "$tempdir/nsis/" | Write-Verbose
+    Expand-Archive "$tempdir/nsis.zip" -DestinationPath "$tempdir/nsis/" -Force | Write-Verbose
 	$env:InstallLocation = $InstallLocation
 	& "$tempdir/nsis/nsis-3.04/makensis.exe" ".\deployment\windows\jellyfin.nsi"
 	Copy-Item .\deployment\windows\Jellyfin.Installer.*.exe $InstallLocation\..\
@@ -113,6 +113,7 @@ function Make-NSIS {
     Remove-Item "$tempdir/nsis/" -Recurse -Force -ErrorAction Continue | Write-Verbose
     Remove-Item "$tempdir/nsis.zip" -Force -ErrorAction Continue | Write-Verbose
 }
+
 
 Write-Verbose "Starting Build Process: Selected Environment is $WindowsVersion-$Architecture"
 Build-JellyFin
