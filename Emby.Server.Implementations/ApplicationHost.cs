@@ -430,7 +430,7 @@ namespace Emby.Server.Implementations
         /// Gets the current application user agent
         /// </summary>
         /// <value>The application user agent.</value>
-        public string ApplicationUserAgent => Name.Replace(' ','-') + "/" + ApplicationVersion;
+        public string ApplicationUserAgent => Name.Replace(' ','-') + '/' + ApplicationVersion;
 
         /// <summary>
         /// Gets the email address for use within a comment section of a user agent field.
@@ -690,11 +690,6 @@ namespace Emby.Server.Implementations
             await HttpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, CancellationToken.None).ConfigureAwait(false);
         }
 
-        protected virtual IHttpClient CreateHttpClient()
-        {
-            return new HttpClientManager.HttpClientManager(ApplicationPaths, LoggerFactory, FileSystemManager, () => ApplicationUserAgent);
-        }
-
         public static IStreamHelper StreamHelper { get; set; }
 
         /// <summary>
@@ -720,7 +715,11 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(FileSystemManager);
             serviceCollection.AddSingleton<TvDbClientManager>();
 
-            HttpClient = CreateHttpClient();
+            HttpClient = new HttpClientManager.HttpClientManager(
+                ApplicationPaths,
+                LoggerFactory.CreateLogger<HttpClientManager.HttpClientManager>(),
+                FileSystemManager,
+                () => ApplicationUserAgent);
             serviceCollection.AddSingleton(HttpClient);
 
             serviceCollection.AddSingleton(NetworkManager);
