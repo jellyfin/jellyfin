@@ -120,13 +120,6 @@ namespace Jellyfin.Server
             // The default connection limit is 10 for ASP.NET hosted applications and 2 for all others.
             ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
 
-// CA5359: Do Not Disable Certificate Validation
-#pragma warning disable CA5359
-
-            // Increase the max http request limit
-            // The default connection limit is 10 for ASP.NET hosted applications and 2 for all others.
-            ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
-
             // Disable the "Expect: 100-Continue" header by default
             // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
             ServicePointManager.Expect100Continue = false;
