@@ -125,12 +125,12 @@ if($InstallNSSM.IsPresent -or ($InstallNSSM -eq $true)){
     Write-Verbose "Starting NSSM Install"
     Install-NSSM $InstallLocation $Architecture
 }
+Copy-Item .\deployment\windows\install-jellyfin.ps1 $InstallLocation\install-jellyfin.ps1
+Copy-Item .\deployment\windows\install.bat $InstallLocation\install.bat
 if($MakeNSIS.IsPresent -or ($MakeNSIS -eq $true)){
     Write-Verbose "Starting NSIS Package creation"
     Make-NSIS $InstallLocation
 }
-Copy-Item .\deployment\windows\install-jellyfin.ps1 $InstallLocation\install-jellyfin.ps1
-Copy-Item .\deployment\windows\install.bat $InstallLocation\install.bat
 if($GenerateZip.IsPresent -or ($GenerateZip -eq $true)){
     Compress-Archive -Path $InstallLocation -DestinationPath "$InstallLocation/jellyfin.zip" -Force
 }
