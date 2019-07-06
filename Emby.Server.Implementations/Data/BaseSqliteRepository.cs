@@ -223,6 +223,8 @@ namespace Emby.Server.Implementations.Data
                     "pragma temp_store = file"
                 });
             }
+            // Configuration and pragmas can affect VACUUM so it needs to be last.
+            queries.Add("VACUUM");
 
             db.ExecuteAll(string.Join(";", queries));
             Logger.LogInformation("PRAGMA synchronous=" + db.Query("PRAGMA synchronous").SelectScalarString().First());
