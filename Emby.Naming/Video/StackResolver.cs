@@ -40,17 +40,24 @@ namespace Emby.Naming.Video
             var result = new StackResult();
             foreach (var directory in files.GroupBy(file => file.IsDirectory ? file.FullName : Path.GetDirectoryName(file.FullName)))
             {
-                var stack = new FileStack();
-                stack.Name = Path.GetFileName(directory.Key);
-                stack.IsDirectoryStack = false;
+                var stack = new FileStack()
+                {
+                    Name = Path.GetFileName(directory.Key),
+                    IsDirectoryStack = false
+                };
                 foreach (var file in directory)
                 {
                     if (file.IsDirectory)
+                    {
                         continue;
+                    }
+
                     stack.Files.Add(file.FullName);
                 }
+
                 result.Stacks.Add(stack);
             }
+
             return result;
         }
 
@@ -114,16 +121,16 @@ namespace Emby.Naming.Video
                                 {
                                     if (!string.Equals(volume1, volume2, StringComparison.OrdinalIgnoreCase))
                                     {
-                                        if (string.Equals(ignore1, ignore2, StringComparison.OrdinalIgnoreCase) &&
-                                            string.Equals(extension1, extension2, StringComparison.OrdinalIgnoreCase))
+                                        if (string.Equals(ignore1, ignore2, StringComparison.OrdinalIgnoreCase)
+                                            && string.Equals(extension1, extension2, StringComparison.OrdinalIgnoreCase))
                                         {
                                             if (stack.Files.Count == 0)
                                             {
                                                 stack.Name = title1 + ignore1;
                                                 stack.IsDirectoryStack = file1.IsDirectory;
-                                                //stack.Name = title1 + ignore1 + extension1;
                                                 stack.Files.Add(file1.FullName);
                                             }
+
                                             stack.Files.Add(file2.FullName);
                                         }
                                         else

@@ -26,11 +26,6 @@ namespace MediaBrowser.Common
         string SystemId { get; }
 
         /// <summary>
-        /// Occurs when [application updated].
-        /// </summary>
-        event EventHandler<GenericEventArgs<PackageVersionInfo>> ApplicationUpdated;
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance has pending kernel reload.
         /// </summary>
         /// <value><c>true</c> if this instance has pending kernel reload; otherwise, <c>false</c>.</value>

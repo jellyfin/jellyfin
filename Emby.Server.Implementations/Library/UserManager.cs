@@ -222,9 +222,8 @@ namespace Emby.Server.Implementations.Library
 
         public void Initialize()
         {
-            _users = LoadUsers();
-
-            var users = Users.ToList();
+            var users = LoadUsers();
+            _users = users.ToArray();
 
             // If there are no local users with admin rights, make them all admins
             if (!users.Any(i => i.Policy.IsAdministrator))
@@ -555,35 +554,36 @@ namespace Emby.Server.Implementations.Library
         /// Loads the users from the repository
         /// </summary>
         /// <returns>IEnumerable{User}.</returns>
-        private User[] LoadUsers()
+        private List<User> LoadUsers()
         {
             var users = UserRepository.RetrieveAllUsers();
 
             // There always has to be at least one user.
-            if (users.Count == 0)
+            if (users.Count != 0)
             {
-                var defaultName = Environment.UserName;
-                if (string.IsNullOrWhiteSpace(defaultName))
-                {
-                    defaultName = "MyJellyfinUser";
-                }
-                var name = MakeValidUsername(defaultName);
-
-                var user = InstantiateNewUser(name);
-
-                user.DateLastSaved = DateTime.UtcNow;
-
-                UserRepository.CreateUser(user);
-
-                users.Add(user);
-
-                user.Policy.IsAdministrator = true;
-                user.Policy.EnableContentDeletion = true;
-                user.Policy.EnableRemoteControlOfOtherUsers = true;
-                UpdateUserPolicy(user, user.Policy, false);
+                return users;
             }
 
-            return users.ToArray();
+            var defaultName = Environment.UserName;
+            if (string.IsNullOrWhiteSpace(defaultName))
+            {
+                defaultName = "MyJellyfinUser";
+            }
+
+            var name = MakeValidUsername(defaultName);
+
+            var user = InstantiateNewUser(name);
+
+            user.DateLastSaved = DateTime.UtcNow;
+
+            UserRepository.CreateUser(user);
+
+            user.Policy.IsAdministrator = true;
+            user.Policy.EnableContentDeletion = true;
+            user.Policy.EnableRemoteControlOfOtherUsers = true;
+            UpdateUserPolicy(user, user.Policy, false);
+
+            return new List<User> { user };
         }
 
         public UserDto GetUserDto(User user, string remoteEndPoint = null)

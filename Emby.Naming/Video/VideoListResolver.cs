@@ -53,7 +53,7 @@ namespace Emby.Naming.Video
                     Name = stack.Name
                 };
 
-                info.Year = info.Files.First().Year;
+                info.Year = info.Files[0].Year;
 
                 var extraBaseNames = new List<string>
                 {
@@ -87,7 +87,7 @@ namespace Emby.Naming.Video
                     Name = media.Name
                 };
 
-                info.Year = info.Files.First().Year;
+                info.Year = info.Files[0].Year;
 
                 var extras = GetExtras(remainingFiles, new List<string> { media.FileNameWithoutExtension });
 
@@ -115,7 +115,7 @@ namespace Emby.Naming.Video
 
                 if (!string.IsNullOrEmpty(parentPath))
                 {
-                    var folderName = Path.GetFileName(Path.GetDirectoryName(videoPath));
+                    var folderName = Path.GetFileName(parentPath);
                     if (!string.IsNullOrEmpty(folderName))
                     {
                         var extras = GetExtras(remainingFiles, new List<string> { folderName });
@@ -163,9 +163,7 @@ namespace Emby.Naming.Video
                 Year = i.Year
             }));
 
-            var orderedList = list.OrderBy(i => i.Name);
-
-            return orderedList;
+            return list.OrderBy(i => i.Name);
         }
 
         private IEnumerable<VideoInfo> GetVideosGroupedByVersion(List<VideoInfo> videos)
@@ -179,23 +177,21 @@ namespace Emby.Naming.Video
 
             var folderName = Path.GetFileName(Path.GetDirectoryName(videos[0].Files[0].Path));
 
-            if (!string.IsNullOrEmpty(folderName) && folderName.Length > 1)
+            if (!string.IsNullOrEmpty(folderName)
+                && folderName.Length > 1
+                && videos.All(i => i.Files.Count == 1
+                && IsEligibleForMultiVersion(folderName, i.Files[0].Path))
+                && HaveSameYear(videos))
             {
-                if (videos.All(i => i.Files.Count == 1 && IsEligibleForMultiVersion(folderName, i.Files[0].Path)))
-                {
-                    if (HaveSameYear(videos))
-                    {
-                        var ordered = videos.OrderBy(i => i.Name).ToList();
+                var ordered = videos.OrderBy(i => i.Name).ToList();
 
-                        list.Add(ordered[0]);
+                list.Add(ordered[0]);
 
-                        list[0].AlternateVersions = ordered.Skip(1).Select(i => i.Files[0]).ToList();
-                        list[0].Name = folderName;
-                        list[0].Extras.AddRange(ordered.Skip(1).SelectMany(i => i.Extras));
+                list[0].AlternateVersions = ordered.Skip(1).Select(i => i.Files[0]).ToList();
+                list[0].Name = folderName;
+                list[0].Extras.AddRange(ordered.Skip(1).SelectMany(i => i.Extras));
 
-                        return list;
-                    }
-                }
+                return list;
             }
 
             return videos;
@@ -213,9 +209,9 @@ namespace Emby.Naming.Video
             if (testFilename.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
             {
                 testFilename = testFilename.Substring(folderName.Length).Trim();
-                return string.IsNullOrEmpty(testFilename) ||
-                       testFilename.StartsWith("-") ||
-                       string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty)) ;
+                return string.IsNullOrEmpty(testFilename)
+                    || testFilename[0] == '-'
+                    || string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty));
             }
 
             return false;

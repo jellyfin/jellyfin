@@ -38,10 +38,11 @@ namespace Emby.Naming.Video
         /// Resolves the specified path.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="IsDirectory">if set to <c>true</c> [is folder].</param>
+        /// <param name="isDirectory">if set to <c>true</c> [is folder].</param>
+        /// <param name="parseName">Whether or not the name should be parsed for info</param>
         /// <returns>VideoFileInfo.</returns>
         /// <exception cref="ArgumentNullException">path</exception>
-        public VideoFileInfo Resolve(string path, bool IsDirectory, bool parseName = true)
+        public VideoFileInfo Resolve(string path, bool isDirectory, bool parseName = true)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -52,9 +53,10 @@ namespace Emby.Naming.Video
             string container = null;
             string stubType = null;
 
-            if (!IsDirectory)
+            if (!isDirectory)
             {
                 var extension = Path.GetExtension(path);
+
                 // Check supported extensions
                 if (!_options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
@@ -79,7 +81,7 @@ namespace Emby.Naming.Video
 
             var extraResult = new ExtraResolver(_options).GetExtraInfo(path);
 
-            var name = IsDirectory
+            var name = isDirectory
                 ? Path.GetFileName(path)
                 : Path.GetFileNameWithoutExtension(path);
 
@@ -108,7 +110,7 @@ namespace Emby.Naming.Video
                 Is3D = format3DResult.Is3D,
                 Format3D = format3DResult.Format3D,
                 ExtraType = extraResult.ExtraType,
-                IsDirectory = IsDirectory,
+                IsDirectory = isDirectory,
                 ExtraRule = extraResult.Rule
             };
         }

@@ -156,11 +156,6 @@ namespace Emby.Server.Implementations
         public event EventHandler HasPendingRestartChanged;
 
         /// <summary>
-        /// Occurs when [application updated].
-        /// </summary>
-        public event EventHandler<GenericEventArgs<PackageVersionInfo>> ApplicationUpdated;
-
-        /// <summary>
         /// Gets a value indicating whether this instance has changes that require the entire application to restart.
         /// </summary>
         /// <value><c>true</c> if this instance has pending application restart; otherwise, <c>false</c>.</value>
@@ -236,11 +231,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value>The server configuration manager.</value>
         public IServerConfigurationManager ServerConfigurationManager => (IServerConfigurationManager)ConfigurationManager;
-
-        protected virtual IResourceFileManager CreateResourceFileManager()
-        {
-            return new ResourceFileManager(HttpResultFactory, LoggerFactory, FileSystemManager);
-        }
 
         /// <summary>
         /// Gets or sets the user manager.
@@ -621,8 +611,6 @@ namespace Emby.Server.Implementations
 
             DiscoverTypes();
 
-            SetHttpLimit();
-
             await RegisterResources(serviceCollection).ConfigureAwait(false);
 
             FindParts();
@@ -765,10 +753,6 @@ namespace Emby.Server.Implementations
             UserDataManager = new UserDataManager(LoggerFactory, ServerConfigurationManager, () => UserManager);
             serviceCollection.AddSingleton(UserDataManager);
 
-            UserRepository = GetUserRepository();
-            // This is only needed for disposal purposes. If removing this, make sure to have the manager handle disposing it
-            serviceCollection.AddSingleton(UserRepository);
-
             var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LoggerFactory, JsonSerializer, ApplicationPaths, FileSystemManager);
             serviceCollection.AddSingleton<IDisplayPreferencesRepository>(displayPreferencesRepo);
 
@@ -777,6 +761,8 @@ namespace Emby.Server.Implementations
 
             AuthenticationRepository = GetAuthenticationRepository();
             serviceCollection.AddSingleton(AuthenticationRepository);
+
+            UserRepository = GetUserRepository();
 
             UserManager = new UserManager(LoggerFactory, ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, this, JsonSerializer, FileSystemManager);
             serviceCollection.AddSingleton(UserManager);
@@ -818,7 +804,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(TVSeriesManager);
 
             DeviceManager = new DeviceManager(AuthenticationRepository, JsonSerializer, LibraryManager, LocalizationManager, UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager);
-
             serviceCollection.AddSingleton(DeviceManager);
 
             MediaSourceManager = new MediaSourceManager(ItemRepository, ApplicationPaths, LocalizationManager, UserManager, LibraryManager, LoggerFactory, JsonSerializer, FileSystemManager, UserDataManager, () => MediaEncoder);
@@ -833,10 +818,10 @@ namespace Emby.Server.Implementations
             DtoService = new DtoService(LoggerFactory, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ProviderManager, this, () => MediaSourceManager, () => LiveTvManager);
             serviceCollection.AddSingleton(DtoService);
 
-            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager, HttpClient, ProviderManager);
+            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, ProviderManager);
             serviceCollection.AddSingleton(ChannelManager);
 
-            SessionManager = new SessionManager(UserDataManager, LoggerFactory, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
+            SessionManager = new SessionManager(UserDataManager, LoggerFactory, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, this, AuthenticationRepository, DeviceManager, MediaSourceManager);
             serviceCollection.AddSingleton(SessionManager);
 
             serviceCollection.AddSingleton<IDlnaManager>(
@@ -893,7 +878,7 @@ namespace Emby.Server.Implementations
             SubtitleEncoder = new MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder(LibraryManager, LoggerFactory, ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, ProcessFactory);
             serviceCollection.AddSingleton(SubtitleEncoder);
 
-            serviceCollection.AddSingleton(CreateResourceFileManager());
+            serviceCollection.AddSingleton(typeof(IResourceFileManager), typeof(ResourceFileManager));
 
             displayPreferencesRepo.Initialize();
 
@@ -918,8 +903,7 @@ namespace Emby.Server.Implementations
                 .Distinct();
 
             logger.LogInformation("Arguments: {Args}", commandLineArgs);
-            // FIXME: @bond this logs the kernel version, not the OS version
-            logger.LogInformation("Operating system: {OS} {OSVersion}", OperatingSystem.Name, Environment.OSVersion.Version);
+            logger.LogInformation("Operating system: {OS}", OperatingSystem.Name);
             logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);
             logger.LogInformation("64-Bit Process: {Is64Bit}", Environment.Is64BitProcess);
             logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
@@ -927,19 +911,6 @@ namespace Emby.Server.Implementations
             logger.LogInformation("Program data path: {ProgramDataPath}", appPaths.ProgramDataPath);
             logger.LogInformation("Web resources path: {WebPath}", appPaths.WebPath);
             logger.LogInformation("Application directory: {ApplicationPath}", appPaths.ProgramSystemPath);
-        }
-
-        private void SetHttpLimit()
-        {
-            try
-            {
-                // Increase the max http request limit
-                ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error setting http limit");
-            }
         }
 
         private X509Certificate2 GetCertificate(CertificateInfo info)
@@ -1035,7 +1006,6 @@ namespace Emby.Server.Implementations
             Video.LiveTvManager = LiveTvManager;
             Folder.UserViewManager = UserViewManager;
             UserView.TVSeriesManager = TVSeriesManager;
-            UserView.PlaylistManager = PlaylistManager;
             UserView.CollectionManager = CollectionManager;
             BaseItem.MediaSourceManager = MediaSourceManager;
             CollectionFolder.XmlSerializer = XmlSerializer;
@@ -1441,9 +1411,9 @@ namespace Emby.Server.Implementations
         public async Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken)
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-            
-            string wanAddress; 
-            
+
+            string wanAddress;
+
             if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
             {
                 wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
@@ -1499,10 +1469,10 @@ namespace Emby.Server.Implementations
 
         public async Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken)
         {
-            var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);            
-            
+            var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+
             string wanAddress;
-            
+
             if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
             {
                 wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
@@ -1572,6 +1542,7 @@ namespace Emby.Server.Implementations
             {
                 Logger.LogError(ex, "Error getting WAN Ip address information");
             }
+
             return null;
         }
 
@@ -1618,9 +1589,9 @@ namespace Emby.Server.Implementations
             }
             return string.Format("http://{0}:{1}",
                     host,
-                    ServerConfigurationManager.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture));      
+                    ServerConfigurationManager.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture));
         }
-        
+
         public Task<List<IpAddressInfo>> GetLocalIpAddresses(CancellationToken cancellationToken)
         {
             return GetLocalIpAddressesInternal(true, 0, cancellationToken);
@@ -1718,10 +1689,8 @@ namespace Emby.Server.Implementations
                         LogErrors = LogPing,
                         LogRequest = LogPing,
                         BufferContent = false,
-
                         CancellationToken = cancellationToken
                     }, HttpMethod.Post).ConfigureAwait(false))
-
                 {
                     using (var reader = new StreamReader(response.Content))
                     {
@@ -1874,24 +1843,6 @@ namespace Emby.Server.Implementations
         {
         }
 
-        /// <summary>
-        /// Called when [application updated].
-        /// </summary>
-        /// <param name="package">The package.</param>
-        protected void OnApplicationUpdated(PackageVersionInfo package)
-        {
-            Logger.LogInformation("Application has been updated to version {0}", package.versionStr);
-
-            ApplicationUpdated?.Invoke(
-                this,
-                new GenericEventArgs<PackageVersionInfo>()
-                {
-                    Argument = package
-                });
-
-            NotifyPendingRestart();
-        }
-
         private bool _disposed = false;
 
         /// <summary>
@@ -1936,7 +1887,11 @@ namespace Emby.Server.Implementations
                         Logger.LogError(ex, "Error disposing {Type}", part.GetType().Name);
                     }
                 }
+
+                UserRepository.Dispose();
             }
+
+            UserRepository = null;
 
             _disposed = true;
         }

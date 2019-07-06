@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Linq;
 using System.Text;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -25,8 +27,6 @@ namespace Emby.Server.Implementations.SocketSharp
             this.OperationName = operationName;
             this.request = httpContext;
             this.Response = new WebSocketSharpResponse(logger, response);
-
-            // HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes[0]);
         }
 
         public HttpRequest HttpRequest => request;
@@ -40,16 +40,9 @@ namespace Emby.Server.Implementations.SocketSharp
         public string RawUrl => request.GetEncodedPathAndQuery();
 
         public string AbsoluteUri => request.GetDisplayUrl().TrimEnd('/');
+        // Header[name] returns "" when undefined
 
-        public string XForwardedFor
-            => StringValues.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"].ToString();
-
-        public int? XForwardedPort
-            => StringValues.IsNullOrEmpty(request.Headers["X-Forwarded-Port"]) ? (int?)null : int.Parse(request.Headers["X-Forwarded-Port"], CultureInfo.InvariantCulture);
-
-        public string XForwardedProtocol => StringValues.IsNullOrEmpty(request.Headers["X-Forwarded-Proto"]) ? null : request.Headers["X-Forwarded-Proto"].ToString();
-
-        public string XRealIp => StringValues.IsNullOrEmpty(request.Headers["X-Real-IP"]) ? null : request.Headers["X-Real-IP"].ToString();
+        private string GetHeader(string name) => request.Headers[name].ToString();
 
         private string remoteIp;
         public string RemoteIp
@@ -61,107 +54,27 @@ namespace Emby.Server.Implementations.SocketSharp
                     return remoteIp;
                 }
 
-                var temp = CheckBadChars(XForwardedFor.AsSpan());
-                if (temp.Length != 0)
+                IPAddress ip;
+
+                // "Real" remote ip might be in X-Forwarded-For of X-Real-Ip
+                // (if the server is behind a reverse proxy for example)
+                if (!IPAddress.TryParse(GetHeader(CustomHeaderNames.XForwardedFor), out ip))
                 {
-                    return remoteIp = temp.ToString();
+                    if (!IPAddress.TryParse(GetHeader(CustomHeaderNames.XRealIP), out ip))
+                    {
+                        ip = request.HttpContext.Connection.RemoteIpAddress;
+                    }
                 }
 
-                temp = CheckBadChars(XRealIp.AsSpan());
-                if (temp.Length != 0)
-                {
-                    return remoteIp = NormalizeIp(temp).ToString();
-                }
-
-                return remoteIp = NormalizeIp(request.HttpContext.Connection.RemoteIpAddress.ToString().AsSpan()).ToString();
+                return remoteIp = NormalizeIp(ip).ToString();
             }
         }
 
-        private static readonly char[] HttpTrimCharacters = new char[] { (char)0x09, (char)0xA, (char)0xB, (char)0xC, (char)0xD, (char)0x20 };
-
-        // CheckBadChars - throws on invalid chars to be not found in header name/value
-        internal static ReadOnlySpan<char> CheckBadChars(ReadOnlySpan<char> name)
+        private static IPAddress NormalizeIp(IPAddress ip)
         {
-            if (name.Length == 0)
+            if (ip.IsIPv4MappedToIPv6)
             {
-                return name;
-            }
-
-            // VALUE check
-            // Trim spaces from both ends
-            name = name.Trim(HttpTrimCharacters);
-
-            // First, check for correctly formed multi-line value
-            // Second, check for absence of CTL characters
-            int crlf = 0;
-            for (int i = 0; i < name.Length; ++i)
-            {
-                char c = (char)(0x000000ff & (uint)name[i]);
-                switch (crlf)
-                {
-                    case 0:
-                    {
-                        if (c == '\r')
-                        {
-                            crlf = 1;
-                        }
-                        else if (c == '\n')
-                        {
-                            // Technically this is bad HTTP.  But it would be a breaking change to throw here.
-                            // Is there an exploit?
-                            crlf = 2;
-                        }
-                        else if (c == 127 || (c < ' ' && c != '\t'))
-                        {
-                            throw new ArgumentException("net_WebHeaderInvalidControlChars", nameof(name));
-                        }
-
-                        break;
-                    }
-
-                    case 1:
-                    {
-                        if (c == '\n')
-                        {
-                            crlf = 2;
-                            break;
-                        }
-
-                        throw new ArgumentException("net_WebHeaderInvalidCRLFChars", nameof(name));
-                    }
-
-                    case 2:
-                    {
-                        if (c == ' ' || c == '\t')
-                        {
-                            crlf = 0;
-                            break;
-                        }
-
-                        throw new ArgumentException("net_WebHeaderInvalidCRLFChars", nameof(name));
-                    }
-                }
-            }
-
-            if (crlf != 0)
-            {
-                throw new ArgumentException("net_WebHeaderInvalidCRLFChars", nameof(name));
-            }
-
-            return name;
-        }
-
-        private ReadOnlySpan<char> NormalizeIp(ReadOnlySpan<char> ip)
-        {
-            if (ip.Length != 0 && !ip.IsWhiteSpace())
-            {
-                // Handle ipv4 mapped to ipv6
-                const string srch = "::ffff:";
-                var index = ip.IndexOf(srch.AsSpan(), StringComparison.OrdinalIgnoreCase);
-                if (index == 0)
-                {
-                    ip = ip.Slice(srch.Length);
-                }
+                return ip.MapToIPv4();
             }
 
             return ip;
@@ -312,97 +225,7 @@ namespace Emby.Server.Implementations.SocketSharp
             return pos == -1 ? strVal : strVal.Slice(0, pos);
         }
 
-        public static string HandlerFactoryPath;
-
-        private string pathInfo;
-        public string PathInfo
-        {
-            get
-            {
-                if (this.pathInfo == null)
-                {
-                    var mode = HandlerFactoryPath;
-
-                    var pos = RawUrl.IndexOf("?", StringComparison.Ordinal);
-                    if (pos != -1)
-                    {
-                        var path = RawUrl.Substring(0, pos);
-                        this.pathInfo = GetPathInfo(
-                            path,
-                            mode,
-                            mode ?? string.Empty);
-                    }
-                    else
-                    {
-                        this.pathInfo = RawUrl;
-                    }
-
-                    this.pathInfo = WebUtility.UrlDecode(pathInfo);
-                    this.pathInfo = NormalizePathInfo(pathInfo, mode).ToString();
-                }
-
-                return this.pathInfo;
-            }
-        }
-
-        private static string GetPathInfo(string fullPath, string mode, string appPath)
-        {
-            var pathInfo = ResolvePathInfoFromMappedPath(fullPath, mode);
-            if (!string.IsNullOrEmpty(pathInfo))
-            {
-                return pathInfo;
-            }
-
-            // Wildcard mode relies on this to work out the handlerPath
-            pathInfo = ResolvePathInfoFromMappedPath(fullPath, appPath);
-            if (!string.IsNullOrEmpty(pathInfo))
-            {
-                return pathInfo;
-            }
-
-            return fullPath;
-        }
-
-        private static string ResolvePathInfoFromMappedPath(string fullPath, string mappedPathRoot)
-        {
-            if (mappedPathRoot == null)
-            {
-                return null;
-            }
-
-            var sbPathInfo = new StringBuilder();
-            var fullPathParts = fullPath.Split('/');
-            var mappedPathRootParts = mappedPathRoot.Split('/');
-            var fullPathIndexOffset = mappedPathRootParts.Length - 1;
-            var pathRootFound = false;
-
-            for (var fullPathIndex = 0; fullPathIndex < fullPathParts.Length; fullPathIndex++)
-            {
-                if (pathRootFound)
-                {
-                    sbPathInfo.Append("/" + fullPathParts[fullPathIndex]);
-                }
-                else if (fullPathIndex - fullPathIndexOffset >= 0)
-                {
-                    pathRootFound = true;
-                    for (var mappedPathRootIndex = 0; mappedPathRootIndex < mappedPathRootParts.Length; mappedPathRootIndex++)
-                    {
-                        if (!string.Equals(fullPathParts[fullPathIndex - fullPathIndexOffset + mappedPathRootIndex], mappedPathRootParts[mappedPathRootIndex], StringComparison.OrdinalIgnoreCase))
-                        {
-                            pathRootFound = false;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!pathRootFound)
-            {
-                return null;
-            }
-
-            return sbPathInfo.Length > 1 ? sbPathInfo.ToString().TrimEnd('/') : "/";
-        }
+        public string PathInfo => this.request.Path.Value;
 
         public string UserAgent => request.Headers[HeaderNames.UserAgent];
 
@@ -474,45 +297,32 @@ namespace Emby.Server.Implementations.SocketSharp
         {
             get
             {
-                if (httpFiles == null)
+                if (httpFiles != null)
                 {
-                    if (files == null)
-                    {
-                        return httpFiles = Array.Empty<IHttpFile>();
-                    }
+                    return httpFiles;
+                }
 
-                    httpFiles = new IHttpFile[files.Count];
-                    var i = 0;
-                    foreach (var pair in files)
+                if (files == null)
+                {
+                    return httpFiles = Array.Empty<IHttpFile>();
+                }
+
+                var values = files.Values;
+                httpFiles = new IHttpFile[values.Count];
+                for (int i = 0; i < values.Count; i++)
+                {
+                    var reqFile = values.ElementAt(i);
+                    httpFiles[i] = new HttpFile
                     {
-                        var reqFile = pair.Value;
-                        httpFiles[i] = new HttpFile
-                        {
-                            ContentType = reqFile.ContentType,
-                            ContentLength = reqFile.ContentLength,
-                            FileName = reqFile.FileName,
-                            InputStream = reqFile.InputStream,
-                        };
-                        i++;
-                    }
+                        ContentType = reqFile.ContentType,
+                        ContentLength = reqFile.ContentLength,
+                        FileName = reqFile.FileName,
+                        InputStream = reqFile.InputStream,
+                    };
                 }
 
                 return httpFiles;
             }
-        }
-
-        public static ReadOnlySpan<char> NormalizePathInfo(string pathInfo, string handlerPath)
-        {
-            if (handlerPath != null)
-            {
-                var trimmed = pathInfo.AsSpan().TrimStart('/');
-                if (trimmed.StartsWith(handlerPath.AsSpan(), StringComparison.OrdinalIgnoreCase))
-                {
-                    return trimmed.Slice(handlerPath.Length).ToString().AsSpan();
-                }
-            }
-
-            return pathInfo.AsSpan();
         }
     }
 }

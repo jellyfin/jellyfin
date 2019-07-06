@@ -355,7 +355,7 @@ namespace Rssdp.Infrastructure
         {
             var socket = _SocketFactory.CreateUdpMulticastSocket(SsdpConstants.MulticastLocalAdminAddress, _MulticastTtl, SsdpConstants.MulticastPort);
 
-            ListenToSocket(socket);
+            _ = ListenToSocketInternal(socket);
 
             return socket;
         }
@@ -389,17 +389,10 @@ namespace Rssdp.Infrastructure
 
             foreach (var socket in sockets)
             {
-                ListenToSocket(socket);
+                _ = ListenToSocketInternal(socket);
             }
 
             return sockets;
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "t", Justification = "Capturing task to local variable removes compiler warning, task is not otherwise required.")]
-        private void ListenToSocket(ISocket socket)
-        {
-            // Tasks are captured to local variables even if we don't use them just to avoid compiler warnings.
-            var t = Task.Run(() => ListenToSocketInternal(socket));
         }
 
         private async Task ListenToSocketInternal(ISocket socket)
@@ -448,10 +441,10 @@ namespace Rssdp.Infrastructure
 
         private void ProcessMessage(string data, IpEndPointInfo endPoint, IpAddressInfo receivedOnLocalIpAddress)
         {
-            //Responses start with the HTTP version, prefixed with HTTP/ while
-            //requests start with a method which can vary and might be one we haven't
-            //seen/don't know. We'll check if this message is a request or a response
-            //by checking for the HTTP/ prefix on the start of the message.
+            // Responses start with the HTTP version, prefixed with HTTP/ while
+            // requests start with a method which can vary and might be one we haven't
+            // seen/don't know. We'll check if this message is a request or a response
+            // by checking for the HTTP/ prefix on the start of the message.
             if (data.StartsWith("HTTP/", StringComparison.OrdinalIgnoreCase))
             {
                 HttpResponseMessage responseMessage = null;
@@ -465,7 +458,9 @@ namespace Rssdp.Infrastructure
                 }
 
                 if (responseMessage != null)
+                {
                     OnResponseReceived(responseMessage, endPoint, receivedOnLocalIpAddress);
+                }
             }
             else
             {

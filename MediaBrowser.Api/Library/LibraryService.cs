@@ -490,18 +490,6 @@ namespace MediaBrowser.Api.Library
                 {
                     return false;
                 }
-                else if (string.Equals(name, "FanArt", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    if (string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    return true;
-                }
                 else if (string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
@@ -999,19 +987,16 @@ namespace MediaBrowser.Api.Library
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(RefreshLibrary request)
+        public async Task Post(RefreshLibrary request)
         {
-            Task.Run(() =>
+            try
             {
-                try
-                {
-                    _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error refreshing library");
-                }
-            });
+                await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error refreshing library");
+            }
         }
 
         /// <summary>

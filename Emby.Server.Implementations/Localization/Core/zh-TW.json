@@ -89,5 +89,8 @@
     "UserStoppedPlayingItemWithValues": "{0} 已停止在 {2} 播放 {1}",
     "ValueHasBeenAddedToLibrary": "{0} 已新增至您的媒體庫",
     "ValueSpecialEpisodeName": "特典 - {0}",
-    "VersionNumber": "版本 {0}"
+    "VersionNumber": "版本 {0}",
+    "HeaderRecordingGroups": "錄製組",
+    "Inherit": "繼承",
+    "SubtitleDownloadFailureFromForItem": "無法為 {1} 從 {0} 下載字幕"
 }

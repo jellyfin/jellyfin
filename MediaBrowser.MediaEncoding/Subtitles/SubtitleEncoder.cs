@@ -126,8 +126,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException(nameof(mediaSourceId));
             }
 
-            // TODO network path substition useful ?
-            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(item, null, true, true, cancellationToken).ConfigureAwait(false);
+            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(item, null, true, false, cancellationToken).ConfigureAwait(false);
 
             var mediaSource = mediaSources
                 .First(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));

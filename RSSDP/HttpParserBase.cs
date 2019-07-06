@@ -23,8 +23,6 @@ namespace Rssdp.Infrastructure
 
         #region Public Methods
 
-        private static byte[] EmptyByteArray = new byte[]{};
-
         /// <summary>
         /// Parses the <paramref name="data"/> provided into either a <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/> object.
         /// </summary>
@@ -46,7 +44,7 @@ namespace Rssdp.Infrastructure
             if (data.Length == 0) throw new ArgumentException("data cannot be an empty string.", nameof(data));
             if (!LineTerminators.Any(data.Contains)) throw new ArgumentException("data is not a valid request, it does not contain any CRLF/LF terminators.", nameof(data));
 
-            using (var retVal = new ByteArrayContent(EmptyByteArray))
+            using (var retVal = new ByteArrayContent(Array.Empty<byte>()))
             {
                 var lines = data.Split(LineTerminators, StringSplitOptions.None);
 

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
@@ -17,7 +16,6 @@ namespace MediaBrowser.Controller.Entities
         public Guid? UserId { get; set; }
 
         public static ITVSeriesManager TVSeriesManager;
-        public static IPlaylistManager PlaylistManager;
 
         [IgnoreDataMember]
         public string CollectionType => ViewType;
@@ -38,6 +36,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 list.Add(Id);
             }
+
             return list;
         }
 
@@ -65,7 +64,7 @@ namespace MediaBrowser.Controller.Entities
                 parent = LibraryManager.GetItemById(ParentId) as Folder ?? parent;
             }
 
-            return new UserViewBuilder(UserViewManager, LibraryManager, Logger, UserDataManager, TVSeriesManager, ConfigurationManager, PlaylistManager)
+            return new UserViewBuilder(UserViewManager, LibraryManager, Logger, UserDataManager, TVSeriesManager, ConfigurationManager)
                 .GetUserItems(parent, this, CollectionType, query);
         }
 

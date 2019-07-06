@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -29,31 +27,39 @@ namespace Emby.Server.Implementations.Activity
 {
     public class ActivityLogEntryPoint : IServerEntryPoint
     {
+        private readonly ILogger _logger;
         private readonly IInstallationManager _installationManager;
         private readonly ISessionManager _sessionManager;
         private readonly ITaskManager _taskManager;
         private readonly IActivityManager _activityManager;
         private readonly ILocalizationManager _localization;
-        private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subManager;
         private readonly IUserManager _userManager;
-        private readonly IServerConfigurationManager _config;
         private readonly IServerApplicationHost _appHost;
         private readonly IDeviceManager _deviceManager;
 
-        public ActivityLogEntryPoint(ISessionManager sessionManager, IDeviceManager deviceManager, ITaskManager taskManager, IActivityManager activityManager, ILocalizationManager localization, IInstallationManager installationManager, ILibraryManager libraryManager, ISubtitleManager subManager, IUserManager userManager, IServerConfigurationManager config, IServerApplicationHost appHost)
+        public ActivityLogEntryPoint(
+            ILogger<ActivityLogEntryPoint> logger,
+            ISessionManager sessionManager,
+            IDeviceManager deviceManager,
+            ITaskManager taskManager,
+            IActivityManager activityManager,
+            ILocalizationManager localization,
+            IInstallationManager installationManager,
+            ISubtitleManager subManager,
+            IUserManager userManager,
+            IServerApplicationHost appHost)
         {
+            _logger = logger;
             _sessionManager = sessionManager;
+            _deviceManager = deviceManager;
             _taskManager = taskManager;
             _activityManager = activityManager;
             _localization = localization;
             _installationManager = installationManager;
-            _libraryManager = libraryManager;
             _subManager = subManager;
             _userManager = userManager;
-            _config = config;
             _appHost = appHost;
-            _deviceManager = deviceManager;
         }
 
         public Task RunAsync()
@@ -82,8 +88,6 @@ namespace Emby.Server.Implementations.Activity
             _userManager.UserLockedOut += OnUserLockedOut;
 
             _deviceManager.CameraImageUploaded += OnCameraImageUploaded;
-
-            _appHost.ApplicationUpdated += OnApplicationUpdated;
 
             return Task.CompletedTask;
         }
@@ -124,7 +128,7 @@ namespace Emby.Server.Implementations.Activity
 
             if (item == null)
             {
-                //_logger.LogWarning("PlaybackStopped reported with null media info.");
+                _logger.LogWarning("PlaybackStopped reported with null media info.");
                 return;
             }
 
@@ -155,7 +159,7 @@ namespace Emby.Server.Implementations.Activity
 
             if (item == null)
             {
-                //_logger.LogWarning("PlaybackStart reported with null media info.");
+                _logger.LogWarning("PlaybackStart reported with null media info.");
                 return;
             }
 
@@ -203,6 +207,7 @@ namespace Emby.Server.Implementations.Activity
             {
                 return NotificationType.AudioPlayback.ToString();
             }
+
             if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
                 return NotificationType.VideoPlayback.ToString();
@@ -217,6 +222,7 @@ namespace Emby.Server.Implementations.Activity
             {
                 return NotificationType.AudioPlaybackStopped.ToString();
             }
+
             if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
                 return NotificationType.VideoPlaybackStopped.ToString();
@@ -272,16 +278,6 @@ namespace Emby.Server.Implementations.Activity
                 Type = "AuthenticationFailed",
                 ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), e.Argument.RemoteEndPoint),
                 Severity = LogLevel.Error
-            });
-        }
-
-        private void OnApplicationUpdated(object sender, GenericEventArgs<PackageVersionInfo> e)
-        {
-            CreateLogEntry(new ActivityLogEntry
-            {
-                Name = string.Format(_localization.GetLocalizedString("MessageApplicationUpdatedTo"), e.Argument.versionStr),
-                Type = NotificationType.ApplicationUpdateInstalled.ToString(),
-                Overview = e.Argument.description
             });
         }
 
@@ -415,6 +411,7 @@ namespace Emby.Server.Implementations.Activity
                 {
                     vals.Add(e.Result.ErrorMessage);
                 }
+
                 if (!string.IsNullOrEmpty(e.Result.LongErrorMessage))
                 {
                     vals.Add(e.Result.LongErrorMessage);
@@ -424,7 +421,7 @@ namespace Emby.Server.Implementations.Activity
                 {
                     Name = string.Format(_localization.GetLocalizedString("ScheduledTaskFailedWithName"), task.Name),
                     Type = NotificationType.TaskFailed.ToString(),
-                    Overview = string.Join(Environment.NewLine, vals.ToArray()),
+                    Overview = string.Join(Environment.NewLine, vals),
                     ShortOverview = runningTime,
                     Severity = LogLevel.Error
                 });
@@ -460,8 +457,6 @@ namespace Emby.Server.Implementations.Activity
             _userManager.UserLockedOut -= OnUserLockedOut;
 
             _deviceManager.CameraImageUploaded -= OnCameraImageUploaded;
-
-            _appHost.ApplicationUpdated -= OnApplicationUpdated;
         }
 
         /// <summary>
@@ -503,6 +498,7 @@ namespace Emby.Server.Implementations.Activity
             {
                 values.Add(CreateValueString(span.Hours, "hour"));
             }
+
             // Number of minutes
             if (span.Minutes >= 1)
             {
@@ -526,6 +522,7 @@ namespace Emby.Server.Implementations.Activity
 
                 builder.Append(values[i]);
             }
+
             // Return result
             return builder.ToString();
         }

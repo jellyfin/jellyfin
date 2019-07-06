@@ -12,21 +12,25 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+
         /// <summary>
         /// Gets or sets the year.
         /// </summary>
         /// <value>The year.</value>
         public int? Year { get; set; }
+
         /// <summary>
         /// Gets or sets the files.
         /// </summary>
         /// <value>The files.</value>
         public List<VideoFileInfo> Files { get; set; }
+
         /// <summary>
         /// Gets or sets the extras.
         /// </summary>
         /// <value>The extras.</value>
         public List<VideoFileInfo> Extras { get; set; }
+
         /// <summary>
         /// Gets or sets the alternate versions.
         /// </summary>
