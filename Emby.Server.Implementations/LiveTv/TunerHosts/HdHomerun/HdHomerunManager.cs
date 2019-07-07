@@ -89,7 +89,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private uint? _lockkey = null;
         private int _activeTuner = -1;
         private readonly ISocketFactory _socketFactory;
-        private IpAddressInfo _remoteIp;
+        private IPAddress _remoteIp;
 
         private ILogger _logger;
         private ISocket _currentTcpSocket;
@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
         }
 
-        public async Task<bool> CheckTunerAvailability(IpAddressInfo remoteIp, int tuner, CancellationToken cancellationToken)
+        public async Task<bool> CheckTunerAvailability(IPAddress remoteIp, int tuner, CancellationToken cancellationToken)
         {
             using (var socket = _socketFactory.CreateTcpSocket(remoteIp, HdHomeRunPort))
             {
@@ -122,9 +122,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
         }
 
-        private static async Task<bool> CheckTunerAvailability(ISocket socket, IpAddressInfo remoteIp, int tuner, CancellationToken cancellationToken)
+        private static async Task<bool> CheckTunerAvailability(ISocket socket, IPAddress remoteIp, int tuner, CancellationToken cancellationToken)
         {
-            var ipEndPoint = new IpEndPointInfo(remoteIp, HdHomeRunPort);
+            var ipEndPoint = new IPEndPoint(remoteIp, HdHomeRunPort);
 
             var lockkeyMsg = CreateGetMessage(tuner, "lockkey");
             await socket.SendToAsync(lockkeyMsg, 0, lockkeyMsg.Length, ipEndPoint, cancellationToken);
@@ -137,7 +137,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return string.Equals(returnVal, "none", StringComparison.OrdinalIgnoreCase);
         }
 
-        public async Task StartStreaming(IpAddressInfo remoteIp, IPAddress localIp, int localPort, IHdHomerunChannelCommands commands, int numTuners, CancellationToken cancellationToken)
+        public async Task StartStreaming(IPAddress remoteIp, IPAddress localIp, int localPort, IHdHomerunChannelCommands commands, int numTuners, CancellationToken cancellationToken)
         {
             _remoteIp = remoteIp;
 
@@ -154,7 +154,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var lockKeyValue = _lockkey.Value;
 
-            var ipEndPoint = new IpEndPointInfo(_remoteIp, HdHomeRunPort);
+            var ipEndPoint = new IPEndPoint(_remoteIp, HdHomeRunPort);
 
             for (int i = 0; i < numTuners; ++i)
             {
@@ -217,7 +217,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 foreach (Tuple<string, string> command in commandList)
                 {
                     var channelMsg = CreateSetMessage(_activeTuner, command.Item1, command.Item2, _lockkey);
-                    await tcpClient.SendToAsync(channelMsg, 0, channelMsg.Length, new IpEndPointInfo(_remoteIp, HdHomeRunPort), cancellationToken).ConfigureAwait(false);
+                    await tcpClient.SendToAsync(channelMsg, 0, channelMsg.Length, new IPEndPoint(_remoteIp, HdHomeRunPort), cancellationToken).ConfigureAwait(false);
                     var response = await tcpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
                     // parse response to make sure it worked
                     if (!ParseReturnMessage(response.Buffer, response.ReceivedBytes, out string returnVal))
@@ -242,7 +242,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             _logger.LogInformation("HdHomerunManager.ReleaseLockkey {0}", lockKeyValue);
 
-            var ipEndPoint = new IpEndPointInfo(_remoteIp, HdHomeRunPort);
+            var ipEndPoint = new IPEndPoint(_remoteIp, HdHomeRunPort);
 
             var releaseTarget = CreateSetMessage(_activeTuner, "target", "none", lockKeyValue);
             await tcpClient.SendToAsync(releaseTarget, 0, releaseTarget.Length, ipEndPoint, CancellationToken.None).ConfigureAwait(false);

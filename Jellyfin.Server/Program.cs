@@ -143,7 +143,7 @@ namespace Jellyfin.Server
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
                 new NullImageEncoder(),
-                new NetworkManager(_loggerFactory),
+                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
                 appConfig))
             {
                 await appHost.InitAsync(new ServiceCollection()).ConfigureAwait(false);
