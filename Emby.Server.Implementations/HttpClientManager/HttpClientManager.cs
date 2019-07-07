@@ -301,23 +301,15 @@ namespace Emby.Server.Implementations.HttpClientManager
                 }
                 else if (options.RequestContent != null)
                 {
-                    httpWebRequest.Content = new StringContent(options.RequestContent);
+                    httpWebRequest.Content = new StringContent(
+                        options.RequestContent,
+                        null,
+                        options.RequestContentType);
                 }
                 else
                 {
                     httpWebRequest.Content = new ByteArrayContent(Array.Empty<byte>());
                 }
-
-                // TODO: add correct content type
-                /*
-                var contentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
-
-                if (options.AppendCharsetToMimeType)
-                {
-                    contentType = contentType.TrimEnd(';') + "; charset=\"utf-8\"";
-                }
-
-                httpWebRequest.Headers.Add(HeaderNames.ContentType, contentType);*/
             }
 
             if (options.LogRequest)
