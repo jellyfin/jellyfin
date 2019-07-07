@@ -66,6 +66,9 @@
           <modelEnumHasValues Id="823863f2-2586-4958-9f47-1d32244b3b9a">
             <modelEnumValue Id="153c966d-6077-42cf-b4cf-71a131b85f88" name="AlternativeFormat" />
           </modelEnumHasValues>
+          <modelEnumHasValues Id="956cd4bd-6d94-4857-b139-597f58dcbb11">
+            <modelEnumValue Id="96afc8b3-f9ce-476e-8242-99f0ce6a0b68" name="AdditionalStream" />
+          </modelEnumHasValues>
         </values>
       </modelEnum>
     </modelRootHasEnums>
