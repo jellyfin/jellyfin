@@ -16,27 +16,21 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public class LiveStream : ILiveStream
     {
-        public MediaSourceInfo OriginalMediaSource { get; set; }
-        public MediaSourceInfo MediaSource { get; set; }
-
-        public int ConsumerCount { get; set; }
-
-        public string OriginalStreamId { get; set; }
-        public bool EnableStreamSharing { get; set; }
-        public string UniqueId { get; }
-
         protected readonly IFileSystem FileSystem;
         protected readonly IServerApplicationPaths AppPaths;
+        protected readonly IStreamHelper StreamHelper;
 
         protected string TempFilePath;
         protected readonly ILogger Logger;
         protected readonly CancellationTokenSource LiveStreamCancellationTokenSource = new CancellationTokenSource();
 
-        public string TunerHostId { get; }
-
-        public DateTime DateOpened { get; protected set; }
-
-        public LiveStream(MediaSourceInfo mediaSource, TunerHostInfo tuner, IFileSystem fileSystem, ILogger logger, IServerApplicationPaths appPaths)
+        public LiveStream(
+            MediaSourceInfo mediaSource,
+            TunerHostInfo tuner,
+            IFileSystem fileSystem,
+            ILogger logger,
+            IServerApplicationPaths appPaths,
+            IStreamHelper streamHelper)
         {
             OriginalMediaSource = mediaSource;
             FileSystem = fileSystem;
@@ -51,10 +45,26 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
 
             AppPaths = appPaths;
+            StreamHelper = streamHelper;
 
             ConsumerCount = 1;
             SetTempFilePath("ts");
         }
+
+        protected virtual int EmptyReadLimit => 1000;
+
+        public MediaSourceInfo OriginalMediaSource { get; set; }
+        public MediaSourceInfo MediaSource { get; set; }
+
+        public int ConsumerCount { get; set; }
+
+        public string OriginalStreamId { get; set; }
+        public bool EnableStreamSharing { get; set; }
+        public string UniqueId { get; }
+
+        public string TunerHostId { get; }
+
+        public DateTime DateOpened { get; protected set; }
 
         protected void SetTempFilePath(string extension)
         {
@@ -71,24 +81,21 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             EnableStreamSharing = false;
 
-            Logger.LogInformation("Closing " + GetType().Name);
+            Logger.LogInformation("Closing {Type}", GetType().Name);
 
             LiveStreamCancellationTokenSource.Cancel();
 
             return Task.CompletedTask;
         }
 
-        protected Stream GetInputStream(string path, bool allowAsyncFileRead)
-        {
-            var fileOpenOptions = FileOpenOptions.SequentialScan;
-
-            if (allowAsyncFileRead)
-            {
-                fileOpenOptions |= FileOpenOptions.Asynchronous;
-            }
-
-            return FileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, fileOpenOptions);
-        }
+        protected FileStream GetInputStream(string path, bool allowAsyncFileRead)
+            => new FileStream(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite,
+                StreamDefaults.DefaultFileStreamBufferSize,
+                allowAsyncFileRead ? FileOptions.SequentialScan | FileOptions.Asynchronous : FileOptions.SequentialScan);
 
         public Task DeleteTempFiles()
         {
@@ -144,8 +151,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             bool seekFile = (DateTime.UtcNow - DateOpened).TotalSeconds > 10;
 
             var nextFileInfo = GetNextFile(null);
-            var nextFile = nextFileInfo.Item1;
-            var isLastFile = nextFileInfo.Item2;
+            var nextFile = nextFileInfo.file;
+            var isLastFile = nextFileInfo.isLastFile;
 
             while (!string.IsNullOrEmpty(nextFile))
             {
@@ -155,8 +162,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                 seekFile = false;
                 nextFileInfo = GetNextFile(nextFile);
-                nextFile = nextFileInfo.Item1;
-                isLastFile = nextFileInfo.Item2;
+                nextFile = nextFileInfo.file;
+                isLastFile = nextFileInfo.isLastFile;
             }
 
             Logger.LogInformation("Live Stream ended.");
@@ -180,18 +187,21 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private async Task CopyFile(string path, bool seekFile, int emptyReadLimit, bool allowAsync, Stream stream, CancellationToken cancellationToken)
         {
-            using (var inputStream = (FileStream)GetInputStream(path, allowAsync))
+            using (var inputStream = GetInputStream(path, allowAsync))
             {
                 if (seekFile)
                 {
                     TrySeek(inputStream, -20000);
                 }
 
-                await ApplicationHost.StreamHelper.CopyToAsync(inputStream, stream, 81920, emptyReadLimit, cancellationToken).ConfigureAwait(false);
+                await StreamHelper.CopyToAsync(
+                    inputStream,
+                    stream,
+                    StreamDefaults.DefaultCopyToBufferSize,
+                    emptyReadLimit,
+                    cancellationToken).ConfigureAwait(false);
             }
         }
-
-        protected virtual int EmptyReadLimit => 1000;
 
         private void TrySeek(FileStream stream, long offset)
         {

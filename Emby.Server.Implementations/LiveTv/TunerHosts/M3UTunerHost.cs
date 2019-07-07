@@ -28,14 +28,25 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         private readonly IServerApplicationHost _appHost;
         private readonly INetworkManager _networkManager;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IStreamHelper _streamHelper;
 
-        public M3UTunerHost(IServerConfigurationManager config, IMediaSourceManager mediaSourceManager, ILogger logger, IJsonSerializer jsonSerializer, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost, INetworkManager networkManager)
+        public M3UTunerHost(
+            IServerConfigurationManager config,
+            IMediaSourceManager mediaSourceManager,
+            ILogger logger,
+            IJsonSerializer jsonSerializer,
+            IFileSystem fileSystem,
+            IHttpClient httpClient,
+            IServerApplicationHost appHost,
+            INetworkManager networkManager,
+            IStreamHelper streamHelper)
             : base(config, logger, jsonSerializer, fileSystem)
         {
             _httpClient = httpClient;
             _appHost = appHost;
             _networkManager = networkManager;
             _mediaSourceManager = mediaSourceManager;
+            _streamHelper = streamHelper;
         }
 
         public override string Type => "m3u";
@@ -103,11 +114,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                 if (!_disallowedSharedStreamExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
-                    return new SharedHttpStream(mediaSource, info, streamId, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
+                    return new SharedHttpStream(mediaSource, info, streamId, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _streamHelper);
                 }
             }
 
-            return new LiveStream(mediaSource, info, FileSystem, Logger, Config.ApplicationPaths);
+            return new LiveStream(mediaSource, info, FileSystem, Logger, Config.ApplicationPaths, _streamHelper);
         }
 
         public async Task Validate(TunerHostInfo info)
