@@ -130,7 +130,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         await StreamHelper.CopyToAsync(
                             stream,
                             fileStream,
-                            StreamDefaults.DefaultFileStreamBufferSize,
+                            StreamDefaults.DefaultCopyToBufferSize,
                             () => Resolve(openTaskCompletionSource),
                             cancellationToken).ConfigureAwait(false);
                     }
