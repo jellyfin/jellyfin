@@ -11,7 +11,6 @@ using Emby.XmlTv.Classes;
 using Emby.XmlTv.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
@@ -29,7 +28,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly IFileSystem _fileSystem;
         private readonly IZipClient _zipClient;
 
-        public XmlTvListingsProvider(IServerConfigurationManager config, IHttpClient httpClient, ILogger logger, IFileSystem fileSystem, IZipClient zipClient)
+        public XmlTvListingsProvider(
+            IServerConfigurationManager config,
+            IHttpClient httpClient,
+            ILogger logger,
+            IFileSystem fileSystem,
+            IZipClient zipClient)
         {
             _config = config;
             _httpClient = httpClient;
@@ -77,12 +81,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 {
                     CancellationToken = cancellationToken,
                     Url = path,
-                    Progress = new SimpleProgress<double>(),
-                    // It's going to come back gzipped regardless of this value
-                    // So we need to make sure the decompression method is set to gzip
                     DecompressionMethod = CompressionMethod.Gzip,
-
-                    UserAgent = "Emby/3.0"
                 },
                 HttpMethod.Get).ConfigureAwait(false))
             using (var stream = res.Content)
@@ -117,7 +116,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error extracting from gz file {file}", file);
+                    _logger.LogError(ex, "Error extracting from gz file {File}", file);
                 }
 
                 try
@@ -127,7 +126,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error extracting from zip file {file}", file);
+                    _logger.LogError(ex, "Error extracting from zip file {File}", file);
                 }
             }
 
