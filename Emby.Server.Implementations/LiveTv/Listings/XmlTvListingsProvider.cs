@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.XmlTv.Classes;
@@ -52,7 +54,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private async Task<string> GetXml(string path, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("xmltv path: {path}", path);
+            _logger.LogInformation("xmltv path: {Path}", path);
 
             if (!path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
@@ -66,24 +68,38 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return UnzipIfNeeded(path, cacheFile);
             }
 
-            _logger.LogInformation("Downloading xmltv listings from {path}", path);
-
-            string tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = path,
-                Progress = new SimpleProgress<double>(),
-                // It's going to come back gzipped regardless of this value
-                // So we need to make sure the decompression method is set to gzip
-                DecompressionMethod = CompressionMethod.Gzip,
-
-                UserAgent = "Emby/3.0"
-
-            }).ConfigureAwait(false);
+            _logger.LogInformation("Downloading xmltv listings from {Path}", path);
 
             Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
 
-            File.Copy(tempFile, cacheFile, true);
+            using (var res = await _httpClient.SendAsync(
+                new HttpRequestOptions
+                {
+                    CancellationToken = cancellationToken,
+                    Url = path,
+                    Progress = new SimpleProgress<double>(),
+                    // It's going to come back gzipped regardless of this value
+                    // So we need to make sure the decompression method is set to gzip
+                    DecompressionMethod = CompressionMethod.Gzip,
+
+                    UserAgent = "Emby/3.0"
+                },
+                HttpMethod.Get).ConfigureAwait(false))
+            using (var stream = res.Content)
+            using (var fileStream = new FileStream(cacheFile, FileMode.CreateNew))
+            {
+                if (res.ContentHeaders.ContentEncoding.Contains("gzip"))
+                {
+                    using (var gzStream = new GZipStream(stream, CompressionMode.Decompress))
+                    {
+                        await gzStream.CopyToAsync(fileStream).ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                }
+            }
 
             return UnzipIfNeeded(path, cacheFile);
         }
@@ -159,20 +175,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 throw new ArgumentNullException(nameof(channelId));
             }
 
-            /*
-            if (!await EmbyTV.EmbyTVRegistration.Instance.EnableXmlTv().ConfigureAwait(false))
-            {
-                var length = endDateUtc - startDateUtc;
-                if (length.TotalDays > 1)
-                {
-                    endDateUtc = startDateUtc.AddDays(1);
-                }
-            }*/
-
-            _logger.LogDebug("Getting xmltv programs for channel {id}", channelId);
+            _logger.LogDebug("Getting xmltv programs for channel {Id}", channelId);
 
             string path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
-            _logger.LogDebug("Opening XmlTvReader for {path}", path);
+            _logger.LogDebug("Opening XmlTvReader for {Path}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
 
             return reader.GetProgrammes(channelId, startDateUtc, endDateUtc, cancellationToken)
@@ -265,7 +271,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             // In theory this should never be called because there is always only one lineup
             string path = await GetXml(info.Path, CancellationToken.None).ConfigureAwait(false);
-            _logger.LogDebug("Opening XmlTvReader for {path}", path);
+            _logger.LogDebug("Opening XmlTvReader for {Path}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
             IEnumerable<XmlTvChannel> results = reader.GetChannels();
 
@@ -277,7 +283,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             // In theory this should never be called because there is always only one lineup
             string path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
-            _logger.LogDebug("Opening XmlTvReader for {path}", path);
+            _logger.LogDebug("Opening XmlTvReader for {Path}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
             var results = reader.GetChannels();
 

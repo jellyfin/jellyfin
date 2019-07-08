@@ -336,7 +336,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                 options.CancellationToken.ThrowIfCancellationRequested();
 
                 var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                return new HttpResponseInfo(response.Headers)
+                return new HttpResponseInfo(response.Headers, response.Content.Headers)
                 {
                     Content = stream,
                     StatusCode = response.StatusCode,
@@ -358,7 +358,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                     await stream.CopyToAsync(memoryStream, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
                     memoryStream.Position = 0;
 
-                    return new HttpResponseInfo(response.Headers)
+                    return new HttpResponseInfo(response.Headers, response.Content.Headers)
                     {
                         Content = memoryStream,
                         StatusCode = response.StatusCode,
@@ -428,7 +428,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
                     options.Progress.Report(100);
 
-                    var responseInfo = new HttpResponseInfo(response.Headers)
+                    var responseInfo = new HttpResponseInfo(response.Headers, response.Content.Headers)
                     {
                         TempFilePath = tempFile,
                         StatusCode = response.StatusCode,
