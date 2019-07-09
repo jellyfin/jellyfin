@@ -9,6 +9,8 @@
 ;    Var _DEFAULTEMBYDATADIR_
     Var _JELLYFINDATADIR_
     Var _SERVICEINSTALLED_
+	Var _EXISTINGINSTALLATION_
+	Var _EXISTINGSERVICE_
 ;--------------------------------
 ;General
 
@@ -25,14 +27,16 @@
     VIFileVersion "${ver_1}.${ver_2}.${ver_3}.${ver_4}"
     VIAddVersionKey "ProductName" "Jellyfin"
     VIAddVersionKey "FileVersion" "${ver_1}.${ver_2}.${ver_3}.${ver_4}"
-  
-  ;Default installation folder
+	VIAddVersionKey "LegalCopyright" "Jellyfin, Free Software Media System"
+	VIAddVersionKey "FileDescription" "Jellyfin, Free Software Media System"  
+	
+;Default installation folder
     InstallDir "$APPDATA\Jellyfin"
   
-  ;Get installation folder from registry if available
+;Get installation folder from registry if available
     InstallDirRegKey HKLM "Software\Jellyfin" "InstallLocation"
   
-  ;Request application privileges for service installation
+;Request application privileges for service installation
     RequestExecutionLevel admin
     CRCCheck on	    
     !define MUI_ABORTWARNING
@@ -42,6 +46,7 @@
 
     !insertmacro MUI_PAGE_LICENSE "$%InstallLocation%\LICENSE"
     !insertmacro MUI_PAGE_COMPONENTS
+    !define MUI_PAGE_CUSTOMFUNCTION_PRE HideDirectoryPage
     !insertmacro MUI_PAGE_DIRECTORY
 
 ; Custom Directory page to ask for Emby Library location in case its needed
@@ -69,6 +74,20 @@
 ;Installer Sections
 
 Section "Install Jellyfin (required)" InstallJellyfin
+	StrCmp $_EXISTINGINSTALLATION_ "YES" CheckService CarryOn
+	
+	CheckService:
+	StrCmp $_EXISTINGSERVICE_ "YES" StopService ExistingInstallButNotService
+	
+	StopService: ; we stop the service to copy files in use
+    ExecWait '"$INSTDIR\nssm.exe" stop Jellyfin' $0
+    DetailPrint "Jellyfin service stop, $0"
+	
+	ExistingInstallButNotService:
+;TODO, find a way to kill the process in case it was started as standalone
+	MessageBox MB_OK|MB_ICONINFORMATION "Please stop Jellyfin manually before proceeding further." 	
+	
+	CarryOn:
     SetOutPath "$INSTDIR"
     SetShellVarContext current
     StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\jellyfin\"
@@ -94,7 +113,7 @@ Section "Install Jellyfin (required)" InstallJellyfin
 
 SectionEnd
 
-Section "Jellyfin desktop shortcut" DesktopShortcut
+Section /o "Jellyfin desktop shortcut" DesktopShortcut
     SetShellVarContext current
     DetailPrint "Creating desktop shortcut"
     CreateShortCut "$DESKTOP\Jellyfin.lnk" "$INSTDIR\jellyfin.exe"
@@ -119,8 +138,9 @@ Section /o "Start Jellyfin after installation" LaunchJellyfin
     Return
     
     Standalone:
-    ExecWait '"$INSTDIR"\jellyfin.exe' $0
+    ExecWait '"$INSTDIR\jellyfin.exe"' $0
     DetailPrint "$INSTDIR\jellyfin.exe start, $0"
+	Return
 
 SectionEnd
 
@@ -161,16 +181,26 @@ SectionEnd
 Section "Uninstall"
     SetShellVarContext current
     StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\jellyfin\"
-;TODO
-; stop running instance
+	
+; Currently we try to stop & remove a running service even if it doesn't exist
+; not really sure about nssm statuscode detection method
+; nothing to loose with brute force stop & remove method
     ExecWait '"$INSTDIR\nssm.exe" stop Jellyfin' $0
     DetailPrint "Jellyfin service stop, $0"
     ExecWait '"$INSTDIR\nssm.exe" remove Jellyfin confirm' $0
     DetailPrint "Jellyfin Service remove, $0"
 
     Delete "$INSTDIR\Uninstall.exe"
-    RMDir /r "$INSTDIR"
-    RMDir /r "$_JELLYFINDATADIR_"
+	
+;TODO
+; stop running instance gracefully, in case its running, the /REBOOTOK flag will delete it on reboot.
+    RMDir /r /REBOOTOK "$INSTDIR" ;
+	
+	MessageBox MB_YESNO|MB_ICONINFORMATION "Do you want to retain Jellyfin settings ? The media will not be touched in any case." /SD IDYES IDYES PreserveData
+    RMDir /r /REBOOTOK "$_JELLYFINDATADIR_"
+
+	PreserveData:
+	
     DeleteRegKey HKLM "Software\Jellyfin"
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Jellyfin"
     Delete "$DESKTOP\Jellyfin.lnk"
@@ -179,6 +209,46 @@ SectionEnd
 
 
 Function .onInit
+	StrCpy $_EXISTINGINSTALLATION_ "NO"
+	StrCpy $_EXISTINGSERVICE_ "NO"
+;Detect if Jellyfin is already installed.
+; In case it is installed, let the user choose either
+;	1. Exit installer
+;   2. Upgrade without messing with data 
+; 		2a. Don't ask for any installation folder
+; 		2b. If there is a service, don't ask for service installation or launch
+; 		2c. If no service, ask for autolaunch, and start as standalone
+
+; Read Registry for installation
+	ClearErrors
+	ReadRegStr "$0" HKLM "Software\Jellyfin" "InstallLocation"
+	IfErrors NoExisitingInstall
+	
+	DetailPrint "Existing Jellyfin detected at: $0"
+	StrCpy "$INSTDIR" "$0"
+	StrCpy $_EXISTINGINSTALLATION_ "YES"	
+	SectionSetText ${InstallJellyfin} "Upgrade Jellyfin" ; Change install text to "Upgrade"
+
+; check if there is a service called Jellyfin
+; hack : nssm statuscode Jellyfin will return non zero return code in case it exists
+    ExecWait '"$INSTDIR\nssm.exe" statuscode Jellyfin' $0
+    DetailPrint "Jellyfin service statuscode, $0"
+	IntCmp $0 0 NoService ; service doesn't exist 
+	
+	StrCpy $_EXISTINGSERVICE_ "YES"
+    SectionSetText ${InstallService} "" ; hide service install option if old install was a service
+	SectionSetText ${LaunchJellyfin} "" ; hide service start option if old install was a service 
+	SectionSetText ${DesktopShortcut} "" ; hide desktop shortcut option too
+ 
+	NoService:	
+; if detected, let the user know that we'll upgrade and its ok to quit
+	MessageBox MB_OKCANCEL|MB_ICONINFORMATION "Existing installation of Jellyfin was detected, it'll be upgraded, settings will be retained" /SD IDOK IDOK Proceed
+	Quit ; Quit if the user is not sure about upgrade
+
+	Proceed:
+
+	NoExisitingInstall:
+	
     SetShellVarContext all
 ; Align installer version with jellyfin.dll version
     !getdllversion "$%InstallLocation%\jellyfin.dll" ver_
@@ -188,6 +258,15 @@ Function .onInit
 	DetailPrint "_JELLYFINDATADIR_ : $_JELLYFINDATADIR_"
     StrCpy $_SERVICEINSTALLED_ "NO"
     SectionSetFlags ${InstallJellyfin} 17 ; this makes the InstallJellyfin section mandatory
+	
+FunctionEnd
+
+Function HideDirectoryPage
+    StrCmp $_EXISTINGINSTALLATION_ "NO" show 
+	
+    Abort ; Dont show folder selection if just upgrading
+
+    show: 
 FunctionEnd
 
 ; This can be uncommented in case Emby Migration is planned later
