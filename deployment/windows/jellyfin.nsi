@@ -2,15 +2,15 @@
 ; This can be removed once stable.
 !verbose 4
 ;--------------------------------
-;Include Modern UI
 
     !include "MUI2.nsh"
+	
     Var _JELLYFINVERSION_
-;    Var _DEFAULTEMBYDATADIR_
     Var _JELLYFINDATADIR_
     Var _SERVICEINSTALLED_
 	Var _EXISTINGINSTALLATION_
 	Var _EXISTINGSERVICE_
+
 ;--------------------------------
 ;General
 
@@ -47,21 +47,9 @@
     !insertmacro MUI_PAGE_LICENSE "$%InstallLocation%\LICENSE"
     !insertmacro MUI_PAGE_COMPONENTS
     !define MUI_PAGE_CUSTOMFUNCTION_PRE HideDirectoryPage
-    !insertmacro MUI_PAGE_DIRECTORY
-
-; Custom Directory page to ask for Emby Library location in case its needed
-; Commented for now to avoid showing this. 
-; This can be uncommented in case Emby Migration is planned later
-;    !define MUI_PAGE_HEADER_TEXT "Emby Library locaton"
-;    !define MUI_PAGE_HEADER_SUBTEXT  ""
-;    !define MUI_DIRECTORYPAGE_TEXT_TOP "Please select the folder where Emby library is present. This will have Enby folders like config, cache, data, metadata, etc."
-;    !define MUI_DIRECTORYPAGE_TEXT_DESTINATION "Emby Library location"
-;    !define MUI_PAGE_CUSTOMFUNCTION_PRE ShowEmbyLibraryPage
-;    !define MUI_DIRECTORYPAGE_VARIABLE $_DEFAULTEMBYDATADIR_
-;    !insertmacro MUI_PAGE_DIRECTORY
-	
+    !insertmacro MUI_PAGE_DIRECTORY	
     !insertmacro MUI_PAGE_INSTFILES
-
+	
     !insertmacro MUI_UNPAGE_CONFIRM
     !insertmacro MUI_UNPAGE_INSTFILES
   
@@ -74,25 +62,29 @@
 ;Installer Sections
 
 Section "Install Jellyfin (required)" InstallJellyfin
-	StrCmp $_EXISTINGINSTALLATION_ "YES" CheckService CarryOn
+; If previous installation is present, run the uninstaller silently
+	StrCmp "$_EXISTINGINSTALLATION_" "YES" RunUninstaller CarryOn
 	
-	CheckService:
-	StrCmp $_EXISTINGSERVICE_ "YES" StopService ExistingInstallButNotService
-	
-	StopService: ; we stop the service to copy files in use
-    ExecWait '"$INSTDIR\nssm.exe" stop Jellyfin' $0
-    DetailPrint "Jellyfin service stop, $0"
-	
-	ExistingInstallButNotService:
-;TODO, find a way to kill the process in case it was started as standalone
-	MessageBox MB_OK|MB_ICONINFORMATION "Please stop Jellyfin manually before proceeding further." 	
-	
+	RunUninstaller:
+	DetailPrint "Looking for uninstaller at $INSTDIR"
+    FindFirst $0 $1 "$INSTDIR\Uninstall.exe"
+    FindClose $0
+    StrCmp $1 "" CarryOn ; the registry key was there but uninstaller was not found
+
+    DetailPrint "Silently running the uninstaller at $INSTDIR"
+    ExecWait '"$INSTDIR\Uninstall.exe" /S _?=$INSTDIR' $0
+	DetailPrint "Uninstall finished, $0"
+    Delete "$INSTDIR\Uninstall.exe"
+
 	CarryOn:
+
     SetOutPath "$INSTDIR"
-    SetShellVarContext current
+	
+    SetShellVarContext current ; Local App Data folder for current user only
     StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\jellyfin\"
 
 ; Pack all the files that were just compiled
+; These will be exploded to $INSTDIR
     File /r $%InstallLocation%\* 
 	
 ; Write the installation path into the registry
@@ -114,12 +106,12 @@ Section "Install Jellyfin (required)" InstallJellyfin
 SectionEnd
 
 Section /o "Jellyfin desktop shortcut" DesktopShortcut
-    SetShellVarContext current
+    SetShellVarContext current ; to create the shortcut for current user only
     DetailPrint "Creating desktop shortcut"
     CreateShortCut "$DESKTOP\Jellyfin.lnk" "$INSTDIR\jellyfin.exe"
 SectionEnd
 
-Section /o "Jellyfin Service" InstallService
+Section "Jellyfin Service" InstallService
     ExecWait '"$INSTDIR\nssm.exe" install Jellyfin "$INSTDIR\jellyfin.exe" --datadir "$_JELLYFINDATADIR_"' $0
     DetailPrint "Jellyfin Service install, $0"
     Sleep 3000
@@ -128,7 +120,7 @@ Section /o "Jellyfin Service" InstallService
     StrCpy $_SERVICEINSTALLED_ "YES"
 SectionEnd
 
-Section /o "Start Jellyfin after installation" LaunchJellyfin
+Section "Start Jellyfin after installation" LaunchJellyfin
 ; either start the service or launch jellyfin standalone
     StrCmp $_SERVICEINSTALLED_ "YES" ServiceStart Standalone
     
@@ -144,35 +136,21 @@ Section /o "Start Jellyfin after installation" LaunchJellyfin
 
 SectionEnd
 
-; This can be uncommented in case Emby Migration is planned later
-;Section /o "Migrate Emby Library" MigrateEmbyLibrary
-;    DetailPrint "Migrating Emby Library"
-;    CopyFiles $_DEFAULTEMBYDATADIR_/config $_JELLYFINDATADIR_
-;    CopyFiles $_DEFAULTEMBYDATADIR_/cache $_JELLYFINDATADIR_
-;    CopyFiles $_DEFAULTEMBYDATADIR_/data $_JELLYFINDATADIR_
-;    CopyFiles $_DEFAULTEMBYDATADIR_/metadata $_JELLYFINDATADIR_
-;    CopyFiles $_DEFAULTEMBYDATADIR_/root $_JELLYFINDATADIR_
-
-;SectionEnd
-
-
 ;--------------------------------
 ;Descriptions
 
-  ;Language strings
+;Language strings
     LangString DESC_InstallJellyfin ${LANG_ENGLISH} "Install Jellyfin"
     LangString DESC_InstallService ${LANG_ENGLISH} "Install As a Service"
     LangString DESC_DesktopShortcut ${LANG_ENGLISH} "Create a desktop shortcut"
     LangString DESC_LaunchJellyfin ${LANG_ENGLISH} "Start Jellyfin after Install"
-;    LangString DESC_MigrateEmbyLibrary ${LANG_ENGLISH} "Migrate existing Emby Library"
 
-  ;Assign language strings to sections
+;Assign language strings to sections
     !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
     !insertmacro MUI_DESCRIPTION_TEXT ${InstallJellyfin} $(DESC_InstallJellyfin)
     !insertmacro MUI_DESCRIPTION_TEXT ${DesktopShortcut} $(DESC_DesktopShortcut)
     !insertmacro MUI_DESCRIPTION_TEXT ${InstallService} $(DESC_InstallService)
     !insertmacro MUI_DESCRIPTION_TEXT ${LaunchJellyfin} $(DESC_LaunchJellyfin)
-;    !insertmacro MUI_DESCRIPTION_TEXT ${MigrateEmbyLibrary} $(DESC_MigrateEmbyLibrary)
     !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;--------------------------------
@@ -208,7 +186,9 @@ Section "Uninstall"
 SectionEnd
 
 
+
 Function .onInit
+
 	StrCpy $_EXISTINGINSTALLATION_ "NO"
 	StrCpy $_EXISTINGSERVICE_ "NO"
 ;Detect if Jellyfin is already installed.
@@ -228,7 +208,7 @@ Function .onInit
 	StrCpy "$INSTDIR" "$0"
 	StrCpy $_EXISTINGINSTALLATION_ "YES"	
 	SectionSetText ${InstallJellyfin} "Upgrade Jellyfin" ; Change install text to "Upgrade"
-
+	
 ; check if there is a service called Jellyfin
 ; hack : nssm statuscode Jellyfin will return non zero return code in case it exists
     ExecWait '"$INSTDIR\nssm.exe" statuscode Jellyfin' $0
@@ -246,13 +226,15 @@ Function .onInit
 	Quit ; Quit if the user is not sure about upgrade
 
 	Proceed:
-
+	
 	NoExisitingInstall:
 	
     SetShellVarContext all
+
 ; Align installer version with jellyfin.dll version
     !getdllversion "$%InstallLocation%\jellyfin.dll" ver_
     StrCpy $_JELLYFINVERSION_ "${ver_1}.${ver_2}.${ver_3}.${ver_4}"
+	
     SetShellVarContext current
     StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\jellyfin\"
 	DetailPrint "_JELLYFINDATADIR_ : $_JELLYFINDATADIR_"
@@ -264,18 +246,7 @@ FunctionEnd
 Function HideDirectoryPage
     StrCmp $_EXISTINGINSTALLATION_ "NO" show 
 	
-    Abort ; Dont show folder selection if just upgrading
+    Abort ; Don't show folder selection if just upgrading
 
     show: 
 FunctionEnd
-
-; This can be uncommented in case Emby Migration is planned later
-;Function ShowEmbyLibraryPage
-;    SectionGetFlags ${MigrateEmbyLibrary} $R0 
-;    IntOp $R0 $R0 & ${SF_SELECTED} 
-;    IntCmp $R0 ${SF_SELECTED} show 
-    
-;    Abort ; Dont show the Emby folder selection window if Emby migrartion is not selected
-
-;    show: 
-;FunctionEnd
