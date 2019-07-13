@@ -16,5 +16,5 @@ dpkg-buildpackage -us -uc
 
 # Move the artifacts out
 mkdir -p ${ARTIFACT_DIR}/deb
-mv /jellyfin_* ${ARTIFACT_DIR}/deb/
+mv /jellyfin[-_]* ${ARTIFACT_DIR}/deb/
 chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
