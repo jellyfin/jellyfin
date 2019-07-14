@@ -52,14 +52,21 @@ namespace MediaBrowser.Common.Net
         /// <value>The headers.</value>
         public HttpResponseHeaders Headers { get; set; }
 
+        /// <summary>
+        /// Gets or sets the content headers.
+        /// </summary>
+        /// <value>The content headers.</value>
+        public HttpContentHeaders ContentHeaders { get; set; }
+
         public HttpResponseInfo()
         {
 
         }
 
-        public HttpResponseInfo(HttpResponseHeaders headers)
+        public HttpResponseInfo(HttpResponseHeaders headers, HttpContentHeaders contentHeader)
         {
             Headers = headers;
+            ContentHeaders = contentHeader;
         }
 
         public void Dispose()
