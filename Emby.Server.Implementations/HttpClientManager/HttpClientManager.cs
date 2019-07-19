@@ -282,47 +282,44 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            if (!options.BufferContent)
+            var response = await client
+                .SendAsync(httpWebRequest, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken)
+                .ConfigureAwait(false);
+
+            await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
+
+            options.CancellationToken.ThrowIfCancellationRequested();
+
+            var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            var httpResponseInfo = new HttpResponseInfo(response.Headers, response.Content.Headers)
             {
-                var response = await client.SendAsync(httpWebRequest, options.CancellationToken).ConfigureAwait(false);
+                StatusCode = response.StatusCode,
+                ContentType = response.Content.Headers.ContentType?.MediaType,
+                ResponseUrl = response.Content.Headers.ContentLocation?.ToString()
+            };
 
-                await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
+            // MPEG-2 transport streams must not be altered and do not support ContentLength
+            if (response.Content.Headers.ContentType != null && response.Content.Headers.ContentType.MediaType.Contains("video/mp2t"))
+            {
+                httpResponseInfo.Content = stream;
+                httpResponseInfo.ContentLength = response.Content.Headers.ContentLength;
+            }
+            else
+            {
+                // TODO does this copy the entire response into memory or only chunks at a time?
+                var memoryStream = new MemoryStream();
+                stream.CopyToAsync(memoryStream, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken)
+                    .ConfigureAwait(false);
+                memoryStream.Position = 0;
+                httpResponseInfo.Content = memoryStream;
+                httpResponseInfo.ContentLength = memoryStream.Length;
 
-                options.CancellationToken.ThrowIfCancellationRequested();
-
-                var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                return new HttpResponseInfo(response.Headers, response.Content.Headers)
-                {
-                    Content = stream,
-                    StatusCode = response.StatusCode,
-                    ContentType = response.Content.Headers.ContentType?.MediaType,
-                    ContentLength = stream.Length,
-                    ResponseUrl = response.Content.Headers.ContentLocation?.ToString()
-                };
+                // TODO how do we dispose in case of MPEG-2 transport?
+                stream.Dispose();
+                response.Dispose();
             }
 
-            using (var response = await client.SendAsync(httpWebRequest, options.CancellationToken).ConfigureAwait(false))
-            {
-                await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
-
-                options.CancellationToken.ThrowIfCancellationRequested();
-
-                using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                {
-                    var memoryStream = new MemoryStream();
-                    await stream.CopyToAsync(memoryStream, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
-                    memoryStream.Position = 0;
-
-                    return new HttpResponseInfo(response.Headers, response.Content.Headers)
-                    {
-                        Content = memoryStream,
-                        StatusCode = response.StatusCode,
-                        ContentType = response.Content.Headers.ContentType?.MediaType,
-                        ContentLength = memoryStream.Length,
-                        ResponseUrl = response.Content.Headers.ContentLocation?.ToString()
-                    };
-                }
-            }
+            return httpResponseInfo;
         }
 
         public Task<HttpResponseInfo> Post(HttpRequestOptions options)
