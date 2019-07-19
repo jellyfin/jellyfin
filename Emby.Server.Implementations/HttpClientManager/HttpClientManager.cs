@@ -284,7 +284,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (!options.BufferContent)
             {
-                var response = await client.SendAsync(httpWebRequest, options.CancellationToken).ConfigureAwait(false);
+                var response = await client.SendAsync(httpWebRequest, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false);
 
                 await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
 
@@ -296,7 +296,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                     Content = stream,
                     StatusCode = response.StatusCode,
                     ContentType = response.Content.Headers.ContentType?.MediaType,
-                    ContentLength = stream.Length,
+                    ContentLength = response.Content.Headers.ContentLength,
                     ResponseUrl = response.Content.Headers.ContentLocation?.ToString()
                 };
             }
