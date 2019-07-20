@@ -301,7 +301,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                 };
             }
 
-            using (var response = await client.SendAsync(httpWebRequest, options.CancellationToken).ConfigureAwait(false))
+            using (var response = await client.SendAsync(httpWebRequest, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false))
             {
                 await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
 
