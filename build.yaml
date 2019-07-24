@@ -1,7 +1,7 @@
 ---
 # We just wrap `build` so this is really it
 name: "jellyfin"
-version: "10.3.6"
+version: "10.3.7"
 packages:
   - debian-package-x64
   - debian-package-armhf

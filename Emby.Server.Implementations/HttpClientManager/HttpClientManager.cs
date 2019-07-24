@@ -179,10 +179,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// <param name="httpMethod">The HTTP method.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
         public Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, string httpMethod)
-        {
-            var httpMethod2 = GetHttpMethod(httpMethod);
-            return SendAsync(options, httpMethod2);
-        }
+            => SendAsync(options, new HttpMethod(httpMethod));
 
         /// <summary>
         /// send as an asynchronous operation.
@@ -216,40 +213,6 @@ namespace Emby.Server.Implementations.HttpClientManager
             }
 
             return response;
-        }
-
-        private HttpMethod GetHttpMethod(string httpMethod)
-        {
-            if (httpMethod.Equals("DELETE", StringComparison.OrdinalIgnoreCase))
-            {
-                return HttpMethod.Delete;
-            }
-            else if (httpMethod.Equals("GET", StringComparison.OrdinalIgnoreCase))
-            {
-                return HttpMethod.Get;
-            }
-            else if (httpMethod.Equals("HEAD", StringComparison.OrdinalIgnoreCase))
-            {
-                return HttpMethod.Head;
-            }
-            else if (httpMethod.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
-            {
-                return HttpMethod.Options;
-            }
-            else if (httpMethod.Equals("POST", StringComparison.OrdinalIgnoreCase))
-            {
-                return HttpMethod.Post;
-            }
-            else if (httpMethod.Equals("PUT", StringComparison.OrdinalIgnoreCase))
-            {
-                return HttpMethod.Put;
-            }
-            else if (httpMethod.Equals("TRACE", StringComparison.OrdinalIgnoreCase))
-            {
-                return HttpMethod.Trace;
-            }
-
-            throw new ArgumentException("Invalid HTTP method", nameof(httpMethod));
         }
 
         private HttpResponseInfo GetCachedResponse(string responseCachePath, TimeSpan cacheLength, string url)
@@ -303,23 +266,15 @@ namespace Emby.Server.Implementations.HttpClientManager
                 }
                 else if (options.RequestContent != null)
                 {
-                    httpWebRequest.Content = new StringContent(options.RequestContent);
+                    httpWebRequest.Content = new StringContent(
+                        options.RequestContent,
+                        null,
+                        options.RequestContentType);
                 }
                 else
                 {
                     httpWebRequest.Content = new ByteArrayContent(Array.Empty<byte>());
                 }
-
-                // TODO: add correct content type
-                /*
-                var contentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
-
-                if (options.AppendCharsetToMimeType)
-                {
-                    contentType = contentType.TrimEnd(';') + "; charset=\"utf-8\"";
-                }
-
-                httpWebRequest.Headers.Add(HeaderNames.ContentType, contentType);*/
             }
 
             if (options.LogRequest)
@@ -331,24 +286,24 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (!options.BufferContent)
             {
-                var response = await client.SendAsync(httpWebRequest, options.CancellationToken).ConfigureAwait(false);
+                var response = await client.SendAsync(httpWebRequest, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false);
 
                 await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
 
                 options.CancellationToken.ThrowIfCancellationRequested();
 
                 var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                return new HttpResponseInfo(response.Headers)
+                return new HttpResponseInfo(response.Headers, response.Content.Headers)
                 {
                     Content = stream,
                     StatusCode = response.StatusCode,
                     ContentType = response.Content.Headers.ContentType?.MediaType,
-                    ContentLength = stream.Length,
+                    ContentLength = response.Content.Headers.ContentLength,
                     ResponseUrl = response.Content.Headers.ContentLocation?.ToString()
                 };
             }
 
-            using (var response = await client.SendAsync(httpWebRequest, options.CancellationToken).ConfigureAwait(false))
+            using (var response = await client.SendAsync(httpWebRequest, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false))
             {
                 await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
 
@@ -360,7 +315,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                     await stream.CopyToAsync(memoryStream, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
                     memoryStream.Position = 0;
 
-                    return new HttpResponseInfo(response.Headers)
+                    return new HttpResponseInfo(response.Headers, response.Content.Headers)
                     {
                         Content = memoryStream,
                         StatusCode = response.StatusCode,
@@ -430,7 +385,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
                     options.Progress.Report(100);
 
-                    var responseInfo = new HttpResponseInfo(response.Headers)
+                    var responseInfo = new HttpResponseInfo(response.Headers, response.Content.Headers)
                     {
                         TempFilePath = tempFile,
                         StatusCode = response.StatusCode,
