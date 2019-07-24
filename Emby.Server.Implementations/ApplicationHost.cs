@@ -1547,17 +1547,27 @@ namespace Emby.Server.Implementations
             return null;
         }
 
+        /// <summary>
+        /// Removes the scope id from IPv6 addresses.
+        /// </summary>
+        /// <param name="address">The IPv6 address.</param>
+        /// <returns>The IPv6 address without the scope id.</returns>
+        private string RemoveScopeId(string address)
+        {
+            var index = address.IndexOf('%');
+            if (index == -1)
+            {
+                return address;
+            }
+
+            return address.Substring(0, index);
+        }
+
         public string GetLocalApiUrl(IPAddress ipAddress)
         {
             if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                // Remove the scope id from IPv6 addresses
-                var str = ipAddress.ToString();
-                var index = str.IndexOf('%');
-                if (index != -1)
-                {
-                    str = str.Substring(0, index);
-                }
+                var str = RemoveScopeId(ipAddress.ToString());
 
                 return GetLocalApiUrl("[" + str + "]");
             }
@@ -1583,13 +1593,7 @@ namespace Emby.Server.Implementations
         {
             if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                // Remove the scope id from IPv6 addresses
-                var str = ipAddress.ToString();
-                var index = str.IndexOf('%');
-                if (index != -1)
-                {
-                    str = str.Substring(0, index);
-                }
+                var str = RemoveScopeId(ipAddress.ToString());
 
                 return GetWanApiUrl("[" + str + "]");
             }
