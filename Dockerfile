@@ -21,7 +21,7 @@ RUN apt-get update \
 COPY --from=ffmpeg / /
 COPY --from=builder /jellyfin /jellyfin
 
-ARG JELLYFIN_WEB_VERSION=10.3.6
+ARG JELLYFIN_WEB_VERSION=10.3.7
 RUN curl -L https://github.com/jellyfin/jellyfin-web/archive/v${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && rm -rf /jellyfin/jellyfin-web \
  && mv jellyfin-web-${JELLYFIN_WEB_VERSION} /jellyfin/jellyfin-web
