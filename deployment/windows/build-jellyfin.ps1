@@ -108,7 +108,7 @@ function Make-NSIS {
     Expand-Archive "$tempdir/nsis.zip" -DestinationPath "$tempdir/nsis/" -Force | Write-Verbose
 	$env:InstallLocation = $InstallLocation
 	& "$tempdir/nsis/nsis-3.04/makensis.exe" ".\deployment\windows\jellyfin.nsi"
-	Copy-Item .\deployment\windows\Jellyfin.Installer.*.exe $InstallLocation\..\
+	Copy-Item .\deployment\windows\jellyfin_*.exe $InstallLocation\..\
 	
     Remove-Item "$tempdir/nsis/" -Recurse -Force -ErrorAction Continue | Write-Verbose
     Remove-Item "$tempdir/nsis.zip" -Force -ErrorAction Continue | Write-Verbose
