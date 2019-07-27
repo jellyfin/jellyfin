@@ -284,47 +284,24 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            if (!options.BufferContent)
+            var response = await client.SendAsync(
+                httpWebRequest,
+                options.BufferContent ? HttpCompletionOption.ResponseContentRead : HttpCompletionOption.ResponseHeadersRead,
+                options.CancellationToken).ConfigureAwait(false);
+
+            await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
+
+            options.CancellationToken.ThrowIfCancellationRequested();
+
+            var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            return new HttpResponseInfo(response.Headers, response.Content.Headers)
             {
-                var response = await client.SendAsync(httpWebRequest, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false);
-
-                await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
-
-                options.CancellationToken.ThrowIfCancellationRequested();
-
-                var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                return new HttpResponseInfo(response.Headers, response.Content.Headers)
-                {
-                    Content = stream,
-                    StatusCode = response.StatusCode,
-                    ContentType = response.Content.Headers.ContentType?.MediaType,
-                    ContentLength = response.Content.Headers.ContentLength,
-                    ResponseUrl = response.Content.Headers.ContentLocation?.ToString()
-                };
-            }
-
-            using (var response = await client.SendAsync(httpWebRequest, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false))
-            {
-                await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
-
-                options.CancellationToken.ThrowIfCancellationRequested();
-
-                using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                {
-                    var memoryStream = new MemoryStream();
-                    await stream.CopyToAsync(memoryStream, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
-                    memoryStream.Position = 0;
-
-                    return new HttpResponseInfo(response.Headers, response.Content.Headers)
-                    {
-                        Content = memoryStream,
-                        StatusCode = response.StatusCode,
-                        ContentType = response.Content.Headers.ContentType?.MediaType,
-                        ContentLength = memoryStream.Length,
-                        ResponseUrl = response.Content.Headers.ContentLocation?.ToString()
-                    };
-                }
-            }
+                Content = stream,
+                StatusCode = response.StatusCode,
+                ContentType = response.Content.Headers.ContentType?.MediaType,
+                ContentLength = response.Content.Headers.ContentLength,
+                ResponseUrl = response.Content.Headers.ContentLocation?.ToString()
+            };
         }
 
         public Task<HttpResponseInfo> Post(HttpRequestOptions options)
