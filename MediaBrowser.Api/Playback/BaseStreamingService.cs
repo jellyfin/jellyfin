@@ -690,8 +690,8 @@ namespace MediaBrowser.Api.Playback
                 request.AudioCodec = EncodingHelper.InferAudioCodec(url);
             }
 
-            var enableDlnaHeaders = !string.IsNullOrWhiteSpace(request.Params) /*||
-                                    string.Equals(Request.Headers.Get("GetContentFeatures.DLNA.ORG"), "1", StringComparison.OrdinalIgnoreCase)*/;
+            var enableDlnaHeaders = !string.IsNullOrWhiteSpace(request.Params) ||
+                                    string.Equals(GetHeader("GetContentFeatures.DLNA.ORG"), "1", StringComparison.OrdinalIgnoreCase);
 
             var state = new StreamState(MediaSourceManager, TranscodingJobType)
             {
@@ -1015,11 +1015,6 @@ namespace MediaBrowser.Api.Playback
                     state.IsTargetAVC
 
                     ).FirstOrDefault() ?? string.Empty;
-            }
-
-            foreach (var item in responseHeaders)
-            {
-                Request.Response.AddHeader(item.Key, item.Value);
             }
         }
 
