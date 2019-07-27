@@ -13,7 +13,7 @@
     Var _JELLYFINDATADIR_
 	Var _INSTALLSERVICE_
 	Var _SERVICESTART_
-	Var _NETWORKSERVICEACCOUNT_
+	Var _LOCALSYSTEMACCOUNT_
 	Var _EXISTINGINSTALLATION_
 	Var _EXISTINGSERVICE_
 	Var _CUSTOMDATAFOLDER_
@@ -67,8 +67,8 @@
 ; Welcome Page
 	!define MUI_WELCOMEPAGE_TEXT "The installer will ask for details to install Jellyfin Server.$\r$\n$\r$\n$\r$\n\
 	ADVANCED:$\r$\n\
-	The default service install uses Local System account and is sufficient for most users. $\r$\n$\r$\n\
-	You can choose to install using Network Service account under advanced options. This also affects where Jellyfin Server and Jellyfin data can be installed. The installer will NOT check this, you should know what you are doing.$\r$\n$\r$\n\
+	The default service install uses Network Service account and is sufficient for most users. $\r$\n$\r$\n\
+	You can choose to install using Local System account under Advanced options. This also affects where Jellyfin Server and Jellyfin data can be installed. The installer will NOT check this, you should know what you are doing.$\r$\n$\r$\n\
 	You can choose the folder for Jellyfin Metadata under advanced options based on your needs."
 	!insertmacro MUI_PAGE_WELCOME
 ; License Page
@@ -93,7 +93,6 @@
 
 ; Actual Installion Page	
 	!insertmacro MUI_PAGE_INSTFILES
-
 
     !insertmacro MUI_UNPAGE_CONFIRM
     !insertmacro MUI_UNPAGE_INSTFILES
@@ -129,7 +128,7 @@ Section "Jellyfin Server (required)" InstallJellyfin
 ; Write the InstallFolder, DataFolder, Network Service info into the registry for later use
     WriteRegExpandStr HKLM "Software\Jellyfin" "InstallFolder" "$INSTDIR"
 	WriteRegExpandStr HKLM "Software\Jellyfin" "DataFolder" "$_JELLYFINDATADIR_"
-	WriteRegStr HKLM "Software\Jellyfin" "NetworkService" "$_NETWORKSERVICEACCOUNT_"
+	WriteRegStr HKLM "Software\Jellyfin" "LocalSystemAccount" "$_LOCALSYSTEMACCOUNT_"
 
     !getdllversion "$%InstallLocation%\jellyfin.dll" ver_
     StrCpy $_JELLYFINVERSION_ "${ver_1}.${ver_2}.${ver_3}" ;
@@ -160,10 +159,10 @@ Section "Jellyfin Service" InstallService
     DetailPrint "Jellyfin Service setting, $0"
 	
     Sleep 3000
-	${If} $_NETWORKSERVICEACCOUNT_ == "YES"
+	${If} $_LOCALSYSTEMACCOUNT_ == "NO" ; the default install using NSSM is Local System
 		DetailPrint "Attempting to change service account to Network Service"
 		ExecWait '"$INSTDIR\nssm.exe" set Jellyfin Objectname "Network Service"' $0
-		DetailPrint "Jellyfin service account change, $0"	
+		DetailPrint "Jellyfin service account change, $0"		
 	${EndIf}
 
 SectionEnd
@@ -175,8 +174,8 @@ Section "Start Jellyfin service after install" StartService
     
 SectionEnd
 
-SectionGroup "Advanced"
-Section /o "Use Network Service account" NetworkServiceAccount
+SectionGroup "Advanced" Advanced
+Section /o "Use Local System account" LocalSystemAccount
 	; The section is for user choice, nothing to do here
 SectionEnd
 Section /o "Custom Jellyfin metadata folder" CustomDataFolder
@@ -192,7 +191,7 @@ SectionGroupEnd
     LangString DESC_InstallJellyfin ${LANG_ENGLISH} "Install Jellyfin Server"
     LangString DESC_InstallService ${LANG_ENGLISH} "Install As a Service"
     LangString DESC_StartService ${LANG_ENGLISH} "Start Jellyfin service after Install"
-    LangString DESC_NetworkServiceAccount ${LANG_ENGLISH} "Use Network Service account to start windows service"
+    LangString DESC_LocalSystemAccount ${LANG_ENGLISH} "Use Local System account to start windows service"
     LangString DESC_CustomDataFolder ${LANG_ENGLISH} "Choose Jellyfin Server metadata folder in subsequent steps"
 
 ;Assign language strings to sections
@@ -200,7 +199,7 @@ SectionGroupEnd
     !insertmacro MUI_DESCRIPTION_TEXT ${InstallJellyfin} $(DESC_InstallJellyfin)
     !insertmacro MUI_DESCRIPTION_TEXT ${InstallService} $(DESC_InstallService)
     !insertmacro MUI_DESCRIPTION_TEXT ${StartService} $(DESC_StartService)
-    !insertmacro MUI_DESCRIPTION_TEXT ${NetworkServiceAccount} $(DESC_NetworkServiceAccount)
+    !insertmacro MUI_DESCRIPTION_TEXT ${LocalSystemAccount} $(DESC_LocalSystemAccount)
     !insertmacro MUI_DESCRIPTION_TEXT ${CustomDataFolder} $(DESC_CustomDataFolder)
     !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
@@ -244,7 +243,7 @@ Function .onInit
 	StrCpy $_INSTALLSERVICE_ "YES"
 	StrCpy $_SERVICESTART_ "YES"
 	StrCpy $_CUSTOMDATAFOLDER_ "NO"
-	StrCpy $_NETWORKSERVICEACCOUNT_ "NO"
+	StrCpy $_LOCALSYSTEMACCOUNT_ "NO"
 	StrCpy $_EXISTINGINSTALLATION_ "NO"
 	StrCpy $_EXISTINGSERVICE_ "NO"
 	
@@ -281,7 +280,7 @@ Function .onInit
 	
 	; check if service was run using Network Service account
 	ClearErrors
-	ReadRegStr "$_NETWORKSERVICEACCOUNT_" HKLM "Software\Jellyfin" "NetworkService" ; in case of error _NETWORKSERVICEACCOUNT_ will be NO as default
+	ReadRegStr "$_LOCALSYSTEMACCOUNT_" HKLM "Software\Jellyfin" "LocalSystemAccount" ; in case of error _LOCALSYSTEMACCOUNT_ will be NO as default
 
 	ClearErrors
 	ReadRegStr $_JELLYFINDATADIR_ HKLM "Software\Jellyfin" "DataFolder" ; in case of error, the default holds
@@ -289,8 +288,10 @@ Function .onInit
 	; Hide sections which will not be needed in case of previous install
     SectionSetText ${InstallService} ""
 	SectionSetText ${StartService} ""
-	SectionSetText ${NetworkServiceAccount} ""
+	SectionSetText ${LocalSystemAccount} ""
 	SectionSetText ${CustomDataFolder} ""
+	SectionSetText ${Advanced} ""
+
  
 	NoService: ; existing install was present but no service was detected
 	
@@ -332,10 +333,10 @@ Function .onSelChange
 	SectionGetFlags ${InstallService} $0
 	${If} $0 = ${SF_SELECTED}
 		StrCpy $_INSTALLSERVICE_ "YES"
-		SectionGetFlags ${NetworkServiceAccount} $0
+		SectionGetFlags ${LocalSystemAccount} $0
 		IntOp $0 $0 | ${SF_RO}
 		IntOp $0 $0 ^ ${SF_RO}	
-		SectionSetFlags ${NetworkServiceAccount} $0
+		SectionSetFlags ${LocalSystemAccount} $0
 		SectionGetFlags ${StartService} $0
 		IntOp $0 $0 | ${SF_RO}
 		IntOp $0 $0 ^ ${SF_RO}	
@@ -343,7 +344,7 @@ Function .onSelChange
 	${Else}
 		StrCpy $_INSTALLSERVICE_ "NO"
 		IntOp $0 ${SF_USELECTED} | ${SF_RO}
-		SectionSetFlags ${NetworkServiceAccount} $0
+		SectionSetFlags ${LocalSystemAccount} $0
 		SectionSetFlags ${StartService} $0
 	${EndIf}
 	
@@ -354,11 +355,11 @@ Function .onSelChange
 		StrCpy $_SERVICESTART_ "NO"
 	${EndIf}	
 
-	SectionGetFlags ${NetworkServiceAccount} $0
+	SectionGetFlags ${LocalSystemAccount} $0
 	${If} $0 = ${SF_SELECTED}
-		StrCpy $_NETWORKSERVICEACCOUNT_ "YES"
+		StrCpy $_LOCALSYSTEMACCOUNT_ "YES"
 	${Else}
-		StrCpy $_NETWORKSERVICEACCOUNT_ "NO"
+		StrCpy $_LOCALSYSTEMACCOUNT_ "NO"
 	${EndIf}
 	
 	  
@@ -373,9 +374,13 @@ Function ConfirmationPage
 	Installation Folder : $INSTDIR$\r$\n\
 	Service install : $_INSTALLSERVICE_$\r$\n\
 	Service start : $_SERVICESTART_$\r$\n\
-	Network Service Account : $_NETWORKSERVICEACCOUNT_$\r$\n\
+	Local System account for service: $_LOCALSYSTEMACCOUNT_$\r$\n\
 	Custom Metadata folder : $_CUSTOMDATAFOLDER_$\r$\n\
 	Jellyfin Metadata Folder: $_JELLYFINDATADIR_"
 	nsDialogs::Show
 
+FunctionEnd
+
+Function .onInstSuccess
+	ExecShell "open" "http://localhost:8096"
 FunctionEnd
