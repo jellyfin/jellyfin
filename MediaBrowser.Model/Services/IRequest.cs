@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Model.Services
@@ -66,11 +63,6 @@ namespace MediaBrowser.Model.Services
         Stream InputStream { get; }
 
         long ContentLength { get; }
-
-        /// <summary>
-        /// Access to the multi-part/formdata files posted on this request
-        /// </summary>
-        IHttpFile[] Files { get; }
 
         /// <summary>
         /// The value of the Referrer, null if not available

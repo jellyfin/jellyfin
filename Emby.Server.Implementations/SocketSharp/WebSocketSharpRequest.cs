@@ -1,17 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Linq;
-using System.Text;
 using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using IHttpFile = MediaBrowser.Model.Services.IHttpFile;
 using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
 
 namespace Emby.Server.Implementations.SocketSharp
@@ -25,8 +22,6 @@ namespace Emby.Server.Implementations.SocketSharp
         private string _remoteIp;
         private Dictionary<string, object> _items;
         private string _responseContentType;
-        private IHttpFile[] _httpFiles;
-        private Dictionary<string, HttpPostedFile> _files;
 
         public WebSocketSharpRequest(HttpRequest httpRequest, HttpResponse httpResponse, string operationName, ILogger logger)
         {
@@ -108,39 +103,6 @@ namespace Emby.Server.Implementations.SocketSharp
         public Stream InputStream => Request.Body;
 
         public long ContentLength => Request.ContentLength ?? 0;
-
-
-        public IHttpFile[] Files
-        {
-            get
-            {
-                if (_httpFiles != null)
-                {
-                    return _httpFiles;
-                }
-
-                if (_files == null)
-                {
-                    return _httpFiles = Array.Empty<IHttpFile>();
-                }
-
-                var values = _files.Values;
-                _httpFiles = new IHttpFile[values.Count];
-                for (int i = 0; i < values.Count; i++)
-                {
-                    var reqFile = values.ElementAt(i);
-                    _httpFiles[i] = new HttpFile
-                    {
-                        ContentType = reqFile.ContentType,
-                        ContentLength = reqFile.ContentLength,
-                        FileName = reqFile.FileName,
-                        InputStream = reqFile.InputStream,
-                    };
-                }
-
-                return _httpFiles;
-            }
-        }
 
         private string GetHeader(string name) => Request.Headers[name].ToString();
 
