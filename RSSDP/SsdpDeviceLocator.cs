@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
 
 namespace Rssdp.Infrastructure
 {
@@ -213,7 +210,7 @@ namespace Rssdp.Infrastructure
         /// Raises the <see cref="DeviceAvailable"/> event.
         /// </summary>
         /// <seealso cref="DeviceAvailable"/>
-        protected virtual void OnDeviceAvailable(DiscoveredSsdpDevice device, bool isNewDevice, IpAddressInfo localIpAddress)
+        protected virtual void OnDeviceAvailable(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress localIpAddress)
         {
             if (this.IsDisposed) return;
 
@@ -295,7 +292,7 @@ namespace Rssdp.Infrastructure
 
         #region Discovery/Device Add
 
-        private void AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IpAddressInfo localIpAddress)
+        private void AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IPAddress localIpAddress)
         {
             bool isNewDevice = false;
             lock (_Devices)
@@ -316,7 +313,7 @@ namespace Rssdp.Infrastructure
             DeviceFound(device, isNewDevice, localIpAddress);
         }
 
-        private void DeviceFound(DiscoveredSsdpDevice device, bool isNewDevice, IpAddressInfo localIpAddress)
+        private void DeviceFound(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress localIpAddress)
         {
             if (!NotificationTypeMatchesFilter(device)) return;
 
@@ -357,7 +354,7 @@ namespace Rssdp.Infrastructure
             return _CommunicationsServer.SendMulticastMessage(message, null, cancellationToken);
         }
 
-        private void ProcessSearchResponseMessage(HttpResponseMessage message, IpAddressInfo localIpAddress)
+        private void ProcessSearchResponseMessage(HttpResponseMessage message, IPAddress localIpAddress)
         {
             if (!message.IsSuccessStatusCode) return;
 
@@ -378,7 +375,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private void ProcessNotificationMessage(HttpRequestMessage message, IpAddressInfo localIpAddress)
+        private void ProcessNotificationMessage(HttpRequestMessage message, IPAddress localIpAddress)
         {
             if (String.Compare(message.Method.Method, "Notify", StringComparison.OrdinalIgnoreCase) != 0) return;
 
@@ -389,7 +386,7 @@ namespace Rssdp.Infrastructure
                 ProcessByeByeNotification(message);
         }
 
-        private void ProcessAliveNotification(HttpRequestMessage message, IpAddressInfo localIpAddress)
+        private void ProcessAliveNotification(HttpRequestMessage message, IPAddress localIpAddress)
         {
             var location = GetFirstHeaderUriValue("Location", message);
             if (location != null)

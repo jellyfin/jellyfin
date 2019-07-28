@@ -16,14 +16,14 @@ namespace Emby.Server.Implementations.Net
         // but that wasn't really the point so kept to YAGNI principal for now, even if the
         // interfaces are a bit ugly, specific and make assumptions.
 
-        public ISocket CreateTcpSocket(IpAddressInfo remoteAddress, int remotePort)
+        public ISocket CreateTcpSocket(IPAddress remoteAddress, int remotePort)
         {
             if (remotePort < 0)
             {
                 throw new ArgumentException("remotePort cannot be less than zero.", nameof(remotePort));
             }
 
-            var addressFamily = remoteAddress.AddressFamily == IpAddressFamily.InterNetwork
+            var addressFamily = remoteAddress.AddressFamily == AddressFamily.InterNetwork
                 ? AddressFamily.InterNetwork
                 : AddressFamily.InterNetworkV6;
 
@@ -40,7 +40,7 @@ namespace Emby.Server.Implementations.Net
 
             try
             {
-                return new UdpSocket(retVal, new IpEndPointInfo(remoteAddress, remotePort));
+                return new UdpSocket(retVal, new IPEndPoint(remoteAddress, remotePort));
             }
             catch
             {
@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.Net
         /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
         /// </summary>
         /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
-        public ISocket CreateSsdpUdpSocket(IpAddressInfo localIpAddress, int localPort)
+        public ISocket CreateSsdpUdpSocket(IPAddress localIpAddress, int localPort)
         {
             if (localPort < 0)
             {
@@ -115,10 +115,8 @@ namespace Emby.Server.Implementations.Net
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
 
-                var localIp = NetworkManager.ToIPAddress(localIpAddress);
-
-                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse("239.255.255.250"), localIp));
-                return new UdpSocket(retVal, localPort, localIp);
+                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse("239.255.255.250"), localIpAddress));
+                return new UdpSocket(retVal, localPort, localIpAddress);
             }
             catch
             {

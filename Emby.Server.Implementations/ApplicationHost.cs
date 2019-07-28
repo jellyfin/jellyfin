@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -1546,14 +1547,32 @@ namespace Emby.Server.Implementations
             return null;
         }
 
-        public string GetLocalApiUrl(IpAddressInfo ipAddress)
+        /// <summary>
+        /// Removes the scope id from IPv6 addresses.
+        /// </summary>
+        /// <param name="address">The IPv6 address.</param>
+        /// <returns>The IPv6 address without the scope id.</returns>
+        private string RemoveScopeId(string address)
         {
-            if (ipAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
+            var index = address.IndexOf('%');
+            if (index == -1)
             {
-                return GetLocalApiUrl("[" + ipAddress.Address + "]");
+                return address;
             }
 
-            return GetLocalApiUrl(ipAddress.Address);
+            return address.Substring(0, index);
+        }
+
+        public string GetLocalApiUrl(IPAddress ipAddress)
+        {
+            if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                var str = RemoveScopeId(ipAddress.ToString());
+
+                return GetLocalApiUrl("[" + str + "]");
+            }
+
+            return GetLocalApiUrl(ipAddress.ToString());
         }
 
         public string GetLocalApiUrl(string host)
@@ -1564,19 +1583,22 @@ namespace Emby.Server.Implementations
                     host,
                     HttpsPort.ToString(CultureInfo.InvariantCulture));
             }
+
             return string.Format("http://{0}:{1}",
                     host,
                     HttpPort.ToString(CultureInfo.InvariantCulture));
         }
 
-        public string GetWanApiUrl(IpAddressInfo ipAddress)
+        public string GetWanApiUrl(IPAddress ipAddress)
         {
-            if (ipAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
+            if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                return GetWanApiUrl("[" + ipAddress.Address + "]");
+                var str = RemoveScopeId(ipAddress.ToString());
+
+                return GetWanApiUrl("[" + str + "]");
             }
 
-            return GetWanApiUrl(ipAddress.Address);
+            return GetWanApiUrl(ipAddress.ToString());
         }
 
         public string GetWanApiUrl(string host)
@@ -1587,17 +1609,18 @@ namespace Emby.Server.Implementations
                     host,
                     ServerConfigurationManager.Configuration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture));
             }
+
             return string.Format("http://{0}:{1}",
                     host,
                     ServerConfigurationManager.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture));
         }
 
-        public Task<List<IpAddressInfo>> GetLocalIpAddresses(CancellationToken cancellationToken)
+        public Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken)
         {
             return GetLocalIpAddressesInternal(true, 0, cancellationToken);
         }
 
-        private async Task<List<IpAddressInfo>> GetLocalIpAddressesInternal(bool allowLoopback, int limit, CancellationToken cancellationToken)
+        private async Task<List<IPAddress>> GetLocalIpAddressesInternal(bool allowLoopback, int limit, CancellationToken cancellationToken)
         {
             var addresses = ServerConfigurationManager
                 .Configuration
@@ -1611,13 +1634,13 @@ namespace Emby.Server.Implementations
                 addresses.AddRange(NetworkManager.GetLocalIpAddresses(ServerConfigurationManager.Configuration.IgnoreVirtualInterfaces));
             }
 
-            var resultList = new List<IpAddressInfo>();
+            var resultList = new List<IPAddress>();
 
             foreach (var address in addresses)
             {
                 if (!allowLoopback)
                 {
-                    if (address.Equals(IpAddressInfo.Loopback) || address.Equals(IpAddressInfo.IPv6Loopback))
+                    if (address.Equals(IPAddress.Loopback) || address.Equals(IPAddress.IPv6Loopback))
                     {
                         continue;
                     }
@@ -1638,7 +1661,7 @@ namespace Emby.Server.Implementations
             return resultList;
         }
 
-        private IpAddressInfo NormalizeConfiguredLocalAddress(string address)
+        private IPAddress NormalizeConfiguredLocalAddress(string address)
         {
             var index = address.Trim('/').IndexOf('/');
 
@@ -1647,7 +1670,7 @@ namespace Emby.Server.Implementations
                 address = address.Substring(index + 1);
             }
 
-            if (NetworkManager.TryParseIpAddress(address.Trim('/'), out IpAddressInfo result))
+            if (IPAddress.TryParse(address.Trim('/'), out IPAddress result))
             {
                 return result;
             }
@@ -1657,10 +1680,10 @@ namespace Emby.Server.Implementations
 
         private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
-        private async Task<bool> IsIpAddressValidAsync(IpAddressInfo address, CancellationToken cancellationToken)
+        private async Task<bool> IsIpAddressValidAsync(IPAddress address, CancellationToken cancellationToken)
         {
-            if (address.Equals(IpAddressInfo.Loopback) ||
-                address.Equals(IpAddressInfo.IPv6Loopback))
+            if (address.Equals(IPAddress.Loopback) ||
+                address.Equals(IPAddress.IPv6Loopback))
             {
                 return true;
             }

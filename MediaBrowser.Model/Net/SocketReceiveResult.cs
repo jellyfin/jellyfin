@@ -1,3 +1,5 @@
+using System.Net;
+
 namespace MediaBrowser.Model.Net
 {
     /// <summary>
@@ -18,7 +20,7 @@ namespace MediaBrowser.Model.Net
         /// <summary>
         /// The <see cref="IpEndPointInfo"/> the data was received from.
         /// </summary>
-        public IpEndPointInfo RemoteEndPoint { get; set; }
-        public IpAddressInfo LocalIPAddress { get; set; }
+        public IPEndPoint RemoteEndPoint { get; set; }
+        public IPAddress LocalIPAddress { get; set; }
     }
 }

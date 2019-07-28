@@ -1,4 +1,5 @@
 using System;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
@@ -247,7 +248,7 @@ namespace Emby.Dlna.Main
 
             foreach (var address in addresses)
             {
-                if (address.AddressFamily == IpAddressFamily.InterNetworkV6)
+                if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
                    // Not support IPv6 right now
                    continue;
