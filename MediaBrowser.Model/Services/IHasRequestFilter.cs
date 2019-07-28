@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+
 namespace MediaBrowser.Model.Services
 {
     public interface IHasRequestFilter
@@ -15,6 +17,6 @@ namespace MediaBrowser.Model.Services
         /// <param name="req">The http request wrapper</param>
         /// <param name="res">The http response wrapper</param>
         /// <param name="requestDto">The request DTO</param>
-        void RequestFilter(IRequest req, IResponse res, object requestDto);
+        void RequestFilter(IRequest req, HttpResponse res, object requestDto);
     }
 }

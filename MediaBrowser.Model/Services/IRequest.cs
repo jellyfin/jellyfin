@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.Services
 {
     public interface IRequest
     {
-        IResponse Response { get; }
+        HttpResponse Response { get; }
 
         /// <summary>
         /// The name of the service being called (e.g. Request DTO Name)
@@ -21,11 +21,6 @@ namespace MediaBrowser.Model.Services
         /// The Verb / HttpMethod or Action for this request
         /// </summary>
         string Verb { get; }
-
-        /// <summary>
-        /// The Request DTO, after it has been deserialized.
-        /// </summary>
-        object Dto { get; set; }
 
         /// <summary>
         /// The request ContentType
@@ -49,8 +44,6 @@ namespace MediaBrowser.Model.Services
         IHeaderDictionary Headers { get; }
 
         IQueryCollection QueryString { get; }
-
-        Task<QueryParamCollection> GetFormData();
 
         string RawUrl { get; }
 
@@ -97,26 +90,5 @@ namespace MediaBrowser.Model.Services
     public interface IRequiresRequest
     {
         IRequest Request { get; set; }
-    }
-
-    public interface IResponse
-    {
-        HttpResponse OriginalResponse { get; }
-
-        int StatusCode { get; set; }
-
-        string StatusDescription { get; set; }
-
-        string ContentType { get; set; }
-
-        void AddHeader(string name, string value);
-
-        void Redirect(string url);
-
-        Stream OutputStream { get; }
-
-        Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, IFileSystem fileSystem, IStreamHelper streamHelper, CancellationToken cancellationToken);
-
-        bool SendChunked { get; set; }
     }
 }

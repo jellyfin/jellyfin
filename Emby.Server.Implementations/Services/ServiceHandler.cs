@@ -5,20 +5,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Services
 {
     public class ServiceHandler
     {
-        public RestPath RestPath { get; }
+        private RestPath _restPath;
 
-        public string ResponseContentType { get; }
+        private string _responseContentType;
 
         internal ServiceHandler(RestPath restPath, string responseContentType)
         {
-            RestPath = restPath;
-            ResponseContentType = responseContentType;
+            _restPath = restPath;
+            _responseContentType = responseContentType;
         }
 
         protected static Task<object> CreateContentTypeRequest(HttpListenerHost host, IRequest httpReq, Type requestType, string contentType)
@@ -54,7 +55,7 @@ namespace Emby.Server.Implementations.Services
 
         private static string GetFormatContentType(string format)
         {
-            //built-in formats
+            // built-in formats
             switch (format)
             {
                 case "json": return "application/json";
@@ -63,16 +64,16 @@ namespace Emby.Server.Implementations.Services
             }
         }
 
-        public async Task ProcessRequestAsync(HttpListenerHost httpHost, IRequest httpReq, IResponse httpRes, ILogger logger, CancellationToken cancellationToken)
+        public async Task ProcessRequestAsync(HttpListenerHost httpHost, IRequest httpReq, HttpResponse httpRes, ILogger logger, CancellationToken cancellationToken)
         {
-            httpReq.Items["__route"] = RestPath;
+            httpReq.Items["__route"] = _restPath;
 
-            if (ResponseContentType != null)
+            if (_responseContentType != null)
             {
-                httpReq.ResponseContentType = ResponseContentType;
+                httpReq.ResponseContentType = _responseContentType;
             }
 
-            var request = httpReq.Dto = await CreateRequest(httpHost, httpReq, RestPath, logger).ConfigureAwait(false);
+            var request = await CreateRequest(httpHost, httpReq, _restPath, logger).ConfigureAwait(false);
 
             httpHost.ApplyRequestFilters(httpReq, httpRes, request);
 
@@ -94,7 +95,7 @@ namespace Emby.Server.Implementations.Services
             if (RequireqRequestStream(requestType))
             {
                 // Used by IRequiresRequestStream
-                var requestParams = await GetRequestParams(httpReq).ConfigureAwait(false);
+                var requestParams = GetRequestParams(httpReq.Response.HttpContext.Request);
                 var request = ServiceHandler.CreateRequest(httpReq, restPath, requestParams, host.CreateInstance(requestType));
 
                 var rawReq = (IRequiresRequestStream)request;
@@ -103,7 +104,7 @@ namespace Emby.Server.Implementations.Services
             }
             else
             {
-                var requestParams = await GetFlattenedRequestParams(httpReq).ConfigureAwait(false);
+                var requestParams = GetFlattenedRequestParams(httpReq.Response.HttpContext.Request);
 
                 var requestDto = await CreateContentTypeRequest(host, httpReq, restPath.RequestType, httpReq.ContentType).ConfigureAwait(false);
 
@@ -130,56 +131,42 @@ namespace Emby.Server.Implementations.Services
         /// <summary>
         /// Duplicate Params are given a unique key by appending a #1 suffix
         /// </summary>
-        private static async Task<Dictionary<string, string>> GetRequestParams(IRequest request)
+        private static Dictionary<string, string> GetRequestParams(HttpRequest request)
         {
             var map = new Dictionary<string, string>();
 
-            foreach (var name in request.QueryString.Keys)
+            foreach (var pair in request.Query)
             {
-                if (name == null)
-                {
-                    // thank you ASP.NET
-                    continue;
-                }
-
-                var values = request.QueryString[name];
+                var values = pair.Value;
                 if (values.Count == 1)
                 {
-                    map[name] = values[0];
+                    map[pair.Key] = values[0];
                 }
                 else
                 {
                     for (var i = 0; i < values.Count; i++)
                     {
-                        map[name + (i == 0 ? "" : "#" + i)] = values[i];
+                        map[pair.Key + (i == 0 ? "" : "#" + i)] = values[i];
                     }
                 }
             }
 
-            if ((IsMethod(request.Verb, "POST") || IsMethod(request.Verb, "PUT")))
+            if (
+                (IsMethod(request.Method, "POST") || IsMethod(request.Method, "PUT"))
+                && request.HasFormContentType)
             {
-                var formData = await request.GetFormData().ConfigureAwait(false);
-                if (formData != null)
+                foreach (var pair in request.Form)
                 {
-                    foreach (var name in formData.Keys)
+                    var values = pair.Value;
+                    if (values.Count == 1)
                     {
-                        if (name == null)
+                        map[pair.Key] = values[0];
+                    }
+                    else
+                    {
+                        for (var i = 0; i < values.Count; i++)
                         {
-                            // thank you ASP.NET
-                            continue;
-                        }
-
-                        var values = formData.GetValues(name);
-                        if (values.Count == 1)
-                        {
-                            map[name] = values[0];
-                        }
-                        else
-                        {
-                            for (var i = 0; i < values.Count; i++)
-                            {
-                                map[name + (i == 0 ? "" : "#" + i)] = values[i];
-                            }
+                            map[pair.Key + (i == 0 ? "" : "#" + i)] = values[i];
                         }
                     }
                 }
@@ -196,36 +183,22 @@ namespace Emby.Server.Implementations.Services
         /// <summary>
         /// Duplicate params have their values joined together in a comma-delimited string
         /// </summary>
-        private static async Task<Dictionary<string, string>> GetFlattenedRequestParams(IRequest request)
+        private static Dictionary<string, string> GetFlattenedRequestParams(HttpRequest request)
         {
             var map = new Dictionary<string, string>();
 
-            foreach (var name in request.QueryString.Keys)
+            foreach (var pair in request.Query)
             {
-                if (name == null)
-                {
-                    // thank you ASP.NET
-                    continue;
-                }
-
-                map[name] = request.QueryString[name];
+                map[pair.Key] = pair.Value;
             }
 
-            if ((IsMethod(request.Verb, "POST") || IsMethod(request.Verb, "PUT")))
+            if (
+                (IsMethod(request.Method, "POST") || IsMethod(request.Method, "PUT"))
+                && request.HasFormContentType)
             {
-                var formData = await request.GetFormData().ConfigureAwait(false);
-                if (formData != null)
+                foreach (var pair in request.Form)
                 {
-                    foreach (var name in formData.Keys)
-                    {
-                        if (name == null)
-                        {
-                            // thank you ASP.NET
-                            continue;
-                        }
-
-                        map[name] = formData[name];
-                    }
+                    map[pair.Key] = pair.Value;
                 }
             }
 

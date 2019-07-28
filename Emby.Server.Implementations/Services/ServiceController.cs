@@ -147,7 +147,6 @@ namespace Emby.Server.Implementations.Services
 
         public Task<object> Execute(HttpListenerHost httpHost, object requestDto, IRequest req)
         {
-            req.Dto = requestDto;
             var requestType = requestDto.GetType();
             req.OperationName = requestType.Name;
 
@@ -160,9 +159,6 @@ namespace Emby.Server.Implementations.Services
             {
                 serviceRequiresContext.Request = req;
             }
-
-            if (req.Dto == null) // Don't override existing batched DTO[]
-                req.Dto = requestDto;
 
             //Executes the service and returns the result
             return ServiceExecGeneral.Execute(serviceType, req, service, requestDto, requestType.GetMethodName());
