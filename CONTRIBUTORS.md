@@ -27,6 +27,7 @@
  - [pjeanjean](https://github.com/pjeanjean)
  - [DrPandemic](https://github.com/drpandemic)
  - [joern-h](https://github.com/joern-h)
+ - [Khinenw](https://github.com/HelloWorld017)
 
 # Emby Contributors
 
