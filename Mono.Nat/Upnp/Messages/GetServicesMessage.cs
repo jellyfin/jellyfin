@@ -25,50 +25,37 @@
 //
 
 using System;
-using System.Diagnostics;
 using System.Net;
 using MediaBrowser.Common.Net;
-using Microsoft.Extensions.Logging;
 
 namespace Mono.Nat.Upnp
 {
     internal class GetServicesMessage : MessageBase
     {
-        private string servicesDescriptionUrl;
-        private EndPoint hostAddress;
-        private readonly ILogger _logger;
+        private string _servicesDescriptionUrl;
+        private EndPoint _hostAddress;
 
-        public GetServicesMessage(string description, EndPoint hostAddress, ILogger logger)
+        public GetServicesMessage(string description, EndPoint hostAddress)
             : base(null)
         {
             if (string.IsNullOrEmpty(description))
-                _logger.LogWarning("Description is null");
-
-            if (hostAddress == null)
-                _logger.LogWarning("hostaddress is null");
-
-            this.servicesDescriptionUrl = description;
-            this.hostAddress = hostAddress;
-            _logger = logger;
-        }
-
-        public override string Method
-        {
-            get
             {
-                return "GET";
+                throw new ArgumentException("Description is null/empty", nameof(description));
             }
+
+            this._servicesDescriptionUrl = description;
+            this._hostAddress = hostAddress ?? throw new ArgumentNullException(nameof(hostAddress));
         }
+
+        public override string Method => "GET";
 
         public override HttpRequestOptions Encode()
         {
-            var req = new HttpRequestOptions();
+            var req = new HttpRequestOptions()
+            {
+                Url = $"http://{this._hostAddress}{this._servicesDescriptionUrl}"
+            };
 
-            // The periodic request logging may keep some devices awake
-            req.LogRequestAsDebug = true;
-            req.LogErrors = false;
-
-            req.Url = "http://" + this.hostAddress.ToString() + this.servicesDescriptionUrl;
             req.RequestHeaders.Add("ACCEPT-LANGUAGE", "en");
 
             return req;

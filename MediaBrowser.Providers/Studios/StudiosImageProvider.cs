@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -143,26 +143,20 @@ namespace MediaBrowser.Providers.Studios
 
             if (!fileInfo.Exists || (DateTime.UtcNow - fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays > 1)
             {
-                var temp = await httpClient.GetTempFile(new HttpRequestOptions
-                {
-                    CancellationToken = cancellationToken,
-                    Progress = new SimpleProgress<double>(),
-                    Url = url
-
-                }).ConfigureAwait(false);
-
                 Directory.CreateDirectory(Path.GetDirectoryName(file));
 
-                try
+                using (var res = await httpClient.SendAsync(
+                    new HttpRequestOptions
+                    {
+                        CancellationToken = cancellationToken,
+                        Url = url
+                    },
+                    HttpMethod.Get).ConfigureAwait(false))
+                using (var content = res.Content)
+                using (var fileStream = new FileStream(file, FileMode.Create))
                 {
-                    File.Copy(temp, file, true);
+                    await content.CopyToAsync(fileStream).ConfigureAwait(false);
                 }
-                catch
-                {
-
-                }
-
-                return temp;
             }
 
             return file;

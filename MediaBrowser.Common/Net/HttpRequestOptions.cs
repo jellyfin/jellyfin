@@ -64,12 +64,6 @@ namespace MediaBrowser.Common.Net
             set => RequestHeaders[HeaderNames.Host] = value;
         }
 
-        /// <summary>
-        /// Gets or sets the progress.
-        /// </summary>
-        /// <value>The progress.</value>
-        public IProgress<double> Progress { get; set; }
-
         public Dictionary<string, string> RequestHeaders { get; private set; }
 
         public string RequestContentType { get; set; }
@@ -78,10 +72,6 @@ namespace MediaBrowser.Common.Net
         public byte[] RequestContentBytes { get; set; }
 
         public bool BufferContent { get; set; }
-
-        public bool LogRequest { get; set; }
-        public bool LogRequestAsDebug { get; set; }
-        public bool LogErrors { get; set; }
 
         public bool LogErrorResponseBody { get; set; }
         public bool EnableKeepAlive { get; set; }
@@ -105,8 +95,6 @@ namespace MediaBrowser.Common.Net
         {
             RequestHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            LogRequest = true;
-            LogErrors = true;
             CacheMode = CacheMode.None;
             DecompressionMethod = CompressionMethod.Deflate;
         }

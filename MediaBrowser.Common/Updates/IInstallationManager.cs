@@ -97,12 +97,9 @@ namespace MediaBrowser.Common.Updates
         /// Installs the package.
         /// </summary>
         /// <param name="package">The package.</param>
-        /// <param name="isPlugin">if set to <c>true</c> [is plugin].</param>
-        /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">package</exception>
-        Task InstallPackage(PackageVersionInfo package, IProgress<double> progress, CancellationToken cancellationToken);
+        /// <returns><see cref="Task" />.</returns>
+        Task InstallPackage(PackageVersionInfo package, CancellationToken cancellationToken);
 
         /// <summary>
         /// Uninstalls a plugin

@@ -73,9 +73,6 @@ namespace Emby.Dlna.PlayTo
                 UserAgent = USERAGENT,
                 LogErrorResponseBody = true,
                 BufferContent = false,
-
-                // The periodic requests may keep some devices awake
-                LogRequestAsDebug = true
             };
 
             options.RequestHeaders["HOST"] = ip + ":" + port.ToString(_usCulture);
@@ -97,9 +94,6 @@ namespace Emby.Dlna.PlayTo
                 UserAgent = USERAGENT,
                 LogErrorResponseBody = true,
                 BufferContent = false,
-
-                // The periodic requests may keep some devices awake
-                LogRequestAsDebug = true,
 
                 CancellationToken = cancellationToken
             };
@@ -135,12 +129,8 @@ namespace Emby.Dlna.PlayTo
             {
                 Url = url,
                 UserAgent = USERAGENT,
-                LogRequest = logRequest || _config.GetDlnaConfiguration().EnableDebugLog,
                 LogErrorResponseBody = true,
                 BufferContent = false,
-
-                // The periodic requests may keep some devices awake
-                LogRequestAsDebug = true,
 
                 CancellationToken = cancellationToken
             };

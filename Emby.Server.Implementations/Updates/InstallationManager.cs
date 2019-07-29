@@ -4,13 +4,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Events;
@@ -126,13 +127,16 @@ namespace Emby.Server.Implementations.Updates
         /// <returns>Task{List{PackageInfo}}.</returns>
         public async Task<List<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken)
         {
-            using (var response = await _httpClient.SendAsync(new HttpRequestOptions
-            {
-                Url = "https://repo.jellyfin.org/releases/plugin/manifest.json",
-                CancellationToken = cancellationToken,
-                CacheLength = GetCacheLength()
-            }, HttpMethod.Get).ConfigureAwait(false))
-            using (var stream = response.Content)
+            using (var response = await _httpClient.SendAsync(
+                new HttpRequestOptions
+                {
+                    Url = "https://repo.jellyfin.org/releases/plugin/manifest.json",
+                    CancellationToken = cancellationToken,
+                    CacheMode = CacheMode.Unconditional,
+                    CacheLength = GetCacheLength()
+                },
+                HttpMethod.Get).ConfigureAwait(false))
+            using (Stream stream = response.Content)
             {
                 return FilterPackages(await _jsonSerializer.DeserializeFromStreamAsync<PackageInfo[]>(stream).ConfigureAwait(false));
             }
@@ -309,25 +313,12 @@ namespace Emby.Server.Implementations.Updates
             .Where(p => !string.IsNullOrEmpty(p.sourceUrl) && !CompletedInstallations.Any(i => string.Equals(i.AssemblyGuid, p.guid, StringComparison.OrdinalIgnoreCase)));
         }
 
-        /// <summary>
-        /// Installs the package.
-        /// </summary>
-        /// <param name="package">The package.</param>
-        /// <param name="isPlugin">if set to <c>true</c> [is plugin].</param>
-        /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">package</exception>
-        public async Task InstallPackage(PackageVersionInfo package, IProgress<double> progress, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public async Task InstallPackage(PackageVersionInfo package, CancellationToken cancellationToken)
         {
             if (package == null)
             {
                 throw new ArgumentNullException(nameof(package));
-            }
-
-            if (progress == null)
-            {
-                throw new ArgumentNullException(nameof(progress));
             }
 
             var installationInfo = new InstallationInfo
@@ -349,16 +340,6 @@ namespace Emby.Server.Implementations.Updates
                 _currentInstallations.Add(tuple);
             }
 
-            var innerProgress = new ActionableProgress<double>();
-
-            // Whenever the progress updates, update the outer progress object and InstallationInfo
-            innerProgress.RegisterAction(percent =>
-            {
-                progress.Report(percent);
-
-                installationInfo.PercentComplete = percent;
-            });
-
             var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token).Token;
 
             var installationEventArgs = new InstallationEventArgs
@@ -371,7 +352,7 @@ namespace Emby.Server.Implementations.Updates
 
             try
             {
-                await InstallPackageInternal(package, innerProgress, linkedToken).ConfigureAwait(false);
+                await InstallPackageInternal(package, linkedToken).ConfigureAwait(false);
 
                 lock (_currentInstallations)
                 {
@@ -423,20 +404,16 @@ namespace Emby.Server.Implementations.Updates
         /// Installs the package internal.
         /// </summary>
         /// <param name="package">The package.</param>
-        /// <param name="isPlugin">if set to <c>true</c> [is plugin].</param>
-        /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task InstallPackageInternal(PackageVersionInfo package, IProgress<double> progress, CancellationToken cancellationToken)
+        /// <returns><see cref="Task" />.</returns>
+        private async Task InstallPackageInternal(PackageVersionInfo package, CancellationToken cancellationToken)
         {
             // Set last update time if we were installed before
             IPlugin plugin = _applicationHost.Plugins.FirstOrDefault(p => string.Equals(p.Id.ToString(), package.guid, StringComparison.OrdinalIgnoreCase))
                            ?? _applicationHost.Plugins.FirstOrDefault(p => p.Name.Equals(package.name, StringComparison.OrdinalIgnoreCase));
 
-            string targetPath = plugin == null ? null : plugin.AssemblyFilePath;
-
             // Do the install
-            await PerformPackageInstallation(progress, targetPath, package, cancellationToken).ConfigureAwait(false);
+            await PerformPackageInstallation(package, cancellationToken).ConfigureAwait(false);
 
             // Do plugin-specific processing
             if (plugin == null)
@@ -455,76 +432,57 @@ namespace Emby.Server.Implementations.Updates
             _applicationHost.NotifyPendingRestart();
         }
 
-        private async Task PerformPackageInstallation(IProgress<double> progress, string target, PackageVersionInfo package, CancellationToken cancellationToken)
+        private async Task PerformPackageInstallation(PackageVersionInfo package, CancellationToken cancellationToken)
         {
-            // TODO: Remove the `string target` argument as it is not used any longer
-
             var extension = Path.GetExtension(package.targetFilename);
-            var isArchive = string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase);
-
-            if (!isArchive)
+            if (!string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError("Only zip packages are supported. {Filename} is not a zip archive.", package.targetFilename);
                 return;
             }
 
             // Always override the passed-in target (which is a file) and figure it out again
-            target = Path.Combine(_appPaths.PluginsPath, package.name);
-            _logger.LogDebug("Installing plugin to {Filename}.", target);
+            string targetDir = Path.Combine(_appPaths.PluginsPath, package.name);
 
-            // Download to temporary file so that, if interrupted, it won't destroy the existing installation
-            _logger.LogDebug("Downloading ZIP.");
-            var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
-            {
-                Url = package.sourceUrl,
-                CancellationToken = cancellationToken,
-                Progress = progress
-
-            }).ConfigureAwait(false);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // TODO: Validate with a checksum, *properly*
-
-            // Check if the target directory already exists, and remove it if so
-            if (Directory.Exists(target))
-            {
-                _logger.LogDebug("Deleting existing plugin at {Filename}.", target);
-                Directory.Delete(target, true);
-            }
-
-            // Success - move it to the real target
-            try
-            {
-                _logger.LogDebug("Extracting ZIP {TempFile} to {Filename}.", tempFile, target);
-                using (var stream = File.OpenRead(tempFile))
+// CA5351: Do Not Use Broken Cryptographic Algorithms
+#pragma warning disable CA5351
+            using (var res = await _httpClient.SendAsync(
+                new HttpRequestOptions
                 {
-                    _zipClient.ExtractAllFromZip(stream, target, true);
-                }
-            }
-            catch (IOException ex)
+                    Url = package.sourceUrl,
+                    CancellationToken = cancellationToken,
+                    // We need it to be buffered for setting the position
+                    BufferContent = true
+                },
+                HttpMethod.Get).ConfigureAwait(false))
+            using (var stream = res.Content)
+            using (var md5 = MD5.Create())
             {
-                _logger.LogError(ex, "Error attempting to extract {TempFile} to {TargetFile}", tempFile, target);
-                throw;
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var hash = HexHelper.ToHexString(md5.ComputeHash(stream));
+                if (!string.Equals(package.checksum, hash, StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogDebug("{0}, {1}", package.checksum, hash);
+                    throw new InvalidDataException($"The checksums didn't match while installing {package.name}.");
+                }
+
+                if (Directory.Exists(targetDir))
+                {
+                    Directory.Delete(targetDir);
+                }
+
+                stream.Position = 0;
+                _zipClient.ExtractAllFromZip(stream, targetDir, true);
             }
 
-            try
-            {
-                _logger.LogDebug("Deleting temporary file {Filename}.", tempFile);
-                _fileSystem.DeleteFile(tempFile);
-            }
-            catch (IOException ex)
-            {
-                // Don't fail because of this
-                _logger.LogError(ex, "Error deleting temp file {TempFile}", tempFile);
-            }
+#pragma warning restore CA5351
         }
 
         /// <summary>
         /// Uninstalls a plugin
         /// </summary>
         /// <param name="plugin">The plugin.</param>
-        /// <exception cref="ArgumentException"></exception>
         public void UninstallPlugin(IPlugin plugin)
         {
             plugin.OnUninstalling();

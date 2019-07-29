@@ -1528,8 +1528,6 @@ namespace Emby.Server.Implementations
                 {
                     Url = Url,
                     LogErrorResponseBody = false,
-                    LogErrors = false,
-                    LogRequest = false,
                     BufferContent = false,
                     CancellationToken = cancellationToken
                 }).ConfigureAwait(false))
@@ -1681,8 +1679,8 @@ namespace Emby.Server.Implementations
 
         private async Task<bool> IsIpAddressValidAsync(IPAddress address, CancellationToken cancellationToken)
         {
-            if (address.Equals(IPAddress.Loopback) ||
-                address.Equals(IPAddress.IPv6Loopback))
+            if (address.Equals(IPAddress.Loopback)
+                || address.Equals(IPAddress.IPv6Loopback))
             {
                 return true;
             }
@@ -1695,12 +1693,6 @@ namespace Emby.Server.Implementations
                 return cachedResult;
             }
 
-#if DEBUG
-            const bool LogPing = true;
-#else
-            const bool LogPing = false;
-#endif
-
             try
             {
                 using (var response = await HttpClient.SendAsync(
@@ -1708,8 +1700,6 @@ namespace Emby.Server.Implementations
                     {
                         Url = apiUrl,
                         LogErrorResponseBody = false,
-                        LogErrors = LogPing,
-                        LogRequest = LogPing,
                         BufferContent = false,
                         CancellationToken = cancellationToken
                     }, HttpMethod.Post).ConfigureAwait(false))

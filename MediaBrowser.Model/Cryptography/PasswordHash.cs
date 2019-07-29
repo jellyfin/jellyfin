@@ -84,6 +84,7 @@ namespace MediaBrowser.Model.Cryptography
             _hash = Array.Empty<Byte>();
         }
 
+        // TODO: move this class and use the HexHelper class
         public static byte[] ConvertFromByteString(string byteString)
         {
             byte[] bytes = new byte[byteString.Length / 2];
