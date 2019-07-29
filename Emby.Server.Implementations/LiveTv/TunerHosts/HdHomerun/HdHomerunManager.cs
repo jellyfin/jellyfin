@@ -108,7 +108,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     _tcpClient = null;
 
-                    var task = StopStreaming(_tcpClient);
+                    var task = StopStreaming(socket);
                     Task.WaitAll(task);
                 }
             }
