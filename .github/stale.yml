@@ -9,12 +9,14 @@ exemptLabels:
   - dotnet-3.0-future
   - roadmap
   - future
+  - feature
+  - enhancement
 # Label to use when marking an issue as stale
 staleLabel: stale
 # Comment to post when marking an issue as stale. Set to `false` to disable
 markComment: >
-  This issue has been automatically marked as stale because it has not had
-  recent activity. It will be closed if no further activity occurs. Thank you
-  for your contributions.
+  Issues go stale after 60d of inactivity. Mark the issue as fresh by adding a comment or commit. Stale issues close after an additional 7d of inactivity.
+  If this issue is safe to close now please do so.
+  If you have any questions you can reach us on [Matrix or Social Media](https://jellyfin.readthedocs.io/en/latest/getting-help/).
 # Comment to post when closing a stale issue. Set to `false` to disable
 closeComment: false
