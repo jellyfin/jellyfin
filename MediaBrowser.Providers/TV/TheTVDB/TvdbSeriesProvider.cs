@@ -355,7 +355,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 series.AddGenre(genre);
             }
 
-            if (!String.IsNullOrEmpty(tvdbSeries.Network))
+            if (!string.IsNullOrEmpty(tvdbSeries.Network))
             {
                 series.AddStudio(tvdbSeries.Network);
             }
