@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Services;
 using MediaBrowser.Common.Extensions;
@@ -470,17 +471,10 @@ namespace Emby.Server.Implementations.HttpServer
 
                 urlToLog = GetUrlToLog(urlString);
 
-                if (string.Equals(localPath, "/emby/", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(localPath, "/" + _config.Configuration.BaseUrl + "/", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(localPath, "/" + _config.Configuration.BaseUrl, StringComparison.OrdinalIgnoreCase))
                 {
-                    httpRes.Redirect(_defaultRedirectPath);
-                    return;
-                }
-
-                if (string.Equals(localPath, "/emby", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase))
-                {
-                    httpRes.Redirect("emby/" + _defaultRedirectPath);
+                    httpRes.Redirect("/" + _config.Configuration.BaseUrl + "/" + _defaultRedirectPath);
                     return;
                 }
 
@@ -602,22 +596,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             foreach (var route in clone)
             {
-                routes.Add(new RouteAttribute(NormalizeEmbyRoutePath(route.Path), route.Verbs)
-                {
-                    Notes = route.Notes,
-                    Priority = route.Priority,
-                    Summary = route.Summary
-                });
-
-                routes.Add(new RouteAttribute(NormalizeMediaBrowserRoutePath(route.Path), route.Verbs)
-                {
-                    Notes = route.Notes,
-                    Priority = route.Priority,
-                    Summary = route.Summary
-                });
-
-                // needed because apps add /emby, and some users also add /emby, thereby double prefixing
-                routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
+                routes.Add(new RouteAttribute(NormalizeCustomRoutePath(_config.Configuration.BaseUrl, route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,
@@ -658,35 +637,14 @@ namespace Emby.Server.Implementations.HttpServer
             return _socketListener.ProcessWebSocketRequest(context);
         }
 
-        //TODO Add Jellyfin Route Path Normalizer
-        private static string NormalizeEmbyRoutePath(string path)
+        private static string NormalizeCustomRoutePath(string baseUrl, string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {
-                return "/emby" + path;
+                return "/" + baseUrl + path;
             }
 
-            return "emby/" + path;
-        }
-
-        private static string NormalizeMediaBrowserRoutePath(string path)
-        {
-            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
-            {
-                return "/mediabrowser" + path;
-            }
-
-            return "mediabrowser/" + path;
-        }
-
-        private static string DoubleNormalizeEmbyRoutePath(string path)
-        {
-            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
-            {
-                return "/emby/emby" + path;
-            }
-
-            return "emby/emby/" + path;
+            return baseUrl + "/" + path;
         }
 
         /// <inheritdoc />
