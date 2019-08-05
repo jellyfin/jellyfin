@@ -484,53 +484,6 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                if (localPath.IndexOf("mediabrowser/web", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    httpRes.StatusCode = 200;
-                    httpRes.ContentType = "text/html";
-                    var newUrl = urlString.Replace("mediabrowser", "emby", StringComparison.OrdinalIgnoreCase)
-                        .Replace("/dashboard/", "/web/", StringComparison.OrdinalIgnoreCase);
-
-                    if (!string.Equals(newUrl, urlString, StringComparison.OrdinalIgnoreCase))
-                    {
-                        await httpRes.WriteAsync(
-                            "<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" +
-                            newUrl + "\">" + newUrl + "</a></body></html>",
-                            cancellationToken).ConfigureAwait(false);
-                        return;
-                    }
-                }
-
-                if (localPath.IndexOf("dashboard/", StringComparison.OrdinalIgnoreCase) != -1 &&
-                    localPath.IndexOf("web/dashboard", StringComparison.OrdinalIgnoreCase) == -1)
-                {
-                    httpRes.StatusCode = 200;
-                    httpRes.ContentType = "text/html";
-                    var newUrl = urlString.Replace("mediabrowser", "emby", StringComparison.OrdinalIgnoreCase)
-                        .Replace("/dashboard/", "/web/", StringComparison.OrdinalIgnoreCase);
-
-                    if (!string.Equals(newUrl, urlString, StringComparison.OrdinalIgnoreCase))
-                    {
-                        await httpRes.WriteAsync(
-                            "<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" +
-                            newUrl + "\">" + newUrl + "</a></body></html>",
-                            cancellationToken).ConfigureAwait(false);
-                        return;
-                    }
-                }
-
-                if (string.Equals(localPath, "/web", StringComparison.OrdinalIgnoreCase))
-                {
-                    httpRes.Redirect(_defaultRedirectPath);
-                    return;
-                }
-
-                if (string.Equals(localPath, "/web/", StringComparison.OrdinalIgnoreCase))
-                {
-                    httpRes.Redirect("../" + _defaultRedirectPath);
-                    return;
-                }
-
                 if (string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase))
                 {
                     httpRes.Redirect(_defaultRedirectPath);
@@ -541,19 +494,6 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     httpRes.Redirect("/" + _defaultRedirectPath);
                     return;
-                }
-
-                if (!string.Equals(httpReq.QueryString["r"], "0", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (localPath.EndsWith("web/dashboard.html", StringComparison.OrdinalIgnoreCase))
-                    {
-                        httpRes.Redirect("index.html#!/dashboard.html");
-                    }
-
-                    if (localPath.EndsWith("web/home.html", StringComparison.OrdinalIgnoreCase))
-                    {
-                        httpRes.Redirect("index.html");
-                    }
                 }
 
                 if (!string.IsNullOrEmpty(GlobalResponse))
@@ -569,7 +509,6 @@ namespace Emby.Server.Implementations.HttpServer
                 }
 
                 var handler = GetServiceHandler(httpReq);
-
                 if (handler != null)
                 {
                     await handler.ProcessRequestAsync(this, httpReq, httpRes, _logger, cancellationToken).ConfigureAwait(false);
