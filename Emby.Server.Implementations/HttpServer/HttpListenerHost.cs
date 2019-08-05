@@ -602,6 +602,13 @@ namespace Emby.Server.Implementations.HttpServer
                     Priority = route.Priority,
                     Summary = route.Summary
                 });
+
+                routes.Add(new RouteAttribute(NormalizeOldRoutePath(route.Path), route.Verbs)
+                {
+                    Notes = route.Notes,
+                    Priority = route.Priority,
+                    Summary = route.Summary
+                });
             }
 
             return routes.ToArray();
@@ -635,6 +642,17 @@ namespace Emby.Server.Implementations.HttpServer
         public Task ProcessWebSocketRequest(HttpContext context)
         {
             return _socketListener.ProcessWebSocketRequest(context);
+        }
+
+        // this method was left for compatibility with third party clients
+        private static string NormalizeOldRoutePath(string path)
+        {
+            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
+            {
+                return "/emby" + path;
+            }
+
+            return "emby/" + path;
         }
 
         private static string NormalizeCustomRoutePath(string baseUrl, string path)
