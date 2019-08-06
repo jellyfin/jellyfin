@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="IPNetwork2" Version="2.4.0.126" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
@@ -31,10 +32,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
-    <PackageReference Include="ServiceStack.Text.Core" Version="5.4.0" />
-    <PackageReference Include="sharpcompress" Version="0.22.0" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="5.5.0" />
+    <PackageReference Include="sharpcompress" Version="0.23.0" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" Version="1.0.0" />
-    <PackageReference Include="UTF.Unknown" Version="1.0.0-beta1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,8 +52,8 @@
 
   <!-- Code analysers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.3" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.3" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
     <PackageReference Include="SerilogAnalyzer" Version="0.15.0" />
   </ItemGroup>
 

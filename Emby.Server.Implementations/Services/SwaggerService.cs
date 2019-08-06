@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
+using Emby.Server.Implementations.HttpServer;
 
 namespace Emby.Server.Implementations.Services
 {
@@ -109,9 +109,15 @@ namespace Emby.Server.Implementations.Services
 
     public class SwaggerService : IService, IRequiresRequest
     {
+        private readonly IHttpServer _httpServer;
         private SwaggerSpec _spec;
 
         public IRequest Request { get; set; }
+
+        public SwaggerService(IHttpServer httpServer)
+        {
+            _httpServer = httpServer;
+        }
 
         public object Get(GetSwaggerSpec request)
         {
@@ -181,7 +187,8 @@ namespace Emby.Server.Implementations.Services
         {
             var paths = new SortedDictionary<string, Dictionary<string, SwaggerMethod>>();
 
-            var all = ServiceController.Instance.RestPathMap.OrderBy(i => i.Key, StringComparer.OrdinalIgnoreCase).ToList();
+            // REVIEW: this can be done better
+            var all = ((HttpListenerHost)_httpServer).ServiceController.RestPathMap.OrderBy(i => i.Key, StringComparer.OrdinalIgnoreCase).ToList();
 
             foreach (var current in all)
             {
@@ -192,11 +199,8 @@ namespace Emby.Server.Implementations.Services
                         continue;
                     }
 
-                    if (info.Path.StartsWith("/mediabrowser", StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-                    if (info.Path.StartsWith("/jellyfin", StringComparison.OrdinalIgnoreCase))
+                    if (info.Path.StartsWith("/mediabrowser", StringComparison.OrdinalIgnoreCase)
+                        || info.Path.StartsWith("/jellyfin", StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }

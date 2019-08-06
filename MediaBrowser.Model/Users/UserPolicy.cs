@@ -75,6 +75,7 @@ namespace MediaBrowser.Model.Users
 
         public int RemoteClientBitrateLimit { get; set; }
         public string AuthenticationProviderId { get; set; }
+        public string PasswordResetProviderId { get; set; }
 
         public UserPolicy()
         {

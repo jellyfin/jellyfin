@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -20,7 +19,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
@@ -40,10 +38,7 @@ namespace Emby.Server.Implementations.Channels
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IHttpClient _httpClient;
         private readonly IProviderManager _providerManager;
-
-        private readonly ILocalizationManager _localization;
 
         public ChannelManager(
             IUserManager userManager,
@@ -54,8 +49,6 @@ namespace Emby.Server.Implementations.Channels
             IFileSystem fileSystem,
             IUserDataManager userDataManager,
             IJsonSerializer jsonSerializer,
-            ILocalizationManager localization,
-            IHttpClient httpClient,
             IProviderManager providerManager)
         {
             _userManager = userManager;
@@ -66,8 +59,6 @@ namespace Emby.Server.Implementations.Channels
             _fileSystem = fileSystem;
             _userDataManager = userDataManager;
             _jsonSerializer = jsonSerializer;
-            _localization = localization;
-            _httpClient = httpClient;
             _providerManager = providerManager;
         }
 

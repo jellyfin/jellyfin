@@ -74,23 +74,14 @@ namespace Emby.Server.Implementations.Configuration
         /// </summary>
         private void UpdateMetadataPath()
         {
-            string metadataPath;
-
             if (string.IsNullOrWhiteSpace(Configuration.MetadataPath))
             {
-                metadataPath = GetInternalMetadataPath();
+                ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = Path.Combine(ApplicationPaths.ProgramDataPath, "metadata");
             }
             else
             {
-                metadataPath = Path.Combine(Configuration.MetadataPath, "metadata");
+                ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = Configuration.MetadataPath;
             }
-
-            ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = metadataPath;
-        }
-
-        private string GetInternalMetadataPath()
-        {
-            return Path.Combine(ApplicationPaths.ProgramDataPath, "metadata");
         }
 
         /// <summary>

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Api.Movies;
@@ -488,18 +490,6 @@ namespace MediaBrowser.Api.Library
                 {
                     return false;
                 }
-                else if (string.Equals(name, "FanArt", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    if (string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    return true;
-                }
                 else if (string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
@@ -828,7 +818,16 @@ namespace MediaBrowser.Api.Library
             var filename = (Path.GetFileName(path) ?? string.Empty).Replace("\"", string.Empty);
             if (!string.IsNullOrWhiteSpace(filename))
             {
-                headers[HeaderNames.ContentDisposition] = "attachment; filename=\"" + filename + "\"";
+                // Kestrel doesn't support non-ASCII characters in headers
+                if (Regex.IsMatch(filename, "[^[:ascii:]]"))
+                {
+                    // Manually encoding non-ASCII characters, following https://tools.ietf.org/html/rfc5987#section-3.2.2
+                    headers[HeaderNames.ContentDisposition] = "attachment; filename*=UTF-8''" + WebUtility.UrlEncode(filename);
+                }
+                else
+                {
+                    headers[HeaderNames.ContentDisposition] = "attachment; filename=\"" + filename + "\"";
+                }
             }
 
             return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
@@ -988,19 +987,16 @@ namespace MediaBrowser.Api.Library
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(RefreshLibrary request)
+        public async Task Post(RefreshLibrary request)
         {
-            Task.Run(() =>
+            try
             {
-                try
-                {
-                    _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error refreshing library");
-                }
-            });
+                await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error refreshing library");
+            }
         }
 
         /// <summary>

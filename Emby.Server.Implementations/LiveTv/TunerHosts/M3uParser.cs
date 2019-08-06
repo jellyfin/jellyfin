@@ -11,7 +11,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
@@ -62,12 +61,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return Task.FromResult((Stream)File.OpenRead(url));
         }
 
-        const string ExtInfPrefix = "#EXTINF:";
+        private const string ExtInfPrefix = "#EXTINF:";
+
         private List<ChannelInfo> GetChannels(TextReader reader, string channelIdPrefix, string tunerHostId)
         {
             var channels = new List<ChannelInfo>();
             string line;
-            string extInf = "";
+            string extInf = string.Empty;
 
             while ((line = reader.ReadLine()) != null)
             {
@@ -101,7 +101,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                     channel.Path = line;
                     channels.Add(channel);
-                    extInf = "";
+                    extInf = string.Empty;
                 }
             }
 
@@ -110,8 +110,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private ChannelInfo GetChannelnfo(string extInf, string tunerHostId, string mediaUrl)
         {
-            var channel = new ChannelInfo();
-            channel.TunerHostId = tunerHostId;
+            var channel = new ChannelInfo()
+            {
+                TunerHostId = tunerHostId
+            };
 
             extInf = extInf.Trim();
 
@@ -137,13 +139,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             {
                 channelIdValues.Add(channelId);
             }
+
             if (!string.IsNullOrWhiteSpace(tvgId))
             {
                 channelIdValues.Add(tvgId);
             }
+
             if (channelIdValues.Count > 0)
             {
-                channel.Id = string.Join("_", channelIdValues.ToArray());
+                channel.Id = string.Join("_", channelIdValues);
             }
 
             return channel;
@@ -152,7 +156,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         private string GetChannelNumber(string extInf, Dictionary<string, string> attributes, string mediaUrl)
         {
             var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
+            var nameInExtInf = nameParts.Length > 1 ? nameParts[nameParts.Length - 1].Trim() : null;
 
             string numberString = null;
             string attributeValue;

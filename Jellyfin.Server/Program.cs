@@ -19,12 +19,12 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.AspNetCore;
+using SQLitePCL;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server
@@ -35,9 +35,8 @@ namespace Jellyfin.Server
         private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
         private static ILogger _logger;
         private static bool _restartOnShutdown;
-        private static IConfiguration appConfig;
 
-        public static async Task Main(string[] args)
+        public static Task Main(string[] args)
         {
             // For backwards compatibility.
             // Modify any input arguments now which start with single-hyphen to POSIX standard
@@ -51,8 +50,8 @@ namespace Jellyfin.Server
             }
 
             // Parse the command line arguments and either start the app or exit indicating error
-            await Parser.Default.ParseArguments<StartupOptions>(args)
-                .MapResult(StartApp, _ => Task.CompletedTask).ConfigureAwait(false);
+            return Parser.Default.ParseArguments<StartupOptions>(args)
+                .MapResult(StartApp, _ => Task.CompletedTask);
         }
 
         public static void Shutdown()
@@ -77,7 +76,7 @@ namespace Jellyfin.Server
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
 
-            appConfig = await CreateConfiguration(appPaths).ConfigureAwait(false);
+            IConfiguration appConfig = await CreateConfiguration(appPaths).ConfigureAwait(false);
 
             CreateLogger(appConfig, appPaths);
 
@@ -117,25 +116,39 @@ namespace Jellyfin.Server
 
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
-            SQLitePCL.Batteries_V2.Init();
+            // Increase the max http request limit
+            // The default connection limit is 10 for ASP.NET hosted applications and 2 for all others.
+            ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
+
+            // Disable the "Expect: 100-Continue" header by default
+            // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
+            ServicePointManager.Expect100Continue = false;
+
+// CA5359: Do Not Disable Certificate Validation
+#pragma warning disable CA5359
 
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
+#pragma warning restore CA5359
 
-            var fileSystem = new ManagedFileSystem(_loggerFactory, appPaths);
+            Batteries_V2.Init();
+            if (raw.sqlite3_enable_shared_cache(1) != raw.SQLITE_OK)
+            {
+                Console.WriteLine("WARN: Failed to enable shared cache for SQLite");
+            }
 
             using (var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
-                fileSystem,
+                new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
                 new NullImageEncoder(),
-                new NetworkManager(_loggerFactory),
+                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
                 appConfig))
             {
                 await appHost.InitAsync(new ServiceCollection()).ConfigureAwait(false);
 
-                appHost.ImageProcessor.ImageEncoder = GetImageEncoder(fileSystem, appPaths, appHost.LocalizationManager);
+                appHost.ImageProcessor.ImageEncoder = GetImageEncoder(appPaths, appHost.LocalizationManager);
 
                 await appHost.RunStartupTasksAsync().ConfigureAwait(false);
 
@@ -158,7 +171,7 @@ namespace Jellyfin.Server
 
         /// <summary>
         /// Create the data, config and log paths from the variety of inputs(command line args,
-        /// environment variables) or decide on what default to use.  For Windows it's %AppPath%
+        /// environment variables) or decide on what default to use. For Windows it's %AppPath%
         /// for everything else the XDG approach is followed:
         /// https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
         /// </summary>
@@ -180,7 +193,9 @@ namespace Jellyfin.Server
                 if (string.IsNullOrEmpty(dataDir))
                 {
                     // LocalApplicationData follows the XDG spec on unix machines
-                    dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "jellyfin");
+                    dataDir = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                        "jellyfin");
                 }
             }
 
@@ -199,20 +214,26 @@ namespace Jellyfin.Server
 
                 if (string.IsNullOrEmpty(configDir))
                 {
-                    if (options.DataDir != null || Directory.Exists(Path.Combine(dataDir, "config")) || RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    if (options.DataDir != null
+                        || Directory.Exists(Path.Combine(dataDir, "config"))
+                        || RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
                         // Hang config folder off already set dataDir
                         configDir = Path.Combine(dataDir, "config");
                     }
                     else
                     {
-                        // $XDG_CONFIG_HOME defines the base directory relative to which user specific configuration files should be stored.
+                        // $XDG_CONFIG_HOME defines the base directory relative to which
+                        // user specific configuration files should be stored.
                         configDir = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
 
-                        // If $XDG_CONFIG_HOME is either not set or empty, a default equal to $HOME /.config should be used.
+                        // If $XDG_CONFIG_HOME is either not set or empty,
+                        // a default equal to $HOME /.config should be used.
                         if (string.IsNullOrEmpty(configDir))
                         {
-                            configDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config");
+                            configDir = Path.Combine(
+                                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                                ".config");
                         }
 
                         configDir = Path.Combine(configDir, "jellyfin");
@@ -240,13 +261,17 @@ namespace Jellyfin.Server
                     }
                     else
                     {
-                        // $XDG_CACHE_HOME defines the base directory relative to which user specific non-essential data files should be stored.
+                        // $XDG_CACHE_HOME defines the base directory relative to which
+                        // user specific non-essential data files should be stored.
                         cacheDir = Environment.GetEnvironmentVariable("XDG_CACHE_HOME");
 
-                        // If $XDG_CACHE_HOME is either not set or empty, a default equal to $HOME/.cache should be used.
+                        // If $XDG_CACHE_HOME is either not set or empty,
+                        // a default equal to $HOME/.cache should be used.
                         if (string.IsNullOrEmpty(cacheDir))
                         {
-                            cacheDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".cache");
+                            cacheDir = Path.Combine(
+                                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                                ".cache");
                         }
 
                         cacheDir = Path.Combine(cacheDir, "jellyfin");
@@ -355,17 +380,22 @@ namespace Jellyfin.Server
         }
 
         private static IImageEncoder GetImageEncoder(
-            IFileSystem fileSystem,
             IApplicationPaths appPaths,
             ILocalizationManager localizationManager)
         {
             try
             {
-                return new SkiaEncoder(_loggerFactory, appPaths, fileSystem, localizationManager);
+                // Test if the native lib is available
+                SkiaEncoder.TestSkia();
+
+                return new SkiaEncoder(
+                    _loggerFactory.CreateLogger<SkiaEncoder>(),
+                    appPaths,
+                    localizationManager);
             }
             catch (Exception ex)
             {
-                _logger.LogInformation(ex, "Skia not available. Will fallback to NullIMageEncoder. {0}");
+                _logger.LogWarning(ex, "Skia not available. Will fallback to NullIMageEncoder.");
             }
 
             return new NullImageEncoder();
@@ -379,7 +409,7 @@ namespace Jellyfin.Server
 
             if (string.IsNullOrWhiteSpace(module))
             {
-                module = Environment.GetCommandLineArgs().First();
+                module = Environment.GetCommandLineArgs()[0];
             }
 
             string commandLineArgsString;
@@ -391,7 +421,7 @@ namespace Jellyfin.Server
             else
             {
                 commandLineArgsString = string.Join(
-                    " ",
+                    ' ',
                     Environment.GetCommandLineArgs().Skip(1).Select(NormalizeCommandLineArgument));
             }
 

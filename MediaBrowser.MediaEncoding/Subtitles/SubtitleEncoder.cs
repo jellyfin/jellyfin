@@ -126,8 +126,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException(nameof(mediaSourceId));
             }
 
-            // TODO network path substition useful ?
-            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(item, null, true, true, cancellationToken).ConfigureAwait(false);
+            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(item, null, true, false, cancellationToken).ConfigureAwait(false);
 
             var mediaSource = mediaSources
                 .First(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
@@ -426,7 +425,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             var encodingParam = await GetSubtitleFileCharacterSet(inputPath, language, inputProtocol, cancellationToken).ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(encodingParam))
+            // FFmpeg automatically convert character encoding when it is UTF-16
+            // If we specify character encoding, it rejects with "do not specify a character encoding" and "Unable to recode subtitle event"
+            if ((inputPath.EndsWith(".smi") || inputPath.EndsWith(".sami")) && (encodingParam == "UTF-16BE" || encodingParam == "UTF-16LE"))
+            {
+                encodingParam = "";
+            }
+            else if (!string.IsNullOrEmpty(encodingParam))
             {
                 encodingParam = " -sub_charenc " + encodingParam;
             }

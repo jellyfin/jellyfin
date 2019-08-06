@@ -25,6 +25,11 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The version.</value>
         public string Version { get; set; }
+        
+        /// <summary>
+        /// The product name. This is the AssemblyProduct name.
+        /// </summary>
+        public string ProductName { get; set; }
 
         /// <summary>
         /// Gets or sets the operating system.

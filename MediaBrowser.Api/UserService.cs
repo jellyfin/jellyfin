@@ -214,6 +214,9 @@ namespace MediaBrowser.Api
     {
         [ApiMember(Name = "Name", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
         public string Name { get; set; }
+
+        [ApiMember(Name = "Password", IsRequired = false, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public string Password { get; set; }
     }
 
     [Route("/Users/ForgotPassword", "POST", Summary = "Initiates the forgot password process for a local user")]
@@ -379,10 +382,15 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
+            if (!string.IsNullOrEmpty(request.Password) && string.IsNullOrEmpty(request.Pw))
+            {
+                throw new MethodNotAllowedException("Hashed-only passwords are not valid for this API.");
+            }
+
             return Post(new AuthenticateUserByName
             {
                 Username = user.Name,
-                Password = request.Password,
+                Password = null, // This should always be null
                 Pw = request.Pw
             });
         }
@@ -401,7 +409,6 @@ namespace MediaBrowser.Api
                 PasswordSha1 = request.Password,
                 RemoteEndPoint = Request.RemoteIp,
                 Username = request.Username
-
             }).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
@@ -496,27 +503,21 @@ namespace MediaBrowser.Api
             }
         }
 
-        /// <summary>
-        /// Posts the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
         public async Task<object> Post(CreateUserByName request)
         {
-            var dtoUser = request;
+            var newUser = await _userManager.CreateUser(request.Name).ConfigureAwait(false);
 
-            var newUser = await _userManager.CreateUser(dtoUser.Name).ConfigureAwait(false);
+            // no need to authenticate password for new user
+            if (request.Password != null)
+            {
+                await _userManager.ChangePassword(newUser, request.Password).ConfigureAwait(false);
+            }
 
             var result = _userManager.GetUserDto(newUser, Request.RemoteIp);
 
             return ToOptimizedResult(result);
         }
 
-        /// <summary>
-        /// Posts the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
         public async Task<object> Post(ForgotPassword request)
         {
             var isLocal = Request.IsLocal || _networkManager.IsInLocalNetwork(Request.RemoteIp);

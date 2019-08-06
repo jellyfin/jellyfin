@@ -7,11 +7,13 @@ namespace Emby.Naming.Audio
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+
         /// <summary>
         /// Gets or sets the part.
         /// </summary>
         /// <value>The part.</value>
         public string Part { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is multi part.
         /// </summary>

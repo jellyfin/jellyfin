@@ -26,7 +26,10 @@ function Build-JellyFin {
             Write-Error "arm only supported with Windows 8 or higher"
             exit
         }
-    dotnet publish -c $BuildType -r "$windowsversion-$Architecture" MediaBrowser.sln -o $InstallLocation -v $DotNetVerbosity
+    Write-Verbose "windowsversion-Architecture: $windowsversion-$Architecture"
+    Write-Verbose "InstallLocation: $InstallLocation"
+    Write-Verbose "DotNetVerbosity: $DotNetVerbosity"
+    dotnet publish -c $BuildType -r `"$windowsversion-$Architecture`" MediaBrowser.sln -o $InstallLocation -v $DotNetVerbosity
 }
 
 function Install-FFMPEG {
@@ -73,6 +76,7 @@ function Install-NSSM {
         Write-Warning "NSSM will not be installed"
     }else{
          Write-Verbose "Downloading NSSM"
+         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
          Invoke-WebRequest -Uri https://nssm.cc/ci/nssm-2.24-101-g897c7ad.zip -UseBasicParsing -OutFile "$tempdir/nssm.zip" | Write-Verbose
     }
 

@@ -20,7 +20,10 @@ namespace Emby.Photos
     public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IHasItemChangeMonitor
     {
         private readonly ILogger _logger;
-        private IImageProcessor _imageProcessor;
+        private readonly IImageProcessor _imageProcessor;
+
+        // These are causing taglib to hang
+        private string[] _includextensions = new string[] { ".jpg", ".jpeg", ".png", ".tiff", ".cr2" };
 
         public PhotoProvider(ILogger logger, IImageProcessor imageProcessor)
         {
@@ -28,75 +31,55 @@ namespace Emby.Photos
             _imageProcessor = imageProcessor;
         }
 
+        public string Name => "Embedded Information";
+
         public bool HasChanged(BaseItem item, IDirectoryService directoryService)
         {
             if (item.IsFileProtocol)
             {
                 var file = directoryService.GetFile(item.Path);
-                if (file != null && file.LastWriteTimeUtc != item.DateModified)
-                {
-                    return true;
-                }
+                return (file != null && file.LastWriteTimeUtc != item.DateModified);
             }
 
             return false;
         }
-
-        // These are causing taglib to hang
-        private string[] _includextensions = new string[] { ".jpg", ".jpeg", ".png", ".tiff", ".cr2" };
 
         public Task<ItemUpdateType> FetchAsync(Photo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             item.SetImagePath(ImageType.Primary, item.Path);
 
             // Examples: https://github.com/mono/taglib-sharp/blob/a5f6949a53d09ce63ee7495580d6802921a21f14/tests/fixtures/TagLib.Tests.Images/NullOrientationTest.cs
-            if (_includextensions.Contains(Path.GetExtension(item.Path) ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (_includextensions.Contains(Path.GetExtension(item.Path), StringComparer.OrdinalIgnoreCase))
             {
                 try
                 {
                     using (var file = TagLib.File.Create(item.Path))
                     {
-                        var image = file as TagLib.Image.File;
-
-                        var tag = file.GetTag(TagTypes.TiffIFD) as IFDTag;
-
-                        if (tag != null)
+                        if (file.GetTag(TagTypes.TiffIFD) is IFDTag tag)
                         {
                             var structure = tag.Structure;
-
-                            if (structure != null)
+                            if (structure != null
+                                && structure.GetEntry(0, (ushort)IFDEntryTag.ExifIFD) is SubIFDEntry exif)
                             {
-                                var exif = structure.GetEntry(0, (ushort)IFDEntryTag.ExifIFD) as SubIFDEntry;
-
-                                if (exif != null)
+                                var exifStructure = exif.Structure;
+                                if (exifStructure != null)
                                 {
-                                    var exifStructure = exif.Structure;
-
-                                    if (exifStructure != null)
+                                    var entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ApertureValue) as RationalIFDEntry;
+                                    if (entry != null)
                                     {
-                                        var entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ApertureValue) as RationalIFDEntry;
+                                        item.Aperture = (double)entry.Value.Numerator / entry.Value.Denominator;
+                                    }
 
-                                        if (entry != null)
-                                        {
-                                            double val = entry.Value.Numerator;
-                                            val /= entry.Value.Denominator;
-                                            item.Aperture = val;
-                                        }
-
-                                        entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ShutterSpeedValue) as RationalIFDEntry;
-
-                                        if (entry != null)
-                                        {
-                                            double val = entry.Value.Numerator;
-                                            val /= entry.Value.Denominator;
-                                            item.ShutterSpeed = val;
-                                        }
+                                    entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ShutterSpeedValue) as RationalIFDEntry;
+                                    if (entry != null)
+                                    {
+                                        item.ShutterSpeed = (double)entry.Value.Numerator / entry.Value.Denominator;
                                     }
                                 }
                             }
                         }
 
-                        if (image != null)
+                        if (file is TagLib.Image.File image)
                         {
                             item.CameraMake = image.ImageTag.Make;
                             item.CameraModel = image.ImageTag.Model;
@@ -116,12 +99,10 @@ namespace Emby.Photos
 
                             item.Overview = image.ImageTag.Comment;
 
-                            if (!string.IsNullOrWhiteSpace(image.ImageTag.Title))
+                            if (!string.IsNullOrWhiteSpace(image.ImageTag.Title)
+                                && !item.LockedFields.Contains(MetadataFields.Name))
                             {
-                                if (!item.LockedFields.Contains(MetadataFields.Name))
-                                {
-                                    item.Name = image.ImageTag.Title;
-                                }
+                                item.Name = image.ImageTag.Title;
                             }
 
                             var dateTaken = image.ImageTag.DateTime;
@@ -140,12 +121,9 @@ namespace Emby.Photos
                             {
                                 item.Orientation = null;
                             }
-                            else
+                            else if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out ImageOrientation orientation))
                             {
-                                if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out ImageOrientation orientation))
-                                {
-                                    item.Orientation = orientation;
-                                }
+                                item.Orientation = orientation;
                             }
 
                             item.ExposureTime = image.ImageTag.ExposureTime;
@@ -195,7 +173,5 @@ namespace Emby.Photos
             const ItemUpdateType result = ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataImport;
             return Task.FromResult(result);
         }
-
-        public string Name => "Embedded Information";
     }
 }

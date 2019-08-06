@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Emby.Naming.Video;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -11,7 +12,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Movies
@@ -27,7 +27,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// <value>The priority.</value>
         public override ResolverPriority Priority => ResolverPriority.Third;
 
-        public MultiItemResolverResult ResolveMultiple(Folder parent,
+        public MultiItemResolverResult ResolveMultiple(
+            Folder parent,
             List<FileSystemMetadata> files,
             string collectionType,
             IDirectoryService directoryService)
@@ -45,7 +46,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             return result;
         }
 
-        private MultiItemResolverResult ResolveMultipleInternal(Folder parent,
+        private MultiItemResolverResult ResolveMultipleInternal(
+            Folder parent,
             List<FileSystemMetadata> files,
             string collectionType,
             IDirectoryService directoryService)
@@ -90,7 +92,13 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             return null;
         }
 
-        private MultiItemResolverResult ResolveVideos<T>(Folder parent, IEnumerable<FileSystemMetadata> fileSystemEntries, IDirectoryService directoryService, bool suppportMultiEditions, string collectionType, bool parseName)
+        private MultiItemResolverResult ResolveVideos<T>(
+            Folder parent,
+            IEnumerable<FileSystemMetadata> fileSystemEntries,
+            IDirectoryService directoryService,
+            bool suppportMultiEditions,
+            string collectionType,
+            bool parseName)
             where T : Video, new()
         {
             var files = new List<FileSystemMetadata>();
@@ -103,8 +111,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 // This is a hack but currently no better way to resolve a sometimes ambiguous situation
                 if (string.IsNullOrEmpty(collectionType))
                 {
-                    if (string.Equals(child.Name, "tvshow.nfo", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(child.Name, "season.nfo", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(child.Name, "tvshow.nfo", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(child.Name, "season.nfo", StringComparison.OrdinalIgnoreCase))
                     {
                         return null;
                     }
@@ -114,11 +122,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 {
                     leftOver.Add(child);
                 }
-                else if (IsIgnored(child.Name))
-                {
-
-                }
-                else
+                else if (!IsIgnored(child.Name))
                 {
                     files.Add(child);
                 }
@@ -167,17 +171,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         private static bool IsIgnored(string filename)
         {
             // Ignore samples
-            var sampleFilename = " " + filename.Replace(".", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("-", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("_", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("!", " ", StringComparison.OrdinalIgnoreCase);
+            Match m = Regex.Match(filename, @"\bsample\b", RegexOptions.IgnoreCase);
 
-            if (sampleFilename.IndexOf(" sample ", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                return true;
-            }
-
-            return false;
+            return m.Success;
         }
 
         private bool ContainsFile(List<VideoInfo> result, FileSystemMetadata file)

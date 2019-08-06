@@ -89,10 +89,8 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>Task.</returns>
-        public Task ProcessMessage(WebSocketMessageInfo message)
-        {
-            return Task.CompletedTask;
-        }
+        public Task ProcessMessageAsync(WebSocketMessageInfo message)
+            => Task.CompletedTask;
 
         private void EnsureController(SessionInfo session, IWebSocketConnection connection)
         {

@@ -53,7 +53,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly int DefaultImageExtractionTimeoutMs;
         private readonly string StartupOptionFFmpegPath;
 
-        private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(2, 2);
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
         private readonly ILocalizationManager _localization;
 
@@ -230,6 +230,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns></returns>
         private string ExistsOnSystemPath(string filename)
         {
+            string inJellyfinPath = GetEncoderPathFromDirectory(System.AppContext.BaseDirectory, filename);
+            if (!string.IsNullOrEmpty(inJellyfinPath))
+            {
+                return inJellyfinPath;
+            }
             var values = Environment.GetEnvironmentVariable("PATH");
 
             foreach (var path in values.Split(Path.PathSeparator))
@@ -577,19 +582,27 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 bool ranToCompletion;
 
-                StartProcess(processWrapper);
-
-                var timeoutMs = ConfigurationManager.Configuration.ImageExtractionTimeoutMs;
-                if (timeoutMs <= 0)
+                await _thumbnailResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+                try
                 {
-                    timeoutMs = DefaultImageExtractionTimeoutMs;
+                    StartProcess(processWrapper);
+
+                    var timeoutMs = ConfigurationManager.Configuration.ImageExtractionTimeoutMs;
+                    if (timeoutMs <= 0)
+                    {
+                        timeoutMs = DefaultImageExtractionTimeoutMs;
+                    }
+
+                    ranToCompletion = await process.WaitForExitAsync(timeoutMs).ConfigureAwait(false);
+
+                    if (!ranToCompletion)
+                    {
+                        StopProcess(processWrapper, 1000);
+                    }
                 }
-
-                ranToCompletion = await process.WaitForExitAsync(timeoutMs).ConfigureAwait(false);
-
-                if (!ranToCompletion)
+                finally
                 {
-                    StopProcess(processWrapper, 1000);
+                    _thumbnailResourcePool.Release();
                 }
 
                 var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
@@ -620,7 +633,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return time.ToString(@"hh\:mm\:ss\.fff", UsCulture);
         }
 
-        public async Task ExtractVideoImagesOnInterval(string[] inputFiles,
+        public async Task ExtractVideoImagesOnInterval(
+            string[] inputFiles,
             string container,
             MediaStream videoStream,
             MediaProtocol protocol,
@@ -631,8 +645,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             int? maxWidth,
             CancellationToken cancellationToken)
         {
-            var resourcePool = _thumbnailResourcePool;
-
             var inputArgument = GetInputArgument(inputFiles, protocol);
 
             var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(UsCulture);
@@ -696,7 +708,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.LogInformation(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
 
-            await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _thumbnailResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             bool ranToCompletion = false;
 
@@ -737,7 +749,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 finally
                 {
-                    resourcePool.Release();
+                    _thumbnailResourcePool.Release();
                 }
 
                 var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;

@@ -1,11 +1,14 @@
 ---
 # We just wrap `build` so this is really it
 name: "jellyfin"
-version: "10.2.2"
+version: "10.3.7"
 packages:
   - debian-package-x64
   - debian-package-armhf
+  - debian-package-arm64
   - ubuntu-package-x64
+  - ubuntu-package-armhf
+  - ubuntu-package-arm64
   - fedora-package-x64
   - centos-package-x64
   - linux-x64

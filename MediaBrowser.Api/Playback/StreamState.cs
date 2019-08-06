@@ -1,17 +1,14 @@
 using System;
-using System.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Net;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
 {
     public class StreamState : EncodingJobInfo, IDisposable
     {
-        private readonly ILogger _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private bool _disposed = false;
 
         public string RequestedUrl { get; set; }
 
@@ -30,11 +27,6 @@ namespace MediaBrowser.Api.Playback
 
         public VideoStreamRequest VideoRequest => Request as VideoStreamRequest;
 
-        /// <summary>
-        /// Gets or sets the log file stream.
-        /// </summary>
-        /// <value>The log file stream.</value>
-        public Stream LogFileStream { get; set; }
         public IDirectStreamProvider DirectStreamProvider { get; set; }
 
         public string WaitForPath { get; set; }
@@ -72,6 +64,7 @@ namespace MediaBrowser.Api.Playback
                     {
                         return 3;
                     }
+
                     return 6;
                 }
 
@@ -94,82 +87,57 @@ namespace MediaBrowser.Api.Playback
 
         public string UserAgent { get; set; }
 
-        public StreamState(IMediaSourceManager mediaSourceManager, ILogger logger, TranscodingJobType transcodingType)
-            : base(transcodingType)
-        {
-            _mediaSourceManager = mediaSourceManager;
-            _logger = logger;
-        }
-
         public bool EstimateContentLength { get; set; }
+
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
 
         public bool EnableDlnaHeaders { get; set; }
 
-        public override void Dispose()
-        {
-            DisposeTranscodingThrottler();
-            DisposeLogStream();
-            DisposeLiveStream();
-
-            TranscodingJob = null;
-        }
-
-        private void DisposeTranscodingThrottler()
-        {
-            if (TranscodingThrottler != null)
-            {
-                try
-                {
-                    TranscodingThrottler.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error disposing TranscodingThrottler");
-                }
-
-                TranscodingThrottler = null;
-            }
-        }
-
-        private void DisposeLogStream()
-        {
-            if (LogFileStream != null)
-            {
-                try
-                {
-                    LogFileStream.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error disposing log stream");
-                }
-
-                LogFileStream = null;
-            }
-        }
-
-        private async void DisposeLiveStream()
-        {
-            if (MediaSource.RequiresClosing && string.IsNullOrWhiteSpace(Request.LiveStreamId) && !string.IsNullOrWhiteSpace(MediaSource.LiveStreamId))
-            {
-                try
-                {
-                    await _mediaSourceManager.CloseLiveStream(MediaSource.LiveStreamId).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error closing media source");
-                }
-            }
-        }
-
         public DeviceProfile DeviceProfile { get; set; }
 
-        public TranscodingJob TranscodingJob;
+        public TranscodingJob TranscodingJob { get; set; }
+
+        public StreamState(IMediaSourceManager mediaSourceManager, TranscodingJobType transcodingType)
+            : base(transcodingType)
+        {
+            _mediaSourceManager = mediaSourceManager;
+        }
+
         public override void ReportTranscodingProgress(TimeSpan? transcodingPosition, float framerate, double? percentComplete, long bytesTranscoded, int? bitRate)
         {
             ApiEntryPoint.Instance.ReportTranscodingProgress(TranscodingJob, this, transcodingPosition, framerate, percentComplete, bytesTranscoded, bitRate);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                // REVIEW: Is this the right place for this?
+                if (MediaSource.RequiresClosing
+                    && string.IsNullOrWhiteSpace(Request.LiveStreamId)
+                    && !string.IsNullOrWhiteSpace(MediaSource.LiveStreamId))
+                {
+                    _mediaSourceManager.CloseLiveStream(MediaSource.LiveStreamId).GetAwaiter().GetResult();
+                }
+
+                TranscodingThrottler?.Dispose();
+            }
+
+            TranscodingThrottler = null;
+            TranscodingJob = null;
+
+            _disposed = true;
         }
     }
 }

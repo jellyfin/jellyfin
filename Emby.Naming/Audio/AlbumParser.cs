@@ -33,27 +33,29 @@ namespace Emby.Naming.Audio
 
             // Normalize
             // Remove whitespace
-            filename = filename.Replace("-", " ");
-            filename = filename.Replace(".", " ");
-            filename = filename.Replace("(", " ");
-            filename = filename.Replace(")", " ");
+            filename = filename.Replace('-', ' ');
+            filename = filename.Replace('.', ' ');
+            filename = filename.Replace('(', ' ');
+            filename = filename.Replace(')', ' ');
             filename = Regex.Replace(filename, @"\s+", " ");
 
             filename = filename.TrimStart();
 
             foreach (var prefix in _options.AlbumStackingPrefixes)
             {
-                if (filename.IndexOf(prefix, StringComparison.OrdinalIgnoreCase) == 0)
+                if (filename.IndexOf(prefix, StringComparison.OrdinalIgnoreCase) != 0)
                 {
-                    var tmp = filename.Substring(prefix.Length);
+                    continue;
+                }
 
-                    tmp = tmp.Trim().Split(' ').FirstOrDefault() ?? string.Empty;
+                var tmp = filename.Substring(prefix.Length);
 
-                    if (int.TryParse(tmp, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
-                    {
-                        result.IsMultiPart = true;
-                        break;
-                    }
+                tmp = tmp.Trim().Split(' ').FirstOrDefault() ?? string.Empty;
+
+                if (int.TryParse(tmp, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
+                {
+                    result.IsMultiPart = true;
+                    break;
                 }
             }
 

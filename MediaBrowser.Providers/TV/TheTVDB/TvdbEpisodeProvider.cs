@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
     /// <summary>
     /// Class RemoteEpisodeProvider
     /// </summary>
-    class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasOrder
+    public class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasOrder
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;

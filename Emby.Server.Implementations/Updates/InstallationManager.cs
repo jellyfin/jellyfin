@@ -12,7 +12,6 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
@@ -39,11 +38,10 @@ namespace Emby.Server.Implementations.Updates
         /// <summary>
         /// The completed installations
         /// </summary>
-        private ConcurrentBag<InstallationInfo> CompletedInstallationsInternal { get; set; }
+        private ConcurrentBag<InstallationInfo> _completedInstallationsInternal;
 
-        public IEnumerable<InstallationInfo> CompletedInstallations => CompletedInstallationsInternal;
+        public IEnumerable<InstallationInfo> CompletedInstallations => _completedInstallationsInternal;
 
-        #region PluginUninstalled Event
         /// <summary>
         /// Occurs when [plugin uninstalled].
         /// </summary>
@@ -57,9 +55,7 @@ namespace Emby.Server.Implementations.Updates
         {
             PluginUninstalled?.Invoke(this, new GenericEventArgs<IPlugin> { Argument = plugin });
         }
-        #endregion
 
-        #region PluginUpdated Event
         /// <summary>
         /// Occurs when [plugin updated].
         /// </summary>
@@ -77,9 +73,7 @@ namespace Emby.Server.Implementations.Updates
 
             _applicationHost.NotifyPendingRestart();
         }
-        #endregion
 
-        #region PluginInstalled Event
         /// <summary>
         /// Occurs when [plugin updated].
         /// </summary>
@@ -96,7 +90,6 @@ namespace Emby.Server.Implementations.Updates
 
             _applicationHost.NotifyPendingRestart();
         }
-        #endregion
 
         /// <summary>
         /// The _logger
@@ -115,11 +108,7 @@ namespace Emby.Server.Implementations.Updates
         /// <value>The application host.</value>
         private readonly IApplicationHost _applicationHost;
 
-        private readonly ICryptoProvider _cryptographyProvider;
         private readonly IZipClient _zipClient;
-
-        // netframework or netcore
-        private readonly string _packageRuntime;
 
         public InstallationManager(
             ILoggerFactory loggerFactory,
@@ -129,9 +118,7 @@ namespace Emby.Server.Implementations.Updates
             IJsonSerializer jsonSerializer,
             IServerConfigurationManager config,
             IFileSystem fileSystem,
-            ICryptoProvider cryptographyProvider,
-            IZipClient zipClient,
-            string packageRuntime)
+            IZipClient zipClient)
         {
             if (loggerFactory == null)
             {
@@ -139,18 +126,16 @@ namespace Emby.Server.Implementations.Updates
             }
 
             CurrentInstallations = new List<Tuple<InstallationInfo, CancellationTokenSource>>();
-            CompletedInstallationsInternal = new ConcurrentBag<InstallationInfo>();
+            _completedInstallationsInternal = new ConcurrentBag<InstallationInfo>();
 
+            _logger = loggerFactory.CreateLogger(nameof(InstallationManager));
             _applicationHost = appHost;
             _appPaths = appPaths;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
             _config = config;
             _fileSystem = fileSystem;
-            _cryptographyProvider = cryptographyProvider;
             _zipClient = zipClient;
-            _packageRuntime = packageRuntime;
-            _logger = loggerFactory.CreateLogger(nameof(InstallationManager));
         }
 
         private static Version GetPackageVersion(PackageVersionInfo version)
@@ -218,11 +203,6 @@ namespace Emby.Server.Implementations.Updates
                 foreach (var version in package.versions)
                 {
                     if (string.IsNullOrEmpty(version.sourceUrl))
-                    {
-                        continue;
-                    }
-
-                    if (string.IsNullOrEmpty(version.runtimes) || version.runtimes.IndexOf(_packageRuntime, StringComparison.OrdinalIgnoreCase) == -1)
                     {
                         continue;
                     }
@@ -448,7 +428,7 @@ namespace Emby.Server.Implementations.Updates
                     CurrentInstallations.Remove(tuple);
                 }
 
-                CompletedInstallationsInternal.Add(installationInfo);
+                _completedInstallationsInternal.Add(installationInfo);
 
                 PackageInstallationCompleted?.Invoke(this, installationEventArgs);
             }
@@ -529,6 +509,8 @@ namespace Emby.Server.Implementations.Updates
 
         private async Task PerformPackageInstallation(IProgress<double> progress, string target, PackageVersionInfo package, CancellationToken cancellationToken)
         {
+            // TODO: Remove the `string target` argument as it is not used any longer
+
             var extension = Path.GetExtension(package.targetFilename);
             var isArchive = string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase);
 
@@ -538,12 +520,12 @@ namespace Emby.Server.Implementations.Updates
                 return;
             }
 
-            if (target == null)
-            {
-                target = Path.Combine(_appPaths.PluginsPath, Path.GetFileNameWithoutExtension(package.targetFilename));
-            }
+            // Always override the passed-in target (which is a file) and figure it out again
+            target = Path.Combine(_appPaths.PluginsPath, package.name);
+            _logger.LogDebug("Installing plugin to {Filename}.", target);
 
             // Download to temporary file so that, if interrupted, it won't destroy the existing installation
+            _logger.LogDebug("Downloading ZIP.");
             var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
             {
                 Url = package.sourceUrl,
@@ -556,9 +538,17 @@ namespace Emby.Server.Implementations.Updates
 
             // TODO: Validate with a checksum, *properly*
 
+            // Check if the target directory already exists, and remove it if so
+            if (Directory.Exists(target))
+            {
+                _logger.LogDebug("Deleting existing plugin at {Filename}.", target);
+                Directory.Delete(target, true);
+            }
+
             // Success - move it to the real target
             try
             {
+                _logger.LogDebug("Extracting ZIP {TempFile} to {Filename}.", tempFile, target);
                 using (var stream = File.OpenRead(tempFile))
                 {
                     _zipClient.ExtractAllFromZip(stream, target, true);
@@ -572,6 +562,7 @@ namespace Emby.Server.Implementations.Updates
 
             try
             {
+                _logger.LogDebug("Deleting temporary file {Filename}.", tempFile);
                 _fileSystem.DeleteFile(tempFile);
             }
             catch (IOException ex)
@@ -594,7 +585,13 @@ namespace Emby.Server.Implementations.Updates
             _applicationHost.RemovePlugin(plugin);
 
             var path = plugin.AssemblyFilePath;
-            _logger.LogInformation("Deleting plugin file {0}", path);
+            bool isDirectory = false;
+            // Check if we have a plugin directory we should remove too
+            if (Path.GetDirectoryName(plugin.AssemblyFilePath) != _appPaths.PluginsPath)
+            {
+                path = Path.GetDirectoryName(plugin.AssemblyFilePath);
+                isDirectory = true;
+            }
 
             // Make this case-insensitive to account for possible incorrect assembly naming
             var file = _fileSystem.GetFilePaths(Path.GetDirectoryName(path))
@@ -605,7 +602,16 @@ namespace Emby.Server.Implementations.Updates
                 path = file;
             }
 
-            _fileSystem.DeleteFile(path);
+            if (isDirectory)
+            {
+                _logger.LogInformation("Deleting plugin directory {0}", path);
+                Directory.Delete(path, true);
+            }
+            else
+            {
+                _logger.LogInformation("Deleting plugin file {0}", path);
+                _fileSystem.DeleteFile(path);
+            }
 
             var list = _config.Configuration.UninstalledPlugins.ToList();
             var filename = Path.GetFileName(path);

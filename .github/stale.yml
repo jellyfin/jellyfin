@@ -1,0 +1,22 @@
+# Number of days of inactivity before an issue becomes stale
+daysUntilStale: 60
+# Number of days of inactivity before a stale issue is closed
+daysUntilClose: 7
+# Issues with these labels will never be considered stale
+exemptLabels:
+  - regression
+  - security
+  - dotnet-3.0-future
+  - roadmap
+  - future
+  - feature
+  - enhancement
+# Label to use when marking an issue as stale
+staleLabel: stale
+# Comment to post when marking an issue as stale. Set to `false` to disable
+markComment: >
+  Issues go stale after 60d of inactivity. Mark the issue as fresh by adding a comment or commit. Stale issues close after an additional 7d of inactivity.
+  If this issue is safe to close now please do so.
+  If you have any questions you can reach us on [Matrix or Social Media](https://jellyfin.readthedocs.io/en/latest/getting-help/).
+# Comment to post when closing a stale issue. Set to `false` to disable
+closeComment: false

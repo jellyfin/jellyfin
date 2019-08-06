@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace Emby.Server.Implementations.Udp
 
         private bool _isDisposed;
 
-        private readonly List<Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, CancellationToken, Task>>> _responders = new List<Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, CancellationToken, Task>>>();
+        private readonly List<Tuple<string, bool, Func<string, IPEndPoint, Encoding, CancellationToken, Task>>> _responders = new List<Tuple<string, bool, Func<string, IPEndPoint, Encoding, CancellationToken, Task>>>();
 
         private readonly IServerApplicationHost _appHost;
         private readonly IJsonSerializer _json;
@@ -41,13 +42,11 @@ namespace Emby.Server.Implementations.Udp
             _socketFactory = socketFactory;
 
             AddMessageResponder("who is JellyfinServer?", true, RespondToV2Message);
-            AddMessageResponder("who is EmbyServer?", true, RespondToV2Message);
-            AddMessageResponder("who is MediaBrowserServer_v2?", false, RespondToV2Message);
         }
 
-        private void AddMessageResponder(string message, bool isSubstring, Func<string, IpEndPointInfo, Encoding, CancellationToken, Task> responder)
+        private void AddMessageResponder(string message, bool isSubstring, Func<string, IPEndPoint, Encoding, CancellationToken, Task> responder)
         {
-            _responders.Add(new Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, CancellationToken, Task>>(message, isSubstring, responder));
+            _responders.Add(new Tuple<string, bool, Func<string, IPEndPoint, Encoding, CancellationToken, Task>>(message, isSubstring, responder));
         }
 
         /// <summary>
@@ -85,7 +84,7 @@ namespace Emby.Server.Implementations.Udp
             }
         }
 
-        private Tuple<string, Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, CancellationToken, Task>>> GetResponder(byte[] buffer, int bytesReceived, Encoding encoding)
+        private Tuple<string, Tuple<string, bool, Func<string, IPEndPoint, Encoding, CancellationToken, Task>>> GetResponder(byte[] buffer, int bytesReceived, Encoding encoding)
         {
             var text = encoding.GetString(buffer, 0, bytesReceived);
             var responder = _responders.FirstOrDefault(i =>
@@ -101,10 +100,10 @@ namespace Emby.Server.Implementations.Udp
             {
                 return null;
             }
-            return new Tuple<string, Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, CancellationToken, Task>>>(text, responder);
+            return new Tuple<string, Tuple<string, bool, Func<string, IPEndPoint, Encoding, CancellationToken, Task>>>(text, responder);
         }
 
-        private async Task RespondToV2Message(string messageText, IpEndPointInfo endpoint, Encoding encoding, CancellationToken cancellationToken)
+        private async Task RespondToV2Message(string messageText, IPEndPoint endpoint, Encoding encoding, CancellationToken cancellationToken)
         {
             var parts = messageText.Split('|');
 
@@ -256,7 +255,7 @@ namespace Emby.Server.Implementations.Udp
             }
         }
 
-        public async Task SendAsync(byte[] bytes, IpEndPointInfo remoteEndPoint, CancellationToken cancellationToken)
+        public async Task SendAsync(byte[] bytes, IPEndPoint remoteEndPoint, CancellationToken cancellationToken)
         {
             if (_isDisposed)
             {

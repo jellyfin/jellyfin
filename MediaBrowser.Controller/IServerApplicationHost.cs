@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 
 namespace MediaBrowser.Controller
@@ -59,7 +59,7 @@ namespace MediaBrowser.Controller
         /// Gets the local ip address.
         /// </summary>
         /// <value>The local ip address.</value>
-        Task<List<IpAddressInfo>> GetLocalIpAddresses(CancellationToken cancellationToken);
+        Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the local API URL.
@@ -77,13 +77,11 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the local API URL.
         /// </summary>
-        string GetLocalApiUrl(IpAddressInfo address);
+        string GetLocalApiUrl(IPAddress address);
 
         void LaunchUrl(string url);
 
         void EnableLoopback(string appName);
-
-        string PackageRuntime { get; }
 
         WakeOnLanInfo[] GetWakeOnLanInfo();
 

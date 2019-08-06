@@ -19,13 +19,12 @@ else
     docker_sudo=""
 fi
 
+# Prepare temporary package dir
+mkdir -p "${package_temporary_dir}"
 # Set up the build environment Docker image
 ${docker_sudo} docker build ../.. -t "${image_name}" -f ./Dockerfile
 # Build the DEBs and copy out to ${package_temporary_dir}
 ${docker_sudo} docker run --rm -v "${package_temporary_dir}:/dist" "${image_name}"
-# Correct ownership on the DEBs (as current user, then as root if that fails)
-chown -R "${current_user}" "${package_temporary_dir}" &>/dev/null \
-  || sudo chown -R "${current_user}" "${package_temporary_dir}" &>/dev/null
 # Move the DEBs to the output directory
 mkdir -p "${output_dir}"
 mv "${package_temporary_dir}"/deb/* "${output_dir}"

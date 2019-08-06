@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
 
 namespace Rssdp.Infrastructure
 {
@@ -14,12 +10,12 @@ namespace Rssdp.Infrastructure
     public sealed class ResponseReceivedEventArgs : EventArgs
     {
 
-        public IpAddressInfo LocalIpAddress { get; set; }
+        public IPAddress LocalIpAddress { get; set; }
 
         #region Fields
 
         private readonly HttpResponseMessage _Message;
-        private readonly IpEndPointInfo _ReceivedFrom;
+        private readonly IPEndPoint _ReceivedFrom;
 
         #endregion
 
@@ -28,7 +24,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Full constructor.
         /// </summary>
-        public ResponseReceivedEventArgs(HttpResponseMessage message, IpEndPointInfo receivedFrom)
+        public ResponseReceivedEventArgs(HttpResponseMessage message, IPEndPoint receivedFrom)
         {
             _Message = message;
             _ReceivedFrom = receivedFrom;
@@ -49,7 +45,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// The <see cref="UdpEndPoint"/> the response came from.
         /// </summary>
-        public IpEndPointInfo ReceivedFrom
+        public IPEndPoint ReceivedFrom
         {
             get { return _ReceivedFrom; }
         }

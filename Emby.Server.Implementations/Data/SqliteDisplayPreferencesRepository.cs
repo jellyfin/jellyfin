@@ -18,13 +18,13 @@ namespace Emby.Server.Implementations.Data
     /// </summary>
     public class SqliteDisplayPreferencesRepository : BaseSqliteRepository, IDisplayPreferencesRepository
     {
-        protected IFileSystem FileSystem { get; private set; }
+        private readonly IFileSystem _fileSystem;
 
         public SqliteDisplayPreferencesRepository(ILoggerFactory loggerFactory, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, IFileSystem fileSystem)
             : base(loggerFactory.CreateLogger(nameof(SqliteDisplayPreferencesRepository)))
         {
             _jsonSerializer = jsonSerializer;
-            FileSystem = fileSystem;
+            _fileSystem = fileSystem;
             DbFilePath = Path.Combine(appPaths.DataPath, "displaypreferences.db");
         }
 
@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.Data
             {
                 Logger.LogError(ex, "Error loading database file. Will reset and retry.");
 
-                FileSystem.DeleteFile(DbFilePath);
+                _fileSystem.DeleteFile(DbFilePath);
 
                 InitializeInternal();
             }
@@ -61,10 +61,8 @@ namespace Emby.Server.Implementations.Data
         /// <returns>Task.</returns>
         private void InitializeInternal()
         {
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
-                RunDefaultInitialization(connection);
-
                 string[] queries = {
 
                     "create table if not exists userdisplaypreferences (id GUID NOT NULL, userId GUID NOT NULL, client text NOT NULL, data BLOB NOT NULL)",
@@ -90,22 +88,20 @@ namespace Emby.Server.Implementations.Data
             {
                 throw new ArgumentNullException(nameof(displayPreferences));
             }
+
             if (string.IsNullOrEmpty(displayPreferences.Id))
             {
-                throw new ArgumentNullException(nameof(displayPreferences.Id));
+                throw new ArgumentException("Display preferences has an invalid Id", nameof(displayPreferences));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = GetConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(db =>
                 {
-                    connection.RunInTransaction(db =>
-                    {
-                        SaveDisplayPreferences(displayPreferences, userId, client, db);
-                    }, TransactionMode);
-                }
+                    SaveDisplayPreferences(displayPreferences, userId, client, db);
+                }, TransactionMode);
             }
         }
 
@@ -141,18 +137,15 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = GetConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(db =>
                 {
-                    connection.RunInTransaction(db =>
+                    foreach (var displayPreference in displayPreferences)
                     {
-                        foreach (var displayPreference in displayPreferences)
-                        {
-                            SaveDisplayPreferences(displayPreference, userId, displayPreference.Client, db);
-                        }
-                    }, TransactionMode);
-                }
+                        SaveDisplayPreferences(displayPreference, userId, displayPreference.Client, db);
+                    }
+                }, TransactionMode);
             }
         }
 
@@ -173,27 +166,24 @@ namespace Emby.Server.Implementations.Data
 
             var guidId = displayPreferencesId.GetMD5();
 
-            using (WriteLock.Read())
+            using (var connection = GetConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where id = @id and userId=@userId and client=@client"))
                 {
-                    using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where id = @id and userId=@userId and client=@client"))
-                    {
-                        statement.TryBind("@id", guidId.ToGuidBlob());
-                        statement.TryBind("@userId", userId.ToGuidBlob());
-                        statement.TryBind("@client", client);
+                    statement.TryBind("@id", guidId.ToGuidBlob());
+                    statement.TryBind("@userId", userId.ToGuidBlob());
+                    statement.TryBind("@client", client);
 
-                        foreach (var row in statement.ExecuteQuery())
-                        {
-                            return Get(row);
-                        }
+                    foreach (var row in statement.ExecuteQuery())
+                    {
+                        return Get(row);
                     }
-
-                    return new DisplayPreferences
-                    {
-                        Id = guidId.ToString("N")
-                    };
                 }
+
+                return new DisplayPreferences
+                {
+                    Id = guidId.ToString("N")
+                };
             }
         }
 
@@ -207,18 +197,15 @@ namespace Emby.Server.Implementations.Data
         {
             var list = new List<DisplayPreferences>();
 
-            using (WriteLock.Read())
+            using (var connection = GetConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where userId=@userId"))
                 {
-                    using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where userId=@userId"))
-                    {
-                        statement.TryBind("@userId", userId.ToGuidBlob());
+                    statement.TryBind("@userId", userId.ToGuidBlob());
 
-                        foreach (var row in statement.ExecuteQuery())
-                        {
-                            list.Add(Get(row));
-                        }
+                    foreach (var row in statement.ExecuteQuery())
+                    {
+                        list.Add(Get(row));
                     }
                 }
             }

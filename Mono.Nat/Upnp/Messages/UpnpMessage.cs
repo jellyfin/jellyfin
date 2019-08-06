@@ -57,10 +57,9 @@ namespace Mono.Nat.Upnp
             req.Url = ss;
             req.EnableKeepAlive = false;
             req.RequestContentType = "text/xml";
-            req.AppendCharsetToMimeType = true;
             req.RequestHeaders.Add("SOAPACTION", "\"" + device.ServiceType + "#" + upnpMethod + "\"");
 
-            string bodyString = "<s:Envelope "
+            req.RequestContent = "<s:Envelope "
                + "xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                + "s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
                + "<s:Body>"
@@ -70,8 +69,6 @@ namespace Mono.Nat.Upnp
                + "</u:" + upnpMethod + ">"
                + "</s:Body>"
                + "</s:Envelope>\r\n\r\n";
-
-            req.RequestContentBytes = System.Text.Encoding.UTF8.GetBytes(bodyString);
             return req;
         }
 

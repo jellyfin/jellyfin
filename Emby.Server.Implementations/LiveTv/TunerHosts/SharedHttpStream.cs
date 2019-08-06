@@ -46,14 +46,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 Url = url,
                 CancellationToken = CancellationToken.None,
                 BufferContent = false,
-
-                // Increase a little bit
-                TimeoutMs = 30000,
-
-                EnableHttpCompression = false,
-
-                LogResponse = true,
-                LogResponseHeaders = true
+                DecompressionMethod = CompressionMethod.None
             };
 
             foreach (var header in mediaSource.RequiredHttpHeaders)

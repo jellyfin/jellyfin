@@ -141,7 +141,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        public static void Attach(ManagedConnection db, string path, string alias)
+        public static void Attach(SQLiteDatabaseConnection db, string path, string alias)
         {
             var commandText = string.Format("attach @path as {0};", alias);
 

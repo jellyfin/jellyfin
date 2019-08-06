@@ -5,6 +5,7 @@ namespace Emby.Naming.Extensions
 {
     public static class StringExtensions
     {
+        // TODO: @bond remove this when moving to netstandard2.1
         public static string Replace(this string str, string oldValue, string newValue, StringComparison comparison)
         {
             var sb = new StringBuilder();

@@ -388,7 +388,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N")).Distinct().ToArray(),
 
-                CollectionFolders = GetTopParentIds(newAndRemoved, user, allUserRootChildren).ToArray()
+                CollectionFolders = GetTopParentIds(newAndRemoved, allUserRootChildren).ToArray()
             };
         }
 
@@ -407,7 +407,7 @@ namespace Emby.Server.Implementations.EntryPoints
             return item.SourceType == SourceType.Library;
         }
 
-        private IEnumerable<string> GetTopParentIds(List<BaseItem> items, User user, List<Folder> allUserRootChildren)
+        private IEnumerable<string> GetTopParentIds(List<BaseItem> items, List<Folder> allUserRootChildren)
         {
             var list = new List<string>();
 

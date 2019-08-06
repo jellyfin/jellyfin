@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -14,14 +15,13 @@ namespace Emby.Naming.AudioBook
             _options = options;
         }
 
-        public AudioBookFilePathParserResult Parse(string path, bool IsDirectory)
+        public AudioBookFilePathParserResult Parse(string path)
         {
-            var result = Parse(path);
-            return !result.Success ? new AudioBookFilePathParserResult() : result;
-        }
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
 
-        private AudioBookFilePathParserResult Parse(string path)
-        {
             var result = new AudioBookFilePathParserResult();
             var fileName = Path.GetFileNameWithoutExtension(path);
             foreach (var expression in _options.AudioBookPartsExpressions)
@@ -40,6 +40,7 @@ namespace Emby.Naming.AudioBook
                             }
                         }
                     }
+
                     if (!result.PartNumber.HasValue)
                     {
                         var value = match.Groups["part"];

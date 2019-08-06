@@ -1,183 +1,144 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using SQLitePCL;
 using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
     public abstract class BaseSqliteRepository : IDisposable
     {
-        protected string DbFilePath { get; set; }
-        protected ReaderWriterLockSlim WriteLock;
-
-        protected ILogger Logger { get; private set; }
+        private bool _disposed = false;
 
         protected BaseSqliteRepository(ILogger logger)
         {
             Logger = logger;
-
-            WriteLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         }
 
+        /// <summary>
+        /// Gets or sets the path to the DB file.
+        /// </summary>
+        /// <value>Path to the DB file.</value>
+        protected string DbFilePath { get; set; }
+
+        /// <summary>
+        /// Gets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        protected ILogger Logger { get; }
+
+        /// <summary>
+        /// Gets the default connection flags.
+        /// </summary>
+        /// <value>The default connection flags.</value>
+        protected virtual ConnectionFlags DefaultConnectionFlags => ConnectionFlags.NoMutex;
+
+        /// <summary>
+        /// Gets the transaction mode.
+        /// </summary>
+        /// <value>The transaction mode.</value>>
         protected TransactionMode TransactionMode => TransactionMode.Deferred;
 
+        /// <summary>
+        /// Gets the transaction mode for read-only operations.
+        /// </summary>
+        /// <value>The transaction mode.</value>
         protected TransactionMode ReadTransactionMode => TransactionMode.Deferred;
 
-        internal static int ThreadSafeMode { get; set; }
+        /// <summary>
+        /// Gets the cache size.
+        /// </summary>
+        /// <value>The cache size or null.</value>
+        protected virtual int? CacheSize => null;
 
-        static BaseSqliteRepository()
+        /// <summary>
+        /// Gets the journal mode.
+        /// </summary>
+        /// <value>The journal mode.</value>
+        protected virtual string JournalMode => "WAL";
+
+        /// <summary>
+        /// Gets the page size.
+        /// </summary>
+        /// <value>The page size or null.</value>
+        protected virtual int? PageSize => null;
+
+        /// <summary>
+        /// Gets the temp store mode.
+        /// </summary>
+        /// <value>The temp store mode.</value>
+        /// <see cref="TempStoreMode"/>
+        protected virtual TempStoreMode TempStore => TempStoreMode.Default;
+
+        /// <summary>
+        /// Gets the synchronous mode.
+        /// </summary>
+        /// <value>The synchronous mode or null.</value>
+        /// <see cref="SynchronousMode"/>
+        protected virtual SynchronousMode? Synchronous => null;
+
+        /// <summary>
+        /// Gets or sets the write lock.
+        /// </summary>
+        /// <value>The write lock.</value>
+        protected SemaphoreSlim WriteLock { get; set; } = new SemaphoreSlim(1, 1);
+
+        /// <summary>
+        /// Gets or sets the write connection.
+        /// </summary>
+        /// <value>The write connection.</value>
+        protected SQLiteDatabaseConnection WriteConnection { get; set; }
+
+        protected ManagedConnection GetConnection(bool _ = false)
         {
-            SQLite3.EnableSharedCache = false;
-
-            int rc = raw.sqlite3_config(raw.SQLITE_CONFIG_MEMSTATUS, 0);
-            //CheckOk(rc);
-
-            rc = raw.sqlite3_config(raw.SQLITE_CONFIG_MULTITHREAD, 1);
-            //rc = raw.sqlite3_config(raw.SQLITE_CONFIG_SINGLETHREAD, 1);
-            //rc = raw.sqlite3_config(raw.SQLITE_CONFIG_SERIALIZED, 1);
-            //CheckOk(rc);
-
-            rc = raw.sqlite3_enable_shared_cache(1);
-
-            ThreadSafeMode = raw.sqlite3_threadsafe();
-        }
-
-        private static bool _versionLogged;
-
-        private string _defaultWal;
-        protected ManagedConnection _connection;
-
-        protected virtual bool EnableSingleConnection => true;
-
-        protected ManagedConnection CreateConnection(bool isReadOnly = false)
-        {
-            if (_connection != null)
+            WriteLock.Wait();
+            if (WriteConnection != null)
             {
-                return _connection;
+                return new ManagedConnection(WriteConnection, WriteLock);
             }
 
-            lock (WriteLock)
+            WriteConnection = SQLite3.Open(
+                DbFilePath,
+                DefaultConnectionFlags | ConnectionFlags.Create | ConnectionFlags.ReadWrite,
+                null);
+
+            if (CacheSize.HasValue)
             {
-                if (!_versionLogged)
-                {
-                    _versionLogged = true;
-                    Logger.LogInformation("Sqlite version: " + SQLite3.Version);
-                    Logger.LogInformation("Sqlite compiler options: " + string.Join(",", SQLite3.CompilerOptions.ToArray()));
-                }
-
-                ConnectionFlags connectionFlags;
-
-                if (isReadOnly)
-                {
-                    //Logger.LogInformation("Opening read connection");
-                    //connectionFlags = ConnectionFlags.ReadOnly;
-                    connectionFlags = ConnectionFlags.Create;
-                    connectionFlags |= ConnectionFlags.ReadWrite;
-                }
-                else
-                {
-                    //Logger.LogInformation("Opening write connection");
-                    connectionFlags = ConnectionFlags.Create;
-                    connectionFlags |= ConnectionFlags.ReadWrite;
-                }
-
-                if (EnableSingleConnection)
-                {
-                    connectionFlags |= ConnectionFlags.PrivateCache;
-                }
-                else
-                {
-                    connectionFlags |= ConnectionFlags.SharedCached;
-                }
-
-                connectionFlags |= ConnectionFlags.NoMutex;
-
-                var db = SQLite3.Open(DbFilePath, connectionFlags, null);
-
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(_defaultWal))
-                    {
-                        _defaultWal = db.Query("PRAGMA journal_mode").SelectScalarString().First();
-
-                        Logger.LogInformation("Default journal_mode for {0} is {1}", DbFilePath, _defaultWal);
-                    }
-
-                    var queries = new List<string>
-                    {
-                        //"PRAGMA cache size=-10000"
-                        //"PRAGMA read_uncommitted = true",
-                        "PRAGMA synchronous=Normal"
-                    };
-
-                    if (CacheSize.HasValue)
-                    {
-                        queries.Add("PRAGMA cache_size=" + CacheSize.Value.ToString(CultureInfo.InvariantCulture));
-                    }
-
-                    if (EnableTempStoreMemory)
-                    {
-                        queries.Add("PRAGMA temp_store = memory");
-                    }
-                    else
-                    {
-                        queries.Add("PRAGMA temp_store = file");
-                    }
-
-                    foreach (var query in queries)
-                    {
-                        db.Execute(query);
-                    }
-                }
-                catch
-                {
-                    using (db)
-                    {
-
-                    }
-
-                    throw;
-                }
-
-                _connection = new ManagedConnection(db, false);
-
-                return _connection;
+                WriteConnection.Execute("PRAGMA cache_size=" + CacheSize.Value);
             }
+
+            if (!string.IsNullOrWhiteSpace(JournalMode))
+            {
+                WriteConnection.Execute("PRAGMA journal_mode=" + JournalMode);
+            }
+
+            if (Synchronous.HasValue)
+            {
+                WriteConnection.Execute("PRAGMA synchronous=" + (int)Synchronous.Value);
+            }
+
+            if (PageSize.HasValue)
+            {
+                WriteConnection.Execute("PRAGMA page_size=" + PageSize.Value);
+            }
+
+            WriteConnection.Execute("PRAGMA temp_store=" + (int)TempStore);
+            
+            // Configuration and pragmas can affect VACUUM so it needs to be last.
+            WriteConnection.Execute("VACUUM");
+
+            return new ManagedConnection(WriteConnection, WriteLock);
         }
 
         public IStatement PrepareStatement(ManagedConnection connection, string sql)
-        {
-            return connection.PrepareStatement(sql);
-        }
-
-        public IStatement PrepareStatementSafe(ManagedConnection connection, string sql)
-        {
-            return connection.PrepareStatement(sql);
-        }
+            => connection.PrepareStatement(sql);
 
         public IStatement PrepareStatement(IDatabaseConnection connection, string sql)
-        {
-            return connection.PrepareStatement(sql);
-        }
+            => connection.PrepareStatement(sql);
 
-        public IStatement PrepareStatementSafe(IDatabaseConnection connection, string sql)
-        {
-            return connection.PrepareStatement(sql);
-        }
-
-        public List<IStatement> PrepareAll(IDatabaseConnection connection, IEnumerable<string> sql)
-        {
-            return PrepareAllSafe(connection, sql);
-        }
-
-        public List<IStatement> PrepareAllSafe(IDatabaseConnection connection, IEnumerable<string> sql)
-        {
-            return sql.Select(connection.PrepareStatement).ToList();
-        }
+        public IEnumerable<IStatement> PrepareAll(IDatabaseConnection connection, IEnumerable<string> sql)
+            => sql.Select(connection.PrepareStatement);
 
         protected bool TableExists(ManagedConnection connection, string name)
         {
@@ -199,103 +160,9 @@ namespace Emby.Server.Implementations.Data
             }, ReadTransactionMode);
         }
 
-        protected void RunDefaultInitialization(ManagedConnection db)
-        {
-            var queries = new List<string>
-            {
-                "PRAGMA journal_mode=WAL",
-                "PRAGMA page_size=4096",
-                "PRAGMA synchronous=Normal"
-            };
-
-            if (EnableTempStoreMemory)
-            {
-                queries.AddRange(new List<string>
-                {
-                    "pragma default_temp_store = memory",
-                    "pragma temp_store = memory"
-                });
-            }
-            else
-            {
-                queries.AddRange(new List<string>
-                {
-                    "pragma temp_store = file"
-                });
-            }
-
-            db.ExecuteAll(string.Join(";", queries));
-            Logger.LogInformation("PRAGMA synchronous=" + db.Query("PRAGMA synchronous").SelectScalarString().First());
-        }
-
-        protected virtual bool EnableTempStoreMemory => false;
-
-        protected virtual int? CacheSize => null;
-
-        private bool _disposed;
-        protected void CheckDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().Name, "Object has been disposed and cannot be accessed.");
-            }
-        }
-
-        public void Dispose()
-        {
-            _disposed = true;
-            Dispose(true);
-        }
-
-        private readonly object _disposeLock = new object();
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                DisposeConnection();
-            }
-        }
-
-        private void DisposeConnection()
-        {
-            try
-            {
-                lock (_disposeLock)
-                {
-                    using (WriteLock.Write())
-                    {
-                        if (_connection != null)
-                        {
-                            using (_connection)
-                            {
-                                _connection.Close();
-                            }
-                            _connection = null;
-                        }
-
-                        CloseConnection();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error disposing database");
-            }
-        }
-
-        protected virtual void CloseConnection()
-        {
-
-        }
-
         protected List<string> GetColumnNames(IDatabaseConnection connection, string table)
         {
-            var list = new List<string>();
+            var columnNames = new List<string>();
 
             foreach (var row in connection.Query("PRAGMA table_info(" + table + ")"))
             {
@@ -303,11 +170,11 @@ namespace Emby.Server.Implementations.Data
                 {
                     var name = row[1].ToString();
 
-                    list.Add(name);
+                    columnNames.Add(name);
                 }
             }
 
-            return list;
+            return columnNames;
         }
 
         protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
@@ -319,61 +186,103 @@ namespace Emby.Server.Implementations.Data
 
             connection.Execute("alter table " + table + " add column " + columnName + " " + type + " NULL");
         }
+
+        protected void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name, "Object has been disposed and cannot be accessed.");
+            }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (dispose)
+            {
+                WriteLock.Wait();
+                try
+                {
+                    WriteConnection.Dispose();
+                }
+                finally
+                {
+                    WriteLock.Release();
+                }
+
+                WriteLock.Dispose();
+            }
+
+            WriteConnection = null;
+            WriteLock = null;
+
+            _disposed = true;
+        }
     }
 
-    public static class ReaderWriterLockSlimExtensions
+    /// <summary>
+    /// The disk synchronization mode, controls how aggressively SQLite will write data
+    /// all the way out to physical storage.
+    /// </summary>
+    public enum SynchronousMode
     {
-        private sealed class ReadLockToken : IDisposable
-        {
-            private ReaderWriterLockSlim _sync;
-            public ReadLockToken(ReaderWriterLockSlim sync)
-            {
-                _sync = sync;
-                sync.EnterReadLock();
-            }
-            public void Dispose()
-            {
-                if (_sync != null)
-                {
-                    _sync.ExitReadLock();
-                    _sync = null;
-                }
-            }
-        }
-        private sealed class WriteLockToken : IDisposable
-        {
-            private ReaderWriterLockSlim _sync;
-            public WriteLockToken(ReaderWriterLockSlim sync)
-            {
-                _sync = sync;
-                sync.EnterWriteLock();
-            }
-            public void Dispose()
-            {
-                if (_sync != null)
-                {
-                    _sync.ExitWriteLock();
-                    _sync = null;
-                }
-            }
-        }
+        /// <summary>
+        /// SQLite continues without syncing as soon as it has handed data off to the operating system
+        /// </summary>
+        Off = 0,
 
-        public static IDisposable Read(this ReaderWriterLockSlim obj)
-        {
-            //if (BaseSqliteRepository.ThreadSafeMode > 0)
-            //{
-            //    return new DummyToken();
-            //}
-            return new WriteLockToken(obj);
-        }
+        /// <summary>
+        /// SQLite database engine will still sync at the most critical moments
+        /// </summary>
+        Normal = 1,
 
-        public static IDisposable Write(this ReaderWriterLockSlim obj)
-        {
-            //if (BaseSqliteRepository.ThreadSafeMode > 0)
-            //{
-            //    return new DummyToken();
-            //}
-            return new WriteLockToken(obj);
-        }
+        /// <summary>
+        /// SQLite database engine will use the xSync method of the VFS
+        /// to ensure that all content is safely written to the disk surface prior to continuing.
+        /// </summary>
+        Full = 2,
+
+        /// <summary>
+        /// EXTRA synchronous is like FULL with the addition that the directory containing a rollback journal
+        /// is synced after that journal is unlinked to commit a transaction in DELETE mode.
+        /// </summary>
+        Extra = 3
+    }
+
+    /// <summary>
+    /// Storage mode used by temporary database files.
+    /// </summary>
+    public enum TempStoreMode
+    {
+        /// <summary>
+        /// The compile-time C preprocessor macro SQLITE_TEMP_STORE
+        /// is used to determine where temporary tables and indices are stored.
+        /// </summary>
+        Default = 0,
+
+        /// <summary>
+        /// Temporary tables and indices are stored in a file.
+        /// </summary>
+        File = 1,
+
+        /// <summary>
+        /// Temporary tables and indices are kept in as if they were pure in-memory databases memory.
+        /// </summary>
+        Memory = 2
     }
 }

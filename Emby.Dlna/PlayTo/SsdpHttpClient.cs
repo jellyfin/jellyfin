@@ -34,16 +34,13 @@ namespace Emby.Dlna.PlayTo
         {
             var cancellationToken = CancellationToken.None;
 
-            using (var response = await PostSoapDataAsync(NormalizeServiceUrl(baseUrl, service.ControlUrl), "\"" + service.ServiceType + "#" + command + "\"", postData, header, logRequest, cancellationToken)
+            var url = NormalizeServiceUrl(baseUrl, service.ControlUrl);
+            using (var response = await PostSoapDataAsync(url, '\"' + service.ServiceType + '#' + command + '\"', postData, header, logRequest, cancellationToken)
                 .ConfigureAwait(false))
+            using (var stream = response.Content)
+            using (var reader = new StreamReader(stream, Encoding.UTF8))
             {
-                using (var stream = response.Content)
-                {
-                    using (var reader = new StreamReader(stream, Encoding.UTF8))
-                    {
-                        return XDocument.Parse(reader.ReadToEnd(), LoadOptions.PreserveWhitespace);
-                    }
-                }
+                return XDocument.Parse(reader.ReadToEnd(), LoadOptions.PreserveWhitespace);
             }
         }
 
@@ -121,15 +118,18 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private Task<HttpResponseInfo> PostSoapDataAsync(string url,
+        private Task<HttpResponseInfo> PostSoapDataAsync(
+            string url,
             string soapAction,
             string postData,
             string header,
             bool logRequest,
             CancellationToken cancellationToken)
         {
-            if (!soapAction.StartsWith("\""))
-                soapAction = "\"" + soapAction + "\"";
+            if (soapAction[0] != '\"')
+            {
+                soapAction = '\"' + soapAction + '\"';
+            }
 
             var options = new HttpRequestOptions
             {
@@ -155,7 +155,6 @@ namespace Emby.Dlna.PlayTo
             }
 
             options.RequestContentType = "text/xml";
-            options.AppendCharsetToMimeType = true;
             options.RequestContent = postData;
 
             return _httpClient.Post(options);

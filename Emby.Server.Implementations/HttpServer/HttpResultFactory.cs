@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out string expires))
             {
-                responseHeaders[HeaderNames.Expires] = "-1";
+                responseHeaders[HeaderNames.Expires] = "0";
             }
 
             AddResponseHeaders(result, responseHeaders);
@@ -132,7 +132,7 @@ namespace Emby.Server.Implementations.HttpServer
                     content = Array.Empty<byte>();
                 }
 
-                result = new StreamWriter(content, contentType);
+                result = new StreamWriter(content, contentType, contentLength);
             }
             else
             {
@@ -146,7 +146,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out string _))
             {
-                responseHeaders[HeaderNames.Expires] = "-1";
+                responseHeaders[HeaderNames.Expires] = "0";
             }
 
             AddResponseHeaders(result, responseHeaders);
@@ -176,7 +176,7 @@ namespace Emby.Server.Implementations.HttpServer
                     bytes = Array.Empty<byte>();
                 }
 
-                result = new StreamWriter(bytes, contentType);
+                result = new StreamWriter(bytes, contentType, contentLength);
             }
             else
             {
@@ -190,7 +190,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out string _))
             {
-                responseHeaders[HeaderNames.Expires] = "-1";
+                responseHeaders[HeaderNames.Expires] = "0";
             }
 
             AddResponseHeaders(result, responseHeaders);
@@ -215,7 +215,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             }
 
-            responseHeaders[HeaderNames.Expires] = "-1";
+            responseHeaders[HeaderNames.Expires] = "0";
 
             return ToOptimizedResultInternal(requestContext, result, responseHeaders);
         }
@@ -335,13 +335,13 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (isHeadRequest)
             {
-                var result = new StreamWriter(Array.Empty<byte>(), contentType);
+                var result = new StreamWriter(Array.Empty<byte>(), contentType, contentLength);
                 AddResponseHeaders(result, responseHeaders);
                 return result;
             }
             else
             {
-                var result = new StreamWriter(content, contentType);
+                var result = new StreamWriter(content, contentType, contentLength);
                 AddResponseHeaders(result, responseHeaders);
                 return result;
             }
@@ -581,6 +581,11 @@ namespace Emby.Server.Implementations.HttpServer
             }
             else
             {
+                if (totalContentLength.HasValue)
+                {
+                    responseHeaders["Content-Length"] = totalContentLength.Value.ToString(CultureInfo.InvariantCulture);
+                }
+
                 if (isHeadRequest)
                 {
                     using (stream)
@@ -624,7 +629,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (lastModifiedDate.HasValue)
             {
-                responseHeaders[HeaderNames.LastModified] = lastModifiedDate.ToString();
+                responseHeaders[HeaderNames.LastModified] = lastModifiedDate.Value.ToString(CultureInfo.InvariantCulture);
             }
         }
 

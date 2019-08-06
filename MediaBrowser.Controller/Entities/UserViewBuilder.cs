@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -21,9 +20,14 @@ namespace MediaBrowser.Controller.Entities
         private readonly IUserDataManager _userDataManager;
         private readonly ITVSeriesManager _tvSeriesManager;
         private readonly IServerConfigurationManager _config;
-        private readonly IPlaylistManager _playlistManager;
 
-        public UserViewBuilder(IUserViewManager userViewManager, ILibraryManager libraryManager, ILogger logger, IUserDataManager userDataManager, ITVSeriesManager tvSeriesManager, IServerConfigurationManager config, IPlaylistManager playlistManager)
+        public UserViewBuilder(
+            IUserViewManager userViewManager,
+            ILibraryManager libraryManager,
+            ILogger logger,
+            IUserDataManager userDataManager,
+            ITVSeriesManager tvSeriesManager,
+            IServerConfigurationManager config)
         {
             _userViewManager = userViewManager;
             _libraryManager = libraryManager;
@@ -31,7 +35,6 @@ namespace MediaBrowser.Controller.Entities
             _userDataManager = userDataManager;
             _tvSeriesManager = tvSeriesManager;
             _config = config;
-            _playlistManager = playlistManager;
         }
 
         public QueryResult<BaseItem> GetUserItems(Folder queryParent, Folder displayParent, string viewType, InternalItemsQuery query)
@@ -110,6 +113,7 @@ namespace MediaBrowser.Controller.Entities
                         {
                             return GetResult(GetMediaFolders(user).OfType<Folder>().SelectMany(i => i.GetChildren(user, true)), queryParent, query);
                         }
+
                         return queryParent.GetItems(query);
                     }
             }

@@ -15,14 +15,14 @@ namespace Emby.Server.Implementations.Activity
 {
     public class ActivityRepository : BaseSqliteRepository, IActivityRepository
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        protected IFileSystem FileSystem { get; private set; }
+        private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
+        private readonly IFileSystem _fileSystem;
 
         public ActivityRepository(ILoggerFactory loggerFactory, IServerApplicationPaths appPaths, IFileSystem fileSystem)
             : base(loggerFactory.CreateLogger(nameof(ActivityRepository)))
         {
             DbFilePath = Path.Combine(appPaths.DataPath, "activitylog.db");
-            FileSystem = fileSystem;
+            _fileSystem = fileSystem;
         }
 
         public void Initialize()
@@ -35,7 +35,7 @@ namespace Emby.Server.Implementations.Activity
             {
                 Logger.LogError(ex, "Error loading database file. Will reset and retry.");
 
-                FileSystem.DeleteFile(DbFilePath);
+                _fileSystem.DeleteFile(DbFilePath);
 
                 InitializeInternal();
             }
@@ -43,10 +43,8 @@ namespace Emby.Server.Implementations.Activity
 
         private void InitializeInternal()
         {
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
-                RunDefaultInitialization(connection);
-
                 connection.RunQueries(new[]
                 {
                     "create table if not exists ActivityLog (Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Overview TEXT, ShortOverview TEXT, Type TEXT NOT NULL, ItemId TEXT, UserId TEXT, DateCreated DATETIME NOT NULL, LogSeverity TEXT NOT NULL)",
@@ -85,8 +83,7 @@ namespace Emby.Server.Implementations.Activity
                 throw new ArgumentNullException(nameof(entry));
             }
 
-            using (WriteLock.Write())
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -124,8 +121,7 @@ namespace Emby.Server.Implementations.Activity
                 throw new ArgumentNullException(nameof(entry));
             }
 
-            using (WriteLock.Write())
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 connection.RunInTransaction(db =>
                 {
@@ -159,8 +155,7 @@ namespace Emby.Server.Implementations.Activity
 
         public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit)
         {
-            using (WriteLock.Read())
-            using (var connection = CreateConnection(true))
+            using (var connection = GetConnection(true))
             {
                 var commandText = BaseActivitySelectText;
                 var whereClauses = new List<string>();
@@ -218,7 +213,7 @@ namespace Emby.Server.Implementations.Activity
                     var list = new List<ActivityLogEntry>();
                     var result = new QueryResult<ActivityLogEntry>();
 
-                    var statements = PrepareAllSafe(db, statementTexts).ToList();
+                    var statements = PrepareAll(db, statementTexts).ToList();
 
                     using (var statement = statements[0])
                     {

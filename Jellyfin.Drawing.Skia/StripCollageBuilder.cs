@@ -1,21 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.IO;
 using SkiaSharp;
 
 namespace Jellyfin.Drawing.Skia
 {
     public class StripCollageBuilder
     {
-        private readonly IApplicationPaths _appPaths;
-        private readonly IFileSystem _fileSystem;
+        private readonly SkiaEncoder _skiaEncoder;
 
-        public StripCollageBuilder(IApplicationPaths appPaths, IFileSystem fileSystem)
+        public StripCollageBuilder(SkiaEncoder skiaEncoder)
         {
-            _appPaths = appPaths;
-            _fileSystem = fileSystem;
+            _skiaEncoder = skiaEncoder;
         }
 
         public static SKEncodedImageFormat GetEncodedFormat(string outputPath)
@@ -25,19 +21,28 @@ namespace Jellyfin.Drawing.Skia
                 throw new ArgumentNullException(nameof(outputPath));
             }
 
-            var ext = Path.GetExtension(outputPath).ToLowerInvariant();
+            var ext = Path.GetExtension(outputPath);
 
-            if (ext == ".jpg" || ext == ".jpeg")
+            if (string.Equals(ext, ".jpg", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(ext, ".jpeg", StringComparison.OrdinalIgnoreCase))
+            {
                 return SKEncodedImageFormat.Jpeg;
+            }
 
-            if (ext == ".webp")
+            if (string.Equals(ext, ".webp", StringComparison.OrdinalIgnoreCase))
+            {
                 return SKEncodedImageFormat.Webp;
+            }
 
-            if (ext == ".gif")
+            if (string.Equals(ext, ".gif", StringComparison.OrdinalIgnoreCase))
+            {
                 return SKEncodedImageFormat.Gif;
+            }
 
-            if (ext == ".bmp")
+            if (string.Equals(ext, ".bmp", StringComparison.OrdinalIgnoreCase))
+            {
                 return SKEncodedImageFormat.Bmp;
+            }
 
             // default to png
             return SKEncodedImageFormat.Png;
@@ -47,25 +52,19 @@ namespace Jellyfin.Drawing.Skia
         {
             using (var bitmap = BuildSquareCollageBitmap(paths, width, height))
             using (var outputStream = new SKFileWStream(outputPath))
+            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels()))
             {
-                using (var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels()))
-                {
-                    pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
-                }
+                pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
             }
         }
 
         public void BuildThumbCollage(string[] paths, string outputPath, int width, int height)
         {
             using (var bitmap = BuildThumbCollageBitmap(paths, width, height))
+            using (var outputStream = new SKFileWStream(outputPath))
+            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels()))
             {
-                using (var outputStream = new SKFileWStream(outputPath))
-                {
-                    using (var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels()))
-                    {
-                        pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
-                    }
-                }
+                pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
             }
         }
 
@@ -127,7 +126,7 @@ namespace Jellyfin.Drawing.Skia
                     currentIndex = 0;
                 }
 
-                bitmap = SkiaEncoder.Decode(paths[currentIndex], false, _fileSystem, null, out var origin);
+                bitmap = _skiaEncoder.Decode(paths[currentIndex], false, null, out var origin);
 
                 imagesTested[currentIndex] = 0;
 
@@ -156,7 +155,6 @@ namespace Jellyfin.Drawing.Skia
                 {
                     for (var y = 0; y < 2; y++)
                     {
-
                         using (var currentBitmap = GetNextValidImage(paths, imageIndex, out int newIndex))
                         {
                             imageIndex = newIndex;

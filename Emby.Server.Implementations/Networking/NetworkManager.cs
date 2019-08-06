@@ -9,55 +9,38 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations.Networking
 {
     public class NetworkManager : INetworkManager
     {
-        protected ILogger Logger { get; private set; }
+        private readonly ILogger _logger;
 
-        public event EventHandler NetworkChanged;
-        public Func<string[]> LocalSubnetsFn { get; set; }
+        private IPAddress[] _localIpAddresses;
+        private readonly object _localIpAddressSyncLock = new object();
 
-        public NetworkManager(ILoggerFactory loggerFactory)
+        public NetworkManager(ILogger<NetworkManager> logger)
         {
-            Logger = loggerFactory.CreateLogger(nameof(NetworkManager));
+            _logger = logger;
 
-            // In FreeBSD these events cause a crash
-            if (OperatingSystem.Id != OperatingSystemId.BSD)
-            {
-                try
-                {
-                    NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error binding to NetworkAddressChanged event");
-                }
-
-                try
-                {
-                    NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAvailabilityChanged;
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error binding to NetworkChange_NetworkAvailabilityChanged event");
-                }
-            }
+            NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
+            NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
         }
 
-        private void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        public Func<string[]> LocalSubnetsFn { get; set; }
+
+        public event EventHandler NetworkChanged;
+
+        private void OnNetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
-            Logger.LogDebug("NetworkAvailabilityChanged");
+            _logger.LogDebug("NetworkAvailabilityChanged");
             OnNetworkChanged();
         }
 
-        private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
+        private void OnNetworkAddressChanged(object sender, EventArgs e)
         {
-            Logger.LogDebug("NetworkAddressChanged");
+            _logger.LogDebug("NetworkAddressChanged");
             OnNetworkChanged();
         }
 
@@ -68,39 +51,35 @@ namespace Emby.Server.Implementations.Networking
                 _localIpAddresses = null;
                 _macAddresses = null;
             }
+
             if (NetworkChanged != null)
             {
                 NetworkChanged(this, EventArgs.Empty);
             }
         }
 
-        private IpAddressInfo[] _localIpAddresses;
-        private readonly object _localIpAddressSyncLock = new object();
-
-        public IpAddressInfo[] GetLocalIpAddresses(bool ignoreVirtualInterface = true)
+        public IPAddress[] GetLocalIpAddresses(bool ignoreVirtualInterface = true)
         {
             lock (_localIpAddressSyncLock)
             {
                 if (_localIpAddresses == null)
                 {
-                    var addresses = GetLocalIpAddressesInternal(ignoreVirtualInterface).Result.Select(ToIpAddressInfo).ToArray();
+                    var addresses = GetLocalIpAddressesInternal(ignoreVirtualInterface).ToArray();
 
                     _localIpAddresses = addresses;
-
-                    return addresses;
                 }
+
                 return _localIpAddresses;
             }
         }
 
-        private async Task<List<IPAddress>> GetLocalIpAddressesInternal(bool ignoreVirtualInterface)
+        private List<IPAddress> GetLocalIpAddressesInternal(bool ignoreVirtualInterface)
         {
-            var list = GetIPsDefault(ignoreVirtualInterface)
-                .ToList();
+            var list = GetIPsDefault(ignoreVirtualInterface).ToList();
 
             if (list.Count == 0)
             {
-                list.AddRange(await GetLocalIpAddressesFallback().ConfigureAwait(false));
+                list = GetLocalIpAddressesFallback().GetAwaiter().GetResult().ToList();
             }
 
             var listClone = list.ToList();
@@ -279,7 +258,7 @@ namespace Emby.Server.Implementations.Networking
 
                 if (normalizedSubnet.IndexOf('/') != -1)
                 {
-                    var ipnetwork = IPNetwork.IPNetwork.Parse(normalizedSubnet);
+                    var ipnetwork = IPNetwork.Parse(normalizedSubnet);
                     if (ipnetwork.Contains(address))
                     {
                         return true;
@@ -351,13 +330,13 @@ namespace Emby.Server.Implementations.Networking
                     try
                     {
                         var host = uri.DnsSafeHost;
-                        Logger.LogDebug("Resolving host {0}", host);
+                        _logger.LogDebug("Resolving host {0}", host);
 
                         address = GetIpAddresses(host).Result.FirstOrDefault();
 
                         if (address != null)
                         {
-                            Logger.LogDebug("{0} resolved to {1}", host, address);
+                            _logger.LogDebug("{0} resolved to {1}", host, address);
 
                             return IsInLocalNetworkInternal(address.ToString(), false);
                         }
@@ -368,7 +347,7 @@ namespace Emby.Server.Implementations.Networking
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, "Error resolving hostname");
+                        _logger.LogError(ex, "Error resolving hostname");
                     }
                 }
             }
@@ -381,56 +360,41 @@ namespace Emby.Server.Implementations.Networking
             return Dns.GetHostAddressesAsync(hostName);
         }
 
-        private List<IPAddress> GetIPsDefault(bool ignoreVirtualInterface)
+        private IEnumerable<IPAddress> GetIPsDefault(bool ignoreVirtualInterface)
         {
-            NetworkInterface[] interfaces;
+            IEnumerable<NetworkInterface> interfaces;
 
             try
             {
-                var validStatuses = new[] { OperationalStatus.Up, OperationalStatus.Unknown };
-
                 interfaces = NetworkInterface.GetAllNetworkInterfaces()
-                    .Where(i => validStatuses.Contains(i.OperationalStatus))
-                    .ToArray();
+                    .Where(x => x.OperationalStatus == OperationalStatus.Up
+                        || x.OperationalStatus == OperationalStatus.Unknown);
             }
-            catch (Exception ex)
+            catch (NetworkInformationException ex)
             {
-                Logger.LogError(ex, "Error in GetAllNetworkInterfaces");
-                return new List<IPAddress>();
+                _logger.LogError(ex, "Error in GetAllNetworkInterfaces");
+                return Enumerable.Empty<IPAddress>();
             }
 
             return interfaces.SelectMany(network =>
             {
+                var ipProperties = network.GetIPProperties();
 
-                try
+                // Try to exclude virtual adapters
+                // http://stackoverflow.com/questions/8089685/c-sharp-finding-my-machines-local-ip-address-and-not-the-vms
+                var addr = ipProperties.GatewayAddresses.FirstOrDefault();
+                if (addr == null
+                    || (ignoreVirtualInterface
+                        && (addr.Address.Equals(IPAddress.Any) || addr.Address.Equals(IPAddress.IPv6Any))))
                 {
-                    // suppress logging because it might be causing nas device wake up
-                    //logger.LogDebug("Querying interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
-
-                    var ipProperties = network.GetIPProperties();
-
-                    // Try to exclude virtual adapters
-                    // http://stackoverflow.com/questions/8089685/c-sharp-finding-my-machines-local-ip-address-and-not-the-vms
-                    var addr = ipProperties.GatewayAddresses.FirstOrDefault();
-                    if (addr == null || ignoreVirtualInterface && string.Equals(addr.Address.ToString(), "0.0.0.0", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return new List<IPAddress>();
-                    }
-
-                    return ipProperties.UnicastAddresses
-                        .Select(i => i.Address)
-                        .Where(i => i.AddressFamily == AddressFamily.InterNetwork || i.AddressFamily == AddressFamily.InterNetworkV6)
-                        .ToList();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error querying network interface");
-                    return new List<IPAddress>();
+                    return Enumerable.Empty<IPAddress>();
                 }
 
+                return ipProperties.UnicastAddresses
+                    .Select(i => i.Address)
+                    .Where(i => i.AddressFamily == AddressFamily.InterNetwork || i.AddressFamily == AddressFamily.InterNetworkV6);
             }).GroupBy(i => i.ToString())
-                .Select(x => x.First())
-                .ToList();
+                .Select(x => x.First());
         }
 
         private static async Task<IEnumerable<IPAddress>> GetLocalIpAddressesFallback()
@@ -612,32 +576,10 @@ namespace Emby.Server.Implementations.Networking
             return hosts[0];
         }
 
-        public IpAddressInfo ParseIpAddress(string ipAddress)
+        public bool IsInSameSubnet(IPAddress address1, IPAddress address2, IPAddress subnetMask)
         {
-            if (TryParseIpAddress(ipAddress, out var info))
-            {
-                return info;
-            }
-
-            throw new ArgumentException("Invalid ip address: " + ipAddress);
-        }
-
-        public bool TryParseIpAddress(string ipAddress, out IpAddressInfo ipAddressInfo)
-        {
-            if (IPAddress.TryParse(ipAddress, out var address))
-            {
-                ipAddressInfo = ToIpAddressInfo(address);
-                return true;
-            }
-
-            ipAddressInfo = null;
-            return false;
-        }
-
-        public bool IsInSameSubnet(IpAddressInfo address1, IpAddressInfo address2, IpAddressInfo subnetMask)
-        {
-             IPAddress network1 = GetNetworkAddress(ToIPAddress(address1), ToIPAddress(subnetMask));
-             IPAddress network2 = GetNetworkAddress(ToIPAddress(address2), ToIPAddress(subnetMask));
+             IPAddress network1 = GetNetworkAddress(address1, subnetMask);
+             IPAddress network2 = GetNetworkAddress(address2, subnetMask);
              return network1.Equals(network2);
         }
 
@@ -656,13 +598,13 @@ namespace Emby.Server.Implementations.Networking
             {
                 broadcastAddress[i] = (byte)(ipAdressBytes[i] & (subnetMaskBytes[i]));
             }
+
             return new IPAddress(broadcastAddress);
         }
 
-        public IpAddressInfo GetLocalIpSubnetMask(IpAddressInfo address)
+        public IPAddress GetLocalIpSubnetMask(IPAddress address)
         {
             NetworkInterface[] interfaces;
-            IPAddress ipaddress = ToIPAddress(address);
 
             try
             {
@@ -674,7 +616,7 @@ namespace Emby.Server.Implementations.Networking
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error in GetAllNetworkInterfaces");
+                _logger.LogError(ex, "Error in GetAllNetworkInterfaces");
                 return null;
             }
 
@@ -684,83 +626,15 @@ namespace Emby.Server.Implementations.Networking
                 {
                     foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
                     {
-                        if (ip.Address.Equals(ipaddress) && ip.IPv4Mask != null)
+                        if (ip.Address.Equals(address) && ip.IPv4Mask != null)
                         {
-                           return ToIpAddressInfo(ip.IPv4Mask);
+                           return ip.IPv4Mask;
                         }
                     }
                 }
             }
+
             return null;
-        }
-
-        public static IpEndPointInfo ToIpEndPointInfo(IPEndPoint endpoint)
-        {
-            if (endpoint == null)
-            {
-                return null;
-            }
-
-            return new IpEndPointInfo(ToIpAddressInfo(endpoint.Address), endpoint.Port);
-        }
-
-        public static IPEndPoint ToIPEndPoint(IpEndPointInfo endpoint)
-        {
-            if (endpoint == null)
-            {
-                return null;
-            }
-
-            return new IPEndPoint(ToIPAddress(endpoint.IpAddress), endpoint.Port);
-        }
-
-        public static IPAddress ToIPAddress(IpAddressInfo address)
-        {
-            if (address.Equals(IpAddressInfo.Any))
-            {
-                return IPAddress.Any;
-            }
-            if (address.Equals(IpAddressInfo.IPv6Any))
-            {
-                return IPAddress.IPv6Any;
-            }
-            if (address.Equals(IpAddressInfo.Loopback))
-            {
-                return IPAddress.Loopback;
-            }
-            if (address.Equals(IpAddressInfo.IPv6Loopback))
-            {
-                return IPAddress.IPv6Loopback;
-            }
-
-            return IPAddress.Parse(address.Address);
-        }
-
-        public static IpAddressInfo ToIpAddressInfo(IPAddress address)
-        {
-            if (address.Equals(IPAddress.Any))
-            {
-                return IpAddressInfo.Any;
-            }
-            if (address.Equals(IPAddress.IPv6Any))
-            {
-                return IpAddressInfo.IPv6Any;
-            }
-            if (address.Equals(IPAddress.Loopback))
-            {
-                return IpAddressInfo.Loopback;
-            }
-            if (address.Equals(IPAddress.IPv6Loopback))
-            {
-                return IpAddressInfo.IPv6Loopback;
-            }
-            return new IpAddressInfo(address.ToString(), address.AddressFamily == AddressFamily.InterNetworkV6 ? IpAddressFamily.InterNetworkV6 : IpAddressFamily.InterNetwork);
-        }
-
-        public async Task<IpAddressInfo[]> GetHostAddressesAsync(string host)
-        {
-            var addresses = await Dns.GetHostAddressesAsync(host).ConfigureAwait(false);
-            return addresses.Select(ToIpAddressInfo).ToArray();
         }
 
         /// <summary>

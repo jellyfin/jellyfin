@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Linq;
 using MediaBrowser.Model.Cryptography;
 
 namespace Emby.Server.Implementations.Cryptography
@@ -136,7 +135,7 @@ namespace Emby.Server.Implementations.Cryptography
         {
             return PBKDF2(DefaultHashMethod, bytes, salt, _defaultIterations);
         }
-        
+
         public byte[] ComputeHash(PasswordHash hash)
         {
             int iterations = _defaultIterations;

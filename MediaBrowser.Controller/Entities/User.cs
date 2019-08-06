@@ -228,7 +228,15 @@ namespace MediaBrowser.Controller.Entities
                 return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, safeFolderName);
             }
 
-            return System.IO.Path.Combine(parentPath, Id.ToString("N"));
+            // TODO: Remove idPath and just use usernamePath for future releases
+            var usernamePath = System.IO.Path.Combine(parentPath, username);
+            var idPath = System.IO.Path.Combine(parentPath, Id.ToString("N"));
+            if (!Directory.Exists(usernamePath) && Directory.Exists(idPath))
+            {
+                Directory.Move(idPath, usernamePath);
+            }
+
+            return usernamePath;
         }
 
         public bool IsParentalScheduleAllowed()

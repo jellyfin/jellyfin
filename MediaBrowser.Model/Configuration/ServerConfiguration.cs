@@ -49,9 +49,9 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableNormalizedItemByNameIds { get; set; }
 
         /// <summary>
-        /// Gets or sets the value pointing to the file system where the ssl certiifcate is located..
+        /// Gets or sets the value pointing to the file system where the ssl certificate is located..
         /// </summary>
-        /// <value>The value pointing to the file system where the ssl certiifcate is located..</value>
+        /// <value>The value pointing to the file system where the ssl certificate is located..</value>
         public string CertificatePath { get; set; }
         public string CertificatePassword { get; set; }
 
@@ -259,7 +259,7 @@ namespace MediaBrowser.Model.Configuration
                 {
                     ItemType = "MusicVideo",
                     DisabledMetadataFetchers = new [] { "The Open Movie Database" },
-                    DisabledImageFetchers = new [] { "The Open Movie Database", "FanArt" }
+                    DisabledImageFetchers = new [] { "The Open Movie Database" }
                 },
                 new MetadataOptions
                 {
@@ -285,7 +285,6 @@ namespace MediaBrowser.Model.Configuration
                 {
                     ItemType = "Season",
                     DisabledMetadataFetchers = new [] { "TheMovieDb" },
-                    DisabledImageFetchers = new [] { "FanArt" }
                 },
                 new MetadataOptions
                 {

@@ -15,7 +15,7 @@ namespace Emby.Naming.AudioBook
             _options = options;
         }
 
-        public IEnumerable<AudioBookInfo> Resolve(List<FileSystemMetadata> files)
+        public IEnumerable<AudioBookInfo> Resolve(IEnumerable<FileSystemMetadata> files)
         {
             var audioBookResolver = new AudioBookResolver(_options);
 

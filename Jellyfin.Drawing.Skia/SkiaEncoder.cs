@@ -2,14 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
 
@@ -18,23 +15,27 @@ namespace Jellyfin.Drawing.Skia
     public class SkiaEncoder : IImageEncoder
     {
         private readonly ILogger _logger;
-        private static IApplicationPaths _appPaths;
-        private readonly IFileSystem _fileSystem;
-        private static ILocalizationManager _localizationManager;
+        private readonly IApplicationPaths _appPaths;
+        private readonly ILocalizationManager _localizationManager;
+
+        private static readonly HashSet<string> _transparentImageTypes
+            = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
 
         public SkiaEncoder(
-            ILoggerFactory loggerFactory,
+            ILogger<SkiaEncoder> logger,
             IApplicationPaths appPaths,
-            IFileSystem fileSystem,
             ILocalizationManager localizationManager)
         {
-            _logger = loggerFactory.CreateLogger("ImageEncoder");
+            _logger = logger;
             _appPaths = appPaths;
-            _fileSystem = fileSystem;
             _localizationManager = localizationManager;
-
-            LogVersion();
         }
+
+        public string Name => "Skia";
+
+        public bool SupportsImageCollageCreation => true;
+
+        public bool SupportsImageEncoding => true;
 
         public IReadOnlyCollection<string> SupportedInputFormats =>
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -66,16 +67,14 @@ namespace Jellyfin.Drawing.Skia
         public IReadOnlyCollection<ImageFormat> SupportedOutputFormats
             => new HashSet<ImageFormat>() { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png };
 
-        private void LogVersion()
+        /// <summary>
+        /// Test to determine if the native lib is available
+        /// </summary>
+        public static void TestSkia()
         {
             // test an operation that requires the native library
             SKPMColor.PreMultiply(SKColors.Black);
-
-            _logger.LogInformation("SkiaSharp version: " + GetVersion());
         }
-
-        public static Version GetVersion()
-            => typeof(SKBitmap).GetTypeInfo().Assembly.GetName().Version;
 
         private static bool IsTransparent(SKColor color)
             => (color.Red == 255 && color.Green == 255 && color.Blue == 255) || color.Alpha == 0;
@@ -106,6 +105,7 @@ namespace Jellyfin.Drawing.Skia
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -118,6 +118,7 @@ namespace Jellyfin.Drawing.Skia
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -185,6 +186,11 @@ namespace Jellyfin.Drawing.Skia
 
         public ImageDimensions GetImageSize(string path)
         {
+            if (!File.Exists(path))
+            {
+                throw new FileNotFoundException("File not found", path);
+            }
+
             using (var s = new SKFileStream(path))
             using (var codec = SKCodec.Create(s))
             {
@@ -197,7 +203,7 @@ namespace Jellyfin.Drawing.Skia
         private static bool HasDiacritics(string text)
             => !string.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
 
-        private static bool RequiresSpecialCharacterHack(string path)
+        private bool RequiresSpecialCharacterHack(string path)
         {
             if (_localizationManager.HasUnicodeCategory(path, UnicodeCategory.OtherLetter))
             {
@@ -212,7 +218,7 @@ namespace Jellyfin.Drawing.Skia
             return false;
         }
 
-        private static string NormalizePath(string path, IFileSystem fileSystem)
+        private string NormalizePath(string path)
         {
             if (!RequiresSpecialCharacterHack(path))
             {
@@ -255,21 +261,18 @@ namespace Jellyfin.Drawing.Skia
             }
         }
 
-        private static readonly HashSet<string> TransparentImageTypes
-            = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
-
-        internal static SKBitmap Decode(string path, bool forceCleanBitmap, IFileSystem fileSystem, ImageOrientation? orientation, out SKEncodedOrigin origin)
+        internal SKBitmap Decode(string path, bool forceCleanBitmap, ImageOrientation? orientation, out SKEncodedOrigin origin)
         {
             if (!File.Exists(path))
             {
                 throw new FileNotFoundException("File not found", path);
             }
 
-            var requiresTransparencyHack = TransparentImageTypes.Contains(Path.GetExtension(path));
+            var requiresTransparencyHack = _transparentImageTypes.Contains(Path.GetExtension(path));
 
             if (requiresTransparencyHack || forceCleanBitmap)
             {
-                using (var stream = new SKFileStream(NormalizePath(path, fileSystem)))
+                using (var stream = new SKFileStream(NormalizePath(path)))
                 using (var codec = SKCodec.Create(stream))
                 {
                     if (codec == null)
@@ -290,11 +293,11 @@ namespace Jellyfin.Drawing.Skia
                 }
             }
 
-            var resultBitmap = SKBitmap.Decode(NormalizePath(path, fileSystem));
+            var resultBitmap = SKBitmap.Decode(NormalizePath(path));
 
             if (resultBitmap == null)
             {
-                return Decode(path, true, fileSystem, orientation, out origin);
+                return Decode(path, true, orientation, out origin);
             }
 
             // If we have to resize these they often end up distorted
@@ -302,7 +305,7 @@ namespace Jellyfin.Drawing.Skia
             {
                 using (resultBitmap)
                 {
-                    return Decode(path, true, fileSystem, orientation, out origin);
+                    return Decode(path, true, orientation, out origin);
                 }
             }
 
@@ -314,13 +317,13 @@ namespace Jellyfin.Drawing.Skia
         {
             if (cropWhitespace)
             {
-                using (var bitmap = Decode(path, forceAnalyzeBitmap, _fileSystem, orientation, out origin))
+                using (var bitmap = Decode(path, forceAnalyzeBitmap, orientation, out origin))
                 {
                     return CropWhiteSpace(bitmap);
                 }
             }
 
-            return Decode(path, forceAnalyzeBitmap, _fileSystem, orientation, out origin);
+            return Decode(path, forceAnalyzeBitmap, orientation, out origin);
         }
 
         private SKBitmap GetBitmap(string path, bool cropWhitespace, bool autoOrient, ImageOrientation? orientation)
@@ -607,16 +610,16 @@ namespace Jellyfin.Drawing.Skia
 
             if (ratio >= 1.4)
             {
-                new StripCollageBuilder(_appPaths, _fileSystem).BuildThumbCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
+                new StripCollageBuilder(this).BuildThumbCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
             }
             else if (ratio >= .9)
             {
-                new StripCollageBuilder(_appPaths, _fileSystem).BuildSquareCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
+                new StripCollageBuilder(this).BuildSquareCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
             }
             else
             {
                 // TODO: Create Poster collage capability
-                new StripCollageBuilder(_appPaths, _fileSystem).BuildSquareCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
+                new StripCollageBuilder(this).BuildSquareCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
             }
         }
 
@@ -645,11 +648,5 @@ namespace Jellyfin.Drawing.Skia
                 _logger.LogError(ex, "Error drawing indicator overlay");
             }
         }
-
-        public string Name => "Skia";
-
-        public bool SupportsImageCollageCreation => true;
-
-        public bool SupportsImageEncoding => true;
     }
 }

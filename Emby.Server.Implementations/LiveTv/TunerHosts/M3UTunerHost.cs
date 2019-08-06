@@ -10,14 +10,12 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -52,9 +50,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             var channelIdPrefix = GetFullChannelIdPrefix(info);
 
-            var result = await new M3uParser(Logger, _httpClient, _appHost).Parse(info.Url, channelIdPrefix, info.Id, cancellationToken).ConfigureAwait(false);
-
-            return result.Cast<ChannelInfo>().ToList();
+            return await new M3uParser(Logger, _httpClient, _appHost).Parse(info.Url, channelIdPrefix, info.Id, cancellationToken).ConfigureAwait(false);
         }
 
         public Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken)
@@ -73,7 +69,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return Task.FromResult(list);
         }
 
-        private string[] _disallowedSharedStreamExtensions = new string[]
+        private static readonly string[] _disallowedSharedStreamExtensions = new string[]
         {
             ".mkv",
             ".mp4",
@@ -88,9 +84,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             if (tunerCount > 0)
             {
                 var tunerHostId = info.Id;
-                var liveStreams = currentLiveStreams.Where(i => string.Equals(i.TunerHostId, tunerHostId, StringComparison.OrdinalIgnoreCase)).ToList();
+                var liveStreams = currentLiveStreams.Where(i => string.Equals(i.TunerHostId, tunerHostId, StringComparison.OrdinalIgnoreCase));
 
-                if (liveStreams.Count >= tunerCount)
+                if (liveStreams.Count() >= tunerCount)
                 {
                     throw new LiveTvConflictException("M3U simultaneous stream limit has been reached.");
                 }
@@ -98,7 +94,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             var sources = await GetChannelStreamMediaSources(info, channelInfo, cancellationToken).ConfigureAwait(false);
 
-            var mediaSource = sources.First();
+            var mediaSource = sources[0];
 
             if (mediaSource.Protocol == MediaProtocol.Http && !mediaSource.RequiresLooping)
             {

@@ -261,7 +261,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public string HomePageUrl => "https://github.com/jellyfin/jellyfin";
 
-        public async Task RefreshSeriesTimers(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task RefreshSeriesTimers(CancellationToken cancellationToken)
         {
             var seriesTimers = await GetSeriesTimersAsync(cancellationToken).ConfigureAwait(false);
 
@@ -271,7 +271,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        public async Task RefreshTimers(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task RefreshTimers(CancellationToken cancellationToken)
         {
             var timers = await GetTimersAsync(cancellationToken).ConfigureAwait(false);
 

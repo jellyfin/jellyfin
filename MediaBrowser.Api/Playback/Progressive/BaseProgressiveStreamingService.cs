@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Services;
 using Microsoft.Net.Http.Headers;
 
 namespace MediaBrowser.Api.Playback.Progressive
@@ -279,10 +281,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <returns>Task{System.Object}.</returns>
         private async Task<object> GetStaticRemoteStreamResult(StreamState state, Dictionary<string, string> responseHeaders, bool isHeadRequest, CancellationTokenSource cancellationTokenSource)
         {
-            string useragent = null;
-            state.RemoteHttpHeaders.TryGetValue("User-Agent", out useragent);
-
-            var trySupportSeek = false;
+            state.RemoteHttpHeaders.TryGetValue(HeaderNames.UserAgent, out var useragent);
 
             var options = new HttpRequestOptions
             {
@@ -292,29 +291,14 @@ namespace MediaBrowser.Api.Playback.Progressive
                 CancellationToken = cancellationTokenSource.Token
             };
 
-            if (trySupportSeek)
-            {
-                if (!string.IsNullOrWhiteSpace(Request.QueryString[HeaderNames.Range]))
-                {
-                    options.RequestHeaders[HeaderNames.Range] = Request.QueryString[HeaderNames.Range];
-                }
-            }
             var response = await HttpClient.GetResponse(options).ConfigureAwait(false);
 
-            if (trySupportSeek)
+            responseHeaders[HeaderNames.AcceptRanges] = "none";
+
+            // Seeing cases of -1 here
+            if (response.ContentLength.HasValue && response.ContentLength.Value >= 0)
             {
-                foreach (var name in new[] { HeaderNames.ContentRange, HeaderNames.AcceptRanges })
-                {
-                    var val = response.Headers[name];
-                    if (!string.IsNullOrWhiteSpace(val))
-                    {
-                        responseHeaders[name] = val;
-                    }
-                }
-            }
-            else
-            {
-                responseHeaders[HeaderNames.AcceptRanges] = "none";
+                responseHeaders[HeaderNames.ContentLength] = response.ContentLength.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             if (isHeadRequest)
@@ -356,10 +340,31 @@ namespace MediaBrowser.Api.Playback.Progressive
             var contentType = state.GetMimeType(outputPath);
 
             // TODO: The isHeadRequest is only here because ServiceStack will add Content-Length=0 to the response
+            var contentLength = state.EstimateContentLength || isHeadRequest ? GetEstimatedContentLength(state) : null;
+
+            if (contentLength.HasValue)
+            {
+                responseHeaders[HeaderNames.ContentLength] = contentLength.Value.ToString(CultureInfo.InvariantCulture);
+            }
+
             // Headers only
             if (isHeadRequest)
             {
-                return ResultFactory.GetResult(null, Array.Empty<byte>(), contentType, responseHeaders);
+                var streamResult = ResultFactory.GetResult(null, Array.Empty<byte>(), contentType, responseHeaders);
+
+                if (streamResult is IHasHeaders hasHeaders)
+                {
+                    if (contentLength.HasValue)
+                    {
+                        hasHeaders.Headers[HeaderNames.ContentLength] = contentLength.Value.ToString(CultureInfo.InvariantCulture);
+                    }
+                    else
+                    {
+                        hasHeaders.Headers.Remove(HeaderNames.ContentLength);
+                    }
+                }
+
+                return streamResult;
             }
 
             var transcodingLock = ApiEntryPoint.Instance.GetTranscodingLock(outputPath);
@@ -396,6 +401,23 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 transcodingLock.Release();
             }
+        }
+
+        /// <summary>
+        /// Gets the length of the estimated content.
+        /// </summary>
+        /// <param name="state">The state.</param>
+        /// <returns>System.Nullable{System.Int64}.</returns>
+        private long? GetEstimatedContentLength(StreamState state)
+        {
+            var totalBitrate = state.TotalOutputBitrate ?? 0;
+
+            if (totalBitrate > 0 && state.RunTimeTicks.HasValue)
+            {
+                return Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds / 8);
+            }
+
+            return null;
         }
     }
 }

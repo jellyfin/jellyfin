@@ -1,5 +1,6 @@
 using System.IO;
 using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace MediaBrowser.Common.Net
 {
@@ -23,12 +24,22 @@ namespace MediaBrowser.Common.Net
         Task<Stream> Get(HttpRequestOptions options);
 
         /// <summary>
+        /// Warning: Deprecated function,
+        /// use 'Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, HttpMethod httpMethod);' instead
         /// Sends the asynchronous.
         /// </summary>
         /// <param name="options">The options.</param>
         /// <param name="httpMethod">The HTTP method.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
         Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, string httpMethod);
+
+        /// <summary>
+        /// Sends the asynchronous.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="httpMethod">The HTTP method.</param>
+        /// <returns>Task{HttpResponseInfo}.</returns>
+        Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, HttpMethod httpMethod);
 
         /// <summary>
         /// Posts the specified options.

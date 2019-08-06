@@ -19,7 +19,7 @@ namespace Emby.Server.Implementations.Library
         public string Name => "Default";
 
         public bool IsEnabled => true;
-        
+
         // This is dumb and an artifact of the backwards way auth providers were designed.
         // This version of authenticate was never meant to be called, but needs to be here for interface compat
         // Only the providers that don't provide local user support use this
@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.Library
         {
             throw new NotImplementedException();
         }
-        
+
         // This is the verson that we need to use for local users. Because reasons.
         public Task<ProviderAuthenticationResult> Authenticate(string username, string password, User resolvedUser)
         {
@@ -103,7 +103,7 @@ namespace Emby.Server.Implementations.Library
                 string hash = user.Password;
                 user.Password = string.Format("$SHA1${0}", hash);
             }
-            
+
             if (user.EasyPassword != null && !user.EasyPassword.Contains("$"))
             {
                 string hash = user.EasyPassword;
@@ -163,6 +163,34 @@ namespace Emby.Server.Implementations.Library
         public string GetPasswordHash(User user)
         {
             return user.Password;
+        }
+
+        public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
+        {
+            ConvertPasswordFormat(user);
+
+            if (newPassword != null)
+            {
+                newPasswordHash = string.Format("$SHA1${0}", GetHashedString(user, newPassword));
+            }
+
+            if (string.IsNullOrWhiteSpace(newPasswordHash))
+            {
+                throw new ArgumentNullException(nameof(newPasswordHash));
+            }
+
+            user.EasyPassword = newPasswordHash;
+        }
+
+        public string GetEasyPasswordHash(User user)
+        {
+            // This should be removed in the future. This was added to let user login after
+            // Jellyfin 10.3.3 failed to save a well formatted PIN.
+            ConvertPasswordFormat(user);
+
+            return string.IsNullOrEmpty(user.EasyPassword)
+                ? null
+                : (new PasswordHash(user.EasyPassword)).Hash;
         }
 
         public string GetHashedStringChangeAuth(string newPassword, PasswordHash passwordHash)
