@@ -167,7 +167,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     case "absolute":
                         episodeQuery.AbsoluteNumber = searchInfo.IndexNumber.Value;
                         break;
-                    default: //aired order
+                    default:
+                        //aired order
                         episodeQuery.AiredEpisode = searchInfo.IndexNumber.Value;
                         episodeQuery.AiredSeason = searchInfo.ParentIndexNumber.Value;
                         break;
