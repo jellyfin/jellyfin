@@ -95,9 +95,8 @@ namespace Emby.Server.Implementations.Networking
 
         private static bool FilterIpAddress(IPAddress address)
         {
-            var addressString = address.ToString();
-
-            if (addressString.StartsWith("169.", StringComparison.OrdinalIgnoreCase))
+            if (address.IsIPv6LinkLocal
+                || address.ToString().StartsWith("169.", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
