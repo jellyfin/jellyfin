@@ -418,7 +418,7 @@ namespace Emby.Server.Implementations
         public string ApplicationVersion { get; } = typeof(ApplicationHost).Assembly.GetName().Version.ToString(3);
 
         /// <summary>
-        /// Gets the current application user agent
+        /// Gets the current application user agent.
         /// </summary>
         /// <value>The application user agent.</value>
         public string ApplicationUserAgent => Name.Replace(' ', '-') + "/" + ApplicationVersion;
@@ -467,8 +467,8 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Creates an instance of type and resolves all constructor dependencies
         /// </summary>
-        /// /// <typeparam name="T">The type</typeparam>
-        /// <returns>T</returns>
+        /// /// <typeparam name="T">The type.</typeparam>
+        /// <returns>T.</returns>
         public T CreateInstance<T>()
             => ActivatorUtilities.CreateInstance<T>(_serviceProvider);
 
