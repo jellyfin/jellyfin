@@ -122,7 +122,7 @@ namespace Emby.Server.Implementations.Services
         public static object CreateRequest(IRequest httpReq, RestPath restPath, Dictionary<string, string> requestParams, object requestDto)
         {
             var pathInfo = !restPath.IsWildCardPath
-                ? GetSanitizedPathInfo(httpReq.PathInfo, out string contentType)
+                ? GetSanitizedPathInfo(httpReq.PathInfo, out _)
                 : httpReq.PathInfo;
 
             return restPath.CreateRequest(pathInfo, requestParams, requestDto);
@@ -146,13 +146,12 @@ namespace Emby.Server.Implementations.Services
                 {
                     for (var i = 0; i < values.Count; i++)
                     {
-                        map[pair.Key + (i == 0 ? "" : "#" + i)] = values[i];
+                        map[pair.Key + (i == 0 ? string.Empty : "#" + i)] = values[i];
                     }
                 }
             }
 
-            if (
-                (IsMethod(request.Method, "POST") || IsMethod(request.Method, "PUT"))
+            if ((IsMethod(request.Method, "POST") || IsMethod(request.Method, "PUT"))
                 && request.HasFormContentType)
             {
                 foreach (var pair in request.Form)
@@ -166,7 +165,7 @@ namespace Emby.Server.Implementations.Services
                     {
                         for (var i = 0; i < values.Count; i++)
                         {
-                            map[pair.Key + (i == 0 ? "" : "#" + i)] = values[i];
+                            map[pair.Key + (i == 0 ? string.Empty : "#" + i)] = values[i];
                         }
                     }
                 }
@@ -176,9 +175,7 @@ namespace Emby.Server.Implementations.Services
         }
 
         private static bool IsMethod(string method, string expected)
-        {
-            return string.Equals(method, expected, StringComparison.OrdinalIgnoreCase);
-        }
+            => string.Equals(method, expected, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// Duplicate params have their values joined together in a comma-delimited string
@@ -192,8 +189,7 @@ namespace Emby.Server.Implementations.Services
                 map[pair.Key] = pair.Value;
             }
 
-            if (
-                (IsMethod(request.Method, "POST") || IsMethod(request.Method, "PUT"))
+            if ((IsMethod(request.Method, "POST") || IsMethod(request.Method, "PUT"))
                 && request.HasFormContentType)
             {
                 foreach (var pair in request.Form)
