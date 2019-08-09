@@ -36,6 +36,10 @@ For more information about the project, please see our [about page](https://jell
 <em>Check out <a href="https://jellyfin.readthedocs.io/en/latest/contributor-docs/contributing/">our documentation for guidelines</a>.</em>
 </p>
 <p align="center">
-<strong>New idea or improvement? Something not working right?</strong>
+<strong>New idea or improvement?</strong>
+<em>Check out our <a href="https://features.jellyfin.org/?view=most-wanted">feature request hub</a>.</em>
+</p>
+<p align="center">
+<strong>Something not working right?</strong>
 <em>Open an <a href="https://jellyfin.readthedocs.io/en/latest/contributor-docs/issues/">Issue</a>.</em>
 </p>
