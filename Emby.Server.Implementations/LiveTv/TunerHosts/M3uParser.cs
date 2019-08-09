@@ -58,6 +58,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     UserAgent = _appHost.ApplicationUserAgent
                 });
             }
+
             return Task.FromResult((Stream)File.OpenRead(url));
         }
 

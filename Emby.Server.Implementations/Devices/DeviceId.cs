@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Text;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Devices

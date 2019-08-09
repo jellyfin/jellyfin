@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller
 
         void EnableLoopback(string appName);
 
-        WakeOnLanInfo[] GetWakeOnLanInfo();
+        IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo();
 
         string ExpandVirtualPath(string path);
         string ReverseVirtualPath(string path);

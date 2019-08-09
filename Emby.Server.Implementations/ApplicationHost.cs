@@ -108,9 +108,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using ServiceStack;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
@@ -386,7 +386,7 @@ namespace Emby.Server.Implementations
 
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
-            NetworkManager.NetworkChanged += NetworkManager_NetworkChanged;
+            NetworkManager.NetworkChanged += OnNetworkChanged;
         }
 
         public string ExpandVirtualPath(string path)
@@ -410,7 +410,7 @@ namespace Emby.Server.Implementations
             return ServerConfigurationManager.Configuration.LocalNetworkSubnets;
         }
 
-        private void NetworkManager_NetworkChanged(object sender, EventArgs e)
+        private void OnNetworkChanged(object sender, EventArgs e)
         {
             _validAddressResults.Clear();
         }
@@ -421,7 +421,7 @@ namespace Emby.Server.Implementations
         /// Gets the current application user agent
         /// </summary>
         /// <value>The application user agent.</value>
-        public string ApplicationUserAgent => Name.Replace(' ','-') + '/' + ApplicationVersion;
+        public string ApplicationUserAgent => Name.Replace(' ', '-') + "/" + ApplicationVersion;
 
         /// <summary>
         /// Gets the email address for use within a comment section of a user agent field.
@@ -429,14 +429,11 @@ namespace Emby.Server.Implementations
         /// </summary>
         public string ApplicationUserAgentAddress { get; } = "team@jellyfin.org";
 
-        private string _productName;
-
         /// <summary>
-        /// Gets the current application name
+        /// Gets the current application name.
         /// </summary>
         /// <value>The application name.</value>
-        public string ApplicationProductName
-            => _productName ?? (_productName = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductName);
+        public string ApplicationProductName { get; } = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductName;
 
         private DeviceId _deviceId;
 
@@ -604,10 +601,15 @@ namespace Emby.Server.Implementations
 
                 foreach (var plugin in Plugins)
                 {
-                    pluginBuilder.AppendLine(string.Format("{0} {1}", plugin.Name, plugin.Version));
+                    pluginBuilder.AppendLine(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{0} {1}",
+                            plugin.Name,
+                            plugin.Version));
                 }
 
-                Logger.LogInformation("Plugins: {plugins}", pluginBuilder.ToString());
+                Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
             }
 
             DiscoverTypes();
@@ -629,7 +631,7 @@ namespace Emby.Server.Implementations
 
                     if (EnableHttps && Certificate != null)
                     {
-                        options.ListenAnyIP(HttpsPort, listenOptions => { listenOptions.UseHttps(Certificate); });
+                        options.ListenAnyIP(HttpsPort, listenOptions => listenOptions.UseHttps(Certificate));
                     }
                 })
                 .UseContentRoot(contentRoot)
@@ -643,6 +645,7 @@ namespace Emby.Server.Implementations
                     app.UseWebSockets();
 
                     app.UseResponseCompression();
+
                     // TODO app.UseMiddleware<WebSocketMiddleware>();
                     app.Use(ExecuteWebsocketHandlerAsync);
                     app.Use(ExecuteHttpHandlerAsync);
@@ -1044,8 +1047,8 @@ namespace Emby.Server.Implementations
                 .Cast<IServerEntryPoint>()
                 .ToList();
 
-            await Task.WhenAll(StartEntryPoints(entries, true));
-            await Task.WhenAll(StartEntryPoints(entries, false));
+            await Task.WhenAll(StartEntryPoints(entries, true)).ConfigureAwait(false);
+            await Task.WhenAll(StartEntryPoints(entries, false)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1458,15 +1461,10 @@ namespace Emby.Server.Implementations
             };
         }
 
-        public WakeOnLanInfo[] GetWakeOnLanInfo()
-        {
-            return NetworkManager.GetMacAddresses()
-                .Select(i => new WakeOnLanInfo
-                {
-                    MacAddress = i
-                })
-                .ToArray();
-        }
+        public IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo()
+            => NetworkManager.GetMacAddresses()
+                .Select(i => new WakeOnLanInfo(i))
+                .ToList();
 
         public async Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken)
         {
@@ -1482,6 +1480,7 @@ namespace Emby.Server.Implementations
             {
                 wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
             }
+
             return new PublicSystemInfo
             {
                 Version = ApplicationVersion,
