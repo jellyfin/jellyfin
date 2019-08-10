@@ -162,8 +162,21 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             // Prefer SxE over premiere date as it is more robust
             if (searchInfo.IndexNumber.HasValue && searchInfo.ParentIndexNumber.HasValue)
             {
-                episodeQuery.AiredEpisode = searchInfo.IndexNumber.Value;
-                episodeQuery.AiredSeason = searchInfo.ParentIndexNumber.Value;
+                switch (searchInfo.SeriesDisplayOrder)
+                {
+                    case "dvd":
+                        episodeQuery.DvdEpisode = searchInfo.IndexNumber.Value;
+                        episodeQuery.DvdSeason = searchInfo.ParentIndexNumber.Value;
+                        break;
+                    case "absolute":
+                        episodeQuery.AbsoluteNumber = searchInfo.IndexNumber.Value;
+                        break;
+                    default:
+                        //aired order
+                        episodeQuery.AiredEpisode = searchInfo.IndexNumber.Value;
+                        episodeQuery.AiredSeason = searchInfo.ParentIndexNumber.Value;
+                        break;
+                }
             }
             else if (searchInfo.PremiereDate.HasValue)
             {
