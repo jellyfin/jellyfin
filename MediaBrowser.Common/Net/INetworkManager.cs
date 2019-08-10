@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
+using System.Net.NetworkInformation;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 
@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Net
         /// Returns MAC Address from first Network Card in Computer
         /// </summary>
         /// <returns>[string] MAC Address</returns>
-        List<string> GetMacAddresses();
+        List<PhysicalAddress> GetMacAddresses();
 
         /// <summary>
         /// Determines whether [is in private address space] [the specified endpoint].

@@ -425,47 +425,27 @@ namespace Emby.Server.Implementations.Networking
             var localEndPoint = new IPEndPoint(IPAddress.Any, 0);
             using (var udpClient = new UdpClient(localEndPoint))
             {
-                var port = ((IPEndPoint)(udpClient.Client.LocalEndPoint)).Port;
+                var port = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
                 return port;
             }
         }
 
-        private List<string> _macAddresses;
-        public List<string> GetMacAddresses()
+        private List<PhysicalAddress> _macAddresses;
+        public List<PhysicalAddress> GetMacAddresses()
         {
             if (_macAddresses == null)
             {
-                _macAddresses = GetMacAddressesInternal();
+                _macAddresses = GetMacAddressesInternal().ToList();
             }
+
             return _macAddresses;
         }
 
-        private static List<string> GetMacAddressesInternal()
-        {
-            return NetworkInterface.GetAllNetworkInterfaces()
+        private static IEnumerable<PhysicalAddress> GetMacAddressesInternal()
+            => NetworkInterface.GetAllNetworkInterfaces()
                 .Where(i => i.NetworkInterfaceType != NetworkInterfaceType.Loopback)
-                .Select(i =>
-                {
-                    try
-                    {
-                        var physicalAddress = i.GetPhysicalAddress();
-
-                        if (physicalAddress == null)
-                        {
-                            return null;
-                        }
-
-                        return physicalAddress.ToString();
-                    }
-                    catch (Exception)
-                    {
-                        //TODO Log exception.
-                        return null;
-                    }
-                })
-                .Where(i => i != null)
-                .ToList();
-        }
+                .Select(x => x.GetPhysicalAddress())
+                .Where(x => x != null && x != PhysicalAddress.None);
 
         /// <summary>
         /// Parses the specified endpointstring.

@@ -18,7 +18,6 @@ using Jellyfin.Drawing.Skia;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -41,12 +40,12 @@ namespace Jellyfin.Server
             // For backwards compatibility.
             // Modify any input arguments now which start with single-hyphen to POSIX standard
             // double-hyphen to allow parsing by CommandLineParser package.
-            const string pattern = @"^(-[^-\s]{2})"; // Match -xx, not -x, not --xx, not xx
-            const string substitution = @"-$1"; // Prepend with additional single-hyphen
-            var regex = new Regex(pattern);
+            const string Pattern = @"^(-[^-\s]{2})"; // Match -xx, not -x, not --xx, not xx
+            const string Substitution = @"-$1"; // Prepend with additional single-hyphen
+            var regex = new Regex(Pattern);
             for (var i = 0; i < args.Length; i++)
             {
-                args[i] = regex.Replace(args[i], substitution);
+                args[i] = regex.Replace(args[i], Substitution);
             }
 
             // Parse the command line arguments and either start the app or exit indicating error
@@ -134,7 +133,7 @@ namespace Jellyfin.Server
             Batteries_V2.Init();
             if (raw.sqlite3_enable_shared_cache(1) != raw.SQLITE_OK)
             {
-                Console.WriteLine("WARN: Failed to enable shared cache for SQLite");
+                _logger.LogWarning("Failed to enable shared cache for SQLite");
             }
 
             using (var appHost = new CoreAppHost(
