@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -305,7 +306,7 @@ namespace MediaBrowser.Api
                 if (tag != null)
                 {
                     hint.ThumbImageTag = tag;
-                    hint.ThumbImageItemId = itemWithImage.Id.ToString("N");
+                    hint.ThumbImageItemId = itemWithImage.Id.ToString("N", CultureInfo.InvariantCulture);
                 }
             }
         }
@@ -326,7 +327,7 @@ namespace MediaBrowser.Api
                 if (tag != null)
                 {
                     hint.BackdropImageTag = tag;
-                    hint.BackdropImageItemId = itemWithImage.Id.ToString("N");
+                    hint.BackdropImageItemId = itemWithImage.Id.ToString("N", CultureInfo.InvariantCulture);
                 }
             }
         }

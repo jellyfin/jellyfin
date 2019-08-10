@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
@@ -29,7 +30,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(child.Path))
             {
-                child.LibraryItemId = item.Id.ToString("N");
+                child.LibraryItemId = item.Id.ToString("N", CultureInfo.InvariantCulture);
             }
 
             return child;
@@ -37,7 +38,7 @@ namespace MediaBrowser.Controller.Entities
 
         public LinkedChild()
         {
-            Id = Guid.NewGuid().ToString("N");
+            Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         }
     }
 

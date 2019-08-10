@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -188,7 +189,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         protected override string GetInternalMetadataPath(string basePath)
         {
-            return System.IO.Path.Combine(basePath, "livetv", Id.ToString("N"));
+            return System.IO.Path.Combine(basePath, "livetv", Id.ToString("N", CultureInfo.InvariantCulture));
         }
 
         public override bool CanDelete()

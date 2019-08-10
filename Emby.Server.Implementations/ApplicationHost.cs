@@ -1220,7 +1220,7 @@ namespace Emby.Server.Implementations
 
             // Generate self-signed cert
             var certHost = GetHostnameFromExternalDns(ServerConfigurationManager.Configuration.WanDdns);
-            var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + (certHost + "2").GetMD5().ToString("N") + ".pfx");
+            var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + (certHost + "2").GetMD5().ToString("N", CultureInfo.InvariantCulture) + ".pfx");
             const string Password = "embycert";
 
             return new CertificateInfo

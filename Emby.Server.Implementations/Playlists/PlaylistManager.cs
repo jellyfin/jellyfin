@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -129,7 +130,7 @@ namespace Emby.Server.Implementations.Playlists
                     {
                         new Share
                         {
-                            UserId = options.UserId.Equals(Guid.Empty) ? null : options.UserId.ToString("N"),
+                            UserId = options.UserId.Equals(Guid.Empty) ? null : options.UserId.ToString("N", CultureInfo.InvariantCulture),
                             CanEdit = true
                         }
                     }
@@ -144,7 +145,7 @@ namespace Emby.Server.Implementations.Playlists
 
                 if (options.ItemIdList.Length > 0)
                 {
-                    AddToPlaylistInternal(playlist.Id.ToString("N"), options.ItemIdList, user, new DtoOptions(false)
+                    AddToPlaylistInternal(playlist.Id.ToString("N", CultureInfo.InvariantCulture), options.ItemIdList, user, new DtoOptions(false)
                     {
                         EnableImages = true
                     });
@@ -152,7 +153,7 @@ namespace Emby.Server.Implementations.Playlists
 
                 return new PlaylistCreationResult
                 {
-                    Id = playlist.Id.ToString("N")
+                    Id = playlist.Id.ToString("N", CultureInfo.InvariantCulture)
                 };
             }
             finally

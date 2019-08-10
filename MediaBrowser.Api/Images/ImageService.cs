@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -537,7 +538,7 @@ namespace MediaBrowser.Api.Images
 
                 if (item == null)
                 {
-                    throw new ResourceNotFoundException(string.Format("Item {0} not found.", itemId.ToString("N")));
+                    throw new ResourceNotFoundException(string.Format("Item {0} not found.", itemId.ToString("N", CultureInfo.InvariantCulture)));
                 }
             }
 

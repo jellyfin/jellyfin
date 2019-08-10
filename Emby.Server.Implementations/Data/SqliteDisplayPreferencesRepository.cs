@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
@@ -182,7 +183,7 @@ namespace Emby.Server.Implementations.Data
 
                 return new DisplayPreferences
                 {
-                    Id = guidId.ToString("N")
+                    Id = guidId.ToString("N", CultureInfo.InvariantCulture)
                 };
             }
         }

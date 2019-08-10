@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -206,7 +207,7 @@ namespace Emby.Server.Implementations.Channels
 
                     try
                     {
-                        return GetChannelProvider(i).IsEnabledFor(user.Id.ToString("N"));
+                        return GetChannelProvider(i).IsEnabledFor(user.Id.ToString("N", CultureInfo.InvariantCulture));
                     }
                     catch
                     {
@@ -511,7 +512,7 @@ namespace Emby.Server.Implementations.Channels
                 IncludeItemTypes = new[] { typeof(Channel).Name },
                 OrderBy = new ValueTuple<string, SortOrder>[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) }
 
-            }).Select(i => GetChannelFeatures(i.ToString("N"))).ToArray();
+            }).Select(i => GetChannelFeatures(i.ToString("N", CultureInfo.InvariantCulture))).ToArray();
         }
 
         public ChannelFeatures GetChannelFeatures(string id)
@@ -552,7 +553,7 @@ namespace Emby.Server.Implementations.Channels
                 SupportsSortOrderToggle = features.SupportsSortOrderToggle,
                 SupportsLatestMedia = supportsLatest,
                 Name = channel.Name,
-                Id = channel.Id.ToString("N"),
+                Id = channel.Id.ToString("N", CultureInfo.InvariantCulture),
                 SupportsContentDownloading = features.SupportsContentDownloading,
                 AutoRefreshLevels = features.AutoRefreshLevels
             };
@@ -740,7 +741,7 @@ namespace Emby.Server.Implementations.Channels
             bool sortDescending,
             CancellationToken cancellationToken)
         {
-            var userId = user == null ? null : user.Id.ToString("N");
+            var userId = user == null ? null : user.Id.ToString("N", CultureInfo.InvariantCulture);
 
             var cacheLength = CacheLength;
             var cachePath = GetChannelDataCachePath(channel, userId, externalFolderId, sortField, sortDescending);
@@ -836,7 +837,7 @@ namespace Emby.Server.Implementations.Channels
             ChannelItemSortField? sortField,
             bool sortDescending)
         {
-            var channelId = GetInternalChannelId(channel.Name).ToString("N");
+            var channelId = GetInternalChannelId(channel.Name).ToString("N", CultureInfo.InvariantCulture);
 
             var userCacheKey = string.Empty;
 
@@ -846,10 +847,10 @@ namespace Emby.Server.Implementations.Channels
                 userCacheKey = hasCacheKey.GetCacheKey(userId) ?? string.Empty;
             }
 
-            var filename = string.IsNullOrEmpty(externalFolderId) ? "root" : externalFolderId.GetMD5().ToString("N");
+            var filename = string.IsNullOrEmpty(externalFolderId) ? "root" : externalFolderId.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             filename += userCacheKey;
 
-            var version = ((channel.DataVersion ?? string.Empty) + "2").GetMD5().ToString("N");
+            var version = ((channel.DataVersion ?? string.Empty) + "2").GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
             if (sortField.HasValue)
             {
@@ -860,7 +861,7 @@ namespace Emby.Server.Implementations.Channels
                 filename += "-sortDescending";
             }
 
-            filename = filename.GetMD5().ToString("N");
+            filename = filename.GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
             return Path.Combine(_config.ApplicationPaths.CachePath,
                 "channels",

@@ -1,5 +1,6 @@
 using System;
 using System.Net.Sockets;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
@@ -307,7 +308,7 @@ namespace Emby.Dlna.Main
             {
                 guid = text.GetMD5();
             }
-            return guid.ToString("N");
+            return guid.ToString("N", CultureInfo.InvariantCulture);
         }
 
         private void SetProperies(SsdpDevice device, string fullDeviceType)

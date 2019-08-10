@@ -89,7 +89,7 @@ namespace MediaBrowser.Controller.LiveTv
 
             var info = new MediaSourceInfo
             {
-                Id = Id.ToString("N"),
+                Id = Id.ToString("N", CultureInfo.InvariantCulture),
                 Protocol = PathProtocol ?? MediaProtocol.File,
                 MediaStreams = new List<MediaStream>(),
                 Name = Name,
@@ -111,7 +111,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         protected override string GetInternalMetadataPath(string basePath)
         {
-            return System.IO.Path.Combine(basePath, "livetv", Id.ToString("N"), "metadata");
+            return System.IO.Path.Combine(basePath, "livetv", Id.ToString("N", CultureInfo.InvariantCulture), "metadata");
         }
 
         public override bool CanDelete()

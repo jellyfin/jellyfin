@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -296,7 +295,7 @@ namespace MediaBrowser.Providers.Subtitles
 
         private string GetProviderId(string name)
         {
-            return name.ToLowerInvariant().GetMD5().ToString("N");
+            return name.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
         private ISubtitleProvider GetProvider(string id)

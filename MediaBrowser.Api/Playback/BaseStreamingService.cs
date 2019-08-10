@@ -142,7 +142,7 @@ namespace MediaBrowser.Api.Playback
             data += "-" + (state.Request.DeviceId ?? string.Empty)
                  + "-" + (state.Request.PlaySessionId ?? string.Empty);
 
-            var filename = data.GetMD5().ToString("N");
+            var filename = data.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             var ext = outputFileExtension.ToLowerInvariant();
             var folder = ServerConfigurationManager.ApplicationPaths.TranscodingTempPath;
 
@@ -240,7 +240,7 @@ namespace MediaBrowser.Api.Playback
             var transcodingJob = ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath,
                 state.Request.PlaySessionId,
                 state.MediaSource.LiveStreamId,
-                Guid.NewGuid().ToString("N"),
+                Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
                 TranscodingJobType,
                 process,
                 state.Request.DeviceId,

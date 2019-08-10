@@ -454,14 +454,14 @@ namespace Emby.Drawing
             // Optimization
             if (imageEnhancers.Length == 0)
             {
-                return (originalImagePath + dateModified.Ticks).GetMD5().ToString("N");
+                return (originalImagePath + dateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
 
             // Cache name is created with supported enhancers combined with the last config change so we pick up new config changes
             var cacheKeys = imageEnhancers.Select(i => i.GetConfigurationCacheKey(item, imageType)).ToList();
             cacheKeys.Add(originalImagePath + dateModified.Ticks);
 
-            return string.Join("|", cacheKeys).GetMD5().ToString("N");
+            return string.Join("|", cacheKeys).GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
         private async Task<(string path, DateTime dateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
@@ -480,7 +480,7 @@ namespace Emby.Drawing
             {
                 try
                 {
-                    string filename = (originalImagePath + dateModified.Ticks.ToString(UsCulture)).GetMD5().ToString("N");
+                    string filename = (originalImagePath + dateModified.Ticks.ToString(UsCulture)).GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
                     string cacheExtension = _mediaEncoder().SupportsEncoder("libwebp") ? ".webp" : ".png";
                     var outputPath = Path.Combine(_appPaths.ImageCachePath, "converted-images", filename + cacheExtension);

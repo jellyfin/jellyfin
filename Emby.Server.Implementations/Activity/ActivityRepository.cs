@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.Activity
                         }
                         else
                         {
-                            statement.TryBind("@UserId", entry.UserId.ToString("N"));
+                            statement.TryBind("@UserId", entry.UserId.ToString("N", CultureInfo.InvariantCulture));
                         }
 
                         statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
@@ -141,7 +141,7 @@ namespace Emby.Server.Implementations.Activity
                         }
                         else
                         {
-                            statement.TryBind("@UserId", entry.UserId.ToString("N"));
+                            statement.TryBind("@UserId", entry.UserId.ToString("N", CultureInfo.InvariantCulture));
                         }
 
                         statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());

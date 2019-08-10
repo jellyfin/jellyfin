@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
@@ -134,7 +135,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="e">The e.</param>
         void userManager_UserDeleted(object sender, GenericEventArgs<User> e)
         {
-            SendMessageToUserSession(e.Argument, "UserDeleted", e.Argument.Id.ToString("N"));
+            SendMessageToUserSession(e.Argument, "UserDeleted", e.Argument.Id.ToString("N", CultureInfo.InvariantCulture));
         }
 
         void _userManager_UserPolicyUpdated(object sender, GenericEventArgs<User> e)

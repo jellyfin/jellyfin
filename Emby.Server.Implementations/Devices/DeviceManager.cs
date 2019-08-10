@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
@@ -195,7 +195,7 @@ namespace Emby.Server.Implementations.Devices
 
         private string GetDevicePath(string id)
         {
-            return Path.Combine(GetDevicesPath(), id.GetMD5().ToString("N"));
+            return Path.Combine(GetDevicesPath(), id.GetMD5().ToString("N", CultureInfo.InvariantCulture));
         }
 
         public ContentUploadHistory GetCameraUploadHistory(string deviceId)

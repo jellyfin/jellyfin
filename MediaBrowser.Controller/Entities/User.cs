@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -230,7 +231,7 @@ namespace MediaBrowser.Controller.Entities
 
             // TODO: Remove idPath and just use usernamePath for future releases
             var usernamePath = System.IO.Path.Combine(parentPath, username);
-            var idPath = System.IO.Path.Combine(parentPath, Id.ToString("N"));
+            var idPath = System.IO.Path.Combine(parentPath, Id.ToString("N", CultureInfo.InvariantCulture));
             if (!Directory.Exists(usernamePath) && Directory.Exists(idPath))
             {
                 Directory.Move(idPath, usernamePath);

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
@@ -26,7 +27,7 @@ namespace Emby.Server.Implementations.Library
             EnableStreamSharing = false;
             _closeFn = closeFn;
             ConsumerCount = 1;
-            UniqueId = Guid.NewGuid().ToString("N");
+            UniqueId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         }
 
         public Task Close()

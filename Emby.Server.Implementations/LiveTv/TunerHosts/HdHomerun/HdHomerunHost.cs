@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -460,7 +461,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 id = "native";
             }
-            id += "_" + channelId.GetMD5().ToString("N") + "_" + url.GetMD5().ToString("N");
+            id += "_" + channelId.GetMD5().ToString("N", CultureInfo.InvariantCulture) + "_" + url.GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
             var mediaSource = new MediaSourceInfo
             {
