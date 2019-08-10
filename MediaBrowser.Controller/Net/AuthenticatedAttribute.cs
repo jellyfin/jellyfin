@@ -1,5 +1,6 @@
 using System;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -33,7 +34,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="request">The http request wrapper</param>
         /// <param name="response">The http response wrapper</param>
         /// <param name="requestDto">The request DTO</param>
-        public void RequestFilter(IRequest request, IResponse response, object requestDto)
+        public void RequestFilter(IRequest request, HttpResponse response, object requestDto)
         {
             AuthService.Authenticate(request, this);
         }

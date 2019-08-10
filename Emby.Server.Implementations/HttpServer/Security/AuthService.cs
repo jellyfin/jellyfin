@@ -3,7 +3,6 @@ using System.Linq;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
@@ -13,27 +12,22 @@ namespace Emby.Server.Implementations.HttpServer.Security
 {
     public class AuthService : IAuthService
     {
+        private readonly IAuthorizationContext _authorizationContext;
+        private readonly ISessionManager _sessionManager;
         private readonly IServerConfigurationManager _config;
+        private readonly INetworkManager _networkManager;
 
-        public AuthService(IUserManager userManager, IAuthorizationContext authorizationContext, IServerConfigurationManager config, ISessionManager sessionManager, INetworkManager networkManager)
+        public AuthService(
+            IAuthorizationContext authorizationContext,
+            IServerConfigurationManager config,
+            ISessionManager sessionManager,
+            INetworkManager networkManager)
         {
-            AuthorizationContext = authorizationContext;
+            _authorizationContext = authorizationContext;
             _config = config;
-            SessionManager = sessionManager;
-            UserManager = userManager;
-            NetworkManager = networkManager;
+            _sessionManager = sessionManager;
+            _networkManager = networkManager;
         }
-
-        public IUserManager UserManager { get; private set; }
-        public IAuthorizationContext AuthorizationContext { get; private set; }
-        public ISessionManager SessionManager { get; private set; }
-        public INetworkManager NetworkManager { get; private set; }
-
-        /// <summary>
-        /// Redirect the client to a specific URL if authentication failed.
-        /// If this property is null, simply `401 Unauthorized` is returned.
-        /// </summary>
-        public string HtmlRedirect { get; set; }
 
         public void Authenticate(IRequest request, IAuthenticationAttributes authAttribtues)
         {
@@ -43,7 +37,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         private void ValidateUser(IRequest request, IAuthenticationAttributes authAttribtues)
         {
             // This code is executed before the service
-            var auth = AuthorizationContext.GetAuthorizationInfo(request);
+            var auth = _authorizationContext.GetAuthorizationInfo(request);
 
             if (!IsExemptFromAuthenticationToken(authAttribtues, request))
             {
@@ -80,7 +74,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 !string.IsNullOrEmpty(auth.Client) &&
                 !string.IsNullOrEmpty(auth.Device))
             {
-                SessionManager.LogSessionActivity(auth.Client,
+                _sessionManager.LogSessionActivity(auth.Client,
                     auth.Version,
                     auth.DeviceId,
                     auth.Device,
@@ -89,7 +83,9 @@ namespace Emby.Server.Implementations.HttpServer.Security
             }
         }
 
-        private void ValidateUserAccess(User user, IRequest request,
+        private void ValidateUserAccess(
+            User user,
+            IRequest request,
             IAuthenticationAttributes authAttribtues,
             AuthorizationInfo auth)
         {
@@ -101,7 +97,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 };
             }
 
-            if (!user.Policy.EnableRemoteAccess && !NetworkManager.IsInLocalNetwork(request.RemoteIp))
+            if (!user.Policy.EnableRemoteAccess && !_networkManager.IsInLocalNetwork(request.RemoteIp))
             {
                 throw new SecurityException("User account has been disabled.")
                 {
@@ -109,11 +105,11 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 };
             }
 
-            if (!user.Policy.IsAdministrator &&
-                !authAttribtues.EscapeParentalControl &&
-                !user.IsParentalScheduleAllowed())
+            if (!user.Policy.IsAdministrator
+                && !authAttribtues.EscapeParentalControl
+                && !user.IsParentalScheduleAllowed())
             {
-                request.Response.AddHeader("X-Application-Error-Code", "ParentalControl");
+                request.Response.Headers.Add("X-Application-Error-Code", "ParentalControl");
 
                 throw new SecurityException("This user account is not allowed access at this time.")
                 {
@@ -183,6 +179,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                     };
                 }
             }
+
             if (roles.Contains("delete", StringComparer.OrdinalIgnoreCase))
             {
                 if (user == null || !user.Policy.EnableContentDeletion)
@@ -193,6 +190,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                     };
                 }
             }
+
             if (roles.Contains("download", StringComparer.OrdinalIgnoreCase))
             {
                 if (user == null || !user.Policy.EnableContentDownloading)

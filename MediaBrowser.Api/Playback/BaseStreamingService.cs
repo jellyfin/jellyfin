@@ -1019,7 +1019,7 @@ namespace MediaBrowser.Api.Playback
 
             foreach (var item in responseHeaders)
             {
-                Request.Response.AddHeader(item.Key, item.Value);
+                Request.Response.Headers.Add(item.Key, item.Value);
             }
         }
 

@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Model.Services
 {
     public interface IRequest
     {
-        IResponse Response { get; }
+        HttpResponse Response { get; }
 
         /// <summary>
         /// The name of the service being called (e.g. Request DTO Name)
@@ -21,11 +18,6 @@ namespace MediaBrowser.Model.Services
         /// The Verb / HttpMethod or Action for this request
         /// </summary>
         string Verb { get; }
-
-        /// <summary>
-        /// The Request DTO, after it has been deserialized.
-        /// </summary>
-        object Dto { get; set; }
 
         /// <summary>
         /// The request ContentType
@@ -50,8 +42,6 @@ namespace MediaBrowser.Model.Services
 
         IQueryCollection QueryString { get; }
 
-        Task<QueryParamCollection> GetFormData();
-
         string RawUrl { get; }
 
         string AbsoluteUri { get; }
@@ -75,11 +65,6 @@ namespace MediaBrowser.Model.Services
         long ContentLength { get; }
 
         /// <summary>
-        /// Access to the multi-part/formdata files posted on this request
-        /// </summary>
-        IHttpFile[] Files { get; }
-
-        /// <summary>
         /// The value of the Referrer, null if not available
         /// </summary>
         Uri UrlReferrer { get; }
@@ -97,26 +82,5 @@ namespace MediaBrowser.Model.Services
     public interface IRequiresRequest
     {
         IRequest Request { get; set; }
-    }
-
-    public interface IResponse
-    {
-        HttpResponse OriginalResponse { get; }
-
-        int StatusCode { get; set; }
-
-        string StatusDescription { get; set; }
-
-        string ContentType { get; set; }
-
-        void AddHeader(string name, string value);
-
-        void Redirect(string url);
-
-        Stream OutputStream { get; }
-
-        Task TransmitFile(string path, long offset, long count, FileShareMode fileShareMode, IFileSystem fileSystem, IStreamHelper streamHelper, CancellationToken cancellationToken);
-
-        bool SendChunked { get; set; }
     }
 }
