@@ -99,7 +99,7 @@ namespace MediaBrowser.Common.Updates
         /// <param name="package">The package.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns><see cref="Task" />.</returns>
-        Task InstallPackage(PackageVersionInfo package, CancellationToken cancellationToken);
+        Task InstallPackage(PackageVersionInfo package, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Uninstalls a plugin

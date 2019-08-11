@@ -279,12 +279,7 @@ namespace Emby.Server.Implementations.Updates
             var package = availablePackages.FirstOrDefault(p => string.Equals(p.guid, guid ?? "none", StringComparison.OrdinalIgnoreCase))
                             ?? availablePackages.FirstOrDefault(p => p.name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
-            if (package == null)
-            {
-                return null;
-            }
-
-            return package.versions
+            return package?.versions
                 .OrderByDescending(x => x.Version)
                 .FirstOrDefault(v => v.classification <= classification && IsPackageVersionUpToDate(v, currentServerVersion));
         }
@@ -308,7 +303,6 @@ namespace Emby.Server.Implementations.Updates
                 var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, p.Id.ToString(), applicationVersion, systemUpdateLevel);
 
                 return latestPluginInfo != null && latestPluginInfo.Version > p.Version ? latestPluginInfo : null;
-
             }).Where(i => i != null)
             .Where(p => !string.IsNullOrEmpty(p.sourceUrl) && !CompletedInstallations.Any(i => string.Equals(i.AssemblyGuid, p.guid, StringComparison.OrdinalIgnoreCase)));
         }
