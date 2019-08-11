@@ -186,7 +186,7 @@ namespace Jellyfin.Server
         /// Create the data, config and log paths from the variety of inputs(command line args,
         /// environment variables) or decide on what default to use. For Windows it's %AppPath%
         /// for everything else the
-        /// <see href="https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html">XDG approach</see>
+        /// <a href="https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html">XDG approach</a>
         /// is followed.
         /// </summary>
         /// <param name="options">The <see cref="StartupOptions" /> for this instance.</param>
