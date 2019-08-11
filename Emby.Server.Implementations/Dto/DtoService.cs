@@ -1364,7 +1364,7 @@ namespace Emby.Server.Implementations.Dto
                 return null;
             }
 
-            var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary);
+            var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary).ToArray();
 
             ImageDimensions size;
 
