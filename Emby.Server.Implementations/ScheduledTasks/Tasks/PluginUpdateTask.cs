@@ -1,4 +1,3 @@
-using MediaBrowser.Common;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Net;
 using System;
@@ -25,13 +24,10 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
         private readonly IInstallationManager _installationManager;
 
-        private readonly IApplicationHost _appHost;
-
-        public PluginUpdateTask(ILogger logger, IInstallationManager installationManager, IApplicationHost appHost)
+        public PluginUpdateTask(ILogger logger, IInstallationManager installationManager)
         {
             _logger = logger;
             _installationManager = installationManager;
-            _appHost = appHost;
         }
 
         /// <summary>
@@ -40,14 +36,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[] { 
-            
-                // At startup
-                new TaskTriggerInfo {Type = TaskTriggerInfo.TriggerStartup},
+            // At startup
+            yield return new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerStartup };
 
-                // Every so often
-                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks}
-            };
+            // Every so often
+            yield return new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks };
         }
 
         /// <summary>
@@ -72,7 +65,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 try
                 {
-                    await _installationManager.InstallPackage(package, true, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
+                    await _installationManager.InstallPackage(package, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {

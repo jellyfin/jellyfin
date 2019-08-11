@@ -346,7 +346,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        private void OnPluginUpdated(object sender, GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> e)
+        private void OnPluginUpdated(object sender, GenericEventArgs<(IPlugin, PackageVersionInfo)> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {

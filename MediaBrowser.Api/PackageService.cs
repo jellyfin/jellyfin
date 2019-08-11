@@ -197,7 +197,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException(string.Format("Package not found: {0}", request.Name));
             }
 
-            await _installationManager.InstallPackage(package, true, new SimpleProgress<double>(), CancellationToken.None);
+            await _installationManager.InstallPackage(package, new SimpleProgress<double>(), CancellationToken.None);
         }
 
         /// <summary>
@@ -206,13 +206,7 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Delete(CancelPackageInstallation request)
         {
-            var info = _installationManager.CurrentInstallations.FirstOrDefault(i => i.Item1.Id.Equals(request.Id));
-
-            if (info != null)
-            {
-                info.Item2.Cancel();
-            }
+            _installationManager.CancelInstallation(new Guid(request.Id));
         }
     }
-
 }
