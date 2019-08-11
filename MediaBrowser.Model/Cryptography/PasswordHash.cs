@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace MediaBrowser.Model.Cryptography
@@ -16,86 +17,71 @@ namespace MediaBrowser.Model.Cryptography
 
         private Dictionary<string, string> _parameters = new Dictionary<string, string>();
 
-        private string _salt;
+        private byte[] _salt;
 
-        private byte[] _saltBytes;
+        private byte[] _hash;
 
-        private string _hash;
+        public PasswordHash(string storageString)
+        {
+            string[] splitted = storageString.Split('$');
+            // The string should at least contain the hash function and the hash itself
+            if (splitted.Length < 3)
+            {
+                throw new ArgumentException("String doesn't contain enough segments", nameof(storageString));
+            }
 
-        private byte[] _hashBytes;
+            // Start at 1, the first index shouldn't contain any data
+            int index = 1;
+
+            // Name of the hash function
+            _id = splitted[index++];
+
+            // Optional parameters
+            if (splitted[index].IndexOf('=') != -1)
+            {
+                foreach (string paramset in splitted[index++].Split(','))
+                {
+                    if (string.IsNullOrEmpty(paramset))
+                    {
+                        continue;
+                    }
+
+                    string[] fields = paramset.Split('=');
+                    if (fields.Length != 2)
+                    {
+                        throw new InvalidDataException($"Malformed parameter in password hash string {paramset}");
+                    }
+
+                    _parameters.Add(fields[0], fields[1]);
+                }
+            }
+
+            // Check if the string also contains a salt
+            if (splitted.Length - index == 2)
+            {
+                _salt = ConvertFromByteString(splitted[index++]);
+                _hash = ConvertFromByteString(splitted[index++]);
+            }
+            else
+            {
+                _salt = Array.Empty<byte>();
+                _hash = ConvertFromByteString(splitted[index++]);
+            }
+        }
 
         public string Id { get => _id; set => _id = value; }
 
         public Dictionary<string, string> Parameters { get => _parameters; set => _parameters = value; }
 
-        public string Salt { get => _salt; set => _salt = value; }
+        public byte[] Salt { get => _salt; set => _salt = value; }
 
-        public byte[] SaltBytes { get => _saltBytes; set => _saltBytes = value; }
-
-        public string Hash { get => _hash; set => _hash = value; }
-
-        public byte[] HashBytes { get => _hashBytes; set => _hashBytes = value; }
-
-        public PasswordHash(string storageString)
-        {
-            string[] splitted = storageString.Split('$');
-            _id = splitted[1];
-            if (splitted[2].Contains("="))
-            {
-                foreach (string paramset in (splitted[2].Split(',')))
-                {
-                    if (!string.IsNullOrEmpty(paramset))
-                    {
-                        string[] fields = paramset.Split('=');
-                        if (fields.Length == 2)
-                        {
-                            _parameters.Add(fields[0], fields[1]);
-                        }
-                        else
-                        {
-                            throw new Exception($"Malformed parameter in password hash string {paramset}");
-                        }
-                    }
-                }
-                if (splitted.Length == 5)
-                {
-                    _salt = splitted[3];
-                    _saltBytes = ConvertFromByteString(_salt);
-                    _hash = splitted[4];
-                    _hashBytes = ConvertFromByteString(_hash);
-                }
-                else
-                {
-                    _salt = string.Empty;
-                    _hash = splitted[3];
-                    _hashBytes = ConvertFromByteString(_hash);
-                }
-            }
-            else
-            {
-                if (splitted.Length == 4)
-                {
-                    _salt = splitted[2];
-                    _saltBytes = ConvertFromByteString(_salt);
-                    _hash = splitted[3];
-                    _hashBytes = ConvertFromByteString(_hash);
-                }
-                else
-                {
-                    _salt = string.Empty;
-                    _hash = splitted[2];
-                    _hashBytes = ConvertFromByteString(_hash);
-                }
-
-            }
-
-        }
+        public byte[] Hash { get => _hash; set => _hash = value; }
 
         public PasswordHash(ICryptoProvider cryptoProvider)
         {
             _id = cryptoProvider.DefaultHashMethod;
-            _saltBytes = cryptoProvider.GenerateSalt();
-            _salt = ConvertToByteString(SaltBytes);
+            _salt = cryptoProvider.GenerateSalt();
+            _hash = Array.Empty<Byte>();
         }
 
         public static byte[] ConvertFromByteString(string byteString)
@@ -111,43 +97,45 @@ namespace MediaBrowser.Model.Cryptography
         }
 
         public static string ConvertToByteString(byte[] bytes)
-        {
-            return BitConverter.ToString(bytes).Replace("-", "");
-        }
+            => BitConverter.ToString(bytes).Replace("-", string.Empty);
 
-        private string SerializeParameters()
+        private void SerializeParameters(StringBuilder stringBuilder)
         {
-            string returnString = string.Empty;
-            foreach (var KVP in _parameters)
+            if (_parameters.Count == 0)
             {
-                returnString += $",{KVP.Key}={KVP.Value}";
+                return;
             }
 
-            if ((!string.IsNullOrEmpty(returnString)) && returnString[0] == ',')
+            stringBuilder.Append('$');
+            foreach (var pair in _parameters)
             {
-                returnString = returnString.Remove(0, 1);
+                stringBuilder.Append(pair.Key);
+                stringBuilder.Append('=');
+                stringBuilder.Append(pair.Value);
+                stringBuilder.Append(',');
             }
 
-            return returnString;
+            // Remove last ','
+            stringBuilder.Length -= 1;
         }
 
         public override string ToString()
         {
-            string outString = "$" + _id;
-            string paramstring = SerializeParameters();
-            if (!string.IsNullOrEmpty(paramstring))
+            var str = new StringBuilder();
+            str.Append('$');
+            str.Append(_id);
+            SerializeParameters(str);
+
+            if (_salt.Length == 0)
             {
-                outString += $"${paramstring}";
+                str.Append('$');
+                str.Append(ConvertToByteString(_salt));
             }
 
-            if (!string.IsNullOrEmpty(_salt))
-            {
-                outString += $"${_salt}";
-            }
+            str.Append('$');
+            str.Append(ConvertToByteString(_hash));
 
-            outString += $"${_hash}";
-            return outString;
+            return str.ToString();
         }
     }
-
 }
