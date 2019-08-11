@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Net;
@@ -30,11 +29,7 @@ namespace Emby.Server.Implementations.HttpServer
 {
     public class HttpListenerHost : IHttpServer, IDisposable
     {
-        private string DefaultRedirectPath { get; set; }
-        public string[] UrlPrefixes { get; private set; }
-
-        public event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
-
+        private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
         private readonly IServerApplicationHost _appHost;
@@ -42,18 +37,15 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IHttpListener _socketListener;
         private readonly Func<Type, Func<string, object>> _funcParseFn;
-
-        public Action<IRequest, IResponse, object>[] ResponseFilters { get; set; }
-
+        private readonly string _defaultRedirectPath;
         private readonly Dictionary<Type, Type> ServiceOperationsMap = new Dictionary<Type, Type>();
-        public static HttpListenerHost Instance { get; protected set; }
-
         private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
         private readonly List<IWebSocketConnection> _webSocketConnections = new List<IWebSocketConnection>();
+        private bool _disposed = false;
 
         public HttpListenerHost(
             IServerApplicationHost applicationHost,
-            ILoggerFactory loggerFactory,
+            ILogger<HttpListenerHost> logger,
             IServerConfigurationManager config,
             IConfiguration configuration,
             INetworkManager networkManager,
@@ -62,9 +54,9 @@ namespace Emby.Server.Implementations.HttpServer
             IHttpListener socketListener)
         {
             _appHost = applicationHost;
-            Logger = loggerFactory.CreateLogger("HttpServer");
+            _logger = logger;
             _config = config;
-            DefaultRedirectPath = configuration["HttpListenerHost:DefaultRedirectPath"];
+            _defaultRedirectPath = configuration["HttpListenerHost:DefaultRedirectPath"];
             _networkManager = networkManager;
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
@@ -74,12 +66,20 @@ namespace Emby.Server.Implementations.HttpServer
             _funcParseFn = t => s => JsvReader.GetParseFn(t)(s);
 
             Instance = this;
-            ResponseFilters = Array.Empty<Action<IRequest, IResponse, object>>();
+            ResponseFilters = Array.Empty<Action<IRequest, HttpResponse, object>>();
         }
+
+        public Action<IRequest, HttpResponse, object>[] ResponseFilters { get; set; }
+
+        public static HttpListenerHost Instance { get; protected set; }
+
+        public string[] UrlPrefixes { get; private set; }
 
         public string GlobalResponse { get; set; }
 
-        protected ILogger Logger { get; }
+        public ServiceController ServiceController { get; private set; }
+
+        public event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
 
         public object CreateInstance(Type type)
         {
@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public void ApplyRequestFilters(IRequest req, IResponse res, object requestDto)
+        public void ApplyRequestFilters(IRequest req, HttpResponse res, object requestDto)
         {
             //Exec all RequestFilter attributes with Priority < 0
             var attributes = GetRequestFilterAttributes(requestDto.GetType());
@@ -145,7 +145,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return;
             }
 
-            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, Logger)
+            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger)
             {
                 OnReceive = ProcessWebSocketMessageReceived,
                 Url = e.Url,
@@ -215,16 +215,16 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (logExceptionStackTrace)
                 {
-                    Logger.LogError(ex, "Error processing request");
+                    _logger.LogError(ex, "Error processing request");
                 }
                 else if (logExceptionMessage)
                 {
-                    Logger.LogError(ex.Message);
+                    _logger.LogError(ex.Message);
                 }
 
                 var httpRes = httpReq.Response;
 
-                if (httpRes.OriginalResponse.HasStarted)
+                if (httpRes.HasStarted)
                 {
                     return;
                 }
@@ -233,11 +233,11 @@ namespace Emby.Server.Implementations.HttpServer
                 httpRes.StatusCode = statusCode;
 
                 httpRes.ContentType = "text/html";
-                await Write(httpRes, NormalizeExceptionMessage(ex.Message)).ConfigureAwait(false);
+                await httpRes.WriteAsync(NormalizeExceptionMessage(ex.Message)).ConfigureAwait(false);
             }
             catch (Exception errorEx)
             {
-                Logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response)");
+                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response)");
             }
         }
 
@@ -431,7 +431,7 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     httpRes.StatusCode = 503;
                     httpRes.ContentType = "text/plain";
-                    await Write(httpRes, "Server shutting down").ConfigureAwait(false);
+                    await httpRes.WriteAsync("Server shutting down", cancellationToken).ConfigureAwait(false);
                     return;
                 }
 
@@ -439,7 +439,7 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     httpRes.StatusCode = 400;
                     httpRes.ContentType = "text/plain";
-                    await Write(httpRes, "Invalid host").ConfigureAwait(false);
+                    await httpRes.WriteAsync("Invalid host", cancellationToken).ConfigureAwait(false);
                     return;
                 }
 
@@ -447,7 +447,7 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     httpRes.StatusCode = 403;
                     httpRes.ContentType = "text/plain";
-                    await Write(httpRes, "Forbidden").ConfigureAwait(false);
+                    await httpRes.WriteAsync("Forbidden", cancellationToken).ConfigureAwait(false);
                     return;
                 }
 
@@ -460,28 +460,27 @@ namespace Emby.Server.Implementations.HttpServer
                 if (string.Equals(httpReq.Verb, "OPTIONS", StringComparison.OrdinalIgnoreCase))
                 {
                     httpRes.StatusCode = 200;
-                    httpRes.AddHeader("Access-Control-Allow-Origin", "*");
-                    httpRes.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-                    httpRes.AddHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Range, X-MediaBrowser-Token, X-Emby-Authorization");
+                    httpRes.Headers.Add("Access-Control-Allow-Origin", "*");
+                    httpRes.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+                    httpRes.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization, Range, X-MediaBrowser-Token, X-Emby-Authorization");
                     httpRes.ContentType = "text/plain";
-                    await Write(httpRes, string.Empty).ConfigureAwait(false);
+                    await httpRes.WriteAsync(string.Empty, cancellationToken).ConfigureAwait(false);
                     return;
                 }
 
                 urlToLog = GetUrlToLog(urlString);
-                Logger.LogDebug("HTTP {HttpMethod} {Url} UserAgent: {UserAgent} \nHeaders: {@Headers}", urlToLog, httpReq.UserAgent ?? string.Empty, httpReq.HttpMethod, httpReq.Headers);
 
                 if (string.Equals(localPath, "/emby/", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase))
                 {
-                    RedirectToUrl(httpRes, DefaultRedirectPath);
+                    httpRes.Redirect(_defaultRedirectPath);
                     return;
                 }
 
                 if (string.Equals(localPath, "/emby", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase))
                 {
-                    RedirectToUrl(httpRes, "emby/" + DefaultRedirectPath);
+                    httpRes.Redirect("emby/" + _defaultRedirectPath);
                     return;
                 }
 
@@ -494,9 +493,10 @@ namespace Emby.Server.Implementations.HttpServer
 
                     if (!string.Equals(newUrl, urlString, StringComparison.OrdinalIgnoreCase))
                     {
-                        await Write(httpRes,
+                        await httpRes.WriteAsync(
                             "<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" +
-                            newUrl + "\">" + newUrl + "</a></body></html>").ConfigureAwait(false);
+                            newUrl + "\">" + newUrl + "</a></body></html>",
+                            cancellationToken).ConfigureAwait(false);
                         return;
                     }
                 }
@@ -511,34 +511,35 @@ namespace Emby.Server.Implementations.HttpServer
 
                     if (!string.Equals(newUrl, urlString, StringComparison.OrdinalIgnoreCase))
                     {
-                        await Write(httpRes,
+                        await httpRes.WriteAsync(
                             "<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" +
-                            newUrl + "\">" + newUrl + "</a></body></html>").ConfigureAwait(false);
+                            newUrl + "\">" + newUrl + "</a></body></html>",
+                            cancellationToken).ConfigureAwait(false);
                         return;
                     }
                 }
 
                 if (string.Equals(localPath, "/web", StringComparison.OrdinalIgnoreCase))
                 {
-                    RedirectToUrl(httpRes, DefaultRedirectPath);
+                    httpRes.Redirect(_defaultRedirectPath);
                     return;
                 }
 
                 if (string.Equals(localPath, "/web/", StringComparison.OrdinalIgnoreCase))
                 {
-                    RedirectToUrl(httpRes, "../" + DefaultRedirectPath);
+                    httpRes.Redirect("../" + _defaultRedirectPath);
                     return;
                 }
 
                 if (string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase))
                 {
-                    RedirectToUrl(httpRes, DefaultRedirectPath);
+                    httpRes.Redirect(_defaultRedirectPath);
                     return;
                 }
 
                 if (string.IsNullOrEmpty(localPath))
                 {
-                    RedirectToUrl(httpRes, "/" + DefaultRedirectPath);
+                    httpRes.Redirect("/" + _defaultRedirectPath);
                     return;
                 }
 
@@ -546,12 +547,12 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     if (localPath.EndsWith("web/dashboard.html", StringComparison.OrdinalIgnoreCase))
                     {
-                        RedirectToUrl(httpRes, "index.html#!/dashboard.html");
+                        httpRes.Redirect("index.html#!/dashboard.html");
                     }
 
                     if (localPath.EndsWith("web/home.html", StringComparison.OrdinalIgnoreCase))
                     {
-                        RedirectToUrl(httpRes, "index.html");
+                        httpRes.Redirect("index.html");
                     }
                 }
 
@@ -562,7 +563,7 @@ namespace Emby.Server.Implementations.HttpServer
                     {
                         httpRes.StatusCode = 503;
                         httpRes.ContentType = "text/html";
-                        await Write(httpRes, GlobalResponse).ConfigureAwait(false);
+                        await httpRes.WriteAsync(GlobalResponse, cancellationToken).ConfigureAwait(false);
                         return;
                     }
                 }
@@ -571,7 +572,7 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (handler != null)
                 {
-                    await handler.ProcessRequestAsync(this, httpReq, httpRes, Logger, cancellationToken).ConfigureAwait(false);
+                    await handler.ProcessRequestAsync(this, httpReq, httpRes, _logger, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -598,11 +599,7 @@ namespace Emby.Server.Implementations.HttpServer
                 var elapsed = stopWatch.Elapsed;
                 if (elapsed.TotalMilliseconds > 500)
                 {
-                    Logger.LogWarning("HTTP Response {StatusCode} to {RemoteIp}. Time (slow): {Elapsed:g}. {Url}", httpRes.StatusCode, remoteIp, elapsed, urlToLog);
-                }
-                else
-                {
-                    Logger.LogDebug("HTTP Response {StatusCode} to {RemoteIp}. Time: {Elapsed:g}. {Url}", httpRes.StatusCode, remoteIp, elapsed, urlToLog);
+                    _logger.LogWarning("HTTP Response {StatusCode} to {RemoteIp}. Time (slow): {Elapsed:g}. {Url}", httpRes.StatusCode, remoteIp, elapsed, urlToLog);
                 }
             }
         }
@@ -619,18 +616,11 @@ namespace Emby.Server.Implementations.HttpServer
                 return new ServiceHandler(restPath, contentType);
             }
 
-            Logger.LogError("Could not find handler for {PathInfo}", pathInfo);
+            _logger.LogError("Could not find handler for {PathInfo}", pathInfo);
             return null;
         }
 
-        private static Task Write(IResponse response, string text)
-        {
-            var bOutput = Encoding.UTF8.GetBytes(text);
-            response.OriginalResponse.ContentLength = bOutput.Length;
-            return response.OutputStream.WriteAsync(bOutput, 0, bOutput.Length);
-        }
-
-        private void RedirectToSecureUrl(IHttpRequest httpReq, IResponse httpRes, string url)
+        private void RedirectToSecureUrl(IHttpRequest httpReq, HttpResponse httpRes, string url)
         {
             if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
             {
@@ -640,22 +630,10 @@ namespace Emby.Server.Implementations.HttpServer
                     Scheme = "https"
                 };
                 url = builder.Uri.ToString();
-
-                RedirectToUrl(httpRes, url);
             }
-            else
-            {
-                RedirectToUrl(httpRes, url);
-            }
-        }
 
-        public static void RedirectToUrl(IResponse httpRes, string url)
-        {
-            httpRes.StatusCode = 302;
-            httpRes.AddHeader("Location", url);
+            httpRes.Redirect(url);
         }
-
-        public ServiceController ServiceController { get; private set; }
 
         /// <summary>
         /// Adds the rest handlers.
@@ -672,9 +650,9 @@ namespace Emby.Server.Implementations.HttpServer
             var types = services.Select(r => r.GetType());
             ServiceController.Init(this, types);
 
-            ResponseFilters = new Action<IRequest, IResponse, object>[]
+            ResponseFilters = new Action<IRequest, HttpResponse, object>[]
             {
-                new ResponseFilter(Logger).FilterResponse
+                new ResponseFilter(_logger).FilterResponse
             };
         }
 
@@ -772,24 +750,23 @@ namespace Emby.Server.Implementations.HttpServer
             return "emby/emby/" + path;
         }
 
-        private bool _disposed;
-        private readonly object _disposeLock = new object();
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed) return;
 
-            lock (_disposeLock)
+            if (disposing)
             {
-                if (_disposed) return;
-
-                _disposed = true;
-
-                if (disposing)
-                {
-                    Stop();
-                }
+                Stop();
             }
+
+            _disposed = true;
         }
 
         /// <summary>
@@ -803,7 +780,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return Task.CompletedTask;
             }
 
-            Logger.LogDebug("Websocket message received: {0}", result.MessageType);
+            _logger.LogDebug("Websocket message received: {0}", result.MessageType);
 
             IEnumerable<Task> GetTasks()
             {
@@ -814,11 +791,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             return Task.WhenAll(GetTasks());
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
         }
     }
 }

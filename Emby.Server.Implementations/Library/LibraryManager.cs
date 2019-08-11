@@ -1187,12 +1187,12 @@ namespace Emby.Server.Implementations.Library
 
             if (libraryFolder != null && libraryFolder.HasImage(ImageType.Primary))
             {
-                info.PrimaryImageItemId = libraryFolder.Id.ToString("N");
+                info.PrimaryImageItemId = libraryFolder.Id.ToString("N", CultureInfo.InvariantCulture);
             }
 
             if (libraryFolder != null)
             {
-                info.ItemId = libraryFolder.Id.ToString("N");
+                info.ItemId = libraryFolder.Id.ToString("N", CultureInfo.InvariantCulture);
                 info.LibraryOptions = GetLibraryOptions(libraryFolder);
 
                 if (refreshQueue != null)
@@ -2135,12 +2135,12 @@ namespace Emby.Server.Implementations.Library
             string viewType,
             string sortName)
         {
-            var parentIdString = parentId.Equals(Guid.Empty) ? null : parentId.ToString("N");
-            var idValues = "38_namedview_" + name + user.Id.ToString("N") + (parentIdString ?? string.Empty) + (viewType ?? string.Empty);
+            var parentIdString = parentId.Equals(Guid.Empty) ? null : parentId.ToString("N", CultureInfo.InvariantCulture);
+            var idValues = "38_namedview_" + name + user.Id.ToString("N", CultureInfo.InvariantCulture) + (parentIdString ?? string.Empty) + (viewType ?? string.Empty);
 
             var id = GetNewItemId(idValues, typeof(UserView));
 
-            var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views", id.ToString("N"));
+            var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views", id.ToString("N", CultureInfo.InvariantCulture));
 
             var item = GetItemById(id) as UserView;
 
@@ -2271,7 +2271,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var parentIdString = parentId.Equals(Guid.Empty) ? null : parentId.ToString("N");
+            var parentIdString = parentId.Equals(Guid.Empty) ? null : parentId.ToString("N", CultureInfo.InvariantCulture);
             var idValues = "37_namedview_" + name + (parentIdString ?? string.Empty) + (viewType ?? string.Empty);
             if (!string.IsNullOrEmpty(uniqueId))
             {
@@ -2280,7 +2280,7 @@ namespace Emby.Server.Implementations.Library
 
             var id = GetNewItemId(idValues, typeof(UserView));
 
-            var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views", id.ToString("N"));
+            var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views", id.ToString("N", CultureInfo.InvariantCulture));
 
             var item = GetItemById(id) as UserView;
 

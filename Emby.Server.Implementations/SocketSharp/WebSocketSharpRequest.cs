@@ -1,57 +1,56 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Linq;
-using System.Text;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using IHttpFile = MediaBrowser.Model.Services.IHttpFile;
 using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
-using IResponse = MediaBrowser.Model.Services.IResponse;
 
 namespace Emby.Server.Implementations.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {
-        private readonly HttpRequest request;
+        public const string FormUrlEncoded = "application/x-www-form-urlencoded";
+        public const string MultiPartFormData = "multipart/form-data";
+        public const string Soap11 = "text/xml; charset=utf-8";
 
-        public WebSocketSharpRequest(HttpRequest httpContext, HttpResponse response, string operationName, ILogger logger)
+        private string _remoteIp;
+        private Dictionary<string, object> _items;
+        private string _responseContentType;
+
+        public WebSocketSharpRequest(HttpRequest httpRequest, HttpResponse httpResponse, string operationName, ILogger logger)
         {
             this.OperationName = operationName;
-            this.request = httpContext;
-            this.Response = new WebSocketSharpResponse(logger, response);
+            this.Request = httpRequest;
+            this.Response = httpResponse;
         }
 
-        public HttpRequest HttpRequest => request;
+        public string Accept => StringValues.IsNullOrEmpty(Request.Headers[HeaderNames.Accept]) ? null : Request.Headers[HeaderNames.Accept].ToString();
 
-        public IResponse Response { get; }
+        public string Authorization => StringValues.IsNullOrEmpty(Request.Headers[HeaderNames.Authorization]) ? null : Request.Headers[HeaderNames.Authorization].ToString();
+
+        public HttpRequest Request { get; }
+
+        public HttpResponse Response { get; }
 
         public string OperationName { get; set; }
 
-        public object Dto { get; set; }
+        public string RawUrl => Request.GetEncodedPathAndQuery();
 
-        public string RawUrl => request.GetEncodedPathAndQuery();
+        public string AbsoluteUri => Request.GetDisplayUrl().TrimEnd('/');
 
-        public string AbsoluteUri => request.GetDisplayUrl().TrimEnd('/');
-        // Header[name] returns "" when undefined
-
-        private string GetHeader(string name) => request.Headers[name].ToString();
-
-        private string remoteIp;
         public string RemoteIp
         {
             get
             {
-                if (remoteIp != null)
+                if (_remoteIp != null)
                 {
-                    return remoteIp;
+                    return _remoteIp;
                 }
 
                 IPAddress ip;
@@ -62,13 +61,50 @@ namespace Emby.Server.Implementations.SocketSharp
                 {
                     if (!IPAddress.TryParse(GetHeader(CustomHeaderNames.XRealIP), out ip))
                     {
-                        ip = request.HttpContext.Connection.RemoteIpAddress;
+                        ip = Request.HttpContext.Connection.RemoteIpAddress;
                     }
                 }
 
-                return remoteIp = NormalizeIp(ip).ToString();
+                return _remoteIp = NormalizeIp(ip).ToString();
             }
         }
+
+        public string[] AcceptTypes => Request.Headers.GetCommaSeparatedValues(HeaderNames.Accept);
+
+        public Dictionary<string, object> Items => _items ?? (_items = new Dictionary<string, object>());
+
+        public string ResponseContentType
+        {
+            get =>
+                _responseContentType
+                ?? (_responseContentType = GetResponseContentType(Request));
+            set => this._responseContentType = value;
+        }
+
+        public string PathInfo => Request.Path.Value;
+
+        public string UserAgent => Request.Headers[HeaderNames.UserAgent];
+
+        public IHeaderDictionary Headers => Request.Headers;
+
+        public IQueryCollection QueryString => Request.Query;
+
+        public bool IsLocal => Request.HttpContext.Connection.LocalIpAddress.Equals(Request.HttpContext.Connection.RemoteIpAddress);
+
+
+        public string HttpMethod => Request.Method;
+
+        public string Verb => HttpMethod;
+
+        public string ContentType => Request.ContentType;
+
+        public Uri UrlReferrer => Request.GetTypedHeaders().Referer;
+
+        public Stream InputStream => Request.Body;
+
+        public long ContentLength => Request.ContentLength ?? 0;
+
+        private string GetHeader(string name) => Request.Headers[name].ToString();
 
         private static IPAddress NormalizeIp(IPAddress ip)
         {
@@ -80,22 +116,6 @@ namespace Emby.Server.Implementations.SocketSharp
             return ip;
         }
 
-        public string[] AcceptTypes => request.Headers.GetCommaSeparatedValues(HeaderNames.Accept);
-
-        private Dictionary<string, object> items;
-        public Dictionary<string, object> Items => items ?? (items = new Dictionary<string, object>());
-
-        private string responseContentType;
-        public string ResponseContentType
-        {
-            get =>
-                responseContentType
-                ?? (responseContentType = GetResponseContentType(HttpRequest));
-            set => this.responseContentType = value;
-        }
-
-        public const string FormUrlEncoded = "application/x-www-form-urlencoded";
-        public const string MultiPartFormData = "multipart/form-data";
         public static string GetResponseContentType(HttpRequest httpReq)
         {
             var specifiedContentType = GetQueryStringContentType(httpReq);
@@ -151,8 +171,6 @@ namespace Emby.Server.Implementations.SocketSharp
             // We could also send a '406 Not Acceptable', but this is allowed also
             return serverDefaultContentType;
         }
-
-        public const string Soap11 = "text/xml; charset=utf-8";
 
         public static bool HasAnyOfContentTypes(HttpRequest request, params string[] contentTypes)
         {
@@ -223,106 +241,6 @@ namespace Emby.Server.Implementations.SocketSharp
 
             var pos = strVal.IndexOf(needle);
             return pos == -1 ? strVal : strVal.Slice(0, pos);
-        }
-
-        public string PathInfo => this.request.Path.Value;
-
-        public string UserAgent => request.Headers[HeaderNames.UserAgent];
-
-        public IHeaderDictionary Headers => request.Headers;
-
-        public IQueryCollection QueryString => request.Query;
-
-        public bool IsLocal => string.Equals(request.HttpContext.Connection.LocalIpAddress.ToString(), request.HttpContext.Connection.RemoteIpAddress.ToString());
-
-        private string httpMethod;
-        public string HttpMethod =>
-            httpMethod
-            ?? (httpMethod = request.Method);
-
-        public string Verb => HttpMethod;
-
-        public string ContentType => request.ContentType;
-
-        private Encoding ContentEncoding
-        {
-            get
-            {
-                // TODO is this necessary?
-                if (UserAgent != null && CultureInfo.InvariantCulture.CompareInfo.IsPrefix(UserAgent, "UP"))
-                {
-                    string postDataCharset = Headers["x-up-devcap-post-charset"];
-                    if (!string.IsNullOrEmpty(postDataCharset))
-                    {
-                        try
-                        {
-                            return Encoding.GetEncoding(postDataCharset);
-                        }
-                        catch (ArgumentException)
-                        {
-                        }
-                    }
-                }
-
-                return request.GetTypedHeaders().ContentType.Encoding ?? Encoding.UTF8;
-            }
-        }
-
-        public Uri UrlReferrer => request.GetTypedHeaders().Referer;
-
-        public static Encoding GetEncoding(string contentTypeHeader)
-        {
-            var param = GetParameter(contentTypeHeader.AsSpan(), "charset=");
-            if (param == null)
-            {
-                return null;
-            }
-
-            try
-            {
-                return Encoding.GetEncoding(param);
-            }
-            catch (ArgumentException)
-            {
-                return null;
-            }
-        }
-
-        public Stream InputStream => request.Body;
-
-        public long ContentLength => request.ContentLength ?? 0;
-
-        private IHttpFile[] httpFiles;
-        public IHttpFile[] Files
-        {
-            get
-            {
-                if (httpFiles != null)
-                {
-                    return httpFiles;
-                }
-
-                if (files == null)
-                {
-                    return httpFiles = Array.Empty<IHttpFile>();
-                }
-
-                var values = files.Values;
-                httpFiles = new IHttpFile[values.Count];
-                for (int i = 0; i < values.Count; i++)
-                {
-                    var reqFile = values.ElementAt(i);
-                    httpFiles[i] = new HttpFile
-                    {
-                        ContentType = reqFile.ContentType,
-                        ContentLength = reqFile.ContentLength,
-                        FileName = reqFile.FileName,
-                        InputStream = reqFile.InputStream,
-                    };
-                }
-
-                return httpFiles;
-            }
         }
     }
 }

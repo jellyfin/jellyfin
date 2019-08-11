@@ -152,7 +152,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>System.String.</returns>
         private static string GetCacheKey(long internalUserId, Guid itemId)
         {
-            return internalUserId.ToString(CultureInfo.InvariantCulture) + "-" + itemId.ToString("N");
+            return internalUserId.ToString(CultureInfo.InvariantCulture) + "-" + itemId.ToString("N", CultureInfo.InvariantCulture);
         }
 
         public UserItemData GetUserData(User user, BaseItem item)

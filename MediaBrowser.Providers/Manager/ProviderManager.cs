@@ -934,7 +934,7 @@ namespace MediaBrowser.Providers.Manager
 
         public void OnRefreshStart(BaseItem item)
         {
-            //_logger.LogInformation("OnRefreshStart {0}", item.Id.ToString("N"));
+            //_logger.LogInformation("OnRefreshStart {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
             var id = item.Id;
 
             lock (_activeRefreshes)
@@ -947,7 +947,7 @@ namespace MediaBrowser.Providers.Manager
 
         public void OnRefreshComplete(BaseItem item)
         {
-            //_logger.LogInformation("OnRefreshComplete {0}", item.Id.ToString("N"));
+            //_logger.LogInformation("OnRefreshComplete {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
             lock (_activeRefreshes)
             {
                 _activeRefreshes.Remove(item.Id);
@@ -971,7 +971,7 @@ namespace MediaBrowser.Providers.Manager
 
         public void OnRefreshProgress(BaseItem item, double progress)
         {
-            //_logger.LogInformation("OnRefreshProgress {0} {1}", item.Id.ToString("N"), progress);
+            //_logger.LogInformation("OnRefreshProgress {0} {1}", item.Id.ToString("N", CultureInfo.InvariantCulture), progress);
             var id = item.Id;
 
             lock (_activeRefreshes)
@@ -985,7 +985,7 @@ namespace MediaBrowser.Providers.Manager
                 else
                 {
                     // TODO: Need to hunt down the conditions for this happening
-                    //throw new Exception(string.Format("Refresh for item {0} {1} is not in progress", item.GetType().Name, item.Id.ToString("N")));
+                    //throw new Exception(string.Format("Refresh for item {0} {1} is not in progress", item.GetType().Name, item.Id.ToString("N", CultureInfo.InvariantCulture)));
                 }
             }
         }

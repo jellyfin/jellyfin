@@ -211,7 +211,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 HasImage = program.Icon != null && !string.IsNullOrEmpty(program.Icon.Source),
                 OfficialRating = program.Rating != null && !string.IsNullOrEmpty(program.Rating.Value) ? program.Rating.Value : null,
                 CommunityRating = program.StarRating,
-                SeriesId = program.Episode == null ? null : program.Title.GetMD5().ToString("N")
+                SeriesId = program.Episode == null ? null : program.Title.GetMD5().ToString("N", CultureInfo.InvariantCulture)
             };
 
             if (string.IsNullOrWhiteSpace(program.ProgramId))
@@ -227,7 +227,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     uniqueString = "-" + programInfo.EpisodeNumber.Value.ToString(CultureInfo.InvariantCulture);
                 }
 
-                programInfo.ShowId = uniqueString.GetMD5().ToString("N");
+                programInfo.ShowId = uniqueString.GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
                 // If we don't have valid episode info, assume it's a unique program, otherwise recordings might be skipped
                 if (programInfo.IsSeries

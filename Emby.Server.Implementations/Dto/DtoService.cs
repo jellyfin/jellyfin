@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -213,7 +214,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.DisplayPreferencesId))
             {
-                dto.DisplayPreferencesId = item.DisplayPreferencesId.ToString("N");
+                dto.DisplayPreferencesId = item.DisplayPreferencesId.ToString("N", CultureInfo.InvariantCulture);
             }
 
             if (user != null)
@@ -444,7 +445,7 @@ namespace Emby.Server.Implementations.Dto
         /// <exception cref="ArgumentNullException">item</exception>
         public string GetDtoId(BaseItem item)
         {
-            return item.Id.ToString("N");
+            return item.Id.ToString("N", CultureInfo.InvariantCulture);
         }
 
         private static void SetBookProperties(BaseItemDto dto, Book item)
@@ -608,7 +609,7 @@ namespace Emby.Server.Implementations.Dto
                 if (dictionary.TryGetValue(person.Name, out Person entity))
                 {
                     baseItemPerson.PrimaryImageTag = GetImageCacheTag(entity, ImageType.Primary);
-                    baseItemPerson.Id = entity.Id.ToString("N");
+                    baseItemPerson.Id = entity.Id.ToString("N", CultureInfo.InvariantCulture);
                     list.Add(baseItemPerson);
                 }
             }
@@ -893,7 +894,7 @@ namespace Emby.Server.Implementations.Dto
                 //var artistItems = _libraryManager.GetArtists(new InternalItemsQuery
                 //{
                 //    EnableTotalRecordCount = false,
-                //    ItemIds = new[] { item.Id.ToString("N") }
+                //    ItemIds = new[] { item.Id.ToString("N", CultureInfo.InvariantCulture) }
                 //});
 
                 //dto.ArtistItems = artistItems.Items
@@ -903,7 +904,7 @@ namespace Emby.Server.Implementations.Dto
                 //        return new NameIdPair
                 //        {
                 //            Name = artist.Name,
-                //            Id = artist.Id.ToString("N")
+                //            Id = artist.Id.ToString("N", CultureInfo.InvariantCulture)
                 //        };
                 //    })
                 //    .ToList();
@@ -946,7 +947,7 @@ namespace Emby.Server.Implementations.Dto
                 //var artistItems = _libraryManager.GetAlbumArtists(new InternalItemsQuery
                 //{
                 //    EnableTotalRecordCount = false,
-                //    ItemIds = new[] { item.Id.ToString("N") }
+                //    ItemIds = new[] { item.Id.ToString("N", CultureInfo.InvariantCulture) }
                 //});
 
                 //dto.AlbumArtists = artistItems.Items
@@ -956,7 +957,7 @@ namespace Emby.Server.Implementations.Dto
                 //        return new NameIdPair
                 //        {
                 //            Name = artist.Name,
-                //            Id = artist.Id.ToString("N")
+                //            Id = artist.Id.ToString("N", CultureInfo.InvariantCulture)
                 //        };
                 //    })
                 //    .ToList();
@@ -1044,7 +1045,7 @@ namespace Emby.Server.Implementations.Dto
                         }
                         else
                         {
-                            string id = item.Id.ToString("N");
+                            string id = item.Id.ToString("N", CultureInfo.InvariantCulture);
                             mediaStreams = dto.MediaSources.Where(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase))
                                 .SelectMany(i => i.MediaStreams)
                                 .ToArray();

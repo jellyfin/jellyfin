@@ -190,7 +190,7 @@ jobs:
     - task: CmdLine@2
       displayName: Execute ABI compatibility check tool
       inputs:
-        script: 'dotnet tools/CompatibilityCheckerCoreCLI.dll current-release/$(AssemblyFileName) new-release/$(AssemblyFileName)'
+        script: 'dotnet tools/CompatibilityCheckerCoreCLI.dll current-release/$(AssemblyFileName) new-release/$(AssemblyFileName) --azure-pipelines'
         workingDirectory: $(System.ArtifactsDirectory) # Optional
         #failOnStderr: false # Optional
 

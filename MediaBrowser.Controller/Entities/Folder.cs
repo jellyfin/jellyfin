@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -177,7 +178,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (user.Policy.BlockedMediaFolders != null)
                 {
-                    if (user.Policy.BlockedMediaFolders.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase) ||
+                    if (user.Policy.BlockedMediaFolders.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase) ||
 
                         // Backwards compatibility
                         user.Policy.BlockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
@@ -187,7 +188,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    if (!user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+                    if (!user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
                     {
                         return false;
                     }

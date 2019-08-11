@@ -10,8 +10,12 @@ namespace Emby.Server.Implementations
     /// </summary>
     public class ServerApplicationPaths : BaseApplicationPaths, IServerApplicationPaths
     {
+        private string _defaultTranscodingTempPath;
+        private string _transcodingTempPath;
+        private string _internalMetadataPath;
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="BaseApplicationPaths" /> class.
+        /// Initializes a new instance of the <see cref="ServerApplicationPaths" /> class.
         /// </summary>
         public ServerApplicationPaths(
             string programDataPath,
@@ -30,7 +34,7 @@ namespace Emby.Server.Implementations
         public string ApplicationResourcesPath { get; } = AppContext.BaseDirectory;
 
         /// <summary>
-        /// Gets the path to the base root media directory
+        /// Gets the path to the base root media directory.
         /// </summary>
         /// <value>The root folder path.</value>
         public string RootFolderPath => Path.Combine(ProgramDataPath, "root");
@@ -48,7 +52,7 @@ namespace Emby.Server.Implementations
         public string LocalizationPath => Path.Combine(ProgramDataPath, "localization");
 
         /// <summary>
-        /// Gets the path to the People directory
+        /// Gets the path to the People directory.
         /// </summary>
         /// <value>The people path.</value>
         public string PeoplePath => Path.Combine(InternalMetadataPath, "People");
@@ -56,37 +60,37 @@ namespace Emby.Server.Implementations
         public string ArtistsPath => Path.Combine(InternalMetadataPath, "artists");
 
         /// <summary>
-        /// Gets the path to the Genre directory
+        /// Gets the path to the Genre directory.
         /// </summary>
         /// <value>The genre path.</value>
         public string GenrePath => Path.Combine(InternalMetadataPath, "Genre");
 
         /// <summary>
-        /// Gets the path to the Genre directory
+        /// Gets the path to the Genre directory.
         /// </summary>
         /// <value>The genre path.</value>
         public string MusicGenrePath => Path.Combine(InternalMetadataPath, "MusicGenre");
 
         /// <summary>
-        /// Gets the path to the Studio directory
+        /// Gets the path to the Studio directory.
         /// </summary>
         /// <value>The studio path.</value>
         public string StudioPath => Path.Combine(InternalMetadataPath, "Studio");
 
         /// <summary>
-        /// Gets the path to the Year directory
+        /// Gets the path to the Year directory.
         /// </summary>
         /// <value>The year path.</value>
         public string YearPath => Path.Combine(InternalMetadataPath, "Year");
 
         /// <summary>
-        /// Gets the path to the General IBN directory
+        /// Gets the path to the General IBN directory.
         /// </summary>
         /// <value>The general path.</value>
         public string GeneralPath => Path.Combine(InternalMetadataPath, "general");
 
         /// <summary>
-        /// Gets the path to the Ratings IBN directory
+        /// Gets the path to the Ratings IBN directory.
         /// </summary>
         /// <value>The ratings path.</value>
         public string RatingsPath => Path.Combine(InternalMetadataPath, "ratings");
@@ -98,15 +102,13 @@ namespace Emby.Server.Implementations
         public string MediaInfoImagesPath => Path.Combine(InternalMetadataPath, "mediainfo");
 
         /// <summary>
-        /// Gets the path to the user configuration directory
+        /// Gets the path to the user configuration directory.
         /// </summary>
         /// <value>The user configuration directory path.</value>
         public string UserConfigurationDirectoryPath => Path.Combine(ConfigurationDirectoryPath, "users");
 
-        private string _defaultTranscodingTempPath;
         public string DefaultTranscodingTempPath => _defaultTranscodingTempPath ?? (_defaultTranscodingTempPath = Path.Combine(ProgramDataPath, "transcoding-temp"));
 
-        private string _transcodingTempPath;
         public string TranscodingTempPath
         {
             get => _transcodingTempPath ?? (_transcodingTempPath = DefaultTranscodingTempPath);
@@ -139,7 +141,6 @@ namespace Emby.Server.Implementations
             return path;
         }
 
-        private string _internalMetadataPath;
         public string InternalMetadataPath
         {
             get => _internalMetadataPath ?? (_internalMetadataPath = Path.Combine(DataPath, "metadata"));

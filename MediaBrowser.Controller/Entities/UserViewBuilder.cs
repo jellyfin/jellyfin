@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
@@ -987,7 +988,7 @@ namespace MediaBrowser.Controller.Entities
 
         private UserView GetUserViewWithName(string name, string type, string sortName, BaseItem parent)
         {
-            return _userViewManager.GetUserSubView(parent.Id, parent.Id.ToString("N"), type, sortName);
+            return _userViewManager.GetUserSubView(parent.Id, parent.Id.ToString("N", CultureInfo.InvariantCulture), type, sortName);
         }
 
         private UserView GetUserView(string type, string localizationKey, string sortName, BaseItem parent)

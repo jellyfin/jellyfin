@@ -1,4 +1,6 @@
 using System;
+using System.Net.Sockets;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
@@ -247,7 +249,7 @@ namespace Emby.Dlna.Main
 
             foreach (var address in addresses)
             {
-                if (address.AddressFamily == IpAddressFamily.InterNetworkV6)
+                if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
                    // Not support IPv6 right now
                    continue;
@@ -306,7 +308,7 @@ namespace Emby.Dlna.Main
             {
                 guid = text.GetMD5();
             }
-            return guid.ToString("N");
+            return guid.ToString("N", CultureInfo.InvariantCulture);
         }
 
         private void SetProperies(SsdpDevice device, string fullDeviceType)

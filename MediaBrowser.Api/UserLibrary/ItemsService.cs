@@ -99,7 +99,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 ancestorIds = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                     .Where(i => i is Folder)
-                    .Where(i => !excludeFolderIds.Contains(i.Id.ToString("N")))
+                    .Where(i => !excludeFolderIds.Contains(i.Id.ToString("N", CultureInfo.InvariantCulture)))
                     .Select(i => i.Id)
                     .ToArray();
             }
@@ -228,7 +228,9 @@ namespace MediaBrowser.Api.UserLibrary
             var collectionFolders = _libraryManager.GetCollectionFolders(item);
             foreach (var collectionFolder in collectionFolders)
             {
-                if (user.Policy.EnabledFolders.Contains(collectionFolder.Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+                if (user.Policy.EnabledFolders.Contains(
+                    collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture),
+                    StringComparer.OrdinalIgnoreCase))
                 {
                     isInEnabledFolder = true;
                 }

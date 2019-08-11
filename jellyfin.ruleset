@@ -27,6 +27,10 @@
     <Rule Id="CA1031" Action="Info" />
     <!-- disable warning CA1062: Validate arguments of public methods -->
     <Rule Id="CA1062" Action="Info" />
+    <!-- disable warning CA1812: internal class that is apparently never instantiated.
+        If so, remove the code from the assembly.
+        If this class is intended to contain only static members, make it static -->
+    <Rule Id="CA1812" Action="Info" />
     <!-- disable warning CA1822: Member does not access instance data and can be marked as static -->
     <Rule Id="CA1822" Action="Info" />
 

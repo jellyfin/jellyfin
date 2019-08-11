@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -107,9 +108,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using ServiceStack;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
@@ -385,7 +386,7 @@ namespace Emby.Server.Implementations
 
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
-            NetworkManager.NetworkChanged += NetworkManager_NetworkChanged;
+            NetworkManager.NetworkChanged += OnNetworkChanged;
         }
 
         public string ExpandVirtualPath(string path)
@@ -409,7 +410,7 @@ namespace Emby.Server.Implementations
             return ServerConfigurationManager.Configuration.LocalNetworkSubnets;
         }
 
-        private void NetworkManager_NetworkChanged(object sender, EventArgs e)
+        private void OnNetworkChanged(object sender, EventArgs e)
         {
             _validAddressResults.Clear();
         }
@@ -417,10 +418,10 @@ namespace Emby.Server.Implementations
         public string ApplicationVersion { get; } = typeof(ApplicationHost).Assembly.GetName().Version.ToString(3);
 
         /// <summary>
-        /// Gets the current application user agent
+        /// Gets the current application user agent.
         /// </summary>
         /// <value>The application user agent.</value>
-        public string ApplicationUserAgent => Name.Replace(' ','-') + '/' + ApplicationVersion;
+        public string ApplicationUserAgent => Name.Replace(' ', '-') + "/" + ApplicationVersion;
 
         /// <summary>
         /// Gets the email address for use within a comment section of a user agent field.
@@ -428,14 +429,11 @@ namespace Emby.Server.Implementations
         /// </summary>
         public string ApplicationUserAgentAddress { get; } = "team@jellyfin.org";
 
-        private string _productName;
-
         /// <summary>
-        /// Gets the current application name
+        /// Gets the current application name.
         /// </summary>
         /// <value>The application name.</value>
-        public string ApplicationProductName
-            => _productName ?? (_productName = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductName);
+        public string ApplicationProductName { get; } = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductName;
 
         private DeviceId _deviceId;
 
@@ -469,8 +467,8 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Creates an instance of type and resolves all constructor dependencies
         /// </summary>
-        /// /// <typeparam name="T">The type</typeparam>
-        /// <returns>T</returns>
+        /// /// <typeparam name="T">The type.</typeparam>
+        /// <returns>T.</returns>
         public T CreateInstance<T>()
             => ActivatorUtilities.CreateInstance<T>(_serviceProvider);
 
@@ -603,10 +601,15 @@ namespace Emby.Server.Implementations
 
                 foreach (var plugin in Plugins)
                 {
-                    pluginBuilder.AppendLine(string.Format("{0} {1}", plugin.Name, plugin.Version));
+                    pluginBuilder.AppendLine(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{0} {1}",
+                            plugin.Name,
+                            plugin.Version));
                 }
 
-                Logger.LogInformation("Plugins: {plugins}", pluginBuilder.ToString());
+                Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
             }
 
             DiscoverTypes();
@@ -628,7 +631,7 @@ namespace Emby.Server.Implementations
 
                     if (EnableHttps && Certificate != null)
                     {
-                        options.ListenAnyIP(HttpsPort, listenOptions => { listenOptions.UseHttps(Certificate); });
+                        options.ListenAnyIP(HttpsPort, listenOptions => listenOptions.UseHttps(Certificate));
                     }
                 })
                 .UseContentRoot(contentRoot)
@@ -642,6 +645,7 @@ namespace Emby.Server.Implementations
                     app.UseWebSockets();
 
                     app.UseResponseCompression();
+
                     // TODO app.UseMiddleware<WebSocketMiddleware>();
                     app.Use(ExecuteWebsocketHandlerAsync);
                     app.Use(ExecuteHttpHandlerAsync);
@@ -675,7 +679,7 @@ namespace Emby.Server.Implementations
             var localPath = context.Request.Path.ToString();
 
             var req = new WebSocketSharpRequest(request, response, request.Path, Logger);
-            await HttpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, CancellationToken.None).ConfigureAwait(false);
+            await HttpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, context.RequestAborted).ConfigureAwait(false);
         }
 
         public static IStreamHelper StreamHelper { get; set; }
@@ -784,7 +788,7 @@ namespace Emby.Server.Implementations
 
             HttpServer = new HttpListenerHost(
                 this,
-                LoggerFactory,
+                LoggerFactory.CreateLogger<HttpListenerHost>(),
                 ServerConfigurationManager,
                 _configuration,
                 NetworkManager,
@@ -872,7 +876,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IAuthorizationContext>(authContext);
             serviceCollection.AddSingleton<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
 
-            AuthService = new AuthService(UserManager, authContext, ServerConfigurationManager, SessionManager, NetworkManager);
+            AuthService = new AuthService(authContext, ServerConfigurationManager, SessionManager, NetworkManager);
             serviceCollection.AddSingleton(AuthService);
 
             SubtitleEncoder = new MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder(LibraryManager, LoggerFactory, ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, ProcessFactory);
@@ -1043,8 +1047,8 @@ namespace Emby.Server.Implementations
                 .Cast<IServerEntryPoint>()
                 .ToList();
 
-            await Task.WhenAll(StartEntryPoints(entries, true));
-            await Task.WhenAll(StartEntryPoints(entries, false));
+            await Task.WhenAll(StartEntryPoints(entries, true)).ConfigureAwait(false);
+            await Task.WhenAll(StartEntryPoints(entries, false)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1219,7 +1223,7 @@ namespace Emby.Server.Implementations
 
             // Generate self-signed cert
             var certHost = GetHostnameFromExternalDns(ServerConfigurationManager.Configuration.WanDdns);
-            var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + (certHost + "2").GetMD5().ToString("N") + ".pfx");
+            var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + (certHost + "2").GetMD5().ToString("N", CultureInfo.InvariantCulture) + ".pfx");
             const string Password = "embycert";
 
             return new CertificateInfo
@@ -1457,15 +1461,10 @@ namespace Emby.Server.Implementations
             };
         }
 
-        public WakeOnLanInfo[] GetWakeOnLanInfo()
-        {
-            return NetworkManager.GetMacAddresses()
-                .Select(i => new WakeOnLanInfo
-                {
-                    MacAddress = i
-                })
-                .ToArray();
-        }
+        public IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo()
+            => NetworkManager.GetMacAddresses()
+                .Select(i => new WakeOnLanInfo(i))
+                .ToList();
 
         public async Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken)
         {
@@ -1481,6 +1480,7 @@ namespace Emby.Server.Implementations
             {
                 wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
             }
+
             return new PublicSystemInfo
             {
                 Version = ApplicationVersion,
@@ -1546,14 +1546,32 @@ namespace Emby.Server.Implementations
             return null;
         }
 
-        public string GetLocalApiUrl(IpAddressInfo ipAddress)
+        /// <summary>
+        /// Removes the scope id from IPv6 addresses.
+        /// </summary>
+        /// <param name="address">The IPv6 address.</param>
+        /// <returns>The IPv6 address without the scope id.</returns>
+        private string RemoveScopeId(string address)
         {
-            if (ipAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
+            var index = address.IndexOf('%');
+            if (index == -1)
             {
-                return GetLocalApiUrl("[" + ipAddress.Address + "]");
+                return address;
             }
 
-            return GetLocalApiUrl(ipAddress.Address);
+            return address.Substring(0, index);
+        }
+
+        public string GetLocalApiUrl(IPAddress ipAddress)
+        {
+            if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                var str = RemoveScopeId(ipAddress.ToString());
+
+                return GetLocalApiUrl("[" + str + "]");
+            }
+
+            return GetLocalApiUrl(ipAddress.ToString());
         }
 
         public string GetLocalApiUrl(string host)
@@ -1564,19 +1582,22 @@ namespace Emby.Server.Implementations
                     host,
                     HttpsPort.ToString(CultureInfo.InvariantCulture));
             }
+
             return string.Format("http://{0}:{1}",
                     host,
                     HttpPort.ToString(CultureInfo.InvariantCulture));
         }
 
-        public string GetWanApiUrl(IpAddressInfo ipAddress)
+        public string GetWanApiUrl(IPAddress ipAddress)
         {
-            if (ipAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
+            if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                return GetWanApiUrl("[" + ipAddress.Address + "]");
+                var str = RemoveScopeId(ipAddress.ToString());
+
+                return GetWanApiUrl("[" + str + "]");
             }
 
-            return GetWanApiUrl(ipAddress.Address);
+            return GetWanApiUrl(ipAddress.ToString());
         }
 
         public string GetWanApiUrl(string host)
@@ -1587,17 +1608,18 @@ namespace Emby.Server.Implementations
                     host,
                     ServerConfigurationManager.Configuration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture));
             }
+
             return string.Format("http://{0}:{1}",
                     host,
                     ServerConfigurationManager.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture));
         }
 
-        public Task<List<IpAddressInfo>> GetLocalIpAddresses(CancellationToken cancellationToken)
+        public Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken)
         {
             return GetLocalIpAddressesInternal(true, 0, cancellationToken);
         }
 
-        private async Task<List<IpAddressInfo>> GetLocalIpAddressesInternal(bool allowLoopback, int limit, CancellationToken cancellationToken)
+        private async Task<List<IPAddress>> GetLocalIpAddressesInternal(bool allowLoopback, int limit, CancellationToken cancellationToken)
         {
             var addresses = ServerConfigurationManager
                 .Configuration
@@ -1611,13 +1633,13 @@ namespace Emby.Server.Implementations
                 addresses.AddRange(NetworkManager.GetLocalIpAddresses(ServerConfigurationManager.Configuration.IgnoreVirtualInterfaces));
             }
 
-            var resultList = new List<IpAddressInfo>();
+            var resultList = new List<IPAddress>();
 
             foreach (var address in addresses)
             {
                 if (!allowLoopback)
                 {
-                    if (address.Equals(IpAddressInfo.Loopback) || address.Equals(IpAddressInfo.IPv6Loopback))
+                    if (address.Equals(IPAddress.Loopback) || address.Equals(IPAddress.IPv6Loopback))
                     {
                         continue;
                     }
@@ -1638,7 +1660,7 @@ namespace Emby.Server.Implementations
             return resultList;
         }
 
-        private IpAddressInfo NormalizeConfiguredLocalAddress(string address)
+        private IPAddress NormalizeConfiguredLocalAddress(string address)
         {
             var index = address.Trim('/').IndexOf('/');
 
@@ -1647,7 +1669,7 @@ namespace Emby.Server.Implementations
                 address = address.Substring(index + 1);
             }
 
-            if (NetworkManager.TryParseIpAddress(address.Trim('/'), out IpAddressInfo result))
+            if (IPAddress.TryParse(address.Trim('/'), out IPAddress result))
             {
                 return result;
             }
@@ -1657,10 +1679,10 @@ namespace Emby.Server.Implementations
 
         private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
-        private async Task<bool> IsIpAddressValidAsync(IpAddressInfo address, CancellationToken cancellationToken)
+        private async Task<bool> IsIpAddressValidAsync(IPAddress address, CancellationToken cancellationToken)
         {
-            if (address.Equals(IpAddressInfo.Loopback) ||
-                address.Equals(IpAddressInfo.IPv6Loopback))
+            if (address.Equals(IPAddress.Loopback) ||
+                address.Equals(IPAddress.IPv6Loopback))
             {
                 return true;
             }

@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml;
-using Rssdp.Infrastructure;
-using MediaBrowser.Model.Net;
+using System.Net;
 
 namespace Rssdp
 {
@@ -56,12 +52,12 @@ namespace Rssdp
         /// <summary>
         /// Gets or sets the Address used to check if the received message from same interface with this device/tree. Required.
         /// </summary>
-        public IpAddressInfo Address { get; set; }
+        public IPAddress Address { get; set; }
 
         /// <summary>
         /// Gets or sets the SubnetMask used to check if the received message from same interface with this device/tree. Required.
         /// </summary>
-        public IpAddressInfo SubnetMask { get; set; }
+        public IPAddress SubnetMask { get; set; }
 
         /// <summary>
         /// The base URL to use for all relative url's provided in other propertise (and those of child devices). Optional.

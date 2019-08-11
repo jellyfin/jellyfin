@@ -573,7 +573,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 // TODO: Perhaps also use original_size=1920x800 ??
-                return string.Format("subtitles=filename='{0}'{1}{2}{3}",
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "subtitles=filename='{0}'{1}{2}",
                     _mediaEncoder.EscapeSubtitleFilterPath(subtitlePath),
                     charsetParam,
                     // fallbackFontParam,
@@ -582,7 +584,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var mediaPath = state.MediaPath ?? string.Empty;
 
-            return string.Format("subtitles='{0}:si={1}'{2}",
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "subtitles='{0}:si={1}'{2}",
                 _mediaEncoder.EscapeSubtitleFilterPath(mediaPath),
                 state.InternalSubtitleStreamOffset.ToString(_usCulture),
                 // fallbackFontParam,

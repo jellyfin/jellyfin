@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Net;
+using System.Net.NetworkInformation;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 
@@ -24,7 +25,7 @@ namespace MediaBrowser.Common.Net
         /// Returns MAC Address from first Network Card in Computer
         /// </summary>
         /// <returns>[string] MAC Address</returns>
-        List<string> GetMacAddresses();
+        List<PhysicalAddress> GetMacAddresses();
 
         /// <summary>
         /// Determines whether [is in private address space] [the specified endpoint].
@@ -53,17 +54,12 @@ namespace MediaBrowser.Common.Net
         /// <returns><c>true</c> if [is in local network] [the specified endpoint]; otherwise, <c>false</c>.</returns>
         bool IsInLocalNetwork(string endpoint);
 
-        IpAddressInfo[] GetLocalIpAddresses(bool ignoreVirtualInterface);
-
-        IpAddressInfo ParseIpAddress(string ipAddress);
-
-        bool TryParseIpAddress(string ipAddress, out IpAddressInfo ipAddressInfo);
-
-        Task<IpAddressInfo[]> GetHostAddressesAsync(string host);
+        IPAddress[] GetLocalIpAddresses(bool ignoreVirtualInterface);
 
         bool IsAddressInSubnets(string addressString, string[] subnets);
 
-        bool IsInSameSubnet(IpAddressInfo address1, IpAddressInfo address2, IpAddressInfo subnetMask);
-        IpAddressInfo GetLocalIpSubnetMask(IpAddressInfo address);
+        bool IsInSameSubnet(IPAddress address1, IPAddress address2, IPAddress subnetMask);
+
+        IPAddress GetLocalIpSubnetMask(IPAddress address);
     }
 }

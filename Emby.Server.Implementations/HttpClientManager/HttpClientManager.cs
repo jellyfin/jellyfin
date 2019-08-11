@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -195,7 +196,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             }
 
             var url = options.Url;
-            var urlHash = url.ToLowerInvariant().GetMD5().ToString("N");
+            var urlHash = url.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
             var responseCachePath = Path.Combine(_appPaths.CachePath, "httpclient", urlHash);
 

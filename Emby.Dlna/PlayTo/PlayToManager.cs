@@ -1,5 +1,7 @@
 using System;
+using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
@@ -14,7 +16,6 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -141,7 +142,7 @@ namespace Emby.Dlna.PlayTo
                 return usn;
             }
 
-            return usn.GetMD5().ToString("N");
+            return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
         private async Task AddDevice(UpnpDeviceInfo info, string location, CancellationToken cancellationToken)
@@ -156,7 +157,7 @@ namespace Emby.Dlna.PlayTo
             }
             else
             {
-                uuid = location.GetMD5().ToString("N");
+                uuid = location.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
 
             var sessionInfo = _sessionManager.LogSessionActivity("DLNA", _appHost.ApplicationVersion, uuid, null, uri.OriginalString, null);
@@ -172,7 +173,7 @@ namespace Emby.Dlna.PlayTo
                 _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
 
                 string serverAddress;
-                if (info.LocalIpAddress == null || info.LocalIpAddress.Equals(IpAddressInfo.Any) || info.LocalIpAddress.Equals(IpAddressInfo.IPv6Any))
+                if (info.LocalIpAddress == null || info.LocalIpAddress.Equals(IPAddress.Any) || info.LocalIpAddress.Equals(IPAddress.IPv6Any))
                 {
                     serverAddress = await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
                 }

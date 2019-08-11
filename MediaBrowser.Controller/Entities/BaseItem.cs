@@ -503,7 +503,7 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var folder in collectionFolders)
                 {
-                    if (allowed.Contains(folder.Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+                    if (allowed.Contains(folder.Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
                     {
                         return true;
                     }
@@ -664,10 +664,10 @@ namespace MediaBrowser.Controller.Entities
         {
             if (SourceType == SourceType.Channel)
             {
-                return System.IO.Path.Combine(basePath, "channels", ChannelId.ToString("N"), Id.ToString("N"));
+                return System.IO.Path.Combine(basePath, "channels", ChannelId.ToString("N", CultureInfo.InvariantCulture), Id.ToString("N", CultureInfo.InvariantCulture));
             }
 
-            var idString = Id.ToString("N");
+            var idString = Id.ToString("N", CultureInfo.InvariantCulture);
 
             basePath = System.IO.Path.Combine(basePath, "library");
 
@@ -1095,7 +1095,7 @@ namespace MediaBrowser.Controller.Entities
 
             var info = new MediaSourceInfo
             {
-                Id = item.Id.ToString("N"),
+                Id = item.Id.ToString("N", CultureInfo.InvariantCulture),
                 Protocol = protocol ?? MediaProtocol.File,
                 MediaStreams = MediaSourceManager.GetMediaStreams(item.Id),
                 Name = GetMediaSourceName(item),
@@ -1113,7 +1113,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (info.Protocol == MediaProtocol.File)
             {
-                info.ETag = item.DateModified.Ticks.ToString(CultureInfo.InvariantCulture).GetMD5().ToString("N");
+                info.ETag = item.DateModified.Ticks.ToString(CultureInfo.InvariantCulture).GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
 
             var video = item as Video;
@@ -1626,7 +1626,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual string CreatePresentationUniqueKey()
         {
-            return Id.ToString("N");
+            return Id.ToString("N", CultureInfo.InvariantCulture);
         }
 
         [IgnoreDataMember]
@@ -2736,7 +2736,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var list = GetEtagValues(user);
 
-            return string.Join("|", list.ToArray()).GetMD5().ToString("N");
+            return string.Join("|", list.ToArray()).GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
         protected virtual List<string> GetEtagValues(User user)

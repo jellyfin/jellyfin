@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Providers
@@ -55,7 +56,7 @@ namespace MediaBrowser.Controller.Providers
 
             foreach (var i in UserDataList)
             {
-                if (string.Equals(userId, i.UserId.ToString("N"), StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(userId, i.UserId.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
                 {
                     userData = i;
                 }

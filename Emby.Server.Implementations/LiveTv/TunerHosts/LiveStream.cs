@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -42,7 +43,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             MediaSource = mediaSource;
             Logger = logger;
             EnableStreamSharing = true;
-            UniqueId = Guid.NewGuid().ToString("N");
+            UniqueId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
             if (tuner != null)
             {

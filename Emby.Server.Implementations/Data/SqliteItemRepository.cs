@@ -696,7 +696,7 @@ namespace Emby.Server.Implementations.Data
                 saveItemStatement.TryBindNull("@EndDate");
             }
 
-            saveItemStatement.TryBind("@ChannelId", item.ChannelId.Equals(Guid.Empty) ? null : item.ChannelId.ToString("N"));
+            saveItemStatement.TryBind("@ChannelId", item.ChannelId.Equals(Guid.Empty) ? null : item.ChannelId.ToString("N", CultureInfo.InvariantCulture));
 
             if (item is IHasProgramAttributes hasProgramAttributes)
             {
@@ -851,7 +851,7 @@ namespace Emby.Server.Implementations.Data
             }
             else
             {
-                saveItemStatement.TryBind("@TopParentId", topParent.Id.ToString("N"));
+                saveItemStatement.TryBind("@TopParentId", topParent.Id.ToString("N", CultureInfo.InvariantCulture));
             }
 
             if (item is Trailer trailer && trailer.TrailerTypes.Length > 0)
@@ -3548,12 +3548,12 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add("ChannelId=@ChannelId");
                 if (statement != null)
                 {
-                    statement.TryBind("@ChannelId", query.ChannelIds[0].ToString("N"));
+                    statement.TryBind("@ChannelId", query.ChannelIds[0].ToString("N", CultureInfo.InvariantCulture));
                 }
             }
             else if (query.ChannelIds.Length > 1)
             {
-                var inClause = string.Join(",", query.ChannelIds.Select(i => "'" + i.ToString("N") + "'"));
+                var inClause = string.Join(",", query.ChannelIds.Select(i => "'" + i.ToString("N", CultureInfo.InvariantCulture) + "'"));
                 whereClauses.Add($"ChannelId in ({inClause})");
             }
 
@@ -4537,12 +4537,12 @@ namespace Emby.Server.Implementations.Data
                 }
                 if (statement != null)
                 {
-                    statement.TryBind("@TopParentId", queryTopParentIds[0].ToString("N"));
+                    statement.TryBind("@TopParentId", queryTopParentIds[0].ToString("N", CultureInfo.InvariantCulture));
                 }
             }
             else if (queryTopParentIds.Length > 1)
             {
-                var val = string.Join(",", queryTopParentIds.Select(i => "'" + i.ToString("N") + "'"));
+                var val = string.Join(",", queryTopParentIds.Select(i => "'" + i.ToString("N", CultureInfo.InvariantCulture) + "'"));
 
                 if (enableItemsByName && includedItemByNameTypes.Count == 1)
                 {
@@ -4574,7 +4574,7 @@ namespace Emby.Server.Implementations.Data
             }
             if (query.AncestorIds.Length > 1)
             {
-                var inClause = string.Join(",", query.AncestorIds.Select(i => "'" + i.ToString("N") + "'"));
+                var inClause = string.Join(",", query.AncestorIds.Select(i => "'" + i.ToString("N", CultureInfo.InvariantCulture) + "'"));
                 whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorIdText in ({0}))", inClause));
             }
             if (!string.IsNullOrWhiteSpace(query.AncestorWithPresentationUniqueKey))
@@ -4637,7 +4637,7 @@ namespace Emby.Server.Implementations.Data
 
                 foreach (var folderId in query.BoxSetLibraryFolders)
                 {
-                    folderIdQueries.Add("data like '%" + folderId.ToString("N") + "%'");
+                    folderIdQueries.Add("data like '%" + folderId.ToString("N", CultureInfo.InvariantCulture) + "%'");
                 }
 
                 whereClauses.Add("(" + string.Join(" OR ", folderIdQueries) + ")");
@@ -5161,7 +5161,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     var ancestorId = ancestorIds[i];
 
                     statement.TryBind("@AncestorId" + index, ancestorId.ToGuidBlob());
-                    statement.TryBind("@AncestorIdText" + index, ancestorId.ToString("N"));
+                    statement.TryBind("@AncestorIdText" + index, ancestorId.ToString("N", CultureInfo.InvariantCulture));
                 }
 
                 statement.Reset();
@@ -5579,6 +5579,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 {
                     counts.TrailerCount = value;
                 }
+
                 counts.ItemCount += value;
             }
 

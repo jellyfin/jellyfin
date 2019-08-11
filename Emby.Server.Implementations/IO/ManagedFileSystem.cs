@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -555,7 +556,7 @@ namespace Emby.Server.Implementations.IO
                 throw new ArgumentNullException(nameof(file2));
             }
 
-            var temp1 = Path.Combine(_tempPath, Guid.NewGuid().ToString("N"));
+            var temp1 = Path.Combine(_tempPath, Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
 
             // Copying over will fail against hidden files
             SetHidden(file1, false);
