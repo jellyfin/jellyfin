@@ -28,6 +28,9 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server
 {
+    /// <summary>
+    /// Class containing the entry point of the application.
+    /// </summary>
     public static class Program
     {
         private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
@@ -35,6 +38,11 @@ namespace Jellyfin.Server
         private static ILogger _logger;
         private static bool _restartOnShutdown;
 
+        /// <summary>
+        /// The entry point of the application.
+        /// </summary>
+        /// <param name="args">The command line arguments passed.</param>
+        /// <returns><see cref="Task" />.</returns>
         public static Task Main(string[] args)
         {
             // For backwards compatibility.
@@ -53,7 +61,10 @@ namespace Jellyfin.Server
                 .MapResult(StartApp, _ => Task.CompletedTask);
         }
 
-        public static void Shutdown()
+        /// <summary>
+        /// Shuts down the application.
+        /// </summary>
+        internal static void Shutdown()
         {
             if (!_tokenSource.IsCancellationRequested)
             {
@@ -61,7 +72,10 @@ namespace Jellyfin.Server
             }
         }
 
-        public static void Restart()
+        /// <summary>
+        /// Restarts the application.
+        /// </summary>
+        internal static void Restart()
         {
             _restartOnShutdown = true;
 
@@ -171,11 +185,12 @@ namespace Jellyfin.Server
         /// <summary>
         /// Create the data, config and log paths from the variety of inputs(command line args,
         /// environment variables) or decide on what default to use. For Windows it's %AppPath%
-        /// for everything else the XDG approach is followed:
-        /// https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+        /// for everything else the
+        /// <a href="https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html">XDG approach</a>
+        /// is followed.
         /// </summary>
-        /// <param name="options">StartupOptions</param>
-        /// <returns>ServerApplicationPaths</returns>
+        /// <param name="options">The <see cref="StartupOptions" /> for this instance.</param>
+        /// <returns><see cref="ServerApplicationPaths" />.</returns>
         private static ServerApplicationPaths CreateApplicationPaths(StartupOptions options)
         {
             // dataDir

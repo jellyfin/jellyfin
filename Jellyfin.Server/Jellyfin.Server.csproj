@@ -9,10 +9,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- We need C# 7.1 for async main-->
+    <!-- We need at least C# 7.1 for async main-->
     <LangVersion>latest</LangVersion>
-    <!-- Disable documentation warnings (for now) -->
-    <NoWarn>SA1600;SA1601;SA1629;CS1591</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -26,7 +24,7 @@
 
   <!-- Code analysers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.3" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.4" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
     <PackageReference Include="SerilogAnalyzer" Version="0.15.0" />
   </ItemGroup>
@@ -36,7 +34,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.5.0" />
+    <PackageReference Include="CommandLineParser" Version="2.6.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="2.1.1" />
@@ -45,7 +43,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
     <PackageReference Include="SkiaSharp" Version="1.68.0" />
-    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="1.1.14" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.0.0" />
     <PackageReference Include="SQLitePCLRaw.provider.sqlite3.netstandard11" Version="1.1.14" />
   </ItemGroup>
 
