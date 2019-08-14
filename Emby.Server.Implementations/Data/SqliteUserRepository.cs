@@ -18,10 +18,10 @@ namespace Emby.Server.Implementations.Data
         private readonly IJsonSerializer _jsonSerializer;
 
         public SqliteUserRepository(
-            ILoggerFactory loggerFactory,
+            ILogger<SqliteUserRepository> logger,
             IServerApplicationPaths appPaths,
             IJsonSerializer jsonSerializer)
-            : base(loggerFactory.CreateLogger(nameof(SqliteUserRepository)))
+            : base(logger)
         {
             _jsonSerializer = jsonSerializer;
 

@@ -123,6 +123,8 @@ namespace Emby.Server.Implementations
     {
         private SqliteUserRepository _userRepository;
 
+        private SqliteDisplayPreferencesRepository _displayPreferencesRepository;
+
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
         /// </summary>
@@ -757,8 +759,12 @@ namespace Emby.Server.Implementations
             UserDataManager = new UserDataManager(LoggerFactory, ServerConfigurationManager, () => UserManager);
             serviceCollection.AddSingleton(UserDataManager);
 
-            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LoggerFactory, JsonSerializer, ApplicationPaths, FileSystemManager);
-            serviceCollection.AddSingleton<IDisplayPreferencesRepository>(displayPreferencesRepo);
+            _displayPreferencesRepository = new SqliteDisplayPreferencesRepository(
+                LoggerFactory.CreateLogger<SqliteDisplayPreferencesRepository>(),
+                JsonSerializer,
+                ApplicationPaths,
+                FileSystemManager);
+            serviceCollection.AddSingleton<IDisplayPreferencesRepository>(_displayPreferencesRepository);
 
             ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, JsonSerializer, LoggerFactory, LocalizationManager);
             serviceCollection.AddSingleton<IItemRepository>(ItemRepository);
@@ -884,7 +890,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(typeof(IResourceFileManager), typeof(ResourceFileManager));
 
-            displayPreferencesRepo.Initialize();
+            _displayPreferencesRepository.Initialize();
 
             var userDataRepo = new SqliteUserDataRepository(LoggerFactory, ApplicationPaths);
 
@@ -964,7 +970,10 @@ namespace Emby.Server.Implementations
         /// <returns><see cref="Task{SqliteUserRepository}" />.</returns>
         private SqliteUserRepository GetUserRepository()
         {
-            var repo = new SqliteUserRepository(LoggerFactory, ApplicationPaths, JsonSerializer);
+            var repo = new SqliteUserRepository(
+                LoggerFactory.CreateLogger<SqliteUserRepository>(),
+                ApplicationPaths,
+                JsonSerializer);
 
             repo.Initialize();
 
@@ -1911,7 +1920,11 @@ namespace Emby.Server.Implementations
                 }
 
                 _userRepository?.Dispose();
+                _displayPreferencesRepository.Dispose();
             }
+
+            _userRepository = null;
+            _displayPreferencesRepository = null;
 
             _disposed = true;
         }
