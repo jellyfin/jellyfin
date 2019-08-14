@@ -17,8 +17,6 @@ namespace MediaBrowser.Model.Net
 
         ISocket CreateUdpBroadcastSocket(int localPort);
 
-        ISocket CreateTcpSocket(IPAddress remoteAddress, int remotePort);
-
         /// <summary>
         /// Creates a new unicast socket using the specified local port number.
         /// </summary>
@@ -34,15 +32,5 @@ namespace MediaBrowser.Model.Net
         ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort);
 
         Stream CreateNetworkStream(ISocket socket, bool ownsSocket);
-    }
-
-    public enum SocketType
-    {
-        Stream
-    }
-
-    public enum ProtocolType
-    {
-        Tcp
     }
 }
