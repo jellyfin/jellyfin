@@ -121,6 +121,10 @@ namespace Emby.Server.Implementations
     /// </summary>
     public abstract class ApplicationHost : IServerApplicationHost, IDisposable
     {
+        private SqliteUserRepository _userRepository;
+
+        private SqliteDisplayPreferencesRepository _displayPreferencesRepository;
+
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
         /// </summary>
@@ -290,8 +294,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value>The user data repository.</value>
         private IUserDataManager UserDataManager { get; set; }
-
-        private IUserRepository UserRepository { get; set; }
 
         internal SqliteItemRepository ItemRepository { get; set; }
 
@@ -757,8 +759,12 @@ namespace Emby.Server.Implementations
             UserDataManager = new UserDataManager(LoggerFactory, ServerConfigurationManager, () => UserManager);
             serviceCollection.AddSingleton(UserDataManager);
 
-            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LoggerFactory, JsonSerializer, ApplicationPaths, FileSystemManager);
-            serviceCollection.AddSingleton<IDisplayPreferencesRepository>(displayPreferencesRepo);
+            _displayPreferencesRepository = new SqliteDisplayPreferencesRepository(
+                LoggerFactory.CreateLogger<SqliteDisplayPreferencesRepository>(),
+                JsonSerializer,
+                ApplicationPaths,
+                FileSystemManager);
+            serviceCollection.AddSingleton<IDisplayPreferencesRepository>(_displayPreferencesRepository);
 
             ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, JsonSerializer, LoggerFactory, LocalizationManager);
             serviceCollection.AddSingleton<IItemRepository>(ItemRepository);
@@ -766,9 +772,9 @@ namespace Emby.Server.Implementations
             AuthenticationRepository = GetAuthenticationRepository();
             serviceCollection.AddSingleton(AuthenticationRepository);
 
-            UserRepository = GetUserRepository();
+            _userRepository = GetUserRepository();
 
-            UserManager = new UserManager(LoggerFactory, ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, this, JsonSerializer, FileSystemManager);
+            UserManager = new UserManager(LoggerFactory, ServerConfigurationManager, _userRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, this, JsonSerializer, FileSystemManager);
             serviceCollection.AddSingleton(UserManager);
 
             LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager);
@@ -884,7 +890,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(typeof(IResourceFileManager), typeof(ResourceFileManager));
 
-            displayPreferencesRepo.Initialize();
+            _displayPreferencesRepository.Initialize();
 
             var userDataRepo = new SqliteUserDataRepository(LoggerFactory, ApplicationPaths);
 
@@ -961,10 +967,13 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the user repository.
         /// </summary>
-        /// <returns>Task{IUserRepository}.</returns>
-        private IUserRepository GetUserRepository()
+        /// <returns><see cref="Task{SqliteUserRepository}" />.</returns>
+        private SqliteUserRepository GetUserRepository()
         {
-            var repo = new SqliteUserRepository(LoggerFactory, ApplicationPaths, JsonSerializer);
+            var repo = new SqliteUserRepository(
+                LoggerFactory.CreateLogger<SqliteUserRepository>(),
+                ApplicationPaths,
+                JsonSerializer);
 
             repo.Initialize();
 
@@ -1910,10 +1919,12 @@ namespace Emby.Server.Implementations
                     }
                 }
 
-                UserRepository.Dispose();
+                _userRepository?.Dispose();
+                _displayPreferencesRepository.Dispose();
             }
 
-            UserRepository = null;
+            _userRepository = null;
+            _displayPreferencesRepository = null;
 
             _disposed = true;
         }

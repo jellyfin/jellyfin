@@ -21,8 +21,8 @@ namespace Emby.Server.Implementations.Data
     {
         private readonly IFileSystem _fileSystem;
 
-        public SqliteDisplayPreferencesRepository(ILoggerFactory loggerFactory, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, IFileSystem fileSystem)
-            : base(loggerFactory.CreateLogger(nameof(SqliteDisplayPreferencesRepository)))
+        public SqliteDisplayPreferencesRepository(ILogger<SqliteDisplayPreferencesRepository> logger, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, IFileSystem fileSystem)
+            : base(logger)
         {
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
