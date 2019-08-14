@@ -19,7 +19,6 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// Gets or sets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        //private IApplicationPaths ApplicationPaths { get; set; }
         protected ServerApplicationPaths ApplicationPaths { get; set; }
 
 
