@@ -205,31 +205,38 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 var currentActor = episode.GuestStars[i];
                 var roleStartIndex = currentActor.IndexOf('(');
 
-                var roles = new List<string> {currentActor.Substring(roleStartIndex + 1)};
-                var name = currentActor.Substring(0, roleStartIndex).Trim();
-
-                // Fetch all roles
-                for (var j = i + 1; j < episode.GuestStars.Length; ++j)
+                string name = currentActor;
+                string role = "";
+                if (roleStartIndex != -1)
                 {
-                    var currentRole = episode.GuestStars[j];
-                    var roleEndIndex = currentRole.IndexOf(')');
+                    var roles = new List<string> {currentActor.Substring(roleStartIndex + 1)};
+                    name = name.Substring(0, roleStartIndex).Trim();
 
-                    if (roleEndIndex != -1)
+                    // Fetch all roles
+                    for (var j = i + 1; j < episode.GuestStars.Length; ++j)
                     {
-                        roles.Add(currentRole.TrimEnd(')'));
-                        // Update the outer index (keep in mind it adds 1 after the iteration)
-                        i = j;
-                        break;
+                        var currentRole = episode.GuestStars[j];
+                        var roleEndIndex = currentRole.IndexOf(')');
+
+                        if (roleEndIndex != -1)
+                        {
+                            roles.Add(currentRole.TrimEnd(')'));
+                            // Update the outer index (keep in mind it adds 1 after the iteration)
+                            i = j;
+                            break;
+                        }
+
+                        roles.Add(currentRole);
                     }
 
-                    roles.Add(currentRole);
+                    role = string.Join(", ", roles);
                 }
 
                 result.AddPerson(new PersonInfo
                 {
                     Type = PersonType.GuestStar,
                     Name = name,
-                    Role = string.Join(", ", roles)
+                    Role = role
                 });
             }
 
