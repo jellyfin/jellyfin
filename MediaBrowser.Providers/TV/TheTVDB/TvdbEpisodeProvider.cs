@@ -118,7 +118,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             }
             catch (TvDbServerException e)
             {
-                _logger.LogError(e, "Failed to retrieve episode with id {TvDbId}", episodeTvdbId ?? seriesTvdbId);
+                _logger.LogError(e, "Failed to retrieve episode with id {EpisodeTvDbId}, series id {SeriesTvdbId}", episodeTvdbId, seriesTvdbId);
             }
 
             return result;
