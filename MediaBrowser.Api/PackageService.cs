@@ -197,7 +197,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException(string.Format("Package not found: {0}", request.Name));
             }
 
-            await _installationManager.InstallPackage(package, new SimpleProgress<double>(), CancellationToken.None);
+            await _installationManager.InstallPackage(package);
         }
 
         /// <summary>

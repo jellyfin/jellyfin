@@ -24,13 +24,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System;
-using System.Diagnostics;
 using System.Xml;
-using System.Net;
-using System.IO;
 using System.Text;
-using System.Globalization;
 using MediaBrowser.Common.Net;
 
 namespace Mono.Nat.Upnp
@@ -46,38 +41,31 @@ namespace Mono.Nat.Upnp
 
         protected HttpRequestOptions CreateRequest(string upnpMethod, string methodParameters)
         {
-            string ss = "http://" + this.device.HostEndPoint.ToString() + this.device.ControlUrl;
+            var req = new HttpRequestOptions()
+            {
+                Url = $"http://{this.device.HostEndPoint}{this.device.ControlUrl}",
+                EnableKeepAlive = false,
+                RequestContentType = "text/xml",
+                RequestContent = "<s:Envelope "
+                + "xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+                + "<s:Body>"
+                + "<u:" + upnpMethod + " "
+                + "xmlns:u=\"" + device.ServiceType + "\">"
+                + methodParameters
+                + "</u:" + upnpMethod + ">"
+                + "</s:Body>"
+                + "</s:Envelope>\r\n\r\n"
+            };
 
-            var req = new HttpRequestOptions();
-            req.LogErrors = false;
-
-            // The periodic request logging may keep some devices awake
-            req.LogRequestAsDebug = true;
-
-            req.Url = ss;
-            req.EnableKeepAlive = false;
-            req.RequestContentType = "text/xml";
             req.RequestHeaders.Add("SOAPACTION", "\"" + device.ServiceType + "#" + upnpMethod + "\"");
 
-            req.RequestContent = "<s:Envelope "
-               + "xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" "
-               + "s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
-               + "<s:Body>"
-               + "<u:" + upnpMethod + " "
-               + "xmlns:u=\"" + device.ServiceType + "\">"
-               + methodParameters
-               + "</u:" + upnpMethod + ">"
-               + "</s:Body>"
-               + "</s:Envelope>\r\n\r\n";
             return req;
         }
 
         public abstract HttpRequestOptions Encode();
 
-        public virtual string Method
-        {
-            get { return "POST"; }
-        }
+        public virtual string Method => "POST";
 
         protected void WriteFullElement(XmlWriter writer, string element, string value)
         {

@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 try
                 {
-                    await _installationManager.InstallPackage(package, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
+                    await _installationManager.InstallPackage(package, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -87,8 +87,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 // Update progress
                 lock (progress)
                 {
-                    numComplete++;
-                    progress.Report(90.0 * numComplete / packagesToInstall.Count + 10);
+                    progress.Report((90.0 * ++numComplete / packagesToInstall.Count) + 10);
                 }
             }
 
