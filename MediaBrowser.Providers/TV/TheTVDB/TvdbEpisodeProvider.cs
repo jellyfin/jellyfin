@@ -224,15 +224,15 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     var currentRole = episode.GuestStars[j];
                     var roleEndIndex = currentRole.IndexOf(')');
 
-                    if (roleEndIndex != -1)
+                    if (roleEndIndex == -1)
                     {
-                        roles.Add(currentRole.TrimEnd(')'));
-                        // Update the outer index (keep in mind it adds 1 after the iteration)
-                        i = j;
-                        break;
+                        roles.Add(currentRole);
                     }
 
-                    roles.Add(currentRole);
+                    roles.Add(currentRole.TrimEnd(')'));
+                    // Update the outer index (keep in mind it adds 1 after the iteration)
+                    i = j;
+                    break;
                 }
 
                 result.AddPerson(new PersonInfo
