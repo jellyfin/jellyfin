@@ -64,7 +64,9 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     if (string.IsNullOrEmpty(episodeTvdbId))
                     {
                         _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
-                            episodeInfo.ParentIndexNumber, episodeInfo.IndexNumber, series.GetProviderId(MetadataProviders.Tvdb));
+                            episodeInfo.ParentIndexNumber,
+                            episodeInfo.IndexNumber,
+                            series.GetProviderId(MetadataProviders.Tvdb));
                         return imageResult;
                     }
 
