@@ -163,6 +163,7 @@ namespace MediaBrowser.Model.Configuration
 
         public string ServerName { get; set; }
         public string WanDdns { get; set; }
+        public string BaseUrl { get; set; }
 
         public string UICulture { get; set; }
 
@@ -243,6 +244,7 @@ namespace MediaBrowser.Model.Configuration
             SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
             SortRemoveWords = new[] { "the", "a", "an" };
 
+            BaseUrl = "jellyfin";
             UICulture = "en-US";
 
             MetadataOptions = new[]

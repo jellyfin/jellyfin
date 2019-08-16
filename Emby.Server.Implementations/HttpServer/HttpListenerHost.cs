@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Services;
 using MediaBrowser.Common.Extensions;
@@ -470,64 +471,10 @@ namespace Emby.Server.Implementations.HttpServer
 
                 urlToLog = GetUrlToLog(urlString);
 
-                if (string.Equals(localPath, "/emby/", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(localPath, "/" + _config.Configuration.BaseUrl + "/", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(localPath, "/" + _config.Configuration.BaseUrl, StringComparison.OrdinalIgnoreCase))
                 {
-                    httpRes.Redirect(_defaultRedirectPath);
-                    return;
-                }
-
-                if (string.Equals(localPath, "/emby", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase))
-                {
-                    httpRes.Redirect("emby/" + _defaultRedirectPath);
-                    return;
-                }
-
-                if (localPath.IndexOf("mediabrowser/web", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    httpRes.StatusCode = 200;
-                    httpRes.ContentType = "text/html";
-                    var newUrl = urlString.Replace("mediabrowser", "emby", StringComparison.OrdinalIgnoreCase)
-                        .Replace("/dashboard/", "/web/", StringComparison.OrdinalIgnoreCase);
-
-                    if (!string.Equals(newUrl, urlString, StringComparison.OrdinalIgnoreCase))
-                    {
-                        await httpRes.WriteAsync(
-                            "<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" +
-                            newUrl + "\">" + newUrl + "</a></body></html>",
-                            cancellationToken).ConfigureAwait(false);
-                        return;
-                    }
-                }
-
-                if (localPath.IndexOf("dashboard/", StringComparison.OrdinalIgnoreCase) != -1 &&
-                    localPath.IndexOf("web/dashboard", StringComparison.OrdinalIgnoreCase) == -1)
-                {
-                    httpRes.StatusCode = 200;
-                    httpRes.ContentType = "text/html";
-                    var newUrl = urlString.Replace("mediabrowser", "emby", StringComparison.OrdinalIgnoreCase)
-                        .Replace("/dashboard/", "/web/", StringComparison.OrdinalIgnoreCase);
-
-                    if (!string.Equals(newUrl, urlString, StringComparison.OrdinalIgnoreCase))
-                    {
-                        await httpRes.WriteAsync(
-                            "<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" +
-                            newUrl + "\">" + newUrl + "</a></body></html>",
-                            cancellationToken).ConfigureAwait(false);
-                        return;
-                    }
-                }
-
-                if (string.Equals(localPath, "/web", StringComparison.OrdinalIgnoreCase))
-                {
-                    httpRes.Redirect(_defaultRedirectPath);
-                    return;
-                }
-
-                if (string.Equals(localPath, "/web/", StringComparison.OrdinalIgnoreCase))
-                {
-                    httpRes.Redirect("../" + _defaultRedirectPath);
+                    httpRes.Redirect("/" + _config.Configuration.BaseUrl + "/" + _defaultRedirectPath);
                     return;
                 }
 
@@ -543,19 +490,6 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                if (!string.Equals(httpReq.QueryString["r"], "0", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (localPath.EndsWith("web/dashboard.html", StringComparison.OrdinalIgnoreCase))
-                    {
-                        httpRes.Redirect("index.html#!/dashboard.html");
-                    }
-
-                    if (localPath.EndsWith("web/home.html", StringComparison.OrdinalIgnoreCase))
-                    {
-                        httpRes.Redirect("index.html");
-                    }
-                }
-
                 if (!string.IsNullOrEmpty(GlobalResponse))
                 {
                     // We don't want the address pings in ApplicationHost to fail
@@ -569,7 +503,6 @@ namespace Emby.Server.Implementations.HttpServer
                 }
 
                 var handler = GetServiceHandler(httpReq);
-
                 if (handler != null)
                 {
                     await handler.ProcessRequestAsync(this, httpReq, httpRes, _logger, cancellationToken).ConfigureAwait(false);
@@ -663,22 +596,14 @@ namespace Emby.Server.Implementations.HttpServer
 
             foreach (var route in clone)
             {
-                routes.Add(new RouteAttribute(NormalizeEmbyRoutePath(route.Path), route.Verbs)
+                routes.Add(new RouteAttribute(NormalizeCustomRoutePath(_config.Configuration.BaseUrl, route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,
                     Summary = route.Summary
                 });
 
-                routes.Add(new RouteAttribute(NormalizeMediaBrowserRoutePath(route.Path), route.Verbs)
-                {
-                    Notes = route.Notes,
-                    Priority = route.Priority,
-                    Summary = route.Summary
-                });
-
-                // needed because apps add /emby, and some users also add /emby, thereby double prefixing
-                routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
+                routes.Add(new RouteAttribute(NormalizeOldRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,
@@ -719,8 +644,8 @@ namespace Emby.Server.Implementations.HttpServer
             return _socketListener.ProcessWebSocketRequest(context);
         }
 
-        //TODO Add Jellyfin Route Path Normalizer
-        private static string NormalizeEmbyRoutePath(string path)
+        // this method was left for compatibility with third party clients
+        private static string NormalizeOldRoutePath(string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {
@@ -730,24 +655,14 @@ namespace Emby.Server.Implementations.HttpServer
             return "emby/" + path;
         }
 
-        private static string NormalizeMediaBrowserRoutePath(string path)
+        private static string NormalizeCustomRoutePath(string baseUrl, string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {
-                return "/mediabrowser" + path;
+                return "/" + baseUrl + path;
             }
 
-            return "mediabrowser/" + path;
-        }
-
-        private static string DoubleNormalizeEmbyRoutePath(string path)
-        {
-            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
-            {
-                return "/emby/emby" + path;
-            }
-
-            return "emby/emby/" + path;
+            return baseUrl + "/" + path;
         }
 
         /// <inheritdoc />
