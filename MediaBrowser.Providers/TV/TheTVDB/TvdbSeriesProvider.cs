@@ -285,7 +285,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private string GetComparableName(string name)
         {
             name = name.ToLowerInvariant();
-            name = _localizationManager.NormalizeFormKD(name);
+            name = name.Normalize(NormalizationForm.FormKD);
             var sb = new StringBuilder();
             foreach (var c in name)
             {
@@ -310,19 +310,16 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     sb.Append(c);
                 }
             }
-            name = sb.ToString();
-            name = name.Replace(", the", "");
-            name = name.Replace("the ", " ");
-            name = name.Replace(" the ", " ");
+            sb.Replace(", the", string.Empty).Replace("the ", " ").Replace(" the ", " ");
 
-            string prevName;
+            int prevLength;
             do
             {
-                prevName = name;
-                name = name.Replace("  ", " ");
-            } while (name.Length != prevName.Length);
+                prevLength = sb.Length;
+                sb.Replace("  ", " ");
+            } while (name.Length != prevLength);
 
-            return name.Trim();
+            return sb.ToString().Trim();
         }
 
         private void MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries, string metadataLanguage)
