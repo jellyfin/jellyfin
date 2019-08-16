@@ -227,6 +227,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     if (roleEndIndex == -1)
                     {
                         roles.Add(currentRole);
+                        continue;
                     }
 
                     roles.Add(currentRole.TrimEnd(')'));
