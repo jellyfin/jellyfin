@@ -75,10 +75,10 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Gets the exports.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="manageLiftime">if set to <c>true</c> [manage liftime].</param>
-        /// <returns>IEnumerable{``0}.</returns>
-        IEnumerable<T> GetExports<T>(bool manageLifetime = true);
+        /// <typeparam name="T">The type.</typeparam>
+        /// <param name="manageLifetime">If set to <c>true</c> [manage lifetime].</param>
+        /// <returns><see cref="IReadOnlyCollection{T}" />.</returns>
+        IReadOnlyCollection<T> GetExports<T>(bool manageLifetime = true);
 
         /// <summary>
         /// Resolves this instance.

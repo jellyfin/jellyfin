@@ -512,13 +512,8 @@ namespace Emby.Server.Implementations
             return AllConcreteTypes.Where(i => currentType.IsAssignableFrom(i));
         }
 
-        /// <summary>
-        /// Gets the exports.
-        /// </summary>
-        /// <typeparam name="T">The type</typeparam>
-        /// <param name="manageLifetime">if set to <c>true</c> [manage lifetime].</param>
-        /// <returns>IEnumerable{``0}.</returns>
-        public IEnumerable<T> GetExports<T>(bool manageLifetime = true)
+        /// <inheritdoc />
+        public IReadOnlyCollection<T> GetExports<T>(bool manageLifetime = true)
         {
             var parts = GetExportTypes<T>()
                 .Select(CreateInstanceSafe)
@@ -540,6 +535,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
+        /// <returns><see cref="Task" />.</returns>
         public async Task RunStartupTasksAsync()
         {
             Logger.LogInformation("Running startup tasks");
@@ -552,7 +548,7 @@ namespace Emby.Server.Implementations
 
             Logger.LogInformation("ServerId: {0}", SystemId);
 
-            var entryPoints = GetExports<IServerEntryPoint>().ToList();
+            var entryPoints = GetExports<IServerEntryPoint>();
 
             var stopWatch = new Stopwatch();
             stopWatch.Start();
@@ -807,7 +803,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(HttpServer);
 
-            ImageProcessor = GetImageProcessor();
+            ImageProcessor = new ImageProcessor(LoggerFactory.CreateLogger<ImageProcessor>(), ServerConfigurationManager.ApplicationPaths, FileSystemManager, ImageEncoder, () => LibraryManager, () => MediaEncoder);
             serviceCollection.AddSingleton(ImageProcessor);
 
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager, ServerConfigurationManager);
@@ -959,11 +955,6 @@ namespace Emby.Server.Implementations
             }
         }
 
-        private IImageProcessor GetImageProcessor()
-        {
-            return new ImageProcessor(LoggerFactory, ServerConfigurationManager.ApplicationPaths, FileSystemManager, ImageEncoder, () => LibraryManager, () => MediaEncoder);
-        }
-
         /// <summary>
         /// Gets the user repository.
         /// </summary>
@@ -1096,7 +1087,7 @@ namespace Emby.Server.Implementations
                 GetExports<IMetadataSaver>(),
                 GetExports<IExternalId>());
 
-            ImageProcessor.AddParts(GetExports<IImageEnhancer>());
+            ImageProcessor.ImageEnhancers = GetExports<IImageEnhancer>();
 
             LiveTvManager.AddParts(GetExports<ILiveTvService>(), GetExports<ITunerHost>(), GetExports<IListingsProvider>());
 
