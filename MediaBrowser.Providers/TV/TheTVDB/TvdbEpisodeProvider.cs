@@ -206,7 +206,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 var roleStartIndex = currentActor.IndexOf('(');
 
                 string name = currentActor;
-                string role = "";
+                string role = string.Empty;
                 if (roleStartIndex != -1)
                 {
                     var roles = new List<string> {currentActor.Substring(roleStartIndex + 1)};
