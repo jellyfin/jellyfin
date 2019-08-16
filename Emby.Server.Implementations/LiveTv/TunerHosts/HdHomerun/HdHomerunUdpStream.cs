@@ -21,8 +21,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private const int RtpHeaderBytes = 12;
 
         private readonly IServerApplicationHost _appHost;
-        private readonly MediaBrowser.Model.Net.ISocketFactory _socketFactory;
-
         private readonly IHdHomerunChannelCommands _channelCommands;
         private readonly int _numTuners;
         private readonly INetworkManager _networkManager;
@@ -37,13 +35,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             ILogger logger,
             IServerApplicationPaths appPaths,
             IServerApplicationHost appHost,
-            MediaBrowser.Model.Net.ISocketFactory socketFactory,
             INetworkManager networkManager,
             IStreamHelper streamHelper)
             : base(mediaSource, tunerHostInfo, fileSystem, logger, appPaths, streamHelper)
         {
             _appHost = appHost;
-            _socketFactory = socketFactory;
             _networkManager = networkManager;
             OriginalStreamId = originalStreamId;
             _channelCommands = channelCommands;

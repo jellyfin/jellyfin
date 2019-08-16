@@ -584,9 +584,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     Logger,
                     Config.ApplicationPaths,
                     _appHost,
-                    _socketFactory,
                     _networkManager,
                     _streamHelper);
+
             }
 
             var enableHttpStream = true;
@@ -601,9 +601,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     httpUrl += "?transcode=" + profile;
                 }
+
                 mediaSource.Path = httpUrl;
 
-                return new SharedHttpStream(mediaSource, info, streamId, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _streamHelper);
+                return new SharedHttpStream(
+                    mediaSource,
+                    info,
+                    streamId,
+                    FileSystem,
+                    _httpClient,
+                    Logger,
+                    Config.ApplicationPaths,
+                    _appHost,
+                    _streamHelper);
             }
 
             return new HdHomerunUdpStream(
@@ -616,7 +626,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 Logger,
                 Config.ApplicationPaths,
                 _appHost,
-                _socketFactory,
                 _networkManager,
                 _streamHelper);
         }
