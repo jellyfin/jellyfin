@@ -38,6 +38,7 @@ namespace MediaBrowser.Model.Globalization
                 {
                     return vals[0];
                 }
+
                 return null;
             }
         }

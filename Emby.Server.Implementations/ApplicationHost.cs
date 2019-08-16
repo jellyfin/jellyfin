@@ -746,7 +746,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(ServerConfigurationManager);
 
-            LocalizationManager = new LocalizationManager(ServerConfigurationManager, JsonSerializer, LoggerFactory);
+            LocalizationManager = new LocalizationManager(ServerConfigurationManager, JsonSerializer, LoggerFactory.CreateLogger<LocalizationManager>());
             await LocalizationManager.LoadAll().ConfigureAwait(false);
             serviceCollection.AddSingleton<ILocalizationManager>(LocalizationManager);
 
