@@ -26,4 +26,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- We need at least C# 7.1 for the "default literal" feature-->
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
 </Project>
