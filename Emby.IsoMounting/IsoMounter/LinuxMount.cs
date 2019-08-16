@@ -3,81 +3,56 @@ using MediaBrowser.Model.IO;
 
 namespace IsoMounter
 {
+    /// <summary>
+    /// Class LinuxMount.
+    /// </summary>
     internal class LinuxMount : IIsoMount
     {
+        private readonly LinuxIsoManager _linuxIsoManager;
 
-        #region Private Fields
+        private bool _disposed = false;
 
-        private readonly LinuxIsoManager linuxIsoManager;
-
-        #endregion
-
-        #region Constructor(s)
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LinuxMount" /> class.
+        /// </summary>
+        /// <param name="isoManager">The ISO manager that mounted this ISO file.</param>
+        /// <param name="isoPath">The path to the ISO file.</param>
+        /// <param name="mountFolder">The folder the ISO is mounted in.</param>
         internal LinuxMount(LinuxIsoManager isoManager, string isoPath, string mountFolder)
         {
-
-            linuxIsoManager = isoManager;
+            _linuxIsoManager = isoManager;
 
             IsoPath = isoPath;
             MountedPath = mountFolder;
-
         }
 
-        #endregion
+        /// <inheritdoc />
+        public string IsoPath { get; }
 
-        #region Interface Implementation for IDisposable
+        /// <inheritdoc />
+        public string MountedPath { get; }
 
-        // Flag: Has Dispose already been called?
-        private bool disposed = false;
-
+        /// <inheritdoc />
         public void Dispose()
         {
-
-            // Dispose of unmanaged resources.
             Dispose(true);
-
-            // Suppress finalization.
             GC.SuppressFinalize(this);
-
         }
 
+        /// <summary>
+        /// Releases the unmanaged resources and disposes of the managed resources used.
+        /// </summary>
+        /// <param name="disposing">Whether or not the managed resources should be disposed.</param>
         protected virtual void Dispose(bool disposing)
         {
-
-            if (disposed)
+            if (_disposed)
             {
                 return;
             }
 
-            if (disposing)
-            {
+            _linuxIsoManager.OnUnmount(this);
 
-                //
-                // Free managed objects here.
-                //
-
-                linuxIsoManager.OnUnmount(this);
-
-            }
-
-            //
-            // Free any unmanaged objects here.
-            //
-
-            disposed = true;
-
+            _disposed = true;
         }
-
-        #endregion
-
-        #region Interface Implementation for IIsoMount
-
-        public string IsoPath { get; private set; }
-        public string MountedPath { get; private set; }
-
-        #endregion
-
     }
-
 }

@@ -117,7 +117,7 @@ namespace Emby.Server.Implementations.SocketSharp
         /// <summary>
         /// Releases the unmanaged resources and disposes of the managed resources used.
         /// </summary>
-        /// <param name="disposing">Whether or not the managed resources should be disposed</param>
+        /// <param name="disposing">Whether or not the managed resources should be disposed.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)

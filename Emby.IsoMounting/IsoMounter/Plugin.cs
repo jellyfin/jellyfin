@@ -6,25 +6,28 @@ using MediaBrowser.Model.Serialization;
 
 namespace IsoMounter
 {
+    /// <summary>
+    /// The LinuxMount plugin class.
+    /// </summary>
     public class Plugin : BasePlugin<PluginConfiguration>
     {
-        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer) : base(applicationPaths, xmlSerializer)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Plugin" /> class.
+        /// </summary>
+        /// <param name="applicationPaths">The application paths.</param>
+        /// <param name="xmlSerializer">The XML serializer.</param>
+        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
+            : base(applicationPaths, xmlSerializer)
         {
         }
 
-        private Guid _id = new Guid("4682DD4C-A675-4F1B-8E7C-79ADF137A8F8");
-        public override Guid Id => _id;
+        /// <inheritdoc />
+        public override Guid Id { get; } = new Guid("4682DD4C-A675-4F1B-8E7C-79ADF137A8F8");
 
-        /// <summary>
-        /// Gets the name of the plugin
-        /// </summary>
-        /// <value>The name.</value>
+        /// <inheritdoc />
         public override string Name => "Iso Mounter";
 
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        /// <value>The description.</value>
+        /// <inheritdoc />
         public override string Description => "Mount and stream ISO contents";
     }
 }

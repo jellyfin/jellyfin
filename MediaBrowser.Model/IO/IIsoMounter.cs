@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Model.IO
 {
-    public interface IIsoMounter : IDisposable
+    public interface IIsoMounter
     {
         /// <summary>
         /// Mounts the specified iso path.
