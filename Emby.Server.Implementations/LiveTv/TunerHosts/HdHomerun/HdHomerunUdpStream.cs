@@ -88,7 +88,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             try
             {
                 // send url to start streaming
-                await hdHomerunManager.StartStreaming(remoteAddress, localAddress, localPort, _channelCommands, _numTuners, openCancellationToken).ConfigureAwait(false);
+                await hdHomerunManager.StartStreaming(
+                    remoteAddress,
+                    localAddress,
+                    localPort,
+                    _channelCommands,
+                    _numTuners,
+                    openCancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

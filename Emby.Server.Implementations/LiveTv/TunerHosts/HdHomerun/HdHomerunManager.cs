@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -8,7 +9,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.LiveTv;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -78,6 +78,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
     public class HdHomerunManager : IDisposable
     {
         public const int HdHomeRunPort = 65001;
+
         // Message constants
         private const byte GetSetName = 3;
         private const byte GetSetValue = 4;
@@ -163,6 +164,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     var lockkeyMsg = CreateSetMessage(i, "lockkey", lockKeyString, null);
                     await stream.WriteAsync(lockkeyMsg, 0, lockkeyMsg.Length, cancellationToken).ConfigureAwait(false);
                     int receivedBytes = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
+
                     // parse response to make sure it worked
                     if (!ParseReturnMessage(buffer, receivedBytes, out _))
                     {
@@ -175,6 +177,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         var channelMsg = CreateSetMessage(i, command.Item1, command.Item2, lockKeyValue);
                         await stream.WriteAsync(channelMsg, 0, channelMsg.Length, cancellationToken).ConfigureAwait(false);
                         receivedBytes = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
+
                         // parse response to make sure it worked
                         if (!ParseReturnMessage(buffer, receivedBytes, out _))
                         {
@@ -188,6 +191,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                     await stream.WriteAsync(targetMsg, 0, targetMsg.Length, cancellationToken).ConfigureAwait(false);
                     receivedBytes = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
+
                     // parse response to make sure it worked
                     if (!ParseReturnMessage(buffer, receivedBytes, out _))
                     {
@@ -226,6 +230,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         var channelMsg = CreateSetMessage(_activeTuner, command.Item1, command.Item2, _lockkey);
                         await stream.WriteAsync(channelMsg, 0, channelMsg.Length, cancellationToken).ConfigureAwait(false);
                         int receivedBytes = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
+
                         // parse response to make sure it worked
                         if (!ParseReturnMessage(buffer, receivedBytes, out _))
                         {
@@ -276,7 +281,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private static byte[] CreateGetMessage(int tuner, string name)
         {
-            var byteName = Encoding.UTF8.GetBytes(string.Format("/tuner{0}/{1}\0", tuner, name));
+            var byteName = Encoding.UTF8.GetBytes(string.Format(CultureInfo.InvariantCulture, "/tuner{0}/{1}\0", tuner, name));
             int messageLength = byteName.Length + 10; // 4 bytes for header + 4 bytes for crc + 2 bytes for tag name and length
 
             var message = new byte[messageLength];
@@ -299,8 +304,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private static byte[] CreateSetMessage(int tuner, string name, string value, uint? lockkey)
         {
-            var byteName = Encoding.UTF8.GetBytes(string.Format("/tuner{0}/{1}\0", tuner, name));
-            var byteValue = Encoding.UTF8.GetBytes(string.Format("{0}\0", value));
+            var byteName = Encoding.UTF8.GetBytes(string.Format(CultureInfo.InvariantCulture, "/tuner{0}/{1}\0", tuner, name));
+            var byteValue = Encoding.UTF8.GetBytes(string.Format(CultureInfo.InvariantCulture, "{0}\0", value));
 
             int messageLength = byteName.Length + byteValue.Length + 12;
             if (lockkey.HasValue)
@@ -321,7 +326,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             if (lockkey.HasValue)
             {
                 message[offset++] = GetSetLockkey;
-                message[offset++] = (byte)4;
+                message[offset++] = 4;
                 var lockKeyBytes = BitConverter.GetBytes(lockkey.Value);
                 if (flipEndian)
                 {
