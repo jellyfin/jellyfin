@@ -904,7 +904,8 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             else
             {
-                var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
+                var keyFrameArg = string.Format(" -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
+                    GetStartNumber(state) * state.SegmentLength,
                     state.SegmentLength.ToString(CultureInfo.InvariantCulture));
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
@@ -961,10 +962,10 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var timeDeltaParam = string.Empty;
 
-            if (isEncoding && startNumber > 0)
+            if (isEncoding && state.TargetFramerate > 0)
             {
-                var startTime = state.SegmentLength * startNumber;
-                timeDeltaParam = string.Format("-segment_time_delta -{0}", startTime);
+                float startTime = 1 / (state.TargetFramerate.Value * 2);
+                timeDeltaParam = string.Format("-segment_time_delta {0}", Math.Round(startTime, 3));
             }
 
             var segmentFormat = GetSegmentFileExtension(state.Request).TrimStart('.');
@@ -973,11 +974,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 segmentFormat = "mpegts";
             }
 
-            var breakOnNonKeyFrames = state.EnableBreakOnNonKeyFrames(videoCodec);
-
-            var breakOnNonKeyFramesArg = breakOnNonKeyFrames ? " -break_non_keyframes 1" : "";
-
-            return string.Format("{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f segment -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -segment_time {6} {10} -individual_header_trailer 0{12} -segment_format {11} -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
+            return string.Format("{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f segment -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -segment_time {6} {10} -individual_header_trailer 0 -segment_format {11} -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
                 inputModifier,
                 EncodingHelper.GetInputArgument(state, encodingOptions),
                 threads,
@@ -989,8 +986,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 outputPath,
                 outputTsArg,
                 timeDeltaParam,
-                segmentFormat,
-                breakOnNonKeyFramesArg
+                segmentFormat
             ).Trim();
         }
     }
