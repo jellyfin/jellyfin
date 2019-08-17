@@ -19,8 +19,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
 
-        public SharedHttpStream(MediaSourceInfo mediaSource, TunerHostInfo tunerHostInfo, string originalStreamId, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost)
-            : base(mediaSource, tunerHostInfo, fileSystem, logger, appPaths)
+        public SharedHttpStream(
+            MediaSourceInfo mediaSource,
+            TunerHostInfo tunerHostInfo,
+            string originalStreamId,
+            IFileSystem fileSystem,
+            IHttpClient httpClient,
+            ILogger logger,
+            IServerApplicationPaths appPaths,
+            IServerApplicationHost appHost,
+            IStreamHelper streamHelper)
+            : base(mediaSource, tunerHostInfo, fileSystem, logger, appPaths, streamHelper)
         {
             _httpClient = httpClient;
             _appHost = appHost;
@@ -118,7 +127,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     using (var stream = response.Content)
                     using (var fileStream = FileSystem.GetFileStream(TempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
                     {
-                        await ApplicationHost.StreamHelper.CopyToAsync(stream, fileStream, 81920, () => Resolve(openTaskCompletionSource), cancellationToken).ConfigureAwait(false);
+                        await StreamHelper.CopyToAsync(
+                            stream,
+                            fileStream,
+                            StreamDefaults.DefaultCopyToBufferSize,
+                            () => Resolve(openTaskCompletionSource),
+                            cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch (OperationCanceledException)
@@ -128,6 +142,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     Logger.LogError(ex, "Error copying live stream.");
                 }
+
                 EnableStreamSharing = false;
                 await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);
             });

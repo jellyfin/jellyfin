@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -18,6 +19,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
     public class HdHomerunUdpStream : LiveStream, IDirectStreamProvider
     {
+        private const int RtpHeaderBytes = 12;
+
         private readonly IServerApplicationHost _appHost;
         private readonly MediaBrowser.Model.Net.ISocketFactory _socketFactory;
 
@@ -32,13 +35,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             IHdHomerunChannelCommands channelCommands,
             int numTuners,
             IFileSystem fileSystem,
-            IHttpClient httpClient,
             ILogger logger,
             IServerApplicationPaths appPaths,
             IServerApplicationHost appHost,
             MediaBrowser.Model.Net.ISocketFactory socketFactory,
-            INetworkManager networkManager)
-            : base(mediaSource, tunerHostInfo, fileSystem, logger, appPaths)
+            INetworkManager networkManager,
+            IStreamHelper streamHelper)
+            : base(mediaSource, tunerHostInfo, fileSystem, logger, appPaths, streamHelper)
         {
             _appHost = appHost;
             _socketFactory = socketFactory;
@@ -80,12 +83,18 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
 
             var udpClient = _socketFactory.CreateUdpSocket(localPort);
-            var hdHomerunManager = new HdHomerunManager(Logger);
+            var hdHomerunManager = new HdHomerunManager();
 
             try
             {
                 // send url to start streaming
-                await hdHomerunManager.StartStreaming(remoteAddress, localAddress, localPort, _channelCommands, _numTuners, openCancellationToken).ConfigureAwait(false);
+                await hdHomerunManager.StartStreaming(
+                    remoteAddress,
+                    localAddress,
+                    localPort,
+                    _channelCommands,
+                    _numTuners,
+                    openCancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -103,7 +112,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
-            await StartStreaming(udpClient, hdHomerunManager, remoteAddress, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
+            await StartStreaming(
+                udpClient,
+                hdHomerunManager,
+                remoteAddress,
+                taskCompletionSource,
+                LiveStreamCancellationTokenSource.Token).ConfigureAwait(false);
 
             //OpenedMediaSource.Protocol = MediaProtocol.File;
             //OpenedMediaSource.Path = tempFile;
@@ -148,49 +162,42 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             });
         }
 
-        private static void Resolve(TaskCompletionSource<bool> openTaskCompletionSource)
-        {
-            Task.Run(() =>
-            {
-                openTaskCompletionSource.TrySetResult(true);
-            });
-        }
-
-        private const int RtpHeaderBytes = 12;
-
         private async Task CopyTo(MediaBrowser.Model.Net.ISocket udpClient, string file, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
-            var bufferSize = 81920;
-
-            byte[] buffer = new byte[bufferSize];
-            int read;
-            var resolved = false;
-
-            using (var source = _socketFactory.CreateNetworkStream(udpClient, false))
-            using (var fileStream = FileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(StreamDefaults.DefaultCopyToBufferSize);
+            try
             {
-                var currentCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token).Token;
-
-                while ((read = await source.ReadAsync(buffer, 0, buffer.Length, currentCancellationToken).ConfigureAwait(false)) != 0)
+                using (var source = _socketFactory.CreateNetworkStream(udpClient, false))
+                using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    currentCancellationToken = cancellationToken;
-
-                    read -= RtpHeaderBytes;
-
-                    if (read > 0)
+                    var currentCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token).Token;
+                    int read;
+                    var resolved = false;
+                    while ((read = await source.ReadAsync(buffer, 0, buffer.Length, currentCancellationToken).ConfigureAwait(false)) != 0)
                     {
-                        fileStream.Write(buffer, RtpHeaderBytes, read);
-                    }
+                        cancellationToken.ThrowIfCancellationRequested();
 
-                    if (!resolved)
-                    {
-                        resolved = true;
-                        DateOpened = DateTime.UtcNow;
-                        Resolve(openTaskCompletionSource);
+                        currentCancellationToken = cancellationToken;
+
+                        read -= RtpHeaderBytes;
+
+                        if (read > 0)
+                        {
+                            await fileStream.WriteAsync(buffer, RtpHeaderBytes, read).ConfigureAwait(false);
+                        }
+
+                        if (!resolved)
+                        {
+                            resolved = true;
+                            DateOpened = DateTime.UtcNow;
+                            openTaskCompletionSource.TrySetResult(true);
+                        }
                     }
                 }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
             }
         }
     }

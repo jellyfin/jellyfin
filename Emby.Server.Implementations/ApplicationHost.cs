@@ -315,8 +315,6 @@ namespace Emby.Server.Implementations
 
         private IMediaSourceManager MediaSourceManager { get; set; }
 
-        private IPlaylistManager PlaylistManager { get; set; }
-
         private readonly IConfiguration _configuration;
 
         /// <summary>
@@ -324,14 +322,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value>The installation manager.</value>
         protected IInstallationManager InstallationManager { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the zip client.
-        /// </summary>
-        /// <value>The zip client.</value>
-        protected IZipClient ZipClient { get; private set; }
-
-        protected IHttpResultFactory HttpResultFactory { get; private set; }
 
         protected IAuthService AuthService { get; private set; }
 
@@ -680,8 +670,6 @@ namespace Emby.Server.Implementations
             await HttpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, context.RequestAborted).ConfigureAwait(false);
         }
 
-        public static IStreamHelper StreamHelper { get; set; }
-
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
@@ -725,8 +713,7 @@ namespace Emby.Server.Implementations
             ProcessFactory = new ProcessFactory();
             serviceCollection.AddSingleton(ProcessFactory);
 
-            ApplicationHost.StreamHelper = new StreamHelper();
-            serviceCollection.AddSingleton(StreamHelper);
+            serviceCollection.AddSingleton(typeof(IStreamHelper), typeof(StreamHelper));
 
             serviceCollection.AddSingleton(typeof(ICryptoProvider), typeof(CryptographyProvider));
 
@@ -735,11 +722,9 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(typeof(IInstallationManager), typeof(InstallationManager));
 
-            ZipClient = new ZipClient();
-            serviceCollection.AddSingleton(ZipClient);
+            serviceCollection.AddSingleton(typeof(IZipClient), typeof(ZipClient));
 
-            HttpResultFactory = new HttpResultFactory(LoggerFactory, FileSystemManager, JsonSerializer, StreamHelper);
-            serviceCollection.AddSingleton(HttpResultFactory);
+            serviceCollection.AddSingleton(typeof(IHttpResultFactory), typeof(HttpResultFactory));
 
             serviceCollection.AddSingleton<IServerApplicationHost>(this);
             serviceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
@@ -837,8 +822,7 @@ namespace Emby.Server.Implementations
             CollectionManager = new CollectionManager(LibraryManager, ApplicationPaths, LocalizationManager, FileSystemManager, LibraryMonitor, LoggerFactory, ProviderManager);
             serviceCollection.AddSingleton(CollectionManager);
 
-            PlaylistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LoggerFactory, UserManager, ProviderManager);
-            serviceCollection.AddSingleton(PlaylistManager);
+            serviceCollection.AddSingleton(typeof(IPlaylistManager), typeof(PlaylistManager));
 
             LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, LoggerFactory, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, FileSystemManager, () => ChannelManager);
             serviceCollection.AddSingleton(LiveTvManager);
