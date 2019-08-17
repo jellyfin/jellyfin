@@ -89,7 +89,7 @@ namespace Emby.Notifications
                         return _userManager.Users.Where(i => i.Policy.IsAdministrator)
                                 .Select(i => i.Id);
                     case SendToUserType.All:
-                        return _userManager.Users.Select(i => i.Id);
+                        return _userManager.UsersIds;
                     case SendToUserType.Custom:
                         return request.UserIds;
                     default:

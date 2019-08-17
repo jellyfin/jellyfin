@@ -50,9 +50,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var users = _userManager.Users.ToList();
-
-            foreach (var user in users)
+            foreach (var user in _userManager.Users)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 

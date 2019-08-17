@@ -770,7 +770,8 @@ namespace Emby.Server.Implementations
 
             _userRepository = GetUserRepository();
 
-            UserManager = new UserManager(LoggerFactory, ServerConfigurationManager, _userRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, this, JsonSerializer, FileSystemManager);
+            UserManager = new UserManager(LoggerFactory.CreateLogger<UserManager>(), _userRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, this, JsonSerializer, FileSystemManager);
+
             serviceCollection.AddSingleton(UserManager);
 
             LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager);

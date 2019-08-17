@@ -17,13 +17,6 @@ namespace MediaBrowser.Controller.Entities
     public class User : BaseItem
     {
         public static IUserManager UserManager { get; set; }
-        public static IXmlSerializer XmlSerializer { get; set; }
-
-        /// <summary>
-        /// From now on all user paths will be Id-based.
-        /// This is for backwards compatibility.
-        /// </summary>
-        public bool UsesIdForConfigurationPath { get; set; }
 
         /// <summary>
         /// Gets or sets the password.
@@ -31,7 +24,6 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The password.</value>
         public string Password { get; set; }
         public string EasyPassword { get; set; }
-        public string Salt { get; set; }
 
         // Strictly to remove IgnoreDataMember
         public override ItemImageInfo[] ImageInfos
@@ -148,46 +140,23 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException"></exception>
         public Task Rename(string newName)
         {
-            if (string.IsNullOrEmpty(newName))
+            if (string.IsNullOrWhiteSpace(newName))
             {
-                throw new ArgumentNullException(nameof(newName));
-            }
-
-            // If only the casing is changing, leave the file system alone
-            if (!UsesIdForConfigurationPath && !string.Equals(newName, Name, StringComparison.OrdinalIgnoreCase))
-            {
-                UsesIdForConfigurationPath = true;
-
-                // Move configuration
-                var newConfigDirectory = GetConfigurationDirectoryPath(newName);
-                var oldConfigurationDirectory = ConfigurationDirectoryPath;
-
-                // Exceptions will be thrown if these paths already exist
-                if (Directory.Exists(newConfigDirectory))
-                {
-                    Directory.Delete(newConfigDirectory, true);
-                }
-
-                if (Directory.Exists(oldConfigurationDirectory))
-                {
-                    Directory.Move(oldConfigurationDirectory, newConfigDirectory);
-                }
-                else
-                {
-                    Directory.CreateDirectory(newConfigDirectory);
-                }
+                throw new ArgumentException("Username can't be empty", nameof(newName));
             }
 
             Name = newName;
 
-            return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(Logger, FileSystem))
-            {
-                ReplaceAllMetadata = true,
-                ImageRefreshMode = MetadataRefreshMode.FullRefresh,
-                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                ForceSave = true
+            return RefreshMetadata(
+                new MetadataRefreshOptions(new DirectoryService(Logger, FileSystem))
+                {
+                    ReplaceAllMetadata = true,
+                    ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ForceSave = true
 
-            }, CancellationToken.None);
+                },
+                CancellationToken.None);
         }
 
         public override void UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
@@ -215,19 +184,6 @@ namespace MediaBrowser.Controller.Entities
         private string GetConfigurationDirectoryPath(string username)
         {
             var parentPath = ConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath;
-
-            // Legacy
-            if (!UsesIdForConfigurationPath)
-            {
-                if (string.IsNullOrEmpty(username))
-                {
-                    throw new ArgumentNullException(nameof(username));
-                }
-
-                var safeFolderName = FileSystem.GetValidFilename(username);
-
-                return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, safeFolderName);
-            }
 
             // TODO: Remove idPath and just use usernamePath for future releases
             var usernamePath = System.IO.Path.Combine(parentPath, username);
