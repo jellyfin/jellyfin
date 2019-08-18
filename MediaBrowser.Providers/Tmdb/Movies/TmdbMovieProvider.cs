@@ -157,8 +157,8 @@ namespace MediaBrowser.Providers.Tmdb.Movies
             }
         }
 
-        private const string TmdbConfigUrl = TmdbUtils.BaseMovieDbUrl + "3/configuration?api_key={0}";
-        private const string GetMovieInfo3 = TmdbUtils.BaseMovieDbUrl + @"3/movie/{0}?api_key={1}&append_to_response=casts,releases,images,keywords,trailers";
+        private const string TmdbConfigUrl = TmdbUtils.BaseTmdbApiUrl + "3/configuration?api_key={0}";
+        private const string GetMovieInfo3 = TmdbUtils.BaseTmdbApiUrl + @"3/movie/{0}?api_key={1}&append_to_response=casts,releases,images,keywords,trailers";
 
         /// <summary>
         /// Gets the movie data path.

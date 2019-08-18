@@ -86,7 +86,7 @@ namespace MediaBrowser.Providers.Tmdb.People
                 return new List<RemoteSearchResult>();
             }
 
-            var url = string.Format(TmdbUtils.BaseMovieDbUrl + @"3/search/person?api_key={1}&query={0}", WebUtility.UrlEncode(searchInfo.Name), TmdbUtils.ApiKey);
+            var url = string.Format(TmdbUtils.BaseTmdbApiUrl + @"3/search/person?api_key={1}&query={0}", WebUtility.UrlEncode(searchInfo.Name), TmdbUtils.ApiKey);
 
             using (var response = await TmdbMovieProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
@@ -219,7 +219,7 @@ namespace MediaBrowser.Providers.Tmdb.People
                 return;
             }
 
-            var url = string.Format(TmdbUtils.BaseMovieDbUrl + @"3/person/{1}?api_key={0}&append_to_response=credits,images,external_ids", TmdbUtils.ApiKey, id);
+            var url = string.Format(TmdbUtils.BaseTmdbApiUrl + @"3/person/{1}?api_key={0}&append_to_response=credits,images,external_ids", TmdbUtils.ApiKey, id);
 
             using (var response = await TmdbMovieProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {

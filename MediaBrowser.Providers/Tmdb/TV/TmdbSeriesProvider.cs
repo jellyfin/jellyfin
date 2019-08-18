@@ -27,7 +27,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
 {
     public class TmdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
-        private const string GetTvInfo3 = TmdbUtils.BaseMovieDbUrl + @"3/tv/{0}?api_key={1}&append_to_response=credits,images,keywords,external_ids,videos,content_ratings";
+        private const string GetTvInfo3 = TmdbUtils.BaseTmdbApiUrl + @"3/tv/{0}?api_key={1}&append_to_response=credits,images,keywords,external_ids,videos,content_ratings";
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         internal static TmdbSeriesProvider Current { get; private set; }
@@ -470,7 +470,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
         private async Task<RemoteSearchResult> FindByExternalId(string id, string externalSource, CancellationToken cancellationToken)
         {
-            var url = string.Format(TmdbUtils.BaseMovieDbUrl + @"3/find/{0}?api_key={1}&external_source={2}",
+            var url = string.Format(TmdbUtils.BaseTmdbApiUrl + @"3/find/{0}?api_key={1}&external_source={2}",
                 id,
                 TmdbUtils.ApiKey,
                 externalSource);

@@ -17,7 +17,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
 {
     public abstract class TmdbEpisodeProviderBase
     {
-        private const string EpisodeUrlPattern = TmdbUtils.BaseMovieDbUrl + @"3/tv/{0}/season/{1}/episode/{2}?api_key={3}&append_to_response=images,external_ids,credits,videos";
+        private const string EpisodeUrlPattern = TmdbUtils.BaseTmdbApiUrl + @"3/tv/{0}/season/{1}/episode/{2}?api_key={3}&append_to_response=images,external_ids,credits,videos";
         private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IJsonSerializer _jsonSerializer;

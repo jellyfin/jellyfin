@@ -11,7 +11,7 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
 
         public string Key => MetadataProviders.TmdbCollection.ToString();
 
-        public string UrlFormatString => TmdbUtils.BaseMovieDbUrl + "collection/{0}";
+        public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "collection/{0}";
 
         public bool Supports(IHasProviderIds item)
         {

@@ -19,7 +19,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
     public class TmdbSearch
     {
         private static readonly CultureInfo EnUs = new CultureInfo("en-US");
-        private const string Search3 = TmdbUtils.BaseMovieDbUrl + @"3/search/{3}?api_key={1}&query={0}&language={2}";
+        private const string Search3 = TmdbUtils.BaseTmdbApiUrl + @"3/search/{3}?api_key={1}&query={0}&language={2}";
 
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;

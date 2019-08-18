@@ -10,7 +10,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
         public string Key => MetadataProviders.Tmdb.ToString();
 
-        public string UrlFormatString => TmdbUtils.BaseMovieDbUrl + "tv/{0}";
+        public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "tv/{0}";
 
         public bool Supports(IHasProviderIds item)
         {

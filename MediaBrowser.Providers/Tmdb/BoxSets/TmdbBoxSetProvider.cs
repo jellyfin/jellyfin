@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
 {
     public class TmdbBoxSetProvider : IRemoteMetadataProvider<BoxSet, BoxSetInfo>
     {
-        private const string GetCollectionInfo3 = TmdbUtils.BaseMovieDbUrl + @"3/collection/{0}?api_key={1}&append_to_response=images";
+        private const string GetCollectionInfo3 = TmdbUtils.BaseTmdbApiUrl + @"3/collection/{0}?api_key={1}&append_to_response=images";
 
         internal static TmdbBoxSetProvider Current;
 

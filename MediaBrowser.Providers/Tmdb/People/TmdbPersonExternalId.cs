@@ -10,7 +10,7 @@ namespace MediaBrowser.Providers.Tmdb.People
 
         public string Key => MetadataProviders.Tmdb.ToString();
 
-        public string UrlFormatString => TmdbUtils.BaseMovieDbUrl + "person/{0}";
+        public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "person/{0}";
 
         public bool Supports(IHasProviderIds item)
         {

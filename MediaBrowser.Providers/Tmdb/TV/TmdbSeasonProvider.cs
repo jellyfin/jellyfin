@@ -24,7 +24,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
 {
     public class TmdbSeasonProvider : IRemoteMetadataProvider<Season, SeasonInfo>
     {
-        private const string GetTvInfo3 = TmdbUtils.BaseMovieDbUrl + @"3/tv/{0}/season/{1}?api_key={2}&append_to_response=images,keywords,external_ids,credits,videos";
+        private const string GetTvInfo3 = TmdbUtils.BaseTmdbApiUrl + @"3/tv/{0}/season/{1}?api_key={2}&append_to_response=images,keywords,external_ids,credits,videos";
         private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IJsonSerializer _jsonSerializer;

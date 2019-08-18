@@ -6,7 +6,8 @@ namespace MediaBrowser.Providers.Tmdb
 {
     public static class TmdbUtils
     {
-        public const string BaseMovieDbUrl = "https://www.themoviedb.org/";
+        public const string BaseTmdbUrl = "https://www.themoviedb.org/";
+        public const string BaseTmdbApiUrl = "https://api.themoviedb.org/";
         public const string ProviderName = "TheMovieDb";
         public const string ApiKey = "4219e299c89411838049ab0dab19ebd5";
         public const string AcceptHeader = "application/json,image/*";
