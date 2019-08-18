@@ -1,9 +1,10 @@
 using System;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
@@ -11,441 +12,274 @@ using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace IsoMounter
 {
+    /// <summary>
+    /// The ISO manager implementation for Linux.
+    /// </summary>
     public class LinuxIsoManager : IIsoMounter
     {
-        [DllImport("libc", SetLastError = true)]
-        static extern uint getuid();
+        private const string MountCommand = "mount";
+        private const string UnmountCommand = "umount";
+        private const string SudoCommand = "sudo";
 
-        #region Private Fields
-
-        private readonly bool ExecutablesAvailable;
         private readonly ILogger _logger;
-        private readonly string MountCommand;
-        private readonly string MountPointRoot;
-        private readonly IProcessFactory ProcessFactory;
-        private readonly string SudoCommand;
-        private readonly string UmountCommand;
+        private readonly string _mountPointRoot;
 
-        #endregion
-
-        #region Constructor(s)
-
-        public LinuxIsoManager(ILogger logger, IProcessFactory processFactory)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LinuxIsoManager" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public LinuxIsoManager(ILogger logger)
         {
             _logger = logger;
-            ProcessFactory = processFactory;
 
-            MountPointRoot = Path.DirectorySeparatorChar + "tmp" + Path.DirectorySeparatorChar + "Emby";
+            _mountPointRoot = Path.DirectorySeparatorChar + "tmp" + Path.DirectorySeparatorChar + "Emby";
 
             _logger.LogDebug(
                 "[{0}] System PATH is currently set to [{1}].",
                 Name,
-                Environment.GetEnvironmentVariable("PATH") ?? ""
-            );
+                Environment.GetEnvironmentVariable("PATH") ?? string.Empty);
 
             _logger.LogDebug(
                 "[{0}] System path separator is [{1}].",
                 Name,
-                Path.PathSeparator
-            );
+                Path.PathSeparator);
 
             _logger.LogDebug(
                 "[{0}] Mount point root is [{1}].",
                 Name,
-                MountPointRoot
-            );
-
-            //
-            // Get the location of the executables we need to support mounting/unmounting ISO images.
-            //
-
-            SudoCommand = GetFullPathForExecutable("sudo");
-
-            _logger.LogInformation(
-                "[{0}] Using version of [sudo] located at [{1}].",
-                Name,
-                SudoCommand
-            );
-
-            MountCommand = GetFullPathForExecutable("mount");
-
-            _logger.LogInformation(
-                "[{0}] Using version of [mount] located at [{1}].",
-                Name,
-                MountCommand
-            );
-
-            UmountCommand = GetFullPathForExecutable("umount");
-
-            _logger.LogInformation(
-                "[{0}] Using version of [umount] located at [{1}].",
-                Name,
-                UmountCommand
-            );
-
-            if (!string.IsNullOrEmpty(SudoCommand) && !string.IsNullOrEmpty(MountCommand) && !string.IsNullOrEmpty(UmountCommand))
-            {
-                ExecutablesAvailable = true;
-            }
-            else
-            {
-                ExecutablesAvailable = false;
-            }
-
+                _mountPointRoot);
         }
 
-        #endregion
-
-        #region Interface Implementation for IIsoMounter
-
-        public bool IsInstalled => true;
-
+        /// <inheritdoc />
         public string Name => "LinuxMount";
 
-        public bool RequiresInstallation => false;
+#pragma warning disable SA1300
+#pragma warning disable SA1400
+        [DllImport("libc", SetLastError = true)]
+        static extern uint getuid();
 
+#pragma warning restore SA1300
+#pragma warning restore SA1400
+
+        /// <inheritdoc />
         public bool CanMount(string path)
         {
-
             if (OperatingSystem.Id != OperatingSystemId.Linux)
             {
                 return false;
             }
+
             _logger.LogInformation(
-                "[{0}] Checking we can attempt to mount [{1}], Extension = [{2}], Operating System = [{3}], Executables Available = [{4}].",
+                "[{0}] Checking we can attempt to mount [{1}], Extension = [{2}], Operating System = [{3}].",
                 Name,
                 path,
                 Path.GetExtension(path),
-                OperatingSystem.Name,
-                ExecutablesAvailable
-            );
+                OperatingSystem.Name);
 
-            if (ExecutablesAvailable)
-            {
-                return string.Equals(Path.GetExtension(path), ".iso", StringComparison.OrdinalIgnoreCase);
-            }
-            else
-            {
-                return false;
-            }
+            return string.Equals(Path.GetExtension(path), ".iso", StringComparison.OrdinalIgnoreCase);
         }
 
-        public Task Install(CancellationToken cancellationToken)
-        {
-            return Task.FromResult(false);
-        }
-
+        /// <inheritdoc />
         public Task<IIsoMount> Mount(string isoPath, CancellationToken cancellationToken)
         {
-            if (MountISO(isoPath, out LinuxMount mountedISO))
+            string cmdArguments;
+            string cmdFilename;
+            string mountPoint = Path.Combine(_mountPointRoot, Guid.NewGuid().ToString());
+
+            if (string.IsNullOrEmpty(isoPath))
             {
-                return Task.FromResult<IIsoMount>(mountedISO);
-            }
-            else
-            {
-                throw new IOException(string.Format(
-                    "An error occurred trying to mount image [$0].",
-                    isoPath
-                ));
-            }
-        }
-
-        #endregion
-
-        #region Interface Implementation for IDisposable
-
-        // Flag: Has Dispose already been called?
-        private bool disposed = false;
-
-        public void Dispose()
-        {
-
-            // Dispose of unmanaged resources.
-            Dispose(true);
-
-            // Suppress finalization.
-            GC.SuppressFinalize(this);
-
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-
-            if (disposed)
-            {
-                return;
+                throw new ArgumentNullException(nameof(isoPath));
             }
 
             _logger.LogInformation(
-                "[{0}] Disposing [{1}].",
+                "[{Name}] Attempting to mount [{Path}].",
                 Name,
-                disposing
-            );
-
-            if (disposing)
-            {
-
-                //
-                // Free managed objects here.
-                //
-
-            }
-
-            //
-            // Free any unmanaged objects here.
-            //
-
-            disposed = true;
-
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        private string GetFullPathForExecutable(string name)
-        {
-
-            foreach (string test in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator))
-            {
-                string path = test.Trim();
-
-                if (!string.IsNullOrEmpty(path) && File.Exists(path = Path.Combine(path, name)))
-                {
-                    return Path.GetFullPath(path);
-                }
-            }
-
-            return string.Empty;
-        }
-
-        private uint GetUID()
-        {
-
-            var uid = getuid();
+                isoPath);
 
             _logger.LogDebug(
-                "[{0}] GetUserId() returned [{2}].",
+                "[{Name}] ISO will be mounted at [{Path}].",
                 Name,
-                uid
-            );
-
-            return uid;
-
-        }
-
-        private bool ExecuteCommand(string cmdFilename, string cmdArguments)
-        {
-
-            bool processFailed = false;
-
-            var process = ProcessFactory.Create(
-                new ProcessOptions
-                {
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    FileName = cmdFilename,
-                    Arguments = cmdArguments,
-                    IsHidden = true,
-                    ErrorDialog = false,
-                    EnableRaisingEvents = true
-                }
-            );
-
-            try
-            {
-                process.Start();
-
-                //StreamReader outputReader = process.StandardOutput.;
-                //StreamReader errorReader = process.StandardError;
-
-                _logger.LogDebug(
-                    "[{Name}] Standard output from process is [{Error}].",
-                    Name,
-                    process.StandardOutput.ReadToEnd()
-                );
-
-                _logger.LogDebug(
-                    "[{Name}] Standard error from process is [{Error}].",
-                    Name,
-                    process.StandardError.ReadToEnd()
-                );
-            }
-            catch (Exception ex)
-            {
-                processFailed = true;
-                _logger.LogDebug(ex, "[{Name}] Unhandled exception executing command.", Name);
-            }
-
-            if (!processFailed && process.ExitCode == 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-
-        }
-
-        private bool MountISO(string isoPath, out LinuxMount mountedISO)
-        {
-
-            string cmdArguments;
-            string cmdFilename;
-            string mountPoint = Path.Combine(MountPointRoot, Guid.NewGuid().ToString());
-
-            if (!string.IsNullOrEmpty(isoPath))
-            {
-
-                _logger.LogInformation(
-                    "[{Name}] Attempting to mount [{Path}].",
-                    Name,
-                    isoPath
-                );
-
-                _logger.LogDebug(
-                    "[{Name}] ISO will be mounted at [{Path}].",
-                    Name,
-                    mountPoint
-                );
-
-            }
-            else
-            {
-
-                throw new ArgumentNullException(nameof(isoPath));
-
-            }
+                mountPoint);
 
             try
             {
                 Directory.CreateDirectory(mountPoint);
             }
-            catch (UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
             {
-                throw new IOException("Unable to create mount point(Permission denied) for " + isoPath);
+                throw new IOException("Unable to create mount point(Permission denied) for " + isoPath, ex);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new IOException("Unable to create mount point for " + isoPath);
+                throw new IOException("Unable to create mount point for " + isoPath, ex);
             }
 
             if (GetUID() == 0)
             {
                 cmdFilename = MountCommand;
-                cmdArguments = string.Format("\"{0}\" \"{1}\"", isoPath, mountPoint);
+                cmdArguments = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "\"{0}\" \"{1}\"",
+                    isoPath,
+                    mountPoint);
             }
             else
             {
                 cmdFilename = SudoCommand;
-                cmdArguments = string.Format("\"{0}\" \"{1}\" \"{2}\"", MountCommand, isoPath, mountPoint);
+                cmdArguments = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "\"{0}\" \"{1}\" \"{2}\"",
+                    MountCommand,
+                    isoPath,
+                    mountPoint);
             }
 
             _logger.LogDebug(
                 "[{0}] Mount command [{1}], mount arguments [{2}].",
                 Name,
                 cmdFilename,
-                cmdArguments
-            );
+                cmdArguments);
 
-            if (ExecuteCommand(cmdFilename, cmdArguments))
+            int exitcode = ExecuteCommand(cmdFilename, cmdArguments);
+            if (exitcode == 0)
             {
-
                 _logger.LogInformation(
                     "[{0}] ISO mount completed successfully.",
-                    Name
-                );
+                    Name);
 
-                mountedISO = new LinuxMount(this, isoPath, mountPoint);
-
+                return Task.FromResult<IIsoMount>(new LinuxMount(this, isoPath, mountPoint));
             }
-            else
+
+            _logger.LogInformation(
+                "[{0}] ISO mount completed with errors.",
+                Name);
+
+            try
             {
-
-                _logger.LogInformation(
-                    "[{0}] ISO mount completed with errors.",
-                    Name
-                );
-
-                try
-                {
-                    Directory.Delete(mountPoint, false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogInformation(ex, "[{Name}] Unhandled exception removing mount point.", Name);
-                }
-
-                mountedISO = null;
-
+                Directory.Delete(mountPoint, false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[{Name}] Unhandled exception removing mount point.", Name);
+                throw;
             }
 
-            return mountedISO != null;
-
+            throw new ExternalException("Mount command failed", exitcode);
         }
 
-        private void UnmountISO(LinuxMount mount)
+        private uint GetUID()
         {
+            var uid = getuid();
+
+            _logger.LogDebug(
+                "[{0}] GetUserId() returned [{2}].",
+                Name,
+                uid);
+
+            return uid;
+        }
+
+        private int ExecuteCommand(string cmdFilename, string cmdArguments)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = cmdFilename,
+                Arguments = cmdArguments,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                ErrorDialog = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+
+            var process = new Process()
+            {
+                StartInfo = startInfo
+            };
+
+            try
+            {
+                process.Start();
+
+                _logger.LogDebug(
+                    "[{Name}] Standard output from process is [{Error}].",
+                    Name,
+                    process.StandardOutput.ReadToEnd());
+
+                _logger.LogDebug(
+                    "[{Name}] Standard error from process is [{Error}].",
+                    Name,
+                    process.StandardError.ReadToEnd());
+
+                return process.ExitCode;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "[{Name}] Unhandled exception executing command.", Name);
+                throw;
+            }
+            finally
+            {
+                process?.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Unmounts the specified mount.
+        /// </summary>
+        /// <param name="mount">The mount.</param>
+        internal void OnUnmount(LinuxMount mount)
+        {
+            if (mount == null)
+            {
+                throw new ArgumentNullException(nameof(mount));
+            }
+
+            _logger.LogInformation(
+                "[{0}] Attempting to unmount ISO [{1}] mounted on [{2}].",
+                Name,
+                mount.IsoPath,
+                mount.MountedPath);
 
             string cmdArguments;
             string cmdFilename;
 
-            if (mount != null)
-            {
-
-                _logger.LogInformation(
-                    "[{0}] Attempting to unmount ISO [{1}] mounted on [{2}].",
-                    Name,
-                    mount.IsoPath,
-                    mount.MountedPath
-                );
-
-            }
-            else
-            {
-
-                throw new ArgumentNullException(nameof(mount));
-
-            }
-
             if (GetUID() == 0)
             {
-                cmdFilename = UmountCommand;
-                cmdArguments = string.Format("\"{0}\"", mount.MountedPath);
+                cmdFilename = UnmountCommand;
+                cmdArguments = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "\"{0}\"",
+                    mount.MountedPath);
             }
             else
             {
                 cmdFilename = SudoCommand;
-                cmdArguments = string.Format("\"{0}\" \"{1}\"", UmountCommand, mount.MountedPath);
+                cmdArguments = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "\"{0}\" \"{1}\"",
+                    UnmountCommand,
+                    mount.MountedPath);
             }
 
             _logger.LogDebug(
                 "[{0}] Umount command [{1}], umount arguments [{2}].",
                 Name,
                 cmdFilename,
-                cmdArguments
-            );
+                cmdArguments);
 
-            if (ExecuteCommand(cmdFilename, cmdArguments))
+            int exitcode = ExecuteCommand(cmdFilename, cmdArguments);
+            if (exitcode == 0)
             {
-
                 _logger.LogInformation(
                     "[{0}] ISO unmount completed successfully.",
-                    Name
-                );
-
+                    Name);
             }
             else
             {
-
                 _logger.LogInformation(
                     "[{0}] ISO unmount completed with errors.",
-                    Name
-                );
-
+                    Name);
             }
 
             try
@@ -454,24 +288,11 @@ namespace IsoMounter
             }
             catch (Exception ex)
             {
-                _logger.LogInformation(ex, "[{Name}] Unhandled exception removing mount point.", Name);
+                _logger.LogError(ex, "[{Name}] Unhandled exception removing mount point.", Name);
+                throw;
             }
+
+            throw new ExternalException("Mount command failed", exitcode);
         }
-
-        #endregion
-
-        #region Internal Methods
-
-        internal void OnUnmount(LinuxMount mount)
-        {
-
-            UnmountISO(mount);
-
-        }
-
-        #endregion
-
     }
-
 }
-
