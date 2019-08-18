@@ -119,9 +119,8 @@ namespace MediaBrowser.Providers.Tmdb.TV
                 item.Overview = response.overview;
 
                 item.CommunityRating = (float)response.vote_average;
-                //item.VoteCount = response.vote_count;
 
-                if (response.videos != null && response.videos.results != null)
+                if (response.videos?.results != null)
                 {
                     foreach (var video in response.videos.results)
                     {
@@ -167,20 +166,16 @@ namespace MediaBrowser.Providers.Tmdb.TV
                         var keepTypes = new[]
                         {
                             PersonType.Director,
-                            //PersonType.Writer,
-                            //PersonType.Producer
+                            PersonType.Writer,
+                            PersonType.Producer
                         };
 
                         foreach (var person in credits.crew)
                         {
                             // Normalize this
-                            var type = person.department;
-                            if (string.Equals(type, "writing", StringComparison.OrdinalIgnoreCase))
-                            {
-                                type = PersonType.Writer;
-                            }
+                            var type = TmdbUtils.MapCrewToPersonType(person);
 
-                            if (!keepTypes.Contains(type ?? string.Empty, StringComparer.OrdinalIgnoreCase) &&
+                            if (!keepTypes.Contains(type, StringComparer.OrdinalIgnoreCase) &&
                                 !keepTypes.Contains(person.job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                             {
                                 continue;

@@ -255,20 +255,16 @@ namespace MediaBrowser.Providers.Tmdb.Movies
                 var keepTypes = new[]
                 {
                     PersonType.Director,
-                    //PersonType.Writer,
-                    //PersonType.Producer
+                    PersonType.Writer,
+                    PersonType.Producer
                 };
 
                 foreach (var person in movieData.casts.crew)
                 {
                     // Normalize this
-                    var type = person.department;
-                    if (string.Equals(type, "writing", StringComparison.OrdinalIgnoreCase))
-                    {
-                        type = PersonType.Writer;
-                    }
+                    var type = TmdbUtils.MapCrewToPersonType(person);
 
-                    if (!keepTypes.Contains(type ?? string.Empty, StringComparer.OrdinalIgnoreCase) &&
+                    if (!keepTypes.Contains(type, StringComparer.OrdinalIgnoreCase) &&
                         !keepTypes.Contains(person.job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                     {
                         continue;
