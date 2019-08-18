@@ -1298,18 +1298,13 @@ namespace Emby.Server.Implementations.Data
 
             if (TypeRequiresDeserialization(type))
             {
-                using (var stream = new MemoryStream(reader[1].ToBlob()))
+                try
                 {
-                    stream.Position = 0;
-
-                    try
-                    {
-                        item = _jsonSerializer.DeserializeFromStream(stream, type) as BaseItem;
-                    }
-                    catch (SerializationException ex)
-                    {
-                        Logger.LogError(ex, "Error deserializing item");
-                    }
+                    item = _jsonSerializer.DeserializeFromString(reader.GetString(1), type) as BaseItem;
+                }
+                catch (SerializationException ex)
+                {
+                    Logger.LogError(ex, "Error deserializing item");
                 }
             }
 
