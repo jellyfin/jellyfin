@@ -62,14 +62,14 @@ namespace Emby.Server.Implementations.Data
         /// <returns>Task.</returns>
         private void InitializeInternal()
         {
+            string[] queries =
+            {
+                "create table if not exists userdisplaypreferences (id GUID NOT NULL, userId GUID NOT NULL, client text NOT NULL, data BLOB NOT NULL)",
+                "create unique index if not exists userdisplaypreferencesindex on userdisplaypreferences (id, userId, client)"
+            };
+
             using (var connection = GetConnection())
             {
-                string[] queries = {
-
-                    "create table if not exists userdisplaypreferences (id GUID NOT NULL, userId GUID NOT NULL, client text NOT NULL, data BLOB NOT NULL)",
-                    "create unique index if not exists userdisplaypreferencesindex on userdisplaypreferences (id, userId, client)"
-                               };
-
                 connection.RunQueries(queries);
             }
         }
@@ -81,7 +81,6 @@ namespace Emby.Server.Implementations.Data
         /// <param name="userId">The user id.</param>
         /// <param name="client">The client.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">item</exception>
         public void SaveDisplayPreferences(DisplayPreferences displayPreferences, Guid userId, string client, CancellationToken cancellationToken)
         {
@@ -99,10 +98,9 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
-                {
-                    SaveDisplayPreferences(displayPreferences, userId, client, db);
-                }, TransactionMode);
+                connection.RunInTransaction(
+                    db => SaveDisplayPreferences(displayPreferences, userId, client, db),
+                    TransactionMode);
             }
         }
 
@@ -127,7 +125,6 @@ namespace Emby.Server.Implementations.Data
         /// <param name="displayPreferences">The display preferences.</param>
         /// <param name="userId">The user id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">item</exception>
         public void SaveAllDisplayPreferences(IEnumerable<DisplayPreferences> displayPreferences, Guid userId, CancellationToken cancellationToken)
         {
@@ -140,13 +137,15 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(db =>
-                {
-                    foreach (var displayPreference in displayPreferences)
+                connection.RunInTransaction(
+                    db =>
                     {
-                        SaveDisplayPreferences(displayPreference, userId, displayPreference.Client, db);
-                    }
-                }, TransactionMode);
+                        foreach (var displayPreference in displayPreferences)
+                        {
+                            SaveDisplayPreferences(displayPreference, userId, displayPreference.Client, db);
+                        }
+                    },
+                    TransactionMode);
             }
         }
 
@@ -180,12 +179,12 @@ namespace Emby.Server.Implementations.Data
                         return Get(row);
                     }
                 }
-
-                return new DisplayPreferences
-                {
-                    Id = guidId.ToString("N", CultureInfo.InvariantCulture)
-                };
             }
+
+            return new DisplayPreferences
+            {
+                Id = guidId.ToString("N", CultureInfo.InvariantCulture)
+            };
         }
 
         /// <summary>
@@ -215,22 +214,12 @@ namespace Emby.Server.Implementations.Data
         }
 
         private DisplayPreferences Get(IReadOnlyList<IResultSetValue> row)
-        {
-            using (var stream = new MemoryStream(row[0].ToBlob()))
-            {
-                stream.Position = 0;
-                return _jsonSerializer.DeserializeFromStream<DisplayPreferences>(stream);
-            }
-        }
+            => _jsonSerializer.DeserializeFromString<DisplayPreferences>(row.GetString(0));
 
         public void SaveDisplayPreferences(DisplayPreferences displayPreferences, string userId, string client, CancellationToken cancellationToken)
-        {
-            SaveDisplayPreferences(displayPreferences, new Guid(userId), client, cancellationToken);
-        }
+            => SaveDisplayPreferences(displayPreferences, new Guid(userId), client, cancellationToken);
 
         public DisplayPreferences GetDisplayPreferences(string displayPreferencesId, string userId, string client)
-        {
-            return GetDisplayPreferences(displayPreferencesId, new Guid(userId), client);
-        }
+            => GetDisplayPreferences(displayPreferencesId, new Guid(userId), client);
     }
 }

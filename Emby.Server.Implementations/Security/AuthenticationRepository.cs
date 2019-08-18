@@ -23,22 +23,22 @@ namespace Emby.Server.Implementations.Security
 
         public void Initialize()
         {
+            string[] queries =
+            {
+                "create table if not exists Tokens (Id INTEGER PRIMARY KEY, AccessToken TEXT NOT NULL, DeviceId TEXT NOT NULL, AppName TEXT NOT NULL, AppVersion TEXT NOT NULL, DeviceName TEXT NOT NULL, UserId TEXT, UserName TEXT, IsActive BIT NOT NULL, DateCreated DATETIME NOT NULL, DateLastActivity DATETIME NOT NULL)",
+                "create table if not exists Devices (Id TEXT NOT NULL PRIMARY KEY, CustomName TEXT, Capabilities TEXT)",
+                "drop index if exists idx_AccessTokens",
+                "drop index if exists Tokens1",
+                "drop index if exists Tokens2",
+
+                "create index if not exists Tokens3 on Tokens (AccessToken, DateLastActivity)",
+                "create index if not exists Tokens4 on Tokens (Id, DateLastActivity)",
+                "create index if not exists Devices1 on Devices (Id)"
+            };
+
             using (var connection = GetConnection())
             {
                 var tableNewlyCreated = !TableExists(connection, "Tokens");
-
-                string[] queries = {
-
-                                "create table if not exists Tokens (Id INTEGER PRIMARY KEY, AccessToken TEXT NOT NULL, DeviceId TEXT NOT NULL, AppName TEXT NOT NULL, AppVersion TEXT NOT NULL, DeviceName TEXT NOT NULL, UserId TEXT, UserName TEXT, IsActive BIT NOT NULL, DateCreated DATETIME NOT NULL, DateLastActivity DATETIME NOT NULL)",
-                                "create table if not exists Devices (Id TEXT NOT NULL PRIMARY KEY, CustomName TEXT, Capabilities TEXT)",
-
-                                "drop index if exists idx_AccessTokens",
-                                "drop index if exists Tokens1",
-                                "drop index if exists Tokens2",
-                                "create index if not exists Tokens3 on Tokens (AccessToken, DateLastActivity)",
-                                "create index if not exists Tokens4 on Tokens (Id, DateLastActivity)",
-                                "create index if not exists Devices1 on Devices (Id)"
-                               };
 
                 connection.RunQueries(queries);
 
@@ -244,45 +244,46 @@ namespace Emby.Server.Implementations.Security
                 }
             }
 
-            var list = new List<AuthenticationInfo>();
+            var statementTexts = new[]
+            {
+                commandText,
+                "select count (Id) from Tokens" + whereTextWithoutPaging
+            };
 
+            var list = new List<AuthenticationInfo>();
+            var result = new QueryResult<AuthenticationInfo>();
             using (var connection = GetConnection(true))
             {
-                return connection.RunInTransaction(db =>
-                {
-                    var result = new QueryResult<AuthenticationInfo>();
-
-                    var statementTexts = new List<string>();
-                    statementTexts.Add(commandText);
-                    statementTexts.Add("select count (Id) from Tokens" + whereTextWithoutPaging);
-
-                    var statements = PrepareAll(db, statementTexts)
-                        .ToList();
-
-                    using (var statement = statements[0])
+                connection.RunInTransaction(
+                    db =>
                     {
-                        BindAuthenticationQueryParams(query, statement);
+                        var statements = PrepareAll(db, statementTexts)
+                            .ToList();
 
-                        foreach (var row in statement.ExecuteQuery())
+                        using (var statement = statements[0])
                         {
-                            list.Add(Get(row));
+                            BindAuthenticationQueryParams(query, statement);
+
+                            foreach (var row in statement.ExecuteQuery())
+                            {
+                                list.Add(Get(row));
+                            }
+
+                            using (var totalCountStatement = statements[1])
+                            {
+                                BindAuthenticationQueryParams(query, totalCountStatement);
+
+                                result.TotalRecordCount = totalCountStatement.ExecuteQuery()
+                                    .SelectScalarInt()
+                                    .First();
+                            }
                         }
-
-                        using (var totalCountStatement = statements[1])
-                        {
-                            BindAuthenticationQueryParams(query, totalCountStatement);
-
-                            result.TotalRecordCount = totalCountStatement.ExecuteQuery()
-                                .SelectScalarInt()
-                                .First();
-                        }
-                    }
-
-                    result.Items = list.ToArray();
-                    return result;
-
-                }, ReadTransactionMode);
+                    },
+                    ReadTransactionMode);
             }
+
+            result.Items = list.ToArray();
+            return result;
         }
 
         private static AuthenticationInfo Get(IReadOnlyList<IResultSetValue> reader)
