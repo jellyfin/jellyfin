@@ -1300,7 +1300,7 @@ namespace Emby.Server.Implementations.Data
             {
                 try
                 {
-                    item = _jsonSerializer.DeserializeFromString(reader[1].ToString(), type) as BaseItem;
+                    item = _jsonSerializer.DeserializeFromString(reader.GetString(1), type) as BaseItem;
                 }
                 catch (SerializationException ex)
                 {
