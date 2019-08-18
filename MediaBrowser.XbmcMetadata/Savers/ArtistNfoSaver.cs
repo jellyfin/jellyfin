@@ -14,26 +14,24 @@ namespace MediaBrowser.XbmcMetadata.Savers
 {
     public class ArtistNfoSaver : BaseNfoSaver
     {
+        public ArtistNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
+            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
+        {
+        }
+
+        /// <inheritdoc />
         protected override string GetLocalSavePath(BaseItem item)
-        {
-            return Path.Combine(item.Path, "artist.nfo");
-        }
+            => Path.Combine(item.Path, "artist.nfo");
 
+        /// <inheritdoc />
         protected override string GetRootElementName(BaseItem item)
-        {
-            return "artist";
-        }
+            => "artist";
 
+        /// <inheritdoc />
         public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
-        {
-            if (!item.SupportsLocalMetadata)
-            {
-                return false;
-            }
+            => !item.SupportsLocalMetadata && item is MusicArtist && updateType >= MinimumUpdateType;
 
-            return item is MusicArtist && updateType >= MinimumUpdateType;
-        }
-
+        /// <inheritdoc />
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
             var artist = (MusicArtist)item;
@@ -51,8 +49,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             AddAlbums(albums, writer);
         }
 
-        private readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
         private void AddAlbums(IList<BaseItem> albums, XmlWriter writer)
         {
             foreach (var album in albums)
@@ -66,13 +62,14 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (album.ProductionYear.HasValue)
                 {
-                    writer.WriteElementString("year", album.ProductionYear.Value.ToString(UsCulture));
+                    writer.WriteElementString("year", album.ProductionYear.Value.ToString(CultureInfo.InvariantCulture));
                 }
 
                 writer.WriteEndElement();
             }
         }
 
+        /// <inheritdoc />
         protected override List<string> GetTagsUsed(BaseItem item)
         {
             var list = base.GetTagsUsed(item);
@@ -81,12 +78,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 "album",
                 "disbanded"
             });
-            return list;
-        }
 
-        public ArtistNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
-            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
-        {
+            return list;
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -15,28 +16,29 @@ namespace MediaBrowser.XbmcMetadata.Savers
 {
     public class MovieNfoSaver : BaseNfoSaver
     {
-        protected override string GetLocalSavePath(BaseItem item)
+        public MovieNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
+            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
-            var paths = GetMovieSavePaths(new ItemInfo(item), FileSystem);
-            return paths.Count == 0 ? null : paths[0];
         }
 
-        public static List<string> GetMovieSavePaths(ItemInfo item, IFileSystem fileSystem)
-        {
-            var list = new List<string>();
+        /// <inheritdoc />
+        protected override string GetLocalSavePath(BaseItem item)
+            => GetMovieSavePaths(new ItemInfo(item)).FirstOrDefault();
 
+        public static IEnumerable<string> GetMovieSavePaths(ItemInfo item)
+        {
             if (item.VideoType == VideoType.Dvd && !item.IsPlaceHolder)
             {
                 var path = item.ContainingFolderPath;
 
-                list.Add(Path.Combine(path, "VIDEO_TS", "VIDEO_TS.nfo"));
+                yield return Path.Combine(path, "VIDEO_TS", "VIDEO_TS.nfo");
             }
 
             if (!item.IsPlaceHolder && (item.VideoType == VideoType.Dvd || item.VideoType == VideoType.BluRay))
             {
                 var path = item.ContainingFolderPath;
 
-                list.Add(Path.Combine(path, Path.GetFileName(path) + ".nfo"));
+                yield return Path.Combine(path, Path.GetFileName(path) + ".nfo");
             }
             else
             {
@@ -47,22 +49,20 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 //    list.Add(Path.Combine(item.ContainingFolderPath, "movie.nfo"));
                 //}
 
-                list.Add(Path.ChangeExtension(item.Path, ".nfo"));
+                yield return Path.ChangeExtension(item.Path, ".nfo");
 
                 if (!item.IsInMixedFolder)
                 {
-                    list.Add(Path.Combine(item.ContainingFolderPath, "movie.nfo"));
+                    yield return Path.Combine(item.ContainingFolderPath, "movie.nfo");
                 }
             }
-
-            return list;
         }
 
+        /// <inheritdoc />
         protected override string GetRootElementName(BaseItem item)
-        {
-            return item is MusicVideo ? "musicvideo" : "movie";
-        }
+            => item is MusicVideo ? "musicvideo" : "movie";
 
+        /// <inheritdoc />
         public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
         {
             if (!item.SupportsLocalMetadata)
@@ -70,10 +70,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 return false;
             }
 
-            var video = item as Video;
-
             // Check parent for null to avoid running this against things like video backdrops
-            if (video != null && !(item is Episode) && !video.ExtraType.HasValue)
+            if (item is Video video && !(item is Episode) && !video.ExtraType.HasValue)
             {
                 return updateType >= MinimumUpdateType;
             }
@@ -81,6 +79,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             return false;
         }
 
+        /// <inheritdoc />
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
             var imdb = item.GetProviderId(MetadataProviders.Imdb);
@@ -90,9 +89,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("id", imdb);
             }
 
-            var musicVideo = item as MusicVideo;
-
-            if (musicVideo != null)
+            if (item is MusicVideo musicVideo)
             {
                 foreach (var artist in musicVideo.Artists)
                 {
@@ -104,9 +101,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 }
             }
 
-            var movie = item as Movie;
-
-            if (movie != null)
+            if (item is Movie movie)
             {
                 if (!string.IsNullOrEmpty(movie.CollectionName))
                 {
@@ -115,6 +110,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
+        /// <inheritdoc />
         protected override List<string> GetTagsUsed(BaseItem item)
         {
             var list = base.GetTagsUsed(item);
@@ -125,12 +121,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 "set",
                 "id"
             });
-            return list;
-        }
 
-        public MovieNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
-            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
-        {
+            return list;
         }
     }
 }

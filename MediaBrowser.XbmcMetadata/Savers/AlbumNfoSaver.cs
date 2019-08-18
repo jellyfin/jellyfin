@@ -28,26 +28,15 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         /// <inheritdoc />
         protected override string GetLocalSavePath(BaseItem item)
-        {
-            return Path.Combine(item.Path, "album.nfo");
-        }
+            => Path.Combine(item.Path, "album.nfo");
 
         /// <inheritdoc />
         protected override string GetRootElementName(BaseItem item)
-        {
-            return "album";
-        }
+            => "album";
 
         /// <inheritdoc />
         public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
-        {
-            if (!item.SupportsLocalMetadata)
-            {
-                return false;
-            }
-
-            return item is MusicAlbum && updateType >= MinimumUpdateType;
-        }
+            => !item.SupportsLocalMetadata && item is MusicAlbum && updateType >= MinimumUpdateType;
 
         /// <inheritdoc />
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)

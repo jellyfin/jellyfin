@@ -9,11 +9,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 {
     public class SeasonNfoParser : BaseNfoParser<Season>
     {
-        /// <summary>
-        /// Fetches the data from XML node.
-        /// </summary>
-        /// <param name="reader">The reader.</param>
-        /// <param name="itemResult">The item result.</param>
+        public SeasonNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
+            : base(logger, config, providerManager)
+        {
+        }
+
+        /// <inheritdoc />
         protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Season> itemResult)
         {
             var item = itemResult.Item;
@@ -38,11 +39,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;
             }
-        }
-
-        public SeasonNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
-            : base(logger, config, providerManager)
-        {
         }
     }
 }

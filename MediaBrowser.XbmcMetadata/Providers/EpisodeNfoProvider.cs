@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
@@ -24,15 +23,13 @@ namespace MediaBrowser.XbmcMetadata.Providers
             _providerManager = providerManager;
         }
 
+        /// <inheritdoc />
         protected override void Fetch(MetadataResult<Episode> result, string path, CancellationToken cancellationToken)
         {
-            var images = new List<LocalImageInfo>();
-
-            new EpisodeNfoParser(_logger, _config, _providerManager).Fetch(result, images, path, cancellationToken);
-
-            result.Images = images;
+            new EpisodeNfoParser(_logger, _config, _providerManager).Fetch(result, path, cancellationToken);
         }
 
+        /// <inheritdoc />
         protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             var path = Path.ChangeExtension(info.Path, ".nfo");

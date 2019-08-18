@@ -6,6 +6,7 @@ namespace MediaBrowser.XbmcMetadata.Configuration
 {
     public class ConfigurationFactory : IConfigurationFactory
     {
+        /// <inheritdoc />
         public IEnumerable<ConfigurationStore> GetConfigurations()
         {
             return new[]
