@@ -73,12 +73,12 @@ namespace MediaBrowser.Providers.Tmdb.Movies
             {
                 list.AddRange(GetPosters(results).Select(i => new RemoteImageInfo
                 {
-                    Url = tmdbImageUrl + i.file_path,
-                    CommunityRating = i.vote_average,
-                    VoteCount = i.vote_count,
-                    Width = i.width,
-                    Height = i.height,
-                    Language = TmdbMovieProvider.AdjustImageLanguage(i.iso_639_1, language),
+                    Url = tmdbImageUrl + i.File_Path,
+                    CommunityRating = i.Vote_Average,
+                    VoteCount = i.Vote_Count,
+                    Width = i.Width,
+                    Height = i.Height,
+                    Language = TmdbMovieProvider.AdjustImageLanguage(i.Iso_639_1, language),
                     ProviderName = Name,
                     Type = ImageType.Primary,
                     RatingType = RatingType.Score
@@ -89,11 +89,11 @@ namespace MediaBrowser.Providers.Tmdb.Movies
             {
                 list.AddRange(GetBackdrops(results).Select(i => new RemoteImageInfo
                 {
-                    Url = tmdbImageUrl + i.file_path,
-                    CommunityRating = i.vote_average,
-                    VoteCount = i.vote_count,
-                    Width = i.width,
-                    Height = i.height,
+                    Url = tmdbImageUrl + i.File_Path,
+                    CommunityRating = i.Vote_Average,
+                    VoteCount = i.Vote_Count,
+                    Width = i.Width,
+                    Height = i.Height,
                     ProviderName = Name,
                     Type = ImageType.Backdrop,
                     RatingType = RatingType.Score
@@ -132,7 +132,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
         /// <returns>IEnumerable{MovieDbProvider.Poster}.</returns>
         private IEnumerable<Poster> GetPosters(Images images)
         {
-            return images.posters ?? new List<Poster>();
+            return images.Posters ?? new List<Poster>();
         }
 
         /// <summary>
@@ -142,11 +142,11 @@ namespace MediaBrowser.Providers.Tmdb.Movies
         /// <returns>IEnumerable{MovieDbProvider.Backdrop}.</returns>
         private IEnumerable<Backdrop> GetBackdrops(Images images)
         {
-            var eligibleBackdrops = images.backdrops == null ? new List<Backdrop>() :
-                images.backdrops;
+            var eligibleBackdrops = images.Backdrops == null ? new List<Backdrop>() :
+                images.Backdrops;
 
-            return eligibleBackdrops.OrderByDescending(i => i.vote_average)
-                .ThenByDescending(i => i.vote_count);
+            return eligibleBackdrops.OrderByDescending(i => i.Vote_Average)
+                .ThenByDescending(i => i.Vote_Count);
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
                     var movieInfo = await TmdbMovieProvider.Current.FetchMainResult(imdbId, false, language, cancellationToken).ConfigureAwait(false);
                     if (movieInfo != null)
                     {
-                        tmdbId = movieInfo.id.ToString(CultureInfo.InvariantCulture);
+                        tmdbId = movieInfo.Id.ToString(CultureInfo.InvariantCulture);
                     }
                 }
             }
@@ -189,7 +189,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
 
                 if (fileInfo.Exists)
                 {
-                    return jsonSerializer.DeserializeFromFile<MovieResult>(path).images;
+                    return jsonSerializer.DeserializeFromFile<MovieResult>(path).Images;
                 }
             }
 

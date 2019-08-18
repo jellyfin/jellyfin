@@ -2,13 +2,13 @@ namespace MediaBrowser.Providers.Tmdb.Models.TV
 {
     public class Episode
     {
-        public string air_date { get; set; }
-        public int episode_number { get; set; }
-        public int id { get; set; }
-        public string name { get; set; }
-        public string overview { get; set; }
-        public string still_path { get; set; }
-        public double vote_average { get; set; }
-        public int vote_count { get; set; }
+        public string Air_Date { get; set; }
+        public int Episode_Number { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Overview { get; set; }
+        public string Still_Path { get; set; }
+        public double Vote_Average { get; set; }
+        public int Vote_Count { get; set; }
     }
 }

@@ -69,12 +69,12 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
             list.AddRange(GetPosters(results).Select(i => new RemoteImageInfo
             {
-                Url = tmdbImageUrl + i.file_path,
-                CommunityRating = i.vote_average,
-                VoteCount = i.vote_count,
-                Width = i.width,
-                Height = i.height,
-                Language = TmdbMovieProvider.AdjustImageLanguage(i.iso_639_1, language),
+                Url = tmdbImageUrl + i.File_Path,
+                CommunityRating = i.Vote_Average,
+                VoteCount = i.Vote_Count,
+                Width = i.Width,
+                Height = i.Height,
+                Language = TmdbMovieProvider.AdjustImageLanguage(i.Iso_639_1, language),
                 ProviderName = Name,
                 Type = ImageType.Primary,
                 RatingType = RatingType.Score
@@ -82,11 +82,11 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
             list.AddRange(GetBackdrops(results).Select(i => new RemoteImageInfo
             {
-                Url = tmdbImageUrl + i.file_path,
-                CommunityRating = i.vote_average,
-                VoteCount = i.vote_count,
-                Width = i.width,
-                Height = i.height,
+                Url = tmdbImageUrl + i.File_Path,
+                CommunityRating = i.Vote_Average,
+                VoteCount = i.Vote_Count,
+                Width = i.Width,
+                Height = i.Height,
                 ProviderName = Name,
                 Type = ImageType.Backdrop,
                 RatingType = RatingType.Score
@@ -123,7 +123,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
         /// <param name="images">The images.</param>
         private IEnumerable<Poster> GetPosters(Images images)
         {
-            return images.posters ?? new List<Poster>();
+            return images.Posters ?? new List<Poster>();
         }
 
         /// <summary>
@@ -132,10 +132,10 @@ namespace MediaBrowser.Providers.Tmdb.TV
         /// <param name="images">The images.</param>
         private IEnumerable<Backdrop> GetBackdrops(Images images)
         {
-            var eligibleBackdrops = images.backdrops ?? new List<Backdrop>();
+            var eligibleBackdrops = images.Backdrops ?? new List<Backdrop>();
 
-            return eligibleBackdrops.OrderByDescending(i => i.vote_average)
-                .ThenByDescending(i => i.vote_count);
+            return eligibleBackdrops.OrderByDescending(i => i.Vote_Average)
+                .ThenByDescending(i => i.Vote_Count);
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
                 if (fileInfo.Exists)
                 {
-                    return jsonSerializer.DeserializeFromFile<SeriesResult>(path).images;
+                    return jsonSerializer.DeserializeFromFile<SeriesResult>(path).Images;
                 }
             }
 

@@ -2,8 +2,8 @@ namespace MediaBrowser.Providers.Tmdb.Models.Movies
 {
     public class Youtube
     {
-        public string name { get; set; }
-        public string size { get; set; }
-        public string source { get; set; }
+        public string Name { get; set; }
+        public string Size { get; set; }
+        public string Source { get; set; }
     }
 }

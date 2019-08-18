@@ -60,7 +60,7 @@ namespace MediaBrowser.Providers.Tmdb.People
 
                 var result = _jsonSerializer.DeserializeFromFile<PersonResult>(dataFilePath);
 
-                var images = result.images ?? new PersonImages();
+                var images = result.Images ?? new PersonImages();
 
                 var tmdbSettings = await TmdbMovieProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
@@ -76,16 +76,16 @@ namespace MediaBrowser.Providers.Tmdb.People
         {
             var list = new List<RemoteImageInfo>();
 
-            if (images.profiles != null)
+            if (images.Profiles != null)
             {
-                list.AddRange(images.profiles.Select(i => new RemoteImageInfo
+                list.AddRange(images.Profiles.Select(i => new RemoteImageInfo
                 {
                     ProviderName = Name,
                     Type = ImageType.Primary,
-                    Width = i.width,
-                    Height = i.height,
+                    Width = i.Width,
+                    Height = i.Height,
                     Language = GetLanguage(i),
-                    Url = baseImageUrl + i.file_path
+                    Url = baseImageUrl + i.File_Path
                 }));
             }
 
@@ -118,7 +118,7 @@ namespace MediaBrowser.Providers.Tmdb.People
 
         private string GetLanguage(Profile profile)
         {
-            return profile.iso_639_1?.ToString();
+            return profile.Iso_639_1?.ToString();
         }
 
         public int Order => 0;

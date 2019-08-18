@@ -71,16 +71,16 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
         {
             var list = new List<RemoteImageInfo>();
 
-            var images = obj.images ?? new CollectionImages();
+            var images = obj.Images ?? new CollectionImages();
 
             list.AddRange(GetPosters(images).Select(i => new RemoteImageInfo
             {
-                Url = baseUrl + i.file_path,
-                CommunityRating = i.vote_average,
-                VoteCount = i.vote_count,
-                Width = i.width,
-                Height = i.height,
-                Language = TmdbMovieProvider.AdjustImageLanguage(i.iso_639_1, language),
+                Url = baseUrl + i.File_Path,
+                CommunityRating = i.Vote_Average,
+                VoteCount = i.Vote_Count,
+                Width = i.Width,
+                Height = i.Height,
+                Language = TmdbMovieProvider.AdjustImageLanguage(i.Iso_639_1, language),
                 ProviderName = Name,
                 Type = ImageType.Primary,
                 RatingType = RatingType.Score
@@ -88,11 +88,11 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
 
             list.AddRange(GetBackdrops(images).Select(i => new RemoteImageInfo
             {
-                Url = baseUrl + i.file_path,
-                CommunityRating = i.vote_average,
-                VoteCount = i.vote_count,
-                Width = i.width,
-                Height = i.height,
+                Url = baseUrl + i.File_Path,
+                CommunityRating = i.Vote_Average,
+                VoteCount = i.Vote_Count,
+                Width = i.Width,
+                Height = i.Height,
                 ProviderName = Name,
                 Type = ImageType.Backdrop,
                 RatingType = RatingType.Score
@@ -130,7 +130,7 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
         /// <returns>IEnumerable{MovieDbProvider.Poster}.</returns>
         private IEnumerable<Poster> GetPosters(CollectionImages images)
         {
-            return images.posters ?? new List<Poster>();
+            return images.Posters ?? new List<Poster>();
         }
 
         /// <summary>
@@ -140,11 +140,11 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
         /// <returns>IEnumerable{MovieDbProvider.Backdrop}.</returns>
         private IEnumerable<Backdrop> GetBackdrops(CollectionImages images)
         {
-            var eligibleBackdrops = images.backdrops == null ? new List<Backdrop>() :
-                images.backdrops;
+            var eligibleBackdrops = images.Backdrops == null ? new List<Backdrop>() :
+                images.Backdrops;
 
-            return eligibleBackdrops.OrderByDescending(i => i.vote_average)
-                .ThenByDescending(i => i.vote_count);
+            return eligibleBackdrops.OrderByDescending(i => i.Vote_Average)
+                .ThenByDescending(i => i.Vote_Count);
         }
 
         public int Order => 0;

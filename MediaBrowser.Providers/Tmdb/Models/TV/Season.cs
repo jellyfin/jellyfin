@@ -2,10 +2,10 @@ namespace MediaBrowser.Providers.Tmdb.Models.TV
 {
     public class Season
     {
-        public string air_date { get; set; }
-        public int episode_count { get; set; }
-        public int id { get; set; }
-        public string poster_path { get; set; }
-        public int season_number { get; set; }
+        public string Air_Date { get; set; }
+        public int Episode_Count { get; set; }
+        public int Id { get; set; }
+        public string Poster_Path { get; set; }
+        public int Season_Number { get; set; }
     }
 }

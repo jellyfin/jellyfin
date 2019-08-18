@@ -4,6 +4,6 @@ namespace MediaBrowser.Providers.Tmdb.Models.General
 {
     public class Videos
     {
-        public List<Video> results { get; set; }
+        public List<Video> Results { get; set; }
     }
 }

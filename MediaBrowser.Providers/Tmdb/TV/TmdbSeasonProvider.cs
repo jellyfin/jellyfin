@@ -67,31 +67,31 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
                     result.Item.IndexNumber = seasonNumber;
 
-                    result.Item.Overview = seasonInfo.overview;
+                    result.Item.Overview = seasonInfo.Overview;
 
-                    if (seasonInfo.external_ids.tvdb_id > 0)
+                    if (seasonInfo.External_Ids.Tvdb_Id > 0)
                     {
-                        result.Item.SetProviderId(MetadataProviders.Tvdb, seasonInfo.external_ids.tvdb_id.ToString(CultureInfo.InvariantCulture));
+                        result.Item.SetProviderId(MetadataProviders.Tvdb, seasonInfo.External_Ids.Tvdb_Id.ToString(CultureInfo.InvariantCulture));
                     }
 
-                    var credits = seasonInfo.credits;
+                    var credits = seasonInfo.Credits;
                     if (credits != null)
                     {
                         //Actors, Directors, Writers - all in People
                         //actors come from cast
-                        if (credits.cast != null)
+                        if (credits.Cast != null)
                         {
                             //foreach (var actor in credits.cast.OrderBy(a => a.order)) result.Item.AddPerson(new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
                         }
 
                         //and the rest from crew
-                        if (credits.crew != null)
+                        if (credits.Crew != null)
                         {
                             //foreach (var person in credits.crew) result.Item.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
                         }
                     }
 
-                    result.Item.PremiereDate = seasonInfo.air_date;
+                    result.Item.PremiereDate = seasonInfo.Air_Date;
                     result.Item.ProductionYear = result.Item.PremiereDate.Value.Year;
                 }
                 catch (HttpException ex)

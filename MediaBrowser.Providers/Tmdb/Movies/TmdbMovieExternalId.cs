@@ -8,12 +8,16 @@ namespace MediaBrowser.Providers.Tmdb.Movies
 {
     public class TmdbMovieExternalId : IExternalId
     {
+        /// <inheritdoc />
         public string Name => TmdbUtils.ProviderName;
 
+        /// <inheritdoc />
         public string Key => MetadataProviders.Tmdb.ToString();
 
+        /// <inheritdoc />
         public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "movie/{0}";
 
+        /// <inheritdoc />
         public bool Supports(IHasProviderIds item)
         {
             // Supports images for tv movies

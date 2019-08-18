@@ -4,8 +4,8 @@ namespace MediaBrowser.Providers.Tmdb.Models.Movies
 {
     public class Country
     {
-        public string iso_3166_1 { get; set; }
-        public string certification { get; set; }
-        public DateTime release_date { get; set; }
+        public string Iso_3166_1 { get; set; }
+        public string Certification { get; set; }
+        public DateTime Release_Date { get; set; }
     }
 }

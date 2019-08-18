@@ -2,14 +2,14 @@ namespace MediaBrowser.Providers.Tmdb.Models.Search
 {
     public class TvResult
     {
-        public string backdrop_path { get; set; }
-        public string first_air_date { get; set; }
-        public int id { get; set; }
-        public string original_name { get; set; }
-        public string poster_path { get; set; }
-        public double popularity { get; set; }
-        public string name { get; set; }
-        public double vote_average { get; set; }
-        public int vote_count { get; set; }
+        public string Backdrop_Path { get; set; }
+        public string First_Air_Date { get; set; }
+        public int Id { get; set; }
+        public string Original_Name { get; set; }
+        public string Poster_Path { get; set; }
+        public double Popularity { get; set; }
+        public string Name { get; set; }
+        public double Vote_Average { get; set; }
+        public int Vote_Count { get; set; }
     }
 }

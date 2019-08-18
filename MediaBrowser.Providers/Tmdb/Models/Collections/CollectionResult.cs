@@ -4,12 +4,12 @@ namespace MediaBrowser.Providers.Tmdb.Models.Collections
 {
     public class CollectionResult
     {
-        public int id { get; set; }
-        public string name { get; set; }
-        public string overview { get; set; }
-        public string poster_path { get; set; }
-        public string backdrop_path { get; set; }
-        public List<Part> parts { get; set; }
-        public CollectionImages images { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Overview { get; set; }
+        public string Poster_Path { get; set; }
+        public string Backdrop_Path { get; set; }
+        public List<Part> Parts { get; set; }
+        public CollectionImages Images { get; set; }
     }
 }

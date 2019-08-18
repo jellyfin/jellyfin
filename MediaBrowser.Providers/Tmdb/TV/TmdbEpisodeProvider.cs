@@ -93,7 +93,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
                 result.HasMetadata = true;
                 result.QueriedById = true;
 
-                if (!string.IsNullOrEmpty(response.overview))
+                if (!string.IsNullOrEmpty(response.Overview))
                 {
                     // if overview is non-empty, we can assume that localized data was returned
                     result.ResultLanguage = info.MetadataLanguage;
@@ -107,29 +107,29 @@ namespace MediaBrowser.Providers.Tmdb.TV
                 item.ParentIndexNumber = info.ParentIndexNumber;
                 item.IndexNumberEnd = info.IndexNumberEnd;
 
-                if (response.external_ids.tvdb_id > 0)
+                if (response.External_Ids.Tvdb_Id > 0)
                 {
-                    item.SetProviderId(MetadataProviders.Tvdb, response.external_ids.tvdb_id.ToString(CultureInfo.InvariantCulture));
+                    item.SetProviderId(MetadataProviders.Tvdb, response.External_Ids.Tvdb_Id.ToString(CultureInfo.InvariantCulture));
                 }
 
-                item.PremiereDate = response.air_date;
+                item.PremiereDate = response.Air_Date;
                 item.ProductionYear = result.Item.PremiereDate.Value.Year;
 
-                item.Name = response.name;
-                item.Overview = response.overview;
+                item.Name = response.Name;
+                item.Overview = response.Overview;
 
-                item.CommunityRating = (float)response.vote_average;
+                item.CommunityRating = (float)response.Vote_Average;
 
-                if (response.videos?.results != null)
+                if (response.Videos?.Results != null)
                 {
-                    foreach (var video in response.videos.results)
+                    foreach (var video in response.Videos.Results)
                     {
-                        if (video.type.Equals("trailer", System.StringComparison.OrdinalIgnoreCase)
-                            || video.type.Equals("clip", System.StringComparison.OrdinalIgnoreCase))
+                        if (video.Type.Equals("trailer", System.StringComparison.OrdinalIgnoreCase)
+                            || video.Type.Equals("clip", System.StringComparison.OrdinalIgnoreCase))
                         {
-                            if (video.site.Equals("youtube", System.StringComparison.OrdinalIgnoreCase))
+                            if (video.Site.Equals("youtube", System.StringComparison.OrdinalIgnoreCase))
                             {
-                                var videoUrl = string.Format("http://www.youtube.com/watch?v={0}", video.key);
+                                var videoUrl = string.Format("http://www.youtube.com/watch?v={0}", video.Key);
                                 item.AddTrailerUrl(videoUrl);
                             }
                         }
@@ -138,30 +138,30 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
                 result.ResetPeople();
 
-                var credits = response.credits;
+                var credits = response.Credits;
                 if (credits != null)
                 {
                     //Actors, Directors, Writers - all in People
                     //actors come from cast
-                    if (credits.cast != null)
+                    if (credits.Cast != null)
                     {
-                        foreach (var actor in credits.cast.OrderBy(a => a.order))
+                        foreach (var actor in credits.Cast.OrderBy(a => a.Order))
                         {
-                            result.AddPerson(new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
+                            result.AddPerson(new PersonInfo { Name = actor.Name.Trim(), Role = actor.Character, Type = PersonType.Actor, SortOrder = actor.Order });
                         }
                     }
 
                     // guest stars
-                    if (credits.guest_stars != null)
+                    if (credits.Guest_Stars != null)
                     {
-                        foreach (var guest in credits.guest_stars.OrderBy(a => a.order))
+                        foreach (var guest in credits.Guest_Stars.OrderBy(a => a.Order))
                         {
-                            result.AddPerson(new PersonInfo { Name = guest.name.Trim(), Role = guest.character, Type = PersonType.GuestStar, SortOrder = guest.order });
+                            result.AddPerson(new PersonInfo { Name = guest.Name.Trim(), Role = guest.Character, Type = PersonType.GuestStar, SortOrder = guest.Order });
                         }
                     }
 
                     //and the rest from crew
-                    if (credits.crew != null)
+                    if (credits.Crew != null)
                     {
                         var keepTypes = new[]
                         {
@@ -170,18 +170,18 @@ namespace MediaBrowser.Providers.Tmdb.TV
                             PersonType.Producer
                         };
 
-                        foreach (var person in credits.crew)
+                        foreach (var person in credits.Crew)
                         {
                             // Normalize this
                             var type = TmdbUtils.MapCrewToPersonType(person);
 
                             if (!keepTypes.Contains(type, StringComparer.OrdinalIgnoreCase) &&
-                                !keepTypes.Contains(person.job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                                !keepTypes.Contains(person.Job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                             {
                                 continue;
                             }
 
-                            result.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = type });
+                            result.AddPerson(new PersonInfo { Name = person.Name.Trim(), Role = person.Job, Type = type });
                         }
                     }
                 }

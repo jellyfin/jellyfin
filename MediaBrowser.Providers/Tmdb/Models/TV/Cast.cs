@@ -2,11 +2,11 @@ namespace MediaBrowser.Providers.Tmdb.Models.TV
 {
     public class Cast
     {
-        public string character { get; set; }
-        public string credit_id { get; set; }
-        public int id { get; set; }
-        public string name { get; set; }
-        public string profile_path { get; set; }
-        public int order { get; set; }
+        public string Character { get; set; }
+        public string Credit_Id { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Profile_Path { get; set; }
+        public int Order { get; set; }
     }
 }

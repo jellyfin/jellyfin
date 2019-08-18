@@ -2,12 +2,12 @@ namespace MediaBrowser.Providers.Tmdb.Models.General
 {
     public class Backdrop
     {
-        public double aspect_ratio { get; set; }
-        public string file_path { get; set; }
-        public int height { get; set; }
-        public string iso_639_1 { get; set; }
-        public double vote_average { get; set; }
-        public int vote_count { get; set; }
-        public int width { get; set; }
+        public double Aspect_Ratio { get; set; }
+        public string File_Path { get; set; }
+        public int Height { get; set; }
+        public string Iso_639_1 { get; set; }
+        public double Vote_Average { get; set; }
+        public int Vote_Count { get; set; }
+        public int Width { get; set; }
     }
 }

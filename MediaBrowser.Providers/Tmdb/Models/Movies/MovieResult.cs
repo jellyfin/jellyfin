@@ -5,45 +5,45 @@ namespace MediaBrowser.Providers.Tmdb.Models.Movies
 {
     public class MovieResult
     {
-        public bool adult { get; set; }
-        public string backdrop_path { get; set; }
-        public BelongsToCollection belongs_to_collection { get; set; }
-        public int budget { get; set; }
-        public List<Genre> genres { get; set; }
-        public string homepage { get; set; }
-        public int id { get; set; }
-        public string imdb_id { get; set; }
-        public string original_title { get; set; }
-        public string original_name { get; set; }
-        public string overview { get; set; }
-        public double popularity { get; set; }
-        public string poster_path { get; set; }
-        public List<ProductionCompany> production_companies { get; set; }
-        public List<ProductionCountry> production_countries { get; set; }
-        public string release_date { get; set; }
-        public int revenue { get; set; }
-        public int runtime { get; set; }
-        public List<SpokenLanguage> spoken_languages { get; set; }
-        public string status { get; set; }
-        public string tagline { get; set; }
-        public string title { get; set; }
-        public string name { get; set; }
-        public double vote_average { get; set; }
-        public int vote_count { get; set; }
-        public Casts casts { get; set; }
-        public Releases releases { get; set; }
-        public Images images { get; set; }
-        public Keywords keywords { get; set; }
-        public Trailers trailers { get; set; }
+        public bool Adult { get; set; }
+        public string Backdrop_Path { get; set; }
+        public BelongsToCollection Belongs_To_Collection { get; set; }
+        public int Budget { get; set; }
+        public List<Genre> Genres { get; set; }
+        public string Homepage { get; set; }
+        public int Id { get; set; }
+        public string Imdb_Id { get; set; }
+        public string Original_Title { get; set; }
+        public string Original_Name { get; set; }
+        public string Overview { get; set; }
+        public double Popularity { get; set; }
+        public string Poster_Path { get; set; }
+        public List<ProductionCompany> Production_Companies { get; set; }
+        public List<ProductionCountry> Production_Countries { get; set; }
+        public string Release_Date { get; set; }
+        public int Revenue { get; set; }
+        public int Runtime { get; set; }
+        public List<SpokenLanguage> Spoken_Languages { get; set; }
+        public string Status { get; set; }
+        public string Tagline { get; set; }
+        public string Title { get; set; }
+        public string Name { get; set; }
+        public double Vote_Average { get; set; }
+        public int Vote_Count { get; set; }
+        public Casts Casts { get; set; }
+        public Releases Releases { get; set; }
+        public Images Images { get; set; }
+        public Keywords Keywords { get; set; }
+        public Trailers Trailers { get; set; }
 
         public string GetOriginalTitle()
         {
-            return original_name ?? original_title;
+            return Original_Name ?? Original_Title;
         }
 
         public string GetTitle()
         {
-            return name ?? title ?? GetOriginalTitle();
+            return Name ?? Title ?? GetOriginalTitle();
         }
     }
 }

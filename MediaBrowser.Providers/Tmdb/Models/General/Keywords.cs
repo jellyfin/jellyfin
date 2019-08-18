@@ -4,6 +4,6 @@ namespace MediaBrowser.Providers.Tmdb.Models.General
 {
     public class Keywords
     {
-        public List<Keyword> results { get; set; }
+        public List<Keyword> Results { get; set; }
     }
 }

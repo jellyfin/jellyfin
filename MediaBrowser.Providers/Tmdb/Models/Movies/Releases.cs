@@ -4,6 +4,6 @@ namespace MediaBrowser.Providers.Tmdb.Models.Movies
 {
     public class Releases
     {
-        public List<Country> countries { get; set; }
+        public List<Country> Countries { get; set; }
     }
 }

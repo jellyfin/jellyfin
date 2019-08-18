@@ -2,11 +2,11 @@ namespace MediaBrowser.Providers.Tmdb.Models.General
 {
     public class Crew
     {
-        public int id { get; set; }
-        public string credit_id { get; set; }
-        public string name { get; set; }
-        public string department { get; set; }
-        public string job { get; set; }
-        public string profile_path { get; set; }
+        public int Id { get; set; }
+        public string Credit_Id { get; set; }
+        public string Name { get; set; }
+        public string Department { get; set; }
+        public string Job { get; set; }
+        public string Profile_Path { get; set; }
     }
 }

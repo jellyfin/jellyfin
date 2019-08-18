@@ -2,10 +2,10 @@ namespace MediaBrowser.Providers.Tmdb.Models.Collections
 {
     public class Part
     {
-        public string title { get; set; }
-        public int id { get; set; }
-        public string release_date { get; set; }
-        public string poster_path { get; set; }
-        public string backdrop_path { get; set; }
+        public string Title { get; set; }
+        public int Id { get; set; }
+        public string Release_Date { get; set; }
+        public string Poster_Path { get; set; }
+        public string Backdrop_Path { get; set; }
     }
 }

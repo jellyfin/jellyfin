@@ -5,6 +5,6 @@ namespace MediaBrowser.Providers.Tmdb.Models.People
 {
     public class PersonImages
     {
-        public List<Profile> profiles { get; set; }
+        public List<Profile> Profiles { get; set; }
     }
 }

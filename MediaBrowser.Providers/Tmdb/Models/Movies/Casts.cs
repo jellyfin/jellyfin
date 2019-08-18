@@ -5,7 +5,7 @@ namespace MediaBrowser.Providers.Tmdb.Models.Movies
 {
     public class Casts
     {
-        public List<Cast> cast { get; set; }
-        public List<Crew> crew { get; set; }
+        public List<Cast> Cast { get; set; }
+        public List<Crew> Crew { get; set; }
     }
 }

@@ -68,14 +68,14 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
             var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
 
-            list.AddRange(GetPosters(response.images).Select(i => new RemoteImageInfo
+            list.AddRange(GetPosters(response.Images).Select(i => new RemoteImageInfo
             {
-                Url = tmdbImageUrl + i.file_path,
-                CommunityRating = i.vote_average,
-                VoteCount = i.vote_count,
-                Width = i.width,
-                Height = i.height,
-                Language = TmdbMovieProvider.AdjustImageLanguage(i.iso_639_1, language),
+                Url = tmdbImageUrl + i.File_Path,
+                CommunityRating = i.Vote_Average,
+                VoteCount = i.Vote_Count,
+                Width = i.Width,
+                Height = i.Height,
+                Language = TmdbMovieProvider.AdjustImageLanguage(i.Iso_639_1, language),
                 ProviderName = Name,
                 Type = ImageType.Primary,
                 RatingType = RatingType.Score
@@ -110,7 +110,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
         private IEnumerable<Still> GetPosters(StillImages images)
         {
-            return images.stills ?? new List<Still>();
+            return images.Stills ?? new List<Still>();
         }
 
 

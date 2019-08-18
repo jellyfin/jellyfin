@@ -83,24 +83,24 @@ namespace MediaBrowser.Providers.Tmdb.Movies
                 {
                     Name = obj.GetTitle(),
                     SearchProviderName = Name,
-                    ImageUrl = string.IsNullOrWhiteSpace(obj.poster_path) ? null : tmdbImageUrl + obj.poster_path
+                    ImageUrl = string.IsNullOrWhiteSpace(obj.Poster_Path) ? null : tmdbImageUrl + obj.Poster_Path
                 };
 
-                if (!string.IsNullOrWhiteSpace(obj.release_date))
+                if (!string.IsNullOrWhiteSpace(obj.Release_Date))
                 {
                     // These dates are always in this exact format
-                    if (DateTime.TryParse(obj.release_date, _usCulture, DateTimeStyles.None, out var r))
+                    if (DateTime.TryParse(obj.Release_Date, _usCulture, DateTimeStyles.None, out var r))
                     {
                         remoteResult.PremiereDate = r.ToUniversalTime();
                         remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
                     }
                 }
 
-                remoteResult.SetProviderId(MetadataProviders.Tmdb, obj.id.ToString(_usCulture));
+                remoteResult.SetProviderId(MetadataProviders.Tmdb, obj.Id.ToString(_usCulture));
 
-                if (!string.IsNullOrWhiteSpace(obj.imdb_id))
+                if (!string.IsNullOrWhiteSpace(obj.Imdb_Id))
                 {
-                    remoteResult.SetProviderId(MetadataProviders.Imdb, obj.imdb_id);
+                    remoteResult.SetProviderId(MetadataProviders.Imdb, obj.Imdb_Id);
                 }
 
                 return new[] { remoteResult };
@@ -364,7 +364,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
 
             // If the language preference isn't english, then have the overview fallback to english if it's blank
             if (mainResult != null &&
-                string.IsNullOrEmpty(mainResult.overview) &&
+                string.IsNullOrEmpty(mainResult.Overview) &&
                 !string.IsNullOrEmpty(language) &&
                 !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
             {
@@ -392,7 +392,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
                     {
                         var englishResult = await _jsonSerializer.DeserializeFromStreamAsync<MovieResult>(json).ConfigureAwait(false);
 
-                        mainResult.overview = englishResult.overview;
+                        mainResult.Overview = englishResult.Overview;
                     }
                 }
             }

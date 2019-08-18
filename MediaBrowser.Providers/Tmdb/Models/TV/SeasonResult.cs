@@ -6,16 +6,16 @@ namespace MediaBrowser.Providers.Tmdb.Models.TV
 {
     public class SeasonResult
     {
-        public DateTime air_date { get; set; }
-        public List<Episode> episodes { get; set; }
-        public string name { get; set; }
-        public string overview { get; set; }
-        public int id { get; set; }
-        public string poster_path { get; set; }
-        public int season_number { get; set; }
-        public Credits credits { get; set; }
-        public SeasonImages images { get; set; }
-        public ExternalIds external_ids { get; set; }
-        public General.Videos videos { get; set; }
+        public DateTime Air_Date { get; set; }
+        public List<Episode> Episodes { get; set; }
+        public string Name { get; set; }
+        public string Overview { get; set; }
+        public int Id { get; set; }
+        public string Poster_Path { get; set; }
+        public int Season_Number { get; set; }
+        public Credits Credits { get; set; }
+        public SeasonImages Images { get; set; }
+        public ExternalIds External_Ids { get; set; }
+        public General.Videos Videos { get; set; }
     }
 }

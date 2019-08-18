@@ -2,9 +2,9 @@ namespace MediaBrowser.Providers.Tmdb.Models.Movies
 {
     public class BelongsToCollection
     {
-        public int id { get; set; }
-        public string name { get; set; }
-        public string poster_path { get; set; }
-        public string backdrop_path { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Poster_Path { get; set; }
+        public string Backdrop_Path { get; set; }
     }
 }

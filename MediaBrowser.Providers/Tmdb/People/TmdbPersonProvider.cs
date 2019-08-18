@@ -19,6 +19,7 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Tmdb.Models.General;
 using MediaBrowser.Providers.Tmdb.Models.People;
+using MediaBrowser.Providers.Tmdb.Models.Search;
 using MediaBrowser.Providers.Tmdb.Movies;
 using Microsoft.Extensions.Logging;
 
@@ -63,19 +64,19 @@ namespace MediaBrowser.Providers.Tmdb.People
                 var dataFilePath = GetPersonDataFilePath(_configurationManager.ApplicationPaths, tmdbId);
                 var info = _jsonSerializer.DeserializeFromFile<PersonResult>(dataFilePath);
 
-                var images = (info.images ?? new PersonImages()).profiles ?? new List<Profile>();
+                var images = (info.Images ?? new PersonImages()).Profiles ?? new List<Profile>();
 
                 var result = new RemoteSearchResult
                 {
-                    Name = info.name,
+                    Name = info.Name,
 
                     SearchProviderName = Name,
 
-                    ImageUrl = images.Count == 0 ? null : (tmdbImageUrl + images[0].file_path)
+                    ImageUrl = images.Count == 0 ? null : (tmdbImageUrl + images[0].File_Path)
                 };
 
-                result.SetProviderId(MetadataProviders.Tmdb, info.id.ToString(_usCulture));
-                result.SetProviderId(MetadataProviders.Imdb, info.imdb_id);
+                result.SetProviderId(MetadataProviders.Tmdb, info.Id.ToString(_usCulture));
+                result.SetProviderId(MetadataProviders.Imdb, info.Imdb_Id);
 
                 return new[] { result };
             }
@@ -98,8 +99,8 @@ namespace MediaBrowser.Providers.Tmdb.People
             {
                 using (var json = response.Content)
                 {
-                    var result = await _jsonSerializer.DeserializeFromStreamAsync<PersonSearchResults>(json).ConfigureAwait(false) ??
-                                 new PersonSearchResults();
+                    var result = await _jsonSerializer.DeserializeFromStreamAsync<TmdbSearchResult<PersonSearchResult>>(json).ConfigureAwait(false) ??
+                                 new TmdbSearchResult<PersonSearchResult>();
 
                     return result.Results.Select(i => GetSearchResult(i, tmdbImageUrl));
                 }
@@ -163,27 +164,27 @@ namespace MediaBrowser.Providers.Tmdb.People
 
                 //item.HomePageUrl = info.homepage;
 
-                if (!string.IsNullOrWhiteSpace(info.place_of_birth))
+                if (!string.IsNullOrWhiteSpace(info.Place_Of_Birth))
                 {
-                    item.ProductionLocations = new string[] { info.place_of_birth };
+                    item.ProductionLocations = new string[] { info.Place_Of_Birth };
                 }
-                item.Overview = info.biography;
+                item.Overview = info.Biography;
 
-                if (DateTime.TryParseExact(info.birthday, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out var date))
+                if (DateTime.TryParseExact(info.Birthday, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out var date))
                 {
                     item.PremiereDate = date.ToUniversalTime();
                 }
 
-                if (DateTime.TryParseExact(info.deathday, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out date))
+                if (DateTime.TryParseExact(info.Deathday, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out date))
                 {
                     item.EndDate = date.ToUniversalTime();
                 }
 
-                item.SetProviderId(MetadataProviders.Tmdb, info.id.ToString(_usCulture));
+                item.SetProviderId(MetadataProviders.Tmdb, info.Id.ToString(_usCulture));
 
-                if (!string.IsNullOrEmpty(info.imdb_id))
+                if (!string.IsNullOrEmpty(info.Imdb_Id))
                 {
-                    item.SetProviderId(MetadataProviders.Imdb, info.imdb_id);
+                    item.SetProviderId(MetadataProviders.Imdb, info.Imdb_Id);
                 }
 
                 result.HasMetadata = true;

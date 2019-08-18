@@ -62,7 +62,7 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
                 var dataFilePath = GetDataFilePath(_config.ApplicationPaths, tmdbId, searchInfo.MetadataLanguage);
                 var info = _json.DeserializeFromFile<CollectionResult>(dataFilePath);
 
-                var images = (info.images ?? new CollectionImages()).posters ?? new List<Poster>();
+                var images = (info.Images ?? new CollectionImages()).Posters ?? new List<Poster>();
 
                 var tmdbSettings = await TmdbMovieProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
@@ -70,14 +70,14 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
 
                 var result = new RemoteSearchResult
                 {
-                    Name = info.name,
+                    Name = info.Name,
 
                     SearchProviderName = Name,
 
-                    ImageUrl = images.Count == 0 ? null : (tmdbImageUrl + images[0].file_path)
+                    ImageUrl = images.Count == 0 ? null : (tmdbImageUrl + images[0].File_Path)
                 };
 
-                result.SetProviderId(MetadataProviders.Tmdb, info.id.ToString(_usCulture));
+                result.SetProviderId(MetadataProviders.Tmdb, info.Id.ToString(_usCulture));
 
                 return new[] { result };
             }
@@ -141,11 +141,11 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
         {
             var item = new BoxSet
             {
-                Name = obj.name,
-                Overview = obj.overview
+                Name = obj.Name,
+                Overview = obj.Overview
             };
 
-            item.SetProviderId(MetadataProviders.Tmdb, obj.id.ToString(_usCulture));
+            item.SetProviderId(MetadataProviders.Tmdb, obj.Id.ToString(_usCulture));
 
             return item;
         }
@@ -195,7 +195,7 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (mainResult != null && string.IsNullOrEmpty(mainResult.name))
+            if (mainResult != null && string.IsNullOrEmpty(mainResult.Name))
             {
                 if (!string.IsNullOrEmpty(language) && !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
                 {

@@ -14,13 +14,13 @@ namespace MediaBrowser.Providers.Tmdb
 
         public static string MapCrewToPersonType(Crew crew)
         {
-            if (crew.department.Equals("production", StringComparison.InvariantCultureIgnoreCase)
-                && crew.job.IndexOf("producer", StringComparison.InvariantCultureIgnoreCase) != -1)
+            if (crew.Department.Equals("production", StringComparison.InvariantCultureIgnoreCase)
+                && crew.Job.IndexOf("producer", StringComparison.InvariantCultureIgnoreCase) != -1)
             {
                 return PersonType.Producer;
             }
 
-            if (crew.department.Equals("writing", StringComparison.InvariantCultureIgnoreCase))
+            if (crew.Department.Equals("writing", StringComparison.InvariantCultureIgnoreCase))
             {
                 return PersonType.Writer;
             }

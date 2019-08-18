@@ -5,6 +5,6 @@ namespace MediaBrowser.Providers.Tmdb.Models.Search
 {
     public class ExternalIdLookupResult
     {
-        public List<TvResult> tv_results { get; set; }
+        public List<TvResult> Tv_Results { get; set; }
     }
 }

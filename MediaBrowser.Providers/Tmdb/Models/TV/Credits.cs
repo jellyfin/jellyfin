@@ -5,7 +5,7 @@ namespace MediaBrowser.Providers.Tmdb.Models.TV
 {
     public class Credits
     {
-        public List<Cast> cast { get; set; }
-        public List<Crew> crew { get; set; }
+        public List<Cast> Cast { get; set; }
+        public List<Crew> Crew { get; set; }
     }
 }

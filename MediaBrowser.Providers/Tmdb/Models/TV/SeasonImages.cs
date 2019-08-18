@@ -5,6 +5,6 @@ namespace MediaBrowser.Providers.Tmdb.Models.TV
 {
     public class SeasonImages
     {
-        public List<Poster> posters { get; set; }
+        public List<Poster> Posters { get; set; }
     }
 }
