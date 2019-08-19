@@ -35,9 +35,8 @@ namespace Emby.Server.Implementations.Data
         public string Name => "SQLite";
 
         /// <summary>
-        /// Opens the connection to the database
+        /// Opens the connection to the database.
         /// </summary>
-        /// <returns>Task.</returns>
         public void Initialize()
         {
             using (var connection = GetConnection())
@@ -180,14 +179,10 @@ namespace Emby.Server.Implementations.Data
             var id = row[0].ToInt64();
             var guid = row[1].ReadGuidFromBlob();
 
-            using (var stream = new MemoryStream(row[2].ToBlob()))
-            {
-                stream.Position = 0;
-                var user = _jsonSerializer.DeserializeFromStream<User>(stream);
-                user.InternalId = id;
-                user.Id = guid;
-                return user;
-            }
+            var user = _jsonSerializer.DeserializeFromString<User>(row.GetString(2));
+            user.InternalId = id;
+            user.Id = guid;
+            return user;
         }
 
         /// <summary>

@@ -215,13 +215,7 @@ namespace Emby.Server.Implementations.Data
         }
 
         private DisplayPreferences Get(IReadOnlyList<IResultSetValue> row)
-        {
-            using (var stream = new MemoryStream(row[0].ToBlob()))
-            {
-                stream.Position = 0;
-                return _jsonSerializer.DeserializeFromStream<DisplayPreferences>(stream);
-            }
-        }
+            => _jsonSerializer.DeserializeFromString<DisplayPreferences>(row.GetString(0));
 
         public void SaveDisplayPreferences(DisplayPreferences displayPreferences, string userId, string client, CancellationToken cancellationToken)
         {
