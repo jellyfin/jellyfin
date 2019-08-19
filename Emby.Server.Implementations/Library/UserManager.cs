@@ -558,6 +558,7 @@ namespace Emby.Server.Implementations.Library
             {
                 _users = new ConcurrentDictionary<Guid, User>(
                     users.Select(x => new KeyValuePair<Guid, User>(x.Id, x)));
+                return;
             }
 
             var defaultName = Environment.UserName;
