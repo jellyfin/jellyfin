@@ -18,10 +18,6 @@ namespace Emby.Server.Implementations.Data
 
             connection.RunInTransaction(conn =>
             {
-                //foreach (var query in queries)
-                //{
-                //    conn.Execute(query);
-                //}
                 conn.ExecuteAll(string.Join(";", queries));
             });
         }
@@ -38,7 +34,8 @@ namespace Emby.Server.Implementations.Data
 
         public static Guid ReadGuidFromBlob(this IResultSetValue result)
         {
-            return new Guid(result.ToBlob());
+            // TODO: Remove ToArray when upgrading to netstandard2.1
+            return new Guid(result.ToBlob().ToArray());
         }
 
         public static string ToDateTimeParamValue(this DateTime dateValue)
