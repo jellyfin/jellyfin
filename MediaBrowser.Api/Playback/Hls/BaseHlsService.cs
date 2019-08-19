@@ -304,7 +304,7 @@ namespace MediaBrowser.Api.Playback.Hls
             return args;
         }
 
-        protected override string GetDefaultH264Preset()
+        protected override string GetDefaultEncoderPreset()
         {
             return "veryfast";
         }

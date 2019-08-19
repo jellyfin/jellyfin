@@ -34,8 +34,16 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetH264Encoder(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
-            var defaultEncoder = "libx264";
+            return GetH264OrH265Encoder("libx264", "h264", state, encodingOptions);
+        }
 
+        public string GetH265Encoder(EncodingJobInfo state, EncodingOptions encodingOptions)
+        {
+            return GetH264OrH265Encoder("libx265", "hevc", state, encodingOptions);
+        }
+
+        private string GetH264OrH265Encoder(string defaultEncoder, string hwEncoder, EncodingJobInfo state, EncodingOptions encodingOptions)
+        {
             // Only use alternative encoders for video files.
             // When using concat with folder rips, if the mfx session fails to initialize, ffmpeg will be stuck retrying and will not exit gracefully
             // Since transcoding of folder rips is expiremental anyway, it's not worth adding additional variables such as this.
@@ -45,14 +53,14 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var codecMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    {"qsv",          "h264_qsv"},
-                    {"h264_qsv",     "h264_qsv"},
-                    {"nvenc",        "h264_nvenc"},
-                    {"amf",          "h264_amf"},
-                    {"omx",          "h264_omx"},
-                    {"h264_v4l2m2m", "h264_v4l2m2m"},
-                    {"mediacodec",   "h264_mediacodec"},
-                    {"vaapi",        "h264_vaapi"}
+                    {"qsv",                  hwEncoder + "_qsv"},
+                    {hwEncoder + "_qsv",     hwEncoder + "_qsv"},
+                    {"nvenc",                hwEncoder + "_nvenc"},
+                    {"amf",                  hwEncoder + "_amf"},
+                    {"omx",                  hwEncoder + "_omx"},
+                    {hwEncoder + "_v4l2m2m", hwEncoder + "_v4l2m2m"},
+                    {"mediacodec",           hwEncoder + "_mediacodec"},
+                    {"vaapi",                hwEncoder + "_vaapi"}
                 };
 
                 if (!string.IsNullOrEmpty(hwType)
@@ -119,6 +127,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (!string.IsNullOrEmpty(codec))
             {
+                if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetH265Encoder(state, encodingOptions);
+                }
                 if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
                 {
                     return GetH264Encoder(state, encodingOptions);
@@ -476,6 +489,30 @@ namespace MediaBrowser.Controller.MediaEncoding
                    codec.IndexOf("avc", StringComparison.OrdinalIgnoreCase) != -1;
         }
 
+        public bool IsH265(MediaStream stream)
+        {
+            var codec = stream.Codec ?? string.Empty;
+
+            return codec.IndexOf("265", StringComparison.OrdinalIgnoreCase) != -1 ||
+                   codec.IndexOf("hevc", StringComparison.OrdinalIgnoreCase) != -1;
+        }
+
+        public string GetBitStreamArgs(MediaStream stream)
+        {
+            if (IsH264(stream))
+            {
+                return "-bsf:v h264_mp4toannexb";
+            }
+            else if (IsH265(stream))
+            {
+                return "-bsf:v hevc_mp4toannexb";
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public string GetVideoBitrateParam(EncodingJobInfo state, string videoCodec)
         {
             var bitrate = state.OutputVideoBitrate;
@@ -494,7 +531,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return string.Format(" -b:v {0}", bitrate.Value.ToString(_usCulture));
                 }
 
-                if (string.Equals(videoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(videoCodec, "libx264", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(videoCodec, "libx265", StringComparison.OrdinalIgnoreCase))
                 {
                     // h264
                     return string.Format(" -maxrate {0} -bufsize {1}",
@@ -515,8 +553,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             // Clients may direct play higher than level 41, but there's no reason to transcode higher
             if (double.TryParse(level, NumberStyles.Any, _usCulture, out double requestLevel)
-                && string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase)
-                && requestLevel > 41)
+                && requestLevel > 41
+                && (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoCodec, "h265", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase)))
             {
                 return "41";
             }
@@ -620,39 +660,43 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the video bitrate to specify on the command line
         /// </summary>
-        public string GetVideoQualityParam(EncodingJobInfo state, string videoEncoder, EncodingOptions encodingOptions, string defaultH264Preset)
+        public string GetVideoQualityParam(EncodingJobInfo state, string videoEncoder, EncodingOptions encodingOptions, string defaultPreset)
         {
             var param = string.Empty;
 
             var isVc1 = state.VideoStream != null &&
                 string.Equals(state.VideoStream.Codec, "vc1", StringComparison.OrdinalIgnoreCase);
+            var isLibX265 = string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase);
 
-            if (string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase) || isLibX265)
             {
-                if (!string.IsNullOrEmpty(encodingOptions.H264Preset))
+                if (!string.IsNullOrEmpty(encodingOptions.EncoderPreset))
                 {
-                    param += "-preset " + encodingOptions.H264Preset;
+                    param += "-preset " + encodingOptions.EncoderPreset;
                 }
                 else
                 {
-                    param += "-preset " + defaultH264Preset;
+                    param += "-preset " + defaultPreset;
                 }
 
-                if (encodingOptions.H264Crf >= 0 && encodingOptions.H264Crf <= 51)
+                int encodeCrf = encodingOptions.H264Crf;
+                if (isLibX265)
                 {
-                    param += " -crf " + encodingOptions.H264Crf.ToString(CultureInfo.InvariantCulture);
+                    encodeCrf = encodingOptions.H265Crf;
+                }
+                if (encodeCrf >= 0 && encodeCrf <= 51)
+                {
+                    param += " -crf " + encodeCrf.ToString(CultureInfo.InvariantCulture);
                 }
                 else
                 {
-                    param += " -crf 23";
+                    string defaultCrf = "23";
+                    if (isLibX265)
+                    {
+                        defaultCrf = "28";
+                    }
+                    param += " -crf " + defaultCrf;
                 }
-            }
-
-            else if (string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase))
-            {
-                param += "-preset fast";
-
-                param += " -crf 28";
             }
 
             // h264 (h264_qsv)
@@ -660,9 +704,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 string[] valid_h264_qsv = { "veryslow", "slower", "slow", "medium", "fast", "faster", "veryfast" };
 
-                if (valid_h264_qsv.Contains(encodingOptions.H264Preset, StringComparer.OrdinalIgnoreCase))
+                if (valid_h264_qsv.Contains(encodingOptions.EncoderPreset, StringComparer.OrdinalIgnoreCase))
                 {
-                    param += "-preset " + encodingOptions.H264Preset;
+                    param += "-preset " + encodingOptions.EncoderPreset;
                 }
                 else
                 {
@@ -674,9 +718,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // h264 (h264_nvenc)
-            else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(videoEncoder, "hevc_nvenc", StringComparison.OrdinalIgnoreCase))
             {
-                switch (encodingOptions.H264Preset)
+                switch (encodingOptions.EncoderPreset)
                 {
                     case "veryslow":
 
@@ -790,7 +835,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // h264_qsv and h264_nvenc expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
                 // also needed for libx264 due to https://trac.ffmpeg.org/ticket/3307
                 if (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase))
+                    string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (level)
                     {
@@ -827,9 +873,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                 }
                 // nvenc doesn't decode with param -level set ?!
-                else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) ||
+                         string.Equals(videoEncoder, "hevc_nvenc", StringComparison.OrdinalIgnoreCase))
                 {
-                    //param += "";
+                    // todo param += ""; 
                 }
                 else if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase))
                 {
@@ -840,6 +887,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase))
             {
                 param += " -x264opts:0 subme=0:me_range=4:rc_lookahead=10:me=dia:no_chroma_me:8x8dct=0:partitions=none";
+            }
+
+            if (string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase))
+            {
+                // todo
             }
 
             if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
@@ -1743,7 +1795,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var videoStream = state.VideoStream;
 
-            if (state.DeInterlace("h264", true) && !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+            if ((state.DeInterlace("h264", true) || state.DeInterlace("h265", true) || state.DeInterlace("hevc", true)) &&
+                !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 var inputFramerate = videoStream == null ? null : videoStream.RealFrameRate;
 
@@ -2404,7 +2457,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return args;
         }
 
-        public string GetProgressiveVideoFullCommandLine(EncodingJobInfo state, EncodingOptions encodingOptions, string outputPath, string defaultH264Preset)
+        public string GetProgressiveVideoFullCommandLine(EncodingJobInfo state, EncodingOptions encodingOptions, string outputPath, string defaultPreset)
         {
             // Get the output codec name
             var videoCodec = GetVideoEncoder(state, encodingOptions);
@@ -2428,7 +2481,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 GetInputArgument(state, encodingOptions),
                 keyFrame,
                 GetMapArgs(state),
-                GetProgressiveVideoArguments(state, encodingOptions, videoCodec, defaultH264Preset),
+                GetProgressiveVideoArguments(state, encodingOptions, videoCodec, defaultPreset),
                 threads,
                 GetProgressiveVideoAudioArguments(state, encodingOptions),
                 GetSubtitleEmbedArguments(state),
@@ -2453,7 +2506,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return string.Empty;
         }
 
-        public string GetProgressiveVideoArguments(EncodingJobInfo state, EncodingOptions encodingOptions, string videoCodec, string defaultH264Preset)
+        public string GetProgressiveVideoArguments(EncodingJobInfo state, EncodingOptions encodingOptions, string videoCodec, string defaultPreset)
         {
             var args = "-codec:v:0 " + videoCodec;
 
@@ -2464,11 +2517,15 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                if (state.VideoStream != null && IsH264(state.VideoStream) &&
+                if (state.VideoStream != null &&
                     string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
-                    args += " -bsf:v h264_mp4toannexb";
+                    string bitStreamArgs = GetBitStreamArgs(state.VideoStream);
+                    if (!string.IsNullOrEmpty(bitStreamArgs))
+                    {
+                        args += " " + bitStreamArgs;
+                    }
                 }
 
                 if (state.RunTimeTicks.HasValue && state.BaseRequest.CopyTimestamps)
@@ -2514,7 +2571,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     args += GetGraphicalSubtitleParam(state, encodingOptions, videoCodec);
                 }
 
-                var qualityParam = GetVideoQualityParam(state, videoCodec, encodingOptions, defaultH264Preset);
+                var qualityParam = GetVideoQualityParam(state, videoCodec, encodingOptions, defaultPreset);
 
                 if (!string.IsNullOrEmpty(qualityParam))
                 {

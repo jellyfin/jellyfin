@@ -154,7 +154,12 @@ namespace MediaBrowser.Api.Playback
             return Path.Combine(folder, filename + ext);
         }
 
-        protected virtual string GetDefaultH264Preset() => "superfast";
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+
+        protected virtual string GetDefaultEncoderPreset()
+        {
+            return "superfast";
+        }
 
         private async Task AcquireResources(StreamState state, CancellationTokenSource cancellationTokenSource)
         {
