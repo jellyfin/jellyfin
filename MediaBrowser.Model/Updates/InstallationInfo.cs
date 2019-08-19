@@ -36,11 +36,5 @@ namespace MediaBrowser.Model.Updates
         /// </summary>
         /// <value>The update class.</value>
         public PackageVersionClass UpdateClass { get; set; }
-
-        /// <summary>
-        /// Gets or sets the percent complete.
-        /// </summary>
-        /// <value>The percent complete.</value>
-        public double? PercentComplete { get; set; }
     }
 }

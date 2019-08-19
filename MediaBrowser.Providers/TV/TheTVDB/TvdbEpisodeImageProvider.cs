@@ -50,27 +50,25 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             var language = item.GetPreferredMetadataLanguage();
             if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
             {
-                var episodeTvdbId = episode.GetProviderId(MetadataProviders.Tvdb);
-
                 // Process images
                 try
                 {
+                    var episodeInfo = new EpisodeInfo
+                    {
+                        IndexNumber = episode.IndexNumber.Value,
+                        ParentIndexNumber = episode.ParentIndexNumber.Value,
+                        SeriesProviderIds = series.ProviderIds
+                    };
+                    string episodeTvdbId = await _tvDbClientManager
+                        .GetEpisodeTvdbId(episodeInfo, language, cancellationToken).ConfigureAwait(false);
                     if (string.IsNullOrEmpty(episodeTvdbId))
                     {
-                        var episodeInfo = new EpisodeInfo
-                        {
-                            IndexNumber = episode.IndexNumber.Value,
-                            ParentIndexNumber = episode.ParentIndexNumber.Value,
-                            SeriesProviderIds = series.ProviderIds
-                        };
-                        episodeTvdbId = await _tvDbClientManager
-                            .GetEpisodeTvdbId(episodeInfo, language, cancellationToken).ConfigureAwait(false);
-                        if (string.IsNullOrEmpty(episodeTvdbId))
-                        {
-                            _logger.LogError("Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
-                                episodeInfo.ParentIndexNumber, episodeInfo.IndexNumber, series.GetProviderId(MetadataProviders.Tvdb));
-                            return imageResult;
-                        }
+                        _logger.LogError(
+                            "Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
+                            episodeInfo.ParentIndexNumber,
+                            episodeInfo.IndexNumber,
+                            series.GetProviderId(MetadataProviders.Tvdb));
+                        return imageResult;
                     }
 
                     var episodeResult =
@@ -86,7 +84,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 }
                 catch (TvDbServerException e)
                 {
-                    _logger.LogError(e, "Failed to retrieve episode images for {TvDbId}", episodeTvdbId);
+                    _logger.LogError(e, "Failed to retrieve episode images for series {TvDbId}", series.GetProviderId(MetadataProviders.Tvdb));
                 }
             }
 

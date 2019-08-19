@@ -3,7 +3,7 @@
 param(
     [Switch]$Quiet,
     [Switch]$InstallAsService,
-    [pscredential]$ServiceUser,
+    [System.Management.Automation.pscredential]$ServiceUser,
     [switch]$CreateDesktopShorcut,
     [switch]$LaunchJellyfin,
     [switch]$MigrateEmbyLibrary,

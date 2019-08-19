@@ -15,22 +15,16 @@ namespace Emby.Server.Implementations.Security
 {
     public class AuthenticationRepository : BaseSqliteRepository, IAuthenticationRepository
     {
-        private readonly IServerConfigurationManager _config;
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         public AuthenticationRepository(ILoggerFactory loggerFactory, IServerConfigurationManager config)
             : base(loggerFactory.CreateLogger(nameof(AuthenticationRepository)))
         {
-            _config = config;
             DbFilePath = Path.Combine(config.ApplicationPaths.DataPath, "authentication.db");
         }
 
         public void Initialize()
         {
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
-                RunDefaultInitialization(connection);
-
                 var tableNewlyCreated = !TableExists(connection, "Tokens");
 
                 string[] queries = {
@@ -91,31 +85,28 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException(nameof(info));
             }
 
-            using (WriteLock.Write())
+            using (var connection = GetConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(db =>
                 {
-                    connection.RunInTransaction(db =>
+                    using (var statement = db.PrepareStatement("insert into Tokens (AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, UserName, IsActive, DateCreated, DateLastActivity) values (@AccessToken, @DeviceId, @AppName, @AppVersion, @DeviceName, @UserId, @UserName, @IsActive, @DateCreated, @DateLastActivity)"))
                     {
-                        using (var statement = db.PrepareStatement("insert into Tokens (AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, UserName, IsActive, DateCreated, DateLastActivity) values (@AccessToken, @DeviceId, @AppName, @AppVersion, @DeviceName, @UserId, @UserName, @IsActive, @DateCreated, @DateLastActivity)"))
-                        {
-                            statement.TryBind("@AccessToken", info.AccessToken);
+                        statement.TryBind("@AccessToken", info.AccessToken);
 
-                            statement.TryBind("@DeviceId", info.DeviceId);
-                            statement.TryBind("@AppName", info.AppName);
-                            statement.TryBind("@AppVersion", info.AppVersion);
-                            statement.TryBind("@DeviceName", info.DeviceName);
-                            statement.TryBind("@UserId", (info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N")));
-                            statement.TryBind("@UserName", info.UserName);
-                            statement.TryBind("@IsActive", true);
-                            statement.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
-                            statement.TryBind("@DateLastActivity", info.DateLastActivity.ToDateTimeParamValue());
+                        statement.TryBind("@DeviceId", info.DeviceId);
+                        statement.TryBind("@AppName", info.AppName);
+                        statement.TryBind("@AppVersion", info.AppVersion);
+                        statement.TryBind("@DeviceName", info.DeviceName);
+                        statement.TryBind("@UserId", (info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N", CultureInfo.InvariantCulture)));
+                        statement.TryBind("@UserName", info.UserName);
+                        statement.TryBind("@IsActive", true);
+                        statement.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
+                        statement.TryBind("@DateLastActivity", info.DateLastActivity.ToDateTimeParamValue());
 
-                            statement.MoveNext();
-                        }
+                        statement.MoveNext();
+                    }
 
-                    }, TransactionMode);
-                }
+                }, TransactionMode);
             }
         }
 
@@ -126,31 +117,28 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException(nameof(info));
             }
 
-            using (WriteLock.Write())
+            using (var connection = GetConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(db =>
                 {
-                    connection.RunInTransaction(db =>
+                    using (var statement = db.PrepareStatement("Update Tokens set AccessToken=@AccessToken, DeviceId=@DeviceId, AppName=@AppName, AppVersion=@AppVersion, DeviceName=@DeviceName, UserId=@UserId, UserName=@UserName, DateCreated=@DateCreated, DateLastActivity=@DateLastActivity where Id=@Id"))
                     {
-                        using (var statement = db.PrepareStatement("Update Tokens set AccessToken=@AccessToken, DeviceId=@DeviceId, AppName=@AppName, AppVersion=@AppVersion, DeviceName=@DeviceName, UserId=@UserId, UserName=@UserName, DateCreated=@DateCreated, DateLastActivity=@DateLastActivity where Id=@Id"))
-                        {
-                            statement.TryBind("@Id", info.Id);
+                        statement.TryBind("@Id", info.Id);
 
-                            statement.TryBind("@AccessToken", info.AccessToken);
+                        statement.TryBind("@AccessToken", info.AccessToken);
 
-                            statement.TryBind("@DeviceId", info.DeviceId);
-                            statement.TryBind("@AppName", info.AppName);
-                            statement.TryBind("@AppVersion", info.AppVersion);
-                            statement.TryBind("@DeviceName", info.DeviceName);
-                            statement.TryBind("@UserId", (info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N")));
-                            statement.TryBind("@UserName", info.UserName);
-                            statement.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
-                            statement.TryBind("@DateLastActivity", info.DateLastActivity.ToDateTimeParamValue());
+                        statement.TryBind("@DeviceId", info.DeviceId);
+                        statement.TryBind("@AppName", info.AppName);
+                        statement.TryBind("@AppVersion", info.AppVersion);
+                        statement.TryBind("@DeviceName", info.DeviceName);
+                        statement.TryBind("@UserId", (info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N", CultureInfo.InvariantCulture)));
+                        statement.TryBind("@UserName", info.UserName);
+                        statement.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
+                        statement.TryBind("@DateLastActivity", info.DateLastActivity.ToDateTimeParamValue());
 
-                            statement.MoveNext();
-                        }
-                    }, TransactionMode);
-                }
+                        statement.MoveNext();
+                    }
+                }, TransactionMode);
             }
         }
 
@@ -161,20 +149,17 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException(nameof(info));
             }
 
-            using (WriteLock.Write())
+            using (var connection = GetConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(db =>
                 {
-                    connection.RunInTransaction(db =>
+                    using (var statement = db.PrepareStatement("Delete from Tokens where Id=@Id"))
                     {
-                        using (var statement = db.PrepareStatement("Delete from Tokens where Id=@Id"))
-                        {
-                            statement.TryBind("@Id", info.Id);
+                        statement.TryBind("@Id", info.Id);
 
-                            statement.MoveNext();
-                        }
-                    }, TransactionMode);
-                }
+                        statement.MoveNext();
+                    }
+                }, TransactionMode);
             }
         }
 
@@ -189,7 +174,7 @@ namespace Emby.Server.Implementations.Security
 
             if (!query.UserId.Equals(Guid.Empty))
             {
-                statement.TryBind("@UserId", query.UserId.ToString("N"));
+                statement.TryBind("@UserId", query.UserId.ToString("N", CultureInfo.InvariantCulture));
             }
 
             if (!string.IsNullOrEmpty(query.DeviceId))
@@ -261,45 +246,42 @@ namespace Emby.Server.Implementations.Security
 
             var list = new List<AuthenticationInfo>();
 
-            using (WriteLock.Read())
+            using (var connection = GetConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                return connection.RunInTransaction(db =>
                 {
-                    return connection.RunInTransaction(db =>
+                    var result = new QueryResult<AuthenticationInfo>();
+
+                    var statementTexts = new List<string>();
+                    statementTexts.Add(commandText);
+                    statementTexts.Add("select count (Id) from Tokens" + whereTextWithoutPaging);
+
+                    var statements = PrepareAll(db, statementTexts)
+                        .ToList();
+
+                    using (var statement = statements[0])
                     {
-                        var result = new QueryResult<AuthenticationInfo>();
+                        BindAuthenticationQueryParams(query, statement);
 
-                        var statementTexts = new List<string>();
-                        statementTexts.Add(commandText);
-                        statementTexts.Add("select count (Id) from Tokens" + whereTextWithoutPaging);
-
-                        var statements = PrepareAllSafe(db, statementTexts)
-                            .ToList();
-
-                        using (var statement = statements[0])
+                        foreach (var row in statement.ExecuteQuery())
                         {
-                            BindAuthenticationQueryParams(query, statement);
-
-                            foreach (var row in statement.ExecuteQuery())
-                            {
-                                list.Add(Get(row));
-                            }
-
-                            using (var totalCountStatement = statements[1])
-                            {
-                                BindAuthenticationQueryParams(query, totalCountStatement);
-
-                                result.TotalRecordCount = totalCountStatement.ExecuteQuery()
-                                    .SelectScalarInt()
-                                    .First();
-                            }
+                            list.Add(Get(row));
                         }
 
-                        result.Items = list.ToArray();
-                        return result;
+                        using (var totalCountStatement = statements[1])
+                        {
+                            BindAuthenticationQueryParams(query, totalCountStatement);
 
-                    }, ReadTransactionMode);
-                }
+                            result.TotalRecordCount = totalCountStatement.ExecuteQuery()
+                                .SelectScalarInt()
+                                .First();
+                        }
+                    }
+
+                    result.Items = list.ToArray();
+                    return result;
+
+                }, ReadTransactionMode);
             }
         }
 
@@ -362,31 +344,28 @@ namespace Emby.Server.Implementations.Security
 
         public DeviceOptions GetDeviceOptions(string deviceId)
         {
-            using (WriteLock.Read())
+            using (var connection = GetConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                return connection.RunInTransaction(db =>
                 {
-                    return connection.RunInTransaction(db =>
+                    using (var statement = base.PrepareStatement(db, "select CustomName from Devices where Id=@DeviceId"))
                     {
-                        using (var statement = PrepareStatementSafe(db, "select CustomName from Devices where Id=@DeviceId"))
+                        statement.TryBind("@DeviceId", deviceId);
+
+                        var result = new DeviceOptions();
+
+                        foreach (var row in statement.ExecuteQuery())
                         {
-                            statement.TryBind("@DeviceId", deviceId);
-
-                            var result = new DeviceOptions();
-
-                            foreach (var row in statement.ExecuteQuery())
+                            if (row[0].SQLiteType != SQLiteType.Null)
                             {
-                                if (row[0].SQLiteType != SQLiteType.Null)
-                                {
-                                    result.CustomName = row[0].ToString();
-                                }
+                                result.CustomName = row[0].ToString();
                             }
-
-                            return result;
                         }
 
-                    }, ReadTransactionMode);
-                }
+                        return result;
+                    }
+
+                }, ReadTransactionMode);
             }
         }
 
@@ -397,30 +376,27 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException(nameof(options));
             }
 
-            using (WriteLock.Write())
+            using (var connection = GetConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(db =>
                 {
-                    connection.RunInTransaction(db =>
+                    using (var statement = db.PrepareStatement("replace into devices (Id, CustomName, Capabilities) VALUES (@Id, @CustomName, (Select Capabilities from Devices where Id=@Id))"))
                     {
-                        using (var statement = db.PrepareStatement("replace into devices (Id, CustomName, Capabilities) VALUES (@Id, @CustomName, (Select Capabilities from Devices where Id=@Id))"))
+                        statement.TryBind("@Id", deviceId);
+
+                        if (string.IsNullOrWhiteSpace(options.CustomName))
                         {
-                            statement.TryBind("@Id", deviceId);
-
-                            if (string.IsNullOrWhiteSpace(options.CustomName))
-                            {
-                                statement.TryBindNull("@CustomName");
-                            }
-                            else
-                            {
-                                statement.TryBind("@CustomName", options.CustomName);
-                            }
-
-                            statement.MoveNext();
+                            statement.TryBindNull("@CustomName");
+                        }
+                        else
+                        {
+                            statement.TryBind("@CustomName", options.CustomName);
                         }
 
-                    }, TransactionMode);
-                }
+                        statement.MoveNext();
+                    }
+
+                }, TransactionMode);
             }
         }
     }

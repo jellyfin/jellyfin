@@ -1,5 +1,6 @@
 [CmdletBinding()]
 param(
+    [switch]$MakeNSIS,
     [switch]$InstallFFMPEG,
     [switch]$InstallNSSM,
     [switch]$GenerateZip,
@@ -96,6 +97,24 @@ function Install-NSSM {
     Remove-Item "$tempdir/nssm.zip" -Force -ErrorAction Continue | Write-Verbose
 }
 
+function Make-NSIS {
+    param(
+        [string]$InstallLocation
+    )
+	Write-Verbose "Downloading NSIS"
+	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+	Invoke-WebRequest -Uri https://nchc.dl.sourceforge.net/project/nsis/NSIS%203/3.04/nsis-3.04.zip -UseBasicParsing -OutFile "$tempdir/nsis.zip" | Write-Verbose
+
+    Expand-Archive "$tempdir/nsis.zip" -DestinationPath "$tempdir/nsis/" -Force | Write-Verbose
+	$env:InstallLocation = $InstallLocation
+	& "$tempdir/nsis/nsis-3.04/makensis.exe" ".\deployment\windows\jellyfin.nsi"
+	Copy-Item .\deployment\windows\jellyfin_*.exe $InstallLocation\..\
+	
+    Remove-Item "$tempdir/nsis/" -Recurse -Force -ErrorAction Continue | Write-Verbose
+    Remove-Item "$tempdir/nsis.zip" -Force -ErrorAction Continue | Write-Verbose
+}
+
+
 Write-Verbose "Starting Build Process: Selected Environment is $WindowsVersion-$Architecture"
 Build-JellyFin
 if($InstallFFMPEG.IsPresent -or ($InstallFFMPEG -eq $true)){
@@ -108,6 +127,11 @@ if($InstallNSSM.IsPresent -or ($InstallNSSM -eq $true)){
 }
 Copy-Item .\deployment\windows\install-jellyfin.ps1 $InstallLocation\install-jellyfin.ps1
 Copy-Item .\deployment\windows\install.bat $InstallLocation\install.bat
+Copy-Item .\LICENSE $InstallLocation\LICENSE
+if($MakeNSIS.IsPresent -or ($MakeNSIS -eq $true)){
+    Write-Verbose "Starting NSIS Package creation"
+    Make-NSIS $InstallLocation
+}
 if($GenerateZip.IsPresent -or ($GenerateZip -eq $true)){
     Compress-Archive -Path $InstallLocation -DestinationPath "$InstallLocation/jellyfin.zip" -Force
 }

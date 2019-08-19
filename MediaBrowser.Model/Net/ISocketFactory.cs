@@ -1,4 +1,5 @@
 using System.IO;
+using System.Net;
 
 namespace MediaBrowser.Model.Net
 {
@@ -8,7 +9,7 @@ namespace MediaBrowser.Model.Net
     public interface ISocketFactory
     {
         /// <summary>
-        /// Createa a new unicast socket using the specified local port number.
+        /// Creates a new unicast socket using the specified local port number.
         /// </summary>
         /// <param name="localPort">The local port to bind to.</param>
         /// <returns>A <see cref="ISocket"/> implementation.</returns>
@@ -16,15 +17,13 @@ namespace MediaBrowser.Model.Net
 
         ISocket CreateUdpBroadcastSocket(int localPort);
 
-        ISocket CreateTcpSocket(IpAddressInfo remoteAddress, int remotePort);
-
         /// <summary>
-        /// Createa a new unicast socket using the specified local port number.
+        /// Creates a new unicast socket using the specified local port number.
         /// </summary>
-        ISocket CreateSsdpUdpSocket(IpAddressInfo localIp, int localPort);
+        ISocket CreateSsdpUdpSocket(IPAddress localIp, int localPort);
 
         /// <summary>
-        /// Createa a new multicast socket using the specified multicast IP address, multicast time to live and local port.
+        /// Creates a new multicast socket using the specified multicast IP address, multicast time to live and local port.
         /// </summary>
         /// <param name="ipAddress">The multicast IP address to bind to.</param>
         /// <param name="multicastTimeToLive">The multicast time to live value. Actually a maximum number of network hops for UDP packets.</param>
@@ -33,15 +32,5 @@ namespace MediaBrowser.Model.Net
         ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort);
 
         Stream CreateNetworkStream(ISocket socket, bool ownsSocket);
-    }
-
-    public enum SocketType
-    {
-        Stream
-    }
-
-    public enum ProtocolType
-    {
-        Tcp
     }
 }

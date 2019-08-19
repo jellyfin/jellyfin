@@ -3,12 +3,6 @@
 ARG DOTNET_VERSION=3.0
 
 
-FROM multiarch/qemu-user-static:x86_64-aarch64 as qemu
-FROM alpine as qemu_extract
-COPY --from=qemu /usr/bin qemu-aarch64-static.tar.gz
-RUN tar -xzvf qemu-aarch64-static.tar.gz
-
-
 FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION} as builder
 WORKDIR /repo
 COPY . .
@@ -22,8 +16,9 @@ RUN bash -c "source deployment/common.build.sh && \
     build_jellyfin Jellyfin.Server Release linux-arm64 /jellyfin"
 
 
+FROM multiarch/qemu-user-static:x86_64-aarch64 as qemu
 FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}-stretch-slim-arm64v8
-COPY --from=qemu_extract qemu-aarch64-static /usr/bin
+COPY --from=qemu /usr/bin/qemu-aarch64-static /usr/bin
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg \
  && rm -rf /var/lib/apt/lists/* \
@@ -31,10 +26,10 @@ RUN apt-get update \
  && chmod 777 /cache /config /media
 COPY --from=builder /jellyfin /jellyfin
 
-ARG JELLYFIN_WEB_VERSION=10.3.3
-RUN curl -L https://github.com/jellyfin/jellyfin-web/archive/v${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
+ARG JELLYFIN_WEB_VERSION=v10.3.7
+RUN curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && rm -rf /jellyfin/jellyfin-web \
- && mv jellyfin-web-${JELLYFIN_WEB_VERSION} /jellyfin/jellyfin-web
+ && mv jellyfin-web-* /jellyfin/jellyfin-web
 
 EXPOSE 8096
 VOLUME /cache /config /media

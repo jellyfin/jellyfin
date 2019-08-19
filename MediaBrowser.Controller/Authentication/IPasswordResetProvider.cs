@@ -12,6 +12,7 @@ namespace MediaBrowser.Controller.Authentication
         Task<ForgotPasswordResult> StartForgotPasswordProcess(User user, bool isInNetwork);
         Task<PinRedeemResult> RedeemPasswordResetPin(string pin);
     }
+
     public class PasswordPinCreationResult
     {
         public string PinFile { get; set; }

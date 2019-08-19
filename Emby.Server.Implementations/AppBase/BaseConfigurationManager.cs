@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -19,11 +20,44 @@ namespace Emby.Server.Implementations.AppBase
     /// </summary>
     public abstract class BaseConfigurationManager : IConfigurationManager
     {
+        private readonly IFileSystem _fileSystem;
+
+        private readonly ConcurrentDictionary<string, object> _configurations = new ConcurrentDictionary<string, object>();
+
+        private ConfigurationStore[] _configurationStores = Array.Empty<ConfigurationStore>();
+        private IConfigurationFactory[] _configurationFactories = Array.Empty<IConfigurationFactory>();
+
         /// <summary>
-        /// Gets the type of the configuration.
+        /// The _configuration loaded.
         /// </summary>
-        /// <value>The type of the configuration.</value>
-        protected abstract Type ConfigurationType { get; }
+        private bool _configurationLoaded;
+
+        /// <summary>
+        /// The _configuration sync lock.
+        /// </summary>
+        private object _configurationSyncLock = new object();
+
+        /// <summary>
+        /// The _configuration.
+        /// </summary>
+        private BaseApplicationConfiguration _configuration;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseConfigurationManager" /> class.
+        /// </summary>
+        /// <param name="applicationPaths">The application paths.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
+        /// <param name="xmlSerializer">The XML serializer.</param>
+        /// <param name="fileSystem">The file system</param>
+        protected BaseConfigurationManager(IApplicationPaths applicationPaths, ILoggerFactory loggerFactory, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
+        {
+            CommonApplicationPaths = applicationPaths;
+            XmlSerializer = xmlSerializer;
+            _fileSystem = fileSystem;
+            Logger = loggerFactory.CreateLogger(GetType().Name);
+
+            UpdateCachePath();
+        }
 
         /// <summary>
         /// Occurs when [configuration updated].
@@ -41,6 +75,12 @@ namespace Emby.Server.Implementations.AppBase
         public event EventHandler<ConfigurationUpdateEventArgs> NamedConfigurationUpdated;
 
         /// <summary>
+        /// Gets the type of the configuration.
+        /// </summary>
+        /// <value>The type of the configuration.</value>
+        protected abstract Type ConfigurationType { get; }
+
+        /// <summary>
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
@@ -56,20 +96,7 @@ namespace Emby.Server.Implementations.AppBase
         /// </summary>
         /// <value>The application paths.</value>
         public IApplicationPaths CommonApplicationPaths { get; private set; }
-        public readonly IFileSystem FileSystem;
 
-        /// <summary>
-        /// The _configuration loaded
-        /// </summary>
-        private bool _configurationLoaded;
-        /// <summary>
-        /// The _configuration sync lock
-        /// </summary>
-        private object _configurationSyncLock = new object();
-        /// <summary>
-        /// The _configuration
-        /// </summary>
-        private BaseApplicationConfiguration _configuration;
         /// <summary>
         /// Gets the system configuration
         /// </summary>
@@ -88,26 +115,6 @@ namespace Emby.Server.Implementations.AppBase
 
                 _configurationLoaded = value != null;
             }
-        }
-
-        private ConfigurationStore[] _configurationStores = { };
-        private IConfigurationFactory[] _configurationFactories = { };
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BaseConfigurationManager" /> class.
-        /// </summary>
-        /// <param name="applicationPaths">The application paths.</param>
-        /// <param name="loggerFactory">The logger factory.</param>
-        /// <param name="xmlSerializer">The XML serializer.</param>
-        /// <param name="fileSystem">The file system</param>
-        protected BaseConfigurationManager(IApplicationPaths applicationPaths, ILoggerFactory loggerFactory, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
-        {
-            CommonApplicationPaths = applicationPaths;
-            XmlSerializer = xmlSerializer;
-            FileSystem = fileSystem;
-            Logger = loggerFactory.CreateLogger(GetType().Name);
-
-            UpdateCachePath();
         }
 
         public virtual void AddParts(IEnumerable<IConfigurationFactory> factories)
@@ -171,6 +178,7 @@ namespace Emby.Server.Implementations.AppBase
         private void UpdateCachePath()
         {
             string cachePath;
+
             // If the configuration file has no entry (i.e. not set in UI)
             if (string.IsNullOrWhiteSpace(CommonConfiguration.CachePath))
             {
@@ -207,12 +215,16 @@ namespace Emby.Server.Implementations.AppBase
             var newPath = newConfig.CachePath;
 
             if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(CommonConfiguration.CachePath ?? string.Empty, newPath))
+                && !string.Equals(CommonConfiguration.CachePath ?? string.Empty, newPath, StringComparison.Ordinal))
             {
                 // Validate
                 if (!Directory.Exists(newPath))
                 {
-                    throw new FileNotFoundException(string.Format("{0} does not exist.", newPath));
+                    throw new FileNotFoundException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{0} does not exist.",
+                            newPath));
                 }
 
                 EnsureWriteAccess(newPath);
@@ -223,10 +235,8 @@ namespace Emby.Server.Implementations.AppBase
         {
             var file = Path.Combine(path, Guid.NewGuid().ToString());
             File.WriteAllText(file, string.Empty);
-            FileSystem.DeleteFile(file);
+            _fileSystem.DeleteFile(file);
         }
-
-        private readonly ConcurrentDictionary<string, object> _configurations = new ConcurrentDictionary<string, object>();
 
         private string GetConfigurationFile(string key)
         {

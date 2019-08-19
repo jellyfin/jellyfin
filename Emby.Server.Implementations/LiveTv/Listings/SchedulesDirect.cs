@@ -96,8 +96,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 Url = ApiUrl + "/schedules",
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken,
-                // The data can be large so give it some extra time
-                TimeoutMs = 60000,
                 LogErrorResponseBody = true,
                 RequestContent = requestString
             };
@@ -115,9 +113,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     Url = ApiUrl + "/programs",
                     UserAgent = UserAgent,
                     CancellationToken = cancellationToken,
-                    LogErrorResponseBody = true,
-                    // The data can be large so give it some extra time
-                    TimeoutMs = 60000
+                    LogErrorResponseBody = true
                 };
 
                 httpOptions.RequestHeaders["token"] = token;
@@ -483,8 +479,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 CancellationToken = cancellationToken,
                 RequestContent = imageIdString,
                 LogErrorResponseBody = true,
-                // The data can be large so give it some extra time
-                TimeoutMs = 60000
             };
 
             try
@@ -633,15 +627,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             ListingsProviderInfo providerInfo)
         {
             // Schedules direct requires that the client support compression and will return a 400 response without it
-            options.EnableHttpCompression = true;
-
-            // On windows 7 under .net core, this header is not getting added
-#if NETSTANDARD2_0
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                options.RequestHeaders[HeaderNames.AcceptEncoding] = "deflate";
-            }
-#endif
+            options.DecompressionMethod = CompressionMethod.Deflate;
 
             try
             {
@@ -671,15 +657,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             ListingsProviderInfo providerInfo)
         {
             // Schedules direct requires that the client support compression and will return a 400 response without it
-            options.EnableHttpCompression = true;
-
-            // On windows 7 under .net core, this header is not getting added
-#if NETSTANDARD2_0
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                options.RequestHeaders[HeaderNames.AcceptEncoding] = "deflate";
-            }
-#endif
+            options.DecompressionMethod = CompressionMethod.Deflate;
 
             try
             {
@@ -871,8 +849,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken,
                 LogErrorResponseBody = true,
-                // The data can be large so give it some extra time
-                TimeoutMs = 60000
             };
 
             httpOptions.RequestHeaders["token"] = token;

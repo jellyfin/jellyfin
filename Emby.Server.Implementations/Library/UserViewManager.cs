@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Controller.Channels;
@@ -117,7 +118,7 @@ namespace Emby.Server.Implementations.Library
 
             if (!query.IncludeHidden)
             {
-                list = list.Where(i => !user.Configuration.MyMediaExcludes.Contains(i.Id.ToString("N"))).ToList();
+                list = list.Where(i => !user.Configuration.MyMediaExcludes.Contains(i.Id.ToString("N", CultureInfo.InvariantCulture))).ToList();
             }
 
             var sorted = _libraryManager.Sort(list, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
@@ -127,7 +128,7 @@ namespace Emby.Server.Implementations.Library
             return list
                 .OrderBy(i =>
                 {
-                    var index = orders.IndexOf(i.Id.ToString("N"));
+                    var index = orders.IndexOf(i.Id.ToString("N", CultureInfo.InvariantCulture));
 
                     if (index == -1)
                     {
@@ -136,7 +137,7 @@ namespace Emby.Server.Implementations.Library
                         {
                             if (!view.DisplayParentId.Equals(Guid.Empty))
                             {
-                                index = orders.IndexOf(view.DisplayParentId.ToString("N"));
+                                index = orders.IndexOf(view.DisplayParentId.ToString("N", CultureInfo.InvariantCulture));
                             }
                         }
                     }
@@ -269,7 +270,7 @@ namespace Emby.Server.Implementations.Library
             {
                 parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                     .Where(i => i is Folder)
-                    .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N")))
+                    .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N", CultureInfo.InvariantCulture)))
                     .ToList();
             }
 

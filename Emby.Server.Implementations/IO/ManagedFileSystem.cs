@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -20,16 +21,14 @@ namespace Emby.Server.Implementations.IO
         protected ILogger Logger;
 
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
-
         private readonly string _tempPath;
-
         private readonly bool _isEnvironmentCaseInsensitive;
 
         public ManagedFileSystem(
-            ILoggerFactory loggerFactory,
+            ILogger<ManagedFileSystem> logger,
             IApplicationPaths applicationPaths)
         {
-            Logger = loggerFactory.CreateLogger("FileSystem");
+            Logger = logger;
             _tempPath = applicationPaths.TempDirectory;
 
             _isEnvironmentCaseInsensitive = OperatingSystem.Id == OperatingSystemId.Windows;
@@ -557,7 +556,7 @@ namespace Emby.Server.Implementations.IO
                 throw new ArgumentNullException(nameof(file2));
             }
 
-            var temp1 = Path.Combine(_tempPath, Guid.NewGuid().ToString("N"));
+            var temp1 = Path.Combine(_tempPath, Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
 
             // Copying over will fail against hidden files
             SetHidden(file1, false);
@@ -647,7 +646,6 @@ namespace Emby.Server.Implementations.IO
         public virtual bool IsPathFile(string path)
         {
             // Cannot use Path.IsPathRooted because it returns false under mono when using windows-based paths, e.g. C:\\
-
             if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) != -1 &&
                 !path.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
             {
@@ -655,8 +653,6 @@ namespace Emby.Server.Implementations.IO
             }
 
             return true;
-
-            //return Path.IsPathRooted(path);
         }
 
         public virtual void DeleteFile(string path)
@@ -667,13 +663,14 @@ namespace Emby.Server.Implementations.IO
 
         public virtual List<FileSystemMetadata> GetDrives()
         {
-            // Only include drives in the ready state or this method could end up being very slow, waiting for drives to timeout
-            return DriveInfo.GetDrives().Where(d => d.IsReady).Select(d => new FileSystemMetadata
+            // check for ready state to avoid waiting for drives to timeout
+            // some drives on linux have no actual size or are used for other purposes
+            return DriveInfo.GetDrives().Where(d => d.IsReady && d.TotalSize != 0 && d.DriveType != DriveType.Ram)
+                .Select(d => new FileSystemMetadata
             {
                 Name = d.Name,
                 FullName = d.RootDirectory.FullName,
                 IsDirectory = true
-
             }).ToList();
         }
 

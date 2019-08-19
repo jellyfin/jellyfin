@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using MediaBrowser.Model.Extensions;
 using Microsoft.Extensions.Logging;
 
@@ -18,10 +19,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             _logger = logger;
         }
 
-        public async void StartStreamingLog(EncodingJobInfo state, Stream source, Stream target)
+        public async Task StartStreamingLog(EncodingJobInfo state, Stream source, Stream target)
         {
             try
             {
+                using (target)
                 using (var reader = new StreamReader(source))
                 {
                     while (!reader.EndOfStream && reader.BaseStream.CanRead)
@@ -97,8 +99,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         var currentMs = startMs + val.TotalMilliseconds;
 
-                        var percentVal = currentMs / totalMs;
-                        percent = 100 * percentVal;
+                        percent = 100.0 * currentMs / totalMs;
 
                         transcodingPosition = val;
                     }

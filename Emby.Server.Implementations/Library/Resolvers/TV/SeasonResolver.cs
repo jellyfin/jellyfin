@@ -52,7 +52,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
                 var path = args.Path;
 
-                var seasonParserResult = new SeasonPathParser(namingOptions).Parse(path, true, true);
+                var seasonParserResult = new SeasonPathParser().Parse(path, true, true);
 
                 var season = new Season
                 {

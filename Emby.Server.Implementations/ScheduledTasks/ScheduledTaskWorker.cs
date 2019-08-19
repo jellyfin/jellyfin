@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -287,7 +287,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 if (_id == null)
                 {
-                    _id = ScheduledTask.GetType().FullName.GetMD5().ToString("N");
+                    _id = ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
                 }
 
                 return _id;

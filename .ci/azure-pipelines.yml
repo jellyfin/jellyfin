@@ -16,7 +16,7 @@ jobs:
   - job: main_build
     displayName: Main Build
     pool:
-      vmImage: ubuntu-16.04
+      vmImage: ubuntu-latest
     strategy:
       matrix:
         release:
@@ -35,12 +35,14 @@ jobs:
       inputs:
         command: restore
         projects: '$(RestoreBuildProjects)'
+      enabled: false
 
     - task: DotNetCoreCLI@2
       displayName: Build
       inputs:
         projects: '$(RestoreBuildProjects)'
         arguments: '--configuration $(BuildConfiguration)'
+      enabled: false
 
     - task: DotNetCoreCLI@2
       displayName: Test
@@ -66,40 +68,40 @@ jobs:
     #     artifactName: 'jellyfin-build-$(BuildConfiguration)'
     #     zipAfterPublish: true
 
-    - task: PublishBuildArtifacts@1
+    - task: PublishPipelineArtifact@0
       displayName: 'Publish Artifact Naming'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/Emby.Naming.dll'
+        targetPath: '$(build.artifactstagingdirectory)/Jellyfin.Server/Emby.Naming.dll'
         artifactName: 'Jellyfin.Naming'
 
-    - task: PublishBuildArtifacts@1
+    - task: PublishPipelineArtifact@0
       displayName: 'Publish Artifact Controller'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Controller.dll'
+        targetPath: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Controller.dll'
         artifactName: 'Jellyfin.Controller'
 
-    - task: PublishBuildArtifacts@1
+    - task: PublishPipelineArtifact@0
       displayName: 'Publish Artifact Model'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Model.dll'
+        targetPath: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Model.dll'
         artifactName: 'Jellyfin.Model'
 
-    - task: PublishBuildArtifacts@1
+    - task: PublishPipelineArtifact@0
       displayName: 'Publish Artifact Common'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Common.dll'
+        targetPath: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Common.dll'
         artifactName: 'Jellyfin.Common'
 
   - job: dotnet_compat
     displayName: Compatibility Check
     pool:
-      vmImage: ubuntu-16.04
+      vmImage: ubuntu-latest
     dependsOn: main_build
-    condition: false #and(succeeded(), variables['System.PullRequest.PullRequestNumber']) # Only execute if the pullrequest numer is defined. (So not for normal CI builds)
+    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber']) # Only execute if the pullrequest numer is defined. (So not for normal CI builds)
     strategy:
       matrix:
         Naming:
@@ -118,45 +120,23 @@ jobs:
     steps:
     - checkout: none
 
-    - task: DownloadBuildArtifacts@0
-      displayName: Download the Reference Assembly Build Artifact
-      inputs:
-        buildType: 'specific' # Options: current, specific
-        project: $(System.TeamProjectId) # Required when buildType == Specific
-        pipeline: $(System.DefinitionId) # Required when buildType == Specific, not sure if this will take a name too
-        #specificBuildWithTriggering: false # Optional
-        buildVersionToDownload: 'latestFromBranch' # Required when buildType == Specific# Options: latest, latestFromBranch, specific
-        allowPartiallySucceededBuilds: false # Optional
-        branchName: '$(System.PullRequest.TargetBranch)' # Required when buildType == Specific && BuildVersionToDownload == LatestFromBranch
-        #buildId: # Required when buildType == Specific && BuildVersionToDownload == Specific
-        #tags: # Optional
-        downloadType: 'single' # Options: single, specific
-        artifactName: '$(NugetPackageName)'# Required when downloadType == Single
-        #itemPattern: '**' # Optional
-        downloadPath: '$(System.ArtifactsDirectory)/current-artifacts'
-        #parallelizationLimit: '8' # Optional
-
-    - task: CopyFiles@2
-      displayName: Copy Nuget Assembly to current-release folder
-      inputs:
-        sourceFolder: $(System.ArtifactsDirectory)/current-artifacts # Optional
-        contents: '**/*.dll'
-        targetFolder: $(System.ArtifactsDirectory)/current-release
-        cleanTargetFolder: true # Optional
-        overWrite: true # Optional
-        flattenFolders: true # Optional
-
-    - task: DownloadBuildArtifacts@0
+    - task: DownloadPipelineArtifact@2
       displayName: Download the New Assembly Build Artifact
       inputs:
-        buildType: 'current' # Options: current, specific
-        allowPartiallySucceededBuilds: false # Optional
-        downloadType: 'single' # Options: single, specific
-        artifactName: '$(NugetPackageName)' # Required when downloadType == Single
-        downloadPath: '$(System.ArtifactsDirectory)/new-artifacts'
+        source: 'current' # Options: current, specific
+        #preferTriggeringPipeline: false # Optional
+        #tags: # Optional
+        artifact: '$(NugetPackageName)' # Optional
+        #patterns: '**' # Optional
+        path: '$(System.ArtifactsDirectory)/new-artifacts'
+        #project: # Required when source == Specific
+        #pipeline: # Required when source == Specific
+        runVersion: 'latest' # Required when source == Specific. Options: latest, latestFromBranch, specific
+        #runBranch: 'refs/heads/master' # Required when source == Specific && runVersion == LatestFromBranch
+        #runId: # Required when source == Specific && runVersion == Specific
 
     - task: CopyFiles@2
-      displayName: Copy Artifact Assembly to new-release folder
+      displayName: Copy New Assembly to new-release folder
       inputs:
         sourceFolder: $(System.ArtifactsDirectory)/new-artifacts # Optional
         contents: '**/*.dll'
@@ -165,10 +145,35 @@ jobs:
         overWrite: true # Optional
         flattenFolders: true # Optional
 
+    - task: DownloadPipelineArtifact@2
+      displayName: Download the Reference Assembly Build Artifact
+      inputs:
+        source: 'specific' # Options: current, specific
+        #preferTriggeringPipeline: false # Optional
+        #tags: # Optional
+        artifact: '$(NugetPackageName)' # Optional
+        #patterns: '**' # Optional
+        path: '$(System.ArtifactsDirectory)/current-artifacts'
+        project: '$(System.TeamProjectId)' # Required when source == Specific
+        pipeline: '$(System.DefinitionId)' # Required when source == Specific
+        runVersion: 'latestFromBranch' # Required when source == Specific. Options: latest, latestFromBranch, specific
+        runBranch: 'refs/heads/$(System.PullRequest.TargetBranch)' # Required when source == Specific && runVersion == LatestFromBranch
+        #runId: # Required when source == Specific && runVersion == Specific
+
+    - task: CopyFiles@2
+      displayName: Copy Reference Assembly to current-release folder
+      inputs:
+        sourceFolder: $(System.ArtifactsDirectory)/current-artifacts # Optional
+        contents: '**/*.dll'
+        targetFolder: $(System.ArtifactsDirectory)/current-release
+        cleanTargetFolder: true # Optional
+        overWrite: true # Optional
+        flattenFolders: true # Optional
+
     - task: DownloadGitHubRelease@0
       displayName: Download ABI compatibility check tool from GitHub
       inputs:
-        connection: Jellyfin GitHub
+        connection: Jellyfin Release Download
         userRepository: EraYaN/dotnet-compatibility
         defaultVersionType: 'latest' # Options: latest, specificVersion, specificTag
         #version: # Required when defaultVersionType != Latest
@@ -185,7 +190,7 @@ jobs:
     - task: CmdLine@2
       displayName: Execute ABI compatibility check tool
       inputs:
-        script: 'dotnet tools/CompatibilityCheckerCoreCLI.dll current-release/$(AssemblyFileName) new-release/$(AssemblyFileName)'
+        script: 'dotnet tools/CompatibilityCheckerCoreCLI.dll current-release/$(AssemblyFileName) new-release/$(AssemblyFileName) --azure-pipelines'
         workingDirectory: $(System.ArtifactsDirectory) # Optional
         #failOnStderr: false # Optional
 

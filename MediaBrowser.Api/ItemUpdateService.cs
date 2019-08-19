@@ -69,8 +69,8 @@ namespace MediaBrowser.Api
             {
                 ParentalRatingOptions = _localizationManager.GetParentalRatings().ToArray(),
                 ExternalIdInfos = _providerManager.GetExternalIdInfos(item).ToArray(),
-                Countries = await _localizationManager.GetCountries(),
-                Cultures = _localizationManager.GetCultures()
+                Countries = _localizationManager.GetCountries().ToArray(),
+                Cultures = _localizationManager.GetCultures().ToArray()
             };
 
             if (!item.IsVirtualItem && !(item is ICollectionFolder) && !(item is UserView) && !(item is AggregateFolder) && !(item is LiveTvChannel) && !(item is IItemByName) &&

@@ -133,12 +133,15 @@ namespace MediaBrowser.Api.Devices
             var album = Request.QueryString["Album"];
             var id = Request.QueryString["Id"];
             var name = Request.QueryString["Name"];
+            var req = Request.Response.HttpContext.Request;
 
-            if (Request.ContentType.IndexOf("multi", StringComparison.OrdinalIgnoreCase) == -1)
+            if (req.HasFormContentType)
             {
-                return _deviceManager.AcceptCameraUpload(deviceId, request.RequestStream, new LocalFileInfo
+                var file = req.Form.Files.Count == 0 ? null : req.Form.Files[0];
+
+                return _deviceManager.AcceptCameraUpload(deviceId, file.OpenReadStream(), new LocalFileInfo
                 {
-                    MimeType = Request.ContentType,
+                    MimeType = file.ContentType,
                     Album = album,
                     Name = name,
                     Id = id
@@ -146,11 +149,9 @@ namespace MediaBrowser.Api.Devices
             }
             else
             {
-                var file = Request.Files.Length == 0 ? null : Request.Files[0];
-
-                return _deviceManager.AcceptCameraUpload(deviceId, file.InputStream, new LocalFileInfo
+                return _deviceManager.AcceptCameraUpload(deviceId, request.RequestStream, new LocalFileInfo
                 {
-                    MimeType = file.ContentType,
+                    MimeType = Request.ContentType,
                     Album = album,
                     Name = name,
                     Id = id

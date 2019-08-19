@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
@@ -17,32 +14,37 @@ namespace Emby.Server.Implementations.Library
 {
     public class DefaultPasswordResetProvider : IPasswordResetProvider
     {
-        public string Name => "Default Password Reset Provider";
-
-        public bool IsEnabled => true;
-
-        private readonly string _passwordResetFileBase;
-        private readonly string _passwordResetFileBaseDir;
-        private readonly string _passwordResetFileBaseName = "passwordreset";
+        private const string BaseResetFileName = "passwordreset";
 
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IUserManager _userManager;
-        private readonly ICryptoProvider _crypto;
 
-        public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IUserManager userManager, ICryptoProvider cryptoProvider)
+        private readonly string _passwordResetFileBase;
+        private readonly string _passwordResetFileBaseDir;
+
+        public DefaultPasswordResetProvider(
+            IServerConfigurationManager configurationManager,
+            IJsonSerializer jsonSerializer,
+            IUserManager userManager)
         {
             _passwordResetFileBaseDir = configurationManager.ApplicationPaths.ProgramDataPath;
-            _passwordResetFileBase = Path.Combine(_passwordResetFileBaseDir, _passwordResetFileBaseName);
+            _passwordResetFileBase = Path.Combine(_passwordResetFileBaseDir, BaseResetFileName);
             _jsonSerializer = jsonSerializer;
             _userManager = userManager;
-            _crypto = cryptoProvider;
         }
 
+        /// <inheritdoc />
+        public string Name => "Default Password Reset Provider";
+
+        /// <inheritdoc />
+        public bool IsEnabled => true;
+
+        /// <inheritdoc />
         public async Task<PinRedeemResult> RedeemPasswordResetPin(string pin)
         {
             SerializablePasswordReset spr;
-            HashSet<string> usersreset = new HashSet<string>();
-            foreach (var resetfile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{_passwordResetFileBaseName}*"))
+            List<string> usersreset = new List<string>();
+            foreach (var resetfile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{BaseResetFileName}*"))
             {
                 using (var str = File.OpenRead(resetfile))
                 {
@@ -53,12 +55,15 @@ namespace Emby.Server.Implementations.Library
                 {
                     File.Delete(resetfile);
                 }
-                else if (spr.Pin.Replace("-", "").Equals(pin.Replace("-", ""), StringComparison.InvariantCultureIgnoreCase))
+                else if (string.Equals(
+                    spr.Pin.Replace("-", string.Empty),
+                    pin.Replace("-", string.Empty),
+                    StringComparison.InvariantCultureIgnoreCase))
                 {
                     var resetUser = _userManager.GetUserByName(spr.UserName);
                     if (resetUser == null)
                     {
-                        throw new Exception($"User with a username of {spr.UserName} not found");
+                        throw new ResourceNotFoundException($"User with a username of {spr.UserName} not found");
                     }
 
                     await _userManager.ChangePassword(resetUser, pin).ConfigureAwait(false);
@@ -81,10 +86,11 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
+        /// <inheritdoc />
         public async Task<ForgotPasswordResult> StartForgotPasswordProcess(MediaBrowser.Controller.Entities.User user, bool isInNetwork)
         {
             string pin = string.Empty;
-            using (var cryptoRandom = System.Security.Cryptography.RandomNumberGenerator.Create())
+            using (var cryptoRandom = RandomNumberGenerator.Create())
             {
                 byte[] bytes = new byte[4];
                 cryptoRandom.GetBytes(bytes);
@@ -101,17 +107,10 @@ namespace Emby.Server.Implementations.Library
                 UserName = user.Name
             };
 
-            try
+            using (FileStream fileStream = File.OpenWrite(filePath))
             {
-                using (FileStream fileStream = File.OpenWrite(filePath))
-                {
-                    _jsonSerializer.SerializeToStream(spr, fileStream);
-                    await fileStream.FlushAsync().ConfigureAwait(false);
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Error serializing or writing password reset for {user.Name} to location: {filePath}", e);
+                _jsonSerializer.SerializeToStream(spr, fileStream);
+                await fileStream.FlushAsync().ConfigureAwait(false);
             }
 
             return new ForgotPasswordResult

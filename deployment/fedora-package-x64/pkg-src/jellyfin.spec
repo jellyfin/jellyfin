@@ -7,7 +7,7 @@
 %endif
 
 Name:           jellyfin
-Version:        10.3.3
+Version:        10.3.7
 Release:        1%{?dist}
 Summary:        The Free Software Media Browser
 License:        GPLv2
@@ -140,6 +140,14 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Wed Jul 24 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
+- New upstream version 10.3.7; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.7
+* Sat Jul 06 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
+- New upstream version 10.3.6; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.6
+* Sun Jun 09 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
+- New upstream version 10.3.5; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.5
+* Thu Jun 06 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
+- New upstream version 10.3.4; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.4
 * Fri May 17 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
 - New upstream version 10.3.3; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.3
 * Tue Apr 30 2019 Jellyfin Packaging Team <packaging@jellyfin.org>

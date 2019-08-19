@@ -7,6 +7,7 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <value>The token.</value>
         public string Token { get; set; }
+
         /// <summary>
         /// Gets or sets the type of the stub.
         /// </summary>

@@ -239,11 +239,6 @@ pip-log.txt
 ##########
 .idea/
 
-##########
-# Visual Studio Code
-##########
-.vscode/
-
 #########################
 # Build artifacts
 #########################

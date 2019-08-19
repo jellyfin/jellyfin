@@ -99,7 +99,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 ancestorIds = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                     .Where(i => i is Folder)
-                    .Where(i => !excludeFolderIds.Contains(i.Id.ToString("N")))
+                    .Where(i => !excludeFolderIds.Contains(i.Id.ToString("N", CultureInfo.InvariantCulture)))
                     .Select(i => i.Id)
                     .ToArray();
             }
@@ -224,7 +224,19 @@ namespace MediaBrowser.Api.UserLibrary
                 request.IncludeItemTypes = "Playlist";
             }
 
-            if (!user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id))
+            bool isInEnabledFolder = user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id);
+            var collectionFolders = _libraryManager.GetCollectionFolders(item);
+            foreach (var collectionFolder in collectionFolders)
+            {
+                if (user.Policy.EnabledFolders.Contains(
+                    collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture),
+                    StringComparer.OrdinalIgnoreCase))
+                {
+                    isInEnabledFolder = true;
+                }
+            }
+
+            if (!(item is UserRootFolder) && !user.Policy.EnableAllFolders && !isInEnabledFolder)
             {
                 Logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Name, item.Name);
                 return new QueryResult<BaseItem>

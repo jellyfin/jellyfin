@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
@@ -470,7 +471,7 @@ namespace MediaBrowser.Api
 
             if (!string.IsNullOrWhiteSpace(request.StartItemId))
             {
-                episodes = episodes.SkipWhile(i => !string.Equals(i.Id.ToString("N"), request.StartItemId, StringComparison.OrdinalIgnoreCase)).ToList();
+                episodes = episodes.SkipWhile(i => !string.Equals(i.Id.ToString("N", CultureInfo.InvariantCulture), request.StartItemId, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
             // This must be the last filter

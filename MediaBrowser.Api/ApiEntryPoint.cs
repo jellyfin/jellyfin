@@ -415,7 +415,7 @@ namespace MediaBrowser.Api
         public void OnTranscodeEndRequest(TranscodingJob job)
         {
             job.ActiveRequestCount--;
-            //Logger.LogDebug("OnTranscodeEndRequest job.ActiveRequestCount={0}", job.ActiveRequestCount);
+            Logger.LogDebug("OnTranscodeEndRequest job.ActiveRequestCount={0}", job.ActiveRequestCount);
             if (job.ActiveRequestCount <= 0)
             {
                 PingTimer(job, false);
@@ -428,7 +428,7 @@ namespace MediaBrowser.Api
                 throw new ArgumentNullException(nameof(playSessionId));
             }
 
-            //Logger.LogDebug("PingTranscodingJob PlaySessionId={0} isUsedPaused: {1}", playSessionId, isUserPaused);
+            Logger.LogDebug("PingTranscodingJob PlaySessionId={0} isUsedPaused: {1}", playSessionId, isUserPaused);
 
             List<TranscodingJob> jobs;
 
@@ -443,7 +443,7 @@ namespace MediaBrowser.Api
             {
                 if (isUserPaused.HasValue)
                 {
-                    //Logger.LogDebug("Setting job.IsUserPaused to {0}. jobId: {1}", isUserPaused, job.Id);
+                    Logger.LogDebug("Setting job.IsUserPaused to {0}. jobId: {1}", isUserPaused, job.Id);
                     job.IsUserPaused = isUserPaused.Value;
                 }
                 PingTimer(job, true);
@@ -601,7 +601,6 @@ namespace MediaBrowser.Api
                     {
                         Logger.LogInformation("Stopping ffmpeg process with q command for {Path}", job.Path);
 
-                        //process.Kill();
                         process.StandardInput.WriteLine("q");
 
                         // Need to wait because killing is asynchronous
@@ -701,7 +700,7 @@ namespace MediaBrowser.Api
             {
                 try
                 {
-                    //Logger.LogDebug("Deleting HLS file {0}", file);
+                    Logger.LogDebug("Deleting HLS file {0}", file);
                     _fileSystem.DeleteFile(file);
                 }
                 catch (FileNotFoundException)
@@ -840,12 +839,12 @@ namespace MediaBrowser.Api
             {
                 if (KillTimer == null)
                 {
-                    //Logger.LogDebug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                    Logger.LogDebug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
                     KillTimer = new Timer(new TimerCallback(callback), this, intervalMs, Timeout.Infinite);
                 }
                 else
                 {
-                    //Logger.LogDebug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                    Logger.LogDebug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
                     KillTimer.Change(intervalMs, Timeout.Infinite);
                 }
             }
@@ -864,7 +863,7 @@ namespace MediaBrowser.Api
                 {
                     var intervalMs = PingTimeout;
 
-                    //Logger.LogDebug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                    Logger.LogDebug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
                     KillTimer.Change(intervalMs, Timeout.Infinite);
                 }
             }

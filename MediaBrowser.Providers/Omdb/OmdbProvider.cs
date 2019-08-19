@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -347,7 +348,7 @@ namespace MediaBrowser.Providers.Omdb
                 CancellationToken = cancellationToken,
                 BufferContent = true,
                 EnableDefaultUserAgent = true
-            }, "GET");
+            }, HttpMethod.Get);
         }
 
         internal string GetDataFilePath(string imdbId)

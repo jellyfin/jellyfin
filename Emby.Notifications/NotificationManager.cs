@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,7 +89,7 @@ namespace Emby.Notifications
                         return _userManager.Users.Where(i => i.Policy.IsAdministrator)
                                 .Select(i => i.Id);
                     case SendToUserType.All:
-                        return _userManager.Users.Select(i => i.Id);
+                        return _userManager.UsersIds;
                     case SendToUserType.Custom:
                         return request.UserIds;
                     default:
@@ -101,7 +102,7 @@ namespace Emby.Notifications
                 var config = GetConfiguration();
 
                 return _userManager.Users
-                    .Where(i => config.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N"), i.Policy))
+                    .Where(i => config.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N", CultureInfo.InvariantCulture), i.Policy))
                     .Select(i => i.Id);
             }
 
@@ -197,7 +198,7 @@ namespace Emby.Notifications
             return _services.Select(i => new NameIdPair
             {
                 Name = i.Name,
-                Id = i.Name.GetMD5().ToString("N")
+                Id = i.Name.GetMD5().ToString("N", CultureInfo.InvariantCulture)
 
             }).OrderBy(i => i.Name);
         }

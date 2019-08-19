@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -16,7 +15,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -32,6 +30,8 @@ namespace MediaBrowser.Api.Playback
     /// </summary>
     public abstract class BaseStreamingService : BaseApiService
     {
+        protected virtual bool EnableOutputInSubFolder => false;
+
         /// <summary>
         /// Gets or sets the application paths.
         /// </summary>
@@ -65,14 +65,24 @@ namespace MediaBrowser.Api.Playback
         protected IFileSystem FileSystem { get; private set; }
 
         protected IDlnaManager DlnaManager { get; private set; }
+
         protected IDeviceManager DeviceManager { get; private set; }
+
         protected ISubtitleEncoder SubtitleEncoder { get; private set; }
+
         protected IMediaSourceManager MediaSourceManager { get; private set; }
+
         protected IJsonSerializer JsonSerializer { get; private set; }
 
         protected IAuthorizationContext AuthorizationContext { get; private set; }
 
         protected EncodingHelper EncodingHelper { get; set; }
+
+        /// <summary>
+        /// Gets the type of the transcoding job.
+        /// </summary>
+        /// <value>The type of the transcoding job.</value>
+        protected abstract TranscodingJobType TranscodingJobType { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
@@ -113,12 +123,6 @@ namespace MediaBrowser.Api.Playback
         protected abstract string GetCommandLineArguments(string outputPath, EncodingOptions encodingOptions, StreamState state, bool isEncoding);
 
         /// <summary>
-        /// Gets the type of the transcoding job.
-        /// </summary>
-        /// <value>The type of the transcoding job.</value>
-        protected abstract TranscodingJobType TranscodingJobType { get; }
-
-        /// <summary>
         /// Gets the output file extension.
         /// </summary>
         /// <param name="state">The state.</param>
@@ -133,24 +137,22 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         private string GetOutputFilePath(StreamState state, EncodingOptions encodingOptions, string outputFileExtension)
         {
-            var folder = ServerConfigurationManager.ApplicationPaths.TranscodingTempPath;
-
             var data = GetCommandLineArguments("dummy\\dummy", encodingOptions, state, false);
 
-            data += "-" + (state.Request.DeviceId ?? string.Empty);
-            data += "-" + (state.Request.PlaySessionId ?? string.Empty);
+            data += "-" + (state.Request.DeviceId ?? string.Empty)
+                 + "-" + (state.Request.PlaySessionId ?? string.Empty);
 
-            var dataHash = data.GetMD5().ToString("N");
+            var filename = data.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            var ext = outputFileExtension.ToLowerInvariant();
+            var folder = ServerConfigurationManager.ApplicationPaths.TranscodingTempPath;
 
             if (EnableOutputInSubFolder)
             {
-                return Path.Combine(folder, dataHash, dataHash + (outputFileExtension ?? string.Empty).ToLowerInvariant());
+                return Path.Combine(folder, filename, filename + ext);
             }
 
-            return Path.Combine(folder, dataHash + (outputFileExtension ?? string.Empty).ToLowerInvariant());
+            return Path.Combine(folder, filename + ext);
         }
-
-        protected virtual bool EnableOutputInSubFolder => false;
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
@@ -171,7 +173,6 @@ namespace MediaBrowser.Api.Playback
                 var liveStreamResponse = await MediaSourceManager.OpenLiveStream(new LiveStreamRequest
                 {
                     OpenToken = state.MediaSource.OpenToken
-
                 }, cancellationTokenSource.Token).ConfigureAwait(false);
 
                 EncodingHelper.AttachMediaSourceInfo(state, liveStreamResponse.MediaSource, state.RequestedUrl);
@@ -209,21 +210,15 @@ namespace MediaBrowser.Api.Playback
             if (state.VideoRequest != null && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
                 var auth = AuthorizationContext.GetAuthorizationInfo(Request);
-                if (auth.User != null)
+                if (auth.User != null && !auth.User.Policy.EnableVideoPlaybackTranscoding)
                 {
-                    if (!auth.User.Policy.EnableVideoPlaybackTranscoding)
-                    {
-                        ApiEntryPoint.Instance.OnTranscodeFailedToStart(outputPath, TranscodingJobType, state);
+                    ApiEntryPoint.Instance.OnTranscodeFailedToStart(outputPath, TranscodingJobType, state);
 
-                        throw new ArgumentException("User does not have access to video transcoding");
-                    }
+                    throw new ArgumentException("User does not have access to video transcoding");
                 }
             }
 
             var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
-
-            var transcodingId = Guid.NewGuid().ToString("N");
-            var commandLineArgs = GetCommandLineArguments(outputPath, encodingOptions, state, true);
 
             var process = new Process()
             {
@@ -239,7 +234,7 @@ namespace MediaBrowser.Api.Playback
                     RedirectStandardInput = true,
 
                     FileName = MediaEncoder.EncoderPath,
-                    Arguments = commandLineArgs,
+                    Arguments = GetCommandLineArguments(outputPath, encodingOptions, state, true),
                     WorkingDirectory = string.IsNullOrWhiteSpace(workingDirectory) ? null : workingDirectory,
 
                     ErrorDialog = false
@@ -250,7 +245,7 @@ namespace MediaBrowser.Api.Playback
             var transcodingJob = ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath,
                 state.Request.PlaySessionId,
                 state.MediaSource.LiveStreamId,
-                transcodingId,
+                Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
                 TranscodingJobType,
                 process,
                 state.Request.DeviceId,
@@ -261,27 +256,26 @@ namespace MediaBrowser.Api.Playback
             Logger.LogInformation(commandLineLogMessage);
 
             var logFilePrefix = "ffmpeg-transcode";
-            if (state.VideoRequest != null)
+            if (state.VideoRequest != null
+                && string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase)
-                    && string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     logFilePrefix = "ffmpeg-directstream";
                 }
-                else if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                else
                 {
                     logFilePrefix = "ffmpeg-remux";
                 }
             }
 
             var logFilePath = Path.Combine(ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, logFilePrefix + "-" + Guid.NewGuid() + ".txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
-            state.LogFileStream = FileSystem.GetFileStream(logFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true);
+            Stream logStream = FileSystem.GetFileStream(logFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true);
 
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(Request.AbsoluteUri + Environment.NewLine + Environment.NewLine + JsonSerializer.SerializeToString(state.MediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
-            await state.LogFileStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length, cancellationTokenSource.Token).ConfigureAwait(false);
+            await logStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length, cancellationTokenSource.Token).ConfigureAwait(false);
 
             process.Exited += (sender, args) => OnFfMpegProcessExited(process, transcodingJob, state);
 
@@ -298,13 +292,10 @@ namespace MediaBrowser.Api.Playback
                 throw;
             }
 
-            // MUST read both stdout and stderr asynchronously or a deadlock may occurr
-            //process.BeginOutputReadLine();
-
             state.TranscodingJob = transcodingJob;
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
-            new JobLogger(Logger).StartStreamingLog(state, process.StandardError.BaseStream, state.LogFileStream);
+            _ = new JobLogger(Logger).StartStreamingLog(state, process.StandardError.BaseStream, logStream);
 
             // Wait for the file to exist before proceeeding
             while (!File.Exists(state.WaitForPath ?? outputPath) && !transcodingJob.HasExited)
@@ -368,25 +359,16 @@ namespace MediaBrowser.Api.Playback
             Logger.LogDebug("Disposing stream resources");
             state.Dispose();
 
-            try
+            if (process.ExitCode == 0)
             {
-                Logger.LogInformation("FFMpeg exited with code {0}", process.ExitCode);
+                Logger.LogInformation("FFMpeg exited with code 0");
             }
-            catch
+            else
             {
-                Logger.LogError("FFMpeg exited with an error.");
+                Logger.LogError("FFMpeg exited with code {0}", process.ExitCode);
             }
 
-            // This causes on exited to be called twice:
-            //try
-            //{
-            //    // Dispose the process
-            //    process.Dispose();
-            //}
-            //catch (Exception ex)
-            //{
-            //    Logger.LogError(ex, "Error disposing ffmpeg.");
-            //}
+            process.Dispose();
         }
 
         /// <summary>
@@ -439,55 +421,55 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.AudioStreamIndex = int.Parse(val, UsCulture);
+                        videoRequest.AudioStreamIndex = int.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 7)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.SubtitleStreamIndex = int.Parse(val, UsCulture);
+                        videoRequest.SubtitleStreamIndex = int.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 8)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.VideoBitRate = int.Parse(val, UsCulture);
+                        videoRequest.VideoBitRate = int.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 9)
                 {
-                    request.AudioBitRate = int.Parse(val, UsCulture);
+                    request.AudioBitRate = int.Parse(val, CultureInfo.InvariantCulture);
                 }
                 else if (i == 10)
                 {
-                    request.MaxAudioChannels = int.Parse(val, UsCulture);
+                    request.MaxAudioChannels = int.Parse(val, CultureInfo.InvariantCulture);
                 }
                 else if (i == 11)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.MaxFramerate = float.Parse(val, UsCulture);
+                        videoRequest.MaxFramerate = float.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 12)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.MaxWidth = int.Parse(val, UsCulture);
+                        videoRequest.MaxWidth = int.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 13)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.MaxHeight = int.Parse(val, UsCulture);
+                        videoRequest.MaxHeight = int.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 14)
                 {
-                    request.StartTimeTicks = long.Parse(val, UsCulture);
+                    request.StartTimeTicks = long.Parse(val, CultureInfo.InvariantCulture);
                 }
                 else if (i == 15)
                 {
@@ -500,14 +482,14 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.MaxRefFrames = int.Parse(val, UsCulture);
+                        videoRequest.MaxRefFrames = int.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 17)
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.MaxVideoBitDepth = int.Parse(val, UsCulture);
+                        videoRequest.MaxVideoBitDepth = int.Parse(val, CultureInfo.InvariantCulture);
                     }
                 }
                 else if (i == 18)
@@ -556,7 +538,7 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 26)
                 {
-                    request.TranscodingMaxAudioChannels = int.Parse(val, UsCulture);
+                    request.TranscodingMaxAudioChannels = int.Parse(val, CultureInfo.InvariantCulture);
                 }
                 else if (i == 27)
                 {
@@ -643,16 +625,25 @@ namespace MediaBrowser.Api.Playback
                 return null;
             }
 
-            if (value.IndexOf("npt=", StringComparison.OrdinalIgnoreCase) != 0)
+            const string Npt = "npt=";
+            if (!value.StartsWith(Npt, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Invalid timeseek header");
             }
-            value = value.Substring(4).Split(new[] { '-' }, 2)[0];
+            int index = value.IndexOf('-');
+            if (index == -1)
+            {
+                value = value.Substring(Npt.Length);
+            }
+            else
+            {
+                value = value.Substring(Npt.Length, index);
+            }
 
             if (value.IndexOf(':') == -1)
             {
                 // Parses npt times in the format of '417.33'
-                if (double.TryParse(value, NumberStyles.Any, UsCulture, out var seconds))
+                if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var seconds))
                 {
                     return TimeSpan.FromSeconds(seconds).Ticks;
                 }
@@ -667,7 +658,7 @@ namespace MediaBrowser.Api.Playback
 
             foreach (var time in tokens)
             {
-                if (double.TryParse(time, NumberStyles.Any, UsCulture, out var digit))
+                if (double.TryParse(time, NumberStyles.Any, CultureInfo.InvariantCulture, out var digit))
                 {
                     secondsSum += digit * timeFactor;
                 }
@@ -704,10 +695,10 @@ namespace MediaBrowser.Api.Playback
                 request.AudioCodec = EncodingHelper.InferAudioCodec(url);
             }
 
-            var enableDlnaHeaders = !string.IsNullOrWhiteSpace(request.Params) /*||
-                                    string.Equals(Request.Headers.Get("GetContentFeatures.DLNA.ORG"), "1", StringComparison.OrdinalIgnoreCase)*/;
+            var enableDlnaHeaders = !string.IsNullOrWhiteSpace(request.Params) ||
+                                    string.Equals(GetHeader("GetContentFeatures.DLNA.ORG"), "1", StringComparison.OrdinalIgnoreCase);
 
-            var state = new StreamState(MediaSourceManager, Logger, TranscodingJobType)
+            var state = new StreamState(MediaSourceManager, TranscodingJobType)
             {
                 Request = request,
                 RequestedUrl = url,
@@ -728,13 +719,10 @@ namespace MediaBrowser.Api.Playback
             //    state.SegmentLength = 6;
             //}
 
-            if (state.VideoRequest != null)
+            if (state.VideoRequest != null && !string.IsNullOrWhiteSpace(state.VideoRequest.VideoCodec))
             {
-                if (!string.IsNullOrWhiteSpace(state.VideoRequest.VideoCodec))
-                {
-                    state.SupportedVideoCodecs = state.VideoRequest.VideoCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
-                    state.VideoRequest.VideoCodec = state.SupportedVideoCodecs.FirstOrDefault();
-                }
+                state.SupportedVideoCodecs = state.VideoRequest.VideoCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
+                state.VideoRequest.VideoCodec = state.SupportedVideoCodecs.FirstOrDefault();
             }
 
             if (!string.IsNullOrWhiteSpace(request.AudioCodec))
@@ -779,12 +767,12 @@ namespace MediaBrowser.Api.Playback
                     var mediaSources = (await MediaSourceManager.GetPlayackMediaSources(LibraryManager.GetItemById(request.Id), null, false, false, cancellationToken).ConfigureAwait(false)).ToList();
 
                     mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
-                       ? mediaSources.First()
-                       : mediaSources.FirstOrDefault(i => string.Equals(i.Id, request.MediaSourceId));
+                       ? mediaSources[0]
+                       : mediaSources.Find(i => string.Equals(i.Id, request.MediaSourceId));
 
                     if (mediaSource == null && request.MediaSourceId.Equals(request.Id))
                     {
-                        mediaSource = mediaSources.First();
+                        mediaSource = mediaSources[0];
                     }
                 }
             }
@@ -834,11 +822,11 @@ namespace MediaBrowser.Api.Playback
                 if (state.OutputVideoBitrate.HasValue && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     var resolution = ResolutionNormalizer.Normalize(
-                        state.VideoStream == null ? (int?)null : state.VideoStream.BitRate,
-                        state.VideoStream == null ? (int?)null : state.VideoStream.Width,
-                        state.VideoStream == null ? (int?)null : state.VideoStream.Height,
+                        state.VideoStream?.BitRate,
+                        state.VideoStream?.Width,
+                        state.VideoStream?.Height,
                         state.OutputVideoBitrate.Value,
-                        state.VideoStream == null ? null : state.VideoStream.Codec,
+                        state.VideoStream?.Codec,
                         state.OutputVideoCodec,
                         videoRequest.MaxWidth,
                         videoRequest.MaxHeight);
@@ -846,17 +834,13 @@ namespace MediaBrowser.Api.Playback
                     videoRequest.MaxWidth = resolution.MaxWidth;
                     videoRequest.MaxHeight = resolution.MaxHeight;
                 }
+            }
 
-                ApplyDeviceProfileSettings(state);
-            }
-            else
-            {
-                ApplyDeviceProfileSettings(state);
-            }
+            ApplyDeviceProfileSettings(state);
 
             var ext = string.IsNullOrWhiteSpace(state.OutputContainer)
                 ? GetOutputFileExtension(state)
-                : ("." + state.OutputContainer);
+                : ('.' + state.OutputContainer);
 
             var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
 
@@ -970,18 +954,18 @@ namespace MediaBrowser.Api.Playback
             responseHeaders["transferMode.dlna.org"] = string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode;
             responseHeaders["realTimeInfo.dlna.org"] = "DLNA.ORG_TLAG=*";
 
-            if (string.Equals(GetHeader("getMediaInfo.sec"), "1", StringComparison.OrdinalIgnoreCase))
+            if (state.RunTimeTicks.HasValue)
             {
-                if (state.RunTimeTicks.HasValue)
+                if (string.Equals(GetHeader("getMediaInfo.sec"), "1", StringComparison.OrdinalIgnoreCase))
                 {
                     var ms = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalMilliseconds;
                     responseHeaders["MediaInfo.sec"] = string.Format("SEC_Duration={0};", Convert.ToInt32(ms).ToString(CultureInfo.InvariantCulture));
                 }
-            }
 
-            if (state.RunTimeTicks.HasValue && !isStaticallyStreamed && profile != null)
-            {
-                AddTimeSeekResponseHeaders(state, responseHeaders);
+                if (!isStaticallyStreamed && profile != null)
+                {
+                    AddTimeSeekResponseHeaders(state, responseHeaders);
+                }
             }
 
             if (profile == null)
@@ -1037,17 +1021,12 @@ namespace MediaBrowser.Api.Playback
 
                     ).FirstOrDefault() ?? string.Empty;
             }
-
-            foreach (var item in responseHeaders)
-            {
-                Request.Response.AddHeader(item.Key, item.Value);
-            }
         }
 
         private void AddTimeSeekResponseHeaders(StreamState state, IDictionary<string, string> responseHeaders)
         {
-            var runtimeSeconds = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds.ToString(UsCulture);
-            var startSeconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds.ToString(UsCulture);
+            var runtimeSeconds = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds.ToString(CultureInfo.InvariantCulture);
+            var startSeconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
             responseHeaders["TimeSeekRange.dlna.org"] = string.Format("npt={0}-{1}/{1}", startSeconds, runtimeSeconds);
             responseHeaders["X-AvailableSeekRange"] = string.Format("1 npt={0}-{1}", startSeconds, runtimeSeconds);

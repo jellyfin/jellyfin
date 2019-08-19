@@ -374,14 +374,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (BaseRequest.Static || string.Equals(OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (BaseRequest.Static
+                    || string.Equals(OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     if (AudioStream != null)
                     {
                         return AudioStream.SampleRate;
                     }
                 }
-
                 else if (BaseRequest.AudioSampleRate.HasValue)
                 {
                     // Don't exceed what the encoder supports
@@ -397,20 +397,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (BaseRequest.Static || string.Equals(OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (BaseRequest.Static
+                    || string.Equals(OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     if (AudioStream != null)
                     {
                         return AudioStream.BitDepth;
                     }
                 }
-
-                //else if (BaseRequest.AudioSampleRate.HasValue)
-                //{
-                //    // Don't exceed what the encoder supports
-                //    // Seeing issues of attempting to encode to 88200
-                //    return Math.Min(44100, BaseRequest.AudioSampleRate.Value);
-                //}
 
                 return null;
             }
@@ -446,7 +440,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (BaseRequest.Static || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (BaseRequest.Static
+                    || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     return VideoStream?.BitDepth;
                 }
@@ -463,7 +458,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (BaseRequest.Static || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (BaseRequest.Static
+                    || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     return VideoStream?.RefFrames;
                 }
@@ -479,7 +475,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (BaseRequest.Static || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (BaseRequest.Static
+                    || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     return VideoStream == null ? null : (VideoStream.AverageFrameRate ?? VideoStream.RealFrameRate);
                 }
@@ -545,7 +542,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (BaseRequest.Static || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (BaseRequest.Static
+                    || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     return VideoStream?.CodecTag;
                 }
@@ -558,7 +556,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (BaseRequest.Static || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (BaseRequest.Static
+                    || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     return VideoStream?.IsAnamorphic;
                 }
@@ -571,14 +570,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                var codec = OutputVideoCodec;
-
-                if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     return VideoStream?.Codec;
                 }
 
-                return codec;
+                return OutputVideoCodec;
             }
         }
 
@@ -586,14 +583,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                var codec = OutputAudioCodec;
-
-                if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     return AudioStream?.Codec;
                 }
 
-                return codec;
+                return OutputAudioCodec;
             }
         }
 
@@ -601,7 +596,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (BaseRequest.Static || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (BaseRequest.Static
+                    || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     return VideoStream?.IsInterlaced;
                 }
@@ -636,6 +632,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     return GetMediaStreamCount(MediaStreamType.Video, int.MaxValue);
                 }
+
                 return GetMediaStreamCount(MediaStreamType.Video, 1);
             }
         }
@@ -648,17 +645,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     return GetMediaStreamCount(MediaStreamType.Audio, int.MaxValue);
                 }
+
                 return GetMediaStreamCount(MediaStreamType.Audio, 1);
             }
         }
 
-        public int HlsListSize
-        {
-            get
-            {
-                return 0;
-            }
-        }
+        public int HlsListSize => 0;
 
         private int? GetMediaStreamCount(MediaStreamType type, int limit)
         {
@@ -676,10 +668,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float framerate, double? percentComplete, long bytesTranscoded, int? bitRate)
         {
             Progress.Report(percentComplete.Value);
-        }
-
-        public virtual void Dispose()
-        {
         }
     }
 

@@ -45,3 +45,7 @@ override_dh_auto_build:
 override_dh_auto_clean:
 	dotnet clean -maxcpucount:1 --configuration $(CONFIG) Jellyfin.Server || true
 	rm -rf '$(CURDIR)/usr'
+
+# Force the service name to jellyfin even if we're building jellyfin-nightly
+override_dh_installinit:
+	dh_installinit --name=jellyfin

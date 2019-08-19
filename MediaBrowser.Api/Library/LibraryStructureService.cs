@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -272,7 +273,7 @@ namespace MediaBrowser.Api.Library
                 // Changing capitalization. Handle windows case insensitivity
                 if (string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    var tempPath = Path.Combine(rootFolderPath, Guid.NewGuid().ToString("N"));
+                    var tempPath = Path.Combine(rootFolderPath, Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
                     Directory.Move(currentPath, tempPath);
                     currentPath = tempPath;
                 }

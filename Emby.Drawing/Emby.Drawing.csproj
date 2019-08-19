@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,5 +16,10 @@
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs" />
   </ItemGroup>
+
+  <PropertyGroup>
+      <!-- We need at least C# 7.1 for the "default literal" feature-->
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
 
 </Project>

@@ -6,8 +6,8 @@ namespace Emby.Server.Implementations
     {
         public static readonly Dictionary<string, string> Configuration = new Dictionary<string, string>
         {
-            {"HttpListenerHost:DefaultRedirectPath", "web/index.html"},
-            {"MusicBrainz:BaseUrl", "https://www.musicbrainz.org"}
+            { "HttpListenerHost:DefaultRedirectPath", "web/index.html" },
+            { "MusicBrainz:BaseUrl", "https://www.musicbrainz.org" }
         };
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -55,12 +56,12 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (bitrate.HasValue)
             {
-                args += " -ab " + bitrate.Value.ToString(UsCulture);
+                args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             if (state.OutputAudioSampleRate.HasValue)
             {
-                args += " -ar " + state.OutputAudioSampleRate.Value.ToString(UsCulture);
+                args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             args += " " + EncodingHelper.GetAudioFilterParam(state, encodingOptions, true);
@@ -104,7 +105,7 @@ namespace MediaBrowser.Api.Playback.Hls
             else
             {
                 var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
-                    state.SegmentLength.ToString(UsCulture));
+                    state.SegmentLength.ToString(CultureInfo.InvariantCulture));
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 

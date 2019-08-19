@@ -13,6 +13,6 @@ namespace MediaBrowser.Model.IO
         /// <summary>
         /// The default file stream buffer size
         /// </summary>
-        public const int DefaultFileStreamBufferSize = 81920;
+        public const int DefaultFileStreamBufferSize = 4096;
     }
 }

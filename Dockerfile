@@ -21,10 +21,10 @@ RUN apt-get update \
 COPY --from=ffmpeg / /
 COPY --from=builder /jellyfin /jellyfin
 
-ARG JELLYFIN_WEB_VERSION=10.3.3
-RUN curl -L https://github.com/jellyfin/jellyfin-web/archive/v${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
+ARG JELLYFIN_WEB_VERSION=v10.3.7
+RUN curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && rm -rf /jellyfin/jellyfin-web \
- && mv jellyfin-web-${JELLYFIN_WEB_VERSION} /jellyfin/jellyfin-web
+ && mv jellyfin-web-* /jellyfin/jellyfin-web
 
 EXPOSE 8096
 VOLUME /cache /config /media

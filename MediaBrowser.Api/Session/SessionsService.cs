@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -316,7 +317,7 @@ namespace MediaBrowser.Api.Session
             _authRepo.Create(new AuthenticationInfo
             {
                 AppName = request.App,
-                AccessToken = Guid.NewGuid().ToString("N"),
+                AccessToken = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
                 DateCreated = DateTime.UtcNow,
                 DeviceId = _appHost.SystemId,
                 DeviceName = _appHost.FriendlyName,

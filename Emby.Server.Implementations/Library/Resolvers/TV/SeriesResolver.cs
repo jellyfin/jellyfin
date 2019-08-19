@@ -194,9 +194,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// <returns><c>true</c> if [is season folder] [the specified path]; otherwise, <c>false</c>.</returns>
         private static bool IsSeasonFolder(string path, bool isTvContentType, ILibraryManager libraryManager)
         {
-            var namingOptions = ((LibraryManager)libraryManager).GetNamingOptions();
-
-            var seasonNumber = new SeasonPathParser(namingOptions).Parse(path, isTvContentType, isTvContentType).SeasonNumber;
+            var seasonNumber = new SeasonPathParser().Parse(path, isTvContentType, isTvContentType).SeasonNumber;
 
             return seasonNumber.HasValue;
         }

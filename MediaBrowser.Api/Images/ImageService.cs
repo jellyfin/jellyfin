@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -537,7 +538,7 @@ namespace MediaBrowser.Api.Images
 
                 if (item == null)
                 {
-                    throw new ResourceNotFoundException(string.Format("Item {0} not found.", itemId.ToString("N")));
+                    throw new ResourceNotFoundException(string.Format("Item {0} not found.", itemId.ToString("N", CultureInfo.InvariantCulture)));
                 }
             }
 
@@ -549,14 +550,14 @@ namespace MediaBrowser.Api.Images
             }
 
             IImageEnhancer[] supportedImageEnhancers;
-            if (_imageProcessor.ImageEnhancers.Length > 0)
+            if (_imageProcessor.ImageEnhancers.Count > 0)
             {
                 if (item == null)
                 {
                     item = _libraryManager.GetItemById(itemId);
                 }
 
-                supportedImageEnhancers = request.EnableImageEnhancers ? _imageProcessor.GetSupportedEnhancers(item, request.Type) : Array.Empty<IImageEnhancer>();
+                supportedImageEnhancers = request.EnableImageEnhancers ? _imageProcessor.GetSupportedEnhancers(item, request.Type).ToArray() : Array.Empty<IImageEnhancer>();
             }
             else
             {
@@ -605,8 +606,8 @@ namespace MediaBrowser.Api.Images
             ImageRequest request,
             ItemImageInfo image,
             bool cropwhitespace,
-            ImageFormat[] supportedFormats,
-            IImageEnhancer[] enhancers,
+            IReadOnlyCollection<ImageFormat> supportedFormats,
+            IReadOnlyCollection<IImageEnhancer> enhancers,
             TimeSpan? cacheDuration,
             IDictionary<string, string> headers,
             bool isHeadRequest)

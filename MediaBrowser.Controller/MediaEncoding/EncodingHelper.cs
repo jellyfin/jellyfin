@@ -613,7 +613,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 // TODO: Perhaps also use original_size=1920x800 ??
-                return string.Format("subtitles=filename='{0}'{1}{2}{3}",
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "subtitles=filename='{0}'{1}{2}",
                     _mediaEncoder.EscapeSubtitleFilterPath(subtitlePath),
                     charsetParam,
                     // fallbackFontParam,
@@ -622,7 +624,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var mediaPath = state.MediaPath ?? string.Empty;
 
-            return string.Format("subtitles='{0}:si={1}'{2}",
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "subtitles='{0}:si={1}'{2}",
                 _mediaEncoder.EscapeSubtitleFilterPath(mediaPath),
                 state.InternalSubtitleStreamOffset.ToString(_usCulture),
                 // fallbackFontParam,
@@ -1135,26 +1139,50 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var bitrate = request.VideoBitRate;
 
-            // If specific values were requested, then force the caller to supply a bitrate as well
-            if (request.Height.HasValue && request.Width.HasValue)
-            {
-                return bitrate;
-            }
-
             if (videoStream != null)
             {
-                if (bitrate.HasValue)
-                {
-                    var inputVideoCodec = videoStream.Codec;
-                    bitrate = ScaleBitrate(bitrate.Value, inputVideoCodec, outputVideoCodec);
+                var isUpscaling = request.Height.HasValue && videoStream.Height.HasValue &&
+                    request.Height.Value > videoStream.Height.Value && request.Width.HasValue && videoStream.Width.HasValue &&
+                    request.Width.Value > videoStream.Width.Value;
 
-                    // If a max bitrate was requested, don't let the scaled bitrate exceed it
-                    if (request.VideoBitRate.HasValue)
+                // Don't allow bitrate increases unless upscaling
+                if (!isUpscaling)
+                {
+                    if (bitrate.HasValue && videoStream.BitRate.HasValue)
                     {
-                        bitrate = Math.Min(bitrate.Value, request.VideoBitRate.Value);
+                        bitrate = GetMinBitrate(videoStream.BitRate.Value, bitrate.Value);
                     }
                 }
             }
+
+            if (bitrate.HasValue)
+            {
+                var inputVideoCodec = videoStream.Codec;
+                bitrate = ScaleBitrate(bitrate.Value, inputVideoCodec, outputVideoCodec);
+
+                // If a max bitrate was requested, don't let the scaled bitrate exceed it
+                if (request.VideoBitRate.HasValue)
+                {
+                    bitrate = Math.Min(bitrate.Value, request.VideoBitRate.Value);
+                }
+            }
+
+            return bitrate;
+        }
+
+        private int GetMinBitrate(int sourceBitrate, int requestedBitrate)
+        {
+            // these values were chosen from testing to improve low bitrate streams
+            if (sourceBitrate <= 2000000)
+            {
+                sourceBitrate = Convert.ToInt32(sourceBitrate * 2.5);
+            }
+            else if (sourceBitrate <= 3000000)
+            {
+                sourceBitrate = Convert.ToInt32(sourceBitrate * 2);
+            }
+
+            var bitrate = Math.Min(sourceBitrate, requestedBitrate);
 
             return bitrate;
         }

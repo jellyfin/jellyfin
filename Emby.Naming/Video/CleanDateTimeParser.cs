@@ -27,8 +27,8 @@ namespace Emby.Naming.Video
             {
                 var extension = Path.GetExtension(name) ?? string.Empty;
                 // Check supported extensions
-                if (!_options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase) &&
-                    !_options.AudioFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+                if (!_options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase)
+                    && !_options.AudioFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
                     // Dummy up a file extension because the expressions will fail without one
                     // This is tricky because we can't just check Path.GetExtension for empty
@@ -38,7 +38,6 @@ namespace Emby.Naming.Video
             }
             catch (ArgumentException)
             {
-
             }
 
             var result = _options.CleanDateTimeRegexes.Select(i => Clean(name, i))
@@ -69,14 +68,15 @@ namespace Emby.Naming.Video
 
             var match = expression.Match(name);
 
-            if (match.Success && match.Groups.Count == 4)
+            if (match.Success
+                && match.Groups.Count == 4
+                && match.Groups[1].Success
+                && match.Groups[2].Success
+                && int.TryParse(match.Groups[2].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
             {
-                if (match.Groups[1].Success && match.Groups[2].Success && int.TryParse(match.Groups[2].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
-                {
-                    name = match.Groups[1].Value;
-                    result.Year = year;
-                    result.HasChanged = true;
-                }
+                name = match.Groups[1].Value;
+                result.Year = year;
+                result.HasChanged = true;
             }
 
             result.Name = name;

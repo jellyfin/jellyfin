@@ -24,7 +24,15 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets the image enhancers.
         /// </summary>
         /// <value>The image enhancers.</value>
-        IImageEnhancer[] ImageEnhancers { get; }
+        IReadOnlyCollection<IImageEnhancer> ImageEnhancers { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether [supports image collage creation].
+        /// </summary>
+        /// <value><c>true</c> if [supports image collage creation]; otherwise, <c>false</c>.</value>
+        bool SupportsImageCollageCreation { get; }
+
+        IImageEncoder ImageEncoder { get; set; }
 
         /// <summary>
         /// Gets the dimensions of the image.
@@ -51,18 +59,12 @@ namespace MediaBrowser.Controller.Drawing
         ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info, bool updateItem);
 
         /// <summary>
-        /// Adds the parts.
-        /// </summary>
-        /// <param name="enhancers">The enhancers.</param>
-        void AddParts(IEnumerable<IImageEnhancer> enhancers);
-
-        /// <summary>
         /// Gets the supported enhancers.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <returns>IEnumerable{IImageEnhancer}.</returns>
-        IImageEnhancer[] GetSupportedEnhancers(BaseItem item, ImageType imageType);
+        IEnumerable<IImageEnhancer> GetSupportedEnhancers(BaseItem item, ImageType imageType);
 
         /// <summary>
         /// Gets the image cache tag.
@@ -80,7 +82,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="image">The image.</param>
         /// <param name="imageEnhancers">The image enhancers.</param>
         /// <returns>Guid.</returns>
-        string GetImageCacheTag(BaseItem item, ItemImageInfo image, IImageEnhancer[] imageEnhancers);
+        string GetImageCacheTag(BaseItem item, ItemImageInfo image, IReadOnlyCollection<IImageEnhancer> imageEnhancers);
 
         /// <summary>
         /// Processes the image.
@@ -109,7 +111,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Gets the supported image output formats.
         /// </summary>
-        /// <returns>IReadOnlyCollection{ImageOutput}.</returns>
+        /// <returns><see cref="IReadOnlyCollection{ImageOutput}" />.</returns>
         IReadOnlyCollection<ImageFormat> GetSupportedImageOutputFormats();
 
         /// <summary>
@@ -117,14 +119,6 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <param name="options">The options.</param>
         void CreateImageCollage(ImageCollageOptions options);
-
-        /// <summary>
-        /// Gets a value indicating whether [supports image collage creation].
-        /// </summary>
-        /// <value><c>true</c> if [supports image collage creation]; otherwise, <c>false</c>.</value>
-        bool SupportsImageCollageCreation { get; }
-
-        IImageEncoder ImageEncoder { get; set; }
 
         bool SupportsTransparency(string path);
     }

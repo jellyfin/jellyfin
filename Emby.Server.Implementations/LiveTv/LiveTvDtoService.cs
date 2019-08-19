@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,7 +53,7 @@ namespace Emby.Server.Implementations.LiveTv
                 ExternalId = info.Id,
                 ChannelId = GetInternalChannelId(service.Name, info.ChannelId),
                 Status = info.Status,
-                SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId) ? null : GetInternalSeriesTimerId(info.SeriesTimerId).ToString("N"),
+                SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId) ? null : GetInternalSeriesTimerId(info.SeriesTimerId).ToString("N", CultureInfo.InvariantCulture),
                 PrePaddingSeconds = info.PrePaddingSeconds,
                 PostPaddingSeconds = info.PostPaddingSeconds,
                 IsPostPaddingRequired = info.IsPostPaddingRequired,
@@ -69,7 +70,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (!string.IsNullOrEmpty(info.ProgramId))
             {
-                dto.ProgramId = GetInternalProgramId(info.ProgramId).ToString("N");
+                dto.ProgramId = GetInternalProgramId(info.ProgramId).ToString("N", CultureInfo.InvariantCulture);
             }
 
             if (program != null)
@@ -107,7 +108,7 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var dto = new SeriesTimerInfoDto
             {
-                Id = GetInternalSeriesTimerId(info.Id).ToString("N"),
+                Id = GetInternalSeriesTimerId(info.Id).ToString("N", CultureInfo.InvariantCulture),
                 Overview = info.Overview,
                 EndDate = info.EndDate,
                 Name = info.Name,
@@ -139,7 +140,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (!string.IsNullOrEmpty(info.ProgramId))
             {
-                dto.ProgramId = GetInternalProgramId(info.ProgramId).ToString("N");
+                dto.ProgramId = GetInternalProgramId(info.ProgramId).ToString("N", CultureInfo.InvariantCulture);
             }
 
             dto.DayPattern = info.Days == null ? null : GetDayPattern(info.Days.ToArray());
@@ -169,7 +170,7 @@ namespace Emby.Server.Implementations.LiveTv
                     try
                     {
                         dto.ParentThumbImageTag = _imageProcessor.GetImageCacheTag(librarySeries, image);
-                        dto.ParentThumbItemId = librarySeries.Id.ToString("N");
+                        dto.ParentThumbItemId = librarySeries.Id.ToString("N", CultureInfo.InvariantCulture);
                     }
                     catch (Exception ex)
                     {
@@ -185,7 +186,7 @@ namespace Emby.Server.Implementations.LiveTv
                             {
                                 _imageProcessor.GetImageCacheTag(librarySeries, image)
                             };
-                        dto.ParentBackdropItemId = librarySeries.Id.ToString("N");
+                        dto.ParentBackdropItemId = librarySeries.Id.ToString("N", CultureInfo.InvariantCulture);
                     }
                     catch (Exception ex)
                     {
@@ -213,7 +214,7 @@ namespace Emby.Server.Implementations.LiveTv
                     try
                     {
                         dto.ParentPrimaryImageTag = _imageProcessor.GetImageCacheTag(program, image);
-                        dto.ParentPrimaryImageItemId = program.Id.ToString("N");
+                        dto.ParentPrimaryImageItemId = program.Id.ToString("N", CultureInfo.InvariantCulture);
                     }
                     catch (Exception ex)
                     {
@@ -232,7 +233,7 @@ namespace Emby.Server.Implementations.LiveTv
                         {
                                 _imageProcessor.GetImageCacheTag(program, image)
                         };
-                            dto.ParentBackdropItemId = program.Id.ToString("N");
+                            dto.ParentBackdropItemId = program.Id.ToString("N", CultureInfo.InvariantCulture);
                         }
                         catch (Exception ex)
                         {
@@ -263,7 +264,7 @@ namespace Emby.Server.Implementations.LiveTv
                     try
                     {
                         dto.ParentThumbImageTag = _imageProcessor.GetImageCacheTag(librarySeries, image);
-                        dto.ParentThumbItemId = librarySeries.Id.ToString("N");
+                        dto.ParentThumbItemId = librarySeries.Id.ToString("N", CultureInfo.InvariantCulture);
                     }
                     catch (Exception ex)
                     {
@@ -279,7 +280,7 @@ namespace Emby.Server.Implementations.LiveTv
                             {
                                 _imageProcessor.GetImageCacheTag(librarySeries, image)
                             };
-                        dto.ParentBackdropItemId = librarySeries.Id.ToString("N");
+                        dto.ParentBackdropItemId = librarySeries.Id.ToString("N", CultureInfo.InvariantCulture);
                     }
                     catch (Exception ex)
                     {
@@ -320,7 +321,7 @@ namespace Emby.Server.Implementations.LiveTv
                     try
                     {
                         dto.ParentPrimaryImageTag = _imageProcessor.GetImageCacheTag(program, image);
-                        dto.ParentPrimaryImageItemId = program.Id.ToString("N");
+                        dto.ParentPrimaryImageItemId = program.Id.ToString("N", CultureInfo.InvariantCulture);
                     }
                     catch (Exception ex)
                     {
@@ -339,7 +340,7 @@ namespace Emby.Server.Implementations.LiveTv
                             {
                                     _imageProcessor.GetImageCacheTag(program, image)
                             };
-                            dto.ParentBackdropItemId = program.Id.ToString("N");
+                            dto.ParentBackdropItemId = program.Id.ToString("N", CultureInfo.InvariantCulture);
                         }
                         catch (Exception ex)
                         {
@@ -407,7 +408,7 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var name = ServiceName + externalId + InternalVersionNumber;
 
-            return name.ToLowerInvariant().GetMD5().ToString("N");
+            return name.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
         public Guid GetInternalSeriesTimerId(string externalId)

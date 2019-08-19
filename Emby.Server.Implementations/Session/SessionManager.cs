@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Devices;
@@ -25,7 +24,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -53,8 +51,6 @@ namespace Emby.Server.Implementations.Session
         private readonly IImageProcessor _imageProcessor;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        private readonly IHttpClient _httpClient;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationHost _appHost;
 
         private readonly IAuthenticationRepository _authRepo;
@@ -96,9 +92,7 @@ namespace Emby.Server.Implementations.Session
             IMusicManager musicManager,
             IDtoService dtoService,
             IImageProcessor imageProcessor,
-            IJsonSerializer jsonSerializer,
             IServerApplicationHost appHost,
-            IHttpClient httpClient,
             IAuthenticationRepository authRepo,
             IDeviceManager deviceManager,
             IMediaSourceManager mediaSourceManager)
@@ -110,9 +104,7 @@ namespace Emby.Server.Implementations.Session
             _musicManager = musicManager;
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
-            _jsonSerializer = jsonSerializer;
             _appHost = appHost;
-            _httpClient = httpClient;
             _authRepo = authRepo;
             _deviceManager = deviceManager;
             _mediaSourceManager = mediaSourceManager;
@@ -335,7 +327,7 @@ namespace Emby.Server.Implementations.Session
         {
             if (string.IsNullOrEmpty(info.MediaSourceId))
             {
-                info.MediaSourceId = info.ItemId.ToString("N");
+                info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
             }
 
             if (!info.ItemId.Equals(Guid.Empty) && info.Item == null && libraryItem != null)
@@ -347,8 +339,7 @@ namespace Emby.Server.Implementations.Session
                     var runtimeTicks = libraryItem.RunTimeTicks;
 
                     MediaSourceInfo mediaSource = null;
-                    var hasMediaSources = libraryItem as IHasMediaSources;
-                    if (hasMediaSources != null)
+                    if (libraryItem is IHasMediaSources hasMediaSources)
                     {
                         mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId, info.LiveStreamId).ConfigureAwait(false);
 
@@ -472,7 +463,7 @@ namespace Emby.Server.Implementations.Session
                 Client = appName,
                 DeviceId = deviceId,
                 ApplicationVersion = appVersion,
-                Id = key.GetMD5().ToString("N"),
+                Id = key.GetMD5().ToString("N", CultureInfo.InvariantCulture),
                 ServerId = _appHost.SystemId
             };
 
@@ -854,7 +845,7 @@ namespace Emby.Server.Implementations.Session
             // Normalize
             if (string.IsNullOrEmpty(info.MediaSourceId))
             {
-                info.MediaSourceId = info.ItemId.ToString("N");
+                info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
             }
 
             if (!info.ItemId.Equals(Guid.Empty) && info.Item == null && libraryItem != null)
@@ -1038,12 +1029,30 @@ namespace Emby.Server.Implementations.Session
         private static async Task SendMessageToSession<T>(SessionInfo session, string name, T data, CancellationToken cancellationToken)
         {
             var controllers = session.SessionControllers.ToArray();
-            var messageId = Guid.NewGuid().ToString("N");
+            var messageId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
             foreach (var controller in controllers)
             {
                 await controller.SendMessage(name, messageId, data, controllers, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        private static Task SendMessageToSessions<T>(IEnumerable<SessionInfo> sessions, string name, T data, CancellationToken cancellationToken)
+        {
+            IEnumerable<Task> GetTasks()
+            {
+                var messageId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+                foreach (var session in sessions)
+                {
+                    var controllers = session.SessionControllers;
+                    foreach (var controller in controllers)
+                    {
+                        yield return controller.SendMessage(name, messageId, data, controllers, cancellationToken);
+                    }
+                }
+            }
+
+            return Task.WhenAll(GetTasks());
         }
 
         public async Task SendPlayCommand(string controllingSessionId, string sessionId, PlayRequest command, CancellationToken cancellationToken)
@@ -1225,19 +1234,20 @@ namespace Emby.Server.Implementations.Session
                 AssertCanControl(session, controllingSession);
                 if (!controllingSession.UserId.Equals(Guid.Empty))
                 {
-                    command.ControllingUserId = controllingSession.UserId.ToString("N");
+                    command.ControllingUserId = controllingSession.UserId.ToString("N", CultureInfo.InvariantCulture);
                 }
             }
 
             return SendMessageToSession(session, "Playstate", command, cancellationToken);
         }
 
-        private void AssertCanControl(SessionInfo session, SessionInfo controllingSession)
+        private static void AssertCanControl(SessionInfo session, SessionInfo controllingSession)
         {
             if (session == null)
             {
                 throw new ArgumentNullException(nameof(session));
             }
+
             if (controllingSession == null)
             {
                 throw new ArgumentNullException(nameof(controllingSession));
@@ -1249,26 +1259,11 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task SendRestartRequiredNotification(CancellationToken cancellationToken)
+        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
         {
             CheckDisposed();
 
-            var sessions = Sessions.ToList();
-
-            var tasks = sessions.Select(session => Task.Run(async () =>
-            {
-                try
-                {
-                    await SendMessageToSession(session, "RestartRequired", string.Empty, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error in SendRestartRequiredNotification.", ex);
-                }
-
-            }, cancellationToken)).ToArray();
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            return SendMessageToSessions(Sessions, "RestartRequired", string.Empty, cancellationToken);
         }
 
         /// <summary>
@@ -1280,22 +1275,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            var sessions = Sessions.ToList();
-
-            var tasks = sessions.Select(session => Task.Run(async () =>
-            {
-                try
-                {
-                    await SendMessageToSession(session, "ServerShuttingDown", string.Empty, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error in SendServerShutdownNotification.", ex);
-                }
-
-            }, cancellationToken)).ToArray();
-
-            return Task.WhenAll(tasks);
+            return SendMessageToSessions(Sessions, "ServerShuttingDown", string.Empty, cancellationToken);
         }
 
         /// <summary>
@@ -1309,22 +1289,7 @@ namespace Emby.Server.Implementations.Session
 
             _logger.LogDebug("Beginning SendServerRestartNotification");
 
-            var sessions = Sessions.ToList();
-
-            var tasks = sessions.Select(session => Task.Run(async () =>
-            {
-                try
-                {
-                    await SendMessageToSession(session, "ServerRestarting", string.Empty, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error in SendServerRestartNotification.", ex);
-                }
-
-            }, cancellationToken)).ToArray();
-
-            return Task.WhenAll(tasks);
+            return SendMessageToSessions(Sessions, "ServerRestarting", string.Empty, cancellationToken);
         }
 
         /// <summary>
@@ -1410,16 +1375,14 @@ namespace Emby.Server.Implementations.Session
             CheckDisposed();
 
             User user = null;
-            if (!request.UserId.Equals(Guid.Empty))
+            if (request.UserId != Guid.Empty)
             {
-                user = _userManager.Users
-                    .FirstOrDefault(i => i.Id == request.UserId);
+                user = _userManager.GetUserById(request.UserId);
             }
 
             if (user == null)
             {
-                user = _userManager.Users
-                    .FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
+                user = _userManager.GetUserByName(request.Username);
             }
 
             if (user != null)
@@ -1519,7 +1482,7 @@ namespace Emby.Server.Implementations.Session
                 DeviceId = deviceId,
                 DeviceName = deviceName,
                 UserId = user.Id,
-                AccessToken = Guid.NewGuid().ToString("N"),
+                AccessToken = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
                 UserName = user.Name
             };
 
@@ -1841,64 +1804,24 @@ namespace Emby.Server.Implementations.Session
 
             var data = dataFn();
 
-            var tasks = sessions.Select(session => Task.Run(async () =>
-            {
-                try
-                {
-                    await SendMessageToSession(session, name, data, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error sending message", ex);
-                }
-
-            }, cancellationToken)).ToArray();
-
-            return Task.WhenAll(tasks);
+            return SendMessageToSessions(sessions, name, data, cancellationToken);
         }
 
         public Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, T data, CancellationToken cancellationToken)
         {
             CheckDisposed();
 
-            var sessions = Sessions.Where(i => userIds.Any(i.ContainsUser)).ToList();
-
-            var tasks = sessions.Select(session => Task.Run(async () =>
-            {
-                try
-                {
-                    await SendMessageToSession(session, name, data, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error sending message", ex);
-                }
-
-            }, cancellationToken)).ToArray();
-
-            return Task.WhenAll(tasks);
+            var sessions = Sessions.Where(i => userIds.Any(i.ContainsUser));
+            return SendMessageToSessions(sessions, name, data, cancellationToken);
         }
 
         public Task SendMessageToUserDeviceSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken)
         {
             CheckDisposed();
 
-            var sessions = Sessions.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase)).ToList();
+            var sessions = Sessions.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
 
-            var tasks = sessions.Select(session => Task.Run(async () =>
-            {
-                try
-                {
-                    await SendMessageToSession(session, name, data, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error sending message", ex);
-                }
-
-            }, cancellationToken)).ToArray();
-
-            return Task.WhenAll(tasks);
+            return SendMessageToSessions(sessions, name, data, cancellationToken);
         }
 
         public Task SendMessageToUserDeviceAndAdminSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken)
@@ -1906,23 +1829,9 @@ namespace Emby.Server.Implementations.Session
             CheckDisposed();
 
             var sessions = Sessions
-                .Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase) || IsAdminSession(i))
-                .ToList();
+                .Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase) || IsAdminSession(i));
 
-            var tasks = sessions.Select(session => Task.Run(async () =>
-            {
-                try
-                {
-                    await SendMessageToSession(session, name, data, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error sending message", ex);
-                }
-
-            }, cancellationToken)).ToArray();
-
-            return Task.WhenAll(tasks);
+            return SendMessageToSessions(sessions, name, data, cancellationToken);
         }
 
         private bool IsAdminSession(SessionInfo s)

@@ -9,8 +9,10 @@ namespace MediaBrowser.Controller.Authentication
         string Name { get; }
         bool IsEnabled { get; }
         Task<ProviderAuthenticationResult> Authenticate(string username, string password);
-        Task<bool> HasPassword(User user);
+        bool HasPassword(User user);
         Task ChangePassword(User user, string newPassword);
+        void ChangeEasyPassword(User user, string newPassword, string newPasswordHash);
+        string GetEasyPasswordHash(User user);
     }
 
     public interface IRequiresResolvedUser

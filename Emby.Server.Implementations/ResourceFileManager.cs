@@ -1,10 +1,8 @@
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations
@@ -13,34 +11,14 @@ namespace Emby.Server.Implementations
     {
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
-        private readonly IHttpResultFactory _resultFactory;
 
-        public ResourceFileManager(
-            IHttpResultFactory resultFactory,
-            ILoggerFactory loggerFactory,
-            IFileSystem fileSystem)
+        public ResourceFileManager(ILogger<ResourceFileManager> logger, IFileSystem fileSystem)
         {
-            _resultFactory = resultFactory;
-            _logger = loggerFactory.CreateLogger("ResourceManager");
+            _logger = logger;
             _fileSystem = fileSystem;
         }
 
-        public Stream GetResourceFileStream(string basePath, string virtualPath)
-        {
-            return _fileSystem.GetFileStream(GetResourcePath(basePath, virtualPath), FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
-        }
-
-        public Task<object> GetStaticFileResult(IRequest request, string basePath, string virtualPath, string contentType, TimeSpan? cacheDuration)
-        {
-            return _resultFactory.GetStaticFileResult(request, GetResourcePath(basePath, virtualPath));
-        }
-
-        public string ReadAllText(string basePath, string virtualPath)
-        {
-            return File.ReadAllText(GetResourcePath(basePath, virtualPath));
-        }
-
-        private string GetResourcePath(string basePath, string virtualPath)
+        public string GetResourcePath(string basePath, string virtualPath)
         {
             var fullPath = Path.Combine(basePath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
 
@@ -50,7 +28,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in Path.GetFullPath");
+                _logger.LogError(ex, "Error retrieving full path");
             }
 
             // Don't allow file system access outside of the source folder

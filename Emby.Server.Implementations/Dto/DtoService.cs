@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -89,14 +90,11 @@ namespace Emby.Server.Implementations.Dto
             var channelTuples = new List<Tuple<BaseItemDto, LiveTvChannel>>();
 
             var index = 0;
-            var allCollectionFolders = _libraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
-
             foreach (var item in items)
             {
-                var dto = GetBaseItemDtoInternal(item, options, allCollectionFolders, user, owner);
+                var dto = GetBaseItemDtoInternal(item, options, user, owner);
 
-                var tvChannel = item as LiveTvChannel;
-                if (tvChannel != null)
+                if (item is LiveTvChannel tvChannel)
                 {
                     channelTuples.Add(new Tuple<BaseItemDto, LiveTvChannel>(dto, tvChannel));
                 }
@@ -105,9 +103,7 @@ namespace Emby.Server.Implementations.Dto
                     programTuples.Add(new Tuple<BaseItem, BaseItemDto>(item, dto));
                 }
 
-                var byName = item as IItemByName;
-
-                if (byName != null)
+                if (item is IItemByName byName)
                 {
                     if (options.ContainsField(ItemFields.ItemCounts))
                     {
@@ -130,8 +126,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (programTuples.Count > 0)
             {
-                var task = _livetvManager().AddInfoToProgramDto(programTuples, options.Fields, user);
-                Task.WaitAll(task);
+                _livetvManager().AddInfoToProgramDto(programTuples, options.Fields, user).GetAwaiter().GetResult();
             }
 
             if (channelTuples.Count > 0)
@@ -144,8 +139,7 @@ namespace Emby.Server.Implementations.Dto
 
         public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
         {
-            var allCollectionFolders = _libraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
-            var dto = GetBaseItemDtoInternal(item, options, allCollectionFolders, user, owner);
+            var dto = GetBaseItemDtoInternal(item, options, user, owner);
             var tvChannel = item as LiveTvChannel;
             if (tvChannel != null)
             {
@@ -188,7 +182,7 @@ namespace Emby.Server.Implementations.Dto
             });
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, List<Folder> allCollectionFolders, User user = null, BaseItem owner = null)
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
         {
             var dto = new BaseItemDto
             {
@@ -220,7 +214,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.DisplayPreferencesId))
             {
-                dto.DisplayPreferencesId = item.DisplayPreferencesId.ToString("N");
+                dto.DisplayPreferencesId = item.DisplayPreferencesId.ToString("N", CultureInfo.InvariantCulture);
             }
 
             if (user != null)
@@ -312,6 +306,7 @@ namespace Emby.Server.Implementations.Dto
                         {
                             path = path.TrimStart('.');
                         }
+
                         if (!string.IsNullOrEmpty(path) && containers.Contains(path, StringComparer.OrdinalIgnoreCase))
                         {
                             fileExtensionContainer = path;
@@ -325,8 +320,7 @@ namespace Emby.Server.Implementations.Dto
 
         public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, User user = null)
         {
-            var allCollectionFolders = _libraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
-            var dto = GetBaseItemDtoInternal(item, options, allCollectionFolders, user);
+            var dto = GetBaseItemDtoInternal(item, options, user);
 
             if (taggedItems != null && options.ContainsField(ItemFields.ItemCounts))
             {
@@ -451,7 +445,7 @@ namespace Emby.Server.Implementations.Dto
         /// <exception cref="ArgumentNullException">item</exception>
         public string GetDtoId(BaseItem item)
         {
-            return item.Id.ToString("N");
+            return item.Id.ToString("N", CultureInfo.InvariantCulture);
         }
 
         private static void SetBookProperties(BaseItemDto dto, Book item)
@@ -615,7 +609,7 @@ namespace Emby.Server.Implementations.Dto
                 if (dictionary.TryGetValue(person.Name, out Person entity))
                 {
                     baseItemPerson.PrimaryImageTag = GetImageCacheTag(entity, ImageType.Primary);
-                    baseItemPerson.Id = entity.Id.ToString("N");
+                    baseItemPerson.Id = entity.Id.ToString("N", CultureInfo.InvariantCulture);
                     list.Add(baseItemPerson);
                 }
             }
@@ -900,7 +894,7 @@ namespace Emby.Server.Implementations.Dto
                 //var artistItems = _libraryManager.GetArtists(new InternalItemsQuery
                 //{
                 //    EnableTotalRecordCount = false,
-                //    ItemIds = new[] { item.Id.ToString("N") }
+                //    ItemIds = new[] { item.Id.ToString("N", CultureInfo.InvariantCulture) }
                 //});
 
                 //dto.ArtistItems = artistItems.Items
@@ -910,7 +904,7 @@ namespace Emby.Server.Implementations.Dto
                 //        return new NameIdPair
                 //        {
                 //            Name = artist.Name,
-                //            Id = artist.Id.ToString("N")
+                //            Id = artist.Id.ToString("N", CultureInfo.InvariantCulture)
                 //        };
                 //    })
                 //    .ToList();
@@ -953,7 +947,7 @@ namespace Emby.Server.Implementations.Dto
                 //var artistItems = _libraryManager.GetAlbumArtists(new InternalItemsQuery
                 //{
                 //    EnableTotalRecordCount = false,
-                //    ItemIds = new[] { item.Id.ToString("N") }
+                //    ItemIds = new[] { item.Id.ToString("N", CultureInfo.InvariantCulture) }
                 //});
 
                 //dto.AlbumArtists = artistItems.Items
@@ -963,7 +957,7 @@ namespace Emby.Server.Implementations.Dto
                 //        return new NameIdPair
                 //        {
                 //            Name = artist.Name,
-                //            Id = artist.Id.ToString("N")
+                //            Id = artist.Id.ToString("N", CultureInfo.InvariantCulture)
                 //        };
                 //    })
                 //    .ToList();
@@ -1051,14 +1045,15 @@ namespace Emby.Server.Implementations.Dto
                         }
                         else
                         {
-                            mediaStreams = dto.MediaSources.Where(i => string.Equals(i.Id, item.Id.ToString("N"), StringComparison.OrdinalIgnoreCase))
+                            string id = item.Id.ToString("N", CultureInfo.InvariantCulture);
+                            mediaStreams = dto.MediaSources.Where(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase))
                                 .SelectMany(i => i.MediaStreams)
                                 .ToArray();
                         }
                     }
                     else
                     {
-                        mediaStreams = _mediaSourceManager().GetStaticMediaSources(item, true).First().MediaStreams.ToArray();
+                        mediaStreams = _mediaSourceManager().GetStaticMediaSources(item, true)[0].MediaStreams.ToArray();
                     }
 
                     dto.MediaStreams = mediaStreams;
@@ -1369,7 +1364,7 @@ namespace Emby.Server.Implementations.Dto
                 return null;
             }
 
-            var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary);
+            var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary).ToArray();
 
             ImageDimensions size;
 

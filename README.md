@@ -13,6 +13,7 @@
 <a href="https://hub.docker.com/r/jellyfin/jellyfin"><img alt="Docker Pull Count" src="https://img.shields.io/docker/pulls/jellyfin/jellyfin.svg"/></a>
 </br>
 <a href="https://opencollective.com/jellyfin"><img alt="Donate" src="https://img.shields.io/opencollective/all/jellyfin.svg?label=backers"/></a>
+<a href="https://features.jellyfin.org"/><img alt="Submit and vote on feature requests" src="https://img.shields.io/badge/fider-vote%20on%20features-success.svg"/></a>
 <a href="https://forum.jellyfin.org"/><img alt="Discuss on our Forum" src="https://img.shields.io/discourse/https/forum.jellyfin.org/users.svg"/></a>
 <a href="https://matrix.to/#/+jellyfin:matrix.org"><img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfin:matrix.org.svg?logo=matrix"/></a>
 <a href="https://www.reddit.com/r/jellyfin/"><img alt="Join our Subreddit" src="https://img.shields.io/badge/reddit-r%2Fjellyfin-%23FF5700.svg"/></a>
@@ -35,6 +36,10 @@ For more information about the project, please see our [about page](https://jell
 <em>Check out <a href="https://jellyfin.readthedocs.io/en/latest/contributor-docs/contributing/">our documentation for guidelines</a>.</em>
 </p>
 <p align="center">
-<strong>New idea or improvement? Something not working right?</strong>
+<strong>New idea or improvement?</strong>
+<em>Check out our <a href="https://features.jellyfin.org/?view=most-wanted">feature request hub</a>.</em>
+</p>
+<p align="center">
+<strong>Something not working right?</strong>
 <em>Open an <a href="https://jellyfin.readthedocs.io/en/latest/contributor-docs/issues/">Issue</a>.</em>
 </p>

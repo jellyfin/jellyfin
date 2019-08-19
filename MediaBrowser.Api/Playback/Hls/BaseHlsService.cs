@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -143,10 +144,10 @@ namespace MediaBrowser.Api.Playback.Hls
 
                     text = text.Replace("#EXTM3U", "#EXTM3U\n#EXT-X-PLAYLIST-TYPE:EVENT");
 
-                    var newDuration = "#EXT-X-TARGETDURATION:" + segmentLength.ToString(UsCulture);
+                    var newDuration = "#EXT-X-TARGETDURATION:" + segmentLength.ToString(CultureInfo.InvariantCulture);
 
-                    text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength - 1).ToString(UsCulture), newDuration, StringComparison.OrdinalIgnoreCase);
-                    //text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(UsCulture), newDuration, StringComparison.OrdinalIgnoreCase);
+                    text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength - 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
+                    //text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
 
                     return text;
                 }
@@ -163,7 +164,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var paddedBitrate = Convert.ToInt32(bitrate * 1.15);
 
             // Main stream
-            builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + paddedBitrate.ToString(UsCulture));
+            builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + paddedBitrate.ToString(CultureInfo.InvariantCulture));
             var playlistUrl = "hls/" + Path.GetFileName(firstPlaylist).Replace(".m3u8", "/stream.m3u8");
             builder.AppendLine(playlistUrl);
 
@@ -231,7 +232,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var itsOffsetMs = 0;
 
-            var itsOffset = itsOffsetMs == 0 ? string.Empty : string.Format("-itsoffset {0} ", TimeSpan.FromMilliseconds(itsOffsetMs).TotalSeconds.ToString(UsCulture));
+            var itsOffset = itsOffsetMs == 0 ? string.Empty : string.Format("-itsoffset {0} ", TimeSpan.FromMilliseconds(itsOffsetMs).TotalSeconds.ToString(CultureInfo.InvariantCulture));
 
             var videoCodec = EncodingHelper.GetVideoEncoder(state, encodingOptions);
 
@@ -240,7 +241,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var inputModifier = EncodingHelper.GetInputModifier(state, encodingOptions);
 
             // If isEncoding is true we're actually starting ffmpeg
-            var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
+            var startNumberParam = isEncoding ? GetStartNumber(state).ToString(CultureInfo.InvariantCulture) : "0";
 
             var baseUrlParam = string.Empty;
 
@@ -272,7 +273,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     EncodingHelper.GetMapArgs(state),
                     GetVideoArguments(state, encodingOptions),
                     GetAudioArguments(state, encodingOptions),
-                    state.SegmentLength.ToString(UsCulture),
+                    state.SegmentLength.ToString(CultureInfo.InvariantCulture),
                     startNumberParam,
                     outputPath,
                     outputTsArg,
@@ -293,9 +294,9 @@ namespace MediaBrowser.Api.Playback.Hls
                 EncodingHelper.GetMapArgs(state),
                 GetVideoArguments(state, encodingOptions),
                 GetAudioArguments(state, encodingOptions),
-                state.SegmentLength.ToString(UsCulture),
+                state.SegmentLength.ToString(CultureInfo.InvariantCulture),
                 startNumberParam,
-                state.HlsListSize.ToString(UsCulture),
+                state.HlsListSize.ToString(CultureInfo.InvariantCulture),
                 baseUrlParam,
                 outputPath
                 ).Trim();

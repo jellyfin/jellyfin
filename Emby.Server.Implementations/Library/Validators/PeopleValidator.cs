@@ -1,7 +1,7 @@
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -96,7 +96,7 @@ namespace Emby.Server.Implementations.Library.Validators
 
             foreach (var item in deadEntities)
             {
-                _logger.LogInformation("Deleting dead {2} {0} {1}.", item.Id.ToString("N"), item.Name, item.GetType().Name);
+                _logger.LogInformation("Deleting dead {2} {0} {1}.", item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name, item.GetType().Name);
 
                 _libraryManager.DeleteItem(item, new DeleteOptions
                 {
