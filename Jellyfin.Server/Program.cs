@@ -150,14 +150,15 @@ namespace Jellyfin.Server
                 _logger.LogWarning("Failed to enable shared cache for SQLite");
             }
 
-            using (var appHost = new CoreAppHost(
+            var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
                 new NullImageEncoder(),
                 new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
-                appConfig))
+                appConfig);
+            try
             {
                 await appHost.InitAsync(new ServiceCollection()).ConfigureAwait(false);
 
@@ -165,15 +166,20 @@ namespace Jellyfin.Server
 
                 await appHost.RunStartupTasksAsync().ConfigureAwait(false);
 
-                try
-                {
-                    // Block main thread until shutdown
-                    await Task.Delay(-1, _tokenSource.Token).ConfigureAwait(false);
-                }
-                catch (TaskCanceledException)
-                {
-                    // Don't throw on cancellation
-                }
+                // Block main thread until shutdown
+                await Task.Delay(-1, _tokenSource.Token).ConfigureAwait(false);
+            }
+            catch (TaskCanceledException)
+            {
+                // Don't throw on cancellation
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "Error while starting server.");
+            }
+            finally
+            {
+                appHost?.Dispose();
             }
 
             if (_restartOnShutdown)
