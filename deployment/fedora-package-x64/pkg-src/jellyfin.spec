@@ -68,7 +68,7 @@ EOF
 %{__install} -D -m 0644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
 %{__install} -D -m 0600 %{SOURCE3} %{buildroot}%{_sysconfdir}/sudoers.d/%{name}-sudoers
 %{__install} -D -m 0755 %{SOURCE4} %{buildroot}%{_libexecdir}/%{name}/restart.sh
-%{__install} -D -m 0644 %{SOURCE6} %{buildroot}%{_prefix}/lib/firewalld/service/%{name}.xml
+%{__install} -D -m 0644 %{SOURCE6} %{buildroot}%{_prefix}/lib/firewalld/services/%{name}.xml
 
 %files
 %{_libdir}/%{name}/jellyfin-web/*
@@ -83,7 +83,7 @@ EOF
 %{_libdir}/%{name}/sosdocsunix.txt
 %{_unitdir}/%{name}.service
 %{_libexecdir}/%{name}/restart.sh
-%{_prefix}/lib/firewalld/service/%{name}.xml
+%{_prefix}/lib/firewalld/services/%{name}.xml
 %attr(755,jellyfin,jellyfin) %dir %{_sysconfdir}/%{name}
 %config %{_sysconfdir}/sysconfig/%{name}
 %config(noreplace) %attr(600,root,root) %{_sysconfdir}/sudoers.d/%{name}-sudoers
