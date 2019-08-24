@@ -904,7 +904,8 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             else
             {
-                var keyFrameArg = string.Format(" -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
+                var keyFrameArg = string.Format(
+                    " -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
                     GetStartNumber(state) * state.SegmentLength,
                     state.SegmentLength.ToString(CultureInfo.InvariantCulture));
 
