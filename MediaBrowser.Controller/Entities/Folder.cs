@@ -666,36 +666,36 @@ namespace MediaBrowser.Controller.Entities
             query.StartIndex = null;
             query.Limit = null;
 
-            var itemsList = LibraryManager.GetItemList(query);
+            IEnumerable<BaseItem> itemsList = LibraryManager.GetItemList(query);
             var user = query.User;
 
             if (user != null)
             {
                 // needed for boxsets
-                itemsList = itemsList.Where(i => i.IsVisibleStandalone(query.User)).ToList();
+                itemsList = itemsList.Where(i => i.IsVisibleStandalone(query.User));
             }
 
-            BaseItem[] returnItems;
+            IEnumerable<BaseItem> returnItems;
             int totalCount = 0;
 
             if (query.EnableTotalRecordCount)
             {
-                var itemsArray = itemsList.ToArray();
-                totalCount = itemsArray.Length;
-                returnItems = itemsArray;
+                var itemArray = itemsList.ToArray();
+                totalCount = itemArray.Length;
+                returnItems = itemArray;
             }
             else
             {
-                returnItems = itemsList.ToArray();
+                returnItems = itemsList;
             }
 
             if (limit.HasValue)
             {
-                returnItems = returnItems.Skip(startIndex ?? 0).Take(limit.Value).ToArray();
+                returnItems = returnItems.Skip(startIndex ?? 0).Take(limit.Value);
             }
             else if (startIndex.HasValue)
             {
-                returnItems = returnItems.Skip(startIndex.Value).ToArray();
+                returnItems = returnItems.Skip(startIndex.Value);
             }
 
             return new QueryResult<BaseItem>

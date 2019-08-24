@@ -87,8 +87,7 @@ namespace Emby.Server.Implementations.Services
 
                 var response = actionContext.ServiceAction(instance, requestDto);
 
-                var taskResponse = response as Task;
-                if (taskResponse != null)
+                if (response is Task taskResponse)
                 {
                     return GetTaskResult(taskResponse);
                 }
@@ -104,8 +103,7 @@ namespace Emby.Server.Implementations.Services
         {
             try
             {
-                var taskObject = task as Task<object>;
-                if (taskObject != null)
+                if (task is Task<object> taskObject)
                 {
                     return await taskObject.ConfigureAwait(false);
                 }
@@ -136,7 +134,7 @@ namespace Emby.Server.Implementations.Services
             }
             catch (TypeAccessException)
             {
-                return null; //return null for void Task's
+                return null; // return null for void Task's
             }
         }
 
@@ -155,29 +153,22 @@ namespace Emby.Server.Implementations.Services
                     Id = ServiceMethod.Key(serviceType, actionName, requestType.GetMethodName())
                 };
 
-                try
-                {
-                    actionCtx.ServiceAction = CreateExecFn(serviceType, requestType, mi);
-                }
-                catch
-                {
-                    //Potential problems with MONO, using reflection for fallback
-                    actionCtx.ServiceAction = (service, request) =>
-                                              mi.Invoke(service, new[] { request });
-                }
+                actionCtx.ServiceAction = CreateExecFn(serviceType, requestType, mi);
 
                 var reqFilters = new List<IHasRequestFilter>();
 
                 foreach (var attr in mi.GetCustomAttributes(true))
                 {
-                    var hasReqFilter = attr as IHasRequestFilter;
-
-                    if (hasReqFilter != null)
+                    if (attr is IHasRequestFilter hasReqFilter)
+                    {
                         reqFilters.Add(hasReqFilter);
+                    }
                 }
 
                 if (reqFilters.Count > 0)
+                {
                     actionCtx.RequestFilters = reqFilters.OrderBy(i => i.Priority).ToArray();
+                }
 
                 actions.Add(actionCtx);
             }
@@ -198,15 +189,19 @@ namespace Emby.Server.Implementations.Services
 
             if (mi.ReturnType != typeof(void))
             {
-                var executeFunc = Expression.Lambda<ActionInvokerFn>
-                (callExecute, serviceParam, requestDtoParam).Compile();
+                var executeFunc = Expression.Lambda<ActionInvokerFn>(
+                    callExecute,
+                    serviceParam,
+                    requestDtoParam).Compile();
 
                 return executeFunc;
             }
             else
             {
-                var executeFunc = Expression.Lambda<VoidActionInvokerFn>
-                (callExecute, serviceParam, requestDtoParam).Compile();
+                var executeFunc = Expression.Lambda<VoidActionInvokerFn>(
+                    callExecute,
+                    serviceParam,
+                    requestDtoParam).Compile();
 
                 return (service, request) =>
                 {

@@ -12,10 +12,10 @@ namespace Emby.Server.Implementations.Services
     {
         public static string GetMethodName(this Type type)
         {
-            var typeName = type.FullName != null //can be null, e.g. generic types
-                ? LeftPart(type.FullName, "[[")   //Generic Fullname
-                    .Replace(type.Namespace + ".", "") //Trim Namespaces
-                    .Replace("+", ".") //Convert nested into normal type
+            var typeName = type.FullName != null // can be null, e.g. generic types
+                ? LeftPart(type.FullName, "[[")   // Generic Fullname
+                    .Replace(type.Namespace + ".", string.Empty) // Trim Namespaces
+                    .Replace("+", ".") // Convert nested into normal type
                 : type.Name;
 
             return type.IsGenericParameter ? "'" + typeName : typeName;
@@ -23,7 +23,11 @@ namespace Emby.Server.Implementations.Services
 
         private static string LeftPart(string strVal, string needle)
         {
-            if (strVal == null) return null;
+            if (strVal == null)
+            {
+                return null;
+            }
+
             var pos = strVal.IndexOf(needle, StringComparison.OrdinalIgnoreCase);
             return pos == -1
                 ? strVal

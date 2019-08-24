@@ -228,7 +228,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 }
             }
 
-            if (item.RemoteTrailers.Length > 0)
+            if (item.RemoteTrailers.Count > 0)
             {
                 writer.WriteStartElement("Trailers");
 

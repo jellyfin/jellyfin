@@ -27,8 +27,11 @@ namespace MediaBrowser.Controller.Entities.Movies
             RemoteTrailerIds = Array.Empty<Guid>();
         }
 
-        public Guid[] LocalTrailerIds { get; set; }
-        public Guid[] RemoteTrailerIds { get; set; }
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> LocalTrailerIds { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the TMDB collection.

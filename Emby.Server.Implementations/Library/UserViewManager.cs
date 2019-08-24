@@ -224,7 +224,7 @@ namespace Emby.Server.Implementations.Library
             return list;
         }
 
-        private List<BaseItem> GetItemsForLatestItems(User user, LatestItemsQuery request, DtoOptions options)
+        private IReadOnlyList<BaseItem> GetItemsForLatestItems(User user, LatestItemsQuery request, DtoOptions options)
         {
             var parentId = request.ParentId;
 
@@ -236,24 +236,22 @@ namespace Emby.Server.Implementations.Library
             if (!parentId.Equals(Guid.Empty))
             {
                 var parentItem = _libraryManager.GetItemById(parentId);
-                var parentItemChannel = parentItem as Channel;
-                if (parentItemChannel != null)
+                if (parentItem is Channel parentItemChannel)
                 {
-                    return _channelManager.GetLatestChannelItemsInternal(new InternalItemsQuery(user)
-                    {
-                        ChannelIds = new[] { parentId },
-                        IsPlayed = request.IsPlayed,
-                        StartIndex = request.StartIndex,
-                        Limit = request.Limit,
-                        IncludeItemTypes = request.IncludeItemTypes,
-                        EnableTotalRecordCount = false
-
-
-                    }, CancellationToken.None).Result.Items.ToList();
+                    return _channelManager.GetLatestChannelItemsInternal(
+                        new InternalItemsQuery(user)
+                        {
+                            ChannelIds = new[] { parentId },
+                            IsPlayed = request.IsPlayed,
+                            StartIndex = request.StartIndex,
+                            Limit = request.Limit,
+                            IncludeItemTypes = request.IncludeItemTypes,
+                            EnableTotalRecordCount = false
+                        },
+                        CancellationToken.None).Result.Items;
                 }
 
-                var parent = parentItem as Folder;
-                if (parent != null)
+                if (parentItem is Folder parent)
                 {
                     parents.Add(parent);
                 }

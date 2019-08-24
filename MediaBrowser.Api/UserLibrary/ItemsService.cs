@@ -175,11 +175,6 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoList = _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user);
 
-            if (dtoList == null)
-            {
-                throw new InvalidOperationException("GetBaseItemDtos returned null");
-            }
-
             return new QueryResult<BaseItemDto>
             {
                 TotalRecordCount = result.TotalRecordCount,

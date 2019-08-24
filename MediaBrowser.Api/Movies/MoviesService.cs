@@ -243,7 +243,7 @@ namespace MediaBrowser.Api.Movies
                 }
             }
 
-            return categories.OrderBy(i => i.RecommendationType).ThenBy(i => Guid.NewGuid());
+            return categories.OrderBy(i => i.RecommendationType);
         }
 
         private IEnumerable<RecommendationDto> GetWithDirector(User user, IEnumerable<string> names, int itemLimit, DtoOptions dtoOptions, RecommendationType type)

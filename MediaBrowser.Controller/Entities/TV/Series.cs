@@ -46,8 +46,11 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public override bool SupportsPeople => true;
 
-        public Guid[] LocalTrailerIds { get; set; }
-        public Guid[] RemoteTrailerIds { get; set; }
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> LocalTrailerIds { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
 
         /// <summary>
         /// airdate, dvd or absolute

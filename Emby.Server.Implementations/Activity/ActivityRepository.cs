@@ -247,7 +247,7 @@ namespace Emby.Server.Implementations.Activity
                     ReadTransactionMode);
             }
 
-            result.Items = list.ToArray();
+            result.Items = list;
             return result;
         }
 
