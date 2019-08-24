@@ -13,6 +13,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Users;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -247,8 +248,9 @@ namespace MediaBrowser.Api
         private readonly INetworkManager _networkManager;
         private readonly IDeviceManager _deviceManager;
         private readonly IAuthorizationContext _authContext;
+        private readonly ILogger _logger;
 
-        public UserService(IUserManager userManager, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager, IDeviceManager deviceManager, IAuthorizationContext authContext)
+        public UserService(IUserManager userManager, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager, IDeviceManager deviceManager, IAuthorizationContext authContext, ILoggerFactory loggerFactory)
         {
             _userManager = userManager;
             _sessionMananger = sessionMananger;
@@ -256,6 +258,7 @@ namespace MediaBrowser.Api
             _networkManager = networkManager;
             _deviceManager = deviceManager;
             _authContext = authContext;
+            _logger = loggerFactory.CreateLogger(nameof(UserService));
         }
 
         public object Get(GetPublicUsers request)
@@ -399,19 +402,27 @@ namespace MediaBrowser.Api
         {
             var auth = _authContext.GetAuthorizationInfo(Request);
 
-            var result = await _sessionMananger.AuthenticateNewSession(new AuthenticationRequest
+            try
             {
-                App = auth.Client,
-                AppVersion = auth.Version,
-                DeviceId = auth.DeviceId,
-                DeviceName = auth.Device,
-                Password = request.Pw,
-                PasswordSha1 = request.Password,
-                RemoteEndPoint = Request.RemoteIp,
-                Username = request.Username
-            }).ConfigureAwait(false);
+                var result = await _sessionMananger.AuthenticateNewSession(new AuthenticationRequest
+                {
+                    App = auth.Client,
+                    AppVersion = auth.Version,
+                    DeviceId = auth.DeviceId,
+                    DeviceName = auth.Device,
+                    Password = request.Pw,
+                    PasswordSha1 = request.Password,
+                    RemoteEndPoint = Request.RemoteIp,
+                    Username = request.Username
+                }).ConfigureAwait(false);
 
-            return ToOptimizedResult(result);
+                return ToOptimizedResult(result);
+            }
+            catch(SecurityException e)
+            {
+                // rethrow adding IP address to message
+                throw new SecurityException($"[{Request.RemoteIp}] {e.Message}");
+            }
         }
 
         /// <summary>
