@@ -1,4 +1,4 @@
-FROM debian:9
+FROM debian:10
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG PLATFORM_DIR=/jellyfin/deployment/debian-package-arm64

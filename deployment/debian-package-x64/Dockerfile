@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.2-sdk-stretch
+FROM microsoft/dotnet:2.2-sdk-buster
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG PLATFORM_DIR=/jellyfin/deployment/debian-package-x64
