@@ -366,11 +366,13 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var dtos = item.GetExtras(new[] { ExtraType.Trailer })
-                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
-                .ToArray();
+            var dtosExtras = item.GetExtras(new[] { ExtraType.Trailer })
+                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
-            return ToOptimizedResult(dtos);
+            var dtosTrailers = item.GetTrailers()
+                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
+
+            return ToOptimizedResult(dtosExtras.Concat(dtosTrailers).ToArray());
         }
 
         /// <summary>

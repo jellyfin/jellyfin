@@ -1079,7 +1079,7 @@ namespace Emby.Server.Implementations.Dto
                     allExtras = item.GetExtras().ToArray();
                 }
 
-                dto.LocalTrailerCount = allExtras.Count(i => i.ExtraType.HasValue && i.ExtraType.Value == ExtraType.Trailer);
+                dto.LocalTrailerCount = allExtras.Count(i => i.ExtraType.HasValue && i.ExtraType.Value == ExtraType.Trailer) + item.GetTrailers().Count();
             }
 
             // Add EpisodeInfo
