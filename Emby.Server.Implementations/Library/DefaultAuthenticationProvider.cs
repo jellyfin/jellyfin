@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(resolvedUser));
             }
 
-            // As long as jellyfin supports passwordless users, we need this little block here to accomodate
+            // As long as jellyfin supports passwordless users, we need this little block here to accommodate
             if (!HasPassword(resolvedUser) && string.IsNullOrEmpty(password))
             {
                 return Task.FromResult(new ProviderAuthenticationResult
@@ -105,6 +105,7 @@ namespace Emby.Server.Implementations.Library
         public Task ChangePassword(User user, string newPassword)
         {
             ConvertPasswordFormat(user);
+
             // This is needed to support changing a no password user to a password user
             if (string.IsNullOrEmpty(user.Password))
             {
