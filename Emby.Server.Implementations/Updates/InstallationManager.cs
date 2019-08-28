@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -19,6 +18,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
+using static MediaBrowser.Common.HexHelper;
 
 namespace Emby.Server.Implementations.Updates
 {
@@ -454,7 +454,7 @@ namespace Emby.Server.Implementations.Updates
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var hash = HexHelper.ToHexString(md5.ComputeHash(stream));
+                var hash = ToHexString(md5.ComputeHash(stream));
                 if (!string.Equals(package.checksum, hash, StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogDebug("{0}, {1}", package.checksum, hash);

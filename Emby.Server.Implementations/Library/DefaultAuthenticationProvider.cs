@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.Library
         {
             return string.IsNullOrEmpty(user.EasyPassword)
                 ? null
-                : HexHelper.ToHexString(PasswordHash.Parse(user.EasyPassword).Hash);
+                : ToHexString(PasswordHash.Parse(user.EasyPassword).Hash);
         }
 
         /// <summary>

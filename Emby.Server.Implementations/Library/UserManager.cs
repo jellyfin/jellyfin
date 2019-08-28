@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
@@ -32,6 +31,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 using Microsoft.Extensions.Logging;
+using static MediaBrowser.Common.HexHelper;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -492,7 +492,7 @@ namespace Emby.Server.Implementations.Library
         {
             return string.IsNullOrEmpty(user.EasyPassword)
                 ? null
-                : HexHelper.ToHexString(PasswordHash.Parse(user.EasyPassword).Hash);
+                : ToHexString(PasswordHash.Parse(user.EasyPassword).Hash);
         }
 
         private void UpdateInvalidLoginAttemptCount(User user, int newValue)

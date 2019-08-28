@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using MediaBrowser.Common.Extensions;
+using static MediaBrowser.Common.HexHelper;
 
 namespace MediaBrowser.Common.Cryptography
 {
@@ -100,13 +100,13 @@ namespace MediaBrowser.Common.Cryptography
             // Check if the string also contains a salt
             if (splitted.Length - index == 2)
             {
-                salt = HexHelper.FromHexString(splitted[index++]);
-                hash = HexHelper.FromHexString(splitted[index++]);
+                salt = FromHexString(splitted[index++]);
+                hash = FromHexString(splitted[index++]);
             }
             else
             {
                 salt = Array.Empty<byte>();
-                hash = HexHelper.FromHexString(splitted[index++]);
+                hash = FromHexString(splitted[index++]);
             }
 
             return new PasswordHash(id, hash, salt, parameters);
@@ -143,11 +143,11 @@ namespace MediaBrowser.Common.Cryptography
             if (Salt.Length != 0)
             {
                 str.Append('$');
-                str.Append(HexHelper.ToHexString(Salt));
+                str.Append(ToHexString(Salt));
             }
 
             str.Append('$');
-            str.Append(HexHelper.ToHexString(Hash));
+            str.Append(ToHexString(Hash));
 
             return str.ToString();
         }
