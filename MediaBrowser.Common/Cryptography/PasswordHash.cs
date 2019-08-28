@@ -6,19 +6,14 @@ using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Common.Cryptography
 {
+    // Defined from this hash storage spec
+    // https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
+    // $<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
+    // with one slight amendment to ease the transition, we're writing out the bytes in hex
+    // rather than making them a BASE64 string with stripped padding
     public class PasswordHash
     {
-        // Defined from this hash storage spec
-        // https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
-        // $<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
-        // with one slight amendment to ease the transition, we're writing out the bytes in hex
-        // rather than making them a BASE64 string with stripped padding
-
-        private readonly string _id;
-
         private readonly Dictionary<string, string> _parameters;
-        private readonly byte[] _salt;
-        private readonly byte[] _hash;
 
         public PasswordHash(string id, byte[] hash)
             : this(id, hash, Array.Empty<byte>())
@@ -34,9 +29,9 @@ namespace MediaBrowser.Common.Cryptography
 
         public PasswordHash(string id, byte[] hash, byte[] salt, Dictionary<string, string> parameters)
         {
-            this._id = id;
-            _hash = hash;
-            _salt = salt;
+            this.Id = id;
+            Hash = hash;
+            Salt = salt;
             _parameters = parameters;
         }
 
@@ -44,25 +39,25 @@ namespace MediaBrowser.Common.Cryptography
         /// Gets the symbolic name for the function used.
         /// </summary>
         /// <value>Returns the symbolic name for the function used.</value>
-        public string Id { get => _id; }
+        public string Id { get; }
 
         /// <summary>
         /// Gets the additional parameters used by the hash function.
         /// </summary>
         /// <value></value>
-        public IReadOnlyDictionary<string, string> Parameters { get => _parameters; }
+        public IReadOnlyDictionary<string, string> Parameters => _parameters;
 
         /// <summary>
         /// Gets the salt used for hashing the password.
         /// </summary>
         /// <value>Returns the salt used for hashing the password.</value>
-        public byte[] Salt { get => _salt; }
+        public byte[] Salt { get; }
 
         /// <summary>
         /// Gets the hashed password.
         /// </summary>
         /// <value>Return the hashed password.</value>
-        public byte[] Hash { get => _hash; }
+        public byte[] Hash { get; }
 
         public static PasswordHash Parse(string storageString)
         {
@@ -142,17 +137,17 @@ namespace MediaBrowser.Common.Cryptography
         {
             var str = new StringBuilder();
             str.Append('$');
-            str.Append(_id);
+            str.Append(Id);
             SerializeParameters(str);
 
-            if (_salt.Length != 0)
+            if (Salt.Length != 0)
             {
                 str.Append('$');
-                str.Append(HexHelper.ToHexString(_salt));
+                str.Append(HexHelper.ToHexString(Salt));
             }
 
             str.Append('$');
-            str.Append(HexHelper.ToHexString(_hash));
+            str.Append(HexHelper.ToHexString(Hash));
 
             return str.ToString();
         }
