@@ -113,7 +113,8 @@ namespace MediaBrowser.Api
 
             _userManager.UpdateUser(user);
 
-            if (!string.IsNullOrEmpty(request.Password)) {
+            if (!string.IsNullOrEmpty(request.Password))
+            {
                 await _userManager.ChangePassword(user, request.Password).ConfigureAwait(false);
             }
         }

@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 using MediaBrowser.Model.Cryptography;
+using static MediaBrowser.Common.Cryptography.Constants;
 
 namespace Emby.Server.Implementations.Cryptography
 {
@@ -30,8 +28,6 @@ namespace Emby.Server.Implementations.Cryptography
 
         private RandomNumberGenerator _randomNumberGenerator;
 
-        private const int _defaultIterations = 1000;
-
         private bool _disposed = false;
 
         public CryptographyProvider()
@@ -45,44 +41,13 @@ namespace Emby.Server.Implementations.Cryptography
 
         public string DefaultHashMethod => "PBKDF2";
 
-        [Obsolete("Use System.Security.Cryptography.MD5 directly")]
-        public Guid GetMD5(string str)
-            => new Guid(ComputeMD5(Encoding.Unicode.GetBytes(str)));
-
-        [Obsolete("Use System.Security.Cryptography.SHA1 directly")]
-        public byte[] ComputeSHA1(byte[] bytes)
-        {
-            using (var provider = SHA1.Create())
-            {
-                return provider.ComputeHash(bytes);
-            }
-        }
-
-        [Obsolete("Use System.Security.Cryptography.MD5 directly")]
-        public byte[] ComputeMD5(Stream str)
-        {
-            using (var provider = MD5.Create())
-            {
-                return provider.ComputeHash(str);
-            }
-        }
-
-        [Obsolete("Use System.Security.Cryptography.MD5 directly")]
-        public byte[] ComputeMD5(byte[] bytes)
-        {
-            using (var provider = MD5.Create())
-            {
-                return provider.ComputeHash(bytes);
-            }
-        }
-
         public IEnumerable<string> GetSupportedHashMethods()
             => _supportedHashMethods;
 
         private byte[] PBKDF2(string method, byte[] bytes, byte[] salt, int iterations)
         {
-            //downgrading for now as we need this library to be dotnetstandard compliant
-            //with this downgrade we'll add a check to make sure we're on the downgrade method at the moment
+            // downgrading for now as we need this library to be dotnetstandard compliant
+            // with this downgrade we'll add a check to make sure we're on the downgrade method at the moment
             if (method == DefaultHashMethod)
             {
                 using (var r = new Rfc2898DeriveBytes(bytes, salt, iterations))
@@ -104,7 +69,7 @@ namespace Emby.Server.Implementations.Cryptography
         {
             if (hashMethod == DefaultHashMethod)
             {
-                return PBKDF2(hashMethod, bytes, salt, _defaultIterations);
+                return PBKDF2(hashMethod, bytes, salt, DefaultIterations);
             }
             else if (_supportedHashMethods.Contains(hashMethod))
             {
@@ -129,26 +94,14 @@ namespace Emby.Server.Implementations.Cryptography
         }
 
         public byte[] ComputeHashWithDefaultMethod(byte[] bytes, byte[] salt)
-            => PBKDF2(DefaultHashMethod, bytes, salt, _defaultIterations);
-
-        public byte[] ComputeHash(PasswordHash hash)
-        {
-            int iterations = _defaultIterations;
-            if (!hash.Parameters.ContainsKey("iterations"))
-            {
-                hash.Parameters.Add("iterations", iterations.ToString(CultureInfo.InvariantCulture));
-            }
-            else if (!int.TryParse(hash.Parameters["iterations"], out iterations))
-            {
-                throw new InvalidDataException($"Couldn't successfully parse iterations value from string: {hash.Parameters["iterations"]}");
-            }
-
-            return PBKDF2(hash.Id, hash.Hash, hash.Salt, iterations);
-        }
+            => PBKDF2(DefaultHashMethod, bytes, salt, DefaultIterations);
 
         public byte[] GenerateSalt()
+            => GenerateSalt(DefaultSaltLength);
+
+        public byte[] GenerateSalt(int length)
         {
-            byte[] salt = new byte[64];
+            byte[] salt = new byte[length];
             _randomNumberGenerator.GetBytes(salt);
             return salt;
         }

@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using MediaBrowser.Common.Extensions;
 
-namespace MediaBrowser.Model.Cryptography
+namespace MediaBrowser.Common.Cryptography
 {
     public class PasswordHash
     {
@@ -13,15 +14,57 @@ namespace MediaBrowser.Model.Cryptography
         // with one slight amendment to ease the transition, we're writing out the bytes in hex
         // rather than making them a BASE64 string with stripped padding
 
-        private string _id;
+        private readonly string _id;
 
-        private Dictionary<string, string> _parameters = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> _parameters;
+        private readonly byte[] _salt;
+        private readonly byte[] _hash;
 
-        private byte[] _salt;
+        public PasswordHash(string id, byte[] hash)
+            : this(id, hash, Array.Empty<byte>())
+        {
 
-        private byte[] _hash;
+        }
 
-        public PasswordHash(string storageString)
+        public PasswordHash(string id, byte[] hash, byte[] salt)
+            : this(id, hash, salt, new Dictionary<string, string>())
+        {
+
+        }
+
+        public PasswordHash(string id, byte[] hash, byte[] salt, Dictionary<string, string> parameters)
+        {
+            this._id = id;
+            _hash = hash;
+            _salt = salt;
+            _parameters = parameters;
+        }
+
+        /// <summary>
+        /// Gets the symbolic name for the function used.
+        /// </summary>
+        /// <value>Returns the symbolic name for the function used.</value>
+        public string Id { get => _id; }
+
+        /// <summary>
+        /// Gets the additional parameters used by the hash function.
+        /// </summary>
+        /// <value></value>
+        public IReadOnlyDictionary<string, string> Parameters { get => _parameters; }
+
+        /// <summary>
+        /// Gets the salt used for hashing the password.
+        /// </summary>
+        /// <value>Returns the salt used for hashing the password.</value>
+        public byte[] Salt { get => _salt; }
+
+        /// <summary>
+        /// Gets the hashed password.
+        /// </summary>
+        /// <value>Return the hashed password.</value>
+        public byte[] Hash { get => _hash; }
+
+        public static PasswordHash Parse(string storageString)
         {
             string[] splitted = storageString.Split('$');
             // The string should at least contain the hash function and the hash itself
@@ -34,9 +77,10 @@ namespace MediaBrowser.Model.Cryptography
             int index = 1;
 
             // Name of the hash function
-            _id = splitted[index++];
+            string id = splitted[index++];
 
             // Optional parameters
+            Dictionary<string, string> parameters = new Dictionary<string, string>();
             if (splitted[index].IndexOf('=') != -1)
             {
                 foreach (string paramset in splitted[index++].Split(','))
@@ -52,53 +96,26 @@ namespace MediaBrowser.Model.Cryptography
                         throw new InvalidDataException($"Malformed parameter in password hash string {paramset}");
                     }
 
-                    _parameters.Add(fields[0], fields[1]);
+                    parameters.Add(fields[0], fields[1]);
                 }
             }
 
+            byte[] hash;
+            byte[] salt;
             // Check if the string also contains a salt
             if (splitted.Length - index == 2)
             {
-                _salt = ConvertFromByteString(splitted[index++]);
-                _hash = ConvertFromByteString(splitted[index++]);
+                salt = HexHelper.FromHexString(splitted[index++]);
+                hash = HexHelper.FromHexString(splitted[index++]);
             }
             else
             {
-                _salt = Array.Empty<byte>();
-                _hash = ConvertFromByteString(splitted[index++]);
-            }
-        }
-
-        public PasswordHash(ICryptoProvider cryptoProvider)
-        {
-            _id = cryptoProvider.DefaultHashMethod;
-            _salt = cryptoProvider.GenerateSalt();
-            _hash = Array.Empty<Byte>();
-        }
-
-        public string Id { get => _id; set => _id = value; }
-
-        public Dictionary<string, string> Parameters { get => _parameters; set => _parameters = value; }
-
-        public byte[] Salt { get => _salt; set => _salt = value; }
-
-        public byte[] Hash { get => _hash; set => _hash = value; }
-
-        // TODO: move this class and use the HexHelper class
-        public static byte[] ConvertFromByteString(string byteString)
-        {
-            byte[] bytes = new byte[byteString.Length / 2];
-            for (int i = 0; i < byteString.Length; i += 2)
-            {
-                // TODO: NetStandard2.1 switch this to use a span instead of a substring.
-                bytes[i / 2] = Convert.ToByte(byteString.Substring(i, 2), 16);
+                salt = Array.Empty<byte>();
+                hash = HexHelper.FromHexString(splitted[index++]);
             }
 
-            return bytes;
+            return new PasswordHash(id, hash, salt, parameters);
         }
-
-        public static string ConvertToByteString(byte[] bytes)
-            => BitConverter.ToString(bytes).Replace("-", string.Empty);
 
         private void SerializeParameters(StringBuilder stringBuilder)
         {
@@ -120,6 +137,7 @@ namespace MediaBrowser.Model.Cryptography
             stringBuilder.Length -= 1;
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             var str = new StringBuilder();
@@ -130,11 +148,11 @@ namespace MediaBrowser.Model.Cryptography
             if (_salt.Length != 0)
             {
                 str.Append('$');
-                str.Append(ConvertToByteString(_salt));
+                str.Append(HexHelper.ToHexString(_salt));
             }
 
             str.Append('$');
-            str.Append(ConvertToByteString(_hash));
+            str.Append(HexHelper.ToHexString(_hash));
 
             return str.ToString();
         }
