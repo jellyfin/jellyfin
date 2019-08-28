@@ -1073,6 +1073,7 @@ namespace Emby.Server.Implementations.Dto
                     allExtras = item.GetExtras().ToArray();
                 }
 
+
                 trailerCount += allExtras.Count(i => i.ExtraType.HasValue && i.ExtraType.Value == ExtraType.Trailer);
 
                 if (item is IHasTrailers hasTrailers)

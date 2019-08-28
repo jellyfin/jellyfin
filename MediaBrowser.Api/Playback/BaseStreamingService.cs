@@ -137,10 +137,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         private string GetOutputFilePath(StreamState state, EncodingOptions encodingOptions, string outputFileExtension)
         {
-            var data = GetCommandLineArguments("dummy\\dummy", encodingOptions, state, false);
-
-            data += "-" + (state.Request.DeviceId ?? string.Empty)
-                 + "-" + (state.Request.PlaySessionId ?? string.Empty);
+            var data = $"{state.MediaPath}-{state.UserAgent}-{state.Request.DeviceId}-{state.Request.PlaySessionId}";
 
             var filename = data.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             var ext = outputFileExtension.ToLowerInvariant();

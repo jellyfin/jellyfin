@@ -1,11 +1,11 @@
 {
     "Albums": "Album",
-    "AppDeviceValues": "App:{0}, Enhet {1}",
+    "AppDeviceValues": "App:{0}, Enhet: {1}",
     "Application": "Applikasjon",
     "Artists": "Artister",
     "AuthenticationSucceededWithUserName": "{0} vellykkede autentisert",
     "Books": "Bøker",
-    "CameraImageUploadedFrom": "A new camera image has been uploaded from {0}",
+    "CameraImageUploadedFrom": "Et nytt kamerabilde er lastet opp fra {0}",
     "Channels": "Kanaler",
     "ChapterNameValue": "Kapittel {0}",
     "Collections": "Samlinger",

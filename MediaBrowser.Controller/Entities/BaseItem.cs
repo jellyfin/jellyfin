@@ -2883,6 +2883,14 @@ namespace MediaBrowser.Controller.Entities
             return ExtraIds.Select(LibraryManager.GetItemById).Where(i => i != null && extraTypes.Contains(i.ExtraType.Value));
         }
 
+        public IEnumerable<BaseItem> GetTrailers()
+        {
+            if (this is IHasTrailers)
+                return ((IHasTrailers)this).LocalTrailerIds.Select(LibraryManager.GetItemById).Where(i => i != null).OrderBy(i => i.SortName);
+            else
+                return Array.Empty<BaseItem>();
+        }
+
         public IEnumerable<BaseItem> GetDisplayExtras()
         {
             return GetExtras(DisplayExtraTypes);
