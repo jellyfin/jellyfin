@@ -1,5 +1,4 @@
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -22,8 +21,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private const int RtpHeaderBytes = 12;
 
         private readonly IServerApplicationHost _appHost;
-        private readonly MediaBrowser.Model.Net.ISocketFactory _socketFactory;
-
         private readonly IHdHomerunChannelCommands _channelCommands;
         private readonly int _numTuners;
         private readonly INetworkManager _networkManager;
@@ -38,13 +35,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             ILogger logger,
             IServerApplicationPaths appPaths,
             IServerApplicationHost appHost,
-            MediaBrowser.Model.Net.ISocketFactory socketFactory,
             INetworkManager networkManager,
             IStreamHelper streamHelper)
             : base(mediaSource, tunerHostInfo, fileSystem, logger, appPaths, streamHelper)
         {
             _appHost = appHost;
-            _socketFactory = socketFactory;
             _networkManager = networkManager;
             OriginalStreamId = originalStreamId;
             _channelCommands = channelCommands;
@@ -82,7 +77,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
-            var udpClient = _socketFactory.CreateUdpSocket(localPort);
+            var udpClient = new UdpClient(localPort, AddressFamily.InterNetwork);
             var hdHomerunManager = new HdHomerunManager();
 
             try
@@ -133,7 +128,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             await taskCompletionSource.Task.ConfigureAwait(false);
         }
 
-        private Task StartStreaming(MediaBrowser.Model.Net.ISocket udpClient, HdHomerunManager hdHomerunManager, IPAddress remoteAddress, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        private Task StartStreaming(UdpClient udpClient, HdHomerunManager hdHomerunManager, IPAddress remoteAddress, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
             return Task.Run(async () =>
             {
@@ -162,28 +157,37 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             });
         }
 
-        private async Task CopyTo(MediaBrowser.Model.Net.ISocket udpClient, string file, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
+        private async Task CopyTo(UdpClient udpClient, string file, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(StreamDefaults.DefaultCopyToBufferSize);
-            try
+            var resolved = false;
+
+            using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
-                using (var source = _socketFactory.CreateNetworkStream(udpClient, false))
-                using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read))
+                while (true)
                 {
-                    var currentCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token).Token;
-                    int read;
-                    var resolved = false;
-                    while ((read = await source.ReadAsync(buffer, 0, buffer.Length, currentCancellationToken).ConfigureAwait(false)) != 0)
+                    cancellationToken.ThrowIfCancellationRequested();
+                    using (var timeOutSource = new CancellationTokenSource())
+                    using (var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(
+                        cancellationToken,
+                        timeOutSource.Token))
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
+                        var resTask = udpClient.ReceiveAsync();
+                        if (await Task.WhenAny(resTask, Task.Delay(30000, linkedSource.Token)).ConfigureAwait(false) != resTask)
+                        {
+                            resTask.Dispose();
+                            break;
+                        }
 
-                        currentCancellationToken = cancellationToken;
+                        // We don't want all these delay tasks to keep running
+                        timeOutSource.Cancel();
+                        var res = await resTask.ConfigureAwait(false);
+                        var buffer = res.Buffer;
 
-                        read -= RtpHeaderBytes;
+                        var read = buffer.Length - RtpHeaderBytes;
 
                         if (read > 0)
                         {
-                            await fileStream.WriteAsync(buffer, RtpHeaderBytes, read).ConfigureAwait(false);
+                            fileStream.Write(buffer, RtpHeaderBytes, read);
                         }
 
                         if (!resolved)
@@ -194,10 +198,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         }
                     }
                 }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer);
             }
         }
     }
