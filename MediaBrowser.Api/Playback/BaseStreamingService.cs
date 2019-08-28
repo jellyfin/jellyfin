@@ -634,7 +634,7 @@ namespace MediaBrowser.Api.Playback
             }
             else
             {
-                value = value.Substring(Npt.Length, index);
+                value = value.Substring(Npt.Length, index - Npt.Length);
             }
 
             if (value.IndexOf(':') == -1)
