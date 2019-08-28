@@ -418,7 +418,7 @@ namespace MediaBrowser.Api
 
                 return ToOptimizedResult(result);
             }
-            catch(SecurityException e)
+            catch (SecurityException e)
             {
                 // rethrow adding IP address to message
                 throw new SecurityException($"[{Request.RemoteIp}] {e.Message}");

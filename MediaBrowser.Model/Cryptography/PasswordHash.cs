@@ -69,6 +69,13 @@ namespace MediaBrowser.Model.Cryptography
             }
         }
 
+        public PasswordHash(ICryptoProvider cryptoProvider)
+        {
+            _id = cryptoProvider.DefaultHashMethod;
+            _salt = cryptoProvider.GenerateSalt();
+            _hash = Array.Empty<Byte>();
+        }
+
         public string Id { get => _id; set => _id = value; }
 
         public Dictionary<string, string> Parameters { get => _parameters; set => _parameters = value; }
@@ -76,13 +83,6 @@ namespace MediaBrowser.Model.Cryptography
         public byte[] Salt { get => _salt; set => _salt = value; }
 
         public byte[] Hash { get => _hash; set => _hash = value; }
-
-        public PasswordHash(ICryptoProvider cryptoProvider)
-        {
-            _id = cryptoProvider.DefaultHashMethod;
-            _salt = cryptoProvider.GenerateSalt();
-            _hash = Array.Empty<Byte>();
-        }
 
         // TODO: move this class and use the HexHelper class
         public static byte[] ConvertFromByteString(string byteString)
@@ -127,7 +127,7 @@ namespace MediaBrowser.Model.Cryptography
             str.Append(_id);
             SerializeParameters(str);
 
-            if (_salt.Length == 0)
+            if (_salt.Length != 0)
             {
                 str.Append('$');
                 str.Append(ConvertToByteString(_salt));
