@@ -3,10 +3,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Cryptography;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Cryptography;
+using static MediaBrowser.Common.HexHelper;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -19,10 +19,13 @@ namespace Emby.Server.Implementations.Library
             _cryptographyProvider = cryptographyProvider;
         }
 
+        /// <inheritdoc />
         public string Name => "Default";
 
+        /// <inheritdoc />
         public bool IsEnabled => true;
 
+        /// <inheritdoc />
         // This is dumb and an artifact of the backwards way auth providers were designed.
         // This version of authenticate was never meant to be called, but needs to be here for interface compat
         // Only the providers that don't provide local user support use this
@@ -31,6 +34,7 @@ namespace Emby.Server.Implementations.Library
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         // This is the version that we need to use for local users. Because reasons.
         public Task<ProviderAuthenticationResult> Authenticate(string username, string password, User resolvedUser)
         {
@@ -78,9 +82,11 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
+        /// <inheritdoc />
         public bool HasPassword(User user)
             => !string.IsNullOrEmpty(user.Password);
 
+        /// <inheritdoc />
         public Task ChangePassword(User user, string newPassword)
         {
             if (string.IsNullOrEmpty(newPassword))
@@ -95,6 +101,7 @@ namespace Emby.Server.Implementations.Library
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
         {
             if (newPassword != null)
@@ -110,6 +117,7 @@ namespace Emby.Server.Implementations.Library
             user.EasyPassword = newPasswordHash;
         }
 
+        /// <inheritdoc />
         public string GetEasyPasswordHash(User user)
         {
             return string.IsNullOrEmpty(user.EasyPassword)
@@ -138,7 +146,6 @@ namespace Emby.Server.Implementations.Library
                 passwordHash.Salt,
                 passwordHash.Parameters.ToDictionary(x => x.Key, y => y.Value)).ToString();
         }
-
 
         public byte[] GetHashed(User user, string str)
         {
