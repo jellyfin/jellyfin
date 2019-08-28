@@ -29,7 +29,7 @@ namespace MediaBrowser.Common.Cryptography
 
         public PasswordHash(string id, byte[] hash, byte[] salt, Dictionary<string, string> parameters)
         {
-            this.Id = id;
+            Id = id;
             Hash = hash;
             Salt = salt;
             _parameters = parameters;
