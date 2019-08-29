@@ -309,44 +309,26 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             _hasExited = true;
 
-            DisposeLogStream();
+            _logFileStream?.Dispose();
+            _logFileStream = null;
 
-            try
+            var exitCode = process.ExitCode;
+
+            _logger.LogInformation("FFMpeg recording exited with code {ExitCode} for {Path}", exitCode, _targetPath);
+
+            if (exitCode == 0)
             {
-                var exitCode = process.ExitCode;
-
-                _logger.LogInformation("FFMpeg recording exited with code {ExitCode} for {path}", exitCode, _targetPath);
-
-                if (exitCode == 0)
-                {
-                    _taskCompletionSource.TrySetResult(true);
-                }
-                else
-                {
-                    _taskCompletionSource.TrySetException(new Exception(string.Format("Recording for {path} failed. Exit code {ExitCode}", _targetPath, exitCode)));
-                }
+                _taskCompletionSource.TrySetResult(true);
             }
-            catch
+            else
             {
-                _logger.LogError("FFMpeg recording exited with an error for {path}.", _targetPath);
-                _taskCompletionSource.TrySetException(new Exception(string.Format("Recording for {path} failed", _targetPath)));
-            }
-        }
-
-        private void DisposeLogStream()
-        {
-            if (_logFileStream != null)
-            {
-                try
-                {
-                    _logFileStream.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error disposing recording log stream");
-                }
-
-                _logFileStream = null;
+                _taskCompletionSource.TrySetException(
+                    new Exception(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Recording for {0} failed. Exit code {1}",
+                            _targetPath,
+                            exitCode)));
             }
         }
 
