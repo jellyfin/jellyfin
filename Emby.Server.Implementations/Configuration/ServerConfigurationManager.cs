@@ -66,7 +66,7 @@ namespace Emby.Server.Implementations.Configuration
         {
             base.AddParts(factories);
 
-            UpdateTranscodingTempPath();
+            UpdateTranscodePath();
         }
 
         /// <summary>
@@ -87,13 +87,13 @@ namespace Emby.Server.Implementations.Configuration
         /// <summary>
         /// Updates the transcoding temporary path.
         /// </summary>
-        private void UpdateTranscodingTempPath()
+        private void UpdateTranscodePath()
         {
             var encodingConfig = this.GetConfiguration<EncodingOptions>("encoding");
 
             ((ServerApplicationPaths)ApplicationPaths).TranscodingTempPath = string.IsNullOrEmpty(encodingConfig.TranscodingTempPath) ?
                 null :
-                Path.Combine(encodingConfig.TranscodingTempPath, "transcoding-temp");
+                Path.Combine(encodingConfig.TranscodingTempPath, "transcodes");
         }
 
         protected override void OnNamedConfigurationUpdated(string key, object configuration)
@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.Configuration
 
             if (string.Equals(key, "encoding", StringComparison.OrdinalIgnoreCase))
             {
-                UpdateTranscodingTempPath();
+                UpdateTranscodePath();
             }
         }
 

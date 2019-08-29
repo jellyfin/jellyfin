@@ -10,7 +10,7 @@ using MediaBrowser.Model.Tasks;
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Class RefreshMediaLibraryTask
+    /// Class RefreshMediaLibraryTask.
     /// </summary>
     public class RefreshMediaLibraryTask : IScheduledTask
     {
@@ -31,15 +31,14 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Creates the triggers that define when the task will run
+        /// Creates the triggers that define when the task will run.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[] {
-
-                // Every so often
-                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(12).Ticks}
+            yield return new TaskTriggerInfo
+            {
+                Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(12).Ticks
             };
         }
 
@@ -60,7 +59,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
         public string Name => "Scan media library";
 
-        public string Description => "Scans your media library and refreshes metatata based on configuration.";
+        public string Description => "Scans your media library for new files and refreshes metadata.";
 
         public string Category => "Library";
 
