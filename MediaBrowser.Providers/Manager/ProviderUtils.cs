@@ -252,12 +252,10 @@ namespace MediaBrowser.Providers.Manager
 
         private static void MergeAlbumArtist(BaseItem source, BaseItem target, MetadataFields[] lockedFields, bool replaceData)
         {
-            var sourceHasAlbumArtist = source as IHasAlbumArtist;
-            var targetHasAlbumArtist = target as IHasAlbumArtist;
-
-            if (sourceHasAlbumArtist != null && targetHasAlbumArtist != null)
+            if (source is IHasAlbumArtist sourceHasAlbumArtist
+                && target is IHasAlbumArtist targetHasAlbumArtist)
             {
-                if (replaceData || targetHasAlbumArtist.AlbumArtists.Length == 0)
+                if (replaceData || targetHasAlbumArtist.AlbumArtists.Count == 0)
                 {
                     targetHasAlbumArtist.AlbumArtists = sourceHasAlbumArtist.AlbumArtists;
                 }

@@ -15,12 +15,34 @@ namespace MediaBrowser.Providers.Music
 {
     public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
     {
+        public AlbumMetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            IUserDataManager userDataManager,
+            ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+        {
+        }
+
+        /// <inheritdoc />
+        protected override bool EnableUpdatingPremiereDateFromChildren => true;
+
+        /// <inheritdoc />
+        protected override bool EnableUpdatingGenresFromChildren => true;
+
+        /// <inheritdoc />
+        protected override bool EnableUpdatingStudiosFromChildren => true;
+
+        /// <inheritdoc />
         protected override IList<BaseItem> GetChildrenForMetadataUpdates(MusicAlbum item)
         {
             return item.GetRecursiveChildren(i => i is Audio)
                         .ToList();
         }
 
+        /// <inheritdoc />
         protected override ItemUpdateType UpdateMetadataFromChildren(MusicAlbum item, IList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
             var updateType = base.UpdateMetadataFromChildren(item, children, isFullRefresh, currentUpdateType);
@@ -49,12 +71,6 @@ namespace MediaBrowser.Providers.Music
 
             return updateType;
         }
-
-        protected override bool EnableUpdatingPremiereDateFromChildren => true;
-
-        protected override bool EnableUpdatingGenresFromChildren => true;
-
-        protected override bool EnableUpdatingStudiosFromChildren => true;
 
         private ItemUpdateType SetAlbumArtistFromSongs(MusicAlbum item, IEnumerable<Audio> songs)
         {
@@ -94,21 +110,23 @@ namespace MediaBrowser.Providers.Music
             return updateType;
         }
 
-        protected override void MergeData(MetadataResult<MusicAlbum> source, MetadataResult<MusicAlbum> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        /// <inheritdoc />
+        protected override void MergeData(
+            MetadataResult<MusicAlbum> source,
+            MetadataResult<MusicAlbum> target,
+            MetadataFields[] lockedFields,
+            bool replaceData,
+            bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
             var sourceItem = source.Item;
             var targetItem = target.Item;
 
-            if (replaceData || targetItem.Artists.Length == 0)
+            if (replaceData || targetItem.Artists.Count == 0)
             {
                 targetItem.Artists = sourceItem.Artists;
             }
-        }
-
-        public AlbumMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
-        {
         }
     }
 }

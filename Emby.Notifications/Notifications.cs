@@ -209,47 +209,48 @@ namespace Emby.Notifications
         public static string GetItemName(BaseItem item)
         {
             var name = item.Name;
-            var episode = item as Episode;
-            if (episode != null)
+            if (item is Episode episode)
             {
                 if (episode.IndexNumber.HasValue)
                 {
-                    name = string.Format("Ep{0} - {1}", episode.IndexNumber.Value.ToString(CultureInfo.InvariantCulture), name);
+                    name = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Ep{0} - {1}",
+                        episode.IndexNumber.Value,
+                        name);
                 }
                 if (episode.ParentIndexNumber.HasValue)
                 {
-                    name = string.Format("S{0}, {1}", episode.ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture), name);
+                    name = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "S{0}, {1}",
+                        episode.ParentIndexNumber.Value,
+                        name);
                 }
             }
 
-            var hasSeries = item as IHasSeries;
 
-            if (hasSeries != null)
+            if (item is IHasSeries hasSeries)
             {
                 name = hasSeries.SeriesName + " - " + name;
             }
 
-            var hasAlbumArtist = item as IHasAlbumArtist;
-            if (hasAlbumArtist != null)
+            if (item is IHasAlbumArtist hasAlbumArtist)
             {
                 var artists = hasAlbumArtist.AlbumArtists;
 
-                if (artists.Length > 0)
+                if (artists.Count > 0)
                 {
                     name = artists[0] + " - " + name;
                 }
             }
-            else
+            else if (item is IHasArtist hasArtist)
             {
-                var hasArtist = item as IHasArtist;
-                if (hasArtist != null)
-                {
-                    var artists = hasArtist.Artists;
+                var artists = hasArtist.Artists;
 
-                    if (artists.Length > 0)
-                    {
-                        name = artists[0] + " - " + name;
-                    }
+                if (artists.Count > 0)
+                {
+                    name = artists[0] + " - " + name;
                 }
             }
 

@@ -7,16 +7,14 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.Sorting
 {
     /// <summary>
-    /// Class ArtistComparer
+    /// Class ArtistComparer.
     /// </summary>
     public class ArtistComparer : IBaseItemComparer
     {
-        /// <summary>
-        /// Compares the specified x.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <param name="y">The y.</param>
-        /// <returns>System.Int32.</returns>
+        /// <inheritdoc />
+        public string Name => ItemSortBy.Artist;
+
+        /// <inheritdoc />
         public int Compare(BaseItem x, BaseItem y)
         {
             return string.Compare(GetValue(x), GetValue(y), StringComparison.CurrentCultureIgnoreCase);
@@ -29,20 +27,12 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>System.String.</returns>
         private static string GetValue(BaseItem x)
         {
-            var audio = x as Audio;
-
-            if (audio == null)
+            if (!(x is Audio audio))
             {
                 return string.Empty;
             }
 
-            return audio.Artists.Length == 0 ? null : audio.Artists[0];
+            return audio.Artists.Count == 0 ? null : audio.Artists[0];
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.Artist;
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -8,16 +9,14 @@ namespace MediaBrowser.Controller.Entities
 {
     public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasLookupInfo<MusicVideoInfo>
     {
+        /// <inheritdoc />
         [IgnoreDataMember]
-        public string[] Artists { get; set; }
+        public IReadOnlyList<string> Artists { get; set; }
 
         public MusicVideo()
         {
             Artists = Array.Empty<string>();
         }
-
-        [IgnoreDataMember]
-        public string[] AllArtists => Artists;
 
         public override UnratedItem GetBlockUnratedType()
         {

@@ -11,6 +11,18 @@ namespace MediaBrowser.Providers.Music
 {
     public class AudioMetadataService : MetadataService<Audio, SongInfo>
     {
+        public AudioMetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            IUserDataManager userDataManager,
+            ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+        {
+        }
+
+        /// <inheritdoc />
         protected override void MergeData(MetadataResult<Audio> source, MetadataResult<Audio> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
@@ -18,7 +30,7 @@ namespace MediaBrowser.Providers.Music
             var sourceItem = source.Item;
             var targetItem = target.Item;
 
-            if (replaceData || targetItem.Artists.Length == 0)
+            if (replaceData || targetItem.Artists.Count == 0)
             {
                 targetItem.Artists = sourceItem.Artists;
             }
@@ -27,10 +39,6 @@ namespace MediaBrowser.Providers.Music
             {
                 targetItem.Album = sourceItem.Album;
             }
-        }
-
-        public AudioMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
-        {
         }
     }
 }

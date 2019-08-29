@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.Providers
         /// Gets or sets the album artist.
         /// </summary>
         /// <value>The album artist.</value>
-        public string[] AlbumArtists { get; set; }
+        public IReadOnlyList<string> AlbumArtists { get; set; }
 
         /// <summary>
         /// Gets or sets the artist provider ids.

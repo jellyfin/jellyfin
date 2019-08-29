@@ -87,8 +87,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 CreateNoWindow = true,
                 UseShellExecute = false,
 
-                // Must consume both stdout and stderr or deadlocks may occur
-                //RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 RedirectStandardInput = true,
 
@@ -120,9 +118,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             cancellationToken.Register(Stop);
 
-            // MUST read both stdout and stderr asynchronously or a deadlock may occurr
-            //process.BeginOutputReadLine();
-
             onStarted();
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
@@ -138,11 +133,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             string videoArgs;
             if (EncodeVideo(mediaSource))
             {
-                var maxBitrate = 25000000;
+                const int MaxBitrate = 25000000;
                 videoArgs = string.Format(
-                        "-codec:v:0 libx264 -force_key_frames \"expr:gte(t,n_forced*5)\" {0} -pix_fmt yuv420p -preset superfast -crf 23 -b:v {1} -maxrate {1} -bufsize ({1}*2) -vsync -1 -profile:v high -level 41",
-                        GetOutputSizeParam(),
-                        maxBitrate.ToString(CultureInfo.InvariantCulture));
+                    CultureInfo.InvariantCulture,
+                    "-codec:v:0 libx264 -force_key_frames \"expr:gte(t,n_forced*5)\" {0} -pix_fmt yuv420p -preset superfast -crf 23 -b:v {1} -maxrate {1} -bufsize ({1}*2) -vsync -1 -profile:v high -level 41",
+                    GetOutputSizeParam(),
+                    MaxBitrate);
             }
             else
             {
@@ -151,18 +147,17 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             videoArgs += " -fflags +genpts";
 
-            var durationParam = " -t " + _mediaEncoder.GetTimeParameter(duration.Ticks);
-            durationParam = string.Empty;
-
             var flags = new List<string>();
             if (mediaSource.IgnoreDts)
             {
                 flags.Add("+igndts");
             }
+
             if (mediaSource.IgnoreIndex)
             {
                 flags.Add("+ignidx");
             }
+
             if (mediaSource.GenPtsInput)
             {
                 flags.Add("+genpts");
@@ -172,10 +167,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (flags.Count > 0)
             {
-                inputModifier += " -fflags " + string.Join("", flags.ToArray());
+                inputModifier += " -fflags " + string.Join(string.Empty, flags);
             }
-
-            var videoStream = mediaSource.VideoStream;
 
             if (mediaSource.ReadAtNativeFramerate)
             {
@@ -200,13 +193,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var outputParam = string.Empty;
 
-            var commandLineArgs = string.Format("-i \"{0}\"{5} {2} -map_metadata -1 -threads 0 {3}{4}{6} -y \"{1}\"",
+            var commandLineArgs = string.Format(
+                CultureInfo.InvariantCulture,
+                "-i \"{0}\" {2} -map_metadata -1 -threads 0 {3}{4}{5} -y \"{1}\"",
                 inputTempFile,
                 targetFile,
                 videoArgs,
                 GetAudioArgs(mediaSource),
                 subtitleArgs,
-                durationParam,
                 outputParam);
 
             return inputModifier + " " + commandLineArgs;
@@ -257,7 +251,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     _logger.LogInformation("Stopping ffmpeg recording process for {path}", _targetPath);
 
-                    //process.Kill();
                     _process.StandardInput.WriteLine("q");
                 }
                 catch (Exception ex)
