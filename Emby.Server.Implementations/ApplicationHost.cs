@@ -202,10 +202,10 @@ namespace Emby.Server.Implementations
         /// Gets or sets all concrete types.
         /// </summary>
         /// <value>All concrete types.</value>
-        public Type[] AllConcreteTypes { get; protected set; }
+        private Type[] _allConcreteTypes;
 
         /// <summary>
-        /// The disposable parts
+        /// The disposable parts.
         /// </summary>
         private readonly List<IDisposable> _disposableParts = new List<IDisposable>();
 
@@ -499,7 +499,7 @@ namespace Emby.Server.Implementations
         {
             var currentType = typeof(T);
 
-            return AllConcreteTypes.Where(i => currentType.IsAssignableFrom(i));
+            return _allConcreteTypes.Where(i => currentType.IsAssignableFrom(i));
         }
 
         /// <inheritdoc />
@@ -1010,9 +1010,11 @@ namespace Emby.Server.Implementations
                         .Select(x => Assembly.LoadFrom(x))
                         .SelectMany(x => x.ExportedTypes)
                         .Where(x => x.IsClass && !x.IsAbstract && !x.IsInterface && !x.IsGenericType)
-                        .ToList();
+                        .ToArray();
 
-            types.AddRange(types);
+            int oldLen = _allConcreteTypes.Length;
+            Array.Resize(ref _allConcreteTypes, oldLen + types.Length);
+            types.CopyTo(_allConcreteTypes, oldLen);
 
             var plugins = types.Where(x => x.IsAssignableFrom(typeof(IPlugin)))
                     .Select(CreateInstanceSafe)
@@ -1022,8 +1024,8 @@ namespace Emby.Server.Implementations
                     .Where(x => x != null)
                     .ToArray();
 
-            int oldLen = _plugins.Length;
-            Array.Resize<IPlugin>(ref _plugins, _plugins.Length + plugins.Length);
+            oldLen = _plugins.Length;
+            Array.Resize(ref _plugins, oldLen + plugins.Length);
             plugins.CopyTo(_plugins, oldLen);
 
             var entries = types.Where(x => x.IsAssignableFrom(typeof(IServerEntryPoint)))
@@ -1140,7 +1142,7 @@ namespace Emby.Server.Implementations
         {
             Logger.LogInformation("Loading assemblies");
 
-            AllConcreteTypes = GetTypes(GetComposablePartAssemblies()).ToArray();
+            _allConcreteTypes = GetTypes(GetComposablePartAssemblies()).ToArray();
         }
 
         private IEnumerable<Type> GetTypes(IEnumerable<Assembly> assemblies)
