@@ -113,7 +113,7 @@ function Make-NSIS {
     if($InstallNSIS.IsPresent -or ($InstallNSIS -eq $true)){
         & "$tempdir/nsis/nsis-3.04/makensis.exe" /D$Architecture /DUXPATH=$ResolvedUXLocation ".\deployment\windows\jellyfin.nsi"
     } else {
-        & "makensis.exe" /D$Architecture /DUXPATH=$ResolvedUXLocation ".\deployment\windows\jellyfin.nsi"
+        & "makensis" /D$Architecture /DUXPATH=$ResolvedUXLocation ".\deployment\windows\jellyfin.nsi"
     }
     Copy-Item .\deployment\windows\jellyfin_*.exe $ResolvedInstallLocation\..\
 }
