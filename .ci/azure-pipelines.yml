@@ -74,6 +74,78 @@ jobs:
         targetPath: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Common.dll'
         artifactName: 'Jellyfin.Common'
 
+  - job: main_test
+    displayName: Main Test
+    pool:
+      vmImage: windows-latest
+    steps:
+    - checkout: self
+      clean: true
+      submodules: true
+      persistCredentials: false
+
+    - task: VisualStudioTestPlatformInstaller@1
+      inputs:
+        packageFeedSelector: 'nugetOrg' # Options: nugetOrg, customFeed, netShare
+        versionSelector: 'latestPreRelease' # Required when packageFeedSelector == NugetOrg || PackageFeedSelector == CustomFeed# Options: latestPreRelease, latestStable, specificVersion
+
+    - task: VSTest@2
+      inputs:
+        testSelector: 'testAssemblies' # Options: testAssemblies, testPlan, testRun
+        testAssemblyVer2: | # Required when testSelector == TestAssemblies
+          **\bin\$(BuildConfiguration)\**\*test*.dll
+          !**\obj\**
+          !**\xunit.runner.visualstudio.testadapter.dll
+          !**\xunit.runner.visualstudio.dotnetcore.testadapter.dll
+        #testPlan: # Required when testSelector == TestPlan
+        #testSuite: # Required when testSelector == TestPlan
+        #testConfiguration: # Required when testSelector == TestPlan
+        #tcmTestRun: '$(test.RunId)' # Optional
+        #searchFolder: '$(System.DefaultWorkingDirectory)'
+        #testFiltercriteria: # Optional
+        #runOnlyImpactedTests: False # Optional
+        #runAllTestsAfterXBuilds: '50' # Optional
+        #uiTests: false # Optional
+        #vstestLocationMethod: 'version' # Optional. Options: version, location
+        #vsTestVersion: 'latest' # Optional. Options: latest, 16.0, 15.0, 14.0, toolsInstaller
+        #vstestLocation: # Optional
+        #runSettingsFile: # Optional
+        #overrideTestrunParameters: # Optional
+        #pathtoCustomTestAdapters: # Optional
+        runInParallel: True # Optional
+        runTestsInIsolation: True # Optional
+        codeCoverageEnabled: True # Optional
+        #otherConsoleOptions: # Optional
+        #distributionBatchType: 'basedOnTestCases' # Optional. Options: basedOnTestCases, basedOnExecutionTime, basedOnAssembly
+        #batchingBasedOnAgentsOption: 'autoBatchSize' # Optional. Options: autoBatchSize, customBatchSize
+        #customBatchSizeValue: '10' # Required when distributionBatchType == BasedOnTestCases && BatchingBasedOnAgentsOption == CustomBatchSize
+        #batchingBasedOnExecutionTimeOption: 'autoBatchSize' # Optional. Options: autoBatchSize, customTimeBatchSize
+        #customRunTimePerBatchValue: '60' # Required when distributionBatchType == BasedOnExecutionTime && BatchingBasedOnExecutionTimeOption == CustomTimeBatchSize
+        #dontDistribute: False # Optional
+        #testRunTitle: # Optional
+        #platform: # Optional
+        configuration: 'Debug' # Optional
+        publishRunAttachments: true # Optional
+        #diagnosticsEnabled: false # Optional
+        #collectDumpOn: 'onAbortOnly' # Optional. Options: onAbortOnly, always, never
+        #rerunFailedTests: False # Optional
+        #rerunType: 'basedOnTestFailurePercentage' # Optional. Options: basedOnTestFailurePercentage, basedOnTestFailureCount
+        #rerunFailedThreshold: '30' # Optional
+        #rerunFailedTestCasesMaxLimit: '5' # Optional
+        #rerunMaxAttempts: '3' # Optional
+
+    # - task: PublishTestResults@2
+    #   inputs:
+    #     testResultsFormat: 'VSTest' # Options: JUnit, NUnit, VSTest, xUnit, cTest
+    #     testResultsFiles: '**/*.trx'
+    #     #searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
+    #     mergeTestResults: true # Optional
+    #     #failTaskOnFailedTests: false # Optional
+    #     #testRunTitle: # Optional
+    #     #buildPlatform: # Optional
+    #     #buildConfiguration: # Optional
+    #     #publishRunAttachments: true # Optional
+
   - job: main_build_win
     displayName: Main Build Windows
     pool:
