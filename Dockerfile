@@ -7,7 +7,8 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 RUN bash -c "source deployment/common.build.sh && \
     build_jellyfin Jellyfin.Server Release linux-x64 /jellyfin"
 
-FROM jellyfin/ffmpeg as ffmpeg
+ARG FFMPEG_VERSION=latest
+FROM jellyfin/ffmpeg:${FFMPEG_VERSION} as ffmpeg
 FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}
 # libfontconfig1 is required for Skia
 RUN apt-get update \
