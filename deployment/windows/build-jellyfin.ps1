@@ -7,6 +7,7 @@ param(
     [switch]$SkipJellyfinBuild,
     [switch]$GenerateZip,
     [string]$InstallLocation = "./dist/jellyfin-win-nsis",
+    [string]$UXLocation = "../jellyfin-ux",
     [ValidateSet('Debug','Release')][string]$BuildType = 'Release',
     [ValidateSet('Quiet','Minimal', 'Normal')][string]$DotNetVerbosity = 'Minimal',
     [ValidateSet('win','win7', 'win8','win81','win10')][string]$WindowsVersion = 'win',
@@ -22,6 +23,7 @@ if(($PSVersionTable.PSEdition -eq 'Core') -and (-not $IsWindows)){
 #Create staging dir
 New-Item -ItemType Directory -Force -Path $InstallLocation
 $ResolvedInstallLocation = Resolve-Path $InstallLocation
+$ResolvedUXLocation = Resolve-Path $UXLocation
 
 function Build-JellyFin {
     if(($Architecture -eq 'arm64') -and ($WindowsVersion -ne 'win10')){
@@ -109,9 +111,9 @@ function Make-NSIS {
 
     $env:InstallLocation = $ResolvedInstallLocation
     if($InstallNSIS.IsPresent -or ($InstallNSIS -eq $true)){
-        & "$tempdir/nsis/nsis-3.04/makensis.exe" /D$Architecture ".\deployment\windows\jellyfin.nsi"
+        & "$tempdir/nsis/nsis-3.04/makensis.exe" /D$Architecture /DUXPATH=$ResolvedUXLocation ".\deployment\windows\jellyfin.nsi"
     } else {
-        & "makensis.exe" /D$Architecture ".\deployment\windows\jellyfin.nsi"
+        & "makensis.exe" /D$Architecture /DUXPATH=$ResolvedUXLocation ".\deployment\windows\jellyfin.nsi"
     }
     Copy-Item .\deployment\windows\jellyfin_*.exe $ResolvedInstallLocation\..\
 }

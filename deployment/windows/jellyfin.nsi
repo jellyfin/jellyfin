@@ -1,14 +1,17 @@
 ; Shows a lot of debug information while compiling
 ; This can be removed once stable.
 !verbose 4
-!define MUI_VERBOSE 4
-SetCompress off ; This is for speed during development
+SetCompressor lzma
+ShowInstDetails show
+ShowUninstDetails show
 ;--------------------------------
 !define SF_USELECTED  0 ; used to check selected options status, rest are inherited from Sections.nsh
 
     !include "MUI2.nsh"
     !include "Sections.nsh"
     !include "LogicLib.nsh"
+
+    !include "helpers\ShowError.nsh"
 
 ; Global variables that we'll use
     Var _JELLYFINVERSION_
@@ -65,12 +68,15 @@ SetCompress off ; This is for speed during development
     !define MUI_ABORTWARNING ;Prompts user in case of aborting install
 
 ; TODO: Replace with nice Jellyfin Icons
-    !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\nsis3-install.ico" ; Installer Icon
-    !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\nsis3-uninstall.ico" ; Uninstaller Icon
+!ifdef UXPATH
+    !define MUI_ICON "${UXPATH}\branding\NSIS\modern-install.ico" ; Installer Icon
+    !define MUI_UNICON "${UXPATH}\branding\NSIS\modern-uninstall.ico" ; Uninstaller Icon
 
     !define MUI_HEADERIMAGE
-    !define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\nsis3-branding.bmp"
-    !define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\nsis3-branding.bmp"
+    !define MUI_HEADERIMAGE_BITMAP "${UXPATH}\branding\NSIS\installer-header.bmp"
+    !define MUI_WELCOMEFINISHPAGE_BITMAP "${UXPATH}\branding\NSIS\installer-right.bmp"
+    !define MUI_UNWELCOMEFINISHPAGE_BITMAP "${UXPATH}\branding\NSIS\installer-right.bmp"
+!endif
 
 ;--------------------------------
 ;Pages
@@ -81,7 +87,6 @@ SetCompress off ; This is for speed during development
 ; License Page
     !insertmacro MUI_PAGE_LICENSE "$%InstallLocation%\LICENSE" ; picking up generic GPL
 ; Components Page
-    !define MUI_COMPONENTSPAGE_SMALLDESC
     !insertmacro MUI_PAGE_COMPONENTS
     !define MUI_PAGE_CUSTOMFUNCTION_PRE HideInstallDirectoryPage ; Controls when to hide / show
     !define MUI_DIRECTORYPAGE_TEXT_DESTINATION "Install folder" ; shows just above the folder selection dialog
@@ -97,29 +102,25 @@ SetCompress off ; This is for speed during development
     !insertmacro MUI_PAGE_DIRECTORY
 
 ; Custom Dialogs
-    !include "CustomPageWrapper.nsh"
-    !include "service-account-type.nsdinc"
-    !include "confirmation.nsdinc"
+    !include "dialogs\service-config.nsdinc"
+    !include "dialogs\confirmation.nsdinc"
 
 ; Select service account type
-    !define MUI_PAGE_CUSTOMFUNCTION_PRE HideServiceAccountTypePage ; Controls when to hide / show (This does not work for Page, might need to go PageEx)
-    !define MUI_PAGE_CUSTOMFUNCTION_SHOW fnc_service_account_type_Show
-    !define MUI_PAGE_CUSTOMFUNCTION_LEAVE ServiceAccountTypePage_Config
-    !insertmacro MUI_PAGE_CUSTOM ServiceAccountType
-    #Page custom fnc_service_account_type_Show ServiceAccountTypePage_Config
+    #!define MUI_PAGE_CUSTOMFUNCTION_PRE HideServiceConfigPage ; Controls when to hide / show (This does not work for Page, might need to go PageEx)
+    #!define MUI_PAGE_CUSTOMFUNCTION_SHOW fnc_service_config_Show
+    #!define MUI_PAGE_CUSTOMFUNCTION_LEAVE ServiceConfigPage_Config
+    #!insertmacro MUI_PAGE_CUSTOM ServiceAccountType
+    Page custom ShowServiceConfigPage ServiceConfigPage_Config
 
 ; Confirmation Page
-    !define MUI_PAGE_CUSTOMFUNCTION_PRE PreConfirm ; Controls when to hide / show (This does not work for Page, might need to go PageEx)
-    !define MUI_PAGE_CUSTOMFUNCTION_SHOW fnc_confirmation_Show
-    !insertmacro MUI_PAGE_CUSTOM Confirmation ; THIS CRASHES THE INSTALLER IS THE PREVIOUS PAGE WAS NOT HIDDEN
-    #Page custom fnc_confirmation_Show ; just letting the user know what they chose to install
+    Page custom ShowConfirmationPage ; just letting the user know what they chose to install
 
 ; Actual Installion Page
     !insertmacro MUI_PAGE_INSTFILES
 
     !insertmacro MUI_UNPAGE_CONFIRM
     !insertmacro MUI_UNPAGE_INSTFILES
-    !insertmacro MUI_UNPAGE_FINISH
+    #!insertmacro MUI_UNPAGE_FINISH
 
 ;--------------------------------
 ;Languages; Add more languages later here if needed
@@ -127,10 +128,10 @@ SetCompress off ; This is for speed during development
 
 ;--------------------------------
 ;Installer Sections
-Section "Jellyfin Server (required)" InstallJellyfinServer
+Section "!Jellyfin Server (required)" InstallJellyfinServer
     SectionIn RO ; Mandatory section, isn't this the whole purpose to run the installer.
 
-    StrCmp "$_EXISTINGINSTALLATION_" "YES" RunUninstaller CarryOn ; Silently uninstall in case of previous installation
+    StrCmp "$_EXISTINGINSTALLATION_" "Yes" RunUninstaller CarryOn ; Silently uninstall in case of previous installation
 
     RunUninstaller:
     DetailPrint "Looking for uninstaller at $INSTDIR"
@@ -143,6 +144,14 @@ Section "Jellyfin Server (required)" InstallJellyfinServer
     DetailPrint "Uninstall finished, $0"
 
     CarryOn:
+    ${If} $_EXISTINGSERVICE_ == 'Yes'
+        ExecWait '"$INSTDIR\nssm.exe" stop JellyfinServer' $0
+        ${If} $0 <> 0
+            MessageBox MB_OK|MB_ICONSTOP "Could not stop the Jellyfin Server service."
+            Abort
+        ${EndIf}
+        DetailPrint "Stopped Jellyfin Server service, $0"
+    ${EndIf}
 
     SetOutPath "$INSTDIR"
 
@@ -159,7 +168,7 @@ Section "Jellyfin Server (required)" InstallJellyfinServer
 ; Write the uninstall keys for Windows
     WriteRegStr HKLM "${REG_UNINST_KEY}" "DisplayName" "Jellyfin Server $_JELLYFINVERSION_ ${NAMESUFFIX}"
     WriteRegExpandStr HKLM "${REG_UNINST_KEY}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
-    WriteRegStr HKLM "${REG_UNINST_KEY}" "DisplayIcon" '"$INSTDIR\jellyfin.exe",0'
+    WriteRegStr HKLM "${REG_UNINST_KEY}" "DisplayIcon" '"$INSTDIR\Uninstall.exe",0'
     WriteRegStr HKLM "${REG_UNINST_KEY}" "Publisher" "The Jellyfin Project"
     WriteRegStr HKLM "${REG_UNINST_KEY}" "URLInfoAbout" "https://jellyfin.media/"
     WriteRegStr HKLM "${REG_UNINST_KEY}" "DisplayVersion" "$_JELLYFINVERSION_"
@@ -172,27 +181,76 @@ SectionEnd
 
 Section "Jellyfin Server Service" InstallService
 
-    ExecWait '"$INSTDIR\nssm.exe" install JellyfinServer "$INSTDIR\jellyfin.exe" --datadir "$_JELLYFINDATADIR_"' $0
-    DetailPrint "Jellyfin Server Service install, $0"
+    ExecWait '"$INSTDIR\nssm.exe" statuscode JellyfinServer' $0
+    DetailPrint "Jellyfin Server service statuscode, $0"
+    ${If} $0 == 0
+        InstallRetry:
+        ExecWait '"$INSTDIR\nssm.exe" install JellyfinServer "$INSTDIR\jellyfin.exe" --datadir "$_JELLYFINDATADIR_"' $0
+        ${If} $0 <> 0
+            !insertmacro ShowError "Could not install the Jellyfin Server service." InstallRetry
+        ${EndIf}
+        DetailPrint "Jellyfin Server Service install, $0"
+    ${Else}
+        DetailPrint "Jellyfin Server Service exists, updating..."
+
+        ConfigureApplicationRetry:
+        ExecWait '"$INSTDIR\nssm.exe" set JellyfinServer Application "$INSTDIR\jellyfin.exe"' $0
+        ${If} $0 <> 0
+            !insertmacro ShowError "Could not configure the Jellyfin Server service." ConfigureApplicationRetry
+        ${EndIf}
+        DetailPrint "Jellyfin Server Service setting (Application), $0"
+
+        ConfigureAppParametersRetry:
+        ExecWait '"$INSTDIR\nssm.exe" set JellyfinServer AppParameters --datadir "$_JELLYFINDATADIR_"' $0
+        ${If} $0 <> 0
+            !insertmacro ShowError "Could not configure the Jellyfin Server service." ConfigureAppParametersRetry
+        ${EndIf}
+        DetailPrint "Jellyfin Server Service setting (AppParameters), $0"
+    ${EndIf}
+
 
     Sleep 3000 ; Give time for Windows to catchup
+    ConfigureStartRetry:
+    ExecWait '"$INSTDIR\nssm.exe" set JellyfinServer Start SERVICE_DELAYED_AUTO_START' $0
+    ${If} $0 <> 0
+        !insertmacro ShowError "Could not configure the Jellyfin Server service." ConfigureStartRetry
+    ${EndIf}
+    DetailPrint "Jellyfin Server Service setting (Start), $0"
 
-    ExecWait '"$INSTDIR\nssm.exe" set Jellyfin Start SERVICE_DELAYED_AUTO_START' $0
-    DetailPrint "Jellyfin Server Service setting, $0"
+    ConfigureDescriptionRetry:
+    ExecWait '"$INSTDIR\nssm.exe" set JellyfinServer Description "Jellyfin Server: The Free Software Media System"' $0
+    ${If} $0 <> 0
+        !insertmacro ShowError "Could not configure the Jellyfin Server service." ConfigureDescriptionRetry
+    ${EndIf}
+    DetailPrint "Jellyfin Server Service setting (Description), $0"
+    ConfigureDisplayNameRetry:
+    ExecWait '"$INSTDIR\nssm.exe" set JellyfinServer DisplayName "Jellyfin Server"' $0
+    ${If} $0 <> 0
+        !insertmacro ShowError "Could not configure the Jellyfin Server service." ConfigureDisplayNameRetry
+
+    ${EndIf}
+    DetailPrint "Jellyfin Server Service setting (DisplayName), $0"
 
     Sleep 3000
     ${If} $_SERVICEACCOUNTTYPE_ == "NetworkService" ; the default install using NSSM is Local System
-        DetailPrint "Attempting to change service account to Network Service"
+        ConfigureNetworkServiceRetry:
         ExecWait '"$INSTDIR\nssm.exe" set JellyfinServer Objectname "Network Service"' $0
+        ${If} $0 <> 0
+            !insertmacro ShowError "Could not configure the Jellyfin Server service account." ConfigureNetworkServiceRetry
+        ${EndIf}
         DetailPrint "Jellyfin Server service account change, $0"
     ${EndIf}
 
 SectionEnd
 
 Section "-start service" StartService
-${If} $_SERVICESTART_ == "YES"
-${AndIf} $_INSTALLSERVICE_ == "YES"
+${If} $_SERVICESTART_ == "Yes"
+${AndIf} $_INSTALLSERVICE_ == "Yes"
+    StartRetry:
     ExecWait '"$INSTDIR\nssm.exe" start JellyfinServer' $0
+    ${If} $0 <> 0
+        !insertmacro ShowError "Could not start the Jellyfin Server service." StartRetry
+    ${EndIf}
     DetailPrint "Jellyfin Server service start, $0"
 ${EndIf}
 SectionEnd
@@ -215,38 +273,45 @@ SectionEnd
 
 Section "Uninstall"
 
-    ReadRegStr $INSTDIR HKLM "Software\Jellyfin" "InstallFolder"  ; read the installation folder
-    ReadRegStr $_JELLYFINDATADIR_ HKLM "Software\Jellyfin" "DataFolder"  ; read the data folder
+    ReadRegStr $INSTDIR HKLM "${REG_CONFIG_KEY}" "InstallFolder"  ; read the installation folder
+    ReadRegStr $_JELLYFINDATADIR_ HKLM "${REG_CONFIG_KEY}" "DataFolder"  ; read the data folder
 
-    DetailPrint "Jellyfin Install location : $INSTDIR"
-    DetailPrint "Jellyfin Data folder : $_JELLYFINDATADIR_"
+    DetailPrint "Jellyfin Install location: $INSTDIR"
+    DetailPrint "Jellyfin Data folder: $_JELLYFINDATADIR_"
 
     MessageBox MB_YESNO|MB_ICONINFORMATION "Do you want to retain the Jellyfin Server data folder? The media will not be touched. $\r$\nIf unsure choose YES." /SD IDYES IDYES PreserveData
-
-    ExecWait '"$INSTDIR\nssm.exe" statuscode JellyfinServer' $0
-    DetailPrint "Jellyfin Server service statuscode, $0"
-    IntCmp $0 0 NoServiceUninstall ; service doesn't exist, may be run from desktop shortcut
-
-    ExecWait '"$INSTDIR\nssm.exe" remove JellyfinServer' $0
-    DetailPrint "Removing Jellyfin Server service, $0"
-
-    Sleep 3000 ; Give time for Windows to catchup
-
-    NoServiceUninstall: ; existing install was present but no service was detected
 
     RMDir /r /REBOOTOK "$_JELLYFINDATADIR_"
 
     PreserveData:
 
-    DetailPrint "Attempting to stop Jellyfin Server"
+    ExecWait '"$INSTDIR\nssm.exe" statuscode JellyfinServer' $0
+    DetailPrint "Jellyfin Server service statuscode, $0"
+    IntCmp $0 0 NoServiceUninstall ; service doesn't exist, may be run from desktop shortcut
+
+    Sleep 3000 ; Give time for Windows to catchup
+
+    UninstallStopRetry:
     ExecWait '"$INSTDIR\nssm.exe" stop JellyfinServer' $0
-    DetailPrint "Jellyfin Server service stop, $0"
-    DetailPrint "Attempting to remove Jellyfin Server service"
+    ${If} $0 <> 0
+        !insertmacro ShowError "Could not stop the Jellyfin Server service." UninstallStopRetry
+    ${EndIf}
+    DetailPrint "Stopped Jellyfin Server service, $0"
+
+    UninstallRemoveRetry:
     ExecWait '"$INSTDIR\nssm.exe" remove JellyfinServer confirm' $0
-    DetailPrint "Jellyfin Server service remove, $0"
+    ${If} $0 <> 0
+        !insertmacro ShowError "Could not remove the Jellyfin Server service." UninstallRemoveRetry
+    ${EndIf}
+    DetailPrint "Removed Jellyfin Server service, $0"
 
+    Sleep 3000 ; Give time for Windows to catchup
+
+    NoServiceUninstall: ; existing install was present but no service was detected
+
+    Delete "$INSTDIR\*.*"
+    RMDir /r /REBOOTOK "$INSTDIR\jellyfin-web"
     Delete "$INSTDIR\Uninstall.exe"
-
     RMDir /r /REBOOTOK "$INSTDIR"
 
     DeleteRegKey HKLM "Software\Jellyfin"
@@ -256,14 +321,20 @@ SectionEnd
 
 Function .onInit
 ; Setting up defaults
-    StrCpy $_INSTALLSERVICE_ "YES"
-    StrCpy $_SERVICESTART_ "YES"
+    StrCpy $_INSTALLSERVICE_ "Yes"
+    StrCpy $_SERVICESTART_ "Yes"
     StrCpy $_SERVICEACCOUNTTYPE_ "NetworkService"
-    StrCpy $_EXISTINGINSTALLATION_ "NO"
-    StrCpy $_EXISTINGSERVICE_ "NO"
+    StrCpy $_EXISTINGINSTALLATION_ "No"
+    StrCpy $_EXISTINGSERVICE_ "No"
 
     SetShellVarContext current
     StrCpy $_JELLYFINDATADIR_ "$%ProgramData%\Jellyfin\Server"
+
+    System::Call 'kernel32::CreateMutex(p 0, i 0, t "JellyfinServerMutex") p .r1 ?e'
+    Pop $R0
+
+    StrCmp $R0 0 +3
+    !insertmacro ShowErrorFinal "The installer is already running."
 
 ;Detect if Jellyfin is already installed.
 ; In case it is installed, let the user choose either
@@ -279,7 +350,7 @@ Function .onInit
     DetailPrint "Existing Jellyfin Server detected at: $0"
     StrCpy "$INSTDIR" "$0" ; set the location fro registry as new default
 
-    StrCpy $_EXISTINGINSTALLATION_ "YES" ; Set our flag to be used later
+    StrCpy $_EXISTINGINSTALLATION_ "Yes" ; Set our flag to be used later
     SectionSetText ${InstallJellyfinServer} "Upgrade Jellyfin Server (required)" ; Change install text to "Upgrade"
 
 ; check if there is a service called Jellyfin, there should be
@@ -289,9 +360,9 @@ Function .onInit
     IntCmp $0 0 NoService ; service doesn't exist, may be run from desktop shortcut
 
     ; if service was detected, set defaults going forward.
-    StrCpy $_EXISTINGSERVICE_ "YES"
-    StrCpy $_INSTALLSERVICE_ "YES"
-    StrCpy $_SERVICESTART_ "YES"
+    StrCpy $_EXISTINGSERVICE_ "Yes"
+    StrCpy $_INSTALLSERVICE_ "Yes"
+    StrCpy $_SERVICESTART_ "Yes"
 
     ; check if service was run using Network Service account
     ClearErrors
@@ -318,27 +389,42 @@ Function .onInit
 FunctionEnd
 
 Function HideInstallDirectoryPage
-    ${If} $_EXISTINGINSTALLATION_ == "YES" ; Existing installation detected, so don't ask for InstallFolder
+    ${If} $_EXISTINGINSTALLATION_ == "Yes" ; Existing installation detected, so don't ask for InstallFolder
         Abort
     ${EndIf}
 FunctionEnd
 
 Function HideDataDirectoryPage
-    ${If} $_EXISTINGINSTALLATION_ == "YES" ; Existing installation detected, so don't ask for InstallFolder
+    ${If} $_EXISTINGINSTALLATION_ == "Yes" ; Existing installation detected, so don't ask for InstallFolder
         Abort
     ${EndIf}
 FunctionEnd
 
-Function HideServiceAccountTypePage
-
-    ${If} $_INSTALLSERVICE_ == "NO" ; Not running as a service, don't ask for service type
-    ${OrIf} $_EXISTINGINSTALLATION_ == "YES" ; Existing installation detected, so don't ask for InstallFolder
+Function HideServiceConfigPage
+    ${If} $_INSTALLSERVICE_ == "No" ; Not running as a service, don't ask for service type
+    ${OrIf} $_EXISTINGINSTALLATION_ == "Yes" ; Existing installation detected, so don't ask for InstallFolder
         Abort
     ${EndIf}
 FunctionEnd
 
-Function PreConfirm
-    MessageBox MB_OK "PreConfirm" ; THIS RUNS BEFORE THE CRASH
+Function HideConfirmationPage
+    ${If} $_EXISTINGINSTALLATION_ == "Yes" ; Existing installation detected, so don't ask for InstallFolder
+        Abort
+    ${EndIf}
+FunctionEnd
+
+; Service Config dialog show function
+Function ShowServiceConfigPage
+  Call HideServiceConfigPage
+  Call fnc_service_config_Create
+  nsDialogs::Show
+FunctionEnd
+
+; Confirmation dialog show function
+Function ShowConfirmationPage
+  Call HideConfirmationPage
+  Call fnc_confirmation_Create
+  nsDialogs::Show
 FunctionEnd
 
 ; Declare temp variables to read the options from the custom page.
@@ -346,22 +432,22 @@ Var StartServiceAfterInstall
 Var UseNetworkServiceAccount
 Var UseLocalSystemAccount
 
-Function ServiceAccountTypePage_Config
-${NSD_GetState} $hCtl_service_account_type_StartServiceAfterInstall $StartServiceAfterInstall
+Function ServiceConfigPage_Config
+${NSD_GetState} $hCtl_service_config_StartServiceAfterInstall $StartServiceAfterInstall
 ${If} $StartServiceAfterInstall == 1
-    StrCpy $_SERVICESTART_ "YES"
+    StrCpy $_SERVICESTART_ "Yes"
 ${Else}
-    StrCpy $_SERVICESTART_ "NO"
+    StrCpy $_SERVICESTART_ "No"
 ${EndIf}
-${NSD_GetState} $hCtl_service_account_type_UseNetworkServiceAccount $UseNetworkServiceAccount
-${NSD_GetState} $hCtl_service_account_type_UseLocalSystemAccount $UseLocalSystemAccount
+${NSD_GetState} $hCtl_service_config_UseNetworkServiceAccount $UseNetworkServiceAccount
+${NSD_GetState} $hCtl_service_config_UseLocalSystemAccount $UseLocalSystemAccount
 
 ${If} $UseNetworkServiceAccount == 1
     StrCpy $_SERVICEACCOUNTTYPE_ "NetworkService"
 ${ElseIf} $UseLocalSystemAccount == 1
     StrCpy $_SERVICEACCOUNTTYPE_ "LocalSystem"
 ${Else}
-    Abort
+    !insertmacro ShowErrorFinal "Service account type not properly configured."
 ${EndIf}
 
 FunctionEnd
@@ -372,12 +458,14 @@ Function .onSelChange
 ; If we are not installing service, we don't need to set the NetworkService account or StartService
     SectionGetFlags ${InstallService} $0
     ${If} $0 = ${SF_SELECTED}
-        StrCpy $_INSTALLSERVICE_ "YES"
+        StrCpy $_INSTALLSERVICE_ "Yes"
     ${Else}
-        StrCpy $_INSTALLSERVICE_ "NO"
+        StrCpy $_INSTALLSERVICE_ "No"
+        StrCpy $_SERVICESTART_ "No"
+        StrCpy $_SERVICEACCOUNTTYPE_ "None"
     ${EndIf}
 FunctionEnd
 
 Function .onInstSuccess
-    ExecShell "open" "http://localhost:8096"
+    #ExecShell "open" "http://localhost:8096"
 FunctionEnd
