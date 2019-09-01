@@ -36,7 +36,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         /// <inheritdoc />
         public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
-            => !item.SupportsLocalMetadata && item is MusicAlbum && updateType >= MinimumUpdateType;
+            => item.SupportsLocalMetadata && item is MusicAlbum && updateType >= MinimumUpdateType;
 
         /// <inheritdoc />
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)

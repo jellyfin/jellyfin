@@ -48,7 +48,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
         protected virtual string MovieDbParserSearchString => "themoviedb.org/movie/";
 
-
         /// <summary>
         /// Fetches metadata for an item from one xml file
         /// </summary>
