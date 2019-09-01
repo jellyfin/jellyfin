@@ -459,7 +459,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.IsVideoRequest)
             {
-                if (GetVideoEncoder(state, encodingOptions).IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1)
+                if (string.Equals(encodingOptions.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase))
                 {
                     var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
                     var hwOutputFormat = "vaapi";
@@ -1780,7 +1780,28 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var request = state.BaseRequest;
 
+            var videoStream = state.VideoStream;
             var filters = new List<string>();
+
+            // If we're hardware VAAPI decoding and software encoding, download frames from the decoder first
+            var hwType = options.HardwareAccelerationType ?? string.Empty;
+            if (string.Equals(hwType, "vaapi", StringComparison.OrdinalIgnoreCase) && !options.EnableHardwareEncoding )
+            {
+                filters.Add("hwdownload");
+
+                // If transcoding from 10 bit, transform colour spaces too
+                if ( !string.IsNullOrEmpty(videoStream.PixelFormat) && videoStream.PixelFormat.IndexOf( "p10", StringComparison.OrdinalIgnoreCase ) != -1
+                    && string.Equals(outputVideoCodec, "libx264", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    filters.Add("format=p010le");
+                    filters.Add("format=nv12");
+                }
+                else
+                {
+                    filters.Add("format=nv12");
+                }
+
+            }
 
             if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
@@ -1792,8 +1813,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 filters.Add(string.Format("deinterlace_vaapi"));
             }
-
-            var videoStream = state.VideoStream;
 
             if ((state.DeInterlace("h264", true) || state.DeInterlace("h265", true) || state.DeInterlace("hevc", true)) &&
                 !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
