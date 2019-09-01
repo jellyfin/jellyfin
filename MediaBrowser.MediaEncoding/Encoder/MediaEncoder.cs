@@ -303,7 +303,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
 
-            var inputFiles = MediaEncoderHelpers.GetInputArgument(FileSystem, request.MediaSource.Path, request.MediaSource.Protocol, request.MountedIso, request.PlayableStreamFileNames);
+            var inputFiles = MediaEncoderHelpers.GetInputArgument(FileSystem, request.MediaSource.Path, request.MountedIso, request.PlayableStreamFileNames);
 
             var probeSize = EncodingHelper.GetProbeSizeArgument(inputFiles.Length);
             string analyzeDuration;

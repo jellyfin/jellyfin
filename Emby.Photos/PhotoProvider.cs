@@ -170,8 +170,8 @@ namespace Emby.Photos
                 }
             }
 
-            const ItemUpdateType result = ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataImport;
-            return Task.FromResult(result);
+            const ItemUpdateType Result = ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataImport;
+            return Task.FromResult(Result);
         }
     }
 }
