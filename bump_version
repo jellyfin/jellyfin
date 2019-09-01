@@ -24,7 +24,11 @@ fi
 shared_version_file="./SharedVersion.cs"
 build_file="./build.yaml"
 
-web_branch="$( git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/' )"
+if [[ -z $2 ]]; then
+    web_branch="$( git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/' )"
+else
+    web_branch="$2"
+fi
 
 # Initialize submodules
 git submodule update --init --recursive
@@ -80,7 +84,7 @@ fi
 # Set the Dockerfile web version to the specified new_version
 old_version="$(
     grep "JELLYFIN_WEB_VERSION=" Dockerfile \
-        | sed -E 's/ARG JELLYFIN_WEB_VERSION=([0-9\.]+[-a-z0-9]*)/\1/'
+        | sed -E 's/ARG JELLYFIN_WEB_VERSION=v([0-9\.]+[-a-z0-9]*)/\1/'
 )"
 echo $old_version
 
