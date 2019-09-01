@@ -120,6 +120,7 @@ namespace MediaBrowser.Model.Net
             { ".m4b", "audio/m4b" },
             { ".xsp", "audio/xsp" },
             { ".dsp", "audio/dsp" },
+            { ".flac", "audio/flac" },
         };
 
         private static readonly Dictionary<string, string> _extensionLookup = CreateExtensionLookup();
