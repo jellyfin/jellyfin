@@ -13,23 +13,22 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
     /// <summary>
     /// Deletes all transcoding temp files
     /// </summary>
-    public class DeleteTranscodingTempTask : IScheduledTask, IConfigurableScheduledTask
+    public class DeleteTranscodeFileTask : IScheduledTask, IConfigurableScheduledTask
     {
         /// <summary>
         /// Gets or sets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        protected ServerApplicationPaths ApplicationPaths { get; set; }
-
+        private ServerApplicationPaths ApplicationPaths { get; set; }
 
         private readonly ILogger _logger;
 
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeleteTranscodingTempTask" /> class.
+        /// Initializes a new instance of the <see cref="DeleteTranscodeFileTask" /> class.
         /// </summary>
-        public DeleteTranscodingTempTask(ServerApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
+        public DeleteTranscodeFileTask(ServerApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
         {
             ApplicationPaths = appPaths;
             _logger = logger;

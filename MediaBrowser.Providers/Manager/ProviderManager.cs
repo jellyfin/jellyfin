@@ -278,7 +278,7 @@ namespace MediaBrowser.Providers.Manager
             var currentOptions = options;
 
             var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
-            var typeFetcherOrder = typeOptions == null ? null : typeOptions.ImageFetcherOrder;
+            var typeFetcherOrder = typeOptions?.ImageFetcherOrder;
 
             return ImageProviders.Where(i => CanRefresh(i, item, libraryOptions, options, refreshOptions, includeDisabled))
                 .OrderBy(i =>
@@ -287,7 +287,6 @@ namespace MediaBrowser.Providers.Manager
                     if (!(i is ILocalImageProvider))
                     {
                         var fetcherOrder = typeFetcherOrder ?? currentOptions.ImageFetcherOrder;
-
                         var index = Array.IndexOf(fetcherOrder, i.Name);
 
                         if (index != -1)
