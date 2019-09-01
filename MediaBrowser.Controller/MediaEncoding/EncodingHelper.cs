@@ -1796,6 +1796,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                     filters.Add("format=p010le");
                     filters.Add("format=nv12");
                 }
+                else
+                {
+                    filters.Add("format=nv12");
+                }
+
             }
 
             if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
