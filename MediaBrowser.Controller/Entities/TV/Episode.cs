@@ -23,8 +23,11 @@ namespace MediaBrowser.Controller.Entities.TV
             RemoteTrailerIds = Array.Empty<Guid>();
         }
 
-        public Guid[] LocalTrailerIds { get; set; }
-        public Guid[] RemoteTrailerIds { get; set; }
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> LocalTrailerIds { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
 
         /// <summary>
         /// Gets the season in which it aired.

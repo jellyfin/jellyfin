@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace MediaBrowser.Model.Querying
 {
     public class QueryResult<T>
@@ -6,7 +9,7 @@ namespace MediaBrowser.Model.Querying
         /// Gets or sets the items.
         /// </summary>
         /// <value>The items.</value>
-        public T[] Items { get; set; }
+        public IReadOnlyList<T> Items { get; set; }
 
         /// <summary>
         /// The total number of records available
@@ -16,7 +19,7 @@ namespace MediaBrowser.Model.Querying
 
         public QueryResult()
         {
-            Items = new T[] { };
+            Items = Array.Empty<T>();
         }
     }
 }

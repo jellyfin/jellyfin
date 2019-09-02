@@ -6,8 +6,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
-using Microsoft.AspNetCore.Http;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace Emby.Server.Implementations.Services
 {

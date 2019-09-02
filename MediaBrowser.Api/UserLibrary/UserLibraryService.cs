@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -367,12 +368,20 @@ namespace MediaBrowser.Api.UserLibrary
             var dtoOptions = GetDtoOptions(_authContext, request);
 
             var dtosExtras = item.GetExtras(new[] { ExtraType.Trailer })
-                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
+                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
+                .ToArray();
 
-            var dtosTrailers = item.GetTrailers()
-                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
+            if (item is IHasTrailers hasTrailers)
+            {
+                var trailers = hasTrailers.GetTrailers();
+                var dtosTrailers = _dtoService.GetBaseItemDtos(trailers, dtoOptions, user, item);
+                var allTrailers = new BaseItemDto[dtosExtras.Length + dtosTrailers.Count];
+                dtosExtras.CopyTo(allTrailers, 0);
+                dtosTrailers.CopyTo(allTrailers, dtosExtras.Length);
+                return ToOptimizedResult(allTrailers);
+            }
 
-            return ToOptimizedResult(dtosExtras.Concat(dtosTrailers).ToArray());
+            return ToOptimizedResult(dtosExtras);
         }
 
         /// <summary>

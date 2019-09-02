@@ -741,7 +741,7 @@ namespace MediaBrowser.Api.LiveTv
             var result = new QueryResult<BaseItemDto>
             {
                 Items = returnArray,
-                TotalRecordCount = returnArray.Length
+                TotalRecordCount = returnArray.Count
             };
 
             return ToOptimizedResult(result);

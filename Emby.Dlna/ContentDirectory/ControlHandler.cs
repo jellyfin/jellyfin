@@ -289,7 +289,7 @@ namespace Emby.Dlna.ContentDirectory
                     var childrenResult = GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount);
                     totalCount = childrenResult.TotalRecordCount;
 
-                    provided = childrenResult.Items.Length;
+                    provided = childrenResult.Items.Count;
 
                     foreach (var i in childrenResult.Items)
                     {
@@ -309,6 +309,7 @@ namespace Emby.Dlna.ContentDirectory
                         }
                     }
                 }
+
                 writer.WriteFullEndElement();
                 //writer.WriteEndDocument();
             }
@@ -386,7 +387,7 @@ namespace Emby.Dlna.ContentDirectory
 
                 totalCount = childrenResult.TotalRecordCount;
 
-                provided = childrenResult.Items.Length;
+                provided = childrenResult.Items.Count;
 
                 var dlnaOptions = _config.GetDlnaConfiguration();
 
@@ -677,7 +678,7 @@ namespace Emby.Dlna.ContentDirectory
 
             return new QueryResult<ServerItem>
             {
-                Items = list.ToArray(),
+                Items = list,
                 TotalRecordCount = list.Count
             };
         }
@@ -755,7 +756,7 @@ namespace Emby.Dlna.ContentDirectory
 
             return new QueryResult<ServerItem>
             {
-                Items = list.ToArray(),
+                Items = list,
                 TotalRecordCount = list.Count
             };
         }
@@ -860,7 +861,7 @@ namespace Emby.Dlna.ContentDirectory
 
             return new QueryResult<ServerItem>
             {
-                Items = list.ToArray(),
+                Items = list,
                 TotalRecordCount = list.Count
             };
         }

@@ -2746,7 +2746,7 @@ namespace Emby.Server.Implementations.Data
                 var returnList = GetItemList(query);
                 return new QueryResult<BaseItem>
                 {
-                    Items = returnList.ToArray(),
+                    Items = returnList,
                     TotalRecordCount = returnList.Count
                 };
             }
@@ -2883,7 +2883,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             LogQueryTime("GetItems", commandText, now);
-            result.Items = list.ToArray();
+            result.Items = list;
             return result;
         }
 
@@ -3161,7 +3161,7 @@ namespace Emby.Server.Implementations.Data
                 var returnList = GetItemIdsList(query);
                 return new QueryResult<Guid>
                 {
-                    Items = returnList.ToArray(),
+                    Items = returnList,
                     TotalRecordCount = returnList.Count
                 };
             }
@@ -3281,7 +3281,7 @@ namespace Emby.Server.Implementations.Data
 
             LogQueryTime("GetItemIds", commandText, now);
 
-            result.Items = list.ToArray();
+            result.Items = list;
             return result;
         }
 
@@ -5520,7 +5520,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 result.TotalRecordCount = list.Count;
             }
 
-            result.Items = list.ToArray();
+            result.Items = list;
 
             return result;
         }

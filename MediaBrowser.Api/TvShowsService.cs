@@ -382,13 +382,13 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("Series not found");
             }
 
-            var seasons = (series.GetItemList(new InternalItemsQuery(user)
+            var seasons = series.GetItemList(new InternalItemsQuery(user)
             {
                 IsMissing = request.IsMissing,
                 IsSpecialSeason = request.IsSpecialSeason,
                 AdjacentTo = request.AdjacentTo
 
-            }));
+            });
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
@@ -396,7 +396,7 @@ namespace MediaBrowser.Api
 
             return new QueryResult<BaseItemDto>
             {
-                TotalRecordCount = returnItems.Length,
+                TotalRecordCount = returnItems.Count,
                 Items = returnItems
             };
         }

@@ -2871,16 +2871,16 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the remote trailers.
         /// </summary>
         /// <value>The remote trailers.</value>
-        public MediaUrl[] RemoteTrailers { get; set; }
+        public IReadOnlyList<MediaUrl> RemoteTrailers { get; set; }
 
         public IEnumerable<BaseItem> GetExtras()
         {
             return ExtraIds.Select(LibraryManager.GetItemById).Where(i => i != null).OrderBy(i => i.SortName);
         }
 
-        public IEnumerable<BaseItem> GetExtras(ExtraType[] extraTypes)
+        public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType> extraTypes)
         {
-            return ExtraIds.Select(LibraryManager.GetItemById).Where(i => i != null && extraTypes.Contains(i.ExtraType.Value)).OrderBy(i => i.SortName);
+            return ExtraIds.Select(LibraryManager.GetItemById).Where(i => i != null && extraTypes.Contains(i.ExtraType.Value));
         }
 
         public IEnumerable<BaseItem> GetTrailers()
@@ -2908,7 +2908,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         // Possible types of extra videos
-        public static ExtraType[] DisplayExtraTypes = new[] { Model.Entities.ExtraType.BehindTheScenes, Model.Entities.ExtraType.Clip, Model.Entities.ExtraType.DeletedScene, Model.Entities.ExtraType.Interview, Model.Entities.ExtraType.Sample, Model.Entities.ExtraType.Scene };
+        public static readonly IReadOnlyCollection<ExtraType> DisplayExtraTypes = new[] { Model.Entities.ExtraType.BehindTheScenes, Model.Entities.ExtraType.Clip, Model.Entities.ExtraType.DeletedScene, Model.Entities.ExtraType.Interview, Model.Entities.ExtraType.Sample, Model.Entities.ExtraType.Scene };
 
         public virtual bool SupportsExternalTransfer => false;
     }

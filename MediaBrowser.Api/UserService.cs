@@ -248,9 +248,14 @@ namespace MediaBrowser.Api
         private readonly INetworkManager _networkManager;
         private readonly IDeviceManager _deviceManager;
         private readonly IAuthorizationContext _authContext;
-        private readonly ILogger _logger;
 
-        public UserService(IUserManager userManager, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager, IDeviceManager deviceManager, IAuthorizationContext authContext, ILoggerFactory loggerFactory)
+        public UserService(
+            IUserManager userManager,
+            ISessionManager sessionMananger,
+            IServerConfigurationManager config,
+            INetworkManager networkManager,
+            IDeviceManager deviceManager,
+            IAuthorizationContext authContext)
         {
             _userManager = userManager;
             _sessionMananger = sessionMananger;
@@ -258,7 +263,6 @@ namespace MediaBrowser.Api
             _networkManager = networkManager;
             _deviceManager = deviceManager;
             _authContext = authContext;
-            _logger = loggerFactory.CreateLogger(nameof(UserService));
         }
 
         public object Get(GetPublicUsers request)

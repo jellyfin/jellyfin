@@ -1441,7 +1441,7 @@ namespace Emby.Server.Implementations.Library
 
             return new QueryResult<BaseItem>
             {
-                Items = list.ToArray()
+                Items = list
             };
         }
 
@@ -1977,8 +1977,7 @@ namespace Emby.Server.Implementations.Library
 
         public LibraryOptions GetLibraryOptions(BaseItem item)
         {
-            var collectionFolder = item as CollectionFolder;
-            if (collectionFolder == null)
+            if (!(item is CollectionFolder collectionFolder))
             {
                 collectionFolder = GetCollectionFolders(item)
                    .OfType<CollectionFolder>()

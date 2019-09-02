@@ -33,8 +33,11 @@ namespace MediaBrowser.Controller.Entities.Movies
         [IgnoreDataMember]
         public override bool SupportsPeople => true;
 
-        public Guid[] LocalTrailerIds { get; set; }
-        public Guid[] RemoteTrailerIds { get; set; }
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> LocalTrailerIds { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
 
         /// <summary>
         /// Gets or sets the display order.
@@ -61,7 +64,8 @@ namespace MediaBrowser.Controller.Entities.Movies
             {
                 return base.GetNonCachedChildren(directoryService);
             }
-            return new List<BaseItem>();
+
+            return Enumerable.Empty<BaseItem>();
         }
 
         protected override List<BaseItem> LoadChildren()

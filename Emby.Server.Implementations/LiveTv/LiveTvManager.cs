@@ -881,7 +881,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
 
             var programList = _libraryManager.QueryItems(internalQuery).Items;
-            var totalCount = programList.Length;
+            var totalCount = programList.Count;
 
             var orderedPrograms = programList.Cast<LiveTvProgram>().OrderBy(i => i.StartDate.Date);
 
@@ -969,8 +969,8 @@ namespace Emby.Server.Implementations.LiveTv
             var timers = new Dictionary<string, List<TimerInfo>>();
             var seriesTimers = new Dictionary<string, List<SeriesTimerInfo>>();
 
-            TimerInfo[] timerList = null;
-            SeriesTimerInfo[] seriesTimerList = null;
+            IReadOnlyList<TimerInfo> timerList = null;
+            IReadOnlyList<SeriesTimerInfo> seriesTimerList = null;
 
             foreach (var programTuple in programs)
             {
@@ -1296,6 +1296,7 @@ namespace Emby.Server.Implementations.LiveTv
         }
 
         private const int MaxGuideDays = 14;
+
         private double GetGuideDays()
         {
             var config = GetConfiguration();
@@ -1340,6 +1341,7 @@ namespace Emby.Server.Implementations.LiveTv
                     excludeItemTypes.Add(typeof(Movie).Name);
                 }
             }
+
             if (query.IsSeries.HasValue)
             {
                 if (query.IsSeries.Value)
@@ -1351,10 +1353,12 @@ namespace Emby.Server.Implementations.LiveTv
                     excludeItemTypes.Add(typeof(Episode).Name);
                 }
             }
+
             if (query.IsSports ?? false)
             {
                 genres.Add("Sports");
             }
+
             if (query.IsKids ?? false)
             {
                 genres.Add("Kids");
@@ -1400,20 +1404,20 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (query.IsInProgress ?? false)
             {
-                //TODO Fix The co-variant conversion between Video[] and BaseItem[], this can generate runtime issues.
+                // TODO: Fix The co-variant conversion between Video[] and BaseItem[], this can generate runtime issues.
                 result.Items = result
                     .Items
                     .OfType<Video>()
                     .Where(i => !i.IsCompleteMedia)
                     .ToArray();
 
-                result.TotalRecordCount = result.Items.Length;
+                result.TotalRecordCount = result.Items.Count;
             }
 
             return result;
         }
 
-        public Task AddInfoToProgramDto(List<Tuple<BaseItem, BaseItemDto>> tuples, ItemFields[] fields, User user = null)
+        public Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> tuples, ItemFields[] fields, User user = null)
         {
             var programTuples = new List<Tuple<BaseItemDto, string, string>>();
             var hasChannelImage = fields.Contains(ItemFields.ChannelImage);
@@ -1877,7 +1881,7 @@ namespace Emby.Server.Implementations.LiveTv
             return _libraryManager.GetItemById(internalChannelId);
         }
 
-        public void AddChannelInfo(List<Tuple<BaseItemDto, LiveTvChannel>> tuples, DtoOptions options, User user)
+        public void AddChannelInfo(IReadOnlyCollection<(BaseItemDto, LiveTvChannel)> tuples, DtoOptions options, User user)
         {
             var now = DateTime.UtcNow;
 
