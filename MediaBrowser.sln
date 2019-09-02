@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.3
@@ -40,8 +40,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Naming", "Emby.Naming\Emby.Naming.csproj", "{E5AF7B26-2239-4CE0-B477-0AA2018EDAA2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.XmlTv", "Emby.XmlTv\Emby.XmlTv\Emby.XmlTv.csproj", "{6EAFA7F0-8A82-49E6-B2FA-086C5CAEA95B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IsoMounter", "Emby.IsoMounting\IsoMounter\IsoMounter.csproj", "{9BA471D2-6DB9-4DBF-B3A0-9FB3171F94A6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.MediaEncoding", "MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj", "{960295EE-4AF4-4440-A525-B4C295B01A61}"
 EndProject
@@ -141,10 +139,6 @@ Global
 		{6EAFA7F0-8A82-49E6-B2FA-086C5CAEA95B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EAFA7F0-8A82-49E6-B2FA-086C5CAEA95B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6EAFA7F0-8A82-49E6-B2FA-086C5CAEA95B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9BA471D2-6DB9-4DBF-B3A0-9FB3171F94A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9BA471D2-6DB9-4DBF-B3A0-9FB3171F94A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9BA471D2-6DB9-4DBF-B3A0-9FB3171F94A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9BA471D2-6DB9-4DBF-B3A0-9FB3171F94A6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{960295EE-4AF4-4440-A525-B4C295B01A61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{960295EE-4AF4-4440-A525-B4C295B01A61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{960295EE-4AF4-4440-A525-B4C295B01A61}.Release|Any CPU.ActiveCfg = Release|Any CPU
