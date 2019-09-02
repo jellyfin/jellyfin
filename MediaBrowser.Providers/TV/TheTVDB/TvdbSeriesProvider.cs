@@ -317,7 +317,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             {
                 prevLength = sb.Length;
                 sb.Replace("  ", " ");
-            } while (name.Length != prevLength);
+            } while (sb.Length != prevLength);
 
             return sb.ToString().Trim();
         }
