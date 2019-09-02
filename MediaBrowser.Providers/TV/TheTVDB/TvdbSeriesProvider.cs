@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -312,14 +313,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             }
             sb.Replace(", the", string.Empty).Replace("the ", " ").Replace(" the ", " ");
 
-            int prevLength;
-            do
-            {
-                prevLength = sb.Length;
-                sb.Replace("  ", " ");
-            } while (sb.Length != prevLength);
-
-            return sb.ToString().Trim();
+            return Regex.Replace(sb.ToString().Trim(), @"\s+", " ");
         }
 
         private void MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries, string metadataLanguage)
