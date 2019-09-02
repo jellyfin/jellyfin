@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -19,15 +20,13 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasLookupInfo<SongInfo>,
         IHasMediaSources
     {
-        /// <summary>
-        /// Gets or sets the artist.
-        /// </summary>
-        /// <value>The artist.</value>
+        /// <inheritdoc />
         [IgnoreDataMember]
-        public string[] Artists { get; set; }
+        public IReadOnlyList<string> Artists { get; set; }
 
+        /// <inheritdoc />
         [IgnoreDataMember]
-        public string[] AlbumArtists { get; set; }
+        public IReadOnlyList<string> AlbumArtists { get; set; }
 
         public Audio()
         {
@@ -61,30 +60,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         public override bool CanDownload()
         {
             return IsFileProtocol;
-        }
-
-        [IgnoreDataMember]
-        public string[] AllArtists
-        {
-            get
-            {
-                var list = new string[AlbumArtists.Length + Artists.Length];
-
-                var index = 0;
-                foreach (var artist in AlbumArtists)
-                {
-                    list[index] = artist;
-                    index++;
-                }
-                foreach (var artist in Artists)
-                {
-                    list[index] = artist;
-                    index++;
-                }
-
-                return list;
-
-            }
         }
 
         [IgnoreDataMember]
@@ -125,7 +100,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 songKey = Album + "-" + songKey;
             }
 
-            var albumArtist = AlbumArtists.Length == 0 ? null : AlbumArtists[0];
+            var albumArtist = AlbumArtists.FirstOrDefault();
             if (!string.IsNullOrEmpty(albumArtist))
             {
                 songKey = albumArtist + "-" + songKey;

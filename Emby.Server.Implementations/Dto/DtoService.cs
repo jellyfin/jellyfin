@@ -886,8 +886,7 @@ namespace Emby.Server.Implementations.Dto
                 //}
             }
 
-            var hasArtist = item as IHasArtist;
-            if (hasArtist != null)
+            if (item is IHasArtist hasArtist)
             {
                 dto.Artists = hasArtist.Artists;
 

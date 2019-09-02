@@ -11,7 +11,24 @@ namespace MediaBrowser.Providers.Music
 {
     public class MusicVideoMetadataService : MetadataService<MusicVideo, MusicVideoInfo>
     {
-        protected override void MergeData(MetadataResult<MusicVideo> source, MetadataResult<MusicVideo> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        public MusicVideoMetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            IUserDataManager userDataManager,
+            ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+        {
+        }
+
+        /// <inheritdoc />
+        protected override void MergeData(
+            MetadataResult<MusicVideo> source,
+            MetadataResult<MusicVideo> target,
+            MetadataFields[] lockedFields,
+            bool replaceData,
+            bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
@@ -23,14 +40,10 @@ namespace MediaBrowser.Providers.Music
                 targetItem.Album = sourceItem.Album;
             }
 
-            if (replaceData || targetItem.Artists.Length == 0)
+            if (replaceData || targetItem.Artists.Count == 0)
             {
                 targetItem.Artists = sourceItem.Artists;
             }
-        }
-
-        public MusicVideoMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
-        {
         }
     }
 }

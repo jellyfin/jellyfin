@@ -18,8 +18,11 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
-        public string[] AlbumArtists { get; set; }
-        public string[] Artists { get; set; }
+        /// <inheritdoc />
+        public IReadOnlyList<string> AlbumArtists { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> Artists { get; set; }
 
         public MusicAlbum()
         {
@@ -41,8 +44,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             var parents = GetParents();
             foreach (var parent in parents)
             {
-                var artist = parent as MusicArtist;
-                if (artist != null)
+                if (parent is MusicArtist artist)
                 {
                     return artist;
                 }
@@ -63,30 +65,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         public override bool SupportsCumulativeRunTimeTicks => true;
 
         [IgnoreDataMember]
-        public string[] AllArtists
-        {
-            get
-            {
-                var list = new string[AlbumArtists.Length + Artists.Length];
-
-                var index = 0;
-                foreach (var artist in AlbumArtists)
-                {
-                    list[index] = artist;
-                    index++;
-                }
-                foreach (var artist in Artists)
-                {
-                    list[index] = artist;
-                    index++;
-                }
-
-                return list;
-            }
-        }
-
-        [IgnoreDataMember]
-        public string AlbumArtist => AlbumArtists.Length == 0 ? null : AlbumArtists[0];
+        public string AlbumArtist => AlbumArtists.FirstOrDefault();
 
         [IgnoreDataMember]
         public override bool SupportsPeople => false;
@@ -216,8 +195,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         private async Task RefreshArtists(MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
-            var all = AllArtists;
-            foreach (var i in all)
+            foreach (var i in this.GetAllArtists())
             {
                 // This should not be necessary but we're seeing some cases of it
                 if (string.IsNullOrEmpty(i))

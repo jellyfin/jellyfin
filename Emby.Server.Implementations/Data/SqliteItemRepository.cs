@@ -979,7 +979,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             string artists = null;
-            if (item is IHasArtist hasArtists && hasArtists.Artists.Length > 0)
+            if (item is IHasArtist hasArtists && hasArtists.Artists.Count > 0)
             {
                 artists = string.Join("|", hasArtists.Artists);
             }
@@ -987,7 +987,7 @@ namespace Emby.Server.Implementations.Data
 
             string albumArtists = null;
             if (item is IHasAlbumArtist hasAlbumArtists
-                && hasAlbumArtists.AlbumArtists.Length > 0)
+                && hasAlbumArtists.AlbumArtists.Count > 0)
             {
                 albumArtists = string.Join("|", hasAlbumArtists.AlbumArtists);
             }
@@ -5731,7 +5731,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 {
                     if (isSubsequentRow)
                     {
-                        insertText.Append(",");
+                        insertText.Append(',');
                     }
 
                     insertText.AppendFormat("(@ItemId, @Name{0}, @Role{0}, @PersonType{0}, @SortOrder{0}, @ListOrder{0})", i.ToString(CultureInfo.InvariantCulture));
