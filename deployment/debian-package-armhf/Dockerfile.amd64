@@ -27,7 +27,7 @@ RUN dpkg --add-architecture armhf \
  && apt-get install -y cross-gcc-dev \
  && TARGET_LIST="armhf" cross-gcc-gensource 8 \
  && cd cross-gcc-packages-amd64/cross-gcc-8-armhf \
- && apt-get install -y gcc-8-source libstdc++-8-dev-armhf-cross binutils-aarch64-linux-gnu bison flex libtool gdb sharutils netbase libmpc-dev libmpfr-dev libgmp-dev systemtap-sdt-dev autogen expect chrpath zlib1g-dev zip libc6-dev:armhf linux-libc-dev:armhf libgcc1:armhf libcurl4-openssl-dev:armhf libfontconfig1-dev:armhf libfreetype6-dev:armhf libssl-dev:armhf liblttng-ust0:armhf libstdc++-8-dev:armhf
+ && apt-get install -y gcc-8-source libstdc++-8-dev-armhf-cross binutils-aarch64-linux-gnu bison flex libtool gdb sharutils netbase libmpc-dev libmpfr-dev libgmp-dev systemtap-sdt-dev autogen expect chrpath zlib1g-dev zip binutils-arm-linux-gnueabihf libc6-dev:armhf linux-libc-dev:armhf libgcc1:armhf libcurl4-openssl-dev:armhf libfontconfig1-dev:armhf libfreetype6-dev:armhf libssl-dev:armhf liblttng-ust0:armhf libstdc++-8-dev:armhf
 
 # Link to docker-build script
 RUN ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh
