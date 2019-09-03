@@ -779,12 +779,23 @@ namespace Emby.Server.Implementations.Library
                     {
                         var userRootPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
 
+                        _logger.LogDebug("Creating userRootPath at {path}", userRootPath);
                         Directory.CreateDirectory(userRootPath);
 
-                        var tmpItem = GetItemById(GetNewItemId(userRootPath, typeof(UserRootFolder))) as UserRootFolder;
+                        var newItemId = GetNewItemId(userRootPath, typeof(UserRootFolder));
+                        UserRootFolder tmpItem = null;
+                        try
+                        {
+                            tmpItem = GetItemById(newItemId) as UserRootFolder;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error creating UserRootFolder {path}", newItemId);
+                        }
 
                         if (tmpItem == null)
                         {
+                            _logger.LogDebug("Creating new userRootFolder with DeepCopy");
                             tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath))).DeepCopy<Folder, UserRootFolder>();
                         }
 
@@ -796,6 +807,7 @@ namespace Emby.Server.Implementations.Library
                         }
 
                         _userRootFolder = tmpItem;
+                        _logger.LogDebug("Setting userRootFolder: {folder}", _userRootFolder);
                     }
                 }
             }
@@ -1146,8 +1158,10 @@ namespace Emby.Server.Implementations.Library
 
         public List<VirtualFolderInfo> GetVirtualFolders(bool includeRefreshState)
         {
+            _logger.LogDebug("Getting topLibraryFolders");
             var topLibraryFolders = GetUserRootFolder().Children.ToList();
 
+            _logger.LogDebug("Getting refreshQueue");
             var refreshQueue = includeRefreshState ? _providerManagerFactory().GetRefreshQueue() : null;
 
             return _fileSystem.GetDirectoryPaths(ConfigurationManager.ApplicationPaths.DefaultUserViewsPath)
