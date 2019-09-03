@@ -7,7 +7,8 @@ Build-Depends:  debhelper (>= 9),
                 libc6-dev,
                 libcurl4-openssl-dev,
                 libfontconfig1-dev,
-                libfreetype6-dev
+                libfreetype6-dev,
+                libssl-dev
 Standards-Version: 3.9.4
 Homepage: https://jellyfin.media/
 Vcs-Git: https://github.org/jellyfin/jellyfin.git
@@ -23,6 +24,6 @@ Depends: at,
          jellyfin-ffmpeg,
          libfontconfig1,
          libfreetype6,
-         libssl1.0.0 | libssl1.0.2 | libssl1.1
+         libssl1.1
 Description: Jellyfin is a home media server.
  It is built on top of other popular open source technologies such as Service Stack, jQuery, jQuery mobile, and Mono. It features a REST-based api with built-in documentation to facilitate client development. We also have client libraries for our api to enable rapid development.
