@@ -30,6 +30,9 @@
           <modelEnumHasValues Id="6cda3f6d-92d6-4287-8574-0c857e5d5dc5">
             <modelEnumValue Id="9eb1f215-5e5a-4688-a4fc-ded65f582392" name="Producer" />
           </modelEnumHasValues>
+          <modelEnumHasValues Id="209a9a5f-3adc-4779-9cd7-a0b9d41ce87f">
+            <modelEnumValue Id="451ec3e3-3cc3-4b90-b4ef-53e120e54f3a" name="Remixer" />
+          </modelEnumHasValues>
         </values>
       </modelEnum>
     </modelRootHasEnums>
@@ -47,6 +50,9 @@
           </modelEnumHasValues>
           <modelEnumHasValues Id="c95912aa-086f-4e72-af9d-a899fd2b81b3">
             <modelEnumValue Id="5f1719c4-3552-4959-b5e2-2faa5add8f11" name="Thumbnail" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="5a6fb569-d5ad-4917-99c3-531a0b8e2b50">
+            <modelEnumValue Id="5e1c0db7-b6e5-4066-8dc5-f5d6c2e5c7be" name="Logo" />
           </modelEnumHasValues>
         </values>
       </modelEnum>
@@ -159,6 +165,9 @@
           <generalization Id="a1069180-e60b-4641-90d5-cc0ca13bdd20">
             <modelClassMoniker Id="cf9b1363-d1a2-46b7-a1ec-56a7b0a418da" />
           </generalization>
+          <generalization Id="9a679250-b296-4d9f-ae28-7b0fe3f39caf">
+            <modelClassMoniker Id="d9db9cdb-1e90-479c-9383-bc7ce2eab1b4" />
+          </generalization>
         </subclasses>
       </modelClass>
     </modelRootHasClasses>
@@ -221,6 +230,9 @@
           </generalization>
           <generalization Id="11b989c3-3908-4e28-ad14-c8e8a3eabadd">
             <modelClassMoniker Id="f2238a16-e071-444b-8ae0-7d5ea623c9e9" />
+          </generalization>
+          <generalization Id="a866f17d-672c-49d5-a22c-95d5f1593611">
+            <modelClassMoniker Id="7ed8e307-b5e6-4602-a99c-51ea6a9c4bd2" />
           </generalization>
         </subclasses>
       </modelClass>
@@ -374,9 +386,9 @@
       </modelClass>
     </modelRootHasClasses>
     <modelRootHasClasses Id="4e940cb2-792f-4a19-940c-1a8f0c80d68e">
-      <modelClass Id="a32f3f8c-3434-41b7-9957-c839c520eda7" tableName="CustomVideo" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="CustomVideos" name="CustomVideo" outputDirectory="Entities" baseClass="LibraryItem">
+      <modelClass Id="a32f3f8c-3434-41b7-9957-c839c520eda7" tableName="CustomItem" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="CustomItems" name="CustomItem" outputDirectory="Entities" baseClass="LibraryItem">
         <unidirectionalTargets>
-          <unidirectionalAssociation Id="b8374825-8e92-4a91-9208-389d1821e85e" targetPropertyName="CustomVideoMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
+          <unidirectionalAssociation Id="b8374825-8e92-4a91-9208-389d1821e85e" targetPropertyName="CustomItemMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
             <modelClassMoniker Id="9690b77b-4fcc-4811-bb56-fed005e6da73" />
           </unidirectionalAssociation>
           <unidirectionalAssociation Id="28c5b191-9f13-41d5-8469-a6fba8a0118b" targetPropertyName="Releases" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
@@ -386,7 +398,7 @@
       </modelClass>
     </modelRootHasClasses>
     <modelRootHasClasses Id="54e03653-b902-4cf5-896a-dc4c3d2aaa9e">
-      <modelClass Id="9690b77b-4fcc-4811-bb56-fed005e6da73" tableName="CustomVideoMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="CustomVideoMetadata" name="CustomVideoMetadata" outputDirectory="Entities" baseClass="Metadata" />
+      <modelClass Id="9690b77b-4fcc-4811-bb56-fed005e6da73" tableName="CustomItemMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="CustomItemMetadata" name="CustomItemMetadata" outputDirectory="Entities" baseClass="Metadata" />
     </modelRootHasClasses>
     <modelRootHasClasses Id="5d0aa8cc-4b1e-4cce-a186-183da9bb1077">
       <modelClass Id="cf9b1363-d1a2-46b7-a1ec-56a7b0a418da" tableName="Book" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Books" name="Book" outputDirectory="Entities" baseClass="LibraryItem">
@@ -447,6 +459,21 @@
           <modelAttribute Id="cf164898-0306-4298-8e73-fe03dfc9c6c9" type="Binary" required="true" indexed="false" indexedUnique="false" stringType="None" isConcurrencyToken="true" name="Timestamp" columnName="Timestamp" columnType="default" />
         </attributes>
       </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="b778b610-3683-43c5-bb22-9670ceca9ace">
+      <modelClass Id="d9db9cdb-1e90-479c-9383-bc7ce2eab1b4" tableName="Photo" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Photo" name="Photo" outputDirectory="Entities" baseClass="LibraryItem">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="70c87b90-3b60-4a33-899b-37d7d90869df" targetPropertyName="PhotoMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
+            <modelClassMoniker Id="7ed8e307-b5e6-4602-a99c-51ea6a9c4bd2" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="3038ac78-5930-4994-a407-8704d5dfa0ef" targetPropertyName="Releases" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
+            <modelClassMoniker Id="e7524125-fbc5-4767-8351-eec6bb5957d3" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="72623ce9-0142-49a6-a7bb-ff5a1797cb15">
+      <modelClass Id="7ed8e307-b5e6-4602-a99c-51ea6a9c4bd2" tableName="PhotoMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="PhotoMetadata" name="PhotoMetadata" outputDirectory="Entities" baseClass="Metadata" />
     </modelRootHasClasses>
   </classes>
 </modelRoot>
