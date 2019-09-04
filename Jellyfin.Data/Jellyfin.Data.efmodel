@@ -2,7 +2,7 @@
 <modelRoot xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" dslVersion="1.3.0.4" Id="cba47279-0950-4257-bb2c-e4d5e72a52a4" entityContainerName="Jellyfin" namespace="Jellyfin.Data" connectionString="Data Source=jellyfin.db" automaticMigrationsEnabled="false" entityOutputDirectory="Entities" contextOutputDirectory="DbContext" enumOutputDirectory="Enums" databaseSchema="jellyfin" concurrencyDefault="Optimistic" fileNameMarker="g" entityFrameworkVersion="EFCore" showCascadeDeletes="true" databaseType="None" warnOnMissingDocumentation="false" structOutputDirectory="Structs" installNuGetPackages="True" layoutAlgorithmSettings="" xmlns="http://schemas.microsoft.com/dsltools/EFModel">
   <comments>
     <comment Id="ce1017ce-8e00-4174-97ed-1c322b40f550" text="This allows multiversion" />
-    <comment Id="21a9ee76-5f8d-43f8-abc7-72220419aea0" text="This allows multiformat and multidisc" />
+    <comment Id="21a9ee76-5f8d-43f8-abc7-72220419aea0" text="This allows multiformat and multidisc&#xD;&#xA;All these files should have the same timestamps." />
     <comment Id="e3f59d71-d842-4d38-a3f5-066602d78677" text="This shares it's source with the metadata" />
     <comment Id="e44ea76e-4cb5-46e8-8492-2873c74fcbaa" text="Audiobooks are supported in the same entities but the Releases will dictate whenever or not this is an audio book vs a normal book." />
     <comment Id="c83d4e1a-563e-4e18-bc43-3b23d2fbeed0" text="Music videos are supported in the same entities but the Releases will dictate whenever or not this is a video just plain audio." />
@@ -107,8 +107,11 @@
     <modelRootHasClasses Id="24a4a1ed-384d-4877-a385-2665aa54e45c">
       <modelClass Id="e7524125-fbc5-4767-8351-eec6bb5957d3" tableName="Release" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Releases" name="Release" outputDirectory="Entities">
         <unidirectionalTargets>
-          <unidirectionalAssociation Id="64e8abc2-1d4b-4c4c-96d9-037ec5f9a706" targetPropertyName="MediaFile" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
+          <unidirectionalAssociation Id="64e8abc2-1d4b-4c4c-96d9-037ec5f9a706" targetPropertyName="MediaFiles" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
             <modelClassMoniker Id="4f2c20cf-c5f0-4592-8888-aff4f27986a0" />
+          </unidirectionalAssociation>
+          <unidirectionalAssociation Id="07771b42-d7b5-48b8-841c-5c96cb320ddd" targetPropertyName="Chapters" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
+            <modelClassMoniker Id="a8c50148-d182-4e10-8d63-c2ef2aa3ad66" />
           </unidirectionalAssociation>
         </unidirectionalTargets>
         <attributes>
@@ -177,7 +180,7 @@
           <unidirectionalAssociation Id="cc7945c2-4b52-42dc-80b4-7d4b15cc30a0" targetPropertyName="PersonRoles" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
             <modelClassMoniker Id="dbaeac30-cef5-4f13-ac8f-553f72cce29e" />
           </unidirectionalAssociation>
-          <unidirectionalAssociation Id="4352236a-9106-4d2c-9c8b-c917fb5bdf93" targetPropertyName="Genre" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
+          <unidirectionalAssociation Id="4352236a-9106-4d2c-9c8b-c917fb5bdf93" targetPropertyName="Genres" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
             <modelClassMoniker Id="54c385f0-904f-4070-a30f-0a53c3d1f21c" />
           </unidirectionalAssociation>
           <unidirectionalAssociation Id="46a9684d-293a-4a9c-af3b-c3f6bbad46ee" targetPropertyName="Artwork" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
@@ -252,7 +255,7 @@
     <modelRootHasClasses Id="ada575f8-af53-4f28-af04-f68917808665">
       <modelClass Id="aae43516-5dc1-4e8b-9d49-767646006865" tableName="Episode" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Episodes" name="Episode" outputDirectory="Entities" baseClass="LibraryItem">
         <unidirectionalTargets>
-          <unidirectionalAssociation Id="3e69679a-7226-4c39-9cf4-abb630aa0a99" targetPropertyName="Release" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
+          <unidirectionalAssociation Id="3e69679a-7226-4c39-9cf4-abb630aa0a99" targetPropertyName="Releases" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
             <modelClassMoniker Id="e7524125-fbc5-4767-8351-eec6bb5957d3" />
           </unidirectionalAssociation>
           <unidirectionalAssociation Id="d3d50f76-d4bb-46c6-b5ea-afac0765ce07" targetPropertyName="EpisodeMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
@@ -291,7 +294,7 @@
     <modelRootHasClasses Id="4e8d3f45-b30c-427a-bee0-8eb66e0975f9">
       <modelClass Id="dbaeac30-cef5-4f13-ac8f-553f72cce29e" tableName="PersonRole" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="PersonRoles" name="PersonRole" outputDirectory="Entities">
         <unidirectionalTargets>
-          <unidirectionalAssociation Id="5cd5ab10-66a9-492e-b903-a1b7a19c48f8" targetMultiplicity="One" targetPropertyName="Person" collectionClass="HashSet" sourceRole="Dependent" targetRole="Principal" foreignKeyLocation="None">
+          <unidirectionalAssociation Id="5cd5ab10-66a9-492e-b903-a1b7a19c48f8" targetMultiplicity="One" targetPropertyName="Person" targetDeleteAction="Cascade" collectionClass="HashSet" sourceRole="Dependent" targetRole="Principal" foreignKeyLocation="None">
             <modelClassMoniker Id="1cfe89ae-4c7f-4cfa-a939-56adc75be715" />
           </unidirectionalAssociation>
           <unidirectionalAssociation Id="d4728109-0b10-4e38-aafe-f471da9e2fa0" targetMultiplicity="ZeroOne" targetPropertyName="Artwork" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
@@ -430,6 +433,18 @@
         <attributes>
           <modelAttribute Id="06b791a8-fa57-4098-9b54-40a0222f00a5" type="Int32" isIdentity="true" required="true" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" columnName="Id" columnType="default" />
           <modelAttribute Id="d940ba31-2a62-4619-b212-03630a8b5a01" type="Binary" required="true" indexed="false" indexedUnique="false" stringType="None" isConcurrencyToken="true" name="Timestamp" columnName="Timestamp" columnType="default" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="4e6c1a98-dc25-49d2-8787-e456f6515a30">
+      <modelClass Id="a8c50148-d182-4e10-8d63-c2ef2aa3ad66" tableName="Chapter" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Chapters" name="Chapter" outputDirectory="Entities">
+        <attributes>
+          <modelAttribute Id="c09b3c24-5d61-4c71-8d47-f6cd3b990f0c" type="Int32" isIdentity="true" required="true" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" columnName="Id" columnType="default" />
+          <modelAttribute Id="614ae84a-a5c6-460e-8370-2e9ba001a3e4" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Name" columnName="Name" columnType="default" />
+          <modelAttribute Id="766c7a8f-6c6a-48bf-ba80-b15c0d4f7a4b" required="true" maxLength="3" indexed="false" indexedUnique="false" stringType="None" summary="ISO-639-3 3-character language codes" name="Language" minLength="3" columnName="Language" columnType="default" />
+          <modelAttribute Id="522817e9-dbbe-4cb6-a5b4-da72e14276bf" type="Int64" required="true" indexed="false" indexedUnique="false" stringType="None" name="TimeStart" columnName="TimeStart" columnType="default" />
+          <modelAttribute Id="c7ef71cc-b776-4e79-9801-ad89b474e31e" type="Int64" indexed="false" indexedUnique="false" stringType="None" name="TimeEnd" columnName="TimeEnd" columnType="default" />
+          <modelAttribute Id="cf164898-0306-4298-8e73-fe03dfc9c6c9" type="Binary" required="true" indexed="false" indexedUnique="false" stringType="None" isConcurrencyToken="true" name="Timestamp" columnName="Timestamp" columnType="default" />
         </attributes>
       </modelClass>
     </modelRootHasClasses>
