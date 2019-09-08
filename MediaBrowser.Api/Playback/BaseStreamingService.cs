@@ -956,7 +956,10 @@ namespace MediaBrowser.Api.Playback
                 if (string.Equals(GetHeader("getMediaInfo.sec"), "1", StringComparison.OrdinalIgnoreCase))
                 {
                     var ms = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalMilliseconds;
-                    responseHeaders["MediaInfo.sec"] = string.Format("SEC_Duration={0};", Convert.ToInt32(ms).ToString(CultureInfo.InvariantCulture));
+                    responseHeaders["MediaInfo.sec"] = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "SEC_Duration={0};",
+                        Convert.ToInt32(ms));
                 }
 
                 if (!isStaticallyStreamed && profile != null)
@@ -974,8 +977,7 @@ namespace MediaBrowser.Api.Playback
 
             if (state.VideoRequest == null)
             {
-                responseHeaders["contentFeatures.dlna.org"] = new ContentFeatureBuilder(profile)
-                    .BuildAudioHeader(
+                responseHeaders["contentFeatures.dlna.org"] = new ContentFeatureBuilder(profile).BuildAudioHeader(
                     state.OutputContainer,
                     audioCodec,
                     state.OutputAudioBitrate,
@@ -984,15 +986,13 @@ namespace MediaBrowser.Api.Playback
                     state.OutputAudioBitDepth,
                     isStaticallyStreamed,
                     state.RunTimeTicks,
-                    state.TranscodeSeekInfo
-                    );
+                    state.TranscodeSeekInfo);
             }
             else
             {
                 var videoCodec = state.ActualOutputVideoCodec;
 
-                responseHeaders["contentFeatures.dlna.org"] = new ContentFeatureBuilder(profile)
-                    .BuildVideoHeader(
+                responseHeaders["contentFeatures.dlna.org"] = new ContentFeatureBuilder(profile).BuildVideoHeader(
                     state.OutputContainer,
                     videoCodec,
                     audioCodec,
@@ -1014,9 +1014,7 @@ namespace MediaBrowser.Api.Playback
                     state.TargetVideoStreamCount,
                     state.TargetAudioStreamCount,
                     state.TargetVideoCodecTag,
-                    state.IsTargetAVC
-
-                    ).FirstOrDefault() ?? string.Empty;
+                    state.IsTargetAVC).FirstOrDefault() ?? string.Empty;
             }
         }
 
@@ -1025,8 +1023,16 @@ namespace MediaBrowser.Api.Playback
             var runtimeSeconds = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds.ToString(CultureInfo.InvariantCulture);
             var startSeconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
-            responseHeaders["TimeSeekRange.dlna.org"] = string.Format("npt={0}-{1}/{1}", startSeconds, runtimeSeconds);
-            responseHeaders["X-AvailableSeekRange"] = string.Format("1 npt={0}-{1}", startSeconds, runtimeSeconds);
+            responseHeaders["TimeSeekRange.dlna.org"] = string.Format(
+                CultureInfo.InvariantCulture,
+                "npt={0}-{1}/{1}",
+                startSeconds,
+                runtimeSeconds);
+            responseHeaders["X-AvailableSeekRange"] = string.Format(
+                CultureInfo.InvariantCulture,
+                "1 npt={0}-{1}",
+                startSeconds,
+                runtimeSeconds);
         }
     }
 }
