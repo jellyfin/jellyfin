@@ -168,9 +168,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>System.String.</returns>
         public string GetUserAgentParam(EncodingJobInfo state)
         {
-            state.RemoteHttpHeaders.TryGetValue("User-Agent", out string useragent);
-
-            if (!string.IsNullOrEmpty(useragent))
+            if (state.RemoteHttpHeaders.TryGetValue("User-Agent", out string useragent))
             {
                 return "-user_agent \"" + useragent + "\"";
             }

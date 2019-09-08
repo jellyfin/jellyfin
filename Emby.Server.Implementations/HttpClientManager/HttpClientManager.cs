@@ -83,7 +83,16 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             var request = new HttpRequestMessage(method, url);
 
-            AddRequestHeaders(request, options);
+            foreach (var header in options.RequestHeaders)
+            {
+                request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+
+            if (options.EnableDefaultUserAgent
+                && !request.Headers.TryGetValues(HeaderNames.UserAgent, out _))
+            {
+                request.Headers.Add(HeaderNames.UserAgent, _defaultUserAgentFn());
+            }
 
             switch (options.DecompressionMethod)
             {
@@ -119,26 +128,6 @@ namespace Emby.Server.Implementations.HttpClientManager
             */
 
             return request;
-        }
-
-        private void AddRequestHeaders(HttpRequestMessage request, HttpRequestOptions options)
-        {
-            var hasUserAgent = false;
-
-            foreach (var header in options.RequestHeaders)
-            {
-                if (string.Equals(header.Key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase))
-                {
-                    hasUserAgent = true;
-                }
-
-                request.Headers.Add(header.Key, header.Value);
-            }
-
-            if (!hasUserAgent && options.EnableDefaultUserAgent)
-            {
-                request.Headers.Add(HeaderNames.UserAgent, _defaultUserAgentFn());
-            }
         }
 
         /// <summary>
