@@ -31,28 +31,6 @@ jobs:
       persistCredentials: false
 
     - task: DotNetCoreCLI@2
-      displayName: Restore
-      inputs:
-        command: restore
-        projects: '$(RestoreBuildProjects)'
-      enabled: false
-
-    - task: DotNetCoreCLI@2
-      displayName: Build
-      inputs:
-        projects: '$(RestoreBuildProjects)'
-        arguments: '--configuration $(BuildConfiguration)'
-      enabled: false
-
-    - task: DotNetCoreCLI@2
-      displayName: Test
-      inputs:
-        command: test
-        projects: '$(RestoreBuildProjects)'
-        arguments: '--configuration $(BuildConfiguration)'
-      enabled: false
-
-    - task: DotNetCoreCLI@2
       displayName: Publish
       inputs:
         command: publish
@@ -95,6 +73,56 @@ jobs:
       inputs:
         targetPath: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Common.dll'
         artifactName: 'Jellyfin.Common'
+
+  - job: main_build_win
+    displayName: Main Build Windows
+    pool:
+      vmImage: windows-latest
+    strategy:
+      matrix:
+        release:
+          BuildConfiguration: Release
+      maxParallel: 2
+    steps:
+    - checkout: self
+      clean: true
+      submodules: true
+      persistCredentials: false
+
+    - task: CmdLine@2
+      displayName: Clone the UX repository
+      inputs:
+        script: git clone --depth=1 https://github.com/jellyfin/jellyfin-ux $(Agent.TempDirectory)\jellyfin-ux
+
+    - task: PowerShell@2
+      displayName: Build the NSIS Installer
+      inputs:
+        targetType: 'filePath' # Optional. Options: filePath, inline
+        filePath: ./deployment/windows/build-jellyfin.ps1 # Required when targetType == FilePath
+        arguments: -InstallFFMPEG -InstallNSSM -MakeNSIS -UXLocation $(Agent.TempDirectory)\jellyfin-ux -InstallLocation $(build.artifactstagingdirectory)
+        #script: '# Write your PowerShell commands here.Write-Host Hello World' # Required when targetType == Inline
+        errorActionPreference: 'stop' # Optional. Options: stop, continue, silentlyContinue
+        #failOnStderr: false # Optional
+        #ignoreLASTEXITCODE: false # Optional
+        #pwsh: false # Optional
+        workingDirectory: $(Build.SourcesDirectory) # Optional
+
+    - task: CopyFiles@2
+      displayName: Copy the NSIS Installer to the artifact directory
+      inputs:
+        sourceFolder: $(Build.SourcesDirectory)/deployment/windows/ # Optional
+        contents: 'jellyfin*.exe'
+        targetFolder: $(System.ArtifactsDirectory)/setup
+        cleanTargetFolder: true # Optional
+        overWrite: true # Optional
+        flattenFolders: true # Optional
+
+    - task: PublishPipelineArtifact@0
+      displayName: 'Publish Setup Artifact'
+      condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
+      inputs:
+        targetPath: '$(build.artifactstagingdirectory)/setup'
+        artifactName: 'Jellyfin Server Setup'
 
   - job: dotnet_compat
     displayName: Compatibility Check

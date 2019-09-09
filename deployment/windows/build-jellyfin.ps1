@@ -1,10 +1,13 @@
 [CmdletBinding()]
 param(
     [switch]$MakeNSIS,
+    [switch]$InstallNSIS,
     [switch]$InstallFFMPEG,
     [switch]$InstallNSSM,
+    [switch]$SkipJellyfinBuild,
     [switch]$GenerateZip,
-    [string]$InstallLocation = "$Env:AppData/Jellyfin-Server/",
+    [string]$InstallLocation = "./dist/jellyfin-win-nsis",
+    [string]$UXLocation = "../jellyfin-ux",
     [ValidateSet('Debug','Release')][string]$BuildType = 'Release',
     [ValidateSet('Quiet','Minimal', 'Normal')][string]$DotNetVerbosity = 'Minimal',
     [ValidateSet('win','win7', 'win8','win81','win10')][string]$WindowsVersion = 'win',
@@ -17,6 +20,10 @@ if(($PSVersionTable.PSEdition -eq 'Core') -and (-not $IsWindows)){
 }else{
     $TempDir = $env:Temp
 }
+#Create staging dir
+New-Item -ItemType Directory -Force -Path $InstallLocation
+$ResolvedInstallLocation = Resolve-Path $InstallLocation
+$ResolvedUXLocation = Resolve-Path $UXLocation
 
 function Build-JellyFin {
     if(($Architecture -eq 'arm64') -and ($WindowsVersion -ne 'win10')){
@@ -28,14 +35,14 @@ function Build-JellyFin {
             exit
         }
     Write-Verbose "windowsversion-Architecture: $windowsversion-$Architecture"
-    Write-Verbose "InstallLocation: $InstallLocation"
+    Write-Verbose "InstallLocation: $ResolvedInstallLocation"
     Write-Verbose "DotNetVerbosity: $DotNetVerbosity"
-    dotnet publish -c $BuildType -r `"$windowsversion-$Architecture`" MediaBrowser.sln -o $InstallLocation -v $DotNetVerbosity
+    dotnet publish --self-contained -c $BuildType --output $ResolvedInstallLocation -v $DotNetVerbosity -p:GenerateDocumentationFile=false -p:DebugSymbols=false -p:DebugType=none --runtime `"$windowsversion-$Architecture`" Jellyfin.Server
 }
 
 function Install-FFMPEG {
     param(
-        [string]$InstallLocation,
+        [string]$ResolvedInstallLocation,
         [string]$Architecture
     )
     Write-Verbose "Checking Architecture"
@@ -44,31 +51,31 @@ function Install-FFMPEG {
         Write-Warning "FFMPEG will not be installed"
     }elseif($Architecture -eq 'x64'){
          Write-Verbose "Downloading 64 bit FFMPEG"
-         Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-4.0.2-win64-static.zip -UseBasicParsing -OutFile "$tempdir/fmmpeg.zip" | Write-Verbose
+         Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win64/shared/ffmpeg-4.0.2-win64-shared.zip -UseBasicParsing -OutFile "$tempdir/ffmpeg.zip" | Write-Verbose
     }else{
          Write-Verbose "Downloading 32 bit FFMPEG"
-         Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-4.0.2-win32-static.zip -UseBasicParsing -OutFile "$tempdir/fmmpeg.zip" | Write-Verbose
+         Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win32/shared/ffmpeg-4.0.2-win32-shared.zip -UseBasicParsing -OutFile "$tempdir/ffmpeg.zip" | Write-Verbose
     }
 
-    Expand-Archive "$tempdir/fmmpeg.zip" -DestinationPath "$tempdir/ffmpeg/" | Write-Verbose
+    Expand-Archive "$tempdir/ffmpeg.zip" -DestinationPath "$tempdir/ffmpeg/" -Force | Write-Verbose
     if($Architecture -eq 'x64'){
         Write-Verbose "Copying Binaries to Jellyfin location"
-        Get-ChildItem "$tempdir/ffmpeg/ffmpeg-4.0.2-win64-static/bin" | ForEach-Object {
+        Get-ChildItem "$tempdir/ffmpeg/ffmpeg-4.0.2-win64-shared/bin" | ForEach-Object {
             Copy-Item $_.FullName -Destination $installLocation | Write-Verbose
         }
     }else{
         Write-Verbose "Copying Binaries to Jellyfin location"
-        Get-ChildItem "$tempdir/ffmpeg/ffmpeg-4.0.2-win32-static/bin" | ForEach-Object {
+        Get-ChildItem "$tempdir/ffmpeg/ffmpeg-4.0.2-win32-shared/bin" | ForEach-Object {
             Copy-Item $_.FullName -Destination $installLocation | Write-Verbose
         }
     }
     Remove-Item "$tempdir/ffmpeg/" -Recurse -Force -ErrorAction Continue | Write-Verbose
-    Remove-Item "$tempdir/fmmpeg.zip" -Force -ErrorAction Continue | Write-Verbose
+    Remove-Item "$tempdir/ffmpeg.zip" -Force -ErrorAction Continue | Write-Verbose
 }
 
 function Install-NSSM {
     param(
-        [string]$InstallLocation,
+        [string]$ResolvedInstallLocation,
         [string]$Architecture
     )
     Write-Verbose "Checking Architecture"
@@ -81,7 +88,7 @@ function Install-NSSM {
          Invoke-WebRequest -Uri https://nssm.cc/ci/nssm-2.24-101-g897c7ad.zip -UseBasicParsing -OutFile "$tempdir/nssm.zip" | Write-Verbose
     }
 
-    Expand-Archive "$tempdir/nssm.zip" -DestinationPath "$tempdir/nssm/" | Write-Verbose
+    Expand-Archive "$tempdir/nssm.zip" -DestinationPath "$tempdir/nssm/" -Force | Write-Verbose
     if($Architecture -eq 'x64'){
         Write-Verbose "Copying Binaries to Jellyfin location"
         Get-ChildItem "$tempdir/nssm/nssm-2.24-101-g897c7ad/win64" | ForEach-Object {
@@ -99,40 +106,59 @@ function Install-NSSM {
 
 function Make-NSIS {
     param(
-        [string]$InstallLocation
+        [string]$ResolvedInstallLocation
     )
-	Write-Verbose "Downloading NSIS"
-	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-	Invoke-WebRequest -Uri https://nchc.dl.sourceforge.net/project/nsis/NSIS%203/3.04/nsis-3.04.zip -UseBasicParsing -OutFile "$tempdir/nsis.zip" | Write-Verbose
+
+    $env:InstallLocation = $ResolvedInstallLocation
+    if($InstallNSIS.IsPresent -or ($InstallNSIS -eq $true)){
+        & "$tempdir/nsis/nsis-3.04/makensis.exe" /D$Architecture /DUXPATH=$ResolvedUXLocation ".\deployment\windows\jellyfin.nsi"
+    } else {
+        & "makensis" /D$Architecture /DUXPATH=$ResolvedUXLocation ".\deployment\windows\jellyfin.nsi"
+    }
+    Copy-Item .\deployment\windows\jellyfin_*.exe $ResolvedInstallLocation\..\
+}
+
+
+function Install-NSIS {
+    Write-Verbose "Downloading NSIS"
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Invoke-WebRequest -Uri https://nchc.dl.sourceforge.net/project/nsis/NSIS%203/3.04/nsis-3.04.zip -UseBasicParsing -OutFile "$tempdir/nsis.zip" | Write-Verbose
 
     Expand-Archive "$tempdir/nsis.zip" -DestinationPath "$tempdir/nsis/" -Force | Write-Verbose
-	$env:InstallLocation = $InstallLocation
-	& "$tempdir/nsis/nsis-3.04/makensis.exe" ".\deployment\windows\jellyfin.nsi"
-	Copy-Item .\deployment\windows\jellyfin_*.exe $InstallLocation\..\
-	
+}
+
+function Cleanup-NSIS {
     Remove-Item "$tempdir/nsis/" -Recurse -Force -ErrorAction Continue | Write-Verbose
     Remove-Item "$tempdir/nsis.zip" -Force -ErrorAction Continue | Write-Verbose
 }
-
-
-Write-Verbose "Starting Build Process: Selected Environment is $WindowsVersion-$Architecture"
-Build-JellyFin
+if(-not $SkipJellyfinBuild.IsPresent -and -not ($InstallNSIS -eq $true)){
+    Write-Verbose "Starting Build Process: Selected Environment is $WindowsVersion-$Architecture"
+    Build-JellyFin
+}
 if($InstallFFMPEG.IsPresent -or ($InstallFFMPEG -eq $true)){
     Write-Verbose "Starting FFMPEG Install"
-    Install-FFMPEG $InstallLocation $Architecture
+    Install-FFMPEG $ResolvedInstallLocation $Architecture
 }
 if($InstallNSSM.IsPresent -or ($InstallNSSM -eq $true)){
     Write-Verbose "Starting NSSM Install"
-    Install-NSSM $InstallLocation $Architecture
+    Install-NSSM $ResolvedInstallLocation $Architecture
 }
-Copy-Item .\deployment\windows\install-jellyfin.ps1 $InstallLocation\install-jellyfin.ps1
-Copy-Item .\deployment\windows\install.bat $InstallLocation\install.bat
-Copy-Item .\LICENSE $InstallLocation\LICENSE
+#Copy-Item .\deployment\windows\install-jellyfin.ps1 $ResolvedInstallLocation\install-jellyfin.ps1
+#Copy-Item .\deployment\windows\install.bat $ResolvedInstallLocation\install.bat
+Copy-Item .\LICENSE $ResolvedInstallLocation\LICENSE
+if($InstallNSIS.IsPresent -or ($InstallNSIS -eq $true)){
+    Write-Verbose "Installing NSIS"
+    Install-NSIS
+}
 if($MakeNSIS.IsPresent -or ($MakeNSIS -eq $true)){
     Write-Verbose "Starting NSIS Package creation"
-    Make-NSIS $InstallLocation
+    Make-NSIS $ResolvedInstallLocation
+}
+if($InstallNSIS.IsPresent -or ($InstallNSIS -eq $true)){
+    Write-Verbose "Cleanup NSIS"
+    Cleanup-NSIS
 }
 if($GenerateZip.IsPresent -or ($GenerateZip -eq $true)){
-    Compress-Archive -Path $InstallLocation -DestinationPath "$InstallLocation/jellyfin.zip" -Force
+    Compress-Archive -Path $ResolvedInstallLocation -DestinationPath "$ResolvedInstallLocation/jellyfin.zip" -Force
 }
 Write-Verbose "Finished"
