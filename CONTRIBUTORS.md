@@ -29,6 +29,7 @@
  - [joern-h](https://github.com/joern-h)
  - [Khinenw](https://github.com/HelloWorld017)
  - [fhriley](https://github.com/fhriley)
+ - [nevado](https://github.com/nevado)
 
 # Emby Contributors
 

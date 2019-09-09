@@ -13,7 +13,7 @@ FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}
 # libfontconfig1 is required for Skia
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y \
-   libfontconfig1 \
+   libfontconfig1 mesa-va-drivers \
  && apt-get clean autoclean \
  && apt-get autoremove \
  && rm -rf /var/lib/apt/lists/* \
