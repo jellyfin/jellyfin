@@ -225,13 +225,15 @@ namespace MediaBrowser.Api
 
             if (displayOrderChanged)
             {
-                _providerManager.QueueRefresh(series.Id, new MetadataRefreshOptions(new DirectoryService(Logger, _fileSystem))
-                {
-                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                    ImageRefreshMode = MetadataRefreshMode.FullRefresh,
-                    ReplaceAllMetadata = true
-
-                }, RefreshPriority.High);
+                _providerManager.QueueRefresh(
+                    series.Id,
+                    new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                    {
+                        MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                        ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+                        ReplaceAllMetadata = true
+                    },
+                    RefreshPriority.High);
             }
         }
 

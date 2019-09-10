@@ -227,15 +227,17 @@ namespace MediaBrowser.Api
             //item.ProductionYear = request.ProductionYear;
             //item.Name = request.Name;
 
-            return _providerManager.RefreshFullItem(item, new MetadataRefreshOptions(new DirectoryService(Logger, _fileSystem))
-            {
-                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                ImageRefreshMode = MetadataRefreshMode.FullRefresh,
-                ReplaceAllMetadata = true,
-                ReplaceAllImages = request.ReplaceAllImages,
-                SearchResult = request
-
-            }, CancellationToken.None);
+            return _providerManager.RefreshFullItem(
+                item,
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                {
+                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ReplaceAllMetadata = true,
+                    ReplaceAllImages = request.ReplaceAllImages,
+                    SearchResult = request
+                },
+                CancellationToken.None);
         }
 
         /// <summary>
@@ -294,11 +296,9 @@ namespace MediaBrowser.Api
 
             Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
             using (var stream = result.Content)
+            using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
             {
-                using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
-                {
-                    await stream.CopyToAsync(filestream).ConfigureAwait(false);
-                }
+                await stream.CopyToAsync(filestream).ConfigureAwait(false);
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
@@ -311,9 +311,6 @@ namespace MediaBrowser.Api
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
         private string GetFullCachePath(string filename)
-        {
-            return Path.Combine(_appPaths.CachePath, "remote-images", filename.Substring(0, 1), filename);
-        }
-
+            => Path.Combine(_appPaths.CachePath, "remote-images", filename.Substring(0, 1), filename);
     }
 }

@@ -1489,16 +1489,18 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 _logger.LogInformation("Refreshing recording parent {path}", item.Path);
 
-                _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
-                {
-                    RefreshPaths = new string[]
+                _providerManager.QueueRefresh(
+                    item.Id,
+                    new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                     {
-                        path,
-                        Path.GetDirectoryName(path),
-                        Path.GetDirectoryName(Path.GetDirectoryName(path))
-                    }
-
-                }, RefreshPriority.High);
+                        RefreshPaths = new string[]
+                        {
+                            path,
+                            Path.GetDirectoryName(path),
+                            Path.GetDirectoryName(Path.GetDirectoryName(path))
+                        }
+                    },
+                    RefreshPriority.High);
             }
         }
 

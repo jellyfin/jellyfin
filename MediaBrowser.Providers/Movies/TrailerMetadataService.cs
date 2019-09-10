@@ -1,5 +1,5 @@
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -9,9 +9,9 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Movies
 {
-    public class MovieMetadataService : MetadataService<Movie, MovieInfo>
+    public class TrailerMetadataService : MetadataService<Trailer, TrailerInfo>
     {
-        public MovieMetadataService(
+        public TrailerMetadataService(
             IServerConfigurationManager serverConfigurationManager,
             ILogger logger,
             IProviderManager providerManager,
@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Movies
         }
 
         /// <inheritdoc />
-        protected override bool IsFullLocalMetadata(Movie item)
+        protected override bool IsFullLocalMetadata(Trailer item)
         {
             if (string.IsNullOrWhiteSpace(item.Overview))
             {
@@ -36,16 +36,13 @@ namespace MediaBrowser.Providers.Movies
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Movie> source, MetadataResult<Movie> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Trailer> source, MetadataResult<Trailer> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
-            var sourceItem = source.Item;
-            var targetItem = target.Item;
-
-            if (replaceData || string.IsNullOrEmpty(targetItem.CollectionName))
+            if (replaceData || target.Item.TrailerTypes.Length == 0)
             {
-                targetItem.CollectionName = sourceItem.CollectionName;
+                target.Item.TrailerTypes = source.Item.TrailerTypes;
             }
         }
     }

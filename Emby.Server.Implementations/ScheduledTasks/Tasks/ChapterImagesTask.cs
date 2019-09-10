@@ -19,16 +19,17 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Class ChapterImagesTask
+    /// Class ChapterImagesTask.
     /// </summary>
     public class ChapterImagesTask : IScheduledTask
     {
         /// <summary>
-        /// The _logger
+        /// The _logger.
         /// </summary>
         private readonly ILogger _logger;
+
         /// <summary>
-        /// The _library manager
+        /// The _library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
@@ -53,12 +54,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Creates the triggers that define when the task will run
+        /// Creates the triggers that define when the task will run.
         /// </summary>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[] {
-
+            return new[]
+            {
                 new TaskTriggerInfo
                 {
                     Type = TaskTriggerInfo.TriggerDaily,
@@ -117,7 +118,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 previouslyFailedImages = new List<string>();
             }
 
-            var directoryService = new DirectoryService(_logger, _fileSystem);
+            var directoryService = new DirectoryService(_fileSystem);
 
             foreach (var video in videos)
             {
