@@ -604,7 +604,7 @@ namespace MediaBrowser.Api
                         process.StandardInput.WriteLine("q");
 
                         // Need to wait because killing is asynchronous
-                        if (!process.WaitForExit(5000))
+                        if (!(process.WaitForExit(5000)))
                         {
                             Logger.LogInformation("Killing ffmpeg process for {Path}", job.Path);
                             process.Kill();
