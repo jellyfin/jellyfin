@@ -970,7 +970,7 @@ namespace MediaBrowser.Api.Playback.Hls
             if (isEncoding && state.TargetFramerate > 0)
             {
                 float startTime = 1 / (state.TargetFramerate.Value * 2);
-                timeDeltaParam = string.Format("-segment_time_delta {0}", Math.Round(startTime, 3));
+                timeDeltaParam = string.Format(CultureInfo.InvariantCulture, "-segment_time_delta {0:F3}", startTime);
             }
 
             var segmentFormat = GetSegmentFileExtension(state.Request).TrimStart('.');
