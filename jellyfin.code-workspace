@@ -2,6 +2,15 @@
     "folders": [
         {
             "path": "."
+        },
+        {
+            "path": "..\\jellyfin-docs"
+        },
+        {
+            "path": "..\\jellyfin-plugin-template"
+        },
+        {
+            "path": "..\\jellyfin-web"
         }
     ],
     "settings": {
