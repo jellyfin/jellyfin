@@ -1,6 +1,15 @@
 ARG DOTNET_VERSION=2.2
 ARG FFMPEG_VERSION=latest
 
+FROM node:alpine as web-builder
+ARG JELLYFIN_WEB_VERSION=v10.4.0
+RUN apk add curl \
+ && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
+ && cd jellyfin-web-* \
+ && yarn install \
+ && yarn build \
+ && mv dist /dist
+
 FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION} as builder
 WORKDIR /repo
 COPY . .
@@ -21,11 +30,7 @@ RUN apt-get update \
  && chmod 777 /cache /config /media
 COPY --from=ffmpeg / /
 COPY --from=builder /jellyfin /jellyfin
-
-ARG JELLYFIN_WEB_VERSION=v10.4.0
-RUN curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
- && rm -rf /jellyfin/jellyfin-web \
- && mv jellyfin-web-* /jellyfin/jellyfin-web
+COPY --from=web-builder /dist /jellyfin/jellyfin-web/src
 
 EXPOSE 8096
 VOLUME /cache /config /media
