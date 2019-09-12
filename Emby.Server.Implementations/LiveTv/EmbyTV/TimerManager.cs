@@ -14,21 +14,19 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
     public class TimerManager : ItemDataProvider<TimerInfo>
     {
         private readonly ConcurrentDictionary<string, Timer> _timers = new ConcurrentDictionary<string, Timer>(StringComparer.OrdinalIgnoreCase);
-        private readonly ILogger _logger;
 
-        public event EventHandler<GenericEventArgs<TimerInfo>> TimerFired;
-
-        public TimerManager(IJsonSerializer jsonSerializer, ILogger logger, string dataPath, ILogger logger1)
+        public TimerManager(IJsonSerializer jsonSerializer, ILogger logger, string dataPath)
             : base(jsonSerializer, logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
-            _logger = logger1;
         }
+
+        public event EventHandler<GenericEventArgs<TimerInfo>> TimerFired;
 
         public void RestartTimers()
         {
             StopTimers();
 
-            foreach (var item in GetAll().ToList())
+            foreach (var item in GetAll())
             {
                 AddOrUpdateSystemTimer(item);
             }
@@ -64,16 +62,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            var list = GetAll().ToList();
+            base.AddOrUpdate(item);
+        }
 
-            if (!list.Any(i => EqualityComparer(i, item)))
-            {
-                base.Add(item);
-            }
-            else
-            {
-                base.Update(item);
-            }
+        public override void AddOrUpdate(TimerInfo item)
+        {
+            base.AddOrUpdate(item);
+            AddOrUpdateSystemTimer(item);
         }
 
         public override void Add(TimerInfo item)
@@ -89,8 +84,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private static bool ShouldStartTimer(TimerInfo item)
         {
-            if (item.Status == RecordingStatus.Completed ||
-                item.Status == RecordingStatus.Cancelled)
+            if (item.Status == RecordingStatus.Completed
+                || item.Status == RecordingStatus.Cancelled)
             {
                 return false;
             }
@@ -126,12 +121,16 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (_timers.TryAdd(item.Id, timer))
             {
-                _logger.LogInformation("Creating recording timer for {id}, {name}. Timer will fire in {minutes} minutes", item.Id, item.Name, dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture));
+                Logger.LogInformation(
+                    "Creating recording timer for {Id}, {Name}. Timer will fire in {Minutes} minutes",
+                    item.Id,
+                    item.Name,
+                    dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture));
             }
             else
             {
                 timer.Dispose();
-                _logger.LogWarning("Timer already exists for item {id}", item.Id);
+                Logger.LogWarning("Timer already exists for item {Id}", item.Id);
             }
         }
 
