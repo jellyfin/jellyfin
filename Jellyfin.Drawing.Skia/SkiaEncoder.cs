@@ -9,6 +9,7 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
+using static Jellyfin.Drawing.Skia.SkiaHelper;
 
 namespace Jellyfin.Drawing.Skia
 {
@@ -184,16 +185,23 @@ namespace Jellyfin.Drawing.Skia
             }
         }
 
+        /// <inheritdoc />
         public ImageDimensions GetImageSize(string path)
         {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             if (!File.Exists(path))
             {
                 throw new FileNotFoundException("File not found", path);
             }
 
-            using (var s = new SKFileStream(path))
-            using (var codec = SKCodec.Create(s))
+            using (var codec = SKCodec.Create(path, out SKCodecResult result))
             {
+                EnsureSuccess(result);
+
                 var info = codec.Info;
 
                 return new ImageDimensions(info.Width, info.Height);
