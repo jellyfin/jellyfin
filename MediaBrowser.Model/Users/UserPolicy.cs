@@ -66,7 +66,7 @@ namespace MediaBrowser.Model.Users
         public bool EnableAllFolders { get; set; }
 
         public int InvalidLoginAttemptCount { get; set; }
-        public int? LoginAttemptsBeforeLockout { get; set; }
+        public int LoginAttemptsBeforeLockout { get; set; }
 
         public bool EnablePublicSharing { get; set; }
 
