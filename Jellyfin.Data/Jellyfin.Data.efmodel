@@ -21,6 +21,9 @@
           <modelEnumHasValues Id="a591f800-7dff-481f-9cdd-f244e210a25b">
             <modelEnumValue Id="0fb59a2b-3424-4a31-a7e3-04ae31aee294" name="Artist" />
           </modelEnumHasValues>
+          <modelEnumHasValues Id="a7dc3f97-0591-4a81-9b83-1d78cb99a5d4">
+            <modelEnumValue Id="65a43391-87ac-4490-92c8-362c31d0836b" name="OriginalArtist" />
+          </modelEnumHasValues>
           <modelEnumHasValues Id="ec0cc5ff-95a1-43dd-9c7b-8cd415066c9e">
             <modelEnumValue Id="bff73fd7-1c60-4f20-9ef6-4e987d67f3d2" name="Actor" />
           </modelEnumHasValues>
@@ -32,6 +35,12 @@
           </modelEnumHasValues>
           <modelEnumHasValues Id="209a9a5f-3adc-4779-9cd7-a0b9d41ce87f">
             <modelEnumValue Id="451ec3e3-3cc3-4b90-b4ef-53e120e54f3a" name="Remixer" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="31e0c122-5b64-44b3-a65a-343481555c7c">
+            <modelEnumValue Id="b3f34e2b-9309-40f8-9862-6d205319f7bc" name="Conductor" />
+          </modelEnumHasValues>
+          <modelEnumHasValues Id="2037c96b-a90b-4506-a58f-16ac72ff20f0">
+            <modelEnumValue Id="c9f2e529-9a37-4a24-815e-67fc25f87094" name="Composer" />
           </modelEnumHasValues>
         </values>
       </modelEnum>
@@ -93,7 +102,15 @@
       </modelClass>
     </modelRootHasClasses>
     <modelRootHasClasses Id="adfbbc1f-987c-4a54-b3b1-a5df1615921e">
-      <modelClass Id="2736560a-088d-4546-bb08-2ec58cde6ef7" tableName="MovieMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="MovieMetadata" name="MovieMetadata" outputDirectory="Entities" baseClass="Metadata" />
+      <modelClass Id="2736560a-088d-4546-bb08-2ec58cde6ef7" tableName="MovieMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="MovieMetadata" name="MovieMetadata" outputDirectory="Entities" baseClass="Metadata">
+        <attributes>
+          <modelAttribute Id="8ef48e28-7dd8-4780-82b2-57790af55231" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Outline" columnName="Outline" columnType="default" />
+          <modelAttribute Id="f4be0442-ab47-4d53-b6d9-c702834e17dc" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="Plot" columnName="Plot" columnType="default" />
+          <modelAttribute Id="9e6c7293-ede2-4a1a-9b8b-31facabe9d13" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Tagline" columnName="Tagline" columnType="default" />
+          <modelAttribute Id="917646d0-4842-4f25-bfb8-b73555e29591" maxLength="2" indexed="false" indexedUnique="false" stringType="None" name="Country" columnName="Country" columnType="default" />
+          <modelAttribute Id="5ebe95da-ed0e-438e-8af3-9639de4bd0d3" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Studio" columnName="Studio" columnType="default" />
+        </attributes>
+      </modelClass>
     </modelRootHasClasses>
     <modelRootHasClasses Id="01df47f7-7457-4591-aa25-f173d846e31d">
       <modelClass Id="ac1f2894-5bcf-47b0-9e53-6835d024881e" tableName="Series" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Series" name="Series" outputDirectory="Entities" baseClass="LibraryItem">
@@ -108,7 +125,15 @@
       </modelClass>
     </modelRootHasClasses>
     <modelRootHasClasses Id="903b8e45-f6ea-4ac5-b332-bf6bc12fb237">
-      <modelClass Id="1856fbb6-16c6-47d4-baaf-6dcd8b5e0b50" tableName="SeriesMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="SeriesMetadata" name="SeriesMetadata" outputDirectory="Entities" baseClass="Metadata" />
+      <modelClass Id="1856fbb6-16c6-47d4-baaf-6dcd8b5e0b50" tableName="SeriesMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="SeriesMetadata" name="SeriesMetadata" outputDirectory="Entities" baseClass="Metadata">
+        <attributes>
+          <modelAttribute Id="f53e40d1-4b2e-4b4c-8068-73ffbaabda85" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Outline" columnName="Outline" columnType="default" />
+          <modelAttribute Id="f3ec0eac-de21-4ab9-8237-f79fd4f4cb5b" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="Plot" columnName="Plot" columnType="default" />
+          <modelAttribute Id="352def7d-1e94-466f-9fc7-840de709140e" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Tagline" columnName="Tagline" columnType="default" />
+          <modelAttribute Id="6c2ef4a2-68a8-4f1a-8e5f-e18b68adc22d" maxLength="2" indexed="false" indexedUnique="false" stringType="None" name="Country" columnName="Country" columnType="default" />
+          <modelAttribute Id="325bfd8f-1283-46a7-962c-ebaa6cac8a25" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Network" columnName="Network" columnType="default" />
+        </attributes>
+      </modelClass>
     </modelRootHasClasses>
     <modelRootHasClasses Id="24a4a1ed-384d-4877-a385-2665aa54e45c">
       <modelClass Id="e7524125-fbc5-4767-8351-eec6bb5957d3" tableName="Release" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Releases" name="Release" outputDirectory="Entities">
@@ -147,25 +172,25 @@
           <generalization Id="3ca5372d-9f86-4eba-a2e1-a8907b23db3c">
             <modelClassMoniker Id="ac1f2894-5bcf-47b0-9e53-6835d024881e" />
           </generalization>
-          <generalization Id="24cec49d-d91d-4f07-8d4c-f15811a5eeab">
+          <generalization Id="ef83222b-add2-48f7-b0fb-ade093c5c18e">
             <modelClassMoniker Id="aae43516-5dc1-4e8b-9d49-767646006865" />
           </generalization>
-          <generalization Id="4354df30-d136-4612-bdbf-04dce4dc5136">
+          <generalization Id="0e030a8f-dd91-4206-900e-d48ee328e451">
             <modelClassMoniker Id="e9cb5b65-ef8c-4021-a2c1-fa5600f98b50" />
           </generalization>
-          <generalization Id="62b712c6-2d27-4ddd-b1a3-fe73fce09239">
+          <generalization Id="afedca72-7edc-48a0-9fd4-e0d498ab93e5">
             <modelClassMoniker Id="2518ea14-6282-4da5-b4ae-43b3dbdfe198" />
           </generalization>
-          <generalization Id="d5c988fb-3fb6-4dfb-b73b-4f488f1981be">
+          <generalization Id="b5a279c2-96bf-4947-8b64-30212a3d10a9">
             <modelClassMoniker Id="fbf358b0-540d-4215-a93a-4197340ea821" />
           </generalization>
-          <generalization Id="c0734791-37d0-4dd2-87fd-32cb9ba9a4d3">
+          <generalization Id="ec9b0809-4d82-45e3-aabf-e74c4f73178d">
             <modelClassMoniker Id="a32f3f8c-3434-41b7-9957-c839c520eda7" />
           </generalization>
-          <generalization Id="a1069180-e60b-4641-90d5-cc0ca13bdd20">
+          <generalization Id="82ed2249-925b-4926-b8db-37287038d97c">
             <modelClassMoniker Id="cf9b1363-d1a2-46b7-a1ec-56a7b0a418da" />
           </generalization>
-          <generalization Id="9a679250-b296-4d9f-ae28-7b0fe3f39caf">
+          <generalization Id="8a9e649c-1b2d-4541-b658-e242f96e0cbf">
             <modelClassMoniker Id="d9db9cdb-1e90-479c-9383-bc7ce2eab1b4" />
           </generalization>
         </subclasses>
@@ -195,10 +220,15 @@
           <unidirectionalAssociation Id="46a9684d-293a-4a9c-af3b-c3f6bbad46ee" targetPropertyName="Artwork" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
             <modelClassMoniker Id="4f3e230d-cb8f-47e8-bfc5-93d80151cc9e" />
           </unidirectionalAssociation>
+          <unidirectionalAssociation Id="f8244d7b-58a0-44d9-9c37-d0da7c535d0c" targetPropertyName="Ratings" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
+            <modelClassMoniker Id="6363388b-d07e-4e8d-a70e-aa8f4b5d1a31" />
+          </unidirectionalAssociation>
         </unidirectionalTargets>
         <attributes>
           <modelAttribute Id="e267cf1e-7f30-4d01-ad1f-58837338902f" type="Int32" isIdentity="true" required="true" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" columnName="Id" columnType="default" />
           <modelAttribute Id="6848848e-7ea1-4600-8bc7-77d06594fce8" required="true" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Title" columnName="Title" columnType="default" />
+          <modelAttribute Id="dbb4b743-2ef2-4835-958d-7cad6f6feb41" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="OriginalTitle" columnName="OriginalTitle" columnType="default" />
+          <modelAttribute Id="9e867bd7-7e5a-42e3-8853-e74c8eac756d" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="SortTitle" columnName="SortTitle" columnType="default" />
           <modelAttribute Id="0b04d87f-a608-4322-b80e-600f7f35c949" required="true" maxLength="3" indexed="false" indexedUnique="false" stringType="None" summary="ISO-639-3 3-character language codes" name="Language" minLength="3" columnName="Language" columnType="default" />
           <modelAttribute Id="bb15eb24-e42a-4c2d-a86d-fe8df234121d" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="SourceId" columnName="SourceId" columnType="default" />
           <modelAttribute Id="b3a84933-f760-443e-bea7-4bc8ffdcabde" type="DateTime" indexed="false" indexedUnique="false" stringType="None" name="ReleaseDate" columnName="ReleaseDate" columnType="default" />
@@ -213,25 +243,25 @@
           <generalization Id="c488c083-7693-4a5c-95d3-8bb81bdd5e62">
             <modelClassMoniker Id="1856fbb6-16c6-47d4-baaf-6dcd8b5e0b50" />
           </generalization>
-          <generalization Id="7a142077-3232-429e-9f08-013a16f1afc3">
+          <generalization Id="7f90ce67-96ad-4850-8de0-44fb60c1b847">
             <modelClassMoniker Id="c92a5225-512d-43a7-9197-b30a10c50f45" />
           </generalization>
-          <generalization Id="3d0533b2-178c-4426-8213-32a00d3cca71">
+          <generalization Id="58fb2d9b-d6e3-46f0-9a75-9be43225425b">
             <modelClassMoniker Id="c8943a8b-d7ce-4b3c-8eb0-2517cb098bdf" />
           </generalization>
-          <generalization Id="84791388-f82a-44d5-b467-10114c2bd715">
+          <generalization Id="dc058893-517f-4b00-bff8-02a276b1f40b">
             <modelClassMoniker Id="c7ce359f-434d-4516-8682-d5ad16d74625" />
           </generalization>
-          <generalization Id="11cc3bd9-615e-4e40-9928-231066933f32">
+          <generalization Id="dc279a18-4d87-4511-8ee8-57453de94c4d">
             <modelClassMoniker Id="0ac0aaf9-2d80-4486-830f-8bae4dea7124" />
           </generalization>
-          <generalization Id="8694d05b-de42-4d46-86cd-0eb6a86f3a8a">
+          <generalization Id="6bc6be69-ce7d-4ac9-a481-10a6af25a280">
             <modelClassMoniker Id="9690b77b-4fcc-4811-bb56-fed005e6da73" />
           </generalization>
-          <generalization Id="11b989c3-3908-4e28-ad14-c8e8a3eabadd">
+          <generalization Id="610117c8-6eb1-435b-8e07-a3315408b720">
             <modelClassMoniker Id="f2238a16-e071-444b-8ae0-7d5ea623c9e9" />
           </generalization>
-          <generalization Id="a866f17d-672c-49d5-a22c-95d5f1593611">
+          <generalization Id="5dfe00b0-e4d8-467a-bde3-6458b1745a57">
             <modelClassMoniker Id="7ed8e307-b5e6-4602-a99c-51ea6a9c4bd2" />
           </generalization>
         </subclasses>
@@ -277,7 +307,13 @@
       </modelClass>
     </modelRootHasClasses>
     <modelRootHasClasses Id="249c64dc-a08b-4458-b60e-a2a42d17a271">
-      <modelClass Id="c92a5225-512d-43a7-9197-b30a10c50f45" tableName="EpisodeMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="EpisodeMetadata" name="EpisodeMetadata" outputDirectory="Entities" baseClass="Metadata" />
+      <modelClass Id="c92a5225-512d-43a7-9197-b30a10c50f45" tableName="EpisodeMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="EpisodeMetadata" name="EpisodeMetadata" outputDirectory="Entities" baseClass="Metadata">
+        <attributes>
+          <modelAttribute Id="aafb5bb1-8fbb-4160-810b-0ea2f73cf35d" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Outline" columnName="Outline" columnType="default" />
+          <modelAttribute Id="8fe55bea-4312-4e77-9e1c-ff945e3ad69a" maxLength="65535" indexed="false" indexedUnique="false" stringType="None" name="Plot" columnName="Plot" columnType="default" />
+          <modelAttribute Id="793ff57b-16cb-4942-8220-b5ee0935f5dd" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Tagline" columnName="Tagline" columnType="default" />
+        </attributes>
+      </modelClass>
     </modelRootHasClasses>
     <modelRootHasClasses Id="789e2a8b-9853-4a0d-aa7b-8a46d4a97291">
       <modelClass Id="4f2c20cf-c5f0-4592-8888-aff4f27986a0" tableName="MediaFile" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="MediaFiles" name="MediaFile" outputDirectory="Entities">
@@ -339,23 +375,34 @@
           <unidirectionalAssociation Id="8ef88860-0a57-42d3-a51e-ae11ed8e8998" targetPropertyName="Releases" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
             <modelClassMoniker Id="e7524125-fbc5-4767-8351-eec6bb5957d3" />
           </unidirectionalAssociation>
-          <unidirectionalAssociation Id="c395059d-0d0e-4944-bce5-7eb49cc6ca72" targetPropertyName="SongMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
+          <unidirectionalAssociation Id="c395059d-0d0e-4944-bce5-7eb49cc6ca72" targetPropertyName="TrackMetadata" collectionClass="HashSet" sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
             <modelClassMoniker Id="c7ce359f-434d-4516-8682-d5ad16d74625" />
           </unidirectionalAssociation>
         </unidirectionalTargets>
       </modelClass>
     </modelRootHasClasses>
     <modelRootHasClasses Id="100a696b-75b7-4ab2-9604-4a07d22abb46">
-      <modelClass Id="c8943a8b-d7ce-4b3c-8eb0-2517cb098bdf" tableName="MusicAlbumMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="MusicAlbumMetadata" name="MusicAlbumMetadata" outputDirectory="Entities" baseClass="Metadata" />
+      <modelClass Id="c8943a8b-d7ce-4b3c-8eb0-2517cb098bdf" tableName="MusicAlbumMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="MusicAlbumMetadata" name="MusicAlbumMetadata" outputDirectory="Entities" baseClass="Metadata">
+        <attributes>
+          <modelAttribute Id="8b1cd193-76a1-4a29-bd17-06ec5121a7fe" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="Barcode" columnName="Barcode" columnType="default" />
+          <modelAttribute Id="05fba154-443a-47a3-9a71-c5740c0e7784" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Label" columnName="Label" columnType="default" />
+          <modelAttribute Id="c6973220-6694-4f72-b8f8-6404bebbf9b8" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="LabelNumber" columnName="LabelNumber" columnType="default" />
+          <modelAttribute Id="9c6c46d7-6ed8-4f11-bf33-f46dd13b9b44" maxLength="2" indexed="false" indexedUnique="false" stringType="None" name="Country" columnName="Country" columnType="default" />
+        </attributes>
+      </modelClass>
     </modelRootHasClasses>
     <modelRootHasClasses Id="aae1e835-3382-44ce-a2d5-577b0e7d2ea5">
-      <modelClass Id="c7ce359f-434d-4516-8682-d5ad16d74625" tableName="TrackMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="TrackMetadata" name="TrackMetadata" outputDirectory="Entities" baseClass="Metadata" />
+      <modelClass Id="c7ce359f-434d-4516-8682-d5ad16d74625" tableName="TrackMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="TrackMetadata" name="TrackMetadata" outputDirectory="Entities" baseClass="Metadata">
+        <attributes>
+          <modelAttribute Id="004191dd-40d3-49b6-a1df-3cf521dcdc00" type="Int32" indexed="false" indexedUnique="false" stringType="None" name="TrackNumber" columnName="TrackNumber" columnType="default" />
+        </attributes>
+      </modelClass>
     </modelRootHasClasses>
     <modelRootHasClasses Id="2aba11b2-b406-4555-ba70-1538e3f16a0e">
       <modelClass Id="54c385f0-904f-4070-a30f-0a53c3d1f21c" tableName="Genre" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Genres" name="Genre" outputDirectory="Entities">
         <attributes>
           <modelAttribute Id="f6521083-c58e-4054-a8e8-c1b439b10298" type="Int32" isIdentity="true" required="true" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" columnName="Id" columnType="default" />
-          <modelAttribute Id="05aaacea-5f11-4d6f-b48c-2c39cf425080" required="true" maxLength="255" indexed="false" indexedUnique="false" stringType="None" name="Name" columnName="Name" columnType="default" />
+          <modelAttribute Id="05aaacea-5f11-4d6f-b48c-2c39cf425080" required="true" maxLength="255" indexed="true" indexedUnique="true" stringType="None" name="Name" columnName="Name" columnType="default" />
           <modelAttribute Id="062b08af-ba0c-42c1-9f6c-9a03c86a27db" type="Binary" required="true" indexed="false" indexedUnique="false" stringType="None" isConcurrencyToken="true" name="Timestamp" columnName="Timestamp" columnType="default" />
         </attributes>
       </modelClass>
@@ -380,7 +427,7 @@
         <attributes>
           <modelAttribute Id="74be7103-1b68-4e22-a1d3-1ee3c40fcd0d" type="Int32" isIdentity="true" required="true" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" columnName="Id" columnType="default" />
           <modelAttribute Id="0ce31902-d387-4980-9f65-de0b1435680a" required="true" maxLength="65535" indexed="false" indexedUnique="false" stringType="URl" name="Path" columnName="Path" columnType="default" />
-          <modelAttribute Id="3dd60b2d-8e70-4c83-a1ab-1a9e322fd5e9" type="ArtKind" required="true" indexed="false" indexedUnique="false" stringType="None" name="Kind" columnName="Kind" columnType="default" />
+          <modelAttribute Id="3dd60b2d-8e70-4c83-a1ab-1a9e322fd5e9" type="ArtKind" required="true" indexed="true" indexedUnique="false" stringType="None" name="Kind" columnName="Kind" columnType="default" />
           <modelAttribute Id="2db78200-dd92-4398-9edf-422a4b951cb4" type="Binary" required="true" indexed="false" indexedUnique="false" stringType="None" isConcurrencyToken="true" name="Timestamp" columnName="Timestamp" columnType="default" />
         </attributes>
       </modelClass>
@@ -474,6 +521,37 @@
     </modelRootHasClasses>
     <modelRootHasClasses Id="72623ce9-0142-49a6-a7bb-ff5a1797cb15">
       <modelClass Id="7ed8e307-b5e6-4602-a99c-51ea6a9c4bd2" tableName="PhotoMetadata" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="PhotoMetadata" name="PhotoMetadata" outputDirectory="Entities" baseClass="Metadata" />
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="4351dc65-faec-40c0-8f88-efedf286e0f6">
+      <modelClass Id="6363388b-d07e-4e8d-a70e-aa8f4b5d1a31" tableName="Rating" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="Rating" name="Rating" outputDirectory="Entities">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="68ff0fe6-460e-451b-be6e-801bfd3cd022" targetMultiplicity="ZeroOne" targetPropertyName="RatingType" collectionClass="HashSet" targetSummary="If this is NULL it's the internal user rating." sourceRole="Principal" targetRole="Dependent" foreignKeyLocation="None">
+            <modelClassMoniker Id="dba03cea-aba7-4ea0-b139-663bd5fb89dd" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="a8495ba4-a45b-47b9-beeb-39790a97b542" type="Int32" isIdentity="true" required="true" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" columnName="Id" columnType="default" />
+          <modelAttribute Id="e1f79680-55a6-4459-a706-3281676a6696" type="Double" required="true" indexed="false" indexedUnique="false" stringType="None" name="Value" columnName="Value" columnType="default" />
+          <modelAttribute Id="5370167e-20b6-44ca-922f-5e87225904f2" type="Int32" indexed="false" indexedUnique="false" stringType="None" name="Votes" columnName="Votes" columnType="default" />
+          <modelAttribute Id="1de2808d-962b-4761-bc2d-8f8cc1b81a08" type="Binary" required="true" indexed="false" indexedUnique="false" stringType="None" isConcurrencyToken="true" name="Timestamp" columnName="Timestamp" columnType="default" />
+        </attributes>
+      </modelClass>
+    </modelRootHasClasses>
+    <modelRootHasClasses Id="15ce70e5-15da-4230-b2fe-8c9d7ebe66a9">
+      <modelClass Id="dba03cea-aba7-4ea0-b139-663bd5fb89dd" tableName="RatingType" databaseSchema="jellyfin" namespace="Jellyfin.Data" dbSetName="RatingSources" name="RatingSource" outputDirectory="Entities" summary="This is the entity to store review ratings, not age ratings">
+        <unidirectionalTargets>
+          <unidirectionalAssociation Id="3dde96b8-d45c-4230-8614-0726b24b4dd6" targetMultiplicity="One" targetPropertyName="Source" collectionClass="HashSet" sourceRole="Dependent" targetRole="Principal" foreignKeyLocation="None">
+            <modelClassMoniker Id="67ffe714-b86d-496a-8e99-de20c8d245fc" />
+          </unidirectionalAssociation>
+        </unidirectionalTargets>
+        <attributes>
+          <modelAttribute Id="149de4e0-96e1-418b-8381-22750c25c9c5" type="Int32" isIdentity="true" required="true" indexed="true" indexedUnique="true" stringType="None" identityType="AutoGenerated" name="Id" columnName="Id" columnType="default" />
+          <modelAttribute Id="4e8e2579-dd56-4023-8e16-02f35aca9481" maxLength="1024" indexed="false" indexedUnique="false" stringType="None" name="Name" columnName="Name" columnType="default" />
+          <modelAttribute Id="dcbd782e-7462-485c-90b8-ded35aa22c8e" type="Double" required="true" indexed="false" indexedUnique="false" stringType="None" name="MaximumValue" columnName="MaximumValue" columnType="default" />
+          <modelAttribute Id="c9bed595-d7e1-4bdc-96e9-054f1059a7e0" type="Double" required="true" indexed="false" indexedUnique="false" stringType="None" name="MinimumValue" columnName="MinimumValue" columnType="default" />
+          <modelAttribute Id="1ff5fdf8-0ca2-4699-929b-04439034fd67" type="Binary" required="true" indexed="false" indexedUnique="false" stringType="None" isConcurrencyToken="true" name="Timestamp" columnName="Timestamp" columnType="default" />
+        </attributes>
+      </modelClass>
     </modelRootHasClasses>
   </classes>
 </modelRoot>
