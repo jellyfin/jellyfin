@@ -117,6 +117,45 @@ jobs:
         overWrite: true # Optional
         flattenFolders: true # Optional
 
+    # Run shell commands or a script on a remote machine using SSH
+    - task: SSH@0
+      displayName: Create drop directory
+      #condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release-'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        sshEndpoint: Jellyfin Repository
+        runOptions: 'commands' # Options: commands, script, inline
+        commands: 'mkdir -p /srv/incoming/jellyfin/win-installer' # Required when runOptions == Commands
+        #scriptPath: # Required when runOptions == Script
+        #inline: # Required when runOptions == Inline
+        #args: # Optional
+        #failOnStdErr: true # Optional
+
+    - task: CopyFilesOverSSH@0
+      displayName: Copy the NSIS Installer to the repository over SSH
+      #condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release-'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        sshEndpoint: Jellyfin Repository
+        sourceFolder: $(System.ArtifactsDirectory)/setup # Optional
+        contents: 'jellyfin*.exe'
+        targetFolder: /srv/incoming/jellyfin/win-installer # Optional
+        cleanTargetFolder: false # Optional
+        overwrite: true # Optional
+        failOnEmptySource: false # Optional
+        #flattenFolders: false # Optional
+
+    # Run shell commands or a script on a remote machine using SSH
+    - task: SSH@0
+      #condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release-'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      displayName: Trigger repository drop processing
+      inputs:
+        sshEndpoint: Jellyfin Repository
+        runOptions: 'commands' # Options: commands, script, inline
+        commands: '/srv/add-win-installer.sh' # Required when runOptions == Commands
+        #scriptPath: # Required when runOptions == Script
+        #inline: # Required when runOptions == Inline
+        #args: # Optional
+        #failOnStdErr: true # Optional
+
     - task: PublishPipelineArtifact@0
       displayName: 'Publish Setup Artifact'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
