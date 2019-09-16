@@ -31,9 +31,7 @@ jobs:
       displayName: 'Create Drop directory'
       inputs:
         sshEndpoint: 'Jellyfin Build Server'
-        commands: |
-        mkdir -p /srv/incoming/jellyfin_$(Version)/win-installer
-        ln -s /srv/incoming/jellyfin_$(Version) /srv/incoming/jellyfin_nightly_azure_upload
+        commands: 'mkdir -p /srv/incoming/jellyfin_$(Version)/win-installer && ln -s /srv/incoming/jellyfin_$(Version) /srv/incoming/jellyfin_nightly_azure_upload'
 
     - task: CopyFilesOverSSH@0
       displayName: 'Copy the Windows Setup to the Repo'
