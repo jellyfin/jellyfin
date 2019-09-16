@@ -13,7 +13,7 @@ jobs:
     pool:
       vmImage: ubuntu-latest
     steps:
-
+    - checkout: none
     - task: DownloadPipelineArtifact@2
       displayName: Download the Windows Setup Artifact
       inputs:
