@@ -30,7 +30,7 @@ jobs:
     - task: SSH@0
       displayName: 'Create Drop directory'
       inputs:
-        sshEndpoint: 'Jellyfin Repository'
+        sshEndpoint: 'Jellyfin Build Server'
         commands: |
         mkdir -p /srv/incoming/jellyfin_$(Version)/win-installer
         ln -s /srv/incoming/jellyfin_$(Version) /srv/incoming/jellyfin_nightly_azure_upload
@@ -38,7 +38,7 @@ jobs:
     - task: CopyFilesOverSSH@0
       displayName: 'Copy the Windows Setup to the Repo'
       inputs:
-        sshEndpoint: 'Jellyfin Repository'
+        sshEndpoint: 'Jellyfin Build Server'
         sourceFolder: '$(System.ArtifactsDirectory)/win-installer'
         contents: 'jellyfin_*.exe'
         targetFolder: '/srv/incoming/jellyfin_nightly_azure_upload/win-installer'
@@ -46,5 +46,5 @@ jobs:
     - task: SSH@0
       displayName: 'Clean up SCP symlink'
       inputs:
-        sshEndpoint: 'Jellyfin Repository'
+        sshEndpoint: 'Jellyfin Build Server'
         commands: 'rm -f /srv/incoming/jellyfin_nightly_azure_upload'
