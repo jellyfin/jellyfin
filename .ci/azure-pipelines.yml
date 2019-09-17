@@ -39,12 +39,12 @@ jobs:
         arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
         zipAfterPublish: false
 
-    # - task: PublishBuildArtifacts@1
-    #   displayName: 'Publish Artifact'
-    #   inputs:
-    #     PathtoPublish: '$(build.artifactstagingdirectory)'
-    #     artifactName: 'jellyfin-build-$(BuildConfiguration)'
-    #     zipAfterPublish: true
+    - task: PublishPipelineArtifact@0
+      displayName: 'Publish Test Artifacts'
+      condition: and(eq(variables['BuildConfiguration'], 'Debug'), succeeded())
+      inputs:
+        targetPath: '$(build.artifactstagingdirectory)'
+        artifactName: 'Jellyfin Tests'
 
     - task: PublishPipelineArtifact@0
       displayName: 'Publish Artifact Naming'
@@ -78,11 +78,18 @@ jobs:
     displayName: Main Test
     pool:
       vmImage: windows-latest
+    dependsOn: main_build
+    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber']) # Only execute if the pullrequest numer is defined. (So not for normal CI builds)
     steps:
-    - checkout: self
-      clean: true
-      submodules: true
-      persistCredentials: false
+    - checkout: none
+
+    - task: DownloadPipelineArtifact@2
+      displayName: Download the Test Artifacts
+      inputs:
+        source: 'current' # Options: current, specific
+        artifact: 'Jellyfin Tests' # Optional
+        #patterns: '**' # Optional
+        path: '$(System.DefaultWorkingDirectory)'
 
     - task: VisualStudioTestPlatformInstaller@1
       inputs:
@@ -101,7 +108,7 @@ jobs:
         #testSuite: # Required when testSelector == TestPlan
         #testConfiguration: # Required when testSelector == TestPlan
         #tcmTestRun: '$(test.RunId)' # Optional
-        #searchFolder: '$(System.DefaultWorkingDirectory)'
+        searchFolder: '$(System.DefaultWorkingDirectory)'
         #testFiltercriteria: # Optional
         #runOnlyImpactedTests: False # Optional
         #runAllTestsAfterXBuilds: '50' # Optional
