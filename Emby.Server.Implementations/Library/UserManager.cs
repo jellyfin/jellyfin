@@ -353,11 +353,11 @@ namespace Emby.Server.Implementations.Library
                     UpdateUser(user);
                 }
 
-                UpdateInvalidLoginAttemptCount(user, 0);
+                ResetInvalidLoginAttemptCount(user);
             }
             else
             {
-                UpdateInvalidLoginAttemptCount(user, user.Policy.InvalidLoginAttemptCount + 1);
+                IncrementInvalidLoginAttemptCount(user);
             }
 
             _logger.LogInformation("Authentication request for {0} {1}.", user.Name, success ? "has succeeded" : "has been denied");
@@ -509,41 +509,28 @@ namespace Emby.Server.Implementations.Library
                 : PasswordHash.ConvertToByteString(new PasswordHash(user.EasyPassword).Hash);
         }
 
-        private void UpdateInvalidLoginAttemptCount(User user, int newValue)
+        private void ResetInvalidLoginAttemptCount(User user)
         {
-            if (user.Policy.InvalidLoginAttemptCount == newValue || newValue <= 0)
+            user.Policy.InvalidLoginAttemptCount = 0;
+            UpdateUserPolicy(user, user.Policy, false);
+        }
+
+        private void IncrementInvalidLoginAttemptCount(User user)
+        {
+            int invalidLogins = ++user.Policy.InvalidLoginAttemptCount;
+            int maxInvalidLogins = user.Policy.LoginAttemptsBeforeLockout;
+            if (maxInvalidLogins > 0
+                && invalidLogins >= maxInvalidLogins)
             {
-                return;
-            }
-
-            user.Policy.InvalidLoginAttemptCount = newValue;
-
-            // Check for users without a value here and then fill in the default value
-            // also protect from an always lockout if misconfigured
-            if (user.Policy.LoginAttemptsBeforeLockout == null || user.Policy.LoginAttemptsBeforeLockout == 0)
-            {
-                user.Policy.LoginAttemptsBeforeLockout = user.Policy.IsAdministrator ? 5 : 3;
-            }
-
-            var maxCount = user.Policy.LoginAttemptsBeforeLockout;
-
-            var fireLockout = false;
-
-            // -1 can be used to specify no lockout value
-            if (maxCount != -1 && newValue >= maxCount)
-            {
-                _logger.LogDebug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue);
                 user.Policy.IsDisabled = true;
-
-                fireLockout = true;
+                UserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
+                _logger.LogWarning(
+                    "Disabling user {UserName} due to {Attempts} unsuccessful login attempts.",
+                    user.Name,
+                    invalidLogins);
             }
 
             UpdateUserPolicy(user, user.Policy, false);
-
-            if (fireLockout)
-            {
-                UserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
-            }
         }
 
         /// <summary>
