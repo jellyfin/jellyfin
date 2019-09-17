@@ -71,8 +71,6 @@ jobs:
     displayName: Main Test
     pool:
       vmImage: windows-latest
-    dependsOn: main_build
-    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber']) # Only execute if the pullrequest numer is defined. (So not for normal CI builds)
     steps:
     - checkout: self
       clean: true
