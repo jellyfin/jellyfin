@@ -15,7 +15,7 @@ jobs:
     pool:
       vmImage: ubuntu-latest
     steps:
-
+    - checkout: none
     - task: DownloadPipelineArtifact@2
       displayName: Download the Windows Setup Artifact
       inputs:
@@ -31,9 +31,7 @@ jobs:
       displayName: 'Create Drop directory'
       inputs:
         sshEndpoint: 'Jellyfin Build Server'
-        commands: |
-        mkdir -p /srv/incoming/jellyfin_$(Version)/win-installer
-        ln -s /srv/incoming/jellyfin_$(Version) /srv/incoming/jellyfin_nightly_azure_upload
+        commands: 'mkdir -p /srv/incoming/jellyfin_$(Version)/win-installer && ln -s /srv/incoming/jellyfin_$(Version) /srv/incoming/jellyfin_release_azure_upload'
 
     - task: CopyFilesOverSSH@0
       displayName: 'Copy the Windows Setup to the Repo'
@@ -41,10 +39,10 @@ jobs:
         sshEndpoint: 'Jellyfin Build Server'
         sourceFolder: '$(System.ArtifactsDirectory)/win-installer'
         contents: 'jellyfin_*.exe'
-        targetFolder: '/srv/incoming/jellyfin_nightly_azure_upload/win-installer'
+        targetFolder: '/srv/incoming/jellyfin_release_azure_upload/win-installer'
 
     - task: SSH@0
       displayName: 'Clean up SCP symlink'
       inputs:
         sshEndpoint: 'Jellyfin Build Server'
-        commands: 'rm -f /srv/incoming/jellyfin_nightly_azure_upload'
+        commands: 'rm -f /srv/incoming/jellyfin_release_azure_upload'
