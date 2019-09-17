@@ -28,7 +28,13 @@ jobs:
     - checkout: self
       clean: true
       submodules: true
-      persistCredentials: false
+      persistCredentials: true
+
+    - task: CmdLine@2
+      displayName: "Update submodules"
+      inputs:
+        script: 'git submodule update --recursive --remote'
+        workingDirectory: '$(Build.SourcesDirectory)'
 
     - task: DotNetCoreCLI@2
       displayName: Publish
@@ -87,7 +93,13 @@ jobs:
     - checkout: self
       clean: true
       submodules: true
-      persistCredentials: false
+      persistCredentials: true
+
+    - task: CmdLine@2
+      displayName: "Update submodules"
+      inputs:
+        script: 'git submodule update --recursive --remote'
+        workingDirectory: '$(Build.SourcesDirectory)'
 
     - task: CmdLine@2
       displayName: Clone the UX repository
