@@ -2,7 +2,7 @@ name: $(Date:yyyyMMdd)$(Rev:.r)
 
 variables:
   - name: TestProjects
-    value: 'Jellyfin.Server.Tests/Jellyfin.Server.Tests.csproj'
+    value: 'tests/Jellyfin.Common.Tests/Jellyfin.Common.Tests.csproj'
   - name: RestoreBuildProjects
     value: 'Jellyfin.Server/Jellyfin.Server.csproj'
 
@@ -40,13 +40,6 @@ jobs:
         zipAfterPublish: false
 
     - task: PublishPipelineArtifact@0
-      displayName: 'Publish Test Artifacts'
-      condition: and(eq(variables['BuildConfiguration'], 'Debug'), succeeded())
-      inputs:
-        targetPath: '$(build.artifactstagingdirectory)'
-        artifactName: 'Jellyfin Tests'
-
-    - task: PublishPipelineArtifact@0
       displayName: 'Publish Artifact Naming'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
@@ -81,15 +74,19 @@ jobs:
     dependsOn: main_build
     condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber']) # Only execute if the pullrequest numer is defined. (So not for normal CI builds)
     steps:
-    - checkout: none
+    - checkout: self
+      clean: true
+      submodules: true
+      persistCredentials: false
 
-    - task: DownloadPipelineArtifact@2
-      displayName: Download the Test Artifacts
+    - task: DotNetCoreCLI@2
+      displayName: Build
       inputs:
-        source: 'current' # Options: current, specific
-        artifact: 'Jellyfin Tests' # Optional
-        #patterns: '**' # Optional
-        path: '$(System.DefaultWorkingDirectory)'
+        command: build
+        publishWebProjects: false
+        projects: '$(TestProjects)'
+        arguments: '--configuration $(BuildConfiguration)'
+        zipAfterPublish: false
 
     - task: VisualStudioTestPlatformInstaller@1
       inputs:
