@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace MediaBrowser.Common.Extensions
+namespace MediaBrowser.Common
 {
     public static class HexHelper
     {
