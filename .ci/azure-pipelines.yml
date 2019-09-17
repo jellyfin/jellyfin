@@ -32,8 +32,16 @@ jobs:
 
     - task: CmdLine@2
       displayName: "Update submodules"
+      condition: and(succeeded(), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release-'), eq(variables['Build.SourceBranch'], 'refs/heads/master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
-        script: 'git submodule update --recursive --remote'
+        script: 'git submodule foreach --recursive git checkout $(Build.SourceBranch)'
+        workingDirectory: '$(Build.SourcesDirectory)'
+
+    - task: CmdLine@2
+      displayName: "Update submodules (PR)"
+      condition: and(succeeded(), or(startsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/release-'), eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest'))
+      inputs:
+        script: 'git submodule foreach --recursive git checkout $(System.PullRequest.TargetBranch)'
         workingDirectory: '$(Build.SourcesDirectory)'
 
     - task: DotNetCoreCLI@2
@@ -97,8 +105,16 @@ jobs:
 
     - task: CmdLine@2
       displayName: "Update submodules"
+      condition: and(succeeded(), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release-'), eq(variables['Build.SourceBranch'], 'refs/heads/master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
-        script: 'git submodule update --recursive --remote'
+        script: 'git submodule foreach --recursive git checkout $(Build.SourceBranch)'
+        workingDirectory: '$(Build.SourcesDirectory)'
+
+    - task: CmdLine@2
+      displayName: "Update submodules (PR)"
+      condition: and(succeeded(), or(startsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/release-'), eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest'))
+      inputs:
+        script: 'git submodule foreach --recursive git checkout $(System.PullRequest.TargetBranch)'
         workingDirectory: '$(Build.SourcesDirectory)'
 
     - task: CmdLine@2
