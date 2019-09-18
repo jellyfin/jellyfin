@@ -181,7 +181,7 @@ namespace Emby.Server.Implementations.HttpServer
             var rangeString = $"bytes {RangeStart}-{RangeEnd}/{TotalContentLength}";
             Headers[HeaderNames.ContentRange] = rangeString;
 
-            _logger.LogInformation("Setting range response values for {0}. RangeRequest: {1} Content-Length: {2}, Content-Range: {3}", Path, RangeHeader, lengthString, rangeString);
+            _logger.LogDebug("Setting range response values for {0}. RangeRequest: {1} Content-Length: {2}, Content-Range: {3}", Path, RangeHeader, lengthString, rangeString);
         }
 
         public async Task WriteToAsync(HttpResponse response, CancellationToken cancellationToken)
