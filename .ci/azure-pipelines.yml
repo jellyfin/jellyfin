@@ -28,7 +28,21 @@ jobs:
     - checkout: self
       clean: true
       submodules: true
-      persistCredentials: false
+      persistCredentials: true
+
+    - task: CmdLine@2
+      displayName: "Update submodules"
+      condition: and(succeeded(), or(contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        script: 'git submodule foreach --recursive git checkout $(Build.SourceBranch)'
+        workingDirectory: '$(Build.SourcesDirectory)'
+
+    - task: CmdLine@2
+      displayName: "Update submodules (PR)"
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest'))
+      inputs:
+        script: 'git submodule foreach --recursive git checkout $(System.PullRequest.TargetBranch)'
+        workingDirectory: '$(Build.SourcesDirectory)'
 
     - task: DotNetCoreCLI@2
       displayName: Publish
@@ -161,7 +175,21 @@ jobs:
     - checkout: self
       clean: true
       submodules: true
-      persistCredentials: false
+      persistCredentials: true
+
+    - task: CmdLine@2
+      displayName: "Update submodules"
+      condition: and(succeeded(), or(contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        script: 'git submodule foreach --recursive git checkout $(Build.SourceBranch)'
+        workingDirectory: '$(Build.SourcesDirectory)'
+
+    - task: CmdLine@2
+      displayName: "Update submodules (PR)"
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest'))
+      inputs:
+        script: 'git submodule foreach --recursive git checkout $(System.PullRequest.TargetBranch)'
+        workingDirectory: '$(Build.SourcesDirectory)'
 
     - task: CmdLine@2
       displayName: Clone the UX repository
