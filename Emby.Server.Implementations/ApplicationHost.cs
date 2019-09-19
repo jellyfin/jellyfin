@@ -1524,32 +1524,6 @@ namespace Emby.Server.Implementations
                     HttpPort.ToString(CultureInfo.InvariantCulture));
         }
 
-        public string GetWanApiUrl(IPAddress ipAddress)
-        {
-            if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                var str = RemoveScopeId(ipAddress.ToString());
-
-                return GetWanApiUrl("[" + str + "]");
-            }
-
-            return GetWanApiUrl(ipAddress.ToString());
-        }
-
-        public string GetWanApiUrl(string host)
-        {
-            if (EnableHttps)
-            {
-                return string.Format("https://{0}:{1}",
-                    host,
-                    ServerConfigurationManager.Configuration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture));
-            }
-
-            return string.Format("http://{0}:{1}",
-                    host,
-                    ServerConfigurationManager.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture));
-        }
-
         public Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken)
         {
             return GetLocalIpAddressesInternal(true, 0, cancellationToken);
