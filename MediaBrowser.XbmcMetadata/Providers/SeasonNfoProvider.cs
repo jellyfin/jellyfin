@@ -23,11 +23,13 @@ namespace MediaBrowser.XbmcMetadata.Providers
             _providerManager = providerManager;
         }
 
+        /// <inheritdoc />
         protected override void Fetch(MetadataResult<Season> result, string path, CancellationToken cancellationToken)
         {
             new SeasonNfoParser(_logger, _config, _providerManager).Fetch(result, path, cancellationToken);
         }
 
+        /// <inheritdoc />
         protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
             => directoryService.GetFile(Path.Combine(info.Path, "season.nfo"));
     }

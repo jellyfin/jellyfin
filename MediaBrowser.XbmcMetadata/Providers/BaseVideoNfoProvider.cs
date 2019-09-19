@@ -25,6 +25,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             _providerManager = providerManager;
         }
 
+        /// <inheritdoc />
         protected override void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken)
         {
             var tmpItem = new MetadataResult<Video>
@@ -42,9 +43,10 @@ namespace MediaBrowser.XbmcMetadata.Providers
             }
         }
 
+        /// <inheritdoc />
         protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
-            return MovieNfoSaver.GetMovieSavePaths(info, FileSystem)
+            return MovieNfoSaver.GetMovieSavePaths(info)
                 .Select(directoryService.GetFile)
                 .FirstOrDefault(i => i != null);
         }

@@ -13,16 +13,26 @@ namespace MediaBrowser.XbmcMetadata.Savers
 {
     public class SeasonNfoSaver : BaseNfoSaver
     {
+        public SeasonNfoSaver(
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager,
+            ILogger logger)
+            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
+        {
+        }
+
+        /// <inheritdoc />
         protected override string GetLocalSavePath(BaseItem item)
-        {
-            return Path.Combine(item.Path, "season.nfo");
-        }
+            => Path.Combine(item.Path, "season.nfo");
 
+        /// <inheritdoc />
         protected override string GetRootElementName(BaseItem item)
-        {
-            return "season";
-        }
+            => "season";
 
+        /// <inheritdoc />
         public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
         {
             if (!item.SupportsLocalMetadata)
@@ -38,6 +48,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             return updateType >= MinimumUpdateType || (updateType >= ItemUpdateType.MetadataImport && File.Exists(GetSavePath(item)));
         }
 
+        /// <inheritdoc />
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
             var season = (Season)item;
@@ -48,6 +59,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
+        /// <inheritdoc />
         protected override List<string> GetTagsUsed(BaseItem item)
         {
             var list = base.GetTagsUsed(item);
@@ -57,17 +69,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             });
 
             return list;
-        }
-
-        public SeasonNfoSaver(
-            IFileSystem fileSystem,
-            IServerConfigurationManager configurationManager,
-            ILibraryManager libraryManager,
-            IUserManager userManager,
-            IUserDataManager userDataManager,
-            ILogger logger)
-            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
-        {
         }
     }
 }
