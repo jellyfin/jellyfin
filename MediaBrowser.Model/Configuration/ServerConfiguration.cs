@@ -162,7 +162,6 @@ namespace MediaBrowser.Model.Configuration
         public bool SkipDeserializationForBasicTypes { get; set; }
 
         public string ServerName { get; set; }
-        public string WanDdns { get; set; }
         public string BaseUrl { get; set; }
 
         public string UICulture { get; set; }
