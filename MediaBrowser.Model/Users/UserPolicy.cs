@@ -79,6 +79,8 @@ namespace MediaBrowser.Model.Users
 
         public UserPolicy()
         {
+            IsHidden = true;
+            
             EnableContentDeletion = false;
             EnableContentDeletionFromFolders = Array.Empty<string>();
 
