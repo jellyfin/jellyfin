@@ -185,7 +185,7 @@ Section "Jellyfin Server Service" InstallService
     DetailPrint "Jellyfin Server service statuscode, $0"
     ${If} $0 == 0
         InstallRetry:
-        ExecWait '"$INSTDIR\nssm.exe" install JellyfinServer "$INSTDIR\jellyfin.exe" --datadir "$_JELLYFINDATADIR_"' $0
+        ExecWait '"$INSTDIR\nssm.exe" install JellyfinServer "$INSTDIR\jellyfin.exe" --datadir \"$_JELLYFINDATADIR_\"' $0
         ${If} $0 <> 0
             !insertmacro ShowError "Could not install the Jellyfin Server service." InstallRetry
         ${EndIf}
@@ -201,7 +201,7 @@ Section "Jellyfin Server Service" InstallService
         DetailPrint "Jellyfin Server Service setting (Application), $0"
 
         ConfigureAppParametersRetry:
-        ExecWait '"$INSTDIR\nssm.exe" set JellyfinServer AppParameters --datadir "$_JELLYFINDATADIR_"' $0
+        ExecWait '"$INSTDIR\nssm.exe" set JellyfinServer AppParameters --datadir \"$_JELLYFINDATADIR_\"' $0
         ${If} $0 <> 0
             !insertmacro ShowError "Could not configure the Jellyfin Server service." ConfigureAppParametersRetry
         ${EndIf}
