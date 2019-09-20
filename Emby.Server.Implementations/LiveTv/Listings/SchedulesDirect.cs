@@ -17,7 +17,6 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.LiveTv.Listings
 {
@@ -40,6 +39,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         }
 
         private string UserAgent => _appHost.ApplicationUserAgent;
+
+        /// <inheritdoc />
+        public string Name => "Schedules Direct";
+
+        /// <inheritdoc />
+        public string Type => nameof(SchedulesDirect);
 
         private static List<string> GetScheduleRequestDates(DateTime startDateUtc, DateTime endDateUtc)
         {
@@ -103,7 +108,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             httpOptions.RequestHeaders["token"] = token;
 
             using (var response = await Post(httpOptions, true, info).ConfigureAwait(false))
-            using (var reader = new StreamReader(response.Content))
             {
                 var dailySchedules = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Day>>(response.Content).ConfigureAwait(false);
                 _logger.LogDebug("Found {ScheduleCount} programs on {ChannelID} ScheduleDirect", dailySchedules.Count, channelId);
@@ -122,7 +126,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 httpOptions.RequestContent = "[\"" + string.Join("\", \"", programsID) + "\"]";
 
                 using (var innerResponse = await Post(httpOptions, true, info).ConfigureAwait(false))
-                using (var innerReader = new StreamReader(innerResponse.Content))
                 {
                     var programDetails = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.ProgramDetails>>(innerResponse.Content).ConfigureAwait(false);
                     var programDict = programDetails.ToDictionary(p => p.programID, y => y);
@@ -152,14 +155,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                                 var imagesWithText = allImages.Where(i => string.Equals(i.text, "yes", StringComparison.OrdinalIgnoreCase));
                                 var imagesWithoutText = allImages.Where(i => string.Equals(i.text, "no", StringComparison.OrdinalIgnoreCase));
 
-                                const double desiredAspect = 0.666666667;
+                                const double DesiredAspect = 2.0 / 3;
 
-                                programEntry.primaryImage = GetProgramImage(ApiUrl, imagesWithText, true, desiredAspect) ??
-                                    GetProgramImage(ApiUrl, allImages, true, desiredAspect);
+                                programEntry.primaryImage = GetProgramImage(ApiUrl, imagesWithText, true, DesiredAspect) ??
+                                    GetProgramImage(ApiUrl, allImages, true, DesiredAspect);
 
-                                const double wideAspect = 1.77777778;
+                                const double WideAspect = 16.0 / 9;
 
-                                programEntry.thumbImage = GetProgramImage(ApiUrl, imagesWithText, true, wideAspect);
+                                programEntry.thumbImage = GetProgramImage(ApiUrl, imagesWithText, true, WideAspect);
 
                                 // Don't supply the same image twice
                                 if (string.Equals(programEntry.primaryImage, programEntry.thumbImage, StringComparison.Ordinal))
@@ -167,7 +170,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                                     programEntry.thumbImage = null;
                                 }
 
-                                programEntry.backdropImage = GetProgramImage(ApiUrl, imagesWithoutText, true, wideAspect);
+                                programEntry.backdropImage = GetProgramImage(ApiUrl, imagesWithoutText, true, WideAspect);
 
                                 //programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
@@ -178,6 +181,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                         programsInfo.Add(GetProgram(channelId, schedule, programDict[schedule.programID]));
                     }
+
                     return programsInfo;
                 }
             }
@@ -185,12 +189,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private static int GetSizeOrder(ScheduleDirect.ImageData image)
         {
-            if (!string.IsNullOrWhiteSpace(image.height))
+            if (!string.IsNullOrWhiteSpace(image.height)
+                && int.TryParse(image.height, out int value))
             {
-                if (int.TryParse(image.height, out int value))
-                {
-                    return value;
-                }
+                return value;
             }
 
             return 0;
@@ -736,15 +738,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             httpOptions.RequestHeaders["token"] = token;
 
-            using (var response = await _httpClient.SendAsync(httpOptions, "PUT"))
+            using (await _httpClient.SendAsync(httpOptions, "PUT"))
             {
             }
         }
-
-        public string Name => "Schedules Direct";
-
-        public static string TypeName = "SchedulesDirect";
-        public string Type => TypeName;
 
         private async Task<bool> HasLineup(ListingsProviderInfo info, CancellationToken cancellationToken)
         {

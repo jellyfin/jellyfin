@@ -455,9 +455,7 @@ namespace MediaBrowser.Api.UserLibrary
                         IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
                         Name = i,
                         Limit = 1
-
-                    }).Select(albumId => albumId);
-
+                    });
                 }).ToArray();
             }
 

@@ -273,14 +273,12 @@ namespace Emby.Server.Implementations.Library
             var user = Users.FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
 
             var success = false;
-            string updatedUsername = null;
             IAuthenticationProvider authenticationProvider = null;
 
             if (user != null)
             {
                 var authResult = await AuthenticateLocalUser(username, password, hashedPassword, user, remoteEndPoint).ConfigureAwait(false);
                 authenticationProvider = authResult.authenticationProvider;
-                updatedUsername = authResult.username;
                 success = authResult.success;
             }
             else
@@ -288,7 +286,7 @@ namespace Emby.Server.Implementations.Library
                 // user is null
                 var authResult = await AuthenticateLocalUser(username, password, hashedPassword, null, remoteEndPoint).ConfigureAwait(false);
                 authenticationProvider = authResult.authenticationProvider;
-                updatedUsername = authResult.username;
+                string updatedUsername = authResult.username;
                 success = authResult.success;
 
                 if (success

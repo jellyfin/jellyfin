@@ -60,16 +60,6 @@ namespace Emby.Server.Implementations.LiveTv
         private IListingsProvider[] _listingProviders = Array.Empty<IListingsProvider>();
         private readonly IFileSystem _fileSystem;
 
-        public event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
-        public event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCancelled;
-        public event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCreated;
-        public event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCreated;
-
-        public string GetEmbyTvActiveRecordingPath(string id)
-        {
-            return EmbyTV.EmbyTV.Current.GetActiveRecordingPath(id);
-        }
-
         public LiveTvManager(
             IServerApplicationHost appHost,
             IServerConfigurationManager config,
@@ -102,15 +92,32 @@ namespace Emby.Server.Implementations.LiveTv
             _tvDtoService = new LiveTvDtoService(dtoService, imageProcessor, loggerFactory, appHost, _libraryManager);
         }
 
+        public event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
+
+        public event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCancelled;
+
+        public event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCreated;
+
+        public event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCreated;
+
         /// <summary>
         /// Gets the services.
         /// </summary>
         /// <value>The services.</value>
         public IReadOnlyList<ILiveTvService> Services => _services;
 
+        public ITunerHost[] TunerHosts => _tunerHosts;
+
+        public IListingsProvider[] ListingProviders => _listingProviders;
+
         private LiveTvOptions GetConfiguration()
         {
             return _config.GetConfiguration<LiveTvOptions>("livetv");
+        }
+
+        public string GetEmbyTvActiveRecordingPath(string id)
+        {
+            return EmbyTV.EmbyTV.Current.GetActiveRecordingPath(id);
         }
 
         /// <summary>
@@ -130,13 +137,13 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 if (service is EmbyTV.EmbyTV embyTv)
                 {
-                    embyTv.TimerCreated += EmbyTv_TimerCreated;
-                    embyTv.TimerCancelled += EmbyTv_TimerCancelled;
+                    embyTv.TimerCreated += OnEmbyTvTimerCreated;
+                    embyTv.TimerCancelled += OnEmbyTvTimerCancelled;
                 }
             }
         }
 
-        private void EmbyTv_TimerCancelled(object sender, GenericEventArgs<string> e)
+        private void OnEmbyTvTimerCancelled(object sender, GenericEventArgs<string> e)
         {
             var timerId = e.Argument;
 
@@ -149,10 +156,9 @@ namespace Emby.Server.Implementations.LiveTv
             });
         }
 
-        private void EmbyTv_TimerCreated(object sender, GenericEventArgs<TimerInfo> e)
+        private void OnEmbyTvTimerCreated(object sender, GenericEventArgs<TimerInfo> e)
         {
             var timer = e.Argument;
-            var service = sender as ILiveTvService;
 
             TimerCreated?.Invoke(this, new GenericEventArgs<TimerEventInfo>
             {
@@ -163,10 +169,6 @@ namespace Emby.Server.Implementations.LiveTv
                 }
             });
         }
-
-        public ITunerHost[] TunerHosts => _tunerHosts;
-
-        public IListingsProvider[] ListingProviders => _listingProviders;
 
         public List<NameIdPair> GetTunerHostTypes()
         {
@@ -966,9 +968,6 @@ namespace Emby.Server.Implementations.LiveTv
 
         private async Task AddRecordingInfo(IEnumerable<Tuple<BaseItemDto, string, string>> programs, CancellationToken cancellationToken)
         {
-            var timers = new Dictionary<string, List<TimerInfo>>();
-            var seriesTimers = new Dictionary<string, List<SeriesTimerInfo>>();
-
             IReadOnlyList<TimerInfo> timerList = null;
             IReadOnlyList<SeriesTimerInfo> seriesTimerList = null;
 
@@ -1601,8 +1600,6 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (!string.IsNullOrEmpty(query.Id))
             {
-                var guid = new Guid(query.Id);
-
                 timers = timers
                     .Where(i => string.Equals(_tvDtoService.GetInternalTimerId(i.Item1.Id), query.Id, StringComparison.OrdinalIgnoreCase));
             }

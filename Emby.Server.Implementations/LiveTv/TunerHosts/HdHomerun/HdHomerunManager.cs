@@ -424,14 +424,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 return false;
             }
 
-            var nameTag = buf[offset++];
+            offset++; // Name Tag
 
             var nameLength = buf[offset++];
 
             // skip the name field to get to value for return
             offset += nameLength;
 
-            var valueTag = buf[offset++];
+            offset++; // Value Tag
 
             var valueLength = buf[offset++];
 

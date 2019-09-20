@@ -212,7 +212,6 @@ namespace BDInfo
 
         public void Scan()
         {
-            var errorStreamClipFiles = new List<TSStreamClipFile>();
             foreach (var streamClipFile in StreamClipFiles.Values)
             {
                 try
@@ -221,7 +220,6 @@ namespace BDInfo
                 }
                 catch (Exception ex)
                 {
-                    errorStreamClipFiles.Add(streamClipFile);
                     if (StreamClipFileScanError != null)
                     {
                         if (StreamClipFileScanError(streamClipFile, ex))
@@ -250,7 +248,6 @@ namespace BDInfo
             StreamFiles.Values.CopyTo(streamFiles, 0);
             Array.Sort(streamFiles, CompareStreamFiles);
 
-            var errorPlaylistFiles = new List<TSPlaylistFile>();
             foreach (var playlistFile in PlaylistFiles.Values)
             {
                 try
@@ -259,7 +256,6 @@ namespace BDInfo
                 }
                 catch (Exception ex)
                 {
-                    errorPlaylistFiles.Add(playlistFile);
                     if (PlaylistFileScanError != null)
                     {
                         if (PlaylistFileScanError(playlistFile, ex))
@@ -275,7 +271,6 @@ namespace BDInfo
                 }
             }
 
-            var errorStreamFiles = new List<TSStreamFile>();
             foreach (var streamFile in streamFiles)
             {
                 try
@@ -296,7 +291,6 @@ namespace BDInfo
                 }
                 catch (Exception ex)
                 {
-                    errorStreamFiles.Add(streamFile);
                     if (StreamFileScanError != null)
                     {
                         if (StreamFileScanError(streamFile, ex))
@@ -431,7 +425,7 @@ namespace BDInfo
             {
                 return 1;
             }
-            else if ((x != null || x.FileInfo != null) && (y == null || y.FileInfo == null))
+            else if ((x != null && x.FileInfo != null) && (y == null || y.FileInfo == null))
             {
                 return -1;
             }
@@ -451,6 +445,5 @@ namespace BDInfo
                 }
             }
         }
-
     }
 }

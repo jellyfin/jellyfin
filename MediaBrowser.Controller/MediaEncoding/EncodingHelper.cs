@@ -1252,9 +1252,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (request.AudioBitRate.HasValue)
             {
-                // Make sure we don't request a bitrate higher than the source
-                var currentBitrate = audioStream == null ? request.AudioBitRate.Value : audioStream.BitRate ?? request.AudioBitRate.Value;
-
                 // Don't encode any higher than this
                 return Math.Min(384000, request.AudioBitRate.Value);
             }

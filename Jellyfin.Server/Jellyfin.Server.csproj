@@ -22,7 +22,7 @@
     <EmbeddedResource Include="Resources/Configuration/*" />
   </ItemGroup>
 
-  <!-- Code analysers-->
+  <!-- Code analyzers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.4" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" />

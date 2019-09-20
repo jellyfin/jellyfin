@@ -86,7 +86,6 @@ namespace Rssdp.Infrastructure
 
             ThrowIfDisposed();
 
-            var minCacheTime = TimeSpan.Zero;
             bool wasAdded = false;
             lock (_Devices)
             {
@@ -94,7 +93,6 @@ namespace Rssdp.Infrastructure
                 {
                     _Devices.Add(device);
                     wasAdded = true;
-                    minCacheTime = GetMinimumNonZeroCacheLifetime();
                 }
             }
 
@@ -120,14 +118,12 @@ namespace Rssdp.Infrastructure
             if (device == null) throw new ArgumentNullException(nameof(device));
 
             bool wasRemoved = false;
-            var minCacheTime = TimeSpan.Zero;
             lock (_Devices)
             {
                 if (_Devices.Contains(device))
                 {
                     _Devices.Remove(device);
                     wasRemoved = true;
-                    minCacheTime = GetMinimumNonZeroCacheLifetime();
                 }
             }
 

@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             var user = auth.User;
 
-            if (user == null & !auth.UserId.Equals(Guid.Empty))
+            if (user == null && auth.UserId != Guid.Empty)
             {
                 throw new SecurityException("User with Id " + auth.UserId + " not found");
             }
