@@ -94,7 +94,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <returns></returns>
         public void ApplyRequestFilters(IRequest req, HttpResponse res, object requestDto)
         {
-            //Exec all RequestFilter attributes with Priority < 0
+            // Exec all RequestFilter attributes with Priority < 0
             var attributes = GetRequestFilterAttributes(requestDto.GetType());
 
             int count = attributes.Count;
@@ -105,7 +105,7 @@ namespace Emby.Server.Implementations.HttpServer
                 attribute.RequestFilter(req, res, requestDto);
             }
 
-            //Exec remaining RequestFilter attributes with Priority >= 0
+            // Exec remaining RequestFilter attributes with Priority >= 0
             for (; i < count && attributes[i].Priority >= 0; i++)
             {
                 var attribute = attributes[i];
@@ -278,7 +278,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 catch
                 {
-
+                    _logger.LogWarning("Error disposing connection");
                 }
             }
         }
@@ -603,7 +603,14 @@ namespace Emby.Server.Implementations.HttpServer
                     Summary = route.Summary
                 });
 
-                routes.Add(new RouteAttribute(NormalizeOldRoutePath(route.Path), route.Verbs)
+                routes.Add(new RouteAttribute(NormalizeEmbyRoutePath(route.Path), route.Verbs)
+                {
+                    Notes = route.Notes,
+                    Priority = route.Priority,
+                    Summary = route.Summary
+                });
+
+                routes.Add(new RouteAttribute(NormalizeMediaBrowserRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,
@@ -645,7 +652,7 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         // this method was left for compatibility with third party clients
-        private static string NormalizeOldRoutePath(string path)
+        private static string NormalizeEmbyRoutePath(string path)
         {
             if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {
@@ -653,6 +660,17 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             return "emby/" + path;
+        }
+
+        // this method was left for compatibility with third party clients
+        private static string NormalizeMediaBrowserRoutePath(string path)
+        {
+            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
+            {
+                return "/mediabrowser" + path;
+            }
+
+            return "mediabrowser/" + path;
         }
 
         private static string NormalizeCustomRoutePath(string baseUrl, string path)
