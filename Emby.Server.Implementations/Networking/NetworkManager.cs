@@ -20,6 +20,9 @@ namespace Emby.Server.Implementations.Networking
         private IPAddress[] _localIpAddresses;
         private readonly object _localIpAddressSyncLock = new object();
 
+        private readonly object _subnetLookupLock = new object();
+        private Dictionary<string, List<string>> _subnetLookup = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+
         public NetworkManager(ILogger<NetworkManager> logger)
         {
             _logger = logger;
@@ -28,9 +31,9 @@ namespace Emby.Server.Implementations.Networking
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
         }
 
-        public Func<string[]> LocalSubnetsFn { get; set; }
-
         public event EventHandler NetworkChanged;
+
+        public Func<string[]> LocalSubnetsFn { get; set; }
 
         private void OnNetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
@@ -179,10 +182,9 @@ namespace Emby.Server.Implementations.Networking
             return false;
         }
 
-        private Dictionary<string, List<string>> _subnetLookup = new Dictionary<string, List<string>>(StringComparer.Ordinal);
         private List<string> GetSubnets(string endpointFirstPart)
         {
-            lock (_subnetLookup)
+            lock (_subnetLookupLock)
             {
                 if (_subnetLookup.TryGetValue(endpointFirstPart, out var subnets))
                 {
@@ -200,7 +202,11 @@ namespace Emby.Server.Implementations.Networking
                             int subnet_Test = 0;
                             foreach (string part in unicastIPAddressInformation.IPv4Mask.ToString().Split('.'))
                             {
-                                if (part.Equals("0")) break;
+                                if (part.Equals("0", StringComparison.Ordinal))
+                                {
+                                    break;
+                                }
+
                                 subnet_Test++;
                             }
 

@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.5.1" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.6.0" />
     <PackageReference Include="UTF.Unknown" Version="2.1.0" />
   </ItemGroup>
 
