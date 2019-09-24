@@ -158,8 +158,6 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// <returns>Task.</returns>
         public static void AddCommonNodes(BaseItem item, XmlWriter writer, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepo, IFileSystem fileSystem, IServerConfigurationManager config)
         {
-            var writtenProviderIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
             if (!string.IsNullOrEmpty(item.OfficialRating))
             {
                 writer.WriteElementString("ContentRating", item.OfficialRating);

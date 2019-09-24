@@ -218,14 +218,12 @@ namespace Emby.Server.Implementations.Dto
                 AttachUserSpecificInfo(dto, item, user, options);
             }
 
-            if (item is IHasMediaSources hasMediaSources)
+            if (item is IHasMediaSources
+                && options.ContainsField(ItemFields.MediaSources))
             {
-                if (options.ContainsField(ItemFields.MediaSources))
-                {
-                    dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(item, true, user).ToArray();
+                dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(item, true, user).ToArray();
 
-                    NormalizeMediaSourceContainers(dto);
-                }
+                NormalizeMediaSourceContainers(dto);
             }
 
             if (options.ContainsField(ItemFields.Studios))

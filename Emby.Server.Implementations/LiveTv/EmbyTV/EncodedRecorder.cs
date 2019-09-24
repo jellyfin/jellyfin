@@ -208,9 +208,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private static string GetAudioArgs(MediaSourceInfo mediaSource)
         {
-            var mediaStreams = mediaSource.MediaStreams ?? new List<MediaStream>();
-            var inputAudioCodec = mediaStreams.Where(i => i.Type == MediaStreamType.Audio).Select(i => i.Codec).FirstOrDefault() ?? string.Empty;
-
             return "-codec:a:0 copy";
 
             //var audioChannels = 2;

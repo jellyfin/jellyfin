@@ -236,7 +236,7 @@ namespace Emby.Server.Implementations.Library
             if (!parentId.Equals(Guid.Empty))
             {
                 var parentItem = _libraryManager.GetItemById(parentId);
-                if (parentItem is Channel parentItemChannel)
+                if (parentItem is Channel)
                 {
                     return _channelManager.GetLatestChannelItemsInternal(
                         new InternalItemsQuery(user)
@@ -248,7 +248,7 @@ namespace Emby.Server.Implementations.Library
                             IncludeItemTypes = request.IncludeItemTypes,
                             EnableTotalRecordCount = false
                         },
-                        CancellationToken.None).Result.Items;
+                        CancellationToken.None).GetAwaiter().GetResult().Items;
                 }
 
                 if (parentItem is Folder parent)

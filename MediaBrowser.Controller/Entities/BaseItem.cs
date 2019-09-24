@@ -2045,7 +2045,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (itemByPath == null)
                 {
-                    //Logger.LogWarning("Unable to find linked item at path {0}", info.Path);
+                    Logger.LogWarning("Unable to find linked item at path {0}", info.Path);
                 }
 
                 return itemByPath;
@@ -2057,7 +2057,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (item == null)
                 {
-                    //Logger.LogWarning("Unable to find linked item at path {0}", info.Path);
+                    Logger.LogWarning("Unable to find linked item at path {0}", info.Path);
                 }
 
                 return item;
@@ -2085,14 +2085,17 @@ namespace MediaBrowser.Controller.Entities
 
             if (!current.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
-                if (current.Length == 0)
+                int curLen = current.Length;
+                if (curLen == 0)
                 {
                     Studios = new[] { name };
                 }
                 else
                 {
-                    var list =
-                    Studios = current.Concat(new[] { name }).ToArray();
+                    var newArr = new string[curLen + 1];
+                    current.CopyTo(newArr, 0);
+                    newArr[curLen] = name;
+                    Studios = newArr;
                 }
             }
         }
@@ -2231,8 +2234,12 @@ namespace MediaBrowser.Controller.Entities
 
             else
             {
-                var currentCount = ImageInfos.Length;
-                ImageInfos = ImageInfos.Concat(new[] { image }).ToArray();
+                var current = ImageInfos;
+                var currentCount = current.Length;
+                var newArr = new ItemImageInfo[currentCount + 1];
+                current.CopyTo(newArr, 0);
+                current[currentCount] = image;
+                ImageInfos = current;
             }
         }
 

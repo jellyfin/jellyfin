@@ -15,7 +15,7 @@ namespace Emby.Server.Implementations.Services
             {
                 PropertySetFn = propertySetFn;
                 PropertyParseStringFn = propertyParseStringFn;
-                PropertyType = PropertyType;
+                PropertyType = propertyType;
             }
 
             public Action<object, object> PropertySetFn { get; private set; }
