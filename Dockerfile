@@ -30,7 +30,7 @@ RUN apt-get update \
  && chmod 777 /cache /config /media
 COPY --from=ffmpeg / /
 COPY --from=builder /jellyfin /jellyfin
-COPY --from=web-builder /dist /jellyfin/jellyfin-web/src
+COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
 EXPOSE 8096
 VOLUME /cache /config /media
