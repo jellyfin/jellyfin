@@ -276,9 +276,9 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     connection.Dispose();
                 }
-                catch
+                catch (Exception ex)
                 {
-                    _logger.LogWarning("Error disposing connection");
+                    _logger.LogError(ex, "Error disposing connection");
                 }
             }
         }
