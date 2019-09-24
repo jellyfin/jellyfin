@@ -57,6 +57,7 @@ jobs:
 
     - task: CopyFiles@2
       displayName: Copy the web UI
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
         sourceFolder: $(Agent.TempDirectory)/jellyfin-web/dist # Optional
         contents: '**'
@@ -225,6 +226,7 @@ jobs:
 
     - task: CopyFiles@2
       displayName: Copy the web UI
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
         sourceFolder: $(Agent.TempDirectory)/jellyfin-web/dist # Optional
         contents: '**'
