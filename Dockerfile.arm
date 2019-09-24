@@ -35,7 +35,7 @@ RUN apt-get update \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media
 COPY --from=builder /jellyfin /jellyfin
-COPY --from=web-builder /dist /jellyfin/jellyfin-web/src
+COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
 EXPOSE 8096
 VOLUME /cache /config /media

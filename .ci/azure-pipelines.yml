@@ -31,18 +31,40 @@ jobs:
       persistCredentials: true
 
     - task: CmdLine@2
-      displayName: "Update submodules"
+      displayName: "Check out web"
       condition: and(succeeded(), or(contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
-        script: 'git submodule foreach --recursive git checkout $(Build.SourceBranch)'
-        workingDirectory: '$(Build.SourcesDirectory)'
+        script: 'git clone --single-branch --branch $(Build.SourceBranch) --depth=1 https://github.com/jellyfin/jellyfin-web.git $(Agent.TempDirectory)/jellyfin-web'
 
     - task: CmdLine@2
-      displayName: "Update submodules (PR)"
+      displayName: "Check out web (PR)"
       condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest'))
       inputs:
-        script: 'git submodule foreach --recursive git checkout $(System.PullRequest.TargetBranch)'
-        workingDirectory: '$(Build.SourcesDirectory)'
+        script: 'git clone --single-branch --branch $(System.PullRequest.TargetBranch) --depth 1 https://github.com/jellyfin/jellyfin-web.git $(Agent.TempDirectory)/jellyfin-web'
+
+    - task: NodeTool@0
+      displayName: 'Install Node.js'
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        versionSpec: '10.x'
+
+    - task: CmdLine@2
+      displayName: "Build Web UI"
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        script: yarn install
+        workingDirectory: $(Agent.TempDirectory)/jellyfin-web
+
+    - task: CopyFiles@2
+      displayName: Copy the web UI
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        sourceFolder: $(Agent.TempDirectory)/jellyfin-web/dist # Optional
+        contents: '**'
+        targetFolder: $(Build.SourcesDirectory)/MediaBrowser.WebDashboard/jellyfin-web
+        cleanTargetFolder: true # Optional
+        overWrite: true # Optional
+        flattenFolders: false # Optional
 
     - task: DotNetCoreCLI@2
       displayName: Publish
@@ -178,18 +200,40 @@ jobs:
       persistCredentials: true
 
     - task: CmdLine@2
-      displayName: "Update submodules"
+      displayName: "Check out web"
       condition: and(succeeded(), or(contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
-        script: 'git submodule foreach --recursive git checkout $(Build.SourceBranch)'
-        workingDirectory: '$(Build.SourcesDirectory)'
+        script: 'git clone --single-branch --branch $(Build.SourceBranch) --depth=1 https://github.com/jellyfin/jellyfin-web.git $(Agent.TempDirectory)/jellyfin-web'
 
     - task: CmdLine@2
-      displayName: "Update submodules (PR)"
+      displayName: "Check out web (PR)"
       condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest'))
       inputs:
-        script: 'git submodule foreach --recursive git checkout $(System.PullRequest.TargetBranch)'
-        workingDirectory: '$(Build.SourcesDirectory)'
+        script: 'git clone --single-branch --branch $(System.PullRequest.TargetBranch) --depth 1 https://github.com/jellyfin/jellyfin-web.git $(Agent.TempDirectory)/jellyfin-web'
+
+    - task: NodeTool@0
+      displayName: 'Install Node.js'
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        versionSpec: '10.x'
+
+    - task: CmdLine@2
+      displayName: "Build Web UI"
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        script: yarn install
+        workingDirectory: $(Agent.TempDirectory)/jellyfin-web
+
+    - task: CopyFiles@2
+      displayName: Copy the web UI
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        sourceFolder: $(Agent.TempDirectory)/jellyfin-web/dist # Optional
+        contents: '**'
+        targetFolder: $(Build.SourcesDirectory)/MediaBrowser.WebDashboard/jellyfin-web
+        cleanTargetFolder: true # Optional
+        overWrite: true # Optional
+        flattenFolders: false # Optional
 
     - task: CmdLine@2
       displayName: Clone the UX repository
