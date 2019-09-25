@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-source ../common.build.sh
-
 args="${@}"
 declare -a docker_envvars
 for arg in ${args}; do

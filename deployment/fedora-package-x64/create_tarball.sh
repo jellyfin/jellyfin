@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
 # shellcheck disable=SC1091
-source ../common.build.sh
-
 WORKDIR="$( pwd )"
 VERSION="$( sed -ne '/^Version:/s/.*  *//p' "${WORKDIR}"/pkg-src/jellyfin.spec )"
 
