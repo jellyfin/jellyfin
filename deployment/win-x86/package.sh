@@ -20,8 +20,8 @@ package_win32() (
         cp ${TEMP_DIR}/${FFMPEG_VERSION}/bin/ffmpeg.exe ${OUTPUT_DIR}/ffmpeg.exe
         cp ${TEMP_DIR}/${FFMPEG_VERSION}/bin/ffprobe.exe ${OUTPUT_DIR}/ffprobe.exe
         rm -r ${TEMP_DIR}
-        cp ${ROOT}/deployment/windows/install-jellyfin.ps1 ${OUTPUT_DIR}/install-jellyfin.ps1
-        cp ${ROOT}/deployment/windows/install.bat ${OUTPUT_DIR}/install.bat
+        cp ${ROOT}/deployment/windows/legacy/install-jellyfin.ps1 ${OUTPUT_DIR}/install-jellyfin.ps1
+        cp ${ROOT}/deployment/windows/legacy/install.bat ${OUTPUT_DIR}/install.bat
         mkdir -p ${PKG_DIR}
         pushd ${OUTPUT_DIR} 
         ${ARCHIVE_CMD} ${ROOT}/${PKG_DIR}/`basename "${OUTPUT_DIR}"`.zip .
