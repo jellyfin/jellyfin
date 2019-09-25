@@ -21,6 +21,7 @@ yarn build
 mkdir -p ${web_target}
 mv dist/* ${web_target}/
 popd
+rm -rf ${web_build_dir}
 
 # Build RPM
 spectool -g -R SPECS/jellyfin.spec

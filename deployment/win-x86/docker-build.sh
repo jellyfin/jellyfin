@@ -27,6 +27,7 @@ yarn build
 mkdir -p ${web_target}
 mv dist/* ${web_target}/
 popd
+rm -rf ${web_build_dir}
 
 # Get version
 version="$( grep "version:" ./build.yaml | sed -E 's/version: "([0-9\.]+.*)"/\1/' )"
@@ -43,6 +44,7 @@ cp ${addin_build_dir}/${NSSM_VERSION}/win64/nssm.exe /dist/jellyfin_${version}/n
 unzip ${addin_build_dir}/ffmpeg.zip -d ${addin_build_dir}
 cp ${addin_build_dir}/${FFMPEG_VERSION}/bin/ffmpeg.exe /dist/jellyfin_${version}/ffmpeg.exe
 cp ${addin_build_dir}/${FFMPEG_VERSION}/bin/ffprobe.exe /dist/jellyfin_${version}/ffprobe.exe
+rm -rf ${addin_build_dir}
 
 # Prepare scripts
 cp ${SOURCE_DIR}/deployment/windows/legacy/install-jellyfin.ps1 /dist/jellyfin_${version}/install-jellyfin.ps1

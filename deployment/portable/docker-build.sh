@@ -21,6 +21,7 @@ yarn build
 mkdir -p ${web_target}
 mv dist/* ${web_target}/
 popd
+rm -rf ${web_build_dir}
 
 # Get version
 version="$( grep "version:" ./build.yaml | sed -E 's/version: "([0-9\.]+.*)"/\1/' )"

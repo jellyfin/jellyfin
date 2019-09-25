@@ -24,6 +24,7 @@ yarn build
 mkdir -p ${web_target}
 mv dist/* ${web_target}/
 popd
+rm -rf ${web_build_dir}
 
 # Build DEB
 export CONFIG_SITE=/etc/dpkg-cross/cross-config.${ARCH}
