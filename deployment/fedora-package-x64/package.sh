@@ -7,11 +7,9 @@ for arg in ${args}; do
 done
 
 WORKDIR="$( pwd )"
-VERSION="$( grep '^Version:' ${WORKDIR}/pkg-src/jellyfin.spec | awk '{ print $NF }' )"
 
 package_temporary_dir="${WORKDIR}/pkg-dist-tmp"
 output_dir="${WORKDIR}/pkg-dist"
-pkg_src_dir="${WORKDIR}/pkg-src"
 current_user="$( whoami )"
 image_name="jellyfin-fedora-build"
 
@@ -24,8 +22,6 @@ if [[ ! -z $(id -Gn | grep -q 'docker') ]] \
 else
     docker_sudo=""
 fi
-
-./create_tarball.sh
 
 # Prepare temporary package dir
 mkdir -p "${package_temporary_dir}"
