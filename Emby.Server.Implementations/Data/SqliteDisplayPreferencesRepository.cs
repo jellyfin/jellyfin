@@ -2,43 +2,43 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text.Json;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
     /// <summary>
-    /// Class SQLiteDisplayPreferencesRepository
+    /// Class SQLiteDisplayPreferencesRepository.
     /// </summary>
     public class SqliteDisplayPreferencesRepository : BaseSqliteRepository, IDisplayPreferencesRepository
     {
         private readonly IFileSystem _fileSystem;
 
-        public SqliteDisplayPreferencesRepository(ILogger<SqliteDisplayPreferencesRepository> logger, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, IFileSystem fileSystem)
+        private readonly JsonSerializerOptions _jsonOptions;
+
+        public SqliteDisplayPreferencesRepository(ILogger<SqliteDisplayPreferencesRepository> logger, IApplicationPaths appPaths, IFileSystem fileSystem)
             : base(logger)
         {
-            _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
+
+            _jsonOptions = JsonDefaults.GetOptions();
+
             DbFilePath = Path.Combine(appPaths.DataPath, "displaypreferences.db");
         }
 
         /// <summary>
-        /// Gets the name of the repository
+        /// Gets the name of the repository.
         /// </summary>
         /// <value>The name.</value>
         public string Name => "SQLite";
-
-        /// <summary>
-        /// The _json serializer
-        /// </summary>
-        private readonly IJsonSerializer _jsonSerializer;
 
         public void Initialize()
         {
@@ -106,7 +106,7 @@ namespace Emby.Server.Implementations.Data
 
         private void SaveDisplayPreferences(DisplayPreferences displayPreferences, Guid userId, string client, IDatabaseConnection connection)
         {
-            var serialized = _jsonSerializer.SerializeToBytes(displayPreferences);
+            var serialized = JsonSerializer.SerializeToUtf8Bytes(displayPreferences, _jsonOptions);
 
             using (var statement = connection.PrepareStatement("replace into userdisplaypreferences (id, userid, client, data) values (@id, @userId, @client, @data)"))
             {
@@ -198,15 +198,13 @@ namespace Emby.Server.Implementations.Data
             var list = new List<DisplayPreferences>();
 
             using (var connection = GetConnection(true))
+            using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where userId=@userId"))
             {
-                using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where userId=@userId"))
-                {
-                    statement.TryBind("@userId", userId.ToGuidBlob());
+                statement.TryBind("@userId", userId.ToGuidBlob());
 
-                    foreach (var row in statement.ExecuteQuery())
-                    {
-                        list.Add(Get(row));
-                    }
+                foreach (var row in statement.ExecuteQuery())
+                {
+                    list.Add(Get(row));
                 }
             }
 
@@ -214,7 +212,7 @@ namespace Emby.Server.Implementations.Data
         }
 
         private DisplayPreferences Get(IReadOnlyList<IResultSetValue> row)
-            => _jsonSerializer.DeserializeFromString<DisplayPreferences>(row.GetString(0));
+            => JsonSerializer.Deserialize<DisplayPreferences>(row[0].ToBlob(), _jsonOptions);
 
         public void SaveDisplayPreferences(DisplayPreferences displayPreferences, string userId, string client, CancellationToken cancellationToken)
             => SaveDisplayPreferences(displayPreferences, new Guid(userId), client, cancellationToken);
