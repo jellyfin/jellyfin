@@ -10,7 +10,7 @@ ENV ARTIFACT_DIR=/dist
 
 # Prepare Fedora build environment
 RUN dnf update -y \
- && dnf install -y @buildsys-build rpmdevtools dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel \
+ && dnf install -y @buildsys-build rpmdevtools dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel nodejs \
  && dnf copr enable -y @dotnet-sig/dotnet \
  && rpmdev-setuptree \
  && dnf install -y dotnet-sdk-${SDK_VERSION} dotnet-runtime-${SDK_VERSION} \
@@ -19,6 +19,10 @@ RUN dnf update -y \
  && ln -s ${PLATFORM_DIR}/pkg-src/jellyfin.spec ${SOURCE_DIR}/SPECS/jellyfin.spec \
  && mkdir -p ${SOURCE_DIR}/SOURCES \
  && ln -s ${PLATFORM_DIR}/pkg-src ${SOURCE_DIR}/SOURCES
+
+# Install yarn package manager
+RUN wget -q -O- https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo \
+ && dnf install -y yarn
 
 VOLUME ${ARTIFACT_DIR}/
 
