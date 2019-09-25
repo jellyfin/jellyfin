@@ -23,7 +23,7 @@ RUN wget https://download.visualstudio.microsoft.com/download/pr/228832ea-805f-4
 
 # Install yarn package manager
 RUN wget -q -O- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
- && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
+ && echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
  && apt update \
  && apt install -y yarn
 
