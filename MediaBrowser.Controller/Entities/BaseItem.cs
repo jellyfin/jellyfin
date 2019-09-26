@@ -2238,8 +2238,8 @@ namespace MediaBrowser.Controller.Entities
                 var currentCount = current.Length;
                 var newArr = new ItemImageInfo[currentCount + 1];
                 current.CopyTo(newArr, 0);
-                current[currentCount] = image;
-                ImageInfos = current;
+                newArr[currentCount] = image;
+                ImageInfos = newArr;
             }
         }
 
