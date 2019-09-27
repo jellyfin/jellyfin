@@ -14,8 +14,7 @@ FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION} as builder
 WORKDIR /repo
 COPY . .
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
-RUN bash -c "source deployment/common.build.sh && \
-    build_jellyfin Jellyfin.Server Release linux-x64 /jellyfin"
+RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-x64 "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
 
 FROM jellyfin/ffmpeg:${FFMPEG_VERSION} as ffmpeg
 FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}
