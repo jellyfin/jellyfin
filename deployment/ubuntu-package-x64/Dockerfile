@@ -14,6 +14,12 @@ RUN apt-get update \
  && ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh \
  && mkdir -p ${SOURCE_DIR} && ln -sf ${PLATFORM_DIR}/pkg-src ${SOURCE_DIR}/debian
 
+# Install yarn package manager
+RUN wget -q -O- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
+ && echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
+ && apt update \
+ && apt install -y yarn
+
 VOLUME ${ARTIFACT_DIR}/
 
 COPY . ${SOURCE_DIR}/

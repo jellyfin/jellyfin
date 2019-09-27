@@ -8,13 +8,23 @@ ARG SDK_VERSION=2.2
 ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist
 
-# Prepare Fedora build environment
-RUN dnf update -y \
- && dnf install -y @buildsys-build rpmdevtools dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel \
- && dnf copr enable -y @dotnet-sig/dotnet \
+# Prepare Fedora environment
+RUN dnf update -y
+
+# Install build dependencies
+RUN dnf install -y @buildsys-build rpmdevtools dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel nodejs wget git
+
+# Install DotNET SDK
+RUN dnf copr enable -y @dotnet-sig/dotnet \
  && rpmdev-setuptree \
- && dnf install -y dotnet-sdk-${SDK_VERSION} dotnet-runtime-${SDK_VERSION} \
- && ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh \
+ && dnf install -y dotnet-sdk-${SDK_VERSION} dotnet-runtime-${SDK_VERSION}
+
+# Install yarn package manager
+RUN wget -q -O /etc/yum.repos.d/yarn.repo https://dl.yarnpkg.com/rpm/yarn.repo \
+ && dnf install -y yarn
+
+# Create symlinks and directories
+RUN ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh \
  && mkdir -p ${SOURCE_DIR}/SPECS \
  && ln -s ${PLATFORM_DIR}/pkg-src/jellyfin.spec ${SOURCE_DIR}/SPECS/jellyfin.spec \
  && mkdir -p ${SOURCE_DIR}/SOURCES \

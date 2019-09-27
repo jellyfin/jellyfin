@@ -21,6 +21,12 @@ RUN wget https://download.visualstudio.microsoft.com/download/pr/3cb1d917-19cc-4
  && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
  && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
 
+# Install yarn package manager
+RUN wget -q -O- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
+ && echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
+ && apt update \
+ && apt install -y yarn
+
 # Link to docker-build script
 RUN ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh
 
