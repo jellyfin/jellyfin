@@ -114,13 +114,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 FFprobePath = Regex.Replace(FFmpegPath, @"[^\/\\]+?(\.[^\/\\\n.]+)?$", @"ffprobe$1");
 
                 // Interrogate to understand what coders are supported
-                var result = new EncoderValidator(_logger, _processFactory).GetAvailableCoders(FFmpegPath);
+                var validator = new EncoderValidator(_logger, FFmpegPath);
 
-                SetAvailableDecoders(result.decoders);
-                SetAvailableEncoders(result.encoders);
+                SetAvailableDecoders(validator.GetDecoders());
+                SetAvailableEncoders(validator.GetEncoders());
             }
 
-            _logger.LogInformation("FFmpeg: {0}: {1}", EncoderLocation.ToString(), FFmpegPath ?? string.Empty);
+            _logger.LogInformation("FFmpeg: {0}: {1}", EncoderLocation, FFmpegPath ?? string.Empty);
         }
 
         /// <summary>
@@ -183,11 +183,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (File.Exists(path))
                 {
-                    rc = new EncoderValidator(_logger, _processFactory).ValidateVersion(path, true);
+                    rc = new EncoderValidator(_logger, path).ValidateVersion();
 
                     if (!rc)
                     {
-                        _logger.LogWarning("FFmpeg: {0}: Failed version check: {1}", location.ToString(), path);
+                        _logger.LogWarning("FFmpeg: {0}: Failed version check: {1}", location, path);
                     }
 
                     // ToDo - Enable the ffmpeg validator.  At the moment any version can be used.
@@ -198,7 +198,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 else
                 {
-                    _logger.LogWarning("FFmpeg: {0}: File not found: {1}", location.ToString(), path);
+                    _logger.LogWarning("FFmpeg: {0}: File not found: {1}", location, path);
                 }
             }
 
@@ -228,9 +228,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        private string ExistsOnSystemPath(string filename)
+        private string ExistsOnSystemPath(string fileName)
         {
-            string inJellyfinPath = GetEncoderPathFromDirectory(System.AppContext.BaseDirectory, filename);
+            string inJellyfinPath = GetEncoderPathFromDirectory(System.AppContext.BaseDirectory, fileName);
             if (!string.IsNullOrEmpty(inJellyfinPath))
             {
                 return inJellyfinPath;
@@ -239,13 +239,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             foreach (var path in values.Split(Path.PathSeparator))
             {
-                var candidatePath = GetEncoderPathFromDirectory(path, filename);
+                var candidatePath = GetEncoderPathFromDirectory(path, fileName);
 
                 if (!string.IsNullOrEmpty(candidatePath))
                 {
                     return candidatePath;
                 }
             }
+
             return null;
         }
 

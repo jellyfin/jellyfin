@@ -1,110 +1,153 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
-using MediaBrowser.Model.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
     public class EncoderValidator
     {
-        private readonly ILogger _logger;
-        private readonly IProcessFactory _processFactory;
+        private const string DefaultEncoderPath = "ffmpeg";
 
-        public EncoderValidator(ILogger logger, IProcessFactory processFactory)
+        private static readonly string[] requiredDecoders = new[]
+        {
+            "mpeg2video",
+            "h264_qsv",
+            "hevc_qsv",
+            "mpeg2_qsv",
+            "vc1_qsv",
+            "h264_cuvid",
+            "hevc_cuvid",
+            "dts",
+            "ac3",
+            "aac",
+            "mp3",
+            "h264",
+            "hevc"
+        };
+
+        private static readonly string[] requiredEncoders = new[]
+        {
+            "libx264",
+            "libx265",
+            "mpeg4",
+            "msmpeg4",
+            "libvpx",
+            "libvpx-vp9",
+            "aac",
+            "libmp3lame",
+            "libopus",
+            "libvorbis",
+            "srt",
+            "h264_nvenc",
+            "hevc_nvenc",
+            "h264_qsv",
+            "hevc_qsv",
+            "h264_omx",
+            "hevc_omx",
+            "h264_vaapi",
+            "hevc_vaapi",
+            "h264_v4l2m2m",
+            "ac3"
+        };
+
+        // Try and use the individual library versions to determine a FFmpeg version
+        // This lookup table is to be maintained with the following command line:
+        // $ ffmpeg -version | perl -ne ' print "$1=$2.$3," if /^(lib\w+)\s+(\d+)\.\s*(\d+)/'
+        private static readonly IReadOnlyDictionary<string, Version> _ffmpegVersionMap = new Dictionary<string, Version>
+        {
+            { "libavutil=56.31,libavcodec=58.54,libavformat=58.29,libavdevice=58.8,libavfilter=7.57,libswscale=5.5,libswresample=3.5,libpostproc=55.5,", new Version(4, 2) },
+            { "libavutil=56.22,libavcodec=58.35,libavformat=58.20,libavdevice=58.5,libavfilter=7.40,libswscale=5.3,libswresample=3.3,libpostproc=55.3,", new Version(4, 1) },
+            { "libavutil=56.14,libavcodec=58.18,libavformat=58.12,libavdevice=58.3,libavfilter=7.16,libswscale=5.1,libswresample=3.1,libpostproc=55.1,", new Version(4, 0) },
+            { "libavutil=55.78,libavcodec=57.107,libavformat=57.83,libavdevice=57.10,libavfilter=6.107,libswscale=4.8,libswresample=2.9,libpostproc=54.7,", new Version(3, 4) },
+            { "libavutil=55.58,libavcodec=57.89,libavformat=57.71,libavdevice=57.6,libavfilter=6.82,libswscale=4.6,libswresample=2.7,libpostproc=54.5,", new Version(3, 3) },
+            { "libavutil=55.34,libavcodec=57.64,libavformat=57.56,libavdevice=57.1,libavfilter=6.65,libswscale=4.2,libswresample=2.3,libpostproc=54.1,", new Version(3, 2) },
+            { "libavutil=54.31,libavcodec=56.60,libavformat=56.40,libavdevice=56.4,libavfilter=5.40,libswscale=3.1,libswresample=1.2,libpostproc=53.3,", new Version(2, 8) }
+        };
+
+        private readonly ILogger _logger;
+
+        private readonly string _encoderPath;
+
+        public EncoderValidator(ILogger logger, string encoderPath = DefaultEncoderPath)
         {
             _logger = logger;
-            _processFactory = processFactory;
+            _encoderPath = encoderPath;
         }
 
-        public (IEnumerable<string> decoders, IEnumerable<string> encoders) GetAvailableCoders(string encoderPath)
-        {
-            _logger.LogInformation("Validating media encoder at {EncoderPath}", encoderPath);
+        public static Version MinVersion { get; } = new Version(4, 0);
 
-            var decoders = GetCodecs(encoderPath, Codec.Decoder);
-            var encoders = GetCodecs(encoderPath, Codec.Encoder);
+        public static Version MaxVersion { get; } = null;
 
-            _logger.LogInformation("Encoder validation complete");
-
-            return (decoders, encoders);
-        }
-
-        public bool ValidateVersion(string encoderAppPath, bool logOutput)
+        public bool ValidateVersion()
         {
             string output = null;
             try
             {
-                output = GetProcessOutput(encoderAppPath, "-version");
+                output = GetProcessOutput(_encoderPath, "-version");
             }
             catch (Exception ex)
             {
-                if (logOutput)
-                {
-                    _logger.LogError(ex, "Error validating encoder");
-                }
+                _logger.LogError(ex, "Error validating encoder");
             }
 
             if (string.IsNullOrWhiteSpace(output))
             {
-                if (logOutput)
-                {
-                    _logger.LogError("FFmpeg validation: The process returned no result");
-                }
+                _logger.LogError("FFmpeg validation: The process returned no result");
                 return false;
             }
 
             _logger.LogDebug("ffmpeg output: {Output}", output);
 
-            if (output.IndexOf("Libav developers", StringComparison.OrdinalIgnoreCase) != -1)
+            return ValidateVersionInternal(output);
+        }
+
+        internal bool ValidateVersionInternal(string versionOutput)
+        {
+            if (versionOutput.IndexOf("Libav developers", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                if (logOutput)
-                {
-                    _logger.LogError("FFmpeg validation: avconv instead of ffmpeg is not supported");
-                }
+                _logger.LogError("FFmpeg validation: avconv instead of ffmpeg is not supported");
                 return false;
             }
 
-            // The min and max FFmpeg versions required to run jellyfin successfully
-            var minRequired = new Version(4, 0);
-            var maxRequired = new Version(4, 0);
-
             // Work out what the version under test is
-            var underTest = GetFFmpegVersion(output);
+            var version = GetFFmpegVersion(versionOutput);
 
-            if (logOutput)
+            _logger.LogInformation("Found ffmpeg version {0}", version != null ? version.ToString() : "unknown");
+
+            if (version == null && MinVersion != null && MaxVersion != null) // Version is unknown
             {
-                _logger.LogInformation("FFmpeg validation: Found ffmpeg version {0}", underTest != null ? underTest.ToString() : "unknown");
+                if (MinVersion == MaxVersion)
+                {
+                    _logger.LogWarning("FFmpeg validation: We recommend ffmpeg version {0}", MinVersion);
+                }
+                else
+                {
+                    _logger.LogWarning("FFmpeg validation: We recommend a minimum of {0} and maximum of {1}", MinVersion, MaxVersion);
+                }
 
-                if (underTest == null) // Version is unknown
-                {
-                    if (minRequired.Equals(maxRequired))
-                    {
-                        _logger.LogWarning("FFmpeg validation: We recommend ffmpeg version {0}", minRequired.ToString());
-                    }
-                    else
-                    {
-                        _logger.LogWarning("FFmpeg validation: We recommend a minimum of {0} and maximum of {1}", minRequired.ToString(), maxRequired.ToString());
-                    }
-                }
-                else if (underTest.CompareTo(minRequired) < 0) // Version is below what we recommend
-                {
-                    _logger.LogWarning("FFmpeg validation: The minimum recommended ffmpeg version is {0}", minRequired.ToString());
-                }
-                else if (underTest.CompareTo(maxRequired) > 0) // Version is above what we recommend
-                {
-                    _logger.LogWarning("FFmpeg validation: The maximum recommended ffmpeg version is {0}", maxRequired.ToString());
-                }
-                else  // Version is ok
-                {
-                    _logger.LogInformation("FFmpeg validation: Found suitable ffmpeg version");
-                }
+                return false;
+            }
+            else if (MinVersion != null && version < MinVersion) // Version is below what we recommend
+            {
+                _logger.LogWarning("FFmpeg validation: The minimum recommended ffmpeg version is {0}", MinVersion);
+                return false;
+            }
+            else if (MaxVersion != null && version > MaxVersion) // Version is above what we recommend
+            {
+                _logger.LogWarning("FFmpeg validation: The maximum recommended ffmpeg version is {0}", MaxVersion);
+                return false;
             }
 
-            // underTest shall be null if versions is unknown
-            return (underTest == null) ? false : (underTest.CompareTo(minRequired) >= 0 && underTest.CompareTo(maxRequired) <= 0);
+            return true;
         }
+
+        public IEnumerable<string> GetDecoders() => GetCodecs(Codec.Decoder);
+
+        public IEnumerable<string> GetEncoders() => GetCodecs(Codec.Encoder);
 
         /// <summary>
         /// Using the output from "ffmpeg -version" work out the FFmpeg version.
@@ -115,10 +158,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="output"></param>
         /// <returns></returns>
-        static private Version GetFFmpegVersion(string output)
+        internal static Version GetFFmpegVersion(string output)
         {
             // For pre-built binaries the FFmpeg version should be mentioned at the very start of the output
-            var match = Regex.Match(output, @"ffmpeg version (\d+\.\d+)");
+            var match = Regex.Match(output, @"ffmpeg version ((?:\d+\.?)+)");
 
             if (match.Success)
             {
@@ -126,25 +169,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             else
             {
-                // Try and use the individual library versions to determine a FFmpeg version
-                // This lookup table is to be maintained with the following command line:
-                // $ ./ffmpeg.exe -version | perl -ne ' print "$1=$2.$3," if /^(lib\w+)\s+(\d+)\.\s*(\d+)/'
-                var lut = new ReadOnlyDictionary<Version, string>
-                    (new Dictionary<Version, string>
-                    {
-                        { new Version("4.1"), "libavutil=56.22,libavcodec=58.35,libavformat=58.20,libavdevice=58.5,libavfilter=7.40,libswscale=5.3,libswresample=3.3,libpostproc=55.3," },
-                        { new Version("4.0"), "libavutil=56.14,libavcodec=58.18,libavformat=58.12,libavdevice=58.3,libavfilter=7.16,libswscale=5.1,libswresample=3.1,libpostproc=55.1," },
-                        { new Version("3.4"), "libavutil=55.78,libavcodec=57.107,libavformat=57.83,libavdevice=57.10,libavfilter=6.107,libswscale=4.8,libswresample=2.9,libpostproc=54.7," },
-                        { new Version("3.3"), "libavutil=55.58,libavcodec=57.89,libavformat=57.71,libavdevice=57.6,libavfilter=6.82,libswscale=4.6,libswresample=2.7,libpostproc=54.5," },
-                        { new Version("3.2"), "libavutil=55.34,libavcodec=57.64,libavformat=57.56,libavdevice=57.1,libavfilter=6.65,libswscale=4.2,libswresample=2.3,libpostproc=54.1," },
-                        { new Version("2.8"), "libavutil=54.31,libavcodec=56.60,libavformat=56.40,libavdevice=56.4,libavfilter=5.40,libswscale=3.1,libswresample=1.2,libpostproc=53.3," }
-                    });
-
                 // Create a reduced version string and lookup key from dictionary
-                var reducedVersion = GetVersionString(output);
+                var reducedVersion = GetLibrariesVersionString(output);
 
                 // Try to lookup the string and return Key, otherwise if not found returns null
-                return lut.FirstOrDefault(x => x.Value == reducedVersion).Key;
+                return _ffmpegVersionMap.TryGetValue(reducedVersion, out Version version) ? version : null;
             }
         }
 
@@ -154,62 +183,24 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="output"></param>
         /// <returns></returns>
-        static private string GetVersionString(string output)
+        private static string GetLibrariesVersionString(string output)
         {
-            string pattern = @"((?<name>lib\w+)\s+(?<major>\d+)\.\s*(?<minor>\d+))";
-            RegexOptions options = RegexOptions.Multiline;
-
-            string rc = null;
-
-            foreach (Match m in Regex.Matches(output, pattern, options))
+            var rc = new StringBuilder(144);
+            foreach (Match m in Regex.Matches(
+                output,
+                @"((?<name>lib\w+)\s+(?<major>\d+)\.\s*(?<minor>\d+))",
+                RegexOptions.Multiline))
             {
-                rc += string.Concat(m.Groups["name"], '=', m.Groups["major"], '.', m.Groups["minor"], ',');
+                rc.Append(m.Groups["name"])
+                    .Append('=')
+                    .Append(m.Groups["major"])
+                    .Append('.')
+                    .Append(m.Groups["minor"])
+                    .Append(',');
             }
 
-            return rc;
+            return rc.Length == 0 ? null : rc.ToString();
         }
-
-        private static readonly string[] requiredDecoders = new[]
-            {
-                "mpeg2video",
-                "h264_qsv",
-                "hevc_qsv",
-                "mpeg2_qsv",
-                "vc1_qsv",
-                "h264_cuvid",
-                "hevc_cuvid",
-                "dts",
-                "ac3",
-                "aac",
-                "mp3",
-                "h264",
-                "hevc"
-            };
-
-        private static readonly string[] requiredEncoders = new[]
-            {
-                "libx264",
-                "libx265",
-                "mpeg4",
-                "msmpeg4",
-                "libvpx",
-                "libvpx-vp9",
-                "aac",
-                "libmp3lame",
-                "libopus",
-                "libvorbis",
-                "srt",
-                "h264_nvenc",
-                "hevc_nvenc",
-                "h264_qsv",
-                "hevc_qsv",
-                "h264_omx",
-                "hevc_omx",
-                "h264_vaapi",
-                "hevc_vaapi",
-                "h264_v4l2m2m",
-                "ac3"
-            };
 
         private enum Codec
         {
@@ -217,13 +208,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             Decoder
         }
 
-        private IEnumerable<string> GetCodecs(string encoderAppPath, Codec codec)
+        private IEnumerable<string> GetCodecs(Codec codec)
         {
             string codecstr = codec == Codec.Encoder ? "encoders" : "decoders";
             string output = null;
             try
             {
-                output = GetProcessOutput(encoderAppPath, "-" + codecstr);
+                output = GetProcessOutput(_encoderPath, "-" + codecstr);
             }
             catch (Exception ex)
             {
@@ -250,45 +241,25 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetProcessOutput(string path, string arguments)
         {
-            IProcess process = _processFactory.Create(new ProcessOptions
+            using (var process = new Process()
             {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                FileName = path,
-                Arguments = arguments,
-                IsHidden = true,
-                ErrorDialog = false,
-                RedirectStandardOutput = true,
-                // ffmpeg uses stderr to log info, don't show this
-                RedirectStandardError = true
-            });
-
-            _logger.LogDebug("Running {Path} {Arguments}", path, arguments);
-
-            using (process)
+                StartInfo = new ProcessStartInfo(path, arguments)
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false,
+                    RedirectStandardOutput = true,
+                    // ffmpeg uses stderr to log info, don't show this
+                    RedirectStandardError = true
+                }
+            })
             {
+                _logger.LogDebug("Running {Path} {Arguments}", path, arguments);
+
                 process.Start();
 
-                try
-                {
-                    return process.StandardOutput.ReadToEnd();
-                }
-                catch
-                {
-                    _logger.LogWarning("Killing process {Path} {Arguments}", path, arguments);
-
-                    // Hate having to do this
-                    try
-                    {
-                        process.Kill();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error killing process");
-                    }
-
-                    throw;
-                }
+                return process.StandardOutput.ReadToEnd();
             }
         }
     }
