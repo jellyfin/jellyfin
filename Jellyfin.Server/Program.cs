@@ -125,7 +125,9 @@ namespace Jellyfin.Server
                 Shutdown();
             };
 
-            _logger.LogInformation("Jellyfin version: {Version}", Assembly.GetEntryAssembly().GetName().Version);
+            _logger.LogInformation(
+                "Jellyfin version: {Version}",
+                Assembly.GetEntryAssembly().GetName().Version.ToString(3));
 
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
