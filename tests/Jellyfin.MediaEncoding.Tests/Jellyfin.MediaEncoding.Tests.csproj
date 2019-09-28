@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../MediaBrowser.Common/MediaBrowser.Common.csproj" />
+    <ProjectReference Include="../../MediaBrowser.MediaEncoding/MediaBrowser.MediaEncoding.csproj" />
   </ItemGroup>
 
 </Project>
