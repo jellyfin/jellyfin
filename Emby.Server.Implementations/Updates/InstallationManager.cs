@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -457,13 +458,17 @@ namespace Emby.Server.Implementations.Updates
                 var hash = ToHexString(md5.ComputeHash(stream));
                 if (!string.Equals(package.checksum, hash, StringComparison.OrdinalIgnoreCase))
                 {
-                    _logger.LogDebug("{0}, {1}", package.checksum, hash);
-                    throw new InvalidDataException($"The checksums didn't match while installing {package.name}.");
+                    _logger.LogError(
+                        "The checksums didn't match while installing {Package}, expected: {Expected}, got: {Received}",
+                        package.name,
+                        package.checksum,
+                        hash);
+                    throw new InvalidDataException("The checksum of the received data doesn't match.");
                 }
 
                 if (Directory.Exists(targetDir))
                 {
-                    Directory.Delete(targetDir);
+                    Directory.Delete(targetDir, true);
                 }
 
                 stream.Position = 0;
