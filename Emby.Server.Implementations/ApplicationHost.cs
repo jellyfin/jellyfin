@@ -1403,17 +1403,6 @@ namespace Emby.Server.Implementations
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
 
-            string wanAddress;
-
-            if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
-            {
-                wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
-            }
-
             return new SystemInfo
             {
                 HasPendingRestart = HasPendingRestart,
@@ -1435,7 +1424,6 @@ namespace Emby.Server.Implementations
                 OperatingSystemDisplayName = OperatingSystem.Name,
                 CanSelfRestart = CanSelfRestart,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
-                WanAddress = wanAddress,
                 HasUpdateAvailable = HasUpdateAvailable,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
                 ServerName = FriendlyName,
@@ -1457,24 +1445,12 @@ namespace Emby.Server.Implementations
         {
             var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
 
-            string wanAddress;
-
-            if (string.IsNullOrEmpty(ServerConfigurationManager.Configuration.WanDdns))
-            {
-                wanAddress = await GetWanApiUrlFromExternal(cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                wanAddress = GetWanApiUrl(ServerConfigurationManager.Configuration.WanDdns);
-            }
-
             return new PublicSystemInfo
             {
                 Version = ApplicationVersion,
                 ProductName = ApplicationProductName,
                 Id = SystemId,
                 OperatingSystem = OperatingSystem.Id.ToString(),
-                WanAddress = wanAddress,
                 ServerName = FriendlyName,
                 LocalAddress = localAddress
             };
@@ -1501,31 +1477,6 @@ namespace Emby.Server.Implementations
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error getting local Ip address information");
-            }
-
-            return null;
-        }
-
-        public async Task<string> GetWanApiUrlFromExternal(CancellationToken cancellationToken)
-        {
-            const string Url = "http://ipv4.icanhazip.com";
-            try
-            {
-                using (var response = await HttpClient.Get(new HttpRequestOptions
-                {
-                    Url = Url,
-                    LogErrorResponseBody = false,
-                    BufferContent = false,
-                    CancellationToken = cancellationToken
-                }).ConfigureAwait(false))
-                {
-                    string res = await response.ReadToEndAsync().ConfigureAwait(false);
-                    return GetWanApiUrl(res.Trim());
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error getting WAN Ip address information");
             }
 
             return null;
@@ -1571,32 +1522,6 @@ namespace Emby.Server.Implementations
             return string.Format("http://{0}:{1}",
                     host,
                     HttpPort.ToString(CultureInfo.InvariantCulture));
-        }
-
-        public string GetWanApiUrl(IPAddress ipAddress)
-        {
-            if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                var str = RemoveScopeId(ipAddress.ToString());
-
-                return GetWanApiUrl("[" + str + "]");
-            }
-
-            return GetWanApiUrl(ipAddress.ToString());
-        }
-
-        public string GetWanApiUrl(string host)
-        {
-            if (EnableHttps)
-            {
-                return string.Format("https://{0}:{1}",
-                    host,
-                    ServerConfigurationManager.Configuration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture));
-            }
-
-            return string.Format("http://{0}:{1}",
-                    host,
-                    ServerConfigurationManager.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture));
         }
 
         public Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken)
