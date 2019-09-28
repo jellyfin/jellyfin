@@ -1198,25 +1198,11 @@ namespace Emby.Server.Implementations
 
         private CertificateInfo GetCertificateInfo(bool generateCertificate)
         {
-            if (!string.IsNullOrWhiteSpace(ServerConfigurationManager.Configuration.CertificatePath))
-            {
-                // Custom cert
-                return new CertificateInfo
-                {
-                    Path = ServerConfigurationManager.Configuration.CertificatePath,
-                    Password = ServerConfigurationManager.Configuration.CertificatePassword
-                };
-            }
-
-            // Generate self-signed cert
-            var certHost = GetHostnameFromExternalDns(ServerConfigurationManager.Configuration.WanDdns);
-            var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + (certHost + "2").GetMD5().ToString("N", CultureInfo.InvariantCulture) + ".pfx");
-            const string Password = "embycert";
-
+            // Custom cert
             return new CertificateInfo
             {
-                Path = certPath,
-                Password = Password
+                Path = ServerConfigurationManager.Configuration.CertificatePath,
+                Password = ServerConfigurationManager.Configuration.CertificatePassword
             };
         }
 
