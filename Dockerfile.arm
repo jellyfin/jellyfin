@@ -22,8 +22,7 @@ RUN find . -type f -exec sed -i 's/netcoreapp2.1/netcoreapp3.0/g' {} \;
 # Discard objs - may cause failures if exists
 RUN find . -type d -name obj | xargs -r rm -r
 # Build
-RUN bash -c "source deployment/common.build.sh && \
-    build_jellyfin Jellyfin.Server Release linux-arm /jellyfin"
+RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-arm "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
 
 
 FROM multiarch/qemu-user-static:x86_64-arm as qemu
