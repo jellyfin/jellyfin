@@ -13,9 +13,11 @@ namespace Jellyfin.MediaEncoding.Tests
         {
             public IEnumerator<object[]> GetEnumerator()
             {
+                yield return new object[] { EncoderValidatorTestsData.FFmpegV421Output, new Version(4, 2, 1) };
                 yield return new object[] { EncoderValidatorTestsData.FFmpegV42Output, new Version(4, 2) };
                 yield return new object[] { EncoderValidatorTestsData.FFmpegV414Output, new Version(4, 1, 4) };
                 yield return new object[] { EncoderValidatorTestsData.FFmpegV404Output, new Version(4, 0, 4) };
+                yield return new object[] { EncoderValidatorTestsData.FFmpegGitUnknownOutput, null };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -29,9 +31,11 @@ namespace Jellyfin.MediaEncoding.Tests
         }
 
         [Theory]
+        [InlineData(EncoderValidatorTestsData.FFmpegV421Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV42Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV414Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV404Output, true)]
+        [InlineData(EncoderValidatorTestsData.FFmpegGitUnknownOutput, false)]
         public void ValidateVersionInternalTest(string versionOutput, bool valid)
         {
             var val = new EncoderValidator(new NullLogger<EncoderValidatorTests>());

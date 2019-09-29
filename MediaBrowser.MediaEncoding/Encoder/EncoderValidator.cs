@@ -118,15 +118,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.LogInformation("Found ffmpeg version {0}", version != null ? version.ToString() : "unknown");
 
-            if (version == null && MinVersion != null && MaxVersion != null) // Version is unknown
+            if (version == null)
             {
-                if (MinVersion == MaxVersion)
+                if (MinVersion != null && MaxVersion != null) // Version is unknown
                 {
-                    _logger.LogWarning("FFmpeg validation: We recommend ffmpeg version {0}", MinVersion);
-                }
-                else
-                {
-                    _logger.LogWarning("FFmpeg validation: We recommend a minimum of {0} and maximum of {1}", MinVersion, MaxVersion);
+                    if (MinVersion == MaxVersion)
+                    {
+                        _logger.LogWarning("FFmpeg validation: We recommend ffmpeg version {0}", MinVersion);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("FFmpeg validation: We recommend a minimum of {0} and maximum of {1}", MinVersion, MaxVersion);
+                    }
                 }
 
                 return false;
@@ -161,7 +164,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         internal static Version GetFFmpegVersion(string output)
         {
             // For pre-built binaries the FFmpeg version should be mentioned at the very start of the output
-            var match = Regex.Match(output, @"ffmpeg version ((?:\d+\.?)+)");
+            var match = Regex.Match(output, @"^ffmpeg version n?((?:\d+\.?)+)");
 
             if (match.Success)
             {
