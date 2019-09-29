@@ -663,7 +663,15 @@ namespace Emby.Server.Implementations
                 })
                 .Build();
 
-            await host.StartAsync().ConfigureAwait(false);
+            try
+            {
+                await host.StartAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in system.xml and try again.");
+                throw;
+            }
         }
 
         private async Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next)
