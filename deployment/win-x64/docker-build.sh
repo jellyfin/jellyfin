@@ -51,7 +51,7 @@ cp ${SOURCE_DIR}/deployment/windows/legacy/install.bat /dist/jellyfin_${version}
 
 # Create zip package
 pushd /dist
-zip /jellyfin_${version}.portable.zip jellyfin_${version}
+zip -r /jellyfin_${version}.portable.zip jellyfin_${version}
 popd
 rm -rf /dist/jellyfin_${version}
 
