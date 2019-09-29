@@ -2548,7 +2548,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                     {
-                        return "-hwaccel dxva2";
+                        if(Environment.OSVersion.Version.Major > 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor > 1))
+                            return "-hwaccel d3d11va";
+                        else
+                            return "-hwaccel dxva2";
                     }
 
                     switch (videoStream.Codec.ToLowerInvariant())
