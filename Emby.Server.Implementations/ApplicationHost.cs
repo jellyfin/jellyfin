@@ -615,11 +615,34 @@ namespace Emby.Server.Implementations
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    options.ListenAnyIP(HttpPort);
-
-                    if (EnableHttps && Certificate != null)
+                    var addresses = ServerConfigurationManager
+                        .Configuration
+                        .LocalNetworkAddresses
+                        .Select(NormalizeConfiguredLocalAddress)
+                        .Where(i => i != null)
+                        .ToList();
+                    if (addresses.Any())
                     {
-                        options.ListenAnyIP(HttpsPort, listenOptions => listenOptions.UseHttps(Certificate));
+                        foreach (var address in addresses)
+                        {
+                            Logger.LogInformation("Kestrel listening on {ipaddr}", address);
+                            options.Listen(address, HttpPort);
+
+                            if (EnableHttps && Certificate != null)
+                            {
+                                options.Listen(address, HttpsPort, listenOptions => listenOptions.UseHttps(Certificate));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogInformation("Kestrel listening on all interfaces");
+                        options.ListenAnyIP(HttpPort);
+
+                        if (EnableHttps && Certificate != null)
+                        {
+                            options.ListenAnyIP(HttpsPort, listenOptions => listenOptions.UseHttps(Certificate));
+                        }
                     }
                 })
                 .UseContentRoot(contentRoot)
@@ -640,7 +663,15 @@ namespace Emby.Server.Implementations
                 })
                 .Build();
 
-            await host.StartAsync().ConfigureAwait(false);
+            try
+            {
+                await host.StartAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in system.xml and try again.");
+                throw;
+            }
         }
 
         private async Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next)
