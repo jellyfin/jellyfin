@@ -53,10 +53,10 @@ namespace Emby.Server.Implementations.Data
         protected virtual int? CacheSize => null;
 
         /// <summary>
-        /// Gets the journal mode.
+        /// Gets the journal mode. <see href="https://www.sqlite.org/pragma.html#pragma_journal_mode" />
         /// </summary>
         /// <value>The journal mode.</value>
-        protected virtual string JournalMode => "WAL";
+        protected virtual string JournalMode => "TRUNCATE";
 
         /// <summary>
         /// Gets the page size.
