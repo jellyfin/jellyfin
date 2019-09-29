@@ -83,9 +83,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            // Avoid performing a second attempt when the first one
-            // hasn't tried hardware encoding anyway.
-            encodingOptions.EnableHardwareEncoding = false;
             return defaultEncoder;
         }
 
