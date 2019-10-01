@@ -965,6 +965,14 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request);
 
+            var timeDeltaParam = string.Empty;
+
+            if (isEncoding && state.TargetFramerate > 0)
+            {
+                float startTime = 1 / (state.TargetFramerate.Value * 2);
+                timeDeltaParam = string.Format(CultureInfo.InvariantCulture, "-segment_time_delta {0:F3}", startTime);
+            }
+
             var segmentFormat = GetSegmentFileExtension(state.Request).TrimStart('.');
             if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
             {
@@ -972,7 +980,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             return string.Format(
-                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f hls -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -hls_time {6} -individual_header_trailer 0 -hls_segment_type {7} -start_number {8} -hls_segment_filename \"{9}\" -hls_playlist_type vod -hls_list_size 0 -y \"{10}\"",
+                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f segment -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -segment_time {6} {10} -individual_header_trailer 0 -segment_format {11} -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
                 inputModifier,
                 EncodingHelper.GetInputArgument(state, encodingOptions),
                 threads,
@@ -980,10 +988,11 @@ namespace MediaBrowser.Api.Playback.Hls
                 GetVideoArguments(state, encodingOptions),
                 GetAudioArguments(state, encodingOptions),
                 state.SegmentLength.ToString(CultureInfo.InvariantCulture),
-                segmentFormat,
                 startNumberParam,
+                outputPath,
                 outputTsArg,
-                outputPath
+                timeDeltaParam,
+                segmentFormat
             ).Trim();
         }
     }
