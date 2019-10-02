@@ -1629,6 +1629,7 @@ namespace Emby.Server.Implementations
                     {
                         Url = apiUrl,
                         LogErrorResponseBody = false,
+                        LogErrorResponseHeaders = false,
                         BufferContent = false,
                         CancellationToken = cancellationToken
                     }, HttpMethod.Post).ConfigureAwait(false))

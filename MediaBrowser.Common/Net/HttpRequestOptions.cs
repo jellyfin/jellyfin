@@ -74,6 +74,7 @@ namespace MediaBrowser.Common.Net
         public bool BufferContent { get; set; }
 
         public bool LogErrorResponseBody { get; set; }
+        public bool LogErrorResponseHeaders { get; set; }
         public bool EnableKeepAlive { get; set; }
 
         public CacheMode CacheMode { get; set; }

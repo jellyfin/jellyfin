@@ -163,12 +163,13 @@ namespace Emby.Server.Implementations.HttpClientManager
         /// </summary>
         /// <param name="options">The options.</param>
         /// <param name="httpMethod">The HTTP method.</param>
+        /// <param name="allowedStatusCodes">The Status codes that should be considered successful.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
-        public async Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, HttpMethod httpMethod)
+        public async Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, HttpMethod httpMethod, HttpStatusCode[] allowedStatusCodes = null)
         {
             if (options.CacheMode == CacheMode.None)
             {
-                return await SendAsyncInternal(options, httpMethod).ConfigureAwait(false);
+                return await SendAsyncInternal(options, httpMethod, allowedStatusCodes).ConfigureAwait(false);
             }
 
             var url = options.Url;
@@ -182,7 +183,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                 return response;
             }
 
-            response = await SendAsyncInternal(options, httpMethod).ConfigureAwait(false);
+            response = await SendAsyncInternal(options, httpMethod, allowedStatusCodes).ConfigureAwait(false);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
@@ -229,7 +230,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             }
         }
 
-        private async Task<HttpResponseInfo> SendAsyncInternal(HttpRequestOptions options, HttpMethod httpMethod)
+        private async Task<HttpResponseInfo> SendAsyncInternal(HttpRequestOptions options, HttpMethod httpMethod, HttpStatusCode[] allowedStatusCodes)
         {
             ValidateParams(options);
 
@@ -267,7 +268,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                 options.BufferContent || options.CacheMode == CacheMode.Unconditional ? HttpCompletionOption.ResponseContentRead : HttpCompletionOption.ResponseHeadersRead,
                 options.CancellationToken).ConfigureAwait(false);
 
-            await EnsureSuccessStatusCode(response, options).ConfigureAwait(false);
+            await EnsureAllowedStatusCode(response, options, allowedStatusCodes).ConfigureAwait(false);
 
             options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -282,8 +283,8 @@ namespace Emby.Server.Implementations.HttpClientManager
             };
         }
 
-        public Task<HttpResponseInfo> Post(HttpRequestOptions options)
-            => SendAsync(options, HttpMethod.Post);
+        public Task<HttpResponseInfo> Post(HttpRequestOptions options, HttpStatusCode[] allowedStatusCodes = null)
+            => SendAsync(options, HttpMethod.Post, allowedStatusCodes);
 
         private void ValidateParams(HttpRequestOptions options)
         {
@@ -316,9 +317,9 @@ namespace Emby.Server.Implementations.HttpClientManager
             return url;
         }
 
-        private async Task EnsureSuccessStatusCode(HttpResponseMessage response, HttpRequestOptions options)
+        private async Task EnsureAllowedStatusCode(HttpResponseMessage response, HttpRequestOptions options, HttpStatusCode[] allowedStatusCodes)
         {
-            if (response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode || (allowedStatusCodes != null && allowedStatusCodes.Length > 0 && Array.Exists(allowedStatusCodes, element => (int)element == (int)response.StatusCode)))
             {
                 return;
             }
@@ -327,6 +328,11 @@ namespace Emby.Server.Implementations.HttpClientManager
             {
                 var msg = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 _logger.LogError("HTTP request failed with message: {Message}", msg);
+            }
+            if (options.LogErrorResponseHeaders)
+            {
+                var headers = response.Headers.ToString();
+                _logger.LogError("HTTP request failed with Headers: {headers}", headers);
             }
 
             throw new HttpException(response.ReasonPhrase)
