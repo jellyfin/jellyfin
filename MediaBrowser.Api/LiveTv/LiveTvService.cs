@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Net.Http.Headers;
+using static MediaBrowser.Common.HexHelper;
 
 namespace MediaBrowser.Api.LiveTv
 {
@@ -599,6 +601,7 @@ namespace MediaBrowser.Api.LiveTv
     {
         public bool ValidateLogin { get; set; }
         public bool ValidateListings { get; set; }
+        public string Pw { get; set; }
     }
 
     [Route("/LiveTv/ListingProviders", "DELETE", Summary = "Deletes a listing provider")]
@@ -866,8 +869,28 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Post(AddListingProvider request)
         {
+            if (request.Pw != null)
+            {
+                request.Password = GetHashedString(request.Pw);
+            }
+
+            request.Pw = null;
+
             var result = await _liveTvManager.SaveListingProvider(request, request.ValidateLogin, request.ValidateListings).ConfigureAwait(false);
             return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Gets the hashed string.
+        /// </summary>
+        private string GetHashedString(string str)
+        {
+            // SchedulesDirect requires a SHA1 hash of the user's password
+            // https://github.com/SchedulesDirect/JSON-Service/wiki/API-20141201#obtain-a-token
+            using (SHA1 sha = SHA1.Create()) {
+                return ToHexString(
+                    sha.ComputeHash(Encoding.UTF8.GetBytes(str)));
+            }
         }
 
         public void Delete(DeleteListingProvider request)
