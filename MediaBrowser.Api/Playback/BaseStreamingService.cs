@@ -289,16 +289,20 @@ namespace MediaBrowser.Api.Playback
                 throw;
             }
 
+            Logger.LogDebug("Launched ffmpeg process");
             state.TranscodingJob = transcodingJob;
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             _ = new JobLogger(Logger).StartStreamingLog(state, process.StandardError.BaseStream, logStream);
 
             // Wait for the file to exist before proceeeding
-            while (!File.Exists(state.WaitForPath ?? outputPath) && !transcodingJob.HasExited)
+            var waitFor = state.WaitForPath ?? outputPath;
+            Logger.LogDebug("Waiting for the creation of '{0}'", waitFor);
+            while (!File.Exists(waitFor) && !transcodingJob.HasExited)
             {
                 await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
             }
+            Logger.LogDebug("File '{0}' created or transcoding has finished", waitFor);
 
             if (state.IsInputVideo && transcodingJob.Type == TranscodingJobType.Progressive && !transcodingJob.HasExited)
             {
@@ -314,6 +318,7 @@ namespace MediaBrowser.Api.Playback
             {
                 StartThrottler(state, transcodingJob);
             }
+            Logger.LogDebug("StartFfMpeg() finished successfully");
 
             return transcodingJob;
         }

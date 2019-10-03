@@ -20,6 +20,7 @@ if [[ -n ${web_branch} ]]; then
     checkout -b origin/${web_branch}
 fi
 yarn install
+yarn build 
 mkdir -p ${web_target}
 mv dist/* ${web_target}/
 popd

@@ -243,6 +243,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
                             request.StartTimeTicks = GetStartPositionTicks(state, requestedIndex);
 
+                            state.WaitForPath = segmentPath;
                             job = await StartFfMpeg(state, playlistPath, cancellationTokenSource).ConfigureAwait(false);
                         }
                         catch
@@ -458,16 +459,15 @@ namespace MediaBrowser.Api.Playback.Hls
             TranscodingJob transcodingJob,
             CancellationToken cancellationToken)
         {
-            var segmentFileExists = File.Exists(segmentPath);
-
-            // If all transcoding has completed, just return immediately
-            if (transcodingJob != null && transcodingJob.HasExited && segmentFileExists)
+            var segmentExists = File.Exists(segmentPath);
+            if (segmentExists)
             {
-                return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
-            }
+                if (transcodingJob != null && transcodingJob.HasExited)
+                {
+                    // Transcoding job is over, so assume all existing files are ready
+                    return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
+                }
 
-            if (segmentFileExists)
-            {
                 var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
 
                 // If requested segment is less than transcoding position, we can't transcode backwards, so assume it's ready
@@ -477,33 +477,26 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
             }
 
-            var segmentFilename = Path.GetFileName(segmentPath);
-
+            var nextSegmentPath = GetSegmentPath(state, playlistPath, segmentIndex + 1);
             while (!cancellationToken.IsCancellationRequested)
             {
-                try
+                // To be considered ready, the segment file has to exist AND
+                // either the transcoding job should be done or next segment should also exit
+                if (segmentExists)
                 {
-                    var text = File.ReadAllText(playlistPath, Encoding.UTF8);
-
-                    // If it appears in the playlist, it's done
-                    if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                    if ((transcodingJob != null && transcodingJob.HasExited) || File.Exists(nextSegmentPath))
                     {
-                        if (!segmentFileExists)
-                        {
-                            segmentFileExists = File.Exists(segmentPath);
-                        }
-                        if (segmentFileExists)
-                        {
-                            return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
-                        }
-                        //break;
+                        return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
                     }
                 }
-                catch (IOException)
+                else
                 {
-                    // May get an error if the file is locked
+                    segmentExists = File.Exists(segmentPath);
+                    if (segmentExists)
+                    {
+                        continue; // avoid unnecessary waiting if segment just became available
+                    }
                 }
-
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
 
