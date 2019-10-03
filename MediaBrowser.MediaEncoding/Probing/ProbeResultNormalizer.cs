@@ -49,6 +49,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                 .Where(i => i.Type != MediaStreamType.Subtitle || !string.IsNullOrWhiteSpace(i.Codec))
                 .ToList();
 
+            info.MediaAttachments = internalStreams.Select(s => GetMediaAttachment(s))
+                .Where(i => i != null)
+                .ToList();
+
             if (data.format != null)
             {
                 info.Container = NormalizeFormat(data.format.format_name);
@@ -511,6 +515,40 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             return codec;
+        }
+
+        /// <summary>
+        /// Converts ffprobe stream info to our MediaAttachment class
+        /// </summary>
+        /// <param name="streamInfo">The stream info.</param>
+        /// <returns>MediaAttachments.</returns>
+        private MediaAttachment GetMediaAttachment(MediaStreamInfo streamInfo)
+        {
+            if (!string.Equals(streamInfo.codec_type, "attachment", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            var attachment = new MediaAttachment
+            {
+                Codec = streamInfo.codec_name,
+                Index = streamInfo.index
+            };
+
+            // Filter out junk
+            if (!string.IsNullOrWhiteSpace(streamInfo.codec_tag_string) && streamInfo.codec_tag_string.IndexOf("[0]", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+               attachment.CodecTag = streamInfo.codec_tag_string;
+            }
+
+            if (streamInfo.tags != null)
+            {
+                attachment.Filename = GetDictionaryValue(streamInfo.tags, "filename");
+                attachment.MIMEType = GetDictionaryValue(streamInfo.tags, "mimetype");
+                attachment.Comment = GetDictionaryValue(streamInfo.tags, "comment");
+            }
+
+            return attachment;
         }
 
         /// <summary>
