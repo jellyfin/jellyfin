@@ -23,17 +23,17 @@
 
 Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media. It is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET Core framework to enable full cross-platform support. There are no strings attached, no premium licenses or features, and no hidden agendas: just a team who want to build something better and work together to achieve it. We welcome anyone who is interested in joining us in our quest!
 
-For further details, please see [our documentation page](https://jellyfin.org/docs/). To receive the latest updates, get help with Jellyfin, and join the community, please visit [one of our communication channels on Matrix/Riot or social media](https://jellyfin.org/docs/general/getting-help.html).
+For further details, please see [our documentation page](https://docs.jellyfin.org/). To receive the latest updates, get help with Jellyfin, and join the community, please visit [one of our communication channels on Matrix/Riot or social media](https://docs.jellyfin.org/general/getting-help.html).
 
-For more information about the project, please see our [about page](https://jellyfin.org/docs/general/about.html).
+For more information about the project, please see our [about page](https://docs.jellyfin.org/general/about.html).
 
 <p align="center">
 <strong>Want to get started?</strong>
-<em>Choose from <a href="https://jellyfin.org/docs/general/administration/installing.html">Prebuilt Packages</a> or <a href="https://jellyfin.org/docs/general/administration/building.html">Build from Source</a>, then see our <a href="https://jellyfin.org/docs/general/administration/quick-start.html">quick start guide</a>.</em>
+<em>Choose from <a href="https://docs.jellyfin.org/general/administration/installing.html">Prebuilt Packages</a> or <a href="https://docs.jellyfin.org/general/administration/building.html">Build from Source</a>, then see our <a href="https://docs.jellyfin.org/general/administration/quick-start.html">quick start guide</a>.</em>
 </p>
 <p align="center">
 <strong>Want to contribute?</strong>
-<em>Check out <a href="https://jellyfin.org/docs/general/contributing/index.html">our documentation for guidelines</a>.</em>
+<em>Check out <a href="https://docs.jellyfin.org/general/contributing/index.html">our documentation for guidelines</a>.</em>
 </p>
 <p align="center">
 <strong>New idea or improvement?</strong>
@@ -41,5 +41,5 @@ For more information about the project, please see our [about page](https://jell
 </p>
 <p align="center">
 <strong>Something not working right?</strong>
-<em>Open an <a href="https://jellyfin.org/docs/general/contributing/issues.html">Issue</a>.</em>
+<em>Open an <a href="https://docs.jellyfin.org/general/contributing/issues.html">Issue</a>.</em>
 </p>
