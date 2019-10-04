@@ -94,6 +94,8 @@ namespace Emby.Server.Implementations.Data
         {
             const string CreateMediaStreamsTableCommand
                     = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, ColorPrimaries TEXT NULL, ColorSpace TEXT NULL, ColorTransfer TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+            const string CreateMediaAttachmentsTableCommand
+                    = "create table if not exists mediaattachments (ItemId GUID, AttachmentIndex INT, Codec TEXT, CodecTag TEXT NULL, Comment TEXT NULL, Filename TEXT NULL, MIMEType TEXT NULL, PRIMARY KEY (ItemId, AttachmentIndex))";
 
             string[] queries =
             {
@@ -116,6 +118,7 @@ namespace Emby.Server.Implementations.Data
                 "create table if not exists " + ChaptersTableName + " (ItemId GUID, ChapterIndex INT NOT NULL, StartPositionTicks BIGINT NOT NULL, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
 
                 CreateMediaStreamsTableCommand,
+                CreateMediaAttachmentsTableCommand,
 
                 "pragma shrink_memory"
             };
@@ -421,6 +424,17 @@ namespace Emby.Server.Implementations.Data
             "ColorPrimaries",
             "ColorSpace",
             "ColorTransfer"
+        };
+
+        private static readonly string[] _mediaAttachmentSaveColumns =
+        {
+            "ItemId",
+            "AttachmentIndex",
+            "Codec",
+            "CodecTag",
+            "Comment",
+            "Filename",
+            "MIMEType"
         };
 
         private static string GetSaveItemCommandText()
@@ -6126,6 +6140,171 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 item.localizedUndefined = _localization.GetLocalizedString("Undefined");
                 item.localizedDefault = _localization.GetLocalizedString("Default");
                 item.localizedForced = _localization.GetLocalizedString("Forced");
+            }
+
+            return item;
+        }
+
+        public List<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query)
+        {
+            CheckDisposed();
+
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            var cmdText = "select "
+                        + string.Join(",", _mediaAttachmentSaveColumns)
+                        + " from mediaattachments where"
+                        + " ItemId=@ItemId";
+
+            if (query.Index.HasValue)
+            {
+                cmdText += "AND AttachmentIndex=@AttachmentIndex";
+            }
+
+            cmdText += " order by AttachmentIndex ASC";
+
+            using (var connection = GetConnection(true))
+            {
+                var list = new List<MediaAttachment>();
+
+                using (var statement = PrepareStatement(connection, cmdText))
+                {
+                    statement.TryBind("@ItemId", query.ItemId.ToGuidBlob());
+
+                    if (query.Index.HasValue)
+                    {
+                        statement.TryBind("@AttachmentIndex", query.Index.Value);
+                    }
+
+                    foreach (var row in statement.ExecuteQuery()) {
+                        list.Add(GetMediaAttachment(row));
+                    }
+                }
+
+                return list;
+            }
+        }
+
+        public void SaveMediaAttachments(Guid id, List<MediaAttachment> attachments, CancellationToken cancellationToken)
+        {
+            CheckDisposed();
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            if (attachments == null)
+            {
+                throw new ArgumentNullException(nameof(attachments));
+            }
+
+            using (var connection = GetConnection())
+            {
+                connection.RunInTransaction(db =>
+                {
+                    var itemIdBlob = id.ToGuidBlob();
+
+                    db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
+
+                    InsertMediaAttachments(itemIdBlob, attachments, db);
+
+                }, TransactionMode);
+            }
+        }
+
+        private void InsertMediaAttachments(byte[] idBlob, List<MediaAttachment> attachments, IDatabaseConnection db)
+        {
+            var startIndex = 0;
+            var limit = 10;
+
+            while (startIndex < attachments.Count)
+            {
+                var insertText = new StringBuilder(string.Format("insert into mediaattachments ({0}) values ", string.Join(",", _mediaAttachmentSaveColumns)));
+
+                var endIndex = Math.Min(attachments.Count, startIndex + limit);
+
+                for (var i = startIndex; i < endIndex; i++)
+                {
+                    if (i != startIndex)
+                    {
+                        insertText.Append(",");
+                    }
+
+                    var index = i.ToString(CultureInfo.InvariantCulture);
+                    insertText.Append("(@ItemId, ");
+
+                    foreach (var column in _mediaAttachmentSaveColumns.Skip(1))
+                    {
+                        insertText.Append("@" + column + index + ",");
+                    }
+                    insertText.Length -= 1;
+
+                    insertText.Append(")");
+                }
+
+                using (var statement = PrepareStatement(db, insertText.ToString()))
+                {
+                    statement.TryBind("@ItemId", idBlob);
+
+                    for (var i = startIndex; i < endIndex; i++)
+                    {
+                        var index = i.ToString(CultureInfo.InvariantCulture);
+
+                        var attachment = attachments[i];
+
+                        statement.TryBind("@AttachmentIndex" + index, attachment.Index);
+                        statement.TryBind("@Codec" + index, attachment.Codec);
+                        statement.TryBind("@CodecTag" + index, attachment.CodecTag);
+                        statement.TryBind("@Comment" + index, attachment.Comment);
+                        statement.TryBind("@Filename" + index, attachment.Filename);
+                        statement.TryBind("@MIMEType" + index, attachment.MIMEType);
+                    }
+
+                    statement.Reset();
+                    statement.MoveNext();
+                }
+                startIndex += limit;
+            }
+        }
+
+        /// <summary>
+        /// Gets the attachment.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <returns>MediaAttachment</returns>
+        private MediaAttachment GetMediaAttachment(IReadOnlyList<IResultSetValue> reader)
+        {
+            var item = new MediaAttachment
+            {
+                Index = reader[1].ToInt()
+            };
+
+            if (reader[2].SQLiteType != SQLiteType.Null)
+            {
+                item.Codec = reader[2].ToString();
+            }
+
+            if (reader[2].SQLiteType != SQLiteType.Null)
+            {
+                item.CodecTag = reader[3].ToString();
+            }
+
+            if (reader[4].SQLiteType != SQLiteType.Null)
+            {
+                item.Comment = reader[4].ToString();
+            }
+
+            if (reader[6].SQLiteType != SQLiteType.Null)
+            {
+                item.Filename = reader[5].ToString();
+            }
+
+            if (reader[6].SQLiteType != SQLiteType.Null)
+            {
+                item.MIMEType = reader[6].ToString();
             }
 
             return item;

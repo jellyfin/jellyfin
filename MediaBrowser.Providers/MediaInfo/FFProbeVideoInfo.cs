@@ -158,11 +158,13 @@ namespace MediaBrowser.Providers.MediaInfo
             MetadataRefreshOptions options)
         {
             List<MediaStream> mediaStreams;
+            List<MediaAttachment> mediaAttachments;
             List<ChapterInfo> chapters;
 
             if (mediaInfo != null)
             {
                 mediaStreams = mediaInfo.MediaStreams;
+                mediaAttachments = mediaInfo.MediaAttachments;
 
                 video.TotalBitrate = mediaInfo.Bitrate;
                 //video.FormatName = (mediaInfo.Container ?? string.Empty)
@@ -198,6 +200,7 @@ namespace MediaBrowser.Providers.MediaInfo
             else
             {
                 mediaStreams = new List<MediaStream>();
+                mediaAttachments = new List<MediaAttachment>();
                 chapters = new List<ChapterInfo>();
             }
 
@@ -223,6 +226,7 @@ namespace MediaBrowser.Providers.MediaInfo
             video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
 
             _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken);
+            _itemRepo.SaveMediaAttachments(video.Id, mediaAttachments, cancellationToken);
 
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh ||
                 options.MetadataRefreshMode == MetadataRefreshMode.Default)
