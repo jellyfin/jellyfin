@@ -667,7 +667,7 @@ namespace Emby.Server.Implementations
             {
                 await host.StartAsync().ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch
             {
                 Logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in system.xml and try again.");
                 throw;
