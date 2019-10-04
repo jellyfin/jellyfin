@@ -8,6 +8,8 @@
 
     <!-- disable warning SA1101: Prefix local calls with 'this.' -->
     <Rule Id="SA1101" Action="None" />
+    <!-- disable warning SA1108: Block statements should not contain embedded comments -->
+    <Rule Id="SA1108" Action="None" />
     <!-- disable warning SA1130: Use lambda syntax -->
     <Rule Id="SA1130" Action="None" />
     <!-- disable warning SA1200: 'using' directive must appear within a namespace declaration -->
