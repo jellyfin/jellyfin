@@ -17,8 +17,11 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-x64 "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
 
 FROM jellyfin/ffmpeg:${FFMPEG_VERSION} as ffmpeg
+
 FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}
-# libfontconfig1 is required for Skia
+COPY --from=ffmpeg / /
+COPY --from=builder /jellyfin /jellyfin
+COPY --from=web-builder /dist /jellyfin/jellyfin-web
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y \
    libfontconfig1 mesa-va-drivers \
@@ -27,9 +30,6 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media
-COPY --from=ffmpeg / /
-COPY --from=builder /jellyfin /jellyfin
-COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
 EXPOSE 8096
 VOLUME /cache /config /media
