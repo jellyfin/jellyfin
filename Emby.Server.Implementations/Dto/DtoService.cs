@@ -1099,7 +1099,7 @@ namespace Emby.Server.Implementations.Dto
 
                 Series episodeSeries = null;
 
-                if (options.ContainsField(ItemFields.SeriesPrimaryImage))
+                //if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
                     episodeSeries = episodeSeries ?? episode.Series;
                     if (episodeSeries != null)
@@ -1143,7 +1143,7 @@ namespace Emby.Server.Implementations.Dto
                     }
                 }
 
-                if (options.ContainsField(ItemFields.SeriesPrimaryImage))
+                //if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
                     series = series ?? season.Series;
                     if (series != null)
