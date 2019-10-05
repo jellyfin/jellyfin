@@ -22,6 +22,9 @@ FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}
 COPY --from=ffmpeg / /
 COPY --from=builder /jellyfin /jellyfin
 COPY --from=web-builder /dist /jellyfin/jellyfin-web
+# Install dependencies:
+#   libfontconfig1: needed for Skia
+#   mesa-va-drivers: needed for VAAPI
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y \
    libfontconfig1 mesa-va-drivers \
