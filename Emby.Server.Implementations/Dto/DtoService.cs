@@ -1099,7 +1099,9 @@ namespace Emby.Server.Implementations.Dto
 
                 Series episodeSeries = null;
 
-                if (options.ContainsField(ItemFields.SeriesPrimaryImage))
+                // this block will add the series poster for episodes without a poster
+                // TODO maybe remove the if statement entirely
+                //if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
                     episodeSeries = episodeSeries ?? episode.Series;
                     if (episodeSeries != null)
@@ -1143,7 +1145,9 @@ namespace Emby.Server.Implementations.Dto
                     }
                 }
 
-                if (options.ContainsField(ItemFields.SeriesPrimaryImage))
+                // this block will add the series poster for seasons without a poster
+                // TODO maybe remove the if statement entirely
+                //if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
                     series = series ?? season.Series;
                     if (series != null)
