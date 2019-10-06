@@ -60,7 +60,7 @@ function Install-FFMPEG {
     Expand-Archive "$tempdir/ffmpeg.zip" -DestinationPath "$tempdir/ffmpeg/" -Force | Write-Verbose
     if($Architecture -eq 'x64'){
         Write-Verbose "Copying Binaries to Jellyfin location"
-        Get-ChildItem "$tempdir/ffmpeg/ffmpeg-4.0.2-win64-shared/bin" | ForEach-Object {
+        Get-ChildItem "$tempdir/ffmpeg/bin" | ForEach-Object {
             Copy-Item $_.FullName -Destination $installLocation | Write-Verbose
         }
     }else{
