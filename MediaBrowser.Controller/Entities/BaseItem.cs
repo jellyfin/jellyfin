@@ -1098,6 +1098,7 @@ namespace MediaBrowser.Controller.Entities
                 Id = item.Id.ToString("N", CultureInfo.InvariantCulture),
                 Protocol = protocol ?? MediaProtocol.File,
                 MediaStreams = MediaSourceManager.GetMediaStreams(item.Id),
+                MediaAttachments = MediaSourceManager.GetMediaAttachments(item.Id),
                 Name = GetMediaSourceName(item),
                 Path = enablePathSubstitution ? GetMappedPath(item, item.Path, protocol) : item.Path,
                 RunTimeTicks = item.RunTimeTicks,
