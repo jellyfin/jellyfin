@@ -24,33 +24,6 @@ fi
 shared_version_file="./SharedVersion.cs"
 build_file="./build.yaml"
 
-if [[ -z $2 ]]; then
-    web_branch="$( git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/' )"
-else
-    web_branch="$2"
-fi
-
-# Initialize submodules
-git submodule update --init --recursive
-
-# configure branch
-pushd MediaBrowser.WebDashboard/jellyfin-web
-
-if ! git diff-index --quiet HEAD --; then
-    popd
-    echo
-    echo "ERROR: Your 'jellyfin-web' submodule working directory is not clean!"
-    echo "This script will overwrite your unstaged and unpushed changes."
-    echo "Please do development on 'jellyfin-web' outside of the submodule."
-    exit 1
-fi
-
-git fetch --all
-git checkout origin/${web_branch}
-popd
-
-git add MediaBrowser.WebDashboard/jellyfin-web
-
 new_version="$1"
 
 # Parse the version from the AssemblyVersion
