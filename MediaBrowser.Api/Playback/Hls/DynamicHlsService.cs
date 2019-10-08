@@ -192,6 +192,7 @@ namespace MediaBrowser.Api.Playback.Hls
             if (File.Exists(segmentPath))
             {
                 job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+                Logger.LogDebug("returning {0} [it exists, try 1]", segmentPath);
                 return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, requestedIndex, job, cancellationToken).ConfigureAwait(false);
             }
 
@@ -207,6 +208,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                     transcodingLock.Release();
                     released = true;
+                    Logger.LogDebug("returning {0} [it exists, try 2]", segmentPath);
                     return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, requestedIndex, job, cancellationToken).ConfigureAwait(false);
                 }
                 else
@@ -278,7 +280,7 @@ namespace MediaBrowser.Api.Playback.Hls
             //    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             //}
 
-            Logger.LogInformation("returning {0}", segmentPath);
+            Logger.LogDebug("returning {0} [general case]", segmentPath);
             job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
             return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, requestedIndex, job, cancellationToken).ConfigureAwait(false);
         }
@@ -465,6 +467,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 if (transcodingJob != null && transcodingJob.HasExited)
                 {
                     // Transcoding job is over, so assume all existing files are ready
+                    Logger.LogDebug("serving up {0} as transcode is over", segmentPath);
                     return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
                 }
 
@@ -473,19 +476,21 @@ namespace MediaBrowser.Api.Playback.Hls
                 // If requested segment is less than transcoding position, we can't transcode backwards, so assume it's ready
                 if (segmentIndex < currentTranscodingIndex)
                 {
+                    Logger.LogDebug("serving up {0} as transcode index {1} is past requested point {2}", segmentPath, segmentIndex, currentTranscodingIndex);
                     return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
                 }
             }
 
             var nextSegmentPath = GetSegmentPath(state, playlistPath, segmentIndex + 1);
-            while (!cancellationToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested && transcodingJob != null && !transcodingJob.HasExited)
             {
                 // To be considered ready, the segment file has to exist AND
-                // either the transcoding job should be done or next segment should also exit
+                // either the transcoding job should be done or next segment should also exist
                 if (segmentExists)
                 {
-                    if ((transcodingJob != null && transcodingJob.HasExited) || File.Exists(nextSegmentPath))
+                    if (transcodingJob.HasExited || File.Exists(nextSegmentPath))
                     {
+                        Logger.LogDebug("serving up {0} as it deemed ready", segmentPath);
                         return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
                     }
                 }
@@ -501,6 +506,14 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             cancellationToken.ThrowIfCancellationRequested();
+            if (!File.Exists(segmentPath))
+            {
+                Logger.LogWarning("cannot serve {0} as transcoding quit before we got there", segmentPath);
+            }
+            else
+            {
+                Logger.LogDebug("serving {0} as it's on disk and transcoding stopped", segmentPath);
+            }
             return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
         }
 
@@ -514,6 +527,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 FileShare = FileShareMode.ReadWrite,
                 OnComplete = () =>
                 {
+                    Logger.LogDebug("finished serving {0}", segmentPath);
                     if (transcodingJob != null)
                     {
                         transcodingJob.DownloadPositionTicks = Math.Max(transcodingJob.DownloadPositionTicks ?? segmentEndingPositionTicks, segmentEndingPositionTicks);

@@ -297,12 +297,12 @@ namespace MediaBrowser.Api.Playback
 
             // Wait for the file to exist before proceeeding
             var waitFor = state.WaitForPath ?? outputPath;
-            Logger.LogDebug("Waiting for the creation of '{0}'", waitFor);
+            Logger.LogDebug("Waiting for the creation of {0}", waitFor);
             while (!File.Exists(waitFor) && !transcodingJob.HasExited)
             {
                 await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
             }
-            Logger.LogDebug("File '{0}' created or transcoding has finished", waitFor);
+            Logger.LogDebug("File {0} created or transcoding has finished", waitFor);
 
             if (state.IsInputVideo && transcodingJob.Type == TranscodingJobType.Progressive && !transcodingJob.HasExited)
             {
