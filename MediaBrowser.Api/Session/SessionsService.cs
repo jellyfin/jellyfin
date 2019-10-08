@@ -321,7 +321,7 @@ namespace MediaBrowser.Api.Session
                 DateCreated = DateTime.UtcNow,
                 DeviceId = _appHost.SystemId,
                 DeviceName = _appHost.FriendlyName,
-                AppVersion = _appHost.ApplicationVersion
+                AppVersion = _appHost.ApplicationVersionString
             });
         }
 

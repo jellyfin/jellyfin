@@ -97,19 +97,12 @@ namespace MediaBrowser.Common.Cryptography
                 }
             }
 
-            byte[] hash;
-            byte[] salt;
             // Check if the string also contains a salt
-            if (splitted.Length - index == 2)
-            {
-                salt = FromHexString(splitted[index++]);
-                hash = FromHexString(splitted[index++]);
-            }
-            else
-            {
-                salt = Array.Empty<byte>();
-                hash = FromHexString(splitted[index++]);
-            }
+            byte[] salt = splitted.Length - index == 2
+                ? FromHexString(splitted[index++])
+                : Array.Empty<byte>();
+
+            byte[] hash = FromHexString(splitted[index]);
 
             return new PasswordHash(id, hash, salt, parameters);
         }
