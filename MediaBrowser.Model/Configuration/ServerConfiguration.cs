@@ -10,6 +10,7 @@ namespace MediaBrowser.Model.Configuration
     {
         public const int DefaultHttpPort = 8096;
         public const int DefaultHttpsPort = 8920;
+        private string _baseUrl;
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable u pn p].
@@ -162,7 +163,36 @@ namespace MediaBrowser.Model.Configuration
         public bool SkipDeserializationForBasicTypes { get; set; }
 
         public string ServerName { get; set; }
-        public string BaseUrl { get; set; }
+        public string BaseUrl
+        {
+            get => _baseUrl;
+            set
+            {
+                _baseUrl = value;
+				// Normalize the start of the string
+                if (string.IsNullOrWhiteSpace(_baseUrl))
+                {
+                    // If baseUrl is empty, set an empty prefix string
+                    _baseUrl = string.Empty;
+                }
+                else if (!_baseUrl.StartsWith("/"))
+                {
+                    // If baseUrl was not configured with a leading slash, append one for consistency
+                    _baseUrl = "/" + _baseUrl;
+                }
+                else
+                {
+                    // If baseUrl was configured with a leading slash, just return it as-is
+                    _baseUrl = _baseUrl;
+                }
+                // Normalize the end of the string
+                if (_baseUrl.EndsWith("/"))
+                {
+                    // If baseUrl was configured with a trailing slash, remove it for consistency
+                    _baseUrl = _baseUrl.Remove(_baseUrl.Length - 1);
+                }
+            }
+        }
 
         public string UICulture { get; set; }
 
@@ -243,7 +273,7 @@ namespace MediaBrowser.Model.Configuration
             SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
             SortRemoveWords = new[] { "the", "a", "an" };
 
-            BaseUrl = "jellyfin";
+            BaseUrl = string.Empty;
             UICulture = "en-US";
 
             MetadataOptions = new[]
