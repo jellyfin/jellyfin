@@ -13,16 +13,18 @@ RUN yum update -y \
  && yum install -y epel-release
 
 # Install build dependencies
-RUN yum install -y @buildsys-build rpmdevtools yum-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel nodejs wget git
+RUN yum install -y @buildsys-build rpmdevtools yum-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel wget git
+
+# Install recent NodeJS and Yarn
+RUN wget -O- https://raw.githubusercontent.com/creationix/nvm/v0.35.0/install.sh | /bin/bash \
+ && source "$HOME/.nvm/nvm.sh" \
+ && nvm install v8 \
+ && npm install -g yarn
 
 # Install DotNET SDK
 RUN rpm -Uvh https://packages.microsoft.com/config/rhel/7/packages-microsoft-prod.rpm \
  && rpmdev-setuptree \
  && yum install -y dotnet-sdk-${SDK_VERSION}
-
-# Install yarn package manager
-RUN wget -q -O /etc/yum.repos.d/yarn.repo https://dl.yarnpkg.com/rpm/yarn.repo \
- && yum install -y yarn
 
 # Create symlinks and directories
 RUN ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh \

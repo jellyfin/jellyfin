@@ -18,6 +18,8 @@ pushd ${web_build_dir}
 if [[ -n ${web_branch} ]]; then
     checkout -b origin/${web_branch}
 fi
+source "$HOME/.nvm/nvm.sh"
+nvm use v8
 yarn install
 mkdir -p ${web_target}
 mv dist/* ${web_target}/
