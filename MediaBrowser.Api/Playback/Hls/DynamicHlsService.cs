@@ -482,38 +482,46 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             var nextSegmentPath = GetSegmentPath(state, playlistPath, segmentIndex + 1);
-            while (!cancellationToken.IsCancellationRequested && transcodingJob != null && !transcodingJob.HasExited)
+            if (transcodingJob != null)
             {
-                // To be considered ready, the segment file has to exist AND
-                // either the transcoding job should be done or next segment should also exist
-                if (segmentExists)
+                while (!cancellationToken.IsCancellationRequested && !transcodingJob.HasExited)
                 {
-                    if (transcodingJob.HasExited || File.Exists(nextSegmentPath))
+                    // To be considered ready, the segment file has to exist AND
+                    // either the transcoding job should be done or next segment should also exist
+                    if (segmentExists)
                     {
-                        Logger.LogDebug("serving up {0} as it deemed ready", segmentPath);
-                        return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
+                        if (transcodingJob.HasExited || File.Exists(nextSegmentPath))
+                        {
+                            Logger.LogDebug("serving up {0} as it deemed ready", segmentPath);
+                            return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
+                        }
                     }
+                    else
+                    {
+                        segmentExists = File.Exists(segmentPath);
+                        if (segmentExists)
+                        {
+                            continue; // avoid unnecessary waiting if segment just became available
+                        }
+                    }
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!File.Exists(segmentPath))
+                {
+                    Logger.LogWarning("cannot serve {0} as transcoding quit before we got there", segmentPath);
                 }
                 else
                 {
-                    segmentExists = File.Exists(segmentPath);
-                    if (segmentExists)
-                    {
-                        continue; // avoid unnecessary waiting if segment just became available
-                    }
+                    Logger.LogDebug("serving {0} as it's on disk and transcoding stopped", segmentPath);
                 }
-                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-            if (!File.Exists(segmentPath))
-            {
-                Logger.LogWarning("cannot serve {0} as transcoding quit before we got there", segmentPath);
             }
             else
             {
-                Logger.LogDebug("serving {0} as it's on disk and transcoding stopped", segmentPath);
+                Logger.LogWarning("cannot serve {0} as it doesn't exist and no transcode is running", segmentPath);
             }
+
             return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
         }
 
