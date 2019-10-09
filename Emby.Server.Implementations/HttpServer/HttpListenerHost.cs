@@ -220,7 +220,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 else
                 {
-                    _logger.LogError("Error processing request: {0}", ex.Message);
+                    _logger.LogError("Error processing request: {Message}", ex.Message);
                 }
 
                 var httpRes = httpReq.Response;
