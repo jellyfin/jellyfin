@@ -169,7 +169,8 @@ namespace MediaBrowser.Model.Configuration
             set
             {
                 _baseUrl = value;
-				// Normalize the start of the string
+
+                // Normalize the start of the string
                 if (string.IsNullOrWhiteSpace(_baseUrl))
                 {
                     // If baseUrl is empty, set an empty prefix string
@@ -185,6 +186,7 @@ namespace MediaBrowser.Model.Configuration
                     // If baseUrl was configured with a leading slash, just return it as-is
                     _baseUrl = _baseUrl;
                 }
+
                 // Normalize the end of the string
                 if (_baseUrl.EndsWith("/"))
                 {
