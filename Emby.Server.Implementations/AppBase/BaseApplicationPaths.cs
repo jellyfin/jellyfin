@@ -59,10 +59,7 @@ namespace Emby.Server.Implementations.AppBase
             private set => _dataPath = Directory.CreateDirectory(value).FullName;
         }
 
-        /// <summary>
-        /// Gets the magic string used for virtual path manipulation.
-        /// </summary>
-        /// <value>The magic string used for virtual path manipulation.</value>
+        /// <inheritdoc />
         public string VirtualDataPath { get; } = "%AppDataPath%";
 
         /// <summary>

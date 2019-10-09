@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Net.Http;
@@ -25,12 +26,13 @@ namespace MediaBrowser.Common.Net
 
         /// <summary>
         /// Warning: Deprecated function,
-        /// use 'Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, HttpMethod httpMethod);' instead
+        /// use 'Task{HttpResponseInfo} SendAsync(HttpRequestOptions options, HttpMethod httpMethod);' instead
         /// Sends the asynchronous.
         /// </summary>
         /// <param name="options">The options.</param>
         /// <param name="httpMethod">The HTTP method.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
+        [Obsolete("Use 'Task{HttpResponseInfo} SendAsync(HttpRequestOptions options, HttpMethod httpMethod);' instead")]
         Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, string httpMethod);
 
         /// <summary>

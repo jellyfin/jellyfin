@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -31,6 +30,10 @@ namespace MediaBrowser.Common
         /// <value><c>true</c> if this instance has pending kernel reload; otherwise, <c>false</c>.</value>
         bool HasPendingRestart { get; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is currently shutting down.
+        /// </summary>
+        /// <value><c>true</c> if this instance is shutting down; otherwise, <c>false</c>.</value>
         bool IsShuttingDown { get; }
 
         /// <summary>
@@ -38,6 +41,12 @@ namespace MediaBrowser.Common
         /// </summary>
         /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
         bool CanSelfRestart { get; }
+
+        /// <summary>
+        /// Get the version class of the system.
+        /// </summary>
+        /// <value><see cref="PackageVersionClass.Release" /> or <see cref="PackageVersionClass.Beta" />.</value>
+        PackageVersionClass SystemUpdateLevel { get; }
 
         /// <summary>
         /// Occurs when [has pending restart changed].
@@ -115,7 +124,5 @@ namespace MediaBrowser.Common
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
         object CreateInstance(Type type);
-
-        PackageVersionClass SystemUpdateLevel { get; }
     }
 }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.IO;
 using System.Net;
@@ -69,6 +71,7 @@ namespace MediaBrowser.Common.Net
             ContentHeaders = contentHeader;
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             // Only IDisposable for backwards compatibility
