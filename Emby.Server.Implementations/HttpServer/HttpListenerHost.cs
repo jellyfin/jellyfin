@@ -233,8 +233,10 @@ namespace Emby.Server.Implementations.HttpServer
                 var statusCode = GetStatusCode(ex);
                 httpRes.StatusCode = statusCode;
 
-                httpRes.ContentType = "text/html";
-                await httpRes.WriteAsync(NormalizeExceptionMessage(ex.Message)).ConfigureAwait(false);
+                var errContent = NormalizeExceptionMessage(ex.Message);
+                httpRes.ContentType = "text/plain";
+                httpRes.ContentLength = errContent.Length;
+                await httpRes.WriteAsync(errContent).ConfigureAwait(false);
             }
             catch (Exception errorEx)
             {
