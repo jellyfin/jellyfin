@@ -476,7 +476,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 // If requested segment is less than transcoding position, we can't transcode backwards, so assume it's ready
                 if (segmentIndex < currentTranscodingIndex)
                 {
-                    Logger.LogDebug("serving up {0} as transcode index {1} is past requested point {2}", segmentPath, segmentIndex, currentTranscodingIndex);
+                    Logger.LogDebug("serving up {0} as transcode index {1} is past requested point {2}", segmentPath, currentTranscodingIndex, segmentIndex);
                     return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
                 }
             }
