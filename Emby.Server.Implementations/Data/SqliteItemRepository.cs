@@ -2724,7 +2724,7 @@ namespace Emby.Server.Implementations.Data
 
             if (elapsed >= SlowThreshold)
             {
-                Logger.LogWarning(
+                Logger.LogDebug(
                     "{Method} query time (slow): {ElapsedMs}ms. Query: {Query}",
                     methodName,
                     elapsed,
