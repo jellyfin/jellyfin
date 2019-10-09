@@ -927,6 +927,18 @@ namespace MediaBrowser.Api.Playback.Hls
                     " -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
                     GetStartNumber(state) * state.SegmentLength,
                     state.SegmentLength.ToString(CultureInfo.InvariantCulture));
+                if (state.TargetFramerate.HasValue)
+                {
+                    // This is to make sure keyframe interval is limited to our segment,
+                    // as forcing keyframes is not enough.
+                    // Example: we ecoded half of desired length, then codec detected
+                    // scene cut and inserted a keyframe; next forced keyframe would
+                    // be created outside of segment, which breaks seeking.
+                    keyFrameArg += string.Format(
+                        " -g {0} -keyint_min {0}",
+                        (int)(state.SegmentLength * state.TargetFramerate)
+                    );
+                }
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
