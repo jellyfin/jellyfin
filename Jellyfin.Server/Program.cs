@@ -84,6 +84,8 @@ namespace Jellyfin.Server
 
         private static async Task StartApp(StartupOptions options)
         {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
             ServerApplicationPaths appPaths = CreateApplicationPaths(options);
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
@@ -167,6 +169,10 @@ namespace Jellyfin.Server
                 appHost.ImageProcessor.ImageEncoder = GetImageEncoder(appPaths, appHost.LocalizationManager);
 
                 await appHost.RunStartupTasksAsync().ConfigureAwait(false);
+
+                stopWatch.Stop();
+
+                _logger.LogInformation("Startup complete {Time:g}", stopWatch.Elapsed);
 
                 // Block main thread until shutdown
                 await Task.Delay(-1, _tokenSource.Token).ConfigureAwait(false);
