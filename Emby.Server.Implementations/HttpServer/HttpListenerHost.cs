@@ -208,7 +208,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace, bool logExceptionMessage)
+        private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace)
         {
             try
             {
@@ -218,9 +218,9 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     _logger.LogError(ex, "Error processing request");
                 }
-                else if (logExceptionMessage)
+                else
                 {
-                    _logger.LogError(ex.Message);
+                    _logger.LogError("Error processing request: {0}", ex.Message);
                 }
 
                 var httpRes = httpReq.Response;
@@ -511,22 +511,22 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 else
                 {
-                    await ErrorHandler(new FileNotFoundException(), httpReq, false, false).ConfigureAwait(false);
+                    await ErrorHandler(new FileNotFoundException(), httpReq, false).ConfigureAwait(false);
                 }
             }
             catch (Exception ex) when (ex is SocketException || ex is IOException || ex is OperationCanceledException)
             {
-                await ErrorHandler(ex, httpReq, false, false).ConfigureAwait(false);
+                await ErrorHandler(ex, httpReq, false).ConfigureAwait(false);
             }
             catch (SecurityException ex)
             {
-                await ErrorHandler(ex, httpReq, false, true).ConfigureAwait(false);
+                await ErrorHandler(ex, httpReq, false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 var logException = !string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase);
 
-                await ErrorHandler(ex, httpReq, logException, false).ConfigureAwait(false);
+                await ErrorHandler(ex, httpReq, logException).ConfigureAwait(false);
             }
             finally
             {
