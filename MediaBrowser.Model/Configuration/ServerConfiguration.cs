@@ -168,31 +168,26 @@ namespace MediaBrowser.Model.Configuration
             get => _baseUrl;
             set
             {
-                _baseUrl = value;
-
                 // Normalize the start of the string
-                if (string.IsNullOrWhiteSpace(_baseUrl))
+                if (string.IsNullOrWhiteSpace(value))
                 {
                     // If baseUrl is empty, set an empty prefix string
-                    _baseUrl = string.Empty;
+                    value = string.Empty;
                 }
-                else if (!_baseUrl.StartsWith("/"))
+                else if (!value.StartsWith("/"))
                 {
                     // If baseUrl was not configured with a leading slash, append one for consistency
-                    _baseUrl = "/" + _baseUrl;
-                }
-                else
-                {
-                    // If baseUrl was configured with a leading slash, just return it as-is
-                    _baseUrl = _baseUrl;
+                    value = "/" + value;
                 }
 
                 // Normalize the end of the string
-                if (_baseUrl.EndsWith("/"))
+                if (value.EndsWith("/"))
                 {
                     // If baseUrl was configured with a trailing slash, remove it for consistency
-                    _baseUrl = _baseUrl.Remove(_baseUrl.Length - 1);
+                    value = value.Remove(value.Length - 1);
                 }
+
+                _baseUrl = value;
             }
         }
 
