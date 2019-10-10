@@ -773,12 +773,11 @@ namespace Emby.Server.Implementations
 
             _displayPreferencesRepository = new SqliteDisplayPreferencesRepository(
                 LoggerFactory.CreateLogger<SqliteDisplayPreferencesRepository>(),
-                JsonSerializer,
                 ApplicationPaths,
                 FileSystemManager);
             serviceCollection.AddSingleton<IDisplayPreferencesRepository>(_displayPreferencesRepository);
 
-            ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, JsonSerializer, LoggerFactory, LocalizationManager);
+            ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, LoggerFactory.CreateLogger<SqliteItemRepository>(), LocalizationManager);
             serviceCollection.AddSingleton<IItemRepository>(ItemRepository);
 
             AuthenticationRepository = GetAuthenticationRepository();
@@ -979,8 +978,7 @@ namespace Emby.Server.Implementations
         {
             var repo = new SqliteUserRepository(
                 LoggerFactory.CreateLogger<SqliteUserRepository>(),
-                ApplicationPaths,
-                JsonSerializer);
+                ApplicationPaths);
 
             repo.Initialize();
 

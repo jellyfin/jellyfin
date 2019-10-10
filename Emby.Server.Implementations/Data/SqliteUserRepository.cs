@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -15,15 +16,14 @@ namespace Emby.Server.Implementations.Data
     /// </summary>
     public class SqliteUserRepository : BaseSqliteRepository, IUserRepository
     {
-        private readonly IJsonSerializer _jsonSerializer;
+        private readonly JsonSerializerOptions _jsonOptions;
 
         public SqliteUserRepository(
             ILogger<SqliteUserRepository> logger,
-            IServerApplicationPaths appPaths,
-            IJsonSerializer jsonSerializer)
+            IServerApplicationPaths appPaths)
             : base(logger)
         {
-            _jsonSerializer = jsonSerializer;
+            _jsonOptions = JsonDefaults.GetOptions();;
 
             DbFilePath = Path.Combine(appPaths.DataPath, "users.db");
         }
@@ -84,7 +84,7 @@ namespace Emby.Server.Implementations.Data
                 }
 
                 user.Password = null;
-                var serialized = _jsonSerializer.SerializeToBytes(user);
+                var serialized = JsonSerializer.SerializeToUtf8Bytes(user, _jsonOptions);
 
                 connection.RunInTransaction(db =>
                 {
@@ -108,7 +108,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var serialized = _jsonSerializer.SerializeToBytes(user);
+            var serialized = JsonSerializer.SerializeToUtf8Bytes(user, _jsonOptions);
 
             using (var connection = GetConnection())
             {
@@ -142,7 +142,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var serialized = _jsonSerializer.SerializeToBytes(user);
+            var serialized = JsonSerializer.SerializeToUtf8Bytes(user, _jsonOptions);
 
             using (var connection = GetConnection())
             {
@@ -179,7 +179,7 @@ namespace Emby.Server.Implementations.Data
             var id = row[0].ToInt64();
             var guid = row[1].ReadGuidFromBlob();
 
-            var user = _jsonSerializer.DeserializeFromString<User>(row.GetString(2));
+            var user = JsonSerializer.Deserialize<User>(row[2].ToBlob(), _jsonOptions);
             user.InternalId = id;
             user.Id = guid;
             return user;
