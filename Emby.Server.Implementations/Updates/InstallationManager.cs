@@ -95,17 +95,17 @@ namespace Emby.Server.Implementations.Updates
         public event EventHandler<InstallationEventArgs> PackageInstallationCancelled;
 
         /// <summary>
-        /// Occurs when [plugin uninstalled].
+        /// Occurs when a plugin is uninstalled.
         /// </summary>
         public event EventHandler<GenericEventArgs<IPlugin>> PluginUninstalled;
 
         /// <summary>
-        /// Occurs when [plugin updated].
+        /// Occurs when a plugin plugin is updated.
         /// </summary>
         public event EventHandler<GenericEventArgs<(IPlugin, PackageVersionInfo)>> PluginUpdated;
 
         /// <summary>
-        /// Occurs when [plugin updated].
+        /// Occurs when a plugin plugin is installed.
         /// </summary>
         public event EventHandler<GenericEventArgs<PackageVersionInfo>> PluginInstalled;
 
