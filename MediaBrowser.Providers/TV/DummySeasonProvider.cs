@@ -127,14 +127,22 @@ namespace MediaBrowser.Providers.TV
             bool isVirtualItem,
             CancellationToken cancellationToken)
         {
-            var seasonName = seasonNumber == 0
-                ? _libraryManager.GetLibraryOptions(series).SeasonZeroDisplayName
-                : (seasonNumber.HasValue
-                    ? string.Format(
-                        CultureInfo.InvariantCulture,
-                        _localization.GetLocalizedString("NameSeasonNumber"),
-                        seasonNumber.Value)
-                    : _localization.GetLocalizedString("NameSeasonUnknown"));
+            string seasonName;
+            if (seasonNumber == null)
+            {
+                seasonName =_localization.GetLocalizedString("NameSeasonUnknown")
+            }
+            else if (seasonNumber == 0)
+            {
+                seasonName = _libraryManager.GetLibraryOptions(series).SeasonZeroDisplayName;
+            }
+            else
+            {
+                seasonName = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("NameSeasonNumber"),
+                    seasonNumber.Value);
+            }
 
             _logger.LogInformation("Creating Season {0} entry for {1}", seasonName, series.Name);
 

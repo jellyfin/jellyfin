@@ -54,7 +54,7 @@ namespace MediaBrowser.Providers.Subtitles
         public void AddParts(IEnumerable<ISubtitleProvider> subtitleProviders)
         {
             _subtitleProviders = subtitleProviders
-                .OrderBy(i => !(i is IHasOrder hasOrder) ? 0 : hasOrder.Order)
+                .OrderBy(i => i is IHasOrder hasOrder ? hasOrder.Order : 0)
                 .ToArray();
         }
 

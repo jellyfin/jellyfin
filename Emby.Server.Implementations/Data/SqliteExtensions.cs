@@ -9,6 +9,9 @@ namespace Emby.Server.Implementations.Data
 {
     public static class SqliteExtensions
     {
+        private const string DatetimeFormatUtc = "yyyy-MM-dd HH:mm:ss.FFFFFFFK";
+        private const string DatetimeFormatLocal = "yyyy-MM-dd HH:mm:ss.FFFFFFF";
+
         /// <summary>
         /// An array of ISO-8601 DateTime formats that we support parsing.
         /// </summary>
@@ -19,7 +22,7 @@ namespace Emby.Server.Implementations.Data
             "HH:mm:ss.FFFFFFFK",
             "HH:mm:ssK",
             "HH:mmK",
-            "yyyy-MM-dd HH:mm:ss.FFFFFFFK", /* NOTE: UTC default (5). */
+            DatetimeFormatUtc,
             "yyyy-MM-dd HH:mm:ssK",
             "yyyy-MM-dd HH:mmK",
             "yyyy-MM-ddTHH:mm:ss.FFFFFFFK",
@@ -33,7 +36,7 @@ namespace Emby.Server.Implementations.Data
             "HH:mm:ss.FFFFFFF",
             "HH:mm:ss",
             "HH:mm",
-            "yyyy-MM-dd HH:mm:ss.FFFFFFF", /* NOTE: Non-UTC default (19). */
+            DatetimeFormatLocal,
             "yyyy-MM-dd HH:mm:ss",
             "yyyy-MM-dd HH:mm",
             "yyyy-MM-ddTHH:mm:ss.FFFFFFF",
@@ -46,9 +49,6 @@ namespace Emby.Server.Implementations.Data
             "yyyyMMdd",
             "yy-MM-dd"
         };
-
-        private static readonly string _datetimeFormatUtc = _datetimeFormats[5];
-        private static readonly string _datetimeFormatLocal = _datetimeFormats[19];
 
         public static void RunQueries(this SQLiteDatabaseConnection connection, string[] queries)
         {
@@ -82,7 +82,7 @@ namespace Emby.Server.Implementations.Data
         }
 
         private static string GetDateTimeKindFormat(DateTimeKind kind)
-            => (kind == DateTimeKind.Utc) ? _datetimeFormatUtc : _datetimeFormatLocal;
+            => (kind == DateTimeKind.Utc) ? DatetimeFormatUtc : DatetimeFormatLocal;
 
         public static DateTime ReadDateTime(this IResultSetValue result)
         {
