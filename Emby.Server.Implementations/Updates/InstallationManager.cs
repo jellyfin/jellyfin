@@ -146,21 +146,23 @@ namespace Emby.Server.Implementations.Updates
             return availablePackages;
         }
 
-        /// <inheridoc />
+        /// <inheritdoc />
         public IEnumerable<PackageVersionInfo> GetCompatibleVersions(
             IEnumerable<PackageVersionInfo> availableVersions,
             Version minVersion = null,
             PackageVersionClass classification = PackageVersionClass.Release)
         {
             var appVer = _applicationHost.ApplicationVersion;
-            availableVersions = availableVersions.Where(x => Version.Parse(x.requiredVersionStr) <= appVer);
+            availableVersions = availableVersions
+                .Where(x => x.classification == classification
+                    && Version.Parse(x.requiredVersionStr) <= appVer);
 
             if (minVersion != null)
             {
                 availableVersions = availableVersions.Where(x => x.Version >= minVersion);
             }
 
-            return availableVersions;
+            return availableVersions.OrderByDescending(x => x.Version);
         }
 
         /// <inheritdoc />
