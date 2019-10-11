@@ -2,8 +2,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Emby.Naming.Common;
-using Emby.Naming.Extensions;
 
 namespace Emby.Naming.TV
 {
