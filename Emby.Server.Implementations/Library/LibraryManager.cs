@@ -1899,7 +1899,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         public void UpdateItem(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            UpdateItems(new [] { item }, parent, updateReason, cancellationToken);
+            UpdateItems(new[] { item }, parent, updateReason, cancellationToken);
         }
 
         /// <summary>
@@ -2486,6 +2486,10 @@ namespace Emby.Server.Implementations.Library
                 if (season != null)
                 {
                     episode.ParentIndexNumber = season.IndexNumber;
+                }
+                else
+                {
+                    episode.ParentIndexNumber = 1;
                 }
 
                 if (episode.ParentIndexNumber.HasValue)

@@ -328,6 +328,10 @@ namespace Emby.Naming.Common
 
                 // *** End Kodi Standard Naming
 
+                // [bar] Foo - 1 [baz]
+                new EpisodeExpression(@".*?(\[.*?\])+.*?(?<seriesname>(\w+\s)+?)[-\s_]+(?<epnumber>\d{1,3}).*$"){
+                    IsNamed=false,
+                },
                 new EpisodeExpression(@".*(\\|\/)[sS]?(?<seasonnumber>\d{1,4})[xX](?<epnumber>\d{1,3})[^\\\/]*$")
                 {
                     IsNamed = true
@@ -654,9 +658,9 @@ namespace Emby.Naming.Common
                 @".*(\\|\/)(?<seriesname>[^\\\/]*)[sS](?<seasonnumber>\d{1,4})[xX\.]?[eE](?<epnumber>\d{1,3})((-| - )?[xXeE](?<endingepnumber>\d{1,3}))+[^\\\/]*$",
                 @".*(\\|\/)(?<seriesname>[^\\\/]*)[sS](?<seasonnumber>\d{1,4})[xX\.]?[eE](?<epnumber>\d{1,3})(-[xX]?[eE]?(?<endingepnumber>\d{1,3}))+[^\\\/]*$"
             }.Select(i => new EpisodeExpression(i)
-                {
-                    IsNamed = true
-                }).ToArray();
+            {
+                IsNamed = true
+            }).ToArray();
 
             VideoFileExtensions = extensions
                 .Distinct(StringComparer.OrdinalIgnoreCase)

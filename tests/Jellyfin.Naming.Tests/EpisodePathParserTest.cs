@@ -30,12 +30,13 @@ namespace Emby.Naming.TV
         }
 
         [Theory]
-        [InlineData("/media/Foo/Foo 889.avi", "Foo", 889)]
+        [InlineData("/media/Foo/Foo 889", "Foo", 889)]
+        [InlineData("/media/Foo/[Bar] Foo Baz - 11 [1080p]", "Foo Baz", 11)]
         public void ParseEpisodeWithoutSeason(string path, string name, int episode)
         {
             NamingOptions o = new NamingOptions();
             EpisodePathParser p = new EpisodePathParser(o);
-            var res = p.Parse(path, false, null, null, true);
+            var res = p.Parse(path, true, null, null, true);
 
             Assert.True(res.Success);
             Assert.Equal(name, res.SeriesName);
