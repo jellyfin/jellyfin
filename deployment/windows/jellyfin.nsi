@@ -16,6 +16,7 @@ ShowUninstDetails show
 ; Global variables that we'll use
     Var _JELLYFINVERSION_
     Var _JELLYFINDATADIR_
+    Var _SETUPTYPE_
     Var _INSTALLSERVICE_
     Var _SERVICESTART_
     Var _SERVICEACCOUNTTYPE_
@@ -86,6 +87,9 @@ ShowUninstDetails show
     !insertmacro MUI_PAGE_WELCOME
 ; License Page
     !insertmacro MUI_PAGE_LICENSE "$%InstallLocation%\LICENSE" ; picking up generic GPL
+
+; Setup Type Page
+    Page custom ShowSetupTypePage SetupTypePage_Config
 ; Components Page
     !insertmacro MUI_PAGE_COMPONENTS
     !define MUI_PAGE_CUSTOMFUNCTION_PRE HideInstallDirectoryPage ; Controls when to hide / show
@@ -102,6 +106,7 @@ ShowUninstDetails show
     !insertmacro MUI_PAGE_DIRECTORY
 
 ; Custom Dialogs
+    !include "dialogs\setuptype.nsdinc"
     !include "dialogs\service-config.nsdinc"
     !include "dialogs\confirmation.nsdinc"
 
@@ -170,7 +175,7 @@ Section "!Jellyfin Server (required)" InstallJellyfinServer
     WriteRegExpandStr HKLM "${REG_UNINST_KEY}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
     WriteRegStr HKLM "${REG_UNINST_KEY}" "DisplayIcon" '"$INSTDIR\Uninstall.exe",0'
     WriteRegStr HKLM "${REG_UNINST_KEY}" "Publisher" "The Jellyfin Project"
-    WriteRegStr HKLM "${REG_UNINST_KEY}" "URLInfoAbout" "https://jellyfin.media/"
+    WriteRegStr HKLM "${REG_UNINST_KEY}" "URLInfoAbout" "https://jellyfin.org/"
     WriteRegStr HKLM "${REG_UNINST_KEY}" "DisplayVersion" "$_JELLYFINVERSION_"
     WriteRegDWORD HKLM "${REG_UNINST_KEY}" "NoModify" 1
     WriteRegDWORD HKLM "${REG_UNINST_KEY}" "NoRepair" 1
@@ -411,6 +416,19 @@ Function HideConfirmationPage
     ${If} $_EXISTINGINSTALLATION_ == "Yes" ; Existing installation detected, so don't ask for InstallFolder
         Abort
     ${EndIf}
+FunctionEnd
+
+Function HideSetupTypePage
+    ${If} $_EXISTINGINSTALLATION_ == "Yes" ; Existing installation detected, so don't ask for InstallFolder
+        Abort
+    ${EndIf}
+FunctionEnd
+
+; Setup Type dialog show function
+Function ShowSetupTypePage
+  Call HideSetupTypePage
+  Call fnc_setuptype_Create
+  nsDialogs::Show
 FunctionEnd
 
 ; Service Config dialog show function
