@@ -52,6 +52,13 @@ case "$1" in
     # Install jellyfin symlink into /usr/bin
     ln -sf /usr/lib/jellyfin/bin/jellyfin /usr/bin/jellyfin
 
+    #
+    # MIGRATIONS
+    #
+
+    # Changelog: 10.4.0 -> 10.4.1+ | Remove default BaseUrl path to prevent strange behavior with fix #1863
+    sed -i '/BaseUrl/s/\/jellyfin//' /etc/jellyfin/system.xml &>/dev/null || true
+
     ;;
     abort-upgrade|abort-remove|abort-deconfigure)
     ;;
