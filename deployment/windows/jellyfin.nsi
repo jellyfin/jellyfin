@@ -89,7 +89,8 @@ ShowUninstDetails show
     !insertmacro MUI_PAGE_LICENSE "$%InstallLocation%\LICENSE" ; picking up generic GPL
 
 ; Setup Type Page
-    Page custom ShowSetupTypePage SetupTypePage_Config
+    Page custom ShowSetupTypePage ;SetupTypePage_Config
+    
 ; Components Page
     !insertmacro MUI_PAGE_COMPONENTS
     !define MUI_PAGE_CUSTOMFUNCTION_PRE HideInstallDirectoryPage ; Controls when to hide / show
@@ -184,7 +185,7 @@ Section "!Jellyfin Server (required)" InstallJellyfinServer
     WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
 
-Section "Jellyfin Server Service" InstallService
+Section /o "Jellyfin Server Service" InstallService
 
     ExecWait '"$INSTDIR\nssm.exe" statuscode JellyfinServer' $0
     DetailPrint "Jellyfin Server service statuscode, $0"
