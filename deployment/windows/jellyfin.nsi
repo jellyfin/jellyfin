@@ -321,7 +321,7 @@ SectionEnd
 
 Function .onInit
 ; Setting up defaults
-    StrCpy $_INSTALLSERVICE_ "Yes"
+    StrCpy $_INSTALLSERVICE_ "No"
     StrCpy $_SERVICESTART_ "Yes"
     StrCpy $_SERVICEACCOUNTTYPE_ "NetworkService"
     StrCpy $_EXISTINGINSTALLATION_ "No"
