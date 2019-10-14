@@ -931,7 +931,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     // This is to make sure keyframe interval is limited to our segment,
                     // as forcing keyframes is not enough.
-                    // Example: we ecoded half of desired length, then codec detected
+                    // Example: we encoded half of desired length, then codec detected
                     // scene cut and inserted a keyframe; next forced keyframe would
                     // be created outside of segment, which breaks seeking.
                     keyFrameArg += string.Format(
