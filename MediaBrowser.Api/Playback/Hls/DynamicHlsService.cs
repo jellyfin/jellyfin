@@ -925,7 +925,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 var keyFrameArg = string.Format(
                     " -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
-                    GetStartNumber(state) * state.SegmentLength,
+                    (GetStartNumber(state) * state.SegmentLength).ToString(CultureInfo.InvariantCulture),
                     state.SegmentLength.ToString(CultureInfo.InvariantCulture));
                 if (state.TargetFramerate.HasValue)
                 {
@@ -936,7 +936,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     // be created outside of segment, which breaks seeking.
                     keyFrameArg += string.Format(
                         " -g {0} -keyint_min {0}",
-                        (int)(state.SegmentLength * state.TargetFramerate)
+                        ((int)(state.SegmentLength * state.TargetFramerate)).ToString(CultureInfo.InvariantCulture)
                     );
                 }
 
@@ -982,6 +982,15 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var threads = EncodingHelper.GetNumberOfThreads(state, encodingOptions, videoCodec);
 
+            if (state.BaseRequest.BreakOnNonKeyFrames)
+            {
+                // FIXME: this is actually a workaround, as ideally it really should be the client which decides whether non-keyframe
+                //        breakpoints are supported; but current implementation always uses "ffmpeg input seeking" which is liable
+                //        to produce a missing part of video stream before first keyframe is encountered, which may lead to
+                //        awkward cases like a few starting HLS segments having no video whatsoever, which breaks hls.js
+                Logger.LogInformation("Current HLS implementation doesn't support non-keyframe breaks but one is requested, ignoring that request");
+                state.BaseRequest.BreakOnNonKeyFrames = false;
+            }
             var inputModifier = EncodingHelper.GetInputModifier(state, encodingOptions);
 
             // If isEncoding is true we're actually starting ffmpeg
