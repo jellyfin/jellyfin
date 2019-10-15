@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Model.Dto
@@ -108,7 +108,7 @@ namespace MediaBrowser.Model.Dto
             }
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public TranscodeReason[] TranscodeReasons { get; set; }
 
         public int? DefaultAudioStreamIndex { get; set; }
@@ -148,7 +148,7 @@ namespace MediaBrowser.Model.Dto
             return null;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public MediaStream VideoStream
         {
             get

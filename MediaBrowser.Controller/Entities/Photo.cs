@@ -1,21 +1,21 @@
+using System.Text.Json.Serialization;
 using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
     public class Photo : BaseItem
     {
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsLocalMetadata => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string MediaType => Model.Entities.MediaType.Photo;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override Folder LatestItemsIndexContainer => AlbumEntity;
 
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public PhotoAlbum AlbumEntity
         {
             get

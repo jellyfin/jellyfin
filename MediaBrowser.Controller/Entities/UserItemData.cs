@@ -1,5 +1,5 @@
 using System;
-using MediaBrowser.Model.Serialization;
+using System.Text.Json.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.Entities
         /// This should never be serialized.
         /// </summary>
         /// <value><c>null</c> if [likes] contains no value, <c>true</c> if [likes]; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public bool? Likes
         {
             get

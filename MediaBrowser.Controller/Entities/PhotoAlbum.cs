@@ -1,16 +1,16 @@
-using MediaBrowser.Model.Serialization;
+using System.Text.Json.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
     public class PhotoAlbum : Folder
     {
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool AlwaysScanInternalMetadataPath => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPlayedStatus => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => false;
     }
 }
