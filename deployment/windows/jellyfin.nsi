@@ -89,9 +89,10 @@ ShowUninstDetails show
     !insertmacro MUI_PAGE_LICENSE "$%InstallLocation%\LICENSE" ; picking up generic GPL
 
 ; Setup Type Page
-    Page custom ShowSetupTypePage ;SetupTypePage_Config
+    Page custom ShowSetupTypePage SetupTypePage_Config
     
 ; Components Page
+    !define MUI_PAGE_CUSTOMFUNCTION_PRE HideComponentsPage
     !insertmacro MUI_PAGE_COMPONENTS
     !define MUI_PAGE_CUSTOMFUNCTION_PRE HideInstallDirectoryPage ; Controls when to hide / show
     !define MUI_DIRECTORYPAGE_TEXT_DESTINATION "Install folder" ; shows just above the folder selection dialog
@@ -185,8 +186,8 @@ Section "!Jellyfin Server (required)" InstallJellyfinServer
     WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
 
-Section /o "Jellyfin Server Service" InstallService
-
+Section "Jellyfin Server Service" InstallService
+${If} $_INSTALLSERVICE_ == "Yes" ; Only run this if we're going to install the service!
     ExecWait '"$INSTDIR\nssm.exe" statuscode JellyfinServer' $0
     DetailPrint "Jellyfin Server service statuscode, $0"
     ${If} $0 == 0
@@ -246,6 +247,7 @@ Section /o "Jellyfin Server Service" InstallService
         ${EndIf}
         DetailPrint "Jellyfin Server service account change, $0"
     ${EndIf}
+${EndIf}
 
 SectionEnd
 
@@ -327,7 +329,7 @@ SectionEnd
 
 Function .onInit
 ; Setting up defaults
-    StrCpy $_INSTALLSERVICE_ "No"
+    StrCpy $_INSTALLSERVICE_ "Yes"
     StrCpy $_SERVICESTART_ "Yes"
     StrCpy $_SERVICEACCOUNTTYPE_ "NetworkService"
     StrCpy $_EXISTINGINSTALLATION_ "No"
@@ -420,7 +422,13 @@ Function HideConfirmationPage
 FunctionEnd
 
 Function HideSetupTypePage
-    ${If} $_EXISTINGINSTALLATION_ == "Yes" ; Existing installation detected, so don't ask for InstallFolder
+    ${If} $_EXISTINGINSTALLATION_ == "Yes" ; Existing installation detected, so don't ask for SetupType
+        Abort
+    ${EndIf}
+FunctionEnd
+
+Function HideComponentsPage
+     ${If} $_SETUPTYPE_ == "Basic" ; Basic installation chosen, don't show components choice
         Abort
     ${EndIf}
 FunctionEnd
@@ -450,6 +458,22 @@ FunctionEnd
 Var StartServiceAfterInstall
 Var UseNetworkServiceAccount
 Var UseLocalSystemAccount
+Var BasicInstall
+
+
+Function SetupTypePage_Config
+${NSD_GetState} $hCtl_setuptype_BasicInstall $BasicInstall
+${If} $BasicInstall == 1
+    StrCpy $_SETUPTYPE_ "Basic"
+    StrCpy $_INSTALLSERVICE_ "No"
+    StrCpy $_SERVICESTART_ "No"
+    StrCpy $_SERVICEACCOUNTTYPE_ "None"
+${Else}
+    StrCpy $_SETUPTYPE_ "Advanced"
+    StrCpy $_INSTALLSERVICE_ "Yes"
+${EndIf}
+    
+FunctionEnd
 
 Function ServiceConfigPage_Config
 ${NSD_GetState} $hCtl_service_config_StartServiceAfterInstall $StartServiceAfterInstall

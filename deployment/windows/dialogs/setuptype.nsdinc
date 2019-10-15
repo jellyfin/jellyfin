@@ -49,8 +49,4 @@ Function fnc_setuptype_Create
   
 FunctionEnd
 
-; dialog show function
-Function fnc_setuptype_Show
-  Call fnc_setuptype_Create
-  nsDialogs::Show
-FunctionEnd
+
