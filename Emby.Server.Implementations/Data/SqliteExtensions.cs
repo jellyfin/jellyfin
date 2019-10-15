@@ -34,8 +34,7 @@ namespace Emby.Server.Implementations.Data
 
         public static Guid ReadGuidFromBlob(this IResultSetValue result)
         {
-            // TODO: Remove ToArray when upgrading to netstandard2.1
-            return new Guid(result.ToBlob().ToArray());
+            return new Guid(result.ToBlob());
         }
 
         public static string ToDateTimeParamValue(this DateTime dateValue)
