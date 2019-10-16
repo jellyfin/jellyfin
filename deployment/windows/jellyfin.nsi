@@ -407,7 +407,6 @@ Function .onInit
             StrCpy $_INSTALLSERVICE_ "No"
             StrCpy $_SERVICESTART_ "No"
             StrCpy $_MAKESHORTCUTS_ "Yes"
-            StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\Jellyfin\Server"
         ${EndIf}
 
 ; Let the user know that we'll upgrade and provide an option to quit.
