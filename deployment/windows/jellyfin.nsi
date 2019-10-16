@@ -268,7 +268,6 @@ SectionEnd
 
 Section "Create Shortcuts" CreateWinShortcuts
     ${If} $_MAKESHORTCUTS_ == "Yes"
-        
         CreateDirectory "$SMPROGRAMS\Jellyfin Server"
         CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin (View Console).lnk" "$INSTDIR\jellyfin.exe" "" "$INSTDIR\icon.ico" 0
         ;CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin Tray App.lnk" "$INSTDIR\jellyfin-tray.exe" "" "$INSTDIR\icon.ico" 0
@@ -297,6 +296,7 @@ Section "Uninstall"
 
     ReadRegStr $INSTDIR HKLM "${REG_CONFIG_KEY}" "InstallFolder"  ; read the installation folder
     ReadRegStr $_JELLYFINDATADIR_ HKLM "${REG_CONFIG_KEY}" "DataFolder"  ; read the data folder
+    ReadRegStr $_SERVICEACCOUNTTYPE_ HKLM "${REG_CONFIG_KEY}" "ServiceAccountType"  ; read the account name
 
     DetailPrint "Jellyfin Install location: $INSTDIR"
     DetailPrint "Jellyfin Data folder: $_JELLYFINDATADIR_"
@@ -329,13 +329,17 @@ Section "Uninstall"
 
     Sleep 3000 ; Give time for Windows to catchup
 
-    NoServiceUninstall: ; existing install was present but no service was detected
+    NoServiceUninstall: ; existing install was present but no service was detected. Remove shortcuts if account is set to none
+        {$If} $_SERVICEACCOUNTTYPE_ == "None"
+            RMDir /r "$SMPROGRAMS\Jellyfin Server"
+            Delete "$DESKTOP\Jellyfin Server.lnk"
+        {$EndIf}
 
     Delete "$INSTDIR\*.*"
     RMDir /r /REBOOTOK "$INSTDIR\jellyfin-web"
     Delete "$INSTDIR\Uninstall.exe"
     RMDir /r /REBOOTOK "$INSTDIR"
-
+    
     DeleteRegKey HKLM "Software\Jellyfin"
     DeleteRegKey HKLM "${REG_UNINST_KEY}"
 
@@ -398,6 +402,13 @@ Function .onInit
     ; SectionSetText ${InstallService} ""
 
     NoService: ; existing install was present but no service was detected
+        ${If} $_SERVICEACCOUNTTYPE_ == "None"
+            StrCpy $_SETUPTYPE_ "Basic"
+            StrCpy $_INSTALLSERVICE_ "No"
+            StrCpy $_SERVICESTART_ "No"
+            StrCpy $_MAKESHORTCUTS_ "Yes"
+            StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\Jellyfin\Server"
+        ${EndIf}
 
 ; Let the user know that we'll upgrade and provide an option to quit.
     MessageBox MB_OKCANCEL|MB_ICONINFORMATION "Existing installation of Jellyfin Server was detected, it'll be upgraded, settings will be retained. \
@@ -484,6 +495,7 @@ ${If} $BasicInstall == 1
     StrCpy $_SERVICESTART_ "No"
     StrCpy $_SERVICEACCOUNTTYPE_ "None"
     StrCpy $_MAKESHORTCUTS_ "Yes"
+    StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\Jellyfin\Server"
 
 ${Else}
     StrCpy $_SETUPTYPE_ "Advanced"
