@@ -26,7 +26,7 @@ Function fnc_setuptype_Create
   ${If} $hCtl_setuptype == error
     Abort
   ${EndIf}
-  !insertmacro MUI_HEADER_TEXT "This controls how Jellyfin is installed." "Setup Type"
+  !insertmacro MUI_HEADER_TEXT "Setup Type" "Control how Jellyfin is installed."
   
   ; === InstallasaServiceLabel (type: Label) ===
   ${NSD_CreateLabel} 8u 71u 280u 28u "Install Jellyfin as a service. This method is recommended for Advanced Users. Additional setup is required to access network shares."
@@ -49,4 +49,8 @@ Function fnc_setuptype_Create
   
 FunctionEnd
 
-
+; dialog show function
+Function fnc_setuptype_Show
+  Call fnc_setuptype_Create
+  nsDialogs::Show
+FunctionEnd
