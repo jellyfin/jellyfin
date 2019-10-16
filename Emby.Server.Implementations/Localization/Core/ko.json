@@ -3,7 +3,7 @@
     "AppDeviceValues": "앱: {0}, 장치: {1}",
     "Application": "애플리케이션",
     "Artists": "아티스트",
-    "AuthenticationSucceededWithUserName": "{0} 인증이 완료되었습니다",
+    "AuthenticationSucceededWithUserName": "{0}이 성공적으로 인증되었습니다",
     "Books": "도서",
     "CameraImageUploadedFrom": "{0}에서 새로운 카메라 이미지가 업로드되었습니다",
     "Channels": "채널",
@@ -92,6 +92,6 @@
     "UserStartedPlayingItemWithValues": "{2}에서 {0}이 {1} 재생 중",
     "UserStoppedPlayingItemWithValues": "{2}에서 {0}이 {1} 재생을 마침",
     "ValueHasBeenAddedToLibrary": "{0}가 미디어 라이브러리에 추가되었습니다",
-    "ValueSpecialEpisodeName": "Special - {0}",
+    "ValueSpecialEpisodeName": "스페셜 - {0}",
     "VersionNumber": "버전 {0}"
 }
