@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -49,7 +51,6 @@ using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -117,7 +118,7 @@ using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 namespace Emby.Server.Implementations
 {
     /// <summary>
-    /// Class CompositionRoot
+    /// Class CompositionRoot.
     /// </summary>
     public abstract class ApplicationHost : IServerApplicationHost, IDisposable
     {
@@ -166,6 +167,7 @@ namespace Emby.Server.Implementations
         /// <value><c>true</c> if this instance has pending application restart; otherwise, <c>false</c>.</value>
         public bool HasPendingRestart { get; private set; }
 
+        /// <inheritdoc />
         public bool IsShuttingDown { get; private set; }
 
         /// <summary>
@@ -217,6 +219,7 @@ namespace Emby.Server.Implementations
 
         public IFileSystem FileSystemManager { get; set; }
 
+        /// <inheritdoc />
         public PackageVersionClass SystemUpdateLevel
         {
             get
