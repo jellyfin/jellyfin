@@ -22,6 +22,7 @@ ShowUninstDetails show
     Var _SERVICEACCOUNTTYPE_
     Var _EXISTINGINSTALLATION_
     Var _EXISTINGSERVICE_
+    Var _MAKESHORTCUTS_
 ;
 !ifdef x64
     !define ARCH "x64"
@@ -263,6 +264,16 @@ ${AndIf} $_INSTALLSERVICE_ == "Yes"
 ${EndIf}
 SectionEnd
 
+Section "Create Shortcuts" CreateWinShortcuts
+    ${If} $_MAKESHORTCUTS_ == "Yes"
+        CreateDirectory "$SMPROGRAMS\Jellyfin Server"
+        CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin (View Console).lnk" "$INSTDIR\jellyfin.exe"
+        ;CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin Tray App.lnk" "$INSTDIR\jellyfin-tray.exe"
+        CreateShortCut "$DESKTOP\Jellyfin Server.lnk" "$INSTDIR\jellyfin.exe"
+        ;CreateShortCut "$DESKTOP\Jellyfin Server\Jellyfin Server.lnk" "$INSTDIR\jellyfin-tray.exe"
+    ${EndIf}
+SectionEnd
+
 ;--------------------------------
 ;Descriptions
 
@@ -334,6 +345,7 @@ Function .onInit
     StrCpy $_SERVICEACCOUNTTYPE_ "NetworkService"
     StrCpy $_EXISTINGINSTALLATION_ "No"
     StrCpy $_EXISTINGSERVICE_ "No"
+    StrCpy $_MAKESHORTCUTS_ "No"
 
     SetShellVarContext current
     StrCpy $_JELLYFINDATADIR_ "$%ProgramData%\Jellyfin\Server"
@@ -468,6 +480,8 @@ ${If} $BasicInstall == 1
     StrCpy $_INSTALLSERVICE_ "No"
     StrCpy $_SERVICESTART_ "No"
     StrCpy $_SERVICEACCOUNTTYPE_ "None"
+    StrCpy $_MAKESHORTCUTS_ "Yes"
+
 ${Else}
     StrCpy $_SETUPTYPE_ "Advanced"
     StrCpy $_INSTALLSERVICE_ "Yes"
