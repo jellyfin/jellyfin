@@ -543,6 +543,7 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     _logger.LogDebug("Sending HTTP Response 500 in response to {Url}", urlToLog);
                 }
+
                 stopWatch.Stop();
                 var elapsed = stopWatch.Elapsed;
                 if (elapsed.TotalMilliseconds > 500)
