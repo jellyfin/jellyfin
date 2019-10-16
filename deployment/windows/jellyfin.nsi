@@ -163,7 +163,9 @@ Section "!Jellyfin Server (required)" InstallJellyfinServer
 
     SetOutPath "$INSTDIR"
 
+    CopyFiles /SILENT /FILESONLY "${UXPATH}\branding\NSIS\modern-install.ico" "$%InstallLocation%\icon.ico"
     File /r $%InstallLocation%\*
+    
 
 ; Write the InstallFolder, DataFolder, Network Service info into the registry for later use
     WriteRegExpandStr HKLM "${REG_CONFIG_KEY}" "InstallFolder" "$INSTDIR"
@@ -266,11 +268,12 @@ SectionEnd
 
 Section "Create Shortcuts" CreateWinShortcuts
     ${If} $_MAKESHORTCUTS_ == "Yes"
+        
         CreateDirectory "$SMPROGRAMS\Jellyfin Server"
-        CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin (View Console).lnk" "$INSTDIR\jellyfin.exe"
-        ;CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin Tray App.lnk" "$INSTDIR\jellyfin-tray.exe"
-        CreateShortCut "$DESKTOP\Jellyfin Server.lnk" "$INSTDIR\jellyfin.exe"
-        ;CreateShortCut "$DESKTOP\Jellyfin Server\Jellyfin Server.lnk" "$INSTDIR\jellyfin-tray.exe"
+        CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin (View Console).lnk" "$INSTDIR\jellyfin.exe" "" "$INSTDIR\icon.ico" 0
+        ;CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin Tray App.lnk" "$INSTDIR\jellyfin-tray.exe" "" "$INSTDIR\icon.ico" 0
+        CreateShortCut "$DESKTOP\Jellyfin Server.lnk" "$INSTDIR\jellyfin.exe" "" "$INSTDIR\icon.ico" 0
+        ;CreateShortCut "$DESKTOP\Jellyfin Server\Jellyfin Server.lnk" "$INSTDIR\jellyfin-tray.exe" "" "$INSTDIR\icon.ico" 0
     ${EndIf}
 SectionEnd
 
