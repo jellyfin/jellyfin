@@ -2,7 +2,7 @@ ARG DOTNET_VERSION=2.2
 ARG FFMPEG_VERSION=latest
 
 FROM node:alpine as web-builder
-ARG JELLYFIN_WEB_VERSION=v10.4.0
+ARG JELLYFIN_WEB_VERSION=v10.5.0
 RUN apk add curl \
  && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && cd jellyfin-web-* \
