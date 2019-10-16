@@ -494,7 +494,8 @@ ${If} $BasicInstall == 1
     StrCpy $_SERVICESTART_ "No"
     StrCpy $_SERVICEACCOUNTTYPE_ "None"
     StrCpy $_MAKESHORTCUTS_ "Yes"
-    StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\Jellyfin\Server"
+    IfFileExists "$LOCALAPPDATA\Jellyfin\Server\*.*" 0 ; if the folder exists, use this, otherwise, go with new default
+        StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\Jellyfin\Server"
 
 ${Else}
     StrCpy $_SETUPTYPE_ "Advanced"
