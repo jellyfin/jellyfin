@@ -180,6 +180,28 @@ namespace Emby.Server.Implementations.Playlists
             return Playlist.GetPlaylistItems(playlistMediaType, items, user, options);
         }
 
+        public bool PlaylistHasItem(string playlistId, string addingItemID)
+        {
+            var playlist = _libraryManager.GetItemById(playlistId) as Playlist;
+
+            if (playlist == null)
+            {
+                throw new ArgumentException("No Playlist exists with the supplied Id");
+            }
+
+            var playlistItems = playlist.LinkedChildren.ToList();
+
+            foreach (var item in playlistItems)
+            {
+                if (item.Id == addingItemID)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public void AddToPlaylist(string playlistId, IEnumerable<Guid> itemIds, Guid userId)
         {
             var user = userId.Equals(Guid.Empty) ? null : _userManager.GetUserById(userId);
@@ -201,13 +223,20 @@ namespace Emby.Server.Implementations.Playlists
 
             var list = new List<LinkedChild>();
 
-            var items = (GetPlaylistItems(itemIds, playlist.MediaType, user, options))
+            var items = GetPlaylistItems(itemIds, playlist.MediaType, user, options)
                 .Where(i => i.SupportsAddingToPlaylist)
                 .ToList();
 
             foreach (var item in items)
             {
-                list.Add(LinkedChild.Create(item));
+                if (PlaylistHasItem(playlistId, item.Id.ToString()) == false)
+                {
+                    list.Add(LinkedChild.Create(item));
+                }
+                else
+                {
+                    throw new ArgumentException("The Playlist " + playlist.Name + " already has the item " + item.Name + " with the item ID " + item.Id);
+                }
             }
 
             var newList = playlist.LinkedChildren.ToList();
@@ -227,6 +256,7 @@ namespace Emby.Server.Implementations.Playlists
 
             }, RefreshPriority.High);
         }
+
 
         public void RemoveFromPlaylist(string playlistId, IEnumerable<string> entryIds)
         {
