@@ -1,0 +1,277 @@
+using System;
+using System.Collections.Concurrent;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Diagnostics;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
+using UtfUnknown;
+
+namespace MediaBrowser.MediaEncoding.Attachments
+{
+    public class AttachmentExtractor : IAttachmentExtractor
+    {
+        private readonly ILibraryManager _libraryManager;
+        private readonly ILogger _logger;
+        private readonly IApplicationPaths _appPaths;
+        private readonly IFileSystem _fileSystem;
+        private readonly IMediaEncoder _mediaEncoder;
+        private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IProcessFactory _processFactory;
+
+        public AttachmentExtractor(
+            ILibraryManager libraryManager,
+            ILoggerFactory loggerFactory,
+            IApplicationPaths appPaths,
+            IFileSystem fileSystem,
+            IMediaEncoder mediaEncoder,
+            IMediaSourceManager mediaSourceManager,
+            IProcessFactory processFactory)
+        {
+            _libraryManager = libraryManager;
+            _logger = loggerFactory.CreateLogger(nameof(AttachmentExtractor));
+            _appPaths = appPaths;
+            _fileSystem = fileSystem;
+            _mediaEncoder = mediaEncoder;
+            _mediaSourceManager = mediaSourceManager;
+            _processFactory = processFactory;
+        }
+
+        private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
+
+        public async Task<(MediaAttachment attachment, Stream stream)> GetAttachment(BaseItem item, string mediaSourceId, int attachmentStreamIndex, CancellationToken cancellationToken)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+            if (string.IsNullOrWhiteSpace(mediaSourceId))
+            {
+                throw new ArgumentNullException(nameof(mediaSourceId));
+            }
+
+            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(item, null, true, false, cancellationToken).ConfigureAwait(false);
+            var mediaSource = mediaSources
+                .First(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
+            var mediaAttachment = mediaSource.MediaAttachments
+                .First(i => i.Index == attachmentStreamIndex);
+            var attachmentStream = await GetAttachmentStream(mediaSource, mediaAttachment, cancellationToken)
+                    .ConfigureAwait(false);
+
+            return (mediaAttachment, attachmentStream);
+        }
+
+        private async Task<Stream> GetAttachmentStream(
+            MediaSourceInfo mediaSource,
+            MediaAttachment mediaAttachment,
+            CancellationToken cancellationToken)
+        {
+            var inputFiles = new[] {mediaSource.Path};
+            var fileInfo = await GetReadableFile(mediaSource.Path, inputFiles, mediaSource.Protocol, mediaAttachment, cancellationToken).ConfigureAwait(false);
+            var stream = await GetAttachmentStream(fileInfo.Path, fileInfo.Protocol, cancellationToken).ConfigureAwait(false);
+            return stream;
+        }
+
+        private async Task<Stream> GetAttachmentStream(
+            string path,
+            MediaProtocol protocol,
+            CancellationToken cancellationToken)
+        {
+            return File.OpenRead(path);
+        }
+
+        private async Task<AttachmentInfo> GetReadableFile(
+            string mediaPath,
+            string[] inputFiles,
+            MediaProtocol protocol,
+            MediaAttachment mediaAttachment,
+            CancellationToken cancellationToken)
+        {
+            var outputPath = GetAttachmentCachePath(mediaPath, protocol, mediaAttachment.Index);
+            await ExtractAttachment(inputFiles, protocol, mediaAttachment.Index, outputPath, cancellationToken)
+                .ConfigureAwait(false);
+
+            return new AttachmentInfo(outputPath, MediaProtocol.File);
+        }
+
+        private struct AttachmentInfo
+        {
+            public AttachmentInfo(string path, MediaProtocol protocol)
+            {
+                Path = path;
+                Protocol = protocol;
+            }
+            public string Path { get; set; }
+            public MediaProtocol Protocol { get; set; }
+        }
+
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
+            new ConcurrentDictionary<string, SemaphoreSlim>();
+
+        private SemaphoreSlim GetLock(string filename)
+        {
+            return _semaphoreLocks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
+        }
+
+        private async Task ExtractAttachment(
+            string[] inputFiles,
+            MediaProtocol protocol,
+            int attachmentStreamIndex,
+            string outputPath,
+            CancellationToken cancellationToken)
+        {
+            var semaphore = GetLock(outputPath);
+
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                if (!File.Exists(outputPath))
+                {
+                    await ExtractAttachmentInternal(_mediaEncoder.GetInputArgument(inputFiles, protocol), attachmentStreamIndex, outputPath, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        private async Task ExtractAttachmentInternal(
+            string inputPath,
+            int attachmentStreamIndex,
+            string outputPath,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(inputPath))
+            {
+                throw new ArgumentNullException(nameof(inputPath));
+            }
+
+            if (string.IsNullOrEmpty(outputPath))
+            {
+                throw new ArgumentNullException(nameof(outputPath));
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+
+            var processArgs = string.Format("-dump_attachment:{1} {2} -i {0} -t 0 -f null null", inputPath, attachmentStreamIndex, outputPath);
+            var process = _processFactory.Create(new ProcessOptions
+            {
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                EnableRaisingEvents = true,
+                FileName = _mediaEncoder.EncoderPath,
+                Arguments = processArgs,
+                IsHidden = true,
+                ErrorDialog = false
+            });
+
+            _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
+
+            try
+            {
+                process.Start();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error starting ffmpeg");
+
+                throw;
+            }
+
+            var ranToCompletion = await process.WaitForExitAsync(300000).ConfigureAwait(false);
+
+            if (!ranToCompletion)
+            {
+                try
+                {
+                    _logger.LogWarning("Killing ffmpeg attachment extraction process");
+                    process.Kill();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error killing attachment extraction process");
+                }
+
+            }
+
+            var exitCode = ranToCompletion ? process.ExitCode : -1;
+
+            process.Dispose();
+            
+            var failed = false;
+
+            if (exitCode == -1)
+            {
+                failed = true;
+
+                try
+                {
+                    _logger.LogWarning("Deleting extracted attachment due to failure: {Path}", outputPath);
+                    _fileSystem.DeleteFile(outputPath);
+                }
+                catch (FileNotFoundException)
+                {
+
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogError(ex, "Error deleting extracted attachment {Path}", outputPath);
+                }
+
+            }
+            else if (!File.Exists(outputPath))
+            {
+                failed = true;
+            }
+
+            if (failed)
+            {
+                var msg = $"ffmpeg attachment extraction failed for {inputPath} to {outputPath}";
+
+                _logger.LogError(msg);
+
+                throw new Exception(msg);
+            }
+            else
+            {
+                var msg = $"ffmpeg attachment extraction completed for {inputPath} to {outputPath}";
+
+                _logger.LogInformation(msg);
+            }
+        }
+
+        private string GetAttachmentCachePath(string mediaPath, MediaProtocol protocol, int attachmentStreamIndex)
+        {
+            if (protocol == MediaProtocol.File)
+            {
+                var date = _fileSystem.GetLastWriteTimeUtc(mediaPath);
+                var filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D");
+                var prefix = filename.Substring(0, 1);
+                return Path.Combine(AttachmentCachePath, prefix, filename);
+            }
+            else
+            {
+                var filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D");
+                var prefix = filename.Substring(0, 1);
+                return Path.Combine(AttachmentCachePath, prefix, filename);
+            }
+        }
+
+    }
+}
