@@ -40,5 +40,11 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The MIME type.</value>
         public string MIMEType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the delivery URL.
+        /// </summary>
+        /// <value>The delivery URL.</value>
+        public string DeliveryUrl { get; set; }
     }
 }
