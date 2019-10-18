@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
@@ -28,5 +28,5 @@
     <!-- We need at least C# 7.1 -->
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
-   
+
 </Project>

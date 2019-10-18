@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -19,7 +18,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
-using static MediaBrowser.Common.HexHelper;
 
 namespace Emby.Server.Implementations.Updates
 {
@@ -455,7 +453,7 @@ namespace Emby.Server.Implementations.Updates
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var hash = ToHexString(md5.ComputeHash(stream));
+                var hash = Hex.Encode(md5.ComputeHash(stream));
                 if (!string.Equals(package.checksum, hash, StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogError(
