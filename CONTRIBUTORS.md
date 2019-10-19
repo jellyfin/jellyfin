@@ -30,6 +30,7 @@
  - [Khinenw](https://github.com/HelloWorld017)
  - [fhriley](https://github.com/fhriley)
  - [nevado](https://github.com/nevado)
+ - [SegiH](https://github.com/SegiH)
 
 # Emby Contributors
 
