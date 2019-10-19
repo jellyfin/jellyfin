@@ -9,10 +9,13 @@ namespace Jellyfin.Common.Benches
     [MemoryDiagnoser]
     public class HexDecodeBenches
     {
-        private const int N = 1000000;
-        private readonly string data;
+        [Params(0, 10, 100, 1000, 10000, 1000000)]
+        public int N { get; set; }
 
-        public HexDecodeBenches()
+        private string data;
+
+        [GlobalSetup]
+        public void GlobalSetup()
         {
             var tmp = new byte[N];
             new Random(42).NextBytes(tmp);
