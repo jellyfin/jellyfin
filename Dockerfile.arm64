@@ -24,7 +24,7 @@ RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" 
 
 
 FROM multiarch/qemu-user-static:x86_64-aarch64 as qemu
-FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}-stretch-slim-arm64v8
+FROM debian:stretch-slim-arm64v8
 COPY --from=qemu /usr/bin/qemu-aarch64-static /usr/bin
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg \
@@ -34,9 +34,11 @@ RUN apt-get update \
 COPY --from=builder /jellyfin /jellyfin
 COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+
 EXPOSE 8096
 VOLUME /cache /config /media
-ENTRYPOINT dotnet /jellyfin/jellyfin.dll \
+ENTRYPOINT ./jellyfin/jellyfin \
     --datadir /config \
     --cachedir /cache \
     --ffmpeg /usr/bin/ffmpeg
