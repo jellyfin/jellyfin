@@ -8,7 +8,9 @@ Build-Depends:  debhelper (>= 9),
                 libcurl4-openssl-dev,
                 libfontconfig1-dev,
                 libfreetype6-dev,
-                libssl-dev
+                libssl-dev,
+                wget,
+                npm | nodejs
 Standards-Version: 3.9.4
 Homepage: https://jellyfin.media/
 Vcs-Git: https://github.org/jellyfin/jellyfin.git
