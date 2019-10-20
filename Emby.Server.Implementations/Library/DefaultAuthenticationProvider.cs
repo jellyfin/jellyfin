@@ -59,7 +59,10 @@ namespace Emby.Server.Implementations.Library
             if (_cryptographyProvider.GetSupportedHashMethods().Contains(readyHash.Id)
                 || _cryptographyProvider.DefaultHashMethod == readyHash.Id)
             {
-                byte[] calculatedHash = _cryptographyProvider.ComputeHash(readyHash.Id, passwordbytes, readyHash.Salt);
+                byte[] calculatedHash = _cryptographyProvider.ComputeHash(
+                    readyHash.Id,
+                    passwordbytes,
+                    readyHash.Salt);
 
                 if (calculatedHash.SequenceEqual(readyHash.Hash))
                 {

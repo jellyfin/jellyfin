@@ -39,17 +39,21 @@ namespace MediaBrowser.Controller.Library
         event EventHandler<GenericEventArgs<User>> UserDeleted;
 
         event EventHandler<GenericEventArgs<User>> UserCreated;
+
         event EventHandler<GenericEventArgs<User>> UserPolicyUpdated;
+
         event EventHandler<GenericEventArgs<User>> UserConfigurationUpdated;
+
         event EventHandler<GenericEventArgs<User>> UserPasswordChanged;
+
         event EventHandler<GenericEventArgs<User>> UserLockedOut;
 
         /// <summary>
-        /// Gets a User by Id
+        /// Gets a User by Id.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <returns>User.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns>The user with the specified Id, or <c>null</c> id the user doesn't exist.</returns>
+        /// <exception cref="ArgumentException"><c>id</c> is an empty Guid.</exception>
         User GetUserById(Guid id);
 
         /// <summary>
