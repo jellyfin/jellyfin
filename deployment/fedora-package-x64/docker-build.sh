@@ -10,20 +10,6 @@ pushd ${SOURCE_DIR}
 
 VERSION="$( grep '^Version:' ${SOURCE_DIR}/SOURCES/pkg-src/jellyfin.spec | awk '{ print $NF }' )"
 
-# Clone down and build Web frontend
-web_build_dir="$( mktemp -d )"
-web_target="${SOURCE_DIR}/MediaBrowser.WebDashboard/jellyfin-web"
-git clone https://github.com/jellyfin/jellyfin-web.git ${web_build_dir}/
-pushd ${web_build_dir}
-if [[ -n ${web_branch} ]]; then
-    checkout -b origin/${web_branch}
-fi
-yarn install
-mkdir -p ${web_target}
-mv dist/* ${web_target}/
-popd
-rm -rf ${web_build_dir}
-
 # Create RPM source archive
 GNU_TAR=1
 echo "Bundling all sources for RPM build."
