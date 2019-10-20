@@ -1173,17 +1173,17 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     bitrate = GetMinBitrate(videoStream.BitRate.Value, bitrate.Value);
                 }
-            }
 
-            if (bitrate.HasValue)
-            {
-                var inputVideoCodec = videoStream.Codec;
-                bitrate = ScaleBitrate(bitrate.Value, inputVideoCodec, outputVideoCodec);
-
-                // If a max bitrate was requested, don't let the scaled bitrate exceed it
-                if (request.VideoBitRate.HasValue)
+                if (bitrate.HasValue)
                 {
-                    bitrate = Math.Min(bitrate.Value, request.VideoBitRate.Value);
+                    var inputVideoCodec = videoStream.Codec;
+                    bitrate = ScaleBitrate(bitrate.Value, inputVideoCodec, outputVideoCodec);
+
+                    // If a max bitrate was requested, don't let the scaled bitrate exceed it
+                    if (request.VideoBitRate.HasValue)
+                    {
+                        bitrate = Math.Min(bitrate.Value, request.VideoBitRate.Value);
+                    }
                 }
             }
 
