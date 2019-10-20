@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool StopRefreshIfLocalMetadataFound => false;
     }
 }

@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -123,7 +123,7 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the session controller.
         /// </summary>
         /// <value>The session controller.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public ISessionController[] SessionControllers { get; set; }
 
         /// <summary>

@@ -1,6 +1,6 @@
 using System;
+using System.Text.Json.Serialization;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -28,7 +28,7 @@ namespace MediaBrowser.Controller.Entities
 
         public int Height { get; set; }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public bool IsLocalFile => Path == null || !Path.StartsWith("http", StringComparison.OrdinalIgnoreCase);
     }
 }

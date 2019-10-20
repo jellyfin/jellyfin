@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 
 namespace Emby.Server.Implementations.Playlists
 {
@@ -24,13 +24,13 @@ namespace Emby.Server.Implementations.Playlists
             return base.GetEligibleChildrenForRecursiveChildren(user).OfType<Playlist>();
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool IsHidden => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string CollectionType => MediaBrowser.Model.Entities.CollectionType.Playlists;
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)

@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 using Microsoft.Extensions.Logging;
 
@@ -18,25 +18,25 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicArtist : Folder, IItemByName, IHasMusicGenres, IHasDualAccess, IHasLookupInfo<ArtistInfo>
     {
-        [IgnoreDataMember]
+        [JsonIgnore]
         public bool IsAccessedByName => ParentId.Equals(Guid.Empty);
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool IsFolder => !IsAccessedByName;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsCumulativeRunTimeTicks => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool IsDisplayedAsFolder => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsAddingToPlaylist => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPlayedStatus => false;
 
         public override double GetDefaultPrimaryImageAspectRatio()
@@ -60,7 +60,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return LibraryManager.GetItemList(query);
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override IEnumerable<BaseItem> Children
         {
             get
@@ -117,7 +117,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// If the item is a folder, it returns the folder itself
         /// </summary>
         /// <value>The containing folder path.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string ContainingFolderPath => Path;
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return info;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => false;
 
         public static string GetPath(string name)
