@@ -160,8 +160,6 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
-* Thu Oct 17 2019 Brian J. Murrell <brian@interlinx.bc.ca> 10.4.0-1
-- Build with new jellyfin-web webpack
 * Sat Aug 31 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
 - New upstream version 10.4.0; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.4.0
 * Wed Jul 24 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
