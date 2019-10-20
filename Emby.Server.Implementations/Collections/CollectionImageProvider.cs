@@ -76,7 +76,6 @@ namespace Emby.Server.Implementations.Collections
                 .Where(i => i != null)
                 .GroupBy(x => x.Id)
                 .Select(x => x.First())
-                .OrderBy(i => Guid.NewGuid())
                 .ToList();
         }
 

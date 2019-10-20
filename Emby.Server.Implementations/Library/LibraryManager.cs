@@ -829,7 +829,7 @@ namespace Emby.Server.Implementations.Library
             {
                 Path = path,
                 IsFolder = isFolder,
-                OrderBy = new[] { ItemSortBy.DateCreated }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
+                OrderBy = new[] { (ItemSortBy.DateCreated, SortOrder.Descending) },
                 Limit = 1,
                 DtoOptions = new DtoOptions(true)
             };
@@ -1257,7 +1257,7 @@ namespace Emby.Server.Implementations.Library
 
         public List<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent)
         {
-            if (query.Recursive && !query.ParentId.Equals(Guid.Empty))
+            if (query.Recursive && query.ParentId != Guid.Empty)
             {
                 var parent = GetItemById(query.ParentId);
                 if (parent != null)

@@ -1163,7 +1163,10 @@ namespace MediaBrowser.Controller.Entities
             }
 
             //the true root should return our users root folder children
-            if (IsPhysicalRoot) return LibraryManager.GetUserRootFolder().GetChildren(user, includeLinkedChildren);
+            if (IsPhysicalRoot)
+            {
+                return LibraryManager.GetUserRootFolder().GetChildren(user, includeLinkedChildren);
+            }
 
             var result = new Dictionary<Guid, BaseItem>();
 

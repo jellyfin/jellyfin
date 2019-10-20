@@ -181,7 +181,7 @@ namespace MediaBrowser.Controller.Playlists
                 {
                     Recursive = true,
                     IsFolder = false,
-                    OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                    OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                     MediaTypes = new[] { mediaType },
                     EnableTotalRecordCount = false,
                     DtoOptions = options
