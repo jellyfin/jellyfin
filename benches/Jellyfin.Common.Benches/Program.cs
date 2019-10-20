@@ -7,7 +7,7 @@ namespace Jellyfin.Common.Benches
     {
         public static void Main(string[] args)
         {
-            _ = BenchmarkRunner.Run<HexEncodeBenches>();
+            //_ = BenchmarkRunner.Run<HexEncodeBenches>();
             _ = BenchmarkRunner.Run<HexDecodeBenches>();
         }
     }

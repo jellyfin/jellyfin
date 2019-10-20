@@ -9,7 +9,7 @@ namespace Jellyfin.Common.Benches
     [MemoryDiagnoser]
     public class HexDecodeBenches
     {
-        [Params(0, 10, 100, 1000, 10000, 1000000)]
+        [Params(/*0,*/ 10, 100, 1000, 10000, 1000000)]
         public int N { get; set; }
 
         private string data;
@@ -40,6 +40,9 @@ namespace Jellyfin.Common.Benches
         public byte[] Decode() => Hex.Decode(data);
 
         [Benchmark]
+        public byte[] Decode2() => Hex.Decode2(data);
+
+        //[Benchmark]
         public byte[] DecodeSubString() => DecodeSubString(data);
     }
 }

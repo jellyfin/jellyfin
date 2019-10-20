@@ -81,7 +81,7 @@ namespace MediaBrowser.Common
                     break; // Unreachable
                 }
 
-                bytes[j] = (byte)((a << 4) | b);
+                bytes[j] = (byte)((a * 16) | b);
             }
 
             return bytes;
