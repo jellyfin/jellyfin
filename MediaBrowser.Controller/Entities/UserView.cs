@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Entities
 
         public static ITVSeriesManager TVSeriesManager;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string CollectionType => ViewType;
 
         public override IEnumerable<Guid> GetIdsForAncestorQuery()
@@ -40,10 +40,10 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPlayedStatus => false;
 
         public override int GetChildCount(User user)
@@ -167,7 +167,7 @@ namespace MediaBrowser.Controller.Entities
             return Task.CompletedTask;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => false;
     }
 }

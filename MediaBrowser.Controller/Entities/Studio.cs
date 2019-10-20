@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using MediaBrowser.Controller.Extensions;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -28,13 +28,13 @@ namespace MediaBrowser.Controller.Entities
         /// If the item is a folder, it returns the folder itself
         /// </summary>
         /// <value>The containing folder path.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string ContainingFolderPath => Path;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool IsDisplayedAsFolder => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsAncestors => false;
 
         public override double GetDefaultPrimaryImageAspectRatio()
@@ -62,7 +62,7 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.GetItemList(query);
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => false;
 
         public static string GetPath(string name)

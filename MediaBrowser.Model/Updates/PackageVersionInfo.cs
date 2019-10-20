@@ -1,5 +1,5 @@
 using System;
-using MediaBrowser.Model.Serialization;
+using System.Text.Json.Serialization;
 
 namespace MediaBrowser.Model.Updates
 {
@@ -36,7 +36,7 @@ namespace MediaBrowser.Model.Updates
         /// Had to make this an interpreted property since Protobuf can't handle Version
         /// </summary>
         /// <value>The version.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public Version Version
         {
             get
