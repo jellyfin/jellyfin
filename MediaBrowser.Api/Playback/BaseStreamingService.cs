@@ -302,6 +302,7 @@ namespace MediaBrowser.Api.Playback
             {
                 await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
             }
+
             Logger.LogDebug("File {0} created or transcoding has finished", ffmpegTargetFile);
 
             if (state.IsInputVideo && transcodingJob.Type == TranscodingJobType.Progressive && !transcodingJob.HasExited)
