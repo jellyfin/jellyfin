@@ -923,10 +923,10 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             else
             {
-                var keyFrameArg = string.Format(
+                var keyFrameArg = string.Format(CultureInfo.InvariantCulture,
                     " -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
-                    (GetStartNumber(state) * state.SegmentLength).ToString(CultureInfo.InvariantCulture),
-                    state.SegmentLength.ToString(CultureInfo.InvariantCulture));
+                    GetStartNumber(state) * state.SegmentLength,
+                    state.SegmentLength);
                 if (state.TargetFramerate.HasValue)
                 {
                     // This is to make sure keyframe interval is limited to our segment,
@@ -934,9 +934,9 @@ namespace MediaBrowser.Api.Playback.Hls
                     // Example: we encoded half of desired length, then codec detected
                     // scene cut and inserted a keyframe; next forced keyframe would
                     // be created outside of segment, which breaks seeking.
-                    keyFrameArg += string.Format(
+                    keyFrameArg += string.Format(CultureInfo.InvariantCulture,
                         " -g {0} -keyint_min {0}",
-                        ((int)(state.SegmentLength * state.TargetFramerate)).ToString(CultureInfo.InvariantCulture)
+                        (int)(state.SegmentLength * state.TargetFramerate)
                     );
                 }
 
