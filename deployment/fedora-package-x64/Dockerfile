@@ -12,16 +12,12 @@ ENV ARTIFACT_DIR=/dist
 RUN dnf update -y
 
 # Install build dependencies
-RUN dnf install -y @buildsys-build rpmdevtools dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel nodejs wget git
+RUN dnf install -y @buildsys-build rpmdevtools dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel nodejs-yarn
 
 # Install DotNET SDK
 RUN dnf copr enable -y @dotnet-sig/dotnet \
  && rpmdev-setuptree \
  && dnf install -y dotnet-sdk-${SDK_VERSION} dotnet-runtime-${SDK_VERSION}
-
-# Install yarn package manager
-RUN wget -q -O /etc/yum.repos.d/yarn.repo https://dl.yarnpkg.com/rpm/yarn.repo \
- && dnf install -y yarn
 
 # Create symlinks and directories
 RUN ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh \
