@@ -23,6 +23,7 @@ ShowUninstDetails show
     Var _EXISTINGINSTALLATION_
     Var _EXISTINGSERVICE_
     Var _MAKESHORTCUTS_
+    Var _FOLDEREXISTS_
 ;
 !ifdef x64
     !define ARCH "x64"
@@ -269,10 +270,10 @@ SectionEnd
 Section "Create Shortcuts" CreateWinShortcuts
     ${If} $_MAKESHORTCUTS_ == "Yes"
         CreateDirectory "$SMPROGRAMS\Jellyfin Server"
-        CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin (View Console).lnk" "$INSTDIR\jellyfin.exe" "" "$INSTDIR\icon.ico" 0
-        ;CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin Tray App.lnk" "$INSTDIR\jellyfin-tray.exe" "" "$INSTDIR\icon.ico" 0
-        CreateShortCut "$DESKTOP\Jellyfin Server.lnk" "$INSTDIR\jellyfin.exe" "" "$INSTDIR\icon.ico" 0
-        ;CreateShortCut "$DESKTOP\Jellyfin Server\Jellyfin Server.lnk" "$INSTDIR\jellyfin-tray.exe" "" "$INSTDIR\icon.ico" 0
+        CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin (View Console).lnk" "$INSTDIR\jellyfin.exe" "--datadir $\"$_JELLYFINDATADIR_$\"" "$INSTDIR\icon.ico" 0 SW_SHOWMAXIMIZED
+        ;CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin Tray App.lnk" "$INSTDIR\jellyfin-tray.exe" "--datadir $\"$_JELLYFINDATADIR_$\"" "$INSTDIR\icon.ico" 0
+        CreateShortCut "$DESKTOP\Jellyfin Server.lnk" "$INSTDIR\jellyfin.exe" "--datadir $\"$_JELLYFINDATADIR_$\"" "$INSTDIR\icon.ico" 0 SW_SHOWMINIMIZED
+        ;CreateShortCut "$DESKTOP\Jellyfin Server\Jellyfin Server.lnk" "$INSTDIR\jellyfin-tray.exe" "--datadir $\"$_JELLYFINDATADIR_$\"" "$INSTDIR\icon.ico" 0
     ${EndIf}
 SectionEnd
 
@@ -330,10 +331,11 @@ Section "Uninstall"
     Sleep 3000 ; Give time for Windows to catchup
 
     NoServiceUninstall: ; existing install was present but no service was detected. Remove shortcuts if account is set to none
-        {$If} $_SERVICEACCOUNTTYPE_ == "None"
+        ${If} $_SERVICEACCOUNTTYPE_ == "None"
             RMDir /r "$SMPROGRAMS\Jellyfin Server"
             Delete "$DESKTOP\Jellyfin Server.lnk"
-        {$EndIf}
+            DetailPrint "Removed old shortcuts..."
+        ${EndIf}
 
     Delete "$INSTDIR\*.*"
     RMDir /r /REBOOTOK "$INSTDIR\jellyfin-web"
@@ -380,6 +382,16 @@ Function .onInit
     StrCpy $_EXISTINGINSTALLATION_ "Yes" ; Set our flag to be used later
     SectionSetText ${InstallJellyfinServer} "Upgrade Jellyfin Server (required)" ; Change install text to "Upgrade"
 
+  ; check if service was run using Network Service account
+    ClearErrors
+    ReadRegStr $_SERVICEACCOUNTTYPE_ HKLM "${REG_CONFIG_KEY}" "ServiceAccountType" ; in case of error _SERVICEACCOUNTTYPE_ will be NetworkService as default
+
+    ClearErrors
+    ReadRegStr $_JELLYFINDATADIR_ HKLM "${REG_CONFIG_KEY}" "DataFolder" ; in case of error, the default holds
+
+    ; Hide sections which will not be needed in case of previous install
+    ; SectionSetText ${InstallService} ""
+
 ; check if there is a service called Jellyfin, there should be
 ; hack : nssm statuscode Jellyfin will return non zero return code in case it exists
     ExecWait '"$INSTDIR\nssm.exe" statuscode JellyfinServer' $0
@@ -391,16 +403,7 @@ Function .onInit
     StrCpy $_INSTALLSERVICE_ "Yes"
     StrCpy $_SERVICESTART_ "Yes"
 
-    ; check if service was run using Network Service account
-    ClearErrors
-    ReadRegStr $_SERVICEACCOUNTTYPE_ HKLM "${REG_CONFIG_KEY}" "ServiceAccountType" ; in case of error _SERVICEACCOUNTTYPE_ will be NetworkService as default
-
-    ClearErrors
-    ReadRegStr $_JELLYFINDATADIR_ HKLM "${REG_CONFIG_KEY}" "DataFolder" ; in case of error, the default holds
-
-    ; Hide sections which will not be needed in case of previous install
-    ; SectionSetText ${InstallService} ""
-
+  
     NoService: ; existing install was present but no service was detected
         ${If} $_SERVICEACCOUNTTYPE_ == "None"
             StrCpy $_SETUPTYPE_ "Basic"
@@ -416,8 +419,7 @@ Function .onInit
 
     ProceedWithUpgrade:
 
-    NoExisitingInstall:
-; by this time, the variables have been correctly set to reflect previous install details
+    NoExisitingInstall: ; by this time, the variables have been correctly set to reflect previous install details
 
 FunctionEnd
 
@@ -488,18 +490,36 @@ Var BasicInstall
 
 Function SetupTypePage_Config
 ${NSD_GetState} $hCtl_setuptype_BasicInstall $BasicInstall
+ IfFileExists "$LOCALAPPDATA\Jellyfin" folderfound foldernotfound ; if the folder exists, use this, otherwise, go with new default
+        folderfound:
+            StrCpy $_FOLDEREXISTS_ "Yes"
+            Goto InstallCheck
+        foldernotfound:
+            StrCpy $_FOLDEREXISTS_ "No"
+            Goto InstallCheck
+
+InstallCheck:
 ${If} $BasicInstall == 1
     StrCpy $_SETUPTYPE_ "Basic"
     StrCpy $_INSTALLSERVICE_ "No"
     StrCpy $_SERVICESTART_ "No"
     StrCpy $_SERVICEACCOUNTTYPE_ "None"
     StrCpy $_MAKESHORTCUTS_ "Yes"
-    IfFileExists "$LOCALAPPDATA\Jellyfin\Server\*.*" 0 ; if the folder exists, use this, otherwise, go with new default
-        StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\Jellyfin\Server"
-
+    ${If} $_FOLDEREXISTS_ == "Yes"
+        StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\Jellyfin\"
+    ${EndIf}
 ${Else}
     StrCpy $_SETUPTYPE_ "Advanced"
     StrCpy $_INSTALLSERVICE_ "Yes"
+    ${If} $_FOLDEREXISTS_ == "Yes"
+            MessageBox MB_OKCANCEL|MB_ICONINFORMATION "An existing data folder was detected.\
+            $\r$\nBasic Setup is highly recommended.\
+            $\r$\nIf you proceed, you will need to set up Jellyfin again." IDOK GoAhead IDCANCEL GoBack
+        GoBack:
+            Abort
+    ${EndIf}
+        GoAhead:
+            StrCpy $_JELLYFINDATADIR_ "$%ProgramData%\Jellyfin\Server"
 ${EndIf}
     
 FunctionEnd
