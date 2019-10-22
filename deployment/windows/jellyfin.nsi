@@ -402,6 +402,8 @@ Function .onInit
     StrCpy $_EXISTINGSERVICE_ "Yes"
     StrCpy $_INSTALLSERVICE_ "Yes"
     StrCpy $_SERVICESTART_ "Yes"
+    StrCpy $_MAKESHORTCUTS_ "No"
+    SectionSetText ${CreateWinShortcuts} ""
 
   
     NoService: ; existing install was present but no service was detected
@@ -511,6 +513,7 @@ ${If} $BasicInstall == 1
 ${Else}
     StrCpy $_SETUPTYPE_ "Advanced"
     StrCpy $_INSTALLSERVICE_ "Yes"
+    StrCpy $_MAKESHORTCUTS_ "No"
     ${If} $_FOLDEREXISTS_ == "Yes"
             MessageBox MB_OKCANCEL|MB_ICONINFORMATION "An existing data folder was detected.\
             $\r$\nBasic Setup is highly recommended.\
@@ -520,6 +523,7 @@ ${Else}
     ${EndIf}
         GoAhead:
             StrCpy $_JELLYFINDATADIR_ "$%ProgramData%\Jellyfin\Server"
+            SectionSetText ${CreateWinShortcuts} ""
 ${EndIf}
     
 FunctionEnd
