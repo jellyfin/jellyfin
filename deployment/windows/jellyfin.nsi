@@ -280,9 +280,9 @@ Section "Create Shortcuts" CreateWinShortcuts
     ${If} $_MAKESHORTCUTS_ == "Yes"
         CreateDirectory "$SMPROGRAMS\Jellyfin Server"
         CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin (View Console).lnk" "$INSTDIR\jellyfin.exe" "--datadir $\"$_JELLYFINDATADIR_$\"" "$INSTDIR\icon.ico" 0 SW_SHOWMAXIMIZED
-        ;CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin Tray App.lnk" "$INSTDIR\jellyfin-tray.exe" "--datadir $\"$_JELLYFINDATADIR_$\"" "$INSTDIR\icon.ico" 0
+        ;CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin Tray App.lnk" "$INSTDIR\jellyfin-tray.exe" "" "$INSTDIR\icon.ico" 0
         CreateShortCut "$DESKTOP\Jellyfin Server.lnk" "$INSTDIR\jellyfin.exe" "--datadir $\"$_JELLYFINDATADIR_$\"" "$INSTDIR\icon.ico" 0 SW_SHOWMINIMIZED
-        ;CreateShortCut "$DESKTOP\Jellyfin Server\Jellyfin Server.lnk" "$INSTDIR\jellyfin-tray.exe" "--datadir $\"$_JELLYFINDATADIR_$\"" "$INSTDIR\icon.ico" 0
+        ;CreateShortCut "$DESKTOP\Jellyfin Server\Jellyfin Server.lnk" "$INSTDIR\jellyfin-tray.exe" "" "$INSTDIR\icon.ico" 0
     ${EndIf}
 SectionEnd
 
