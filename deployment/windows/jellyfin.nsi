@@ -251,6 +251,15 @@ ${If} $_INSTALLSERVICE_ == "Yes" ; Only run this if we're going to install the s
         ${EndIf}
         DetailPrint "Jellyfin Server service account change, $0"
     ${EndIf}
+
+    Sleep 3000
+    ConfigureDefaultAppExit:
+        ExecWait '"$INSTDIR\nssm.exe" set JellyfinServer AppExit Default Exit' $0
+        ${If} $0 <> 0
+            !insertmacro ShowError "Could not configure the Jellyfin Server service app exit action." ConfigureDefaultAppExit
+        ${EndIf}
+        DetailPrint "Jellyfin Server service exit action set, $0"
+    ${EndIf}
 ${EndIf}
 
 SectionEnd
