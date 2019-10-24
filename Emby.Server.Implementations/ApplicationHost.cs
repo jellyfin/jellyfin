@@ -1446,7 +1446,7 @@ namespace Emby.Server.Implementations
                 CanSelfRestart = CanSelfRestart,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 HasUpdateAvailable = HasUpdateAvailable,
-                TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
+                TranscodingTempPath = ApplicationPaths.TranscodePath,
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,
                 SupportsLibraryMonitor = true,

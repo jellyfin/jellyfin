@@ -39,7 +39,13 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// Creates the triggers that define when the task will run
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers() => new List<TaskTriggerInfo>();
+        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
+        {
+            yield return new TaskTriggerInfo
+            {
+                Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks
+            };
+        }
 
         /// <summary>
         /// Returns the task to be executed
@@ -54,7 +60,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
             try
             {
-                DeleteTempFilesFromDirectory(cancellationToken, ApplicationPaths.TranscodingTempPath, minDateModified, progress);
+                DeleteTempFilesFromDirectory(cancellationToken, ApplicationPaths.TranscodePath, minDateModified, progress);
             }
             catch (DirectoryNotFoundException)
             {
@@ -138,17 +144,17 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             }
         }
 
-        public string Name => "Transcoding temp cleanup";
+        public string Name => "Transcode file cleanup";
 
-        public string Description => "Deletes transcoding temp files older than 24 hours.";
+        public string Description => "Deletes transcode files more than 24 hours old.";
 
         public string Category => "Maintenance";
 
-        public string Key => "DeleteTranscodingTempFiles";
+        public string Key => "DeleteTranscodeFiles";
 
         public bool IsHidden => false;
 
-        public bool IsEnabled => false;
+        public bool IsEnabled => true;
 
         public bool IsLogged => true;
     }

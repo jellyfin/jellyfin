@@ -167,7 +167,7 @@ namespace MediaBrowser.Api
         /// </summary>
         private void DeleteEncodedMediaCache()
         {
-            var path = ConfigurationManager.ApplicationPaths.GetTranscodingTempPath();
+            var path = ConfigurationManager.ApplicationPaths.GetTranscodePath();
 
             if (!Directory.Exists(path))
             {
