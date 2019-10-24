@@ -370,7 +370,7 @@ namespace Jellyfin.Server
 
             return new ConfigurationBuilder()
                 .SetBasePath(appPaths.ConfigurationDirectoryPath)
-                .AddJsonFile("logging.json")
+                .AddJsonFile("logging.json", false, true)
                 .AddEnvironmentVariables("JELLYFIN_")
                 .AddInMemoryCollection(ConfigurationOptions.Configuration)
                 .Build();
