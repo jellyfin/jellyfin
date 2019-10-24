@@ -4,7 +4,7 @@ ARG DOTNET_VERSION=3.0
 
 
 FROM node:alpine as web-builder
-ARG JELLYFIN_WEB_VERSION=v10.5.0
+ARG JELLYFIN_WEB_VERSION=master
 RUN apk add curl \
  && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && cd jellyfin-web-* \
@@ -17,8 +17,6 @@ FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION} as builder
 WORKDIR /repo
 COPY . .
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
-# TODO Remove or update the sed line when we update dotnet version.
-RUN find . -type f -exec sed -i 's/netcoreapp2.1/netcoreapp3.0/g' {} \;
 # Discard objs - may cause failures if exists
 RUN find . -type d -name obj | xargs -r rm -r
 # Build
