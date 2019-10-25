@@ -130,7 +130,6 @@ namespace Emby.Server.Implementations.Devices
             var session = _authRepo.Get(new AuthenticationInfoQuery
             {
                 DeviceId = id
-
             }).Items.FirstOrDefault();
 
             var device = session == null ? null : ToDeviceInfo(session);

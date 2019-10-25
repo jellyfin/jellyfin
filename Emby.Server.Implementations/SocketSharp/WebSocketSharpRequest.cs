@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Linq;
 using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -13,7 +12,7 @@ using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
 
 namespace Emby.Server.Implementations.SocketSharp
 {
-    public partial class WebSocketSharpRequest : IHttpRequest
+    public class WebSocketSharpRequest : IHttpRequest
     {
         public const string FormUrlEncoded = "application/x-www-form-urlencoded";
         public const string MultiPartFormData = "multipart/form-data";

@@ -490,23 +490,25 @@ namespace Emby.Server.Implementations.Networking
             IPAddress ipaddy;
             int port = -1;
 
-            //check if we have an IPv6 or ports
+            // check if we have an IPv6 or ports
             if (values.Length <= 2) // ipv4 or hostname
             {
                 port = values.Length == 1 ? defaultport : GetPort(values[1]);
 
-                //try to use the address as IPv4, otherwise get hostname
+                // try to use the address as IPv4, otherwise get hostname
                 if (!IPAddress.TryParse(values[0], out ipaddy))
+                {
                     ipaddy = await GetIPfromHost(values[0]).ConfigureAwait(false);
+                }
             }
-            else if (values.Length > 2) //ipv6
+            else if (values.Length > 2) // ipv6
             {
-                //could [a:b:c]:d
+                //ncould [a:b:c]:d
                 if (values[0].StartsWith("[") && values[values.Length - 2].EndsWith("]"))
                 {
                     string ipaddressstring = string.Join(":", values.Take(values.Length - 1).ToArray());
                     ipaddy = IPAddress.Parse(ipaddressstring);
-                    port = GetPort(values[values.Length - 1]);
+                    port = GetPort(values[^1]);
                 }
                 else //[a:b:c] or a:b:c
                 {
@@ -516,7 +518,11 @@ namespace Emby.Server.Implementations.Networking
             }
             else
             {
-                throw new FormatException(string.Format("Invalid endpoint ipaddress '{0}'", endpointstring));
+                throw new FormatException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Invalid endpoint ipaddress '{0}'",
+                        endpointstring));
             }
 
             if (port == -1)

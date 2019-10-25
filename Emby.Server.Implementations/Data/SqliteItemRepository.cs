@@ -1177,7 +1177,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (id == Guid.Empty)
             {
-                throw new ArgumentException(nameof(id), "Guid can't be empty");
+                throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
             CheckDisposed();

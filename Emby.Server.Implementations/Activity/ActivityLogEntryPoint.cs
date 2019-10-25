@@ -616,8 +616,8 @@ namespace Emby.Server.Implementations.Activity
         /// <summary>
         /// Constructs a string description of a time-span value.
         /// </summary>
-        /// <param name="value">The value of this item</param>
-        /// <param name="description">The name of this item (singular form)</param>
+        /// <param name="value">The value of this item.</param>
+        /// <param name="description">The name of this item (singular form).</param>
         private static string CreateValueString(int value, string description)
         {
             return string.Format(

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace Emby.Naming.Video
 {
     /// <summary>
-    /// Represents a complete video, including all parts and subtitles
+    /// Represents a complete video, including all parts and subtitles.
     /// </summary>
     public class VideoInfo
     {

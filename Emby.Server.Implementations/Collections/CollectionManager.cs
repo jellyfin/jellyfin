@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.Collections
             // This could cause it to get re-resolved as a plain folder
             var folderName = _fileSystem.GetValidFilename(name) + " [boxset]";
 
-            var parentFolder = GetCollectionsFolder(true).Result;
+            var parentFolder = GetCollectionsFolder(true).GetAwaiter().GetResult();
 
             if (parentFolder == null)
             {

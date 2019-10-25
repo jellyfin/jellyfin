@@ -156,7 +156,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             try
             {
-                await _sessionManager.SendMessageToAdminSessions(name, data, CancellationToken.None);
+                await _sessionManager.SendMessageToAdminSessions(name, data, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception)
             {

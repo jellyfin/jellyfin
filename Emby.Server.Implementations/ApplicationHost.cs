@@ -321,7 +321,7 @@ namespace Emby.Server.Implementations
         private readonly IConfiguration _configuration;
 
         /// <summary>
-        /// Gets or sets the installation manager.
+        /// Gets the installation manager.
         /// </summary>
         /// <value>The installation manager.</value>
         protected IInstallationManager InstallationManager { get; private set; }
@@ -500,7 +500,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the export types.
         /// </summary>
-        /// <typeparam name="T">The type</typeparam>
+        /// <typeparam name="T">The type.</typeparam>
         /// <returns>IEnumerable{Type}.</returns>
         public IEnumerable<Type> GetExportTypes<T>()
         {
@@ -1022,7 +1022,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// Dirty hacks
+        /// Dirty hacks.
         /// </summary>
         private void SetStaticProperties()
         {
