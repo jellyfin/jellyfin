@@ -17,8 +17,8 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-x64 "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
 
 FROM jellyfin/ffmpeg:${FFMPEG_VERSION} as ffmpeg
+FROM debian:stretch-slim
 
-FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}
 COPY --from=ffmpeg /opt/ffmpeg /opt/ffmpeg
 COPY --from=builder /jellyfin /jellyfin
 COPY --from=web-builder /dist /jellyfin/jellyfin-web
@@ -38,9 +38,11 @@ RUN apt-get update \
  && ln -s /opt/ffmpeg/bin/ffmpeg /usr/local/bin \
  && ln -s /opt/ffmpeg/bin/ffprobe /usr/local/bin
 
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+
 EXPOSE 8096
 VOLUME /cache /config /media
-ENTRYPOINT dotnet /jellyfin/jellyfin.dll \
+ENTRYPOINT ./jellyfin/jellyfin \
     --datadir /config \
     --cachedir /cache \
     --ffmpeg /usr/local/bin/ffmpeg
