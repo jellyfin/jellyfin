@@ -13,7 +13,7 @@ Summary:        The Free Software Media Browser
 License:        GPLv2
 URL:            https://jellyfin.media
 Source0:        %{name}-%{version}.tar.gz
-Source1:        https://github.com/%{name}/%{name}-web/archive/%{name}-web-%{version}.tar.gz
+Source1:        https://github.com/%{name}/%{name}-web/archive/v%{version}.tar.gz
 Source11:       jellyfin.service
 Source12:       jellyfin.env
 Source13:       jellyfin.sudoers
