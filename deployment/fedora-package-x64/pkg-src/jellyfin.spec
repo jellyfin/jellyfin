@@ -12,7 +12,9 @@ Release:        1%{?dist}
 Summary:        The Free Software Media Browser
 License:        GPLv2
 URL:            https://jellyfin.media
-Source0:        %{name}-%{version}.tar.gz
+# Jellyfin Server tarball created by `make -f .copr/Makefile srpm`, real URL ends with `v%{version}.tar.gz`
+Source0:        https://github.com/%{name}/%{name}/archive/%{name}-%{version}.tar.gz
+# Jellyfin Webinterface downloaded by `make -f .copr/Makefile srpm`, real URL ends with `v%{version}.tar.gz`
 Source1:        https://github.com/%{name}/%{name}-web/archive/%{name}-web-%{version}.tar.gz
 Source11:       jellyfin.service
 Source12:       jellyfin.env
@@ -39,9 +41,6 @@ Requires:       libcurl, fontconfig, freetype, openssl, glibc libicu
 BuildRequires:  dotnet-runtime-2.2, dotnet-sdk-2.2
 # RPMfusion free
 Requires:       ffmpeg
-
-# Fedora has openssl1.1 which is incompatible with dotnet 
-%{?fedora:Requires: compat-openssl10}
 
 # Disable Automatic Dependency Processing
 AutoReqProv:    no
