@@ -9,9 +9,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- We need at least C# 7.1 for async main-->
-    <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
