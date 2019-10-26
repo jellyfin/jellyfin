@@ -886,16 +886,14 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(ChapterManager);
 
             MediaEncoder = new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
-                LoggerFactory,
-                JsonSerializer,
-                StartupOptions.FFmpegPath,
+                LoggerFactory.CreateLogger<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(),
                 ServerConfigurationManager,
                 FileSystemManager,
-                () => SubtitleEncoder,
-                () => MediaSourceManager,
                 ProcessFactory,
-                5000,
-                LocalizationManager);
+                LocalizationManager,
+                () => SubtitleEncoder,
+                _configuration,
+                StartupOptions.FFmpegPath);
             serviceCollection.AddSingleton(MediaEncoder);
 
             EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, LoggerFactory, MediaEncoder, ChapterManager, LibraryManager);
@@ -912,10 +910,19 @@ namespace Emby.Server.Implementations
             AuthService = new AuthService(authContext, ServerConfigurationManager, SessionManager, NetworkManager);
             serviceCollection.AddSingleton(AuthService);
 
-            SubtitleEncoder = new MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder(LibraryManager, LoggerFactory, ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, ProcessFactory);
+            SubtitleEncoder = new MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder(
+                LibraryManager,
+                LoggerFactory.CreateLogger<MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>(),
+                ApplicationPaths,
+                FileSystemManager,
+                MediaEncoder,
+                HttpClient,
+                MediaSourceManager,
+                ProcessFactory);
             serviceCollection.AddSingleton(SubtitleEncoder);
 
             serviceCollection.AddSingleton(typeof(IResourceFileManager), typeof(ResourceFileManager));
+            serviceCollection.AddSingleton<EncodingHelper>();
 
             _displayPreferencesRepository.Initialize();
 

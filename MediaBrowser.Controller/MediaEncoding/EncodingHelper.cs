@@ -12,6 +12,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Configuration;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -22,6 +23,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IFileSystem _fileSystem;
         private readonly ISubtitleEncoder _subtitleEncoder;
+        private readonly IConfiguration _configuration;
 
         private static readonly string[] _videoProfiles = new[]
         {
@@ -34,11 +36,16 @@ namespace MediaBrowser.Controller.MediaEncoding
             "ConstrainedHigh"
         };
 
-        public EncodingHelper(IMediaEncoder mediaEncoder, IFileSystem fileSystem, ISubtitleEncoder subtitleEncoder)
+        public EncodingHelper(
+            IMediaEncoder mediaEncoder,
+            IFileSystem fileSystem,
+            ISubtitleEncoder subtitleEncoder,
+            IConfiguration configuration)
         {
             _mediaEncoder = mediaEncoder;
             _fileSystem = fileSystem;
             _subtitleEncoder = subtitleEncoder;
+            _configuration = configuration;
         }
 
         public string GetH264Encoder(EncodingJobInfo state, EncodingOptions encodingOptions)
@@ -172,7 +179,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return string.Empty;
         }
 
-        public string GetInputFormat(string container)
+        public static string GetInputFormat(string container)
         {
             if (string.IsNullOrEmpty(container))
             {
@@ -641,7 +648,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (!string.IsNullOrEmpty(state.SubtitleStream.Language))
                 {
-                    var charenc = _subtitleEncoder.GetSubtitleFileCharacterSet(subtitlePath, state.SubtitleStream.Language, state.MediaSource.Protocol, CancellationToken.None).Result;
+                    var charenc = _subtitleEncoder.GetSubtitleFileCharacterSet(
+                        subtitlePath,
+                        state.SubtitleStream.Language,
+                        state.MediaSource.Protocol,
+                        CancellationToken.None).GetAwaiter().GetResult();
 
                     if (!string.IsNullOrEmpty(charenc))
                     {
@@ -1897,7 +1908,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // If transcoding from 10 bit, transform colour spaces too
                 if (!string.IsNullOrEmpty(videoStream.PixelFormat)
                     && videoStream.PixelFormat.IndexOf("p10", StringComparison.OrdinalIgnoreCase) != -1
-                    && string.Equals(outputVideoCodec,"libx264", StringComparison.OrdinalIgnoreCase))
+                    && string.Equals(outputVideoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
                 {
                     filters.Add("format=p010le");
                     filters.Add("format=nv12");
@@ -1946,7 +1957,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var output = string.Empty;
 
-            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
+            if (state.SubtitleStream != null
+                && state.SubtitleStream.IsTextSubtitleStream
+                && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
             {
                 var subParam = GetTextSubtitleParam(state);
 
@@ -2035,11 +2048,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        public static string GetProbeSizeArgument(int numInputFiles)
-            => numInputFiles > 1 ? "-probesize 1G" : "";
+        public string GetProbeSizeArgument(int numInputFiles)
+            => numInputFiles > 1 ? "-probesize " + _configuration["FFmpeg:probesize"] : string.Empty;
 
-        public static string GetAnalyzeDurationArgument(int numInputFiles)
-            => numInputFiles > 1 ? "-analyzeduration 200M" : "";
+        public string GetAnalyzeDurationArgument(int numInputFiles)
+            => numInputFiles > 1 ? "-analyzeduration " + _configuration["FFmpeg:analyzeduration"] : string.Empty;
 
         public string GetInputModifier(EncodingJobInfo state, EncodingOptions encodingOptions)
         {

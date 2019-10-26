@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Security;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -132,6 +133,10 @@ namespace Jellyfin.Server
                 Assembly.GetEntryAssembly().GetName().Version.ToString(3));
 
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
+
+            // Make sure we have all the code pages we can get
+            // Ref: https://docs.microsoft.com/en-us/dotnet/api/system.text.codepagesencodingprovider.instance?view=netcore-3.0#remarks
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             // Increase the max http request limit
             // The default connection limit is 10 for ASP.NET hosted applications and 2 for all others.
@@ -369,9 +374,9 @@ namespace Jellyfin.Server
 
             return new ConfigurationBuilder()
                 .SetBasePath(appPaths.ConfigurationDirectoryPath)
+                .AddInMemoryCollection(ConfigurationOptions.Configuration)
                 .AddJsonFile("logging.json", false, true)
                 .AddEnvironmentVariables("JELLYFIN_")
-                .AddInMemoryCollection(ConfigurationOptions.Configuration)
                 .Build();
         }
 

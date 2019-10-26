@@ -26,6 +26,34 @@ namespace MediaBrowser.Api.Playback.Hls
     [Authenticated]
     public class VideoHlsService : BaseHlsService
     {
+        public VideoHlsService(
+            IServerConfigurationManager serverConfig,
+            IUserManager userManager,
+            ILibraryManager libraryManager,
+            IIsoManager isoManager,
+            IMediaEncoder mediaEncoder,
+            IFileSystem fileSystem,
+            IDlnaManager dlnaManager,
+            IDeviceManager deviceManager,
+            IMediaSourceManager mediaSourceManager,
+            IJsonSerializer jsonSerializer,
+            IAuthorizationContext authorizationContext,
+            EncodingHelper encodingHelper)
+                : base(serverConfig,
+                    userManager,
+                    libraryManager,
+                    isoManager,
+                    mediaEncoder,
+                    fileSystem,
+                    dlnaManager,
+                    deviceManager,
+                    mediaSourceManager,
+                    jsonSerializer,
+                    authorizationContext,
+                    encodingHelper)
+        {
+        }
+
         public Task<object> Get(GetLiveHlsStream request)
         {
             return ProcessRequestAsync(request, true);
@@ -134,34 +162,6 @@ namespace MediaBrowser.Api.Playback.Hls
             args += EncodingHelper.GetOutputFFlags(state);
 
             return args;
-        }
-
-        public VideoHlsService(
-            IServerConfigurationManager serverConfig,
-            IUserManager userManager,
-            ILibraryManager libraryManager,
-            IIsoManager isoManager,
-            IMediaEncoder mediaEncoder,
-            IFileSystem fileSystem,
-            IDlnaManager dlnaManager,
-            ISubtitleEncoder subtitleEncoder,
-            IDeviceManager deviceManager,
-            IMediaSourceManager mediaSourceManager,
-            IJsonSerializer jsonSerializer,
-            IAuthorizationContext authorizationContext)
-                : base(serverConfig,
-                    userManager,
-                    libraryManager,
-                    isoManager,
-                    mediaEncoder,
-                    fileSystem,
-                    dlnaManager,
-                    subtitleEncoder,
-                    deviceManager,
-                    mediaSourceManager,
-                    jsonSerializer,
-                    authorizationContext)
-        {
         }
     }
 }

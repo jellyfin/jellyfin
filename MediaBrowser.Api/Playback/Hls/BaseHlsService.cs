@@ -25,6 +25,34 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {
+        public BaseHlsService(
+            IServerConfigurationManager serverConfig,
+            IUserManager userManager,
+            ILibraryManager libraryManager,
+            IIsoManager isoManager,
+            IMediaEncoder mediaEncoder,
+            IFileSystem fileSystem,
+            IDlnaManager dlnaManager,
+            IDeviceManager deviceManager,
+            IMediaSourceManager mediaSourceManager,
+            IJsonSerializer jsonSerializer,
+            IAuthorizationContext authorizationContext,
+            EncodingHelper encodingHelper)
+                : base(serverConfig,
+                    userManager,
+                    libraryManager,
+                    isoManager,
+                    mediaEncoder,
+                    fileSystem,
+                    dlnaManager,
+                    deviceManager,
+                    mediaSourceManager,
+                    jsonSerializer,
+                    authorizationContext,
+                    encodingHelper)
+        {
+        }
+
         /// <summary>
         /// Gets the audio arguments.
         /// </summary>
@@ -312,34 +340,6 @@ namespace MediaBrowser.Api.Playback.Hls
         protected virtual int GetStartNumber(StreamState state)
         {
             return 0;
-        }
-
-        public BaseHlsService(
-            IServerConfigurationManager serverConfig,
-            IUserManager userManager,
-            ILibraryManager libraryManager,
-            IIsoManager isoManager,
-            IMediaEncoder mediaEncoder,
-            IFileSystem fileSystem,
-            IDlnaManager dlnaManager,
-            ISubtitleEncoder subtitleEncoder,
-            IDeviceManager deviceManager,
-            IMediaSourceManager mediaSourceManager,
-            IJsonSerializer jsonSerializer,
-            IAuthorizationContext authorizationContext)
-                : base(serverConfig,
-                    userManager,
-                    libraryManager,
-                    isoManager,
-                    mediaEncoder,
-                    fileSystem,
-                    dlnaManager,
-                    subtitleEncoder,
-                    deviceManager,
-                    mediaSourceManager,
-                    jsonSerializer,
-                    authorizationContext)
-        {
         }
     }
 }

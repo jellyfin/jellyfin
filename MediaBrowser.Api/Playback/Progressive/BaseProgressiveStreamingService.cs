@@ -35,23 +35,24 @@ namespace MediaBrowser.Api.Playback.Progressive
             IMediaEncoder mediaEncoder,
             IFileSystem fileSystem,
             IDlnaManager dlnaManager,
-            ISubtitleEncoder subtitleEncoder,
             IDeviceManager deviceManager,
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
-            IAuthorizationContext authorizationContext)
-            : base(serverConfig,
+            IAuthorizationContext authorizationContext,
+            EncodingHelper encodingHelper)
+            : base(
+                serverConfig,
                 userManager,
                 libraryManager,
                 isoManager,
                 mediaEncoder,
                 fileSystem,
                 dlnaManager,
-                subtitleEncoder,
                 deviceManager,
                 mediaSourceManager,
                 jsonSerializer,
-                authorizationContext)
+                authorizationContext,
+                encodingHelper)
         {
             HttpClient = httpClient;
         }

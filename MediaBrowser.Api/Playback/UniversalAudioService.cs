@@ -9,7 +9,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
@@ -75,6 +74,9 @@ namespace MediaBrowser.Api.Playback
     [Authenticated]
     public class UniversalAudioService : BaseApiService
     {
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly EncodingHelper _encodingHelper;
+
         public UniversalAudioService(
             IHttpClient httpClient,
             IServerConfigurationManager serverConfigurationManager,
@@ -85,14 +87,12 @@ namespace MediaBrowser.Api.Playback
             IFileSystem fileSystem,
             IDlnaManager dlnaManager,
             IDeviceManager deviceManager,
-            ISubtitleEncoder subtitleEncoder,
             IMediaSourceManager mediaSourceManager,
-            IZipClient zipClient,
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext,
-            IImageProcessor imageProcessor,
             INetworkManager networkManager,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            EncodingHelper encodingHelper)
         {
             HttpClient = httpClient;
             ServerConfigurationManager = serverConfigurationManager;
@@ -103,15 +103,12 @@ namespace MediaBrowser.Api.Playback
             FileSystem = fileSystem;
             DlnaManager = dlnaManager;
             DeviceManager = deviceManager;
-            SubtitleEncoder = subtitleEncoder;
             MediaSourceManager = mediaSourceManager;
-            ZipClient = zipClient;
             JsonSerializer = jsonSerializer;
             AuthorizationContext = authorizationContext;
-            ImageProcessor = imageProcessor;
             NetworkManager = networkManager;
             _loggerFactory = loggerFactory;
-            _logger = loggerFactory.CreateLogger(nameof(UniversalAudioService));
+            _encodingHelper = encodingHelper;
         }
 
         protected IHttpClient HttpClient { get; private set; }
@@ -123,15 +120,10 @@ namespace MediaBrowser.Api.Playback
         protected IFileSystem FileSystem { get; private set; }
         protected IDlnaManager DlnaManager { get; private set; }
         protected IDeviceManager DeviceManager { get; private set; }
-        protected ISubtitleEncoder SubtitleEncoder { get; private set; }
         protected IMediaSourceManager MediaSourceManager { get; private set; }
-        protected IZipClient ZipClient { get; private set; }
         protected IJsonSerializer JsonSerializer { get; private set; }
         protected IAuthorizationContext AuthorizationContext { get; private set; }
-        protected IImageProcessor ImageProcessor { get; private set; }
         protected INetworkManager NetworkManager { get; private set; }
-        private ILoggerFactory _loggerFactory;
-        private ILogger _logger;
 
         public Task<object> Get(GetUniversalAudioStream request)
         {
@@ -242,7 +234,17 @@ namespace MediaBrowser.Api.Playback
 
             AuthorizationContext.GetAuthorizationInfo(Request).DeviceId = request.DeviceId;
 
-            var mediaInfoService = new MediaInfoService(MediaSourceManager, DeviceManager, LibraryManager, ServerConfigurationManager, NetworkManager, MediaEncoder, UserManager, JsonSerializer, AuthorizationContext, _loggerFactory)
+            var mediaInfoService = new MediaInfoService(
+                MediaSourceManager,
+                DeviceManager,
+                LibraryManager,
+                ServerConfigurationManager,
+                NetworkManager,
+                MediaEncoder,
+                UserManager,
+                JsonSerializer,
+                AuthorizationContext,
+                _loggerFactory)
             {
                 Request = Request
             };
@@ -276,19 +278,20 @@ namespace MediaBrowser.Api.Playback
 
             if (!isStatic && string.Equals(mediaSource.TranscodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
             {
-                var service = new DynamicHlsService(ServerConfigurationManager,
-                  UserManager,
-                  LibraryManager,
-                  IsoManager,
-                  MediaEncoder,
-                  FileSystem,
-                  DlnaManager,
-                  SubtitleEncoder,
-                  DeviceManager,
-                  MediaSourceManager,
-                  JsonSerializer,
-                  AuthorizationContext,
-                  NetworkManager)
+                var service = new DynamicHlsService(
+                    ServerConfigurationManager,
+                    UserManager,
+                    LibraryManager,
+                    IsoManager,
+                    MediaEncoder,
+                    FileSystem,
+                    DlnaManager,
+                    DeviceManager,
+                    MediaSourceManager,
+                    JsonSerializer,
+                    AuthorizationContext,
+                    NetworkManager,
+                    _encodingHelper)
                 {
                     Request = Request
                 };
@@ -330,11 +333,11 @@ namespace MediaBrowser.Api.Playback
                     MediaEncoder,
                     FileSystem,
                     DlnaManager,
-                    SubtitleEncoder,
                     DeviceManager,
                     MediaSourceManager,
                     JsonSerializer,
-                    AuthorizationContext)
+                    AuthorizationContext,
+                    _encodingHelper)
                 {
                     Request = Request
                 };

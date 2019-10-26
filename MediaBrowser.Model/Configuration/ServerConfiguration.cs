@@ -231,7 +231,6 @@ namespace MediaBrowser.Model.Configuration
             LocalNetworkSubnets = Array.Empty<string>();
             LocalNetworkAddresses = Array.Empty<string>();
             CodecsUsed = Array.Empty<string>();
-            ImageExtractionTimeoutMs = 0;
             PathSubstitutions = Array.Empty<PathSubstitution>();
             IgnoreVirtualInterfaces = false;
             EnableSimpleArtistDetection = true;

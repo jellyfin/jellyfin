@@ -69,8 +69,6 @@ namespace MediaBrowser.Api.Playback
 
         protected IDeviceManager DeviceManager { get; private set; }
 
-        protected ISubtitleEncoder SubtitleEncoder { get; private set; }
-
         protected IMediaSourceManager MediaSourceManager { get; private set; }
 
         protected IJsonSerializer JsonSerializer { get; private set; }
@@ -96,11 +94,11 @@ namespace MediaBrowser.Api.Playback
             IMediaEncoder mediaEncoder,
             IFileSystem fileSystem,
             IDlnaManager dlnaManager,
-            ISubtitleEncoder subtitleEncoder,
             IDeviceManager deviceManager,
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
-            IAuthorizationContext authorizationContext)
+            IAuthorizationContext authorizationContext,
+            EncodingHelper encodingHelper)
         {
             ServerConfigurationManager = serverConfig;
             UserManager = userManager;
@@ -109,13 +107,12 @@ namespace MediaBrowser.Api.Playback
             MediaEncoder = mediaEncoder;
             FileSystem = fileSystem;
             DlnaManager = dlnaManager;
-            SubtitleEncoder = subtitleEncoder;
             DeviceManager = deviceManager;
             MediaSourceManager = mediaSourceManager;
             JsonSerializer = jsonSerializer;
             AuthorizationContext = authorizationContext;
 
-            EncodingHelper = new EncodingHelper(MediaEncoder, FileSystem, SubtitleEncoder);
+            EncodingHelper = encodingHelper;
         }
 
         /// <summary>
@@ -151,8 +148,6 @@ namespace MediaBrowser.Api.Playback
 
             return Path.Combine(folder, filename + ext);
         }
-
-        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         protected virtual string GetDefaultEncoderPreset()
         {
