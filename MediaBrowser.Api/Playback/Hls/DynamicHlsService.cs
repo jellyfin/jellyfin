@@ -504,6 +504,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             continue; // avoid unnecessary waiting if segment just became available
                         }
                     }
+
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
 
@@ -923,7 +924,8 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             else
             {
-                var keyFrameArg = string.Format(CultureInfo.InvariantCulture,
+                var keyFrameArg = string.Format(
+                    CultureInfo.InvariantCulture,
                     " -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
                     GetStartNumber(state) * state.SegmentLength,
                     state.SegmentLength);
@@ -934,7 +936,8 @@ namespace MediaBrowser.Api.Playback.Hls
                     // Example: we encoded half of desired length, then codec detected
                     // scene cut and inserted a keyframe; next forced keyframe would
                     // be created outside of segment, which breaks seeking.
-                    keyFrameArg += string.Format(CultureInfo.InvariantCulture,
+                    keyFrameArg += string.Format(
+                        CultureInfo.InvariantCulture,
                         " -g {0} -keyint_min {0}",
                         (int)(state.SegmentLength * state.TargetFramerate)
                     );
