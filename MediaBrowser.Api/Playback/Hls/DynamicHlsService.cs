@@ -508,7 +508,6 @@ namespace MediaBrowser.Api.Playback.Hls
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
 
-                cancellationToken.ThrowIfCancellationRequested();
                 if (!File.Exists(segmentPath))
                 {
                     Logger.LogWarning("cannot serve {0} as transcoding quit before we got there", segmentPath);
@@ -517,6 +516,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     Logger.LogDebug("serving {0} as it's on disk and transcoding stopped", segmentPath);
                 }
+                cancellationToken.ThrowIfCancellationRequested();
             }
             else
             {
