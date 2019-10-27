@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Providers;
@@ -8,7 +9,6 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
@@ -39,7 +39,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <value>The name of the TMDB collection.</value>
         public string TmdbCollectionName { get; set; }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string CollectionName
         {
             get => TmdbCollectionName;
@@ -186,7 +186,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return list;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool StopRefreshIfLocalMetadataFound => false;
     }
 }

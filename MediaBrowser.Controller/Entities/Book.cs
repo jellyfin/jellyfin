@@ -1,21 +1,21 @@
 using System;
 using System.Linq;
+using System.Text.Json.Serialization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
     public class Book : BaseItem, IHasLookupInfo<BookInfo>, IHasSeries
     {
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string MediaType => Model.Entities.MediaType.Book;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string SeriesPresentationUniqueKey { get; set; }
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string SeriesName { get; set; }
-        [IgnoreDataMember]
+        [JsonIgnore]
         public Guid SeriesId { get; set; }
 
         public string FindSeriesSortName()

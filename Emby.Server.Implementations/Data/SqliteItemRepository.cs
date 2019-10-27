@@ -5,8 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using Emby.Server.Implementations.Playlists;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -38,14 +41,6 @@ namespace Emby.Server.Implementations.Data
     {
         private const string ChaptersTableName = "Chapters2";
 
-        private readonly TypeMapper _typeMapper;
-
-        /// <summary>
-        /// Gets the json serializer.
-        /// </summary>
-        /// <value>The json serializer.</value>
-        private readonly IJsonSerializer _jsonSerializer;
-
         /// <summary>
         /// The _app paths
         /// </summary>
@@ -53,32 +48,30 @@ namespace Emby.Server.Implementations.Data
         private readonly IServerApplicationHost _appHost;
         private readonly ILocalizationManager _localization;
 
+        private readonly TypeMapper _typeMapper;
+        private readonly JsonSerializerOptions _jsonOptions;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
         public SqliteItemRepository(
             IServerConfigurationManager config,
             IServerApplicationHost appHost,
-            IJsonSerializer jsonSerializer,
-            ILoggerFactory loggerFactory,
+            ILogger<SqliteItemRepository> logger,
             ILocalizationManager localization)
-            : base(loggerFactory.CreateLogger(nameof(SqliteItemRepository)))
+            : base(logger)
         {
             if (config == null)
             {
                 throw new ArgumentNullException(nameof(config));
             }
 
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException(nameof(jsonSerializer));
-            }
-
-            _appHost = appHost;
             _config = config;
-            _jsonSerializer = jsonSerializer;
-            _typeMapper = new TypeMapper();
+            _appHost = appHost;
             _localization = localization;
+
+            _typeMapper = new TypeMapper();
+            _jsonOptions = JsonDefaults.GetOptions();
 
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
         }
@@ -671,7 +664,7 @@ namespace Emby.Server.Implementations.Data
 
             if (TypeRequiresDeserialization(item.GetType()))
             {
-                saveItemStatement.TryBind("@data", _jsonSerializer.SerializeToBytes(item));
+                saveItemStatement.TryBind("@data", JsonSerializer.SerializeToUtf8Bytes(item, _jsonOptions));
             }
             else
             {
@@ -1302,11 +1295,11 @@ namespace Emby.Server.Implementations.Data
             {
                 try
                 {
-                    item = _jsonSerializer.DeserializeFromString(reader.GetString(1), type) as BaseItem;
+                    item = JsonSerializer.Deserialize(reader[1].ToBlob(), type, _jsonOptions) as BaseItem;
                 }
-                catch (SerializationException ex)
+                catch (JsonException ex)
                 {
-                    Logger.LogError(ex, "Error deserializing item");
+                    Logger.LogError(ex, "Error deserializing item with JSON: {Data}", reader.GetString(1));
                 }
             }
 
@@ -2724,7 +2717,7 @@ namespace Emby.Server.Implementations.Data
 
             if (elapsed >= SlowThreshold)
             {
-                Logger.LogWarning(
+                Logger.LogDebug(
                     "{Method} query time (slow): {ElapsedMs}ms. Query: {Query}",
                     methodName,
                     elapsed,

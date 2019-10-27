@@ -10,6 +10,7 @@ namespace MediaBrowser.Model.Configuration
     {
         public const int DefaultHttpPort = 8096;
         public const int DefaultHttpsPort = 8920;
+        private string _baseUrl;
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable u pn p].
@@ -162,7 +163,33 @@ namespace MediaBrowser.Model.Configuration
         public bool SkipDeserializationForBasicTypes { get; set; }
 
         public string ServerName { get; set; }
-        public string BaseUrl { get; set; }
+        public string BaseUrl
+        {
+            get => _baseUrl;
+            set
+            {
+                // Normalize the start of the string
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    // If baseUrl is empty, set an empty prefix string
+                    value = string.Empty;
+                }
+                else if (!value.StartsWith("/"))
+                {
+                    // If baseUrl was not configured with a leading slash, append one for consistency
+                    value = "/" + value;
+                }
+
+                // Normalize the end of the string
+                if (value.EndsWith("/"))
+                {
+                    // If baseUrl was configured with a trailing slash, remove it for consistency
+                    value = value.Remove(value.Length - 1);
+                }
+
+                _baseUrl = value;
+            }
+        }
 
         public string UICulture { get; set; }
 
@@ -243,7 +270,7 @@ namespace MediaBrowser.Model.Configuration
             SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
             SortRemoveWords = new[] { "the", "a", "an" };
 
-            BaseUrl = "jellyfin";
+            BaseUrl = string.Empty;
             UICulture = "en-US";
 
             MetadataOptions = new[]

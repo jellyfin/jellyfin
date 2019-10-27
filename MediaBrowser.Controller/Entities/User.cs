@@ -1,12 +1,12 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Entities
         public string Password { get; set; }
         public string EasyPassword { get; set; }
 
-        // Strictly to remove IgnoreDataMember
+        // Strictly to remove JsonIgnore
         public override ItemImageInfo[] ImageInfos
         {
             get => base.ImageInfos;
@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string Path
         {
             get => ConfigurationDirectoryPath;
@@ -65,14 +65,14 @@ namespace MediaBrowser.Controller.Entities
         /// If the item is a folder, it returns the folder itself
         /// </summary>
         /// <value>The containing folder path.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string ContainingFolderPath => Path;
 
         /// <summary>
         /// Gets the root folder.
         /// </summary>
         /// <value>The root folder.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public Folder RootFolder => LibraryManager.GetUserRootFolder();
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace MediaBrowser.Controller.Entities
 
         private volatile UserConfiguration _config;
         private readonly object _configSyncLock = new object();
-        [IgnoreDataMember]
+        [JsonIgnore]
         public UserConfiguration Configuration
         {
             get
@@ -111,7 +111,7 @@ namespace MediaBrowser.Controller.Entities
 
         private volatile UserPolicy _policy;
         private readonly object _policySyncLock = new object();
-        [IgnoreDataMember]
+        [JsonIgnore]
         public UserPolicy Policy
         {
             get
@@ -168,7 +168,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the path to the user's configuration directory
         /// </summary>
         /// <value>The configuration directory path.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string ConfigurationDirectoryPath => GetConfigurationDirectoryPath(Name);
 
         public override double GetDefaultPrimaryImageAspectRatio()
@@ -252,7 +252,7 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => false;
 
         public long InternalId { get; set; }

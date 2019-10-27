@@ -17,39 +17,50 @@ using TagLib.IFD.Tags;
 
 namespace Emby.Photos
 {
+    /// <summary>
+    /// Metadata provider for photos.
+    /// </summary>
     public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IHasItemChangeMonitor
     {
         private readonly ILogger _logger;
         private readonly IImageProcessor _imageProcessor;
 
         // These are causing taglib to hang
-        private string[] _includextensions = new string[] { ".jpg", ".jpeg", ".png", ".tiff", ".cr2" };
+        private readonly string[] _includeExtensions = new string[] { ".jpg", ".jpeg", ".png", ".tiff", ".cr2" };
 
-        public PhotoProvider(ILogger logger, IImageProcessor imageProcessor)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PhotoProvider" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="imageProcessor">The image processor.</param>
+        public PhotoProvider(ILogger<PhotoProvider> logger, IImageProcessor imageProcessor)
         {
             _logger = logger;
             _imageProcessor = imageProcessor;
         }
 
+        /// <inheritdoc />
         public string Name => "Embedded Information";
 
+        /// <inheritdoc />
         public bool HasChanged(BaseItem item, IDirectoryService directoryService)
         {
             if (item.IsFileProtocol)
             {
                 var file = directoryService.GetFile(item.Path);
-                return (file != null && file.LastWriteTimeUtc != item.DateModified);
+                return file != null && file.LastWriteTimeUtc != item.DateModified;
             }
 
             return false;
         }
 
+        /// <inheritdoc />
         public Task<ItemUpdateType> FetchAsync(Photo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             item.SetImagePath(ImageType.Primary, item.Path);
 
             // Examples: https://github.com/mono/taglib-sharp/blob/a5f6949a53d09ce63ee7495580d6802921a21f14/tests/fixtures/TagLib.Tests.Images/NullOrientationTest.cs
-            if (_includextensions.Contains(Path.GetExtension(item.Path), StringComparer.OrdinalIgnoreCase))
+            if (_includeExtensions.Contains(Path.GetExtension(item.Path), StringComparer.OrdinalIgnoreCase))
             {
                 try
                 {
@@ -88,14 +99,7 @@ namespace Emby.Photos
                             item.Height = image.Properties.PhotoHeight;
 
                             var rating = image.ImageTag.Rating;
-                            if (rating.HasValue)
-                            {
-                                item.CommunityRating = rating;
-                            }
-                            else
-                            {
-                                item.CommunityRating = null;
-                            }
+                            item.CommunityRating = rating.HasValue ? rating : null;
 
                             item.Overview = image.ImageTag.Comment;
 

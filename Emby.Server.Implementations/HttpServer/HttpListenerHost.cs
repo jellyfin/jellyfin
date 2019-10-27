@@ -39,6 +39,7 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly IHttpListener _socketListener;
         private readonly Func<Type, Func<string, object>> _funcParseFn;
         private readonly string _defaultRedirectPath;
+        private readonly string _baseUrlPrefix;
         private readonly Dictionary<Type, Type> ServiceOperationsMap = new Dictionary<Type, Type>();
         private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
         private readonly List<IWebSocketConnection> _webSocketConnections = new List<IWebSocketConnection>();
@@ -58,6 +59,7 @@ namespace Emby.Server.Implementations.HttpServer
             _logger = logger;
             _config = config;
             _defaultRedirectPath = configuration["HttpListenerHost:DefaultRedirectPath"];
+            _baseUrlPrefix = _config.Configuration.BaseUrl;
             _networkManager = networkManager;
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
@@ -85,6 +87,20 @@ namespace Emby.Server.Implementations.HttpServer
         public object CreateInstance(Type type)
         {
             return _appHost.CreateInstance(type);
+        }
+
+        private static string NormalizeUrlPath(string path)
+        {
+            if (path.StartsWith("/"))
+            {
+                // If the path begins with a leading slash, just return it as-is
+                return path;
+            }
+            else
+            {
+                // If the path does not begin with a leading slash, append one for consistency
+                return "/" + path;
+            }
         }
 
         /// <summary>
@@ -208,7 +224,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace, bool logExceptionMessage)
+        private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace)
         {
             try
             {
@@ -218,9 +234,9 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     _logger.LogError(ex, "Error processing request");
                 }
-                else if (logExceptionMessage)
+                else
                 {
-                    _logger.LogError(ex.Message);
+                    _logger.LogError("Error processing request: {Message}", ex.Message);
                 }
 
                 var httpRes = httpReq.Response;
@@ -233,8 +249,10 @@ namespace Emby.Server.Implementations.HttpServer
                 var statusCode = GetStatusCode(ex);
                 httpRes.StatusCode = statusCode;
 
-                httpRes.ContentType = "text/html";
-                await httpRes.WriteAsync(NormalizeExceptionMessage(ex.Message)).ConfigureAwait(false);
+                var errContent = NormalizeExceptionMessage(ex.Message);
+                httpRes.ContentType = "text/plain";
+                httpRes.ContentLength = errContent.Length;
+                await httpRes.WriteAsync(errContent).ConfigureAwait(false);
             }
             catch (Exception errorEx)
             {
@@ -471,22 +489,15 @@ namespace Emby.Server.Implementations.HttpServer
 
                 urlToLog = GetUrlToLog(urlString);
 
-                if (string.Equals(localPath, "/" + _config.Configuration.BaseUrl + "/", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(localPath, "/" + _config.Configuration.BaseUrl, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(localPath, _baseUrlPrefix + "/", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(localPath, _baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase)
+                    || string.IsNullOrEmpty(localPath)
+                    || !localPath.StartsWith(_baseUrlPrefix))
                 {
-                    httpRes.Redirect("/" + _config.Configuration.BaseUrl + "/" + _defaultRedirectPath);
-                    return;
-                }
-
-                if (string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase))
-                {
-                    httpRes.Redirect(_defaultRedirectPath);
-                    return;
-                }
-
-                if (string.IsNullOrEmpty(localPath))
-                {
-                    httpRes.Redirect("/" + _defaultRedirectPath);
+                    // Always redirect back to the default path if the base prefix is invalid or missing
+                    _logger.LogDebug("Normalizing a URL at {0}", localPath);
+                    httpRes.Redirect(_baseUrlPrefix + "/" + _defaultRedirectPath);
                     return;
                 }
 
@@ -509,22 +520,22 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 else
                 {
-                    await ErrorHandler(new FileNotFoundException(), httpReq, false, false).ConfigureAwait(false);
+                    await ErrorHandler(new FileNotFoundException(), httpReq, false).ConfigureAwait(false);
                 }
             }
             catch (Exception ex) when (ex is SocketException || ex is IOException || ex is OperationCanceledException)
             {
-                await ErrorHandler(ex, httpReq, false, false).ConfigureAwait(false);
+                await ErrorHandler(ex, httpReq, false).ConfigureAwait(false);
             }
             catch (SecurityException ex)
             {
-                await ErrorHandler(ex, httpReq, false, true).ConfigureAwait(false);
+                await ErrorHandler(ex, httpReq, false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 var logException = !string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase);
 
-                await ErrorHandler(ex, httpReq, logException, false).ConfigureAwait(false);
+                await ErrorHandler(ex, httpReq, logException).ConfigureAwait(false);
             }
             finally
             {
@@ -596,7 +607,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             foreach (var route in clone)
             {
-                routes.Add(new RouteAttribute(NormalizeCustomRoutePath(_config.Configuration.BaseUrl, route.Path), route.Verbs)
+                routes.Add(new RouteAttribute(NormalizeCustomRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,
@@ -651,36 +662,22 @@ namespace Emby.Server.Implementations.HttpServer
             return _socketListener.ProcessWebSocketRequest(context);
         }
 
-        // this method was left for compatibility with third party clients
-        private static string NormalizeEmbyRoutePath(string path)
+        private string NormalizeEmbyRoutePath(string path)
         {
-            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
-            {
-                return "/emby" + path;
-            }
-
-            return "emby/" + path;
+            _logger.LogDebug("Normalizing /emby route");
+            return _baseUrlPrefix + "/emby" + NormalizeUrlPath(path);
         }
 
-        // this method was left for compatibility with third party clients
-        private static string NormalizeMediaBrowserRoutePath(string path)
+        private string NormalizeMediaBrowserRoutePath(string path)
         {
-            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
-            {
-                return "/mediabrowser" + path;
-            }
-
-            return "mediabrowser/" + path;
+            _logger.LogDebug("Normalizing /mediabrowser route");
+            return _baseUrlPrefix + "/mediabrowser" + NormalizeUrlPath(path);
         }
 
-        private static string NormalizeCustomRoutePath(string baseUrl, string path)
+        private string NormalizeCustomRoutePath(string path)
         {
-            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
-            {
-                return "/" + baseUrl + path;
-            }
-
-            return baseUrl + "/" + path;
+            _logger.LogDebug("Normalizing custom route {0}", path);
+            return _baseUrlPrefix + NormalizeUrlPath(path);
         }
 
         /// <inheritdoc />

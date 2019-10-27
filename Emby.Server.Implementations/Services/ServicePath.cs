@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Emby.Server.Implementations.Services
 {
@@ -27,6 +28,13 @@ namespace Emby.Server.Implementations.Services
 
         private readonly bool[] isWildcard;
         private readonly int wildcardCount = 0;
+
+        internal static string[] IgnoreAttributesNamed = new[]
+        {
+            nameof(JsonIgnoreAttribute)
+        };
+
+        private static Type _excludeType = typeof(Stream);
 
         public int VariableArgsCount { get; set; }
 
@@ -190,21 +198,12 @@ namespace Emby.Server.Implementations.Services
                     StringComparer.OrdinalIgnoreCase);
         }
 
-        internal static string[] IgnoreAttributesNamed = new[]
-        {
-            "IgnoreDataMemberAttribute",
-            "JsonIgnoreAttribute"
-        };
-
-
-        private static Type excludeType = typeof(Stream);
-
         internal static IEnumerable<PropertyInfo> GetSerializableProperties(Type type)
         {
             foreach (var prop in GetPublicProperties(type))
             {
                 if (prop.GetMethod == null
-                    || excludeType == prop.PropertyType)
+                    || _excludeType == prop.PropertyType)
                 {
                     continue;
                 }
