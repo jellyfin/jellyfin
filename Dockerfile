@@ -29,7 +29,7 @@ COPY --from=web-builder /dist /jellyfin/jellyfin-web
 #   mesa-va-drivers: needed for VAAPI
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y \
-   libfontconfig1 libgomp1 libva-drm2 mesa-va-drivers \
+   libfontconfig1 libgomp1 libva-drm2 mesa-va-drivers openssl \
  && apt-get clean autoclean \
  && apt-get autoremove \
  && rm -rf /var/lib/apt/lists/* \
