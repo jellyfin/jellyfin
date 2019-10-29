@@ -8,17 +8,9 @@ set -o xtrace
 # Move to source directory
 pushd ${SOURCE_DIR}
 
-# Prepare the source
-source "$HOME/.nvm/nvm.sh"
-nvm use v8
+# Build RPM
 make -f .copr/Makefile srpm outdir=/root/rpmbuild/SRPMS
-
-# Remove dep for nodejs/yarn since our build env won't have these (NVM instead)
-sed -i '/BuildRequires:  nodejs >= 8 yarn/d' SPECS/jellyfin.spec
-
-# Build the RPMs
-rpmbuild -bs SPECS/jellyfin.spec --define "_sourcedir ${SOURCE_DIR}/SOURCES/pkg-src/"
-rpmbuild -bb SPECS/jellyfin.spec --define "_sourcedir ${SOURCE_DIR}/SOURCES/pkg-src/"
+rpmbuild --rebuild -bb /root/rpmbuild/SRPMS/jellyfin-*.src.rpm
 
 # Move the artifacts out
 mkdir -p ${ARTIFACT_DIR}/rpm
