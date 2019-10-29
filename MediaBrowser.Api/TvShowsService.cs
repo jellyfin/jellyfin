@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
@@ -381,13 +382,13 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("Series not found");
             }
 
-            var seasons = (series.GetItemList(new InternalItemsQuery(user)
+            var seasons = series.GetItemList(new InternalItemsQuery(user)
             {
                 IsMissing = request.IsMissing,
                 IsSpecialSeason = request.IsSpecialSeason,
                 AdjacentTo = request.AdjacentTo
 
-            }));
+            });
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
@@ -395,7 +396,7 @@ namespace MediaBrowser.Api
 
             return new QueryResult<BaseItemDto>
             {
-                TotalRecordCount = returnItems.Length,
+                TotalRecordCount = returnItems.Count,
                 Items = returnItems
             };
         }
@@ -470,7 +471,7 @@ namespace MediaBrowser.Api
 
             if (!string.IsNullOrWhiteSpace(request.StartItemId))
             {
-                episodes = episodes.SkipWhile(i => !string.Equals(i.Id.ToString("N"), request.StartItemId, StringComparison.OrdinalIgnoreCase)).ToList();
+                episodes = episodes.SkipWhile(i => !string.Equals(i.Id.ToString("N", CultureInfo.InvariantCulture), request.StartItemId, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
             // This must be the last filter

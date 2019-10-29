@@ -164,40 +164,6 @@ for target_platform in ${platform[@]}; do
     fi
 done
 
-if [[ ${web_branch} != 'local' ]]; then
-    # Initialize submodules
-    git submodule update --init --recursive
-
-    # configure branch
-    pushd MediaBrowser.WebDashboard/jellyfin-web
-
-    if ! git diff-index --quiet HEAD --; then
-        popd
-        echo
-        echo "ERROR: Your 'jellyfin-web' submodule working directory is not clean!"
-        echo "This script will overwrite your unstaged and unpushed changes."
-        echo "Please do development on 'jellyfin-web' outside of the submodule."
-        exit 1
-    fi
-
-    git fetch --all
-    # If this is an official branch name, fetch it from origin
-    official_branches_regex="^master$|^dev$|^release-.*$|^hotfix-.*$"
-    if [[ ${web_branch} =~ ${official_branches_regex} ]]; then
-        git checkout origin/${web_branch} || {
-            echo "ERROR: 'jellyfin-web' branch 'origin/${web_branch}' is invalid."
-            exit 1
-        }
-    # Otherwise, just check out the local branch (for testing, etc.)
-    else
-        git checkout ${web_branch} || {
-            echo "ERROR: 'jellyfin-web' branch '${web_branch}' is invalid."
-            exit 1
-        }
-    fi
-    popd
-fi
-
 # Execute each platform and action in order, if said action is enabled
 pushd deployment/
 for target_platform in ${platform[@]}; do
@@ -214,7 +180,7 @@ for target_platform in ${platform[@]}; do
     for target_action in ${action[@]}; do
         echo -e ">> Processing action ${target_action}"
         if [[ -f ${target_action}.sh && -x ${target_action}.sh ]]; then
-            ./${target_action}.sh
+            ./${target_action}.sh web_branch=${web_branch}
         fi
     done
     if [[ -d pkg-dist/ ]]; then

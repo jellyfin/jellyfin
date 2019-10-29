@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
@@ -81,17 +82,20 @@ namespace MediaBrowser.Model.Dlna
             //    flagValue = flagValue | DlnaFlags.TimeBasedSeek;
             //}
 
-            string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
-             DlnaMaps.FlagsToString(flagValue));
+            string dlnaflags = string.Format(
+                CultureInfo.InvariantCulture,
+                ";DLNA.ORG_FLAGS={0}",
+                DlnaMaps.FlagsToString(flagValue));
 
-            ResponseProfile mediaProfile = _profile.GetAudioMediaProfile(container,
+            ResponseProfile mediaProfile = _profile.GetAudioMediaProfile(
+                container,
                 audioCodec,
                 audioChannels,
                 audioBitrate,
                 audioSampleRate,
                 audioBitDepth);
 
-            string orgPn = mediaProfile == null ? null : mediaProfile.OrgPn;
+            string orgPn = mediaProfile?.OrgPn;
 
             if (string.IsNullOrEmpty(orgPn))
             {

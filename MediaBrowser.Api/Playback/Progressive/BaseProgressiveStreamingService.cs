@@ -77,7 +77,8 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 var videoCodec = state.VideoRequest.VideoCodec;
 
-                if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(videoCodec, "h265", StringComparison.OrdinalIgnoreCase))
                 {
                     return ".ts";
                 }
@@ -279,17 +280,23 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <param name="cancellationTokenSource">The cancellation token source.</param>
         /// <returns>Task{System.Object}.</returns>
-        private async Task<object> GetStaticRemoteStreamResult(StreamState state, Dictionary<string, string> responseHeaders, bool isHeadRequest, CancellationTokenSource cancellationTokenSource)
+        private async Task<object> GetStaticRemoteStreamResult(
+            StreamState state,
+            Dictionary<string, string> responseHeaders,
+            bool isHeadRequest,
+            CancellationTokenSource cancellationTokenSource)
         {
-            state.RemoteHttpHeaders.TryGetValue(HeaderNames.UserAgent, out var useragent);
-
             var options = new HttpRequestOptions
             {
                 Url = state.MediaPath,
-                UserAgent = useragent,
                 BufferContent = false,
                 CancellationToken = cancellationTokenSource.Token
             };
+
+            if (state.RemoteHttpHeaders.TryGetValue(HeaderNames.UserAgent, out var useragent))
+            {
+                options.UserAgent = useragent;
+            }
 
             var response = await HttpClient.GetResponse(options).ConfigureAwait(false);
 
@@ -305,7 +312,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 using (response)
                 {
-                    return ResultFactory.GetResult(null, new byte[] { }, response.ContentType, responseHeaders);
+                    return ResultFactory.GetResult(null, Array.Empty<byte>(), response.ContentType, responseHeaders);
                 }
             }
 

@@ -2,7 +2,7 @@ name: $(Date:yyyyMMdd)$(Rev:.r)
 
 variables:
   - name: TestProjects
-    value: 'Jellyfin.Server.Tests/Jellyfin.Server.Tests.csproj'
+    value: 'tests/Jellyfin.Common.Tests/Jellyfin.Common.Tests.csproj'
   - name: RestoreBuildProjects
     value: 'Jellyfin.Server/Jellyfin.Server.csproj'
 
@@ -28,29 +28,43 @@ jobs:
     - checkout: self
       clean: true
       submodules: true
-      persistCredentials: false
+      persistCredentials: true
 
-    - task: DotNetCoreCLI@2
-      displayName: Restore
+    - task: CmdLine@2
+      displayName: "Check out web"
+      condition: and(succeeded(), or(contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
-        command: restore
-        projects: '$(RestoreBuildProjects)'
-      enabled: false
+        script: 'git clone --single-branch --branch $(Build.SourceBranchName) --depth=1 https://github.com/jellyfin/jellyfin-web.git $(Agent.TempDirectory)/jellyfin-web'
 
-    - task: DotNetCoreCLI@2
-      displayName: Build
+    - task: CmdLine@2
+      displayName: "Check out web (PR)"
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest'))
       inputs:
-        projects: '$(RestoreBuildProjects)'
-        arguments: '--configuration $(BuildConfiguration)'
-      enabled: false
+        script: 'git clone --single-branch --branch $(System.PullRequest.TargetBranch) --depth 1 https://github.com/jellyfin/jellyfin-web.git $(Agent.TempDirectory)/jellyfin-web'
 
-    - task: DotNetCoreCLI@2
-      displayName: Test
+    - task: NodeTool@0
+      displayName: 'Install Node.js'
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
-        command: test
-        projects: '$(RestoreBuildProjects)'
-        arguments: '--configuration $(BuildConfiguration)'
-      enabled: false
+        versionSpec: '10.x'
+
+    - task: CmdLine@2
+      displayName: "Build Web UI"
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        script: yarn install
+        workingDirectory: $(Agent.TempDirectory)/jellyfin-web
+
+    - task: CopyFiles@2
+      displayName: Copy the web UI
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        sourceFolder: $(Agent.TempDirectory)/jellyfin-web/dist # Optional
+        contents: '**'
+        targetFolder: $(Build.SourcesDirectory)/MediaBrowser.WebDashboard/jellyfin-web
+        cleanTargetFolder: true # Optional
+        overWrite: true # Optional
+        flattenFolders: false # Optional
 
     - task: DotNetCoreCLI@2
       displayName: Publish
@@ -60,13 +74,6 @@ jobs:
         projects: '$(RestoreBuildProjects)'
         arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
         zipAfterPublish: false
-
-    # - task: PublishBuildArtifacts@1
-    #   displayName: 'Publish Artifact'
-    #   inputs:
-    #     PathtoPublish: '$(build.artifactstagingdirectory)'
-    #     artifactName: 'jellyfin-build-$(BuildConfiguration)'
-    #     zipAfterPublish: true
 
     - task: PublishPipelineArtifact@0
       displayName: 'Publish Artifact Naming'
@@ -95,6 +102,173 @@ jobs:
       inputs:
         targetPath: '$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Common.dll'
         artifactName: 'Jellyfin.Common'
+
+  - job: main_test
+    displayName: Main Test
+    pool:
+      vmImage: windows-latest
+    steps:
+    - checkout: self
+      clean: true
+      submodules: true
+      persistCredentials: false
+
+    - task: DotNetCoreCLI@2
+      displayName: Build
+      inputs:
+        command: build
+        publishWebProjects: false
+        projects: '$(TestProjects)'
+        arguments: '--configuration $(BuildConfiguration)'
+        zipAfterPublish: false
+
+    - task: VisualStudioTestPlatformInstaller@1
+      inputs:
+        packageFeedSelector: 'nugetOrg' # Options: nugetOrg, customFeed, netShare
+        versionSelector: 'latestPreRelease' # Required when packageFeedSelector == NugetOrg || PackageFeedSelector == CustomFeed# Options: latestPreRelease, latestStable, specificVersion
+
+    - task: VSTest@2
+      inputs:
+        testSelector: 'testAssemblies' # Options: testAssemblies, testPlan, testRun
+        testAssemblyVer2: | # Required when testSelector == TestAssemblies
+          **\bin\$(BuildConfiguration)\**\*test*.dll
+          !**\obj\**
+          !**\xunit.runner.visualstudio.testadapter.dll
+          !**\xunit.runner.visualstudio.dotnetcore.testadapter.dll
+        #testPlan: # Required when testSelector == TestPlan
+        #testSuite: # Required when testSelector == TestPlan
+        #testConfiguration: # Required when testSelector == TestPlan
+        #tcmTestRun: '$(test.RunId)' # Optional
+        searchFolder: '$(System.DefaultWorkingDirectory)'
+        #testFiltercriteria: # Optional
+        #runOnlyImpactedTests: False # Optional
+        #runAllTestsAfterXBuilds: '50' # Optional
+        #uiTests: false # Optional
+        #vstestLocationMethod: 'version' # Optional. Options: version, location
+        #vsTestVersion: 'latest' # Optional. Options: latest, 16.0, 15.0, 14.0, toolsInstaller
+        #vstestLocation: # Optional
+        #runSettingsFile: # Optional
+        #overrideTestrunParameters: # Optional
+        #pathtoCustomTestAdapters: # Optional
+        runInParallel: True # Optional
+        runTestsInIsolation: True # Optional
+        codeCoverageEnabled: True # Optional
+        #otherConsoleOptions: # Optional
+        #distributionBatchType: 'basedOnTestCases' # Optional. Options: basedOnTestCases, basedOnExecutionTime, basedOnAssembly
+        #batchingBasedOnAgentsOption: 'autoBatchSize' # Optional. Options: autoBatchSize, customBatchSize
+        #customBatchSizeValue: '10' # Required when distributionBatchType == BasedOnTestCases && BatchingBasedOnAgentsOption == CustomBatchSize
+        #batchingBasedOnExecutionTimeOption: 'autoBatchSize' # Optional. Options: autoBatchSize, customTimeBatchSize
+        #customRunTimePerBatchValue: '60' # Required when distributionBatchType == BasedOnExecutionTime && BatchingBasedOnExecutionTimeOption == CustomTimeBatchSize
+        #dontDistribute: False # Optional
+        #testRunTitle: # Optional
+        #platform: # Optional
+        configuration: 'Debug' # Optional
+        publishRunAttachments: true # Optional
+        #diagnosticsEnabled: false # Optional
+        #collectDumpOn: 'onAbortOnly' # Optional. Options: onAbortOnly, always, never
+        #rerunFailedTests: False # Optional
+        #rerunType: 'basedOnTestFailurePercentage' # Optional. Options: basedOnTestFailurePercentage, basedOnTestFailureCount
+        #rerunFailedThreshold: '30' # Optional
+        #rerunFailedTestCasesMaxLimit: '5' # Optional
+        #rerunMaxAttempts: '3' # Optional
+
+    # - task: PublishTestResults@2
+    #   inputs:
+    #     testResultsFormat: 'VSTest' # Options: JUnit, NUnit, VSTest, xUnit, cTest
+    #     testResultsFiles: '**/*.trx'
+    #     #searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
+    #     mergeTestResults: true # Optional
+    #     #failTaskOnFailedTests: false # Optional
+    #     #testRunTitle: # Optional
+    #     #buildPlatform: # Optional
+    #     #buildConfiguration: # Optional
+    #     #publishRunAttachments: true # Optional
+
+  - job: main_build_win
+    displayName: Main Build Windows
+    pool:
+      vmImage: windows-latest
+    strategy:
+      matrix:
+        release:
+          BuildConfiguration: Release
+      maxParallel: 2
+    steps:
+    - checkout: self
+      clean: true
+      submodules: true
+      persistCredentials: true
+
+    - task: CmdLine@2
+      displayName: "Check out web"
+      condition: and(succeeded(), or(contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        script: 'git clone --single-branch --branch $(Build.SourceBranchName) --depth=1 https://github.com/jellyfin/jellyfin-web.git $(Agent.TempDirectory)/jellyfin-web'
+
+    - task: CmdLine@2
+      displayName: "Check out web (PR)"
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest'))
+      inputs:
+        script: 'git clone --single-branch --branch $(System.PullRequest.TargetBranch) --depth 1 https://github.com/jellyfin/jellyfin-web.git $(Agent.TempDirectory)/jellyfin-web'
+
+    - task: NodeTool@0
+      displayName: 'Install Node.js'
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        versionSpec: '10.x'
+
+    - task: CmdLine@2
+      displayName: "Build Web UI"
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        script: yarn install
+        workingDirectory: $(Agent.TempDirectory)/jellyfin-web
+
+    - task: CopyFiles@2
+      displayName: Copy the web UI
+      condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+      inputs:
+        sourceFolder: $(Agent.TempDirectory)/jellyfin-web/dist # Optional
+        contents: '**'
+        targetFolder: $(Build.SourcesDirectory)/MediaBrowser.WebDashboard/jellyfin-web
+        cleanTargetFolder: true # Optional
+        overWrite: true # Optional
+        flattenFolders: false # Optional
+
+    - task: CmdLine@2
+      displayName: Clone the UX repository
+      inputs:
+        script: git clone --depth=1 https://github.com/jellyfin/jellyfin-ux $(Agent.TempDirectory)\jellyfin-ux
+
+    - task: PowerShell@2
+      displayName: Build the NSIS Installer
+      inputs:
+        targetType: 'filePath' # Optional. Options: filePath, inline
+        filePath: ./deployment/windows/build-jellyfin.ps1 # Required when targetType == FilePath
+        arguments: -InstallFFMPEG -InstallNSSM -MakeNSIS -UXLocation $(Agent.TempDirectory)\jellyfin-ux -InstallLocation $(build.artifactstagingdirectory)
+        #script: '# Write your PowerShell commands here.Write-Host Hello World' # Required when targetType == Inline
+        errorActionPreference: 'stop' # Optional. Options: stop, continue, silentlyContinue
+        #failOnStderr: false # Optional
+        #ignoreLASTEXITCODE: false # Optional
+        #pwsh: false # Optional
+        workingDirectory: $(Build.SourcesDirectory) # Optional
+
+    - task: CopyFiles@2
+      displayName: Copy the NSIS Installer to the artifact directory
+      inputs:
+        sourceFolder: $(Build.SourcesDirectory)/deployment/windows/ # Optional
+        contents: 'jellyfin*.exe'
+        targetFolder: $(System.ArtifactsDirectory)/setup
+        cleanTargetFolder: true # Optional
+        overWrite: true # Optional
+        flattenFolders: true # Optional
+
+    - task: PublishPipelineArtifact@0
+      displayName: 'Publish Setup Artifact'
+      condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
+      inputs:
+        targetPath: '$(build.artifactstagingdirectory)/setup'
+        artifactName: 'Jellyfin Server Setup'
 
   - job: dotnet_compat
     displayName: Compatibility Check

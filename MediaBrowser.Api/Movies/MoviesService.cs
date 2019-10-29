@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
@@ -11,7 +12,6 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 
@@ -243,7 +243,7 @@ namespace MediaBrowser.Api.Movies
                 }
             }
 
-            return categories.OrderBy(i => i.RecommendationType).ThenBy(i => Guid.NewGuid());
+            return categories.OrderBy(i => i.RecommendationType);
         }
 
         private IEnumerable<RecommendationDto> GetWithDirector(User user, IEnumerable<string> names, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
@@ -268,7 +268,7 @@ namespace MediaBrowser.Api.Movies
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
 
-                }).GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N"))
+                }).GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
                 .Select(x => x.First())
                 .Take(itemLimit)
                 .ToList();
@@ -309,7 +309,7 @@ namespace MediaBrowser.Api.Movies
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
 
-                }).GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N"))
+                }).GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
                 .Select(x => x.First())
                 .Take(itemLimit)
                 .ToList();

@@ -18,16 +18,6 @@ namespace MediaBrowser.Controller.Drawing
         IReadOnlyCollection<ImageFormat> SupportedOutputFormats { get; }
 
         /// <summary>
-        /// Encodes the image.
-        /// </summary>
-        string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat outputFormat);
-
-        /// <summary>
-        /// Creates the image collage.
-        /// </summary>
-        /// <param name="options">The options.</param>
-        void CreateImageCollage(ImageCollageOptions options);
-        /// <summary>
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
@@ -46,5 +36,16 @@ namespace MediaBrowser.Controller.Drawing
         bool SupportsImageEncoding { get; }
 
         ImageDimensions GetImageSize(string path);
+
+        /// <summary>
+        /// Encodes the image.
+        /// </summary>
+        string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat outputFormat);
+
+        /// <summary>
+        /// Creates the image collage.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        void CreateImageCollage(ImageCollageOptions options);
     }
 }

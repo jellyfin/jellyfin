@@ -189,11 +189,9 @@ namespace MediaBrowser.Api
 
             var dtos = _dtoService.GetBaseItemDtos(items.Select(i => i.Item2).ToList(), dtoOptions, user);
 
-            var index = 0;
-            foreach (var item in dtos)
+            for (int index = 0; index < dtos.Count; index++)
             {
-                item.PlaylistItemId = items[index].Item1.Id;
-                index++;
+                dtos[index].PlaylistItemId = items[index].Item1.Id;
             }
 
             var result = new QueryResult<BaseItemDto>

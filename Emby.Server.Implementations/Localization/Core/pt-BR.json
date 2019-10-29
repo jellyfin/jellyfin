@@ -1,7 +1,7 @@
 {
     "Albums": "Álbuns",
     "AppDeviceValues": "App: {0}, Dispositivo: {1}",
-    "Application": "Aplicativo",
+    "Application": "Inscrição",
     "Artists": "Artistas",
     "AuthenticationSucceededWithUserName": "{0} autenticado com sucesso",
     "Books": "Livros",
@@ -16,7 +16,7 @@
     "Folders": "Pastas",
     "Genres": "Gêneros",
     "HeaderAlbumArtists": "Artistas do Álbum",
-    "HeaderCameraUploads": "Uploads da Câmera",
+    "HeaderCameraUploads": "Envios da Câmera",
     "HeaderContinueWatching": "Continuar Assistindo",
     "HeaderFavoriteAlbums": "Álbuns Favoritos",
     "HeaderFavoriteArtists": "Artistas Favoritos",

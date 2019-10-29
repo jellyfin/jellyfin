@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
@@ -89,7 +90,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                     AccessToken = token
                 });
 
-                var tokenInfo = result.Items.Length > 0 ? result.Items[0] : null;
+                var tokenInfo = result.Items.Count > 0 ? result.Items[0] : null;
 
                 if (tokenInfo != null)
                 {
@@ -190,17 +191,23 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
         private Dictionary<string, string> GetAuthorization(string authorizationHeader)
         {
-            if (authorizationHeader == null) return null;
+            if (authorizationHeader == null)
+            {
+                return null;
+            }
 
             var parts = authorizationHeader.Split(new[] { ' ' }, 2);
 
             // There should be at least to parts
-            if (parts.Length != 2) return null;
+            if (parts.Length != 2)
+            {
+                return null;
+            }
 
             var acceptedNames = new[] { "MediaBrowser", "Emby" };
 
             // It has to be a digest request
-            if (!acceptedNames.Contains(parts[0] ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (!acceptedNames.Contains(parts[0], StringComparer.OrdinalIgnoreCase))
             {
                 return null;
             }
@@ -232,7 +239,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 return value;
             }
 
-            return System.Net.WebUtility.HtmlEncode(value);
+            return WebUtility.HtmlEncode(value);
         }
     }
 }

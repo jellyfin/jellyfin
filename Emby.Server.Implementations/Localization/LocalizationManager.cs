@@ -17,43 +17,49 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Localization
 {
     /// <summary>
-    /// Class LocalizationManager
+    /// Class LocalizationManager.
     /// </summary>
     public class LocalizationManager : ILocalizationManager
     {
-        /// <summary>
-        /// The _configuration manager
-        /// </summary>
-        private readonly IServerConfigurationManager _configurationManager;
+        private const string DefaultCulture = "en-US";
+        private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
+        private static readonly string[] _unratedValues = { "n/a", "unrated", "not rated" };
 
         /// <summary>
-        /// The us culture
+        /// The _configuration manager.
         /// </summary>
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        private readonly IServerConfigurationManager _configurationManager;
+        private readonly IJsonSerializer _jsonSerializer;
+        private readonly ILogger _logger;
 
         private readonly Dictionary<string, Dictionary<string, ParentalRating>> _allParentalRatings =
             new Dictionary<string, Dictionary<string, ParentalRating>>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly IJsonSerializer _jsonSerializer;
-        private readonly ILogger _logger;
-        private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
+        private readonly ConcurrentDictionary<string, Dictionary<string, string>> _dictionaries =
+            new ConcurrentDictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+
+        private List<CultureDto> _cultures;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="loggerFactory">The logger factory</param>
+        /// <param name="logger">The logger.</param>
         public LocalizationManager(
             IServerConfigurationManager configurationManager,
             IJsonSerializer jsonSerializer,
-            ILoggerFactory loggerFactory)
+            ILogger<LocalizationManager> logger)
         {
             _configurationManager = configurationManager;
             _jsonSerializer = jsonSerializer;
-            _logger = loggerFactory.CreateLogger(nameof(LocalizationManager));
+            _logger = logger;
         }
 
+        /// <summary>
+        /// Loads all resources into memory.
+        /// </summary>
+        /// <returns><see cref="Task" />.</returns>
         public async Task LoadAll()
         {
             const string RatingsResource = "Emby.Server.Implementations.Localization.Ratings.";
@@ -82,9 +88,10 @@ namespace Emby.Server.Implementations.Localization
 
                         string[] parts = line.Split(',');
                         if (parts.Length == 2
-                            && int.TryParse(parts[1], NumberStyles.Integer, UsCulture, out var value))
+                            && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
                         {
-                            dict.Add(parts[0], new ParentalRating { Name = parts[0], Value = value });
+                            var name = parts[0];
+                            dict.Add(name, new ParentalRating(name, value));
                         }
 #if DEBUG
                         else
@@ -101,16 +108,11 @@ namespace Emby.Server.Implementations.Localization
             await LoadCultures().ConfigureAwait(false);
         }
 
-        public string NormalizeFormKD(string text)
-            => text.Normalize(NormalizationForm.FormKD);
-
-        private CultureDto[] _cultures;
-
         /// <summary>
         /// Gets the cultures.
         /// </summary>
-        /// <returns>IEnumerable{CultureDto}.</returns>
-        public CultureDto[] GetCultures()
+        /// <returns><see cref="IEnumerable{CultureDto}" />.</returns>
+        public IEnumerable<CultureDto> GetCultures()
             => _cultures;
 
         private async Task LoadCultures()
@@ -168,9 +170,10 @@ namespace Emby.Server.Implementations.Localization
                 }
             }
 
-            _cultures = list.ToArray();
+            _cultures = list;
         }
 
+        /// <inheritdoc />
         public CultureDto FindLanguageInfo(string language)
             => GetCultures()
                 .FirstOrDefault(i =>
@@ -179,25 +182,19 @@ namespace Emby.Server.Implementations.Localization
                     || i.ThreeLetterISOLanguageNames.Contains(language, StringComparer.OrdinalIgnoreCase)
                     || string.Equals(i.TwoLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase));
 
-        /// <summary>
-        /// Gets the countries.
-        /// </summary>
-        /// <returns>IEnumerable{CountryInfo}.</returns>
-        public Task<CountryInfo[]> GetCountries()
-            => _jsonSerializer.DeserializeFromStreamAsync<CountryInfo[]>(
+        /// <inheritdoc />
+        public IEnumerable<CountryInfo> GetCountries()
+            => _jsonSerializer.DeserializeFromStream<IEnumerable<CountryInfo>>(
                     _assembly.GetManifestResourceStream("Emby.Server.Implementations.Localization.countries.json"));
 
-        /// <summary>
-        /// Gets the parental ratings.
-        /// </summary>
-        /// <returns>IEnumerable{ParentalRating}.</returns>
+        /// <inheritdoc />
         public IEnumerable<ParentalRating> GetParentalRatings()
             => GetParentalRatingsDictionary().Values;
 
         /// <summary>
         /// Gets the parental ratings dictionary.
         /// </summary>
-        /// <returns>Dictionary{System.StringParentalRating}.</returns>
+        /// <returns><see cref="Dictionary{String, ParentalRating}" />.</returns>
         private Dictionary<string, ParentalRating> GetParentalRatingsDictionary()
         {
             var countryCode = _configurationManager.Configuration.MetadataCountryCode;
@@ -207,14 +204,14 @@ namespace Emby.Server.Implementations.Localization
                 countryCode = "us";
             }
 
-           return GetRatings(countryCode) ?? GetRatings("us");
+            return GetRatings(countryCode) ?? GetRatings("us");
         }
 
         /// <summary>
         /// Gets the ratings.
         /// </summary>
         /// <param name="countryCode">The country code.</param>
-        /// <returns>The ratings</returns>
+        /// <returns>The ratings.</returns>
         private Dictionary<string, ParentalRating> GetRatings(string countryCode)
         {
             _allParentalRatings.TryGetValue(countryCode, out var value);
@@ -222,14 +219,7 @@ namespace Emby.Server.Implementations.Localization
             return value;
         }
 
-        private static readonly string[] _unratedValues = { "n/a", "unrated", "not rated" };
-
         /// <inheritdoc />
-        /// <summary>
-        /// Gets the rating level.
-        /// </summary>
-        /// <param name="rating">Rating field</param>
-        /// <returns>The rating level</returns>&gt;
         public int? GetRatingLevel(string rating)
         {
             if (string.IsNullOrEmpty(rating))
@@ -277,6 +267,7 @@ namespace Emby.Server.Implementations.Localization
             return null;
         }
 
+        /// <inheritdoc />
         public bool HasUnicodeCategory(string value, UnicodeCategory category)
         {
             foreach (var chr in value)
@@ -290,11 +281,13 @@ namespace Emby.Server.Implementations.Localization
             return false;
         }
 
+        /// <inheritdoc />
         public string GetLocalizedString(string phrase)
         {
             return GetLocalizedString(phrase, _configurationManager.Configuration.UICulture);
         }
 
+        /// <inheritdoc />
         public string GetLocalizedString(string phrase, string culture)
         {
             if (string.IsNullOrEmpty(culture))
@@ -317,12 +310,7 @@ namespace Emby.Server.Implementations.Localization
             return phrase;
         }
 
-        private const string DefaultCulture = "en-US";
-
-        private readonly ConcurrentDictionary<string, Dictionary<string, string>> _dictionaries =
-            new ConcurrentDictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-
-        public Dictionary<string, string> GetLocalizationDictionary(string culture)
+        private Dictionary<string, string> GetLocalizationDictionary(string culture)
         {
             if (string.IsNullOrEmpty(culture))
             {
@@ -332,8 +320,9 @@ namespace Emby.Server.Implementations.Localization
             const string prefix = "Core";
             var key = prefix + culture;
 
-            return _dictionaries.GetOrAdd(key,
-                    f => GetDictionary(prefix, culture, DefaultCulture + ".json").GetAwaiter().GetResult());
+            return _dictionaries.GetOrAdd(
+                key,
+                f => GetDictionary(prefix, culture, DefaultCulture + ".json").GetAwaiter().GetResult());
         }
 
         private async Task<Dictionary<string, string>> GetDictionary(string prefix, string culture, string baseFilename)
@@ -390,45 +379,45 @@ namespace Emby.Server.Implementations.Localization
             return culture + ".json";
         }
 
-        public LocalizationOption[] GetLocalizationOptions()
-            => new LocalizationOption[]
-            {
-                new LocalizationOption("Arabic", "ar"),
-                new LocalizationOption("Bulgarian (Bulgaria)", "bg-BG"),
-                new LocalizationOption("Catalan", "ca"),
-                new LocalizationOption("Chinese Simplified", "zh-CN"),
-                new LocalizationOption("Chinese Traditional", "zh-TW"),
-                new LocalizationOption("Croatian", "hr"),
-                new LocalizationOption("Czech", "cs"),
-                new LocalizationOption("Danish", "da"),
-                new LocalizationOption("Dutch", "nl"),
-                new LocalizationOption("English (United Kingdom)", "en-GB"),
-                new LocalizationOption("English (United States)", "en-US"),
-                new LocalizationOption("French", "fr"),
-                new LocalizationOption("French (Canada)", "fr-CA"),
-                new LocalizationOption("German", "de"),
-                new LocalizationOption("Greek", "el"),
-                new LocalizationOption("Hebrew", "he"),
-                new LocalizationOption("Hungarian", "hu"),
-                new LocalizationOption("Italian", "it"),
-                new LocalizationOption("Kazakh", "kk"),
-                new LocalizationOption("Korean", "ko"),
-                new LocalizationOption("Lithuanian", "lt-LT"),
-                new LocalizationOption("Malay", "ms"),
-                new LocalizationOption("Norwegian Bokmål", "nb"),
-                new LocalizationOption("Persian", "fa"),
-                new LocalizationOption("Polish", "pl"),
-                new LocalizationOption("Portuguese (Brazil)", "pt-BR"),
-                new LocalizationOption("Portuguese (Portugal)", "pt-PT"),
-                new LocalizationOption("Russian", "ru"),
-                new LocalizationOption("Slovak", "sk"),
-                new LocalizationOption("Slovenian (Slovenia)", "sl-SI"),
-                new LocalizationOption("Spanish", "es"),
-                new LocalizationOption("Spanish (Argentina)", "es-AR"),
-                new LocalizationOption("Spanish (Mexico)", "es-MX"),
-                new LocalizationOption("Swedish", "sv"),
-                new LocalizationOption("Swiss German", "gsw"),
-                new LocalizationOption("Turkish", "tr")
-            };
+        /// <inheritdoc />
+        public IEnumerable<LocalizationOption> GetLocalizationOptions()
+        {
+            yield return new LocalizationOption("Arabic", "ar");
+            yield return new LocalizationOption("Bulgarian (Bulgaria)", "bg-BG");
+            yield return new LocalizationOption("Catalan", "ca");
+            yield return new LocalizationOption("Chinese Simplified", "zh-CN");
+            yield return new LocalizationOption("Chinese Traditional", "zh-TW");
+            yield return new LocalizationOption("Croatian", "hr");
+            yield return new LocalizationOption("Czech", "cs");
+            yield return new LocalizationOption("Danish", "da");
+            yield return new LocalizationOption("Dutch", "nl");
+            yield return new LocalizationOption("English (United Kingdom)", "en-GB");
+            yield return new LocalizationOption("English (United States)", "en-US");
+            yield return new LocalizationOption("French", "fr");
+            yield return new LocalizationOption("French (Canada)", "fr-CA");
+            yield return new LocalizationOption("German", "de");
+            yield return new LocalizationOption("Greek", "el");
+            yield return new LocalizationOption("Hebrew", "he");
+            yield return new LocalizationOption("Hungarian", "hu");
+            yield return new LocalizationOption("Italian", "it");
+            yield return new LocalizationOption("Kazakh", "kk");
+            yield return new LocalizationOption("Korean", "ko");
+            yield return new LocalizationOption("Lithuanian", "lt-LT");
+            yield return new LocalizationOption("Malay", "ms");
+            yield return new LocalizationOption("Norwegian Bokmål", "nb");
+            yield return new LocalizationOption("Persian", "fa");
+            yield return new LocalizationOption("Polish", "pl");
+            yield return new LocalizationOption("Portuguese (Brazil)", "pt-BR");
+            yield return new LocalizationOption("Portuguese (Portugal)", "pt-PT");
+            yield return new LocalizationOption("Russian", "ru");
+            yield return new LocalizationOption("Slovak", "sk");
+            yield return new LocalizationOption("Slovenian (Slovenia)", "sl-SI");
+            yield return new LocalizationOption("Spanish", "es");
+            yield return new LocalizationOption("Spanish (Argentina)", "es-AR");
+            yield return new LocalizationOption("Spanish (Mexico)", "es-MX");
+            yield return new LocalizationOption("Swedish", "sv");
+            yield return new LocalizationOption("Swiss German", "gsw");
+            yield return new LocalizationOption("Turkish", "tr");
+        }
     }
 }

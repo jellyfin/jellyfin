@@ -16,6 +16,8 @@ namespace Emby.Dlna.PlayTo
         private const string USERAGENT = "Microsoft-Windows/6.2 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50";
         private const string FriendlyName = "Jellyfin";
 
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+
         private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _config;
 
@@ -25,7 +27,8 @@ namespace Emby.Dlna.PlayTo
             _config = config;
         }
 
-        public async Task<XDocument> SendCommandAsync(string baseUrl,
+        public async Task<XDocument> SendCommandAsync(
+            string baseUrl,
             DeviceService service,
             string command,
             string postData,
@@ -35,12 +38,20 @@ namespace Emby.Dlna.PlayTo
             var cancellationToken = CancellationToken.None;
 
             var url = NormalizeServiceUrl(baseUrl, service.ControlUrl);
-            using (var response = await PostSoapDataAsync(url, '\"' + service.ServiceType + '#' + command + '\"', postData, header, logRequest, cancellationToken)
+            using (var response = await PostSoapDataAsync(
+                url,
+                $"\"{service.ServiceType}#{command}\"",
+                postData,
+                header,
+                logRequest,
+                cancellationToken)
                 .ConfigureAwait(false))
             using (var stream = response.Content)
             using (var reader = new StreamReader(stream, Encoding.UTF8))
             {
-                return XDocument.Parse(reader.ReadToEnd(), LoadOptions.PreserveWhitespace);
+                return XDocument.Parse(
+                    await reader.ReadToEndAsync().ConfigureAwait(false),
+                    LoadOptions.PreserveWhitespace);
             }
         }
 
@@ -58,9 +69,8 @@ namespace Emby.Dlna.PlayTo
             return baseUrl + serviceUrl;
         }
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
-        public async Task SubscribeAsync(string url,
+        public async Task SubscribeAsync(
+            string url,
             string ip,
             int port,
             string localIp,
@@ -73,9 +83,6 @@ namespace Emby.Dlna.PlayTo
                 UserAgent = USERAGENT,
                 LogErrorResponseBody = true,
                 BufferContent = false,
-
-                // The periodic requests may keep some devices awake
-                LogRequestAsDebug = true
             };
 
             options.RequestHeaders["HOST"] = ip + ":" + port.ToString(_usCulture);
@@ -98,23 +105,18 @@ namespace Emby.Dlna.PlayTo
                 LogErrorResponseBody = true,
                 BufferContent = false,
 
-                // The periodic requests may keep some devices awake
-                LogRequestAsDebug = true,
-
                 CancellationToken = cancellationToken
             };
 
             options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
 
             using (var response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false))
+            using (var stream = response.Content)
+            using (var reader = new StreamReader(stream, Encoding.UTF8))
             {
-                using (var stream = response.Content)
-                {
-                    using (var reader = new StreamReader(stream, Encoding.UTF8))
-                    {
-                        return XDocument.Parse(reader.ReadToEnd(), LoadOptions.PreserveWhitespace);
-                    }
-                }
+                return XDocument.Parse(
+                    await reader.ReadToEndAsync().ConfigureAwait(false),
+                    LoadOptions.PreserveWhitespace);
             }
         }
 
@@ -128,19 +130,15 @@ namespace Emby.Dlna.PlayTo
         {
             if (soapAction[0] != '\"')
             {
-                soapAction = '\"' + soapAction + '\"';
+                soapAction = $"\"{soapAction}\"";
             }
 
             var options = new HttpRequestOptions
             {
                 Url = url,
                 UserAgent = USERAGENT,
-                LogRequest = logRequest || _config.GetDlnaConfiguration().EnableDebugLog,
                 LogErrorResponseBody = true,
                 BufferContent = false,
-
-                // The periodic requests may keep some devices awake
-                LogRequestAsDebug = true,
 
                 CancellationToken = cancellationToken
             };

@@ -2,54 +2,12 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using Emby.Server.Implementations.Networking;
 using MediaBrowser.Model.Net;
 
 namespace Emby.Server.Implementations.Net
 {
     public class SocketFactory : ISocketFactory
     {
-        // THIS IS A LINKED FILE - SHARED AMONGST MULTIPLE PLATFORMS
-        // Be careful to check any changes compile and work for all platform projects it is shared in.
-
-        // Not entirely happy with this. Would have liked to have done something more generic/reusable,
-        // but that wasn't really the point so kept to YAGNI principal for now, even if the
-        // interfaces are a bit ugly, specific and make assumptions.
-
-        public ISocket CreateTcpSocket(IPAddress remoteAddress, int remotePort)
-        {
-            if (remotePort < 0)
-            {
-                throw new ArgumentException("remotePort cannot be less than zero.", nameof(remotePort));
-            }
-
-            var addressFamily = remoteAddress.AddressFamily == AddressFamily.InterNetwork
-                ? AddressFamily.InterNetwork
-                : AddressFamily.InterNetworkV6;
-
-            var retVal = new Socket(addressFamily, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
-
-            try
-            {
-                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            }
-            catch (SocketException)
-            {
-                // This is not supported on all operating systems (qnap)
-            }
-
-            try
-            {
-                return new UdpSocket(retVal, new IPEndPoint(remoteAddress, remotePort));
-            }
-            catch
-            {
-                retVal?.Dispose();
-
-                throw;
-            }
-        }
-
         /// <summary>
         /// Creates a new UDP acceptSocket and binds it to the specified local port.
         /// </summary>
@@ -61,7 +19,8 @@ namespace Emby.Server.Implementations.Net
                 throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
             }
 
-            var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
+            var retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
             try
             {
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);

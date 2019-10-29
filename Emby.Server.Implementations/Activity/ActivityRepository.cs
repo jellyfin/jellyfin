@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.Activity
                         }
                         else
                         {
-                            statement.TryBind("@UserId", entry.UserId.ToString("N"));
+                            statement.TryBind("@UserId", entry.UserId.ToString("N", CultureInfo.InvariantCulture));
                         }
 
                         statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
@@ -141,7 +141,7 @@ namespace Emby.Server.Implementations.Activity
                         }
                         else
                         {
-                            statement.TryBind("@UserId", entry.UserId.ToString("N"));
+                            statement.TryBind("@UserId", entry.UserId.ToString("N", CultureInfo.InvariantCulture));
                         }
 
                         statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
@@ -155,94 +155,100 @@ namespace Emby.Server.Implementations.Activity
 
         public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit)
         {
-            using (var connection = GetConnection(true))
+            var commandText = BaseActivitySelectText;
+            var whereClauses = new List<string>();
+
+            if (minDate.HasValue)
             {
-                var commandText = BaseActivitySelectText;
-                var whereClauses = new List<string>();
-
-                if (minDate.HasValue)
+                whereClauses.Add("DateCreated>=@DateCreated");
+            }
+            if (hasUserId.HasValue)
+            {
+                if (hasUserId.Value)
                 {
-                    whereClauses.Add("DateCreated>=@DateCreated");
+                    whereClauses.Add("UserId not null");
                 }
-                if (hasUserId.HasValue)
+                else
                 {
-                    if (hasUserId.Value)
-                    {
-                        whereClauses.Add("UserId not null");
-                    }
-                    else
-                    {
-                        whereClauses.Add("UserId is null");
-                    }
+                    whereClauses.Add("UserId is null");
                 }
+            }
 
-                var whereTextWithoutPaging = whereClauses.Count == 0 ?
-                  string.Empty :
-                  " where " + string.Join(" AND ", whereClauses.ToArray());
+            var whereTextWithoutPaging = whereClauses.Count == 0 ?
+              string.Empty :
+              " where " + string.Join(" AND ", whereClauses.ToArray());
 
-                if (startIndex.HasValue && startIndex.Value > 0)
-                {
-                    var pagingWhereText = whereClauses.Count == 0 ?
-                        string.Empty :
-                        " where " + string.Join(" AND ", whereClauses.ToArray());
-
-                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM ActivityLog {0} ORDER BY DateCreated DESC LIMIT {1})",
-                        pagingWhereText,
-                        startIndex.Value.ToString(_usCulture)));
-                }
-
-                var whereText = whereClauses.Count == 0 ?
+            if (startIndex.HasValue && startIndex.Value > 0)
+            {
+                var pagingWhereText = whereClauses.Count == 0 ?
                     string.Empty :
                     " where " + string.Join(" AND ", whereClauses.ToArray());
 
-                commandText += whereText;
-
-                commandText += " ORDER BY DateCreated DESC";
-
-                if (limit.HasValue)
-                {
-                    commandText += " LIMIT " + limit.Value.ToString(_usCulture);
-                }
-
-                var statementTexts = new List<string>();
-                statementTexts.Add(commandText);
-                statementTexts.Add("select count (Id) from ActivityLog" + whereTextWithoutPaging);
-
-                return connection.RunInTransaction(db =>
-                {
-                    var list = new List<ActivityLogEntry>();
-                    var result = new QueryResult<ActivityLogEntry>();
-
-                    var statements = PrepareAll(db, statementTexts).ToList();
-
-                    using (var statement = statements[0])
-                    {
-                        if (minDate.HasValue)
-                        {
-                            statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
-                        }
-
-                        foreach (var row in statement.ExecuteQuery())
-                        {
-                            list.Add(GetEntry(row));
-                        }
-                    }
-
-                    using (var statement = statements[1])
-                    {
-                        if (minDate.HasValue)
-                        {
-                            statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
-                        }
-
-                        result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
-                    }
-
-                    result.Items = list.ToArray();
-                    return result;
-
-                }, ReadTransactionMode);
+                whereClauses.Add(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Id NOT IN (SELECT Id FROM ActivityLog {0} ORDER BY DateCreated DESC LIMIT {1})",
+                        pagingWhereText,
+                        startIndex.Value));
             }
+
+            var whereText = whereClauses.Count == 0 ?
+                string.Empty :
+                " where " + string.Join(" AND ", whereClauses.ToArray());
+
+            commandText += whereText;
+
+            commandText += " ORDER BY DateCreated DESC";
+
+            if (limit.HasValue)
+            {
+                commandText += " LIMIT " + limit.Value.ToString(_usCulture);
+            }
+
+            var statementTexts = new[]
+            {
+                commandText,
+                "select count (Id) from ActivityLog" + whereTextWithoutPaging
+            };
+
+            var list = new List<ActivityLogEntry>();
+            var result = new QueryResult<ActivityLogEntry>();
+
+            using (var connection = GetConnection(true))
+            {
+                connection.RunInTransaction(
+                    db =>
+                    {
+                        var statements = PrepareAll(db, statementTexts).ToList();
+
+                        using (var statement = statements[0])
+                        {
+                            if (minDate.HasValue)
+                            {
+                                statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
+                            }
+
+                            foreach (var row in statement.ExecuteQuery())
+                            {
+                                list.Add(GetEntry(row));
+                            }
+                        }
+
+                        using (var statement = statements[1])
+                        {
+                            if (minDate.HasValue)
+                            {
+                                statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
+                            }
+
+                            result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
+                        }
+                    },
+                    ReadTransactionMode);
+            }
+
+            result.Items = list;
+            return result;
         }
 
         private static ActivityLogEntry GetEntry(IReadOnlyList<IResultSetValue> reader)

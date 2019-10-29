@@ -11,15 +11,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 {
     public class SeriesNfoParser : BaseNfoParser<Series>
     {
+        public SeriesNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
+            : base(logger, config, providerManager)
+        {
+        }
+
+        /// <inheritdoc />
         protected override bool SupportsUrlAfterClosingXmlTag => true;
 
+        /// <inheritdoc />
         protected override string MovieDbParserSearchString => "themoviedb.org/tv/";
 
-        /// <summary>
-        /// Fetches the data from XML node.
-        /// </summary>
-        /// <param name="reader">The reader.</param>
-        /// <param name="itemResult">The item result.</param>
+        /// <inheritdoc />
         protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Series> itemResult)
         {
             var item = itemResult.Item;
@@ -90,11 +93,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;
             }
-        }
-
-        public SeriesNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
-            : base(logger, config, providerManager)
-        {
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Net.Http.Headers;
+using static MediaBrowser.Common.HexHelper;
 
 namespace MediaBrowser.Api.LiveTv
 {
@@ -742,7 +744,7 @@ namespace MediaBrowser.Api.LiveTv
             var result = new QueryResult<BaseItemDto>
             {
                 Items = returnArray,
-                TotalRecordCount = returnArray.Length
+                TotalRecordCount = returnArray.Count
             };
 
             return ToOptimizedResult(result);
@@ -883,10 +885,12 @@ namespace MediaBrowser.Api.LiveTv
         /// </summary>
         private string GetHashedString(string str)
         {
-            // legacy
-            return BitConverter.ToString(
-                _cryptographyProvider.ComputeSHA1(Encoding.UTF8.GetBytes(str)))
-                    .Replace("-", string.Empty).ToLowerInvariant();
+            // SchedulesDirect requires a SHA1 hash of the user's password
+            // https://github.com/SchedulesDirect/JSON-Service/wiki/API-20141201#obtain-a-token
+            using (SHA1 sha = SHA1.Create()) {
+                return ToHexString(
+                    sha.ComputeHash(Encoding.UTF8.GetBytes(str)));
+            }
         }
 
         public void Delete(DeleteListingProvider request)

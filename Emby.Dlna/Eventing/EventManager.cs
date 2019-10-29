@@ -55,7 +55,7 @@ namespace Emby.Dlna.Eventing
         public EventSubscriptionResponse CreateEventSubscription(string notificationType, string requestedTimeoutString, string callbackUrl)
         {
             var timeout = ParseTimeout(requestedTimeoutString) ?? 300;
-            var id = "uuid:" + Guid.NewGuid().ToString("N");
+            var id = "uuid:" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
             // Remove logging for now because some devices are sending this very frequently
             // TODO re-enable with dlna debug logging setting

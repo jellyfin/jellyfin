@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -27,14 +28,25 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         private readonly IServerApplicationHost _appHost;
         private readonly INetworkManager _networkManager;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IStreamHelper _streamHelper;
 
-        public M3UTunerHost(IServerConfigurationManager config, IMediaSourceManager mediaSourceManager, ILogger logger, IJsonSerializer jsonSerializer, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost, INetworkManager networkManager)
+        public M3UTunerHost(
+            IServerConfigurationManager config,
+            IMediaSourceManager mediaSourceManager,
+            ILogger logger,
+            IJsonSerializer jsonSerializer,
+            IFileSystem fileSystem,
+            IHttpClient httpClient,
+            IServerApplicationHost appHost,
+            INetworkManager networkManager,
+            IStreamHelper streamHelper)
             : base(config, logger, jsonSerializer, fileSystem)
         {
             _httpClient = httpClient;
             _appHost = appHost;
             _networkManager = networkManager;
             _mediaSourceManager = mediaSourceManager;
+            _streamHelper = streamHelper;
         }
 
         public override string Type => "m3u";
@@ -43,7 +55,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private string GetFullChannelIdPrefix(TunerHostInfo info)
         {
-            return ChannelIdPrefix + info.Url.GetMD5().ToString("N");
+            return ChannelIdPrefix + info.Url.GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
         protected override async Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
@@ -61,7 +73,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 Name = Name,
                 SourceType = Type,
                 Status = LiveTvTunerStatus.Available,
-                Id = i.Url.GetMD5().ToString("N"),
+                Id = i.Url.GetMD5().ToString("N", CultureInfo.InvariantCulture),
                 Url = i.Url
             })
             .ToList();
@@ -102,11 +114,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                 if (!_disallowedSharedStreamExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
-                    return new SharedHttpStream(mediaSource, info, streamId, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
+                    return new SharedHttpStream(mediaSource, info, streamId, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _streamHelper);
                 }
             }
 
-            return new LiveStream(mediaSource, info, FileSystem, Logger, Config.ApplicationPaths);
+            return new LiveStream(mediaSource, info, FileSystem, Logger, Config.ApplicationPaths, _streamHelper);
         }
 
         public async Task Validate(TunerHostInfo info)
@@ -173,7 +185,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                 ReadAtNativeFramerate = false,
 
-                Id = channel.Path.GetMD5().ToString("N"),
+                Id = channel.Path.GetMD5().ToString("N", CultureInfo.InvariantCulture),
                 IsInfiniteStream = true,
                 IsRemote = isRemote,
 

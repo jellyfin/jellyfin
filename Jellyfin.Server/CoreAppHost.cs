@@ -9,8 +9,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server
 {
+    /// <summary>
+    /// Implementation of the abstract <see cref="ApplicationHost" /> class.
+    /// </summary>
     public class CoreAppHost : ApplicationHost
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CoreAppHost" /> class.
+        /// </summary>
+        /// <param name="applicationPaths">The <see cref="ServerApplicationPaths" /> to be used by the <see cref="CoreAppHost" />.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory" /> to be used by the <see cref="CoreAppHost" />.</param>
+        /// <param name="options">The <see cref="StartupOptions" /> to be used by the <see cref="CoreAppHost" />.</param>
+        /// <param name="fileSystem">The <see cref="IFileSystem" /> to be used by the <see cref="CoreAppHost" />.</param>
+        /// <param name="imageEncoder">The <see cref="IImageEncoder" /> to be used by the <see cref="CoreAppHost" />.</param>
+        /// <param name="networkManager">The <see cref="INetworkManager" /> to be used by the <see cref="CoreAppHost" />.</param>
+        /// <param name="configuration">The <see cref="IConfiguration" /> to be used by the <see cref="CoreAppHost" />.</param>
         public CoreAppHost(
             ServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
@@ -30,15 +43,19 @@ namespace Jellyfin.Server
         {
         }
 
+        /// <inheritdoc />
         public override bool CanSelfRestart => StartupOptions.RestartPath != null;
 
+        /// <inheritdoc />
         protected override void RestartInternal() => Program.Restart();
 
+        /// <inheritdoc />
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()
         {
             yield return typeof(CoreAppHost).Assembly;
         }
 
+        /// <inheritdoc />
         protected override void ShutdownInternal() => Program.Shutdown();
     }
 }

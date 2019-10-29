@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -73,7 +74,7 @@ namespace Emby.Server.Implementations.TV
             {
                 parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                    .Where(i => i is Folder)
-                   .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N")))
+                   .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N", CultureInfo.InvariantCulture)))
                    .ToArray();
             }
 

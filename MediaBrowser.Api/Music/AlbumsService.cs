@@ -104,16 +104,15 @@ namespace MediaBrowser.Api.Music
             var album2 = (MusicAlbum)item2;
 
             var artists1 = album1
-                .AllArtists
+                .GetAllArtists()
                 .DistinctNames()
                 .ToList();
 
-            var artists2 = album2
-                .AllArtists
-                .DistinctNames()
-                .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+            var artists2 = new HashSet<string>(
+                album2.GetAllArtists().DistinctNames(),
+                StringComparer.OrdinalIgnoreCase);
 
-            return points + artists1.Where(artists2.ContainsKey).Sum(i => 5);
+            return points + artists1.Where(artists2.Contains).Sum(i => 5);
         }
     }
 }

@@ -9,12 +9,6 @@ namespace MediaBrowser.Model.System
         public string LocalAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the wan address.
-        /// </summary>
-        /// <value>The wan address.</value>
-        public string WanAddress { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of the server.
         /// </summary>
         /// <value>The name of the server.</value>
@@ -25,7 +19,7 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The version.</value>
         public string Version { get; set; }
-        
+
         /// <summary>
         /// The product name. This is the AssemblyProduct name.
         /// </summary>

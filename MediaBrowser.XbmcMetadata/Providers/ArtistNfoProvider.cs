@@ -23,14 +23,14 @@ namespace MediaBrowser.XbmcMetadata.Providers
             _providerManager = providerManager;
         }
 
+        /// <inheritdoc />
         protected override void Fetch(MetadataResult<MusicArtist> result, string path, CancellationToken cancellationToken)
         {
             new BaseNfoParser<MusicArtist>(_logger, _config, _providerManager).Fetch(result, path, cancellationToken);
         }
 
+        /// <inheritdoc />
         protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
-        {
-            return directoryService.GetFile(Path.Combine(info.Path, "artist.nfo"));
-        }
+            => directoryService.GetFile(Path.Combine(info.Path, "artist.nfo"));
     }
 }

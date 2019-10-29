@@ -610,9 +610,8 @@ namespace MediaBrowser.Api
                             process.Kill();
                         }
                     }
-                    catch (Exception ex)
+                    catch (InvalidOperationException)
                     {
-                        Logger.LogError(ex, "Error killing transcoding job for {Path}", job.Path);
                     }
                 }
             }

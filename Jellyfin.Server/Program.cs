@@ -18,17 +18,19 @@ using Jellyfin.Drawing.Skia;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.AspNetCore;
+using Serilog.Extensions.Logging;
 using SQLitePCL;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server
 {
+    /// <summary>
+    /// Class containing the entry point of the application.
+    /// </summary>
     public static class Program
     {
         private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
@@ -36,17 +38,22 @@ namespace Jellyfin.Server
         private static ILogger _logger;
         private static bool _restartOnShutdown;
 
+        /// <summary>
+        /// The entry point of the application.
+        /// </summary>
+        /// <param name="args">The command line arguments passed.</param>
+        /// <returns><see cref="Task" />.</returns>
         public static Task Main(string[] args)
         {
             // For backwards compatibility.
             // Modify any input arguments now which start with single-hyphen to POSIX standard
             // double-hyphen to allow parsing by CommandLineParser package.
-            const string pattern = @"^(-[^-\s]{2})"; // Match -xx, not -x, not --xx, not xx
-            const string substitution = @"-$1"; // Prepend with additional single-hyphen
-            var regex = new Regex(pattern);
+            const string Pattern = @"^(-[^-\s]{2})"; // Match -xx, not -x, not --xx, not xx
+            const string Substitution = @"-$1"; // Prepend with additional single-hyphen
+            var regex = new Regex(Pattern);
             for (var i = 0; i < args.Length; i++)
             {
-                args[i] = regex.Replace(args[i], substitution);
+                args[i] = regex.Replace(args[i], Substitution);
             }
 
             // Parse the command line arguments and either start the app or exit indicating error
@@ -54,7 +61,10 @@ namespace Jellyfin.Server
                 .MapResult(StartApp, _ => Task.CompletedTask);
         }
 
-        public static void Shutdown()
+        /// <summary>
+        /// Shuts down the application.
+        /// </summary>
+        internal static void Shutdown()
         {
             if (!_tokenSource.IsCancellationRequested)
             {
@@ -62,7 +72,10 @@ namespace Jellyfin.Server
             }
         }
 
-        public static void Restart()
+        /// <summary>
+        /// Restarts the application.
+        /// </summary>
+        internal static void Restart()
         {
             _restartOnShutdown = true;
 
@@ -71,6 +84,8 @@ namespace Jellyfin.Server
 
         private static async Task StartApp(StartupOptions options)
         {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
             ServerApplicationPaths appPaths = CreateApplicationPaths(options);
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
@@ -112,7 +127,9 @@ namespace Jellyfin.Server
                 Shutdown();
             };
 
-            _logger.LogInformation("Jellyfin version: {Version}", Assembly.GetEntryAssembly().GetName().Version);
+            _logger.LogInformation(
+                "Jellyfin version: {Version}",
+                Assembly.GetEntryAssembly().GetName().Version.ToString(3));
 
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
@@ -134,17 +151,18 @@ namespace Jellyfin.Server
             Batteries_V2.Init();
             if (raw.sqlite3_enable_shared_cache(1) != raw.SQLITE_OK)
             {
-                Console.WriteLine("WARN: Failed to enable shared cache for SQLite");
+                _logger.LogWarning("Failed to enable shared cache for SQLite");
             }
 
-            using (var appHost = new CoreAppHost(
+            var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
                 new NullImageEncoder(),
                 new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
-                appConfig))
+                appConfig);
+            try
             {
                 await appHost.InitAsync(new ServiceCollection()).ConfigureAwait(false);
 
@@ -152,15 +170,24 @@ namespace Jellyfin.Server
 
                 await appHost.RunStartupTasksAsync().ConfigureAwait(false);
 
-                try
-                {
-                    // Block main thread until shutdown
-                    await Task.Delay(-1, _tokenSource.Token).ConfigureAwait(false);
-                }
-                catch (TaskCanceledException)
-                {
-                    // Don't throw on cancellation
-                }
+                stopWatch.Stop();
+
+                _logger.LogInformation("Startup complete {Time:g}", stopWatch.Elapsed);
+
+                // Block main thread until shutdown
+                await Task.Delay(-1, _tokenSource.Token).ConfigureAwait(false);
+            }
+            catch (TaskCanceledException)
+            {
+                // Don't throw on cancellation
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "Error while starting server.");
+            }
+            finally
+            {
+                appHost?.Dispose();
             }
 
             if (_restartOnShutdown)
@@ -172,11 +199,12 @@ namespace Jellyfin.Server
         /// <summary>
         /// Create the data, config and log paths from the variety of inputs(command line args,
         /// environment variables) or decide on what default to use. For Windows it's %AppPath%
-        /// for everything else the XDG approach is followed:
-        /// https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+        /// for everything else the
+        /// <a href="https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html">XDG approach</a>
+        /// is followed.
         /// </summary>
-        /// <param name="options">StartupOptions</param>
-        /// <returns>ServerApplicationPaths</returns>
+        /// <param name="options">The <see cref="StartupOptions" /> for this instance.</param>
+        /// <returns><see cref="ServerApplicationPaths" />.</returns>
         private static ServerApplicationPaths CreateApplicationPaths(StartupOptions options)
         {
             // dataDir
@@ -292,7 +320,7 @@ namespace Jellyfin.Server
                 if (string.IsNullOrEmpty(webDir))
                 {
                     // Use default location under ResourcesPath
-                    webDir = Path.Combine(AppContext.BaseDirectory, "jellyfin-web", "src");
+                    webDir = Path.Combine(AppContext.BaseDirectory, "jellyfin-web");
                 }
             }
 
@@ -348,7 +376,7 @@ namespace Jellyfin.Server
 
             return new ConfigurationBuilder()
                 .SetBasePath(appPaths.ConfigurationDirectoryPath)
-                .AddJsonFile("logging.json")
+                .AddJsonFile("logging.json", false, true)
                 .AddEnvironmentVariables("JELLYFIN_")
                 .AddInMemoryCollection(ConfigurationOptions.Configuration)
                 .Build();

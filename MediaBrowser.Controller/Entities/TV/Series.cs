@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
@@ -9,7 +11,6 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.TV
@@ -30,23 +31,26 @@ namespace MediaBrowser.Controller.Entities.TV
         public DayOfWeek[] AirDays { get; set; }
         public string AirTime { get; set; }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsAddingToPlaylist => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool IsPreSorted => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsDateLastMediaAdded => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => true;
 
-        public Guid[] LocalTrailerIds { get; set; }
-        public Guid[] RemoteTrailerIds { get; set; }
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> LocalTrailerIds { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
 
         /// <summary>
         /// airdate, dvd or absolute
@@ -91,7 +95,7 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             var folders = LibraryManager.GetCollectionFolders(this)
-                .Select(i => i.Id.ToString("N"))
+                .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
                 .ToArray();
 
             if (folders.Length == 0)
@@ -500,7 +504,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return list;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool StopRefreshIfLocalMetadataFound => false;
     }
 }

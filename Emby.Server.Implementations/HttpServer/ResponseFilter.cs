@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -9,7 +10,7 @@ namespace Emby.Server.Implementations.HttpServer
 {
     public class ResponseFilter
     {
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
         private readonly ILogger _logger;
 
         public ResponseFilter(ILogger logger)
@@ -23,12 +24,12 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="req">The req.</param>
         /// <param name="res">The res.</param>
         /// <param name="dto">The dto.</param>
-        public void FilterResponse(IRequest req, IResponse res, object dto)
+        public void FilterResponse(IRequest req, HttpResponse res, object dto)
         {
             // Try to prevent compatibility view
-            res.AddHeader("Access-Control-Allow-Headers", "Accept, Accept-Language, Authorization, Cache-Control, Content-Disposition, Content-Encoding, Content-Language, Content-Length, Content-MD5, Content-Range, Content-Type, Date, Host, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Origin, OriginToken, Pragma, Range, Slug, Transfer-Encoding, Want-Digest, X-MediaBrowser-Token, X-Emby-Authorization");
-            res.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-            res.AddHeader("Access-Control-Allow-Origin", "*");
+            res.Headers.Add("Access-Control-Allow-Headers", "Accept, Accept-Language, Authorization, Cache-Control, Content-Disposition, Content-Encoding, Content-Language, Content-Length, Content-MD5, Content-Range, Content-Type, Date, Host, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Origin, OriginToken, Pragma, Range, Slug, Transfer-Encoding, Want-Digest, X-MediaBrowser-Token, X-Emby-Authorization");
+            res.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+            res.Headers.Add("Access-Control-Allow-Origin", "*");
 
             if (dto is Exception exception)
             {
@@ -39,7 +40,7 @@ namespace Emby.Server.Implementations.HttpServer
                     var error = exception.Message.Replace(Environment.NewLine, " ");
                     error = RemoveControlCharacters(error);
 
-                    res.AddHeader("X-Application-Error-Code", error);
+                    res.Headers.Add("X-Application-Error-Code", error);
                 }
             }
 
@@ -54,12 +55,11 @@ namespace Emby.Server.Implementations.HttpServer
                 if (hasHeaders.Headers.TryGetValue(HeaderNames.ContentLength, out string contentLength)
                     && !string.IsNullOrEmpty(contentLength))
                 {
-                    var length = long.Parse(contentLength, UsCulture);
+                    var length = long.Parse(contentLength, _usCulture);
 
                     if (length > 0)
                     {
-                        res.OriginalResponse.ContentLength = length;
-                        res.SendChunked = false;
+                        res.ContentLength = length;
                     }
                 }
             }
@@ -72,9 +72,12 @@ namespace Emby.Server.Implementations.HttpServer
         /// <returns>System.String.</returns>
         public static string RemoveControlCharacters(string inString)
         {
-            if (inString == null) return null;
+            if (inString == null)
+            {
+                return null;
+            }
 
-            var newString = new StringBuilder();
+            var newString = new StringBuilder(inString.Length);
 
             foreach (var ch in inString)
             {
@@ -83,6 +86,7 @@ namespace Emby.Server.Implementations.HttpServer
                     newString.Append(ch);
                 }
             }
+
             return newString.ToString();
         }
     }

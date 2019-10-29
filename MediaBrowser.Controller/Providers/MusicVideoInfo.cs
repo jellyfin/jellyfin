@@ -1,7 +1,9 @@
+using System.Collections.Generic;
+
 namespace MediaBrowser.Controller.Providers
 {
     public class MusicVideoInfo : ItemLookupInfo
     {
-        public string[] Artists { get; set; }
+        public IReadOnlyList<string> Artists { get; set; }
     }
 }

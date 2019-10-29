@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _lastProgressMessageTimes[item.Id] = DateTime.UtcNow;
 
             var dict = new Dictionary<string, string>();
-            dict["ItemId"] = item.Id.ToString("N");
+            dict["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture);
             dict["Progress"] = progress.ToString(CultureInfo.InvariantCulture);
 
             try
@@ -116,7 +116,7 @@ namespace Emby.Server.Implementations.EntryPoints
             foreach (var collectionFolder in collectionFolders)
             {
                 var collectionFolderDict = new Dictionary<string, string>();
-                collectionFolderDict["ItemId"] = collectionFolder.Id.ToString("N");
+                collectionFolderDict["ItemId"] = collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture);
                 collectionFolderDict["Progress"] = (collectionFolder.GetRefreshProgress() ?? 0).ToString(CultureInfo.InvariantCulture);
 
                 try
@@ -378,15 +378,15 @@ namespace Emby.Server.Implementations.EntryPoints
 
             return new LibraryUpdateInfo
             {
-                ItemsAdded = itemsAdded.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N")).Distinct().ToArray(),
+                ItemsAdded = itemsAdded.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
 
-                ItemsUpdated = itemsUpdated.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N")).Distinct().ToArray(),
+                ItemsUpdated = itemsUpdated.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
 
-                ItemsRemoved = itemsRemoved.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, true)).Select(i => i.Id.ToString("N")).Distinct().ToArray(),
+                ItemsRemoved = itemsRemoved.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, true)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
 
-                FoldersAddedTo = foldersAddedTo.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N")).Distinct().ToArray(),
+                FoldersAddedTo = foldersAddedTo.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
 
-                FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N")).Distinct().ToArray(),
+                FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
 
                 CollectionFolders = GetTopParentIds(newAndRemoved, allUserRootChildren).ToArray()
             };
@@ -422,7 +422,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 var collectionFolders = _libraryManager.GetCollectionFolders(item, allUserRootChildren);
                 foreach (var folder in allUserRootChildren)
                 {
-                    list.Add(folder.Id.ToString("N"));
+                    list.Add(folder.Id.ToString("N", CultureInfo.InvariantCulture));
                 }
             }
 

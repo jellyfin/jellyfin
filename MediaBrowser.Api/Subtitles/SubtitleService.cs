@@ -168,7 +168,7 @@ namespace MediaBrowser.Api.Subtitles
             builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
             builder.AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
 
-            long positionTicks = 0; 
+            long positionTicks = 0;
 
             var accessToken = _authContext.GetAuthorizationInfo(Request).Token;
 
@@ -206,7 +206,7 @@ namespace MediaBrowser.Api.Subtitles
             {
                 var item = (Video)_libraryManager.GetItemById(request.Id);
 
-                var idString = request.Id.ToString("N");
+                var idString = request.Id.ToString("N", CultureInfo.InvariantCulture);
                 var mediaSource = _mediaSourceManager.GetStaticMediaSources(item, false, null)
                     .First(i => string.Equals(i.Id, request.MediaSourceId ?? idString));
 

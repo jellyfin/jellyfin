@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _streamHelper = streamHelper;
 
             _seriesTimerProvider = new SeriesTimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers.json"));
-            _timerProvider = new TimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "timers.json"), _logger);
+            _timerProvider = new TimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "timers.json"));
             _timerProvider.TimerFired += _timerProvider_TimerFired;
 
             _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
@@ -681,7 +681,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
-            timer.Id = Guid.NewGuid().ToString("N");
+            timer.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
             LiveTvProgram programInfo = null;
 
@@ -713,7 +713,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public async Task<string> CreateSeriesTimer(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
-            info.Id = Guid.NewGuid().ToString("N");
+            info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
             // populate info.seriesID
             var program = GetProgramInfoFromCache(info.ProgramId);
@@ -1059,7 +1059,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var json = _jsonSerializer.SerializeToString(mediaSource);
             mediaSource = _jsonSerializer.DeserializeFromString<MediaSourceInfo>(json);
 
-            mediaSource.Id = Guid.NewGuid().ToString("N") + "_" + mediaSource.Id;
+            mediaSource.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture) + "_" + mediaSource.Id;
 
             //if (mediaSource.DateLiveStreamOpened.HasValue && enableStreamSharing)
             //{
@@ -2529,7 +2529,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var timer = new TimerInfo
             {
                 ChannelId = channelId,
-                Id = (seriesTimer.Id + parent.ExternalId).GetMD5().ToString("N"),
+                Id = (seriesTimer.Id + parent.ExternalId).GetMD5().ToString("N", CultureInfo.InvariantCulture),
                 StartDate = parent.StartDate,
                 EndDate = parent.EndDate.Value,
                 ProgramId = parent.ExternalId,

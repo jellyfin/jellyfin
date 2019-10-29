@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -141,7 +142,7 @@ namespace Emby.Dlna.PlayTo
                 return usn;
             }
 
-            return usn.GetMD5().ToString("N");
+            return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
         private async Task AddDevice(UpnpDeviceInfo info, string location, CancellationToken cancellationToken)
@@ -156,7 +157,7 @@ namespace Emby.Dlna.PlayTo
             }
             else
             {
-                uuid = location.GetMD5().ToString("N");
+                uuid = location.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
 
             var sessionInfo = _sessionManager.LogSessionActivity("DLNA", _appHost.ApplicationVersion, uuid, null, uri.OriginalString, null);

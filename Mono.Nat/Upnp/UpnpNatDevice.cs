@@ -27,11 +27,9 @@
 //
 
 using System;
-using System.IO;
 using System.Net;
 using System.Xml;
 using System.Text;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
@@ -96,7 +94,7 @@ namespace Mono.Nat.Upnp
         public async Task GetServicesList()
         {
             // Create a HTTPWebRequest to download the list of services the device offers
-            var message = new GetServicesMessage(this.serviceDescriptionUrl, this.hostEndPoint, _logger);
+            var message = new GetServicesMessage(this.serviceDescriptionUrl, this.hostEndPoint);
 
             using (var response = await _httpClient.SendAsync(message.Encode(), message.Method).ConfigureAwait(false))
             {

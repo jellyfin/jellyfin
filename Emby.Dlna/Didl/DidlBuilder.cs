@@ -158,7 +158,7 @@ namespace Emby.Dlna.Didl
 
             AddGeneralProperties(item, null, context, writer, filter);
 
-            AddSamsungBookmarkInfo(item, user, writer);
+            AddSamsungBookmarkInfo(item, user, writer, streamInfo);
 
             // refID?
             // storeAttribute(itemNode, object, ClassProperties.REF_ID, false);
@@ -581,7 +581,7 @@ namespace Emby.Dlna.Didl
             writer.WriteFullEndElement();
         }
 
-        private void AddSamsungBookmarkInfo(BaseItem item, User user, XmlWriter writer)
+        private void AddSamsungBookmarkInfo(BaseItem item, User user, XmlWriter writer, StreamInfo streamInfo)
         {
             if (!item.SupportsPositionTicksResume || item is Folder)
             {
@@ -605,10 +605,11 @@ namespace Emby.Dlna.Didl
             }
 
             var userdata = _userDataManager.GetUserData(user, item);
+            var playbackPositionTicks = (streamInfo != null && streamInfo.StartPositionTicks > 0) ? streamInfo.StartPositionTicks : userdata.PlaybackPositionTicks;
 
-            if (userdata.PlaybackPositionTicks > 0)
+            if (playbackPositionTicks > 0)
             {
-                var elementValue = string.Format("BM={0}", Convert.ToInt32(TimeSpan.FromTicks(userdata.PlaybackPositionTicks).TotalSeconds).ToString(_usCulture));
+                var elementValue = string.Format("BM={0}", Convert.ToInt32(TimeSpan.FromTicks(playbackPositionTicks).TotalSeconds).ToString(_usCulture));
                 AddValue(writer, "sec", "dcmInfo", elementValue, secAttribute.Value);
             }
         }
@@ -1082,7 +1083,7 @@ namespace Emby.Dlna.Didl
 
         public static string GetClientId(Guid idValue, StubType? stubType)
         {
-            var id = idValue.ToString("N");
+            var id = idValue.ToString("N", CultureInfo.InvariantCulture);
 
             if (stubType.HasValue)
             {
@@ -1096,7 +1097,7 @@ namespace Emby.Dlna.Didl
         {
             var url = string.Format("{0}/Items/{1}/Images/{2}/0/{3}/{4}/{5}/{6}/0/0",
                 _serverAddress,
-                info.ItemId.ToString("N"),
+                info.ItemId.ToString("N", CultureInfo.InvariantCulture),
                 info.Type,
                 info.ImageTag,
                 format,

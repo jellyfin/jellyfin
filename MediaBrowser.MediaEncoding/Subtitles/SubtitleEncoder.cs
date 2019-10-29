@@ -506,12 +506,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (failed)
             {
-                var msg = string.Format("ffmpeg subtitle conversion failed for {Path}", inputPath);
+                _logger.LogError("ffmpeg subtitle conversion failed for {Path}", inputPath);
 
-                _logger.LogError(msg);
-
-                throw new Exception(msg);
+                throw new Exception(
+                    string.Format(CultureInfo.InvariantCulture, "ffmpeg subtitle conversion failed for {0}", inputPath));
             }
+
             await SetAssFont(outputPath).ConfigureAwait(false);
 
             _logger.LogInformation("ffmpeg subtitle conversion succeeded for {Path}", inputPath);

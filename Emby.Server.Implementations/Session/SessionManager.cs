@@ -327,7 +327,7 @@ namespace Emby.Server.Implementations.Session
         {
             if (string.IsNullOrEmpty(info.MediaSourceId))
             {
-                info.MediaSourceId = info.ItemId.ToString("N");
+                info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
             }
 
             if (!info.ItemId.Equals(Guid.Empty) && info.Item == null && libraryItem != null)
@@ -463,7 +463,7 @@ namespace Emby.Server.Implementations.Session
                 Client = appName,
                 DeviceId = deviceId,
                 ApplicationVersion = appVersion,
-                Id = key.GetMD5().ToString("N"),
+                Id = key.GetMD5().ToString("N", CultureInfo.InvariantCulture),
                 ServerId = _appHost.SystemId
             };
 
@@ -845,7 +845,7 @@ namespace Emby.Server.Implementations.Session
             // Normalize
             if (string.IsNullOrEmpty(info.MediaSourceId))
             {
-                info.MediaSourceId = info.ItemId.ToString("N");
+                info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
             }
 
             if (!info.ItemId.Equals(Guid.Empty) && info.Item == null && libraryItem != null)
@@ -1029,7 +1029,7 @@ namespace Emby.Server.Implementations.Session
         private static async Task SendMessageToSession<T>(SessionInfo session, string name, T data, CancellationToken cancellationToken)
         {
             var controllers = session.SessionControllers.ToArray();
-            var messageId = Guid.NewGuid().ToString("N");
+            var messageId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
             foreach (var controller in controllers)
             {
@@ -1041,7 +1041,7 @@ namespace Emby.Server.Implementations.Session
         {
             IEnumerable<Task> GetTasks()
             {
-                var messageId = Guid.NewGuid().ToString("N");
+                var messageId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
                 foreach (var session in sessions)
                 {
                     var controllers = session.SessionControllers;
@@ -1234,7 +1234,7 @@ namespace Emby.Server.Implementations.Session
                 AssertCanControl(session, controllingSession);
                 if (!controllingSession.UserId.Equals(Guid.Empty))
                 {
-                    command.ControllingUserId = controllingSession.UserId.ToString("N");
+                    command.ControllingUserId = controllingSession.UserId.ToString("N", CultureInfo.InvariantCulture);
                 }
             }
 
@@ -1375,16 +1375,14 @@ namespace Emby.Server.Implementations.Session
             CheckDisposed();
 
             User user = null;
-            if (!request.UserId.Equals(Guid.Empty))
+            if (request.UserId != Guid.Empty)
             {
-                user = _userManager.Users
-                    .FirstOrDefault(i => i.Id == request.UserId);
+                user = _userManager.GetUserById(request.UserId);
             }
 
             if (user == null)
             {
-                user = _userManager.Users
-                    .FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
+                user = _userManager.GetUserByName(request.Username);
             }
 
             if (user != null)
@@ -1484,7 +1482,7 @@ namespace Emby.Server.Implementations.Session
                 DeviceId = deviceId,
                 DeviceName = deviceName,
                 UserId = user.Id,
-                AccessToken = Guid.NewGuid().ToString("N"),
+                AccessToken = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
                 UserName = user.Name
             };
 
@@ -1822,6 +1820,7 @@ namespace Emby.Server.Implementations.Session
             CheckDisposed();
 
             var sessions = Sessions.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
+
             return SendMessageToSessions(sessions, name, data, cancellationToken);
         }
 
@@ -1831,6 +1830,7 @@ namespace Emby.Server.Implementations.Session
 
             var sessions = Sessions
                 .Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase) || IsAdminSession(i));
+
             return SendMessageToSessions(sessions, name, data, cancellationToken);
         }
 

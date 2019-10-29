@@ -18,10 +18,6 @@ namespace Emby.Server.Implementations.Data
 
             connection.RunInTransaction(conn =>
             {
-                //foreach (var query in queries)
-                //{
-                //    conn.Execute(query);
-                //}
                 conn.ExecuteAll(string.Join(";", queries));
             });
         }

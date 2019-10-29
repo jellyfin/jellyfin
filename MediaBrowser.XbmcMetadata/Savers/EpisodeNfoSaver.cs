@@ -14,43 +14,43 @@ namespace MediaBrowser.XbmcMetadata.Savers
 {
     public class EpisodeNfoSaver : BaseNfoSaver
     {
+        public EpisodeNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
+            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
+        {
+        }
+
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+
+        /// <inheritdoc />
         protected override string GetLocalSavePath(BaseItem item)
-        {
-            return Path.ChangeExtension(item.Path, ".nfo");
-        }
+            => Path.ChangeExtension(item.Path, ".nfo");
 
+        /// <inheritdoc />
         protected override string GetRootElementName(BaseItem item)
-        {
-            return "episodedetails";
-        }
+            => "episodedetails";
 
+        /// <inheritdoc />
         public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
-        {
-            if (!item.SupportsLocalMetadata)
-            {
-                return false;
-            }
+            => item.SupportsLocalMetadata && item is Episode && updateType >= MinimumUpdateType;
 
-            return item is Episode && updateType >= MinimumUpdateType;
-        }
-
+        /// <inheritdoc />
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
             var episode = (Episode)item;
 
             if (episode.IndexNumber.HasValue)
             {
-                writer.WriteElementString("episode", episode.IndexNumber.Value.ToString(UsCulture));
+                writer.WriteElementString("episode", episode.IndexNumber.Value.ToString(_usCulture));
             }
 
             if (episode.IndexNumberEnd.HasValue)
             {
-                writer.WriteElementString("episodenumberend", episode.IndexNumberEnd.Value.ToString(UsCulture));
+                writer.WriteElementString("episodenumberend", episode.IndexNumberEnd.Value.ToString(_usCulture));
             }
 
             if (episode.ParentIndexNumber.HasValue)
             {
-                writer.WriteElementString("season", episode.ParentIndexNumber.Value.ToString(UsCulture));
+                writer.WriteElementString("season", episode.ParentIndexNumber.Value.ToString(_usCulture));
             }
 
             if (episode.PremiereDate.HasValue)
@@ -64,32 +64,33 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 if (episode.AirsAfterSeasonNumber.HasValue && episode.AirsAfterSeasonNumber.Value != -1)
                 {
-                    writer.WriteElementString("airsafter_season", episode.AirsAfterSeasonNumber.Value.ToString(UsCulture));
-                }
-                if (episode.AirsBeforeEpisodeNumber.HasValue && episode.AirsBeforeEpisodeNumber.Value != -1)
-                {
-                    writer.WriteElementString("airsbefore_episode", episode.AirsBeforeEpisodeNumber.Value.ToString(UsCulture));
-                }
-                if (episode.AirsBeforeSeasonNumber.HasValue && episode.AirsBeforeSeasonNumber.Value != -1)
-                {
-                    writer.WriteElementString("airsbefore_season", episode.AirsBeforeSeasonNumber.Value.ToString(UsCulture));
+                    writer.WriteElementString("airsafter_season", episode.AirsAfterSeasonNumber.Value.ToString(_usCulture));
                 }
 
                 if (episode.AirsBeforeEpisodeNumber.HasValue && episode.AirsBeforeEpisodeNumber.Value != -1)
                 {
-                    writer.WriteElementString("displayepisode", episode.AirsBeforeEpisodeNumber.Value.ToString(UsCulture));
+                    writer.WriteElementString("airsbefore_episode", episode.AirsBeforeEpisodeNumber.Value.ToString(_usCulture));
+                }
+
+                if (episode.AirsBeforeSeasonNumber.HasValue && episode.AirsBeforeSeasonNumber.Value != -1)
+                {
+                    writer.WriteElementString("airsbefore_season", episode.AirsBeforeSeasonNumber.Value.ToString(_usCulture));
+                }
+
+                if (episode.AirsBeforeEpisodeNumber.HasValue && episode.AirsBeforeEpisodeNumber.Value != -1)
+                {
+                    writer.WriteElementString("displayepisode", episode.AirsBeforeEpisodeNumber.Value.ToString(_usCulture));
                 }
 
                 var specialSeason = episode.AiredSeasonNumber;
                 if (specialSeason.HasValue && specialSeason.Value != -1)
                 {
-                    writer.WriteElementString("displayseason", specialSeason.Value.ToString(UsCulture));
+                    writer.WriteElementString("displayseason", specialSeason.Value.ToString(_usCulture));
                 }
             }
         }
 
-        private readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
+        /// <inheritdoc />
         protected override List<string> GetTagsUsed(BaseItem item)
         {
             var list = base.GetTagsUsed(item);
@@ -105,12 +106,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 "displayseason",
                 "displayepisode"
             });
-            return list;
-        }
 
-        public EpisodeNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
-            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
-        {
+            return list;
         }
     }
 }

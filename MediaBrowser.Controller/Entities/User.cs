@@ -1,11 +1,12 @@
 using System;
+using System.Globalization;
 using System.IO;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
@@ -16,13 +17,6 @@ namespace MediaBrowser.Controller.Entities
     public class User : BaseItem
     {
         public static IUserManager UserManager { get; set; }
-        public static IXmlSerializer XmlSerializer { get; set; }
-
-        /// <summary>
-        /// From now on all user paths will be Id-based.
-        /// This is for backwards compatibility.
-        /// </summary>
-        public bool UsesIdForConfigurationPath { get; set; }
 
         /// <summary>
         /// Gets or sets the password.
@@ -30,9 +24,8 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The password.</value>
         public string Password { get; set; }
         public string EasyPassword { get; set; }
-        public string Salt { get; set; }
 
-        // Strictly to remove IgnoreDataMember
+        // Strictly to remove JsonIgnore
         public override ItemImageInfo[] ImageInfos
         {
             get => base.ImageInfos;
@@ -43,7 +36,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string Path
         {
             get => ConfigurationDirectoryPath;
@@ -72,14 +65,14 @@ namespace MediaBrowser.Controller.Entities
         /// If the item is a folder, it returns the folder itself
         /// </summary>
         /// <value>The containing folder path.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string ContainingFolderPath => Path;
 
         /// <summary>
         /// Gets the root folder.
         /// </summary>
         /// <value>The root folder.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public Folder RootFolder => LibraryManager.GetUserRootFolder();
 
         /// <summary>
@@ -95,7 +88,7 @@ namespace MediaBrowser.Controller.Entities
 
         private volatile UserConfiguration _config;
         private readonly object _configSyncLock = new object();
-        [IgnoreDataMember]
+        [JsonIgnore]
         public UserConfiguration Configuration
         {
             get
@@ -118,7 +111,7 @@ namespace MediaBrowser.Controller.Entities
 
         private volatile UserPolicy _policy;
         private readonly object _policySyncLock = new object();
-        [IgnoreDataMember]
+        [JsonIgnore]
         public UserPolicy Policy
         {
             get
@@ -147,46 +140,23 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException"></exception>
         public Task Rename(string newName)
         {
-            if (string.IsNullOrEmpty(newName))
+            if (string.IsNullOrWhiteSpace(newName))
             {
-                throw new ArgumentNullException(nameof(newName));
-            }
-
-            // If only the casing is changing, leave the file system alone
-            if (!UsesIdForConfigurationPath && !string.Equals(newName, Name, StringComparison.OrdinalIgnoreCase))
-            {
-                UsesIdForConfigurationPath = true;
-
-                // Move configuration
-                var newConfigDirectory = GetConfigurationDirectoryPath(newName);
-                var oldConfigurationDirectory = ConfigurationDirectoryPath;
-
-                // Exceptions will be thrown if these paths already exist
-                if (Directory.Exists(newConfigDirectory))
-                {
-                    Directory.Delete(newConfigDirectory, true);
-                }
-
-                if (Directory.Exists(oldConfigurationDirectory))
-                {
-                    Directory.Move(oldConfigurationDirectory, newConfigDirectory);
-                }
-                else
-                {
-                    Directory.CreateDirectory(newConfigDirectory);
-                }
+                throw new ArgumentException("Username can't be empty", nameof(newName));
             }
 
             Name = newName;
 
-            return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(Logger, FileSystem))
-            {
-                ReplaceAllMetadata = true,
-                ImageRefreshMode = MetadataRefreshMode.FullRefresh,
-                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                ForceSave = true
+            return RefreshMetadata(
+                new MetadataRefreshOptions(new DirectoryService(Logger, FileSystem))
+                {
+                    ReplaceAllMetadata = true,
+                    ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ForceSave = true
 
-            }, CancellationToken.None);
+                },
+                CancellationToken.None);
         }
 
         public override void UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
@@ -198,7 +168,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the path to the user's configuration directory
         /// </summary>
         /// <value>The configuration directory path.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string ConfigurationDirectoryPath => GetConfigurationDirectoryPath(Name);
 
         public override double GetDefaultPrimaryImageAspectRatio()
@@ -215,22 +185,9 @@ namespace MediaBrowser.Controller.Entities
         {
             var parentPath = ConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath;
 
-            // Legacy
-            if (!UsesIdForConfigurationPath)
-            {
-                if (string.IsNullOrEmpty(username))
-                {
-                    throw new ArgumentNullException(nameof(username));
-                }
-
-                var safeFolderName = FileSystem.GetValidFilename(username);
-
-                return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, safeFolderName);
-            }
-
             // TODO: Remove idPath and just use usernamePath for future releases
             var usernamePath = System.IO.Path.Combine(parentPath, username);
-            var idPath = System.IO.Path.Combine(parentPath, Id.ToString("N"));
+            var idPath = System.IO.Path.Combine(parentPath, Id.ToString("N", CultureInfo.InvariantCulture));
             if (!Directory.Exists(usernamePath) && Directory.Exists(idPath))
             {
                 Directory.Move(idPath, usernamePath);
@@ -295,7 +252,7 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => false;
 
         public long InternalId { get; set; }

@@ -57,7 +57,6 @@ namespace Emby.Server.Implementations.Library
             }
 
             var filename = fileInfo.Name;
-            var path = fileInfo.FullName;
 
             // Ignore hidden files on UNIX
             if (Environment.OSVersion.Platform != PlatformID.Win32NT

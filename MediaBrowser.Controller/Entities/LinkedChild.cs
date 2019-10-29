@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text.Json.Serialization;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -11,7 +12,7 @@ namespace MediaBrowser.Controller.Entities
         public LinkedChildType Type { get; set; }
         public string LibraryItemId { get; set; }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string Id { get; set; }
 
         /// <summary>
@@ -29,7 +30,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(child.Path))
             {
-                child.LibraryItemId = item.Id.ToString("N");
+                child.LibraryItemId = item.Id.ToString("N", CultureInfo.InvariantCulture);
             }
 
             return child;
@@ -37,7 +38,7 @@ namespace MediaBrowser.Controller.Entities
 
         public LinkedChild()
         {
-            Id = Guid.NewGuid().ToString("N");
+            Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         }
     }
 

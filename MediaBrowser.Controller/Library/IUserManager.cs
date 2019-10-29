@@ -23,6 +23,12 @@ namespace MediaBrowser.Controller.Library
         IEnumerable<User> Users { get; }
 
         /// <summary>
+        /// Gets the user ids.
+        /// </summary>
+        /// <value>The users ids.</value>
+        IEnumerable<Guid> UsersIds { get; }
+
+        /// <summary>
         /// Occurs when [user updated].
         /// </summary>
         event EventHandler<GenericEventArgs<User>> UserUpdated;
@@ -92,7 +98,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns>User.</returns>
         /// <exception cref="ArgumentNullException">name</exception>
         /// <exception cref="ArgumentException"></exception>
-        Task<User> CreateUser(string name);
+        User CreateUser(string name);
 
         /// <summary>
         /// Deletes the user.
@@ -101,7 +107,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">user</exception>
         /// <exception cref="ArgumentException"></exception>
-        Task DeleteUser(User user);
+        void DeleteUser(User user);
 
         /// <summary>
         /// Resets the password.

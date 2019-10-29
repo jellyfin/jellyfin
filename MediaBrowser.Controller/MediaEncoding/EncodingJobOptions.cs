@@ -118,14 +118,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Gets or sets the profile.
         /// </summary>
         /// <value>The profile.</value>
-        [ApiMember(Name = "Profile", Description = "Optional. Specify a specific h264 profile, e.g. main, baseline, high.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "Profile", Description = "Optional. Specify a specific an encoder profile (varies by encoder), e.g. main, baseline, high.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Profile { get; set; }
 
         /// <summary>
         /// Gets or sets the level.
         /// </summary>
         /// <value>The level.</value>
-        [ApiMember(Name = "Level", Description = "Optional. Specify a level for the h264 profile, e.g. 3, 3.1.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "Level", Description = "Optional. Specify a level for the encoder profile (varies by encoder), e.g. 3, 3.1.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Level { get; set; }
 
         /// <summary>
@@ -212,7 +212,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Gets or sets the video codec.
         /// </summary>
         /// <value>The video codec.</value>
-        [ApiMember(Name = "VideoCodec", Description = "Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h264, mpeg4, theora, vpx, wmv.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "VideoCodec", Description = "Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string VideoCodec { get; set; }
 
         public string SubtitleCodec { get; set; }

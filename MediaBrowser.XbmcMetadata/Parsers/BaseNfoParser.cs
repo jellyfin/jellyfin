@@ -22,13 +22,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
     public class BaseNfoParser<T>
         where T : BaseItem
     {
-        /// <summary>
-        /// The logger
-        /// </summary>
-        protected ILogger Logger { get; private set; }
-        protected IProviderManager ProviderManager { get; private set; }
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IConfigurationManager _config;
         private Dictionary<string, string> _validProviderIds;
 
@@ -41,6 +34,19 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             _config = config;
             ProviderManager = providerManager;
         }
+
+        protected CultureInfo UsCulture { get; } = new CultureInfo("en-US");
+
+        /// <summary>
+        /// Gets the logger.
+        /// </summary>
+        protected ILogger Logger { get; }
+
+        protected IProviderManager ProviderManager { get; }
+
+        protected virtual bool SupportsUrlAfterClosingXmlTag => false;
+
+        protected virtual string MovieDbParserSearchString => "themoviedb.org/movie/";
 
         /// <summary>
         /// Fetches metadata for an item from one xml file
@@ -82,8 +88,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             Fetch(item, metadataFile, GetXmlReaderSettings(), cancellationToken);
         }
-
-        protected virtual bool SupportsUrlAfterClosingXmlTag => false;
 
         /// <summary>
         /// Fetches the specified item.
@@ -198,8 +202,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
-        protected virtual string MovieDbParserSearchString => "themoviedb.org/movie/";
-
         protected void ParseProviderLinks(T item, string xml)
         {
             //Look for a match for the Regex pattern "tt" followed by 7 digits
@@ -219,7 +221,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 var tmdbId = xml.Substring(index + srch.Length).TrimEnd('/').Split('-')[0];
                 if (!string.IsNullOrWhiteSpace(tmdbId) && int.TryParse(tmdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
                 {
-                    item.SetProviderId(MetadataProviders.Tmdb, value.ToString(_usCulture));
+                    item.SetProviderId(MetadataProviders.Tmdb, value.ToString(UsCulture));
                 }
             }
 
@@ -234,7 +236,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     var tvdbId = xml.Substring(index + srch.Length).TrimEnd('/');
                     if (!string.IsNullOrWhiteSpace(tvdbId) && int.TryParse(tvdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
                     {
-                        item.SetProviderId(MetadataProviders.Tvdb, value.ToString(_usCulture));
+                        item.SetProviderId(MetadataProviders.Tvdb, value.ToString(UsCulture));
                     }
                 }
             }
@@ -291,7 +293,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrEmpty(text))
                         {
-                            if (float.TryParse(text, NumberStyles.Any, _usCulture, out var value))
+                            if (float.TryParse(text, NumberStyles.Any, UsCulture, out var value))
                             {
                                 item.CriticRating = value;
                             }
@@ -417,7 +419,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(text))
                         {
-                            if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, _usCulture, out var runtime))
+                            if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, UsCulture, out var runtime))
                             {
                                 item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                             }
@@ -870,7 +872,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
-                                    if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var intVal))
+                                    if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var intVal))
                                     {
                                         sortOrder = intVal;
                                     }

@@ -234,7 +234,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the trailer urls.
         /// </summary>
         /// <value>The trailer urls.</value>
-        public MediaUrl[] RemoteTrailers { get; set; }
+        public IReadOnlyCollection<MediaUrl> RemoteTrailers { get; set; }
 
         /// <summary>
         /// Gets or sets the provider ids.
@@ -386,7 +386,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the artists.
         /// </summary>
         /// <value>The artists.</value>
-        public string[] Artists { get; set; }
+        public IReadOnlyList<string> Artists { get; set; }
 
         /// <summary>
         /// Gets or sets the artist items.

@@ -11,7 +11,8 @@ namespace MediaBrowser.Providers.Manager
 {
     public static class ProviderUtils
     {
-        public static void MergeBaseItemData<T>(MetadataResult<T> sourceResult,
+        public static void MergeBaseItemData<T>(
+            MetadataResult<T> sourceResult,
             MetadataResult<T> targetResult,
             MetadataFields[] lockedFields,
             bool replaceData,
@@ -174,11 +175,11 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            MergeAlbumArtist(source, target, lockedFields, replaceData);
-            MergeCriticRating(source, target, lockedFields, replaceData);
-            MergeTrailers(source, target, lockedFields, replaceData);
-            MergeVideoInfo(source, target, lockedFields, replaceData);
-            MergeDisplayOrder(source, target, lockedFields, replaceData);
+            MergeAlbumArtist(source, target, replaceData);
+            MergeCriticRating(source, target, replaceData);
+            MergeTrailers(source, target, replaceData);
+            MergeVideoInfo(source, target, replaceData);
+            MergeDisplayOrder(source, target, replaceData);
 
             if (replaceData || string.IsNullOrEmpty(target.ForcedSortName))
             {
@@ -196,7 +197,7 @@ namespace MediaBrowser.Providers.Manager
                 target.IsLocked = source.IsLocked;
 
                 // Grab the value if it's there, but if not then don't overwrite the default
-                if (source.DateCreated != default(DateTime))
+                if (source.DateCreated != default)
                 {
                     target.DateCreated = source.DateCreated;
                 }
@@ -231,12 +232,10 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private static void MergeDisplayOrder(BaseItem source, BaseItem target, MetadataFields[] lockedFields, bool replaceData)
+        private static void MergeDisplayOrder(BaseItem source, BaseItem target, bool replaceData)
         {
-            var sourceHasDisplayOrder = source as IHasDisplayOrder;
-            var targetHasDisplayOrder = target as IHasDisplayOrder;
-
-            if (sourceHasDisplayOrder != null && targetHasDisplayOrder != null)
+            if (source is IHasDisplayOrder sourceHasDisplayOrder
+                && target is IHasDisplayOrder targetHasDisplayOrder)
             {
                 if (replaceData || string.IsNullOrEmpty(targetHasDisplayOrder.DisplayOrder))
                 {
@@ -250,21 +249,19 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private static void MergeAlbumArtist(BaseItem source, BaseItem target, MetadataFields[] lockedFields, bool replaceData)
+        private static void MergeAlbumArtist(BaseItem source, BaseItem target, bool replaceData)
         {
-            var sourceHasAlbumArtist = source as IHasAlbumArtist;
-            var targetHasAlbumArtist = target as IHasAlbumArtist;
-
-            if (sourceHasAlbumArtist != null && targetHasAlbumArtist != null)
+            if (source is IHasAlbumArtist sourceHasAlbumArtist
+                && target is IHasAlbumArtist targetHasAlbumArtist)
             {
-                if (replaceData || targetHasAlbumArtist.AlbumArtists.Length == 0)
+                if (replaceData || targetHasAlbumArtist.AlbumArtists.Count == 0)
                 {
                     targetHasAlbumArtist.AlbumArtists = sourceHasAlbumArtist.AlbumArtists;
                 }
             }
         }
 
-        private static void MergeCriticRating(BaseItem source, BaseItem target, MetadataFields[] lockedFields, bool replaceData)
+        private static void MergeCriticRating(BaseItem source, BaseItem target, bool replaceData)
         {
             if (replaceData || !target.CriticRating.HasValue)
             {
@@ -272,20 +269,17 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private static void MergeTrailers(BaseItem source, BaseItem target, MetadataFields[] lockedFields, bool replaceData)
+        private static void MergeTrailers(BaseItem source, BaseItem target, bool replaceData)
         {
-            if (replaceData || target.RemoteTrailers.Length == 0)
+            if (replaceData || target.RemoteTrailers.Count == 0)
             {
                 target.RemoteTrailers = source.RemoteTrailers;
             }
         }
 
-        private static void MergeVideoInfo(BaseItem source, BaseItem target, MetadataFields[] lockedFields, bool replaceData)
+        private static void MergeVideoInfo(BaseItem source, BaseItem target, bool replaceData)
         {
-            var sourceCast = source as Video;
-            var targetCast = target as Video;
-
-            if (sourceCast != null && targetCast != null)
+            if (source is Video sourceCast && target is Video targetCast)
             {
                 if (replaceData || targetCast.Video3DFormat == null)
                 {

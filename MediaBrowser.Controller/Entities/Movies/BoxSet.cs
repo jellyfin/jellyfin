@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.Movies
@@ -24,17 +24,20 @@ namespace MediaBrowser.Controller.Entities.Movies
             DisplayOrder = ItemSortBy.PremiereDate;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         protected override bool FilterLinkedChildrenPerUser => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => true;
 
-        public Guid[] LocalTrailerIds { get; set; }
-        public Guid[] RemoteTrailerIds { get; set; }
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> LocalTrailerIds { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
 
         /// <summary>
         /// Gets or sets the display order.
@@ -61,7 +64,8 @@ namespace MediaBrowser.Controller.Entities.Movies
             {
                 return base.GetNonCachedChildren(directoryService);
             }
-            return new List<BaseItem>();
+
+            return Enumerable.Empty<BaseItem>();
         }
 
         protected override List<BaseItem> LoadChildren()
@@ -75,7 +79,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return new List<BaseItem>();
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         private bool IsLegacyBoxSet
         {
             get
@@ -94,7 +98,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool IsPreSorted => true;
 
         public override bool IsAuthorizedToDelete(User user, List<Folder> allCollectionFolders)

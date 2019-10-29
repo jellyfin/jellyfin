@@ -269,7 +269,7 @@ namespace Emby.Server.Implementations.Library
 
         private static void SetKeyProperties(IMediaSourceProvider provider, MediaSourceInfo mediaSource)
         {
-            var prefix = provider.GetType().FullName.GetMD5().ToString("N") + LiveStreamIdDelimeter;
+            var prefix = provider.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture) + LiveStreamIdDelimeter;
 
             if (!string.IsNullOrEmpty(mediaSource.OpenToken) && !mediaSource.OpenToken.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
@@ -626,7 +626,7 @@ namespace Emby.Server.Implementations.Library
             var now = DateTime.UtcNow;
 
             MediaInfo mediaInfo = null;
-            var cacheFilePath = string.IsNullOrEmpty(cacheKey) ? null : Path.Combine(_appPaths.CachePath, "mediainfo", cacheKey.GetMD5().ToString("N") + ".json");
+            var cacheFilePath = string.IsNullOrEmpty(cacheKey) ? null : Path.Combine(_appPaths.CachePath, "mediainfo", cacheKey.GetMD5().ToString("N", CultureInfo.InvariantCulture) + ".json");
 
             if (!string.IsNullOrEmpty(cacheKey))
             {
@@ -854,7 +854,7 @@ namespace Emby.Server.Implementations.Library
 
             var keys = key.Split(new[] { LiveStreamIdDelimeter }, 2);
 
-            var provider = _providers.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N"), keys[0], StringComparison.OrdinalIgnoreCase));
+            var provider = _providers.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture), keys[0], StringComparison.OrdinalIgnoreCase));
 
             var splitIndex = key.IndexOf(LiveStreamIdDelimeter);
             var keyId = key.Substring(splitIndex + 1);

@@ -13,6 +13,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Users;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -248,7 +249,13 @@ namespace MediaBrowser.Api
         private readonly IDeviceManager _deviceManager;
         private readonly IAuthorizationContext _authContext;
 
-        public UserService(IUserManager userManager, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager, IDeviceManager deviceManager, IAuthorizationContext authContext)
+        public UserService(
+            IUserManager userManager,
+            ISessionManager sessionMananger,
+            IServerConfigurationManager config,
+            INetworkManager networkManager,
+            IDeviceManager deviceManager,
+            IAuthorizationContext authContext)
         {
             _userManager = userManager;
             _sessionMananger = sessionMananger;
@@ -365,8 +372,8 @@ namespace MediaBrowser.Api
             }
 
             _sessionMananger.RevokeUserTokens(user.Id, null);
-
-            return _userManager.DeleteUser(user);
+            _userManager.DeleteUser(user);
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -399,19 +406,27 @@ namespace MediaBrowser.Api
         {
             var auth = _authContext.GetAuthorizationInfo(Request);
 
-            var result = await _sessionMananger.AuthenticateNewSession(new AuthenticationRequest
+            try
             {
-                App = auth.Client,
-                AppVersion = auth.Version,
-                DeviceId = auth.DeviceId,
-                DeviceName = auth.Device,
-                Password = request.Pw,
-                PasswordSha1 = request.Password,
-                RemoteEndPoint = Request.RemoteIp,
-                Username = request.Username
-            }).ConfigureAwait(false);
+                var result = await _sessionMananger.AuthenticateNewSession(new AuthenticationRequest
+                {
+                    App = auth.Client,
+                    AppVersion = auth.Version,
+                    DeviceId = auth.DeviceId,
+                    DeviceName = auth.Device,
+                    Password = request.Pw,
+                    PasswordSha1 = request.Password,
+                    RemoteEndPoint = Request.RemoteIp,
+                    Username = request.Username
+                }).ConfigureAwait(false);
 
-            return ToOptimizedResult(result);
+                return ToOptimizedResult(result);
+            }
+            catch (SecurityException e)
+            {
+                // rethrow adding IP address to message
+                throw new SecurityException($"[{Request.RemoteIp}] {e.Message}");
+            }
         }
 
         /// <summary>
@@ -503,9 +518,14 @@ namespace MediaBrowser.Api
             }
         }
 
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
         public async Task<object> Post(CreateUserByName request)
         {
-            var newUser = await _userManager.CreateUser(request.Name).ConfigureAwait(false);
+            var newUser = _userManager.CreateUser(request.Name);
 
             // no need to authenticate password for new user
             if (request.Password != null)

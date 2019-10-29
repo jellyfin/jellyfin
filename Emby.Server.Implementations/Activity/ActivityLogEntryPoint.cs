@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -75,7 +76,6 @@ namespace Emby.Server.Implementations.Activity
             _sessionManager.AuthenticationFailed += OnAuthenticationFailed;
             _sessionManager.AuthenticationSucceeded += OnAuthenticationSucceeded;
             _sessionManager.SessionEnded += OnSessionEnded;
-
             _sessionManager.PlaybackStart += OnPlaybackStart;
             _sessionManager.PlaybackStopped += OnPlaybackStopped;
 
@@ -96,7 +96,10 @@ namespace Emby.Server.Implementations.Activity
         {
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("CameraImageUploadedFrom"), e.Argument.Device.Name),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("CameraImageUploadedFrom"),
+                    e.Argument.Device.Name),
                 Type = NotificationType.CameraImageUploaded.ToString()
             });
         }
@@ -105,7 +108,10 @@ namespace Emby.Server.Implementations.Activity
         {
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("UserLockedOutWithName"), e.Argument.Name),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserLockedOutWithName"),
+                    e.Argument.Name),
                 Type = NotificationType.UserLockedOut.ToString(),
                 UserId = e.Argument.Id
             });
@@ -115,9 +121,13 @@ namespace Emby.Server.Implementations.Activity
         {
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("SubtitleDownloadFailureFromForItem"), e.Provider, Notifications.Notifications.GetItemName(e.Item)),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("SubtitleDownloadFailureFromForItem"),
+                    e.Provider,
+                    Notifications.Notifications.GetItemName(e.Item)),
                 Type = "SubtitleDownloadFailure",
-                ItemId = e.Item.Id.ToString("N"),
+                ItemId = e.Item.Id.ToString("N", CultureInfo.InvariantCulture),
                 ShortOverview = e.Exception.Message
             });
         }
@@ -178,7 +188,12 @@ namespace Emby.Server.Implementations.Activity
 
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("UserStartedPlayingItemWithValues"), user.Name, GetItemName(item), e.DeviceName),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserStartedPlayingItemWithValues"),
+                    user.Name,
+                    GetItemName(item),
+                    e.DeviceName),
                 Type = GetPlaybackNotificationType(item.MediaType),
                 UserId = user.Id
             });
@@ -193,7 +208,7 @@ namespace Emby.Server.Implementations.Activity
                 name = item.SeriesName + " - " + name;
             }
 
-            if (item.Artists != null && item.Artists.Length > 0)
+            if (item.Artists != null && item.Artists.Count > 0)
             {
                 name = item.Artists[0] + " - " + name;
             }
@@ -238,21 +253,31 @@ namespace Emby.Server.Implementations.Activity
 
             if (string.IsNullOrEmpty(session.UserName))
             {
-                name = string.Format(_localization.GetLocalizedString("DeviceOfflineWithName"), session.DeviceName);
+                name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("DeviceOfflineWithName"),
+                    session.DeviceName);
 
                 // Causing too much spam for now
                 return;
             }
             else
             {
-                name = string.Format(_localization.GetLocalizedString("UserOfflineFromDevice"), session.UserName, session.DeviceName);
+                name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserOfflineFromDevice"),
+                    session.UserName,
+                    session.DeviceName);
             }
 
             CreateLogEntry(new ActivityLogEntry
             {
                 Name = name,
                 Type = "SessionEnded",
-                ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), session.RemoteEndPoint),
+                ShortOverview = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("LabelIpAddressValue"),
+                    session.RemoteEndPoint),
                 UserId = session.UserId
             });
         }
@@ -263,9 +288,15 @@ namespace Emby.Server.Implementations.Activity
 
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("AuthenticationSucceededWithUserName"), user.Name),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("AuthenticationSucceededWithUserName"),
+                    user.Name),
                 Type = "AuthenticationSucceeded",
-                ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), e.Argument.SessionInfo.RemoteEndPoint),
+                ShortOverview = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("LabelIpAddressValue"),
+                    e.Argument.SessionInfo.RemoteEndPoint),
                 UserId = user.Id
             });
         }
@@ -274,9 +305,15 @@ namespace Emby.Server.Implementations.Activity
         {
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("FailedLoginAttemptWithUserName"), e.Argument.Username),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("FailedLoginAttemptWithUserName"),
+                    e.Argument.Username),
                 Type = "AuthenticationFailed",
-                ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), e.Argument.RemoteEndPoint),
+                ShortOverview = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("LabelIpAddressValue"),
+                    e.Argument.RemoteEndPoint),
                 Severity = LogLevel.Error
             });
         }
@@ -285,7 +322,10 @@ namespace Emby.Server.Implementations.Activity
         {
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("UserPolicyUpdatedWithName"), e.Argument.Name),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserPolicyUpdatedWithName"),
+                    e.Argument.Name),
                 Type = "UserPolicyUpdated",
                 UserId = e.Argument.Id
             });
@@ -295,7 +335,10 @@ namespace Emby.Server.Implementations.Activity
         {
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("UserDeletedWithName"), e.Argument.Name),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserDeletedWithName"),
+                    e.Argument.Name),
                 Type = "UserDeleted"
             });
         }
@@ -304,7 +347,10 @@ namespace Emby.Server.Implementations.Activity
         {
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("UserPasswordChangedWithName"), e.Argument.Name),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserPasswordChangedWithName"),
+                    e.Argument.Name),
                 Type = "UserPasswordChanged",
                 UserId = e.Argument.Id
             });
@@ -314,7 +360,10 @@ namespace Emby.Server.Implementations.Activity
         {
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("UserCreatedWithName"), e.Argument.Name),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserCreatedWithName"),
+                    e.Argument.Name),
                 Type = "UserCreated",
                 UserId = e.Argument.Id
             });
@@ -327,32 +376,48 @@ namespace Emby.Server.Implementations.Activity
 
             if (string.IsNullOrEmpty(session.UserName))
             {
-                name = string.Format(_localization.GetLocalizedString("DeviceOnlineWithName"), session.DeviceName);
+                name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("DeviceOnlineWithName"),
+                    session.DeviceName);
 
                 // Causing too much spam for now
                 return;
             }
             else
             {
-                name = string.Format(_localization.GetLocalizedString("UserOnlineFromDevice"), session.UserName, session.DeviceName);
+                name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserOnlineFromDevice"),
+                    session.UserName,
+                    session.DeviceName);
             }
 
             CreateLogEntry(new ActivityLogEntry
             {
                 Name = name,
                 Type = "SessionStarted",
-                ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), session.RemoteEndPoint),
+                ShortOverview = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("LabelIpAddressValue"),
+                    session.RemoteEndPoint),
                 UserId = session.UserId
             });
         }
 
-        private void OnPluginUpdated(object sender, GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> e)
+        private void OnPluginUpdated(object sender, GenericEventArgs<(IPlugin, PackageVersionInfo)> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("PluginUpdatedWithName"), e.Argument.Item1.Name),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("PluginUpdatedWithName"),
+                    e.Argument.Item1.Name),
                 Type = NotificationType.PluginUpdateInstalled.ToString(),
-                ShortOverview = string.Format(_localization.GetLocalizedString("VersionNumber"), e.Argument.Item2.versionStr),
+                ShortOverview = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("VersionNumber"),
+                    e.Argument.Item2.versionStr),
                 Overview = e.Argument.Item2.description
             });
         }
@@ -361,7 +426,10 @@ namespace Emby.Server.Implementations.Activity
         {
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("PluginUninstalledWithName"), e.Argument.Name),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("PluginUninstalledWithName"),
+                    e.Argument.Name),
                 Type = NotificationType.PluginUninstalled.ToString()
             });
         }
@@ -370,9 +438,15 @@ namespace Emby.Server.Implementations.Activity
         {
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("PluginInstalledWithName"), e.Argument.name),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("PluginInstalledWithName"),
+                    e.Argument.name),
                 Type = NotificationType.PluginInstalled.ToString(),
-                ShortOverview = string.Format(_localization.GetLocalizedString("VersionNumber"), e.Argument.versionStr)
+                ShortOverview = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("VersionNumber"),
+                    e.Argument.versionStr)
             });
         }
 
@@ -382,9 +456,15 @@ namespace Emby.Server.Implementations.Activity
 
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("NameInstallFailed"), installationInfo.Name),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("NameInstallFailed"),
+                    installationInfo.Name),
                 Type = NotificationType.InstallationFailed.ToString(),
-                ShortOverview = string.Format(_localization.GetLocalizedString("VersionNumber"), installationInfo.Version),
+                ShortOverview = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("VersionNumber"),
+                    installationInfo.Version),
                 Overview = e.Exception.Message
             });
         }
@@ -401,7 +481,10 @@ namespace Emby.Server.Implementations.Activity
             }
 
             var time = result.EndTimeUtc - result.StartTimeUtc;
-            var runningTime = string.Format(_localization.GetLocalizedString("LabelRunningTimeValue"), ToUserFriendlyString(time));
+            var runningTime = string.Format(
+                CultureInfo.InvariantCulture,
+                _localization.GetLocalizedString("LabelRunningTimeValue"),
+                ToUserFriendlyString(time));
 
             if (result.Status == TaskCompletionStatus.Failed)
             {
@@ -419,7 +502,10 @@ namespace Emby.Server.Implementations.Activity
 
                 CreateLogEntry(new ActivityLogEntry
                 {
-                    Name = string.Format(_localization.GetLocalizedString("ScheduledTaskFailedWithName"), task.Name),
+                    Name = string.Format(
+                        CultureInfo.InvariantCulture,
+                        _localization.GetLocalizedString("ScheduledTaskFailedWithName"),
+                        task.Name),
                     Type = NotificationType.TaskFailed.ToString(),
                     Overview = string.Join(Environment.NewLine, vals),
                     ShortOverview = runningTime,
@@ -534,8 +620,11 @@ namespace Emby.Server.Implementations.Activity
         /// <param name="description">The name of this item (singular form)</param>
         private static string CreateValueString(int value, string description)
         {
-            return string.Format("{0:#,##0} {1}",
-                value, value == 1 ? description : string.Format("{0}s", description));
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{0:#,##0} {1}",
+                value,
+                value == 1 ? description : string.Format(CultureInfo.InvariantCulture, "{0}s", description));
         }
     }
 }

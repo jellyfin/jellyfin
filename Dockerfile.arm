@@ -3,21 +3,28 @@
 ARG DOTNET_VERSION=3.0
 
 
+FROM node:alpine as web-builder
+ARG JELLYFIN_WEB_VERSION=master
+RUN apk add curl \
+ && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
+ && cd jellyfin-web-* \
+ && yarn install \
+ && yarn build \
+ && mv dist /dist
+
+
 FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION} as builder
 WORKDIR /repo
 COPY . .
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
-# TODO Remove or update the sed line when we update dotnet version.
-RUN find . -type f -exec sed -i 's/netcoreapp2.1/netcoreapp3.0/g' {} \;
 # Discard objs - may cause failures if exists
 RUN find . -type d -name obj | xargs -r rm -r
 # Build
-RUN bash -c "source deployment/common.build.sh && \
-    build_jellyfin Jellyfin.Server Release linux-arm /jellyfin"
+RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-arm "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
 
 
 FROM multiarch/qemu-user-static:x86_64-arm as qemu
-FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}-stretch-slim-arm32v7
+FROM debian:stretch-slim-arm32v7
 COPY --from=qemu /usr/bin/qemu-arm-static /usr/bin
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg \
@@ -25,15 +32,13 @@ RUN apt-get update \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media
 COPY --from=builder /jellyfin /jellyfin
+COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
-ARG JELLYFIN_WEB_VERSION=v10.3.7
-RUN curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
- && rm -rf /jellyfin/jellyfin-web \
- && mv jellyfin-web-${JELLYFIN_WEB_VERSION} /jellyfin/jellyfin-web
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
 EXPOSE 8096
 VOLUME /cache /config /media
-ENTRYPOINT dotnet /jellyfin/jellyfin.dll \
+ENTRYPOINT ./jellyfin/jellyfin \
     --datadir /config \
     --cachedir /cache \
     --ffmpeg /usr/bin/ffmpeg

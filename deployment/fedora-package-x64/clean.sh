@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-source ../common.build.sh
-
 keep_artifacts="${1}"
 
 WORKDIR="$( pwd )"

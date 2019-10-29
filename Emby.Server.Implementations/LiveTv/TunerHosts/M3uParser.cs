@@ -58,6 +58,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     UserAgent = _appHost.ApplicationUserAgent
                 });
             }
+
             return Task.FromResult((Stream)File.OpenRead(url));
         }
 
@@ -92,11 +93,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     var channel = GetChannelnfo(extInf, tunerHostId, line);
                     if (string.IsNullOrWhiteSpace(channel.Id))
                     {
-                        channel.Id = channelIdPrefix + line.GetMD5().ToString("N");
+                        channel.Id = channelIdPrefix + line.GetMD5().ToString("N", CultureInfo.InvariantCulture);
                     }
                     else
                     {
-                        channel.Id = channelIdPrefix + channel.Id.GetMD5().ToString("N");
+                        channel.Id = channelIdPrefix + channel.Id.GetMD5().ToString("N", CultureInfo.InvariantCulture);
                     }
 
                     channel.Path = line;

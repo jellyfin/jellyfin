@@ -264,3 +264,7 @@ ci/
 
 # Doxygen
 doc/
+
+# Deployment artifacts
+dist
+*.exe

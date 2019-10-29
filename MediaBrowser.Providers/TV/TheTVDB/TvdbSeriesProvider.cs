@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -285,7 +286,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private string GetComparableName(string name)
         {
             name = name.ToLowerInvariant();
-            name = _localizationManager.NormalizeFormKD(name);
+            name = name.Normalize(NormalizationForm.FormKD);
             var sb = new StringBuilder();
             foreach (var c in name)
             {
@@ -310,19 +311,9 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     sb.Append(c);
                 }
             }
-            name = sb.ToString();
-            name = name.Replace(", the", "");
-            name = name.Replace("the ", " ");
-            name = name.Replace(" the ", " ");
+            sb.Replace(", the", string.Empty).Replace("the ", " ").Replace(" the ", " ");
 
-            string prevName;
-            do
-            {
-                prevName = name;
-                name = name.Replace("  ", " ");
-            } while (name.Length != prevName.Length);
-
-            return name.Trim();
+            return Regex.Replace(sb.ToString().Trim(), @"\s+", " ");
         }
 
         private void MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries, string metadataLanguage)

@@ -44,7 +44,7 @@ namespace Emby.Server.Implementations.Data
                 var userDatasTableExists = TableExists(connection, "UserDatas");
                 var userDataTableExists = TableExists(connection, "userdata");
 
-                var users = userDatasTableExists ? null : userManager.Users.ToArray();
+                var users = userDatasTableExists ? null : userManager.Users;
 
                 connection.RunInTransaction(db =>
                 {
@@ -84,7 +84,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void ImportUserIds(IDatabaseConnection db, User[] users)
+        private void ImportUserIds(IDatabaseConnection db, IEnumerable<User> users)
         {
             var userIdsWithUserData = GetAllUserIdsWithUserData(db);
 

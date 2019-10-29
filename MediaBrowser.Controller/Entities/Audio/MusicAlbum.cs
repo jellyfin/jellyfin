@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
@@ -8,7 +9,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.Audio
@@ -18,8 +18,11 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
-        public string[] AlbumArtists { get; set; }
-        public string[] Artists { get; set; }
+        /// <inheritdoc />
+        public IReadOnlyList<string> AlbumArtists { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> Artists { get; set; }
 
         public MusicAlbum()
         {
@@ -27,13 +30,13 @@ namespace MediaBrowser.Controller.Entities.Audio
             AlbumArtists = Array.Empty<string>();
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsAddingToPlaylist => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public MusicArtist MusicArtist => GetMusicArtist(new DtoOptions(true));
 
         public MusicArtist GetMusicArtist(DtoOptions options)
@@ -41,8 +44,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             var parents = GetParents();
             foreach (var parent in parents)
             {
-                var artist = parent as MusicArtist;
-                if (artist != null)
+                if (parent is MusicArtist artist)
                 {
                     return artist;
                 }
@@ -56,46 +58,23 @@ namespace MediaBrowser.Controller.Entities.Audio
             return null;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPlayedStatus => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsCumulativeRunTimeTicks => true;
 
-        [IgnoreDataMember]
-        public string[] AllArtists
-        {
-            get
-            {
-                var list = new string[AlbumArtists.Length + Artists.Length];
+        [JsonIgnore]
+        public string AlbumArtist => AlbumArtists.FirstOrDefault();
 
-                var index = 0;
-                foreach (var artist in AlbumArtists)
-                {
-                    list[index] = artist;
-                    index++;
-                }
-                foreach (var artist in Artists)
-                {
-                    list[index] = artist;
-                    index++;
-                }
-
-                return list;
-            }
-        }
-
-        [IgnoreDataMember]
-        public string AlbumArtist => AlbumArtists.Length == 0 ? null : AlbumArtists[0];
-
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => false;
 
         /// <summary>
         /// Gets the tracks.
         /// </summary>
         /// <value>The tracks.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public IEnumerable<Audio> Tracks => GetRecursiveChildren(i => i is Audio).Cast<Audio>();
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
@@ -216,8 +195,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         private async Task RefreshArtists(MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
-            var all = AllArtists;
-            foreach (var i in all)
+            foreach (var i in this.GetAllArtists())
             {
                 // This should not be necessary but we're seeing some cases of it
                 if (string.IsNullOrEmpty(i))

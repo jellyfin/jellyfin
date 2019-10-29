@@ -1,4 +1,4 @@
-FROM debian:9
+FROM debian:10
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG PLATFORM_DIR=/jellyfin/deployment/debian-package-armhf
@@ -12,14 +12,20 @@ ENV ARCH=armhf
 
 # Prepare Debian build environment
 RUN apt-get update \
- && apt-get install -y apt-transport-https debhelper gnupg wget devscripts mmv libc6-dev libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev liblttng-ust0
+ && apt-get install -y apt-transport-https debhelper gnupg wget devscripts mmv libc6-dev libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev libssl-dev liblttng-ust0
 
 # Install dotnet repository
 # https://dotnet.microsoft.com/download/linux-package-manager/debian9/sdk-current
-RUN wget https://download.visualstudio.microsoft.com/download/pr/d9f37b73-df8d-4dfa-a905-b7648d3401d0/6312573ac13d7a8ddc16e4058f7d7dc5/dotnet-sdk-2.2.104-linux-arm.tar.gz -O dotnet-sdk.tar.gz \
+RUN wget https://download.visualstudio.microsoft.com/download/pr/3cb1d917-19cc-4399-9a53-03bb5de223f6/be3e011601610d9fe0a4f6b1962378ea/dotnet-sdk-2.2.401-linux-arm.tar.gz -O dotnet-sdk.tar.gz \
  && mkdir -p dotnet-sdk \
  && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
  && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
+
+# Install yarn package manager
+RUN wget -q -O- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
+ && echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
+ && apt update \
+ && apt install -y yarn
 
 # Link to docker-build script
 RUN ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh

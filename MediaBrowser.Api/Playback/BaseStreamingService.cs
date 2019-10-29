@@ -137,12 +137,9 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         private string GetOutputFilePath(StreamState state, EncodingOptions encodingOptions, string outputFileExtension)
         {
-            var data = GetCommandLineArguments("dummy\\dummy", encodingOptions, state, false);
+            var data = $"{state.MediaPath}-{state.UserAgent}-{state.Request.DeviceId}-{state.Request.PlaySessionId}";
 
-            data += "-" + (state.Request.DeviceId ?? string.Empty)
-                 + "-" + (state.Request.PlaySessionId ?? string.Empty);
-
-            var filename = data.GetMD5().ToString("N");
+            var filename = data.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             var ext = outputFileExtension.ToLowerInvariant();
             var folder = ServerConfigurationManager.ApplicationPaths.TranscodingTempPath;
 
@@ -154,7 +151,12 @@ namespace MediaBrowser.Api.Playback
             return Path.Combine(folder, filename + ext);
         }
 
-        protected virtual string GetDefaultH264Preset() => "superfast";
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+
+        protected virtual string GetDefaultEncoderPreset()
+        {
+            return "superfast";
+        }
 
         private async Task AcquireResources(StreamState state, CancellationTokenSource cancellationTokenSource)
         {
@@ -240,7 +242,7 @@ namespace MediaBrowser.Api.Playback
             var transcodingJob = ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath,
                 state.Request.PlaySessionId,
                 state.MediaSource.LiveStreamId,
-                Guid.NewGuid().ToString("N"),
+                Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
                 TranscodingJobType,
                 process,
                 state.Request.DeviceId,
@@ -632,7 +634,7 @@ namespace MediaBrowser.Api.Playback
             }
             else
             {
-                value = value.Substring(Npt.Length, index);
+                value = value.Substring(Npt.Length, index - Npt.Length);
             }
 
             if (value.IndexOf(':') == -1)
@@ -690,8 +692,8 @@ namespace MediaBrowser.Api.Playback
                 request.AudioCodec = EncodingHelper.InferAudioCodec(url);
             }
 
-            var enableDlnaHeaders = !string.IsNullOrWhiteSpace(request.Params) /*||
-                                    string.Equals(Request.Headers.Get("GetContentFeatures.DLNA.ORG"), "1", StringComparison.OrdinalIgnoreCase)*/;
+            var enableDlnaHeaders = !string.IsNullOrWhiteSpace(request.Params) ||
+                                    string.Equals(GetHeader("GetContentFeatures.DLNA.ORG"), "1", StringComparison.OrdinalIgnoreCase);
 
             var state = new StreamState(MediaSourceManager, TranscodingJobType)
             {
@@ -954,7 +956,10 @@ namespace MediaBrowser.Api.Playback
                 if (string.Equals(GetHeader("getMediaInfo.sec"), "1", StringComparison.OrdinalIgnoreCase))
                 {
                     var ms = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalMilliseconds;
-                    responseHeaders["MediaInfo.sec"] = string.Format("SEC_Duration={0};", Convert.ToInt32(ms).ToString(CultureInfo.InvariantCulture));
+                    responseHeaders["MediaInfo.sec"] = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "SEC_Duration={0};",
+                        Convert.ToInt32(ms));
                 }
 
                 if (!isStaticallyStreamed && profile != null)
@@ -972,8 +977,7 @@ namespace MediaBrowser.Api.Playback
 
             if (state.VideoRequest == null)
             {
-                responseHeaders["contentFeatures.dlna.org"] = new ContentFeatureBuilder(profile)
-                    .BuildAudioHeader(
+                responseHeaders["contentFeatures.dlna.org"] = new ContentFeatureBuilder(profile).BuildAudioHeader(
                     state.OutputContainer,
                     audioCodec,
                     state.OutputAudioBitrate,
@@ -982,15 +986,13 @@ namespace MediaBrowser.Api.Playback
                     state.OutputAudioBitDepth,
                     isStaticallyStreamed,
                     state.RunTimeTicks,
-                    state.TranscodeSeekInfo
-                    );
+                    state.TranscodeSeekInfo);
             }
             else
             {
                 var videoCodec = state.ActualOutputVideoCodec;
 
-                responseHeaders["contentFeatures.dlna.org"] = new ContentFeatureBuilder(profile)
-                    .BuildVideoHeader(
+                responseHeaders["contentFeatures.dlna.org"] = new ContentFeatureBuilder(profile).BuildVideoHeader(
                     state.OutputContainer,
                     videoCodec,
                     audioCodec,
@@ -1012,14 +1014,7 @@ namespace MediaBrowser.Api.Playback
                     state.TargetVideoStreamCount,
                     state.TargetAudioStreamCount,
                     state.TargetVideoCodecTag,
-                    state.IsTargetAVC
-
-                    ).FirstOrDefault() ?? string.Empty;
-            }
-
-            foreach (var item in responseHeaders)
-            {
-                Request.Response.AddHeader(item.Key, item.Value);
+                    state.IsTargetAVC).FirstOrDefault() ?? string.Empty;
             }
         }
 
@@ -1028,8 +1023,16 @@ namespace MediaBrowser.Api.Playback
             var runtimeSeconds = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds.ToString(CultureInfo.InvariantCulture);
             var startSeconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
-            responseHeaders["TimeSeekRange.dlna.org"] = string.Format("npt={0}-{1}/{1}", startSeconds, runtimeSeconds);
-            responseHeaders["X-AvailableSeekRange"] = string.Format("1 npt={0}-{1}", startSeconds, runtimeSeconds);
+            responseHeaders["TimeSeekRange.dlna.org"] = string.Format(
+                CultureInfo.InvariantCulture,
+                "npt={0}-{1}/{1}",
+                startSeconds,
+                runtimeSeconds);
+            responseHeaders["X-AvailableSeekRange"] = string.Format(
+                CultureInfo.InvariantCulture,
+                "1 npt={0}-{1}",
+                startSeconds,
+                runtimeSeconds);
         }
     }
 }
