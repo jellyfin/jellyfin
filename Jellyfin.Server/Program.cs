@@ -89,7 +89,7 @@ namespace Jellyfin.Server
             var stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            // Log all uncaught exception to std error
+            // Log all uncaught exceptions to std error
             static void UnhandledExceptionToConsole(object sender, UnhandledExceptionEventArgs e) =>
                 Console.Error.WriteLine("Unhandled Exception\n" + e.ExceptionObject.ToString());
             AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionToConsole;
