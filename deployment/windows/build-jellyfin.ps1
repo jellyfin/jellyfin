@@ -84,8 +84,9 @@ function Install-NSSM {
         Write-Warning "NSSM will not be installed"
     }else{
          Write-Verbose "Downloading NSSM"
-         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-         Invoke-WebRequest -Uri https://nssm.cc/ci/nssm-2.24-101-g897c7ad.zip -UseBasicParsing -OutFile "$tempdir/nssm.zip" | Write-Verbose
+         # [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+         # Temporary workaround, file is hosted in an azure blob with a custom domain in front for brevity
+         Invoke-WebRequest -Uri http://files.evilt.win/nssm/nssm-2.24-101-g897c7ad.zip -UseBasicParsing -OutFile "$tempdir/nssm.zip" | Write-Verbose
     }
 
     Expand-Archive "$tempdir/nssm.zip" -DestinationPath "$tempdir/nssm/" -Force | Write-Verbose
