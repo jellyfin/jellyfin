@@ -63,6 +63,6 @@ namespace MediaBrowser.Providers.Music
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item)
-         => item is Audio || item is MusicAlbum;
+            => item is Audio || item is MusicAlbum;
     }
 }

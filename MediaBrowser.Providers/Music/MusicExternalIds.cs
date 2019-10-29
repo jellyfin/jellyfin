@@ -78,7 +78,6 @@ namespace MediaBrowser.Providers.Music
         public string Key => MetadataProviders.MusicBrainzArtist.ToString();
 
         /// <inheritdoc />
-
         public string UrlFormatString => "https://musicbrainz.org/artist/{0}";
 
         /// <inheritdoc />

@@ -151,7 +151,6 @@ namespace MediaBrowser.Providers.Music
                     Url = url,
                     CancellationToken = cancellationToken,
                     BufferContent = true
-
                 },
                 "GET").ConfigureAwait(false))
             using (var response = httpResponse.Content)
