@@ -52,7 +52,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets a User by Id.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <returns>The user with the specified Id, or <c>null</c> id the user doesn't exist.</returns>
+        /// <returns>The user with the specified Id, or <c>null</c> if the user doesn't exist.</returns>
         /// <exception cref="ArgumentException"><c>id</c> is an empty Guid.</exception>
         User GetUserById(Guid id);
 
