@@ -259,7 +259,6 @@ ${If} $_INSTALLSERVICE_ == "Yes" ; Only run this if we're going to install the s
             !insertmacro ShowError "Could not configure the Jellyfin Server service app exit action." ConfigureDefaultAppExit
         ${EndIf}
         DetailPrint "Jellyfin Server service exit action set, $0"
-    ${EndIf}
 ${EndIf}
 
 SectionEnd
