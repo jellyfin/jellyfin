@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -36,19 +38,19 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library
 {
     /// <summary>
-    /// Class UserManager
+    /// Class UserManager.
     /// </summary>
     public class UserManager : IUserManager
     {
         /// <summary>
-        /// The _logger
+        /// The _logger.
         /// </summary>
         private readonly ILogger _logger;
 
         private readonly object _policySyncLock = new object();
 
         /// <summary>
-        /// Gets the active user repository
+        /// Gets the active user repository.
         /// </summary>
         /// <value>The user repository.</value>
         private readonly IUserRepository _userRepository;
@@ -358,6 +360,8 @@ namespace Emby.Server.Implementations.Library
             return success ? user : null;
         }
 
+#nullable enable
+
         private static string GetAuthenticationProviderId(IAuthenticationProvider provider)
         {
             return provider.GetType().FullName;
@@ -378,7 +382,7 @@ namespace Emby.Server.Implementations.Library
             return GetPasswordResetProviders(user)[0];
         }
 
-        private IAuthenticationProvider[] GetAuthenticationProviders(User user)
+        private IAuthenticationProvider[] GetAuthenticationProviders(User? user)
         {
             var authenticationProviderId = user?.Policy.AuthenticationProviderId;
 
@@ -399,7 +403,7 @@ namespace Emby.Server.Implementations.Library
             return providers;
         }
 
-        private IPasswordResetProvider[] GetPasswordResetProviders(User user)
+        private IPasswordResetProvider[] GetPasswordResetProviders(User? user)
         {
             var passwordResetProviderId = user?.Policy.PasswordResetProviderId;
 
@@ -418,7 +422,11 @@ namespace Emby.Server.Implementations.Library
             return providers;
         }
 
-        private async Task<(string username, bool success)> AuthenticateWithProvider(IAuthenticationProvider provider, string username, string password, User resolvedUser)
+        private async Task<(string username, bool success)> AuthenticateWithProvider(
+            IAuthenticationProvider provider,
+            string username,
+            string password,
+            User? resolvedUser)
         {
             try
             {
@@ -442,15 +450,15 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private async Task<(IAuthenticationProvider authenticationProvider, string username, bool success)> AuthenticateLocalUser(
+        private async Task<(IAuthenticationProvider? authenticationProvider, string username, bool success)> AuthenticateLocalUser(
             string username,
             string password,
             string hashedPassword,
-            User user,
+            User? user,
             string remoteEndPoint)
         {
             bool success = false;
-            IAuthenticationProvider authenticationProvider = null;
+            IAuthenticationProvider? authenticationProvider = null;
 
             foreach (var provider in GetAuthenticationProviders(user))
             {
@@ -546,6 +554,8 @@ namespace Emby.Server.Implementations.Library
             _users = new ConcurrentDictionary<Guid, User>();
             _users[user.Id] = user;
         }
+
+#nullable restore
 
         public UserDto GetUserDto(User user, string remoteEndPoint = null)
         {

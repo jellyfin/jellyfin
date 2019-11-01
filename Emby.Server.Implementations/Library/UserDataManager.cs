@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,7 +17,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library
 {
     /// <summary>
-    /// Class UserDataManager
+    /// Class UserDataManager.
     /// </summary>
     public class UserDataManager : IUserDataManager
     {

@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Resolvers;
 namespace Emby.Server.Implementations.Library.Resolvers
 {
     /// <summary>
-    /// Class ItemResolver
+    /// Class ItemResolver.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public abstract class ItemResolver<T> : IItemResolver

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +15,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library
 {
-    /// <summary>
-    /// </summary>
     public class SearchEngine : ISearchEngine
     {
         private readonly ILibraryManager _libraryManager;

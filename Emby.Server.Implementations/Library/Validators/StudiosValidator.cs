@@ -9,19 +9,29 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators
 {
-    class StudiosValidator
+    /// <summary>
+    /// Class StudiosValidator.
+    /// </summary>
+    public class StudiosValidator
     {
         /// <summary>
-        /// The _library manager
+        /// The _library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
         private readonly IItemRepository _itemRepo;
+
         /// <summary>
-        /// The _logger
+        /// The _logger.
         /// </summary>
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StudiosValidator" /> class.
+        /// </summary>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="itemRepo">The item repository.</param>
         public StudiosValidator(ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;

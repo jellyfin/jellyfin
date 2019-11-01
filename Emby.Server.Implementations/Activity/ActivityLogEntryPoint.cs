@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -39,6 +41,19 @@ namespace Emby.Server.Implementations.Activity
         private readonly IServerApplicationHost _appHost;
         private readonly IDeviceManager _deviceManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ActivityLogEntryPoint"/> class.
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="sessionManager"></param>
+        /// <param name="deviceManager"></param>
+        /// <param name="taskManager"></param>
+        /// <param name="activityManager"></param>
+        /// <param name="localization"></param>
+        /// <param name="installationManager"></param>
+        /// <param name="subManager"></param>
+        /// <param name="userManager"></param>
+        /// <param name="appHost"></param>
         public ActivityLogEntryPoint(
             ILogger<ActivityLogEntryPoint> logger,
             ISessionManager sessionManager,
