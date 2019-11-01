@@ -8,22 +8,25 @@ namespace Jellyfin.Common.Benches
     [MemoryDiagnoser]
     public class HexEncodeBenches
     {
-        private const int N = 1000;
-        private readonly byte[] data;
+        private byte[] _data;
 
-        public HexEncodeBenches()
+        [Params(0, 10, 100, 1000, 10000, 1000000)]
+        public int N { get; set; }
+
+        [GlobalSetup]
+        public void GlobalSetup()
         {
-            data = new byte[N];
-            new Random(42).NextBytes(data);
+            _data = new byte[N];
+            new Random(42).NextBytes(_data);
         }
 
         [Benchmark]
-        public string HexEncode() => Hex.Encode(data);
+        public string HexEncode() => Hex.Encode(_data);
 
         [Benchmark]
-        public string BitConverterToString() => BitConverter.ToString(data);
+        public string BitConverterToString() => BitConverter.ToString(_data);
 
         [Benchmark]
-        public string BitConverterToStringWithReplace() => BitConverter.ToString(data).Replace("-", "");
+        public string BitConverterToStringWithReplace() => BitConverter.ToString(_data).Replace("-", "");
     }
 }

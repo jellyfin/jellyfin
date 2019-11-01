@@ -9,20 +9,26 @@ namespace Jellyfin.Common.Benches
     [MemoryDiagnoser]
     public class HexDecodeBenches
     {
-        [Params(/*0,*/ 10, 100, 1000, 10000, 1000000)]
-        public int N { get; set; }
+        private string _data;
 
-        private string data;
+        [Params(0, 10, 100, 1000, 10000, 1000000)]
+        public int N { get; set; }
 
         [GlobalSetup]
         public void GlobalSetup()
         {
-            var tmp = new byte[N];
-            new Random(42).NextBytes(tmp);
-            data = Hex.Encode(tmp);
+            var bytes = new byte[N];
+            new Random(42).NextBytes(bytes);
+            _data = Hex.Encode(bytes);
         }
 
-        public static byte[] DecodeSubString(string str)
+        [Benchmark]
+        public byte[] Decode() => Hex.Decode(_data);
+
+        [Benchmark]
+        public byte[] DecodeSubString() => DecodeSubString(_data);
+
+        private static byte[] DecodeSubString(string str)
         {
             byte[] bytes = new byte[str.Length / 2];
             for (int i = 0; i < str.Length; i += 2)
@@ -35,14 +41,5 @@ namespace Jellyfin.Common.Benches
 
             return bytes;
         }
-
-        [Benchmark]
-        public byte[] Decode() => Hex.Decode(data);
-
-        [Benchmark]
-        public byte[] Decode2() => Hex.Decode2(data);
-
-        //[Benchmark]
-        public byte[] DecodeSubString() => DecodeSubString(data);
     }
 }
