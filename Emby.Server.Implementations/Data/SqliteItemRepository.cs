@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using Emby.Server.Implementations.Playlists;
 using MediaBrowser.Common.Json;
@@ -28,7 +26,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -659,12 +656,14 @@ namespace Emby.Server.Implementations.Data
 
         private void SaveItem(BaseItem item, BaseItem topParent, string userDataKey, IStatement saveItemStatement)
         {
-            saveItemStatement.TryBind("@guid", item.Id);
-            saveItemStatement.TryBind("@type", item.GetType().FullName);
+            Type type = item.GetType();
 
-            if (TypeRequiresDeserialization(item.GetType()))
+            saveItemStatement.TryBind("@guid", item.Id);
+            saveItemStatement.TryBind("@type", type.FullName);
+
+            if (TypeRequiresDeserialization(type))
             {
-                saveItemStatement.TryBind("@data", JsonSerializer.SerializeToUtf8Bytes(item, _jsonOptions));
+                saveItemStatement.TryBind("@data", JsonSerializer.SerializeToUtf8Bytes(item, type, _jsonOptions));
             }
             else
             {
