@@ -164,7 +164,7 @@ Section "!Jellyfin Server (required)" InstallJellyfinServer
 
     SetOutPath "$INSTDIR"
 
-    CopyFiles /SILENT /FILESONLY "${UXPATH}\branding\NSIS\modern-install.ico" "$%InstallLocation%\icon.ico"
+    File "/oname=icon.ico" "${UXPATH}\branding\NSIS\modern-install.ico"
     File /r $%InstallLocation%\*
     
 
