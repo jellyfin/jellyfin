@@ -2111,6 +2111,8 @@ namespace Emby.Server.Implementations.Library
 
             var item = GetItemById(id) as UserView;
 
+            item.ViewType ??= viewType;
+
             var refresh = false;
 
             if (item == null || !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
