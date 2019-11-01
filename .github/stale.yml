@@ -11,6 +11,7 @@ exemptLabels:
   - future
   - feature
   - enhancement
+  - confirmed
 # Label to use when marking an issue as stale
 staleLabel: stale
 # Comment to post when marking an issue as stale. Set to `false` to disable
