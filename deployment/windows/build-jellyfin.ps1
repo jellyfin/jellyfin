@@ -8,7 +8,7 @@ param(
     [switch]$GenerateZip,
     [string]$InstallLocation = "./dist/jellyfin-win-nsis",
     [string]$UXLocation = "../jellyfin-ux",
-    [string]$InstallTrayApp,
+    [switch]$InstallTrayApp,
     [ValidateSet('Debug','Release')][string]$BuildType = 'Release',
     [ValidateSet('Quiet','Minimal', 'Normal')][string]$DotNetVerbosity = 'Minimal',
     [ValidateSet('win','win7', 'win8','win81','win10')][string]$WindowsVersion = 'win',
