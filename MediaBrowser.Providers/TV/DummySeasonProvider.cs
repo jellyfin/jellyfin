@@ -130,7 +130,7 @@ namespace MediaBrowser.Providers.TV
             string seasonName;
             if (seasonNumber == null)
             {
-                seasonName =_localization.GetLocalizedString("NameSeasonUnknown")
+                seasonName =_localization.GetLocalizedString("NameSeasonUnknown");
             }
             else if (seasonNumber == 0)
             {
