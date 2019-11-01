@@ -10,7 +10,6 @@
     <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj" />
     <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
-    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj" />
     <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj" />
     <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj" />
     <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
@@ -32,6 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.0.0" />
+    <PackageReference Include="Mono.Nat" Version="2.0.0" />
     <PackageReference Include="ServiceStack.Text.Core" Version="5.6.0" />
     <PackageReference Include="sharpcompress" Version="0.24.0" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" Version="2.0.1" />
