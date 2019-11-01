@@ -14,6 +14,9 @@ using Mono.Nat;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
+    /// <summary>
+    /// Server entrypoint handling external port forwarding.
+    /// </summary>
     public class ExternalPortForwarding : IServerEntryPoint
     {
         private readonly IServerApplicationHost _appHost;
@@ -21,14 +24,20 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IServerConfigurationManager _config;
         private readonly IDeviceDiscovery _deviceDiscovery;
 
-        private Timer _timer;
-
         private readonly object _createdRulesLock = new object();
         private List<IPEndPoint> _createdRules = new List<IPEndPoint>();
+        private Timer _timer;
         private string _lastConfigIdentifier;
 
         private bool _disposed = false;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExternalPortForwarding"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="appHost">The application host.</param>
+        /// <param name="config">The configuration manager.</param>
+        /// <param name="deviceDiscovery">The device discovery.</param>
         public ExternalPortForwarding(
             ILogger<ExternalPortForwarding> logger,
             IServerApplicationHost appHost,
@@ -66,6 +75,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             if (_config.Configuration.EnableUPnP && _config.Configuration.EnableRemoteAccess)
