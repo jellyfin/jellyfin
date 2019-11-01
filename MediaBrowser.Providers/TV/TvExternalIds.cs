@@ -7,57 +7,62 @@ namespace MediaBrowser.Providers.TV
 {
     public class Zap2ItExternalId : IExternalId
     {
+        /// <inheritdoc />
         public string Name => "Zap2It";
 
+        /// <inheritdoc />
         public string Key => MetadataProviders.Zap2It.ToString();
 
+        /// <inheritdoc />
         public string UrlFormatString => "http://tvlistings.zap2it.com/overview.html?programSeriesId={0}";
 
-        public bool Supports(IHasProviderIds item)
-        {
-            return item is Series;
-        }
+        /// <inheritdoc />
+        public bool Supports(IHasProviderIds item) => item is Series;
     }
 
     public class TvdbExternalId : IExternalId
     {
+        /// <inheritdoc />
         public string Name => "TheTVDB";
 
+        /// <inheritdoc />
         public string Key => MetadataProviders.Tvdb.ToString();
 
+        /// <inheritdoc />
         public string UrlFormatString => TvdbUtils.TvdbBaseUrl + "?tab=series&id={0}";
 
-        public bool Supports(IHasProviderIds item)
-        {
-            return item is Series;
-        }
+        /// <inheritdoc />
+        public bool Supports(IHasProviderIds item) => item is Series;
+
     }
 
     public class TvdbSeasonExternalId : IExternalId
     {
+        /// <inheritdoc />
         public string Name => "TheTVDB";
 
+        /// <inheritdoc />
         public string Key => MetadataProviders.Tvdb.ToString();
 
+        /// <inheritdoc />
         public string UrlFormatString => null;
 
-        public bool Supports(IHasProviderIds item)
-        {
-            return item is Season;
-        }
+        /// <inheritdoc />
+        public bool Supports(IHasProviderIds item) => item is Season;
     }
 
     public class TvdbEpisodeExternalId : IExternalId
     {
+        /// <inheritdoc />
         public string Name => "TheTVDB";
 
+        /// <inheritdoc />
         public string Key => MetadataProviders.Tvdb.ToString();
 
+        /// <inheritdoc />
         public string UrlFormatString => TvdbUtils.TvdbBaseUrl + "?tab=episode&id={0}";
 
-        public bool Supports(IHasProviderIds item)
-        {
-            return item is Episode;
-        }
+        /// <inheritdoc />
+        public bool Supports(IHasProviderIds item) => item is Episode;
     }
 }

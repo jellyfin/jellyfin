@@ -90,8 +90,7 @@ namespace Emby.Server.Implementations.Playlists
                     }
                     else
                     {
-                        var folder = item as Folder;
-                        if (folder != null)
+                        if (item is Folder folder)
                         {
                             options.MediaType = folder.GetRecursiveChildren(i => !i.IsFolder && i.SupportsAddingToPlaylist)
                                 .Select(i => i.MediaType)
@@ -140,7 +139,7 @@ namespace Emby.Server.Implementations.Playlists
 
                 parentFolder.AddChild(playlist, CancellationToken.None);
 
-                await playlist.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)) { ForceSave = true }, CancellationToken.None)
+                await playlist.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem)) { ForceSave = true }, CancellationToken.None)
                     .ConfigureAwait(false);
 
                 if (options.ItemIdList.Length > 0)
@@ -201,7 +200,7 @@ namespace Emby.Server.Implementations.Playlists
 
             var list = new List<LinkedChild>();
 
-            var items = (GetPlaylistItems(itemIds, playlist.MediaType, user, options))
+            var items = GetPlaylistItems(itemIds, playlist.MediaType, user, options)
                 .Where(i => i.SupportsAddingToPlaylist)
                 .ToList();
 
@@ -221,18 +220,18 @@ namespace Emby.Server.Implementations.Playlists
                 SavePlaylistFile(playlist);
             }
 
-            _providerManager.QueueRefresh(playlist.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
-            {
-                ForceSave = true
-
-            }, RefreshPriority.High);
+            _providerManager.QueueRefresh(
+                playlist.Id,
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                {
+                    ForceSave = true
+                },
+                RefreshPriority.High);
         }
 
         public void RemoveFromPlaylist(string playlistId, IEnumerable<string> entryIds)
         {
-            var playlist = _libraryManager.GetItemById(playlistId) as Playlist;
-
-            if (playlist == null)
+            if (!(_libraryManager.GetItemById(playlistId) is Playlist playlist))
             {
                 throw new ArgumentException("No Playlist exists with the supplied Id");
             }
@@ -254,7 +253,7 @@ namespace Emby.Server.Implementations.Playlists
                 SavePlaylistFile(playlist);
             }
 
-            _providerManager.QueueRefresh(playlist.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
+            _providerManager.QueueRefresh(playlist.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem))
             {
                 ForceSave = true
 
@@ -263,9 +262,7 @@ namespace Emby.Server.Implementations.Playlists
 
         public void MoveItem(string playlistId, string entryId, int newIndex)
         {
-            var playlist = _libraryManager.GetItemById(playlistId) as Playlist;
-
-            if (playlist == null)
+            if (!(_libraryManager.GetItemById(playlistId) is Playlist playlist))
             {
                 throw new ArgumentException("No Playlist exists with the supplied Id");
             }

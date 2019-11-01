@@ -124,10 +124,10 @@ namespace MediaBrowser.Common.Cryptography
             stringBuilder.Append('$');
             foreach (var pair in _parameters)
             {
-                stringBuilder.Append(pair.Key);
-                stringBuilder.Append('=');
-                stringBuilder.Append(pair.Value);
-                stringBuilder.Append(',');
+                stringBuilder.Append(pair.Key)
+                    .Append('=')
+                    .Append(pair.Value)
+                    .Append(',');
             }
 
             // Remove last ','
@@ -137,21 +137,19 @@ namespace MediaBrowser.Common.Cryptography
         /// <inheritdoc />
         public override string ToString()
         {
-            var str = new StringBuilder();
-            str.Append('$');
-            str.Append(Id);
+            var str = new StringBuilder()
+                .Append('$')
+                .Append(Id);
             SerializeParameters(str);
 
             if (Salt.Length != 0)
             {
-                str.Append('$');
-                str.Append(ToHexString(Salt));
+                str.Append('$')
+                    .Append(ToHexString(Salt));
             }
 
-            str.Append('$');
-            str.Append(ToHexString(Hash));
-
-            return str.ToString();
+            return str.Append('$')
+                .Append(ToHexString(Hash)).ToString();
         }
     }
 }

@@ -639,7 +639,7 @@ namespace Emby.Server.Implementations.Library
         {
             foreach (var user in Users)
             {
-                await user.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), cancellationToken).ConfigureAwait(false);
+                await user.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem)), cancellationToken).ConfigureAwait(false);
             }
         }
 

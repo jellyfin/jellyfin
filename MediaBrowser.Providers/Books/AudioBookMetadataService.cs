@@ -16,9 +16,8 @@ namespace MediaBrowser.Providers.Books
             ILogger logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
-            IUserDataManager userDataManager,
             ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
         }
 

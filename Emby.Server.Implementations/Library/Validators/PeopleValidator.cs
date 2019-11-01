@@ -11,16 +11,17 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library.Validators
 {
     /// <summary>
-    /// Class PeopleValidator
+    /// Class PeopleValidator.
     /// </summary>
     public class PeopleValidator
     {
         /// <summary>
-        /// The _library manager
+        /// The _library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
+
         /// <summary>
-        /// The _logger
+        /// The _logger.
         /// </summary>
         private readonly ILogger _logger;
 
@@ -62,7 +63,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 {
                     var item = _libraryManager.GetPerson(person);
 
-                    var options = new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
+                    var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                     {
                         ImageRefreshMode = MetadataRefreshMode.ValidationOnly,
                         MetadataRefreshMode = MetadataRefreshMode.ValidationOnly
@@ -96,12 +97,19 @@ namespace Emby.Server.Implementations.Library.Validators
 
             foreach (var item in deadEntities)
             {
-                _logger.LogInformation("Deleting dead {2} {0} {1}.", item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name, item.GetType().Name);
+                _logger.LogInformation(
+                    "Deleting dead {2} {0} {1}.",
+                    item.Id.ToString("N", CultureInfo.InvariantCulture),
+                    item.Name,
+                    item.GetType().Name);
 
-                _libraryManager.DeleteItem(item, new DeleteOptions
-                {
-                    DeleteFileLocation = false
-                }, false);
+                _libraryManager.DeleteItem(
+                    item,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = false
+                    },
+                    false);
             }
 
             progress.Report(100);

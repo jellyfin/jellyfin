@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Net;
 
 namespace Emby.Server.Implementations.Library
 {

@@ -171,7 +171,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var locations = PhysicalLocations;
 
-                var newLocations = CreateResolveArgs(new DirectoryService(Logger, FileSystem), false).PhysicalLocations;
+                var newLocations = CreateResolveArgs(new DirectoryService(FileSystem), false).PhysicalLocations;
 
                 if (!locations.SequenceEqual(newLocations))
                 {
