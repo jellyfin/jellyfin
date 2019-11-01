@@ -2,11 +2,11 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Cryptography;
-using static MediaBrowser.Common.HexHelper;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -122,7 +122,7 @@ namespace Emby.Server.Implementations.Library
         {
             return string.IsNullOrEmpty(user.EasyPassword)
                 ? null
-                : ToHexString(PasswordHash.Parse(user.EasyPassword).Hash);
+                : Hex.Encode(PasswordHash.Parse(user.EasyPassword).Hash);
         }
 
         /// <summary>
