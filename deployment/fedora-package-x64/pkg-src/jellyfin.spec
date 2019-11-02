@@ -53,7 +53,7 @@ Jellyfin is a free software media system that puts you in control of managing an
 %autosetup -n %{name}-%{version} -b 0 -b 1
 web_build_dir="$(mktemp -d)"
 web_target="$PWD/MediaBrowser.WebDashboard/jellyfin-web"
-pushd ../jellyfin-web-%{version}
+pushd ../jellyfin-web-%{version} || pushd ../jellyfin-web-master
 %if 0%{?fedora}
 nodejs-yarn install
 %else
