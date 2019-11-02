@@ -65,23 +65,20 @@ namespace Emby.Server.Implementations.EntryPoints
                 .ToString();
         }
 
-        private async void OnConfigurationUpdated(object sender, EventArgs e)
+        private void OnConfigurationUpdated(object sender, EventArgs e)
         {
             if (!string.Equals(_lastConfigIdentifier, GetConfigIdentifier(), StringComparison.OrdinalIgnoreCase))
             {
                 Stop();
 
-                await RunAsync().ConfigureAwait(false);
+                Start();
             }
         }
 
         /// <inheritdoc />
         public Task RunAsync()
         {
-            if (_config.Configuration.EnableUPnP && _config.Configuration.EnableRemoteAccess)
-            {
-                Start();
-            }
+            Start();
 
             _config.ConfigurationUpdated += OnConfigurationUpdated;
 
@@ -90,6 +87,11 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private void Start()
         {
+            if (!_config.Configuration.EnableUPnP || !_config.Configuration.EnableRemoteAccess)
+            {
+                return;
+            }
+
             _logger.LogDebug("Starting NAT discovery");
 
             NatUtility.DeviceFound += OnNatUtilityDeviceFound;
@@ -213,6 +215,8 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 return;
             }
+
+            _config.ConfigurationUpdated -= OnConfigurationUpdated;
 
             Stop();
 
