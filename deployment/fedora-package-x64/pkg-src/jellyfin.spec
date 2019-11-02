@@ -99,7 +99,7 @@ EOF
 %{_libdir}/%{name}/createdump
 # Needs 755 else only root can run it since binary build by dotnet is 722
 %attr(755,root,root) %{_libdir}/%{name}/jellyfin
-%{_libdir}/%{name}/sosdocsunix.txt
+%{_libdir}/%{name}/SOS_README.md
 %{_unitdir}/%{name}.service
 %{_libexecdir}/%{name}/restart.sh
 %{_prefix}/lib/firewalld/services/%{name}.xml
