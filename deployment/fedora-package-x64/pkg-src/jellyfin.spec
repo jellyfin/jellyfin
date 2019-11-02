@@ -38,7 +38,7 @@ Requires:       libcurl, fontconfig, freetype, openssl, glibc libicu
 # Requirements not packaged in main repos
 # COPR @dotnet-sig/dotnet or
 # https://packages.microsoft.com/rhel/7/prod/
-BuildRequires:  dotnet-runtime-2.2, dotnet-sdk-2.2
+BuildRequires:  dotnet-runtime-3.0, dotnet-sdk-3.0
 # RPMfusion free
 Requires:       ffmpeg
 
