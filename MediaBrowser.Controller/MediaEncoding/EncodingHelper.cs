@@ -2168,7 +2168,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Important: If this is ever re-enabled, make sure not to use it with wtv because it breaks seeking
                 if (!string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase)
                     && state.TranscodingType != TranscodingJobType.Progressive
-                    && state.EnableBreakOnNonKeyFrames(outputVideoCodec))
+                    && !state.EnableBreakOnNonKeyFrames(outputVideoCodec)
+                    && (state.BaseRequest.StartTimeTicks ?? 0) > 0)
                 {
                     inputModifier += " -noaccurate_seek";
                 }
