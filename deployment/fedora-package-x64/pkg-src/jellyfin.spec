@@ -12,27 +12,35 @@ Release:        1%{?dist}
 Summary:        The Free Software Media Browser
 License:        GPLv2
 URL:            https://jellyfin.media
-Source0:        %{name}-%{version}.tar.gz
-Source1:        jellyfin.service
-Source2:        jellyfin.env
-Source3:        jellyfin.sudoers
-Source4:        restart.sh
-Source5:        jellyfin.override.conf
-Source6:        jellyfin-firewalld.xml
+# Jellyfin Server tarball created by `make -f .copr/Makefile srpm`, real URL ends with `v%{version}.tar.gz`
+Source0:        https://github.com/%{name}/%{name}/archive/%{name}-%{version}.tar.gz
+# Jellyfin Webinterface downloaded by `make -f .copr/Makefile srpm`, real URL ends with `v%{version}.tar.gz`
+Source1:        https://github.com/%{name}/%{name}-web/archive/%{name}-web-%{version}.tar.gz
+Source11:       jellyfin.service
+Source12:       jellyfin.env
+Source13:       jellyfin.sudoers
+Source14:       restart.sh
+Source15:       jellyfin.override.conf
+Source16:       jellyfin-firewalld.xml
 
 %{?systemd_requires}
 BuildRequires:  systemd
 Requires(pre):  shadow-utils
 BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, glibc-devel, libicu-devel
+%if 0%{?fedora}
+BuildRequires:  nodejs-yarn
+%else
+# Requirements not packaged in main repos
+# From https://rpm.nodesource.com/pub_8.x/el/7/x86_64/
+BuildRequires:  nodejs >= 8 yarn
+%endif
 Requires:       libcurl, fontconfig, freetype, openssl, glibc libicu
 # Requirements not packaged in main repos
-# COPR @dotnet-sig/dotnet
+# COPR @dotnet-sig/dotnet or
+# https://packages.microsoft.com/rhel/7/prod/
 BuildRequires:  dotnet-runtime-2.2, dotnet-sdk-2.2
 # RPMfusion free
 Requires:       ffmpeg
-
-# Fedora has openssl1.1 which is incompatible with dotnet 
-%{?fedora:Requires: compat-openssl10}
 
 # Disable Automatic Dependency Processing
 AutoReqProv:    no
@@ -42,7 +50,18 @@ Jellyfin is a free software media system that puts you in control of managing an
 
 
 %prep
-%autosetup -n %{name}-%{version}
+%autosetup -n %{name}-%{version} -b 0 -b 1
+web_build_dir="$(mktemp -d)"
+web_target="$PWD/MediaBrowser.WebDashboard/jellyfin-web"
+pushd ../jellyfin-web-%{version} || pushd ../jellyfin-web-master
+%if 0%{?fedora}
+nodejs-yarn install
+%else
+yarn install
+%endif
+mkdir -p ${web_target}
+mv dist/* ${web_target}/
+popd
 
 %build
 
@@ -52,7 +71,7 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime %{dotnet_runtime} \
     "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none" Jellyfin.Server
 %{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/%{name}/LICENSE
-%{__install} -D -m 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
+%{__install} -D -m 0644 %{SOURCE15} %{buildroot}%{_sysconfdir}/systemd/system/%{name}.service.d/override.conf
 %{__install} -D -m 0644 Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/%{name}/logging.json
 %{__mkdir} -p %{buildroot}%{_bindir}
 tee %{buildroot}%{_bindir}/jellyfin << EOF
@@ -64,11 +83,11 @@ EOF
 %{__mkdir} -p %{buildroot}%{_var}/log/jellyfin
 %{__mkdir} -p %{buildroot}%{_var}/cache/jellyfin
 
-%{__install} -D -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.service
-%{__install} -D -m 0644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
-%{__install} -D -m 0600 %{SOURCE3} %{buildroot}%{_sysconfdir}/sudoers.d/%{name}-sudoers
-%{__install} -D -m 0755 %{SOURCE4} %{buildroot}%{_libexecdir}/%{name}/restart.sh
-%{__install} -D -m 0644 %{SOURCE6} %{buildroot}%{_prefix}/lib/firewalld/services/%{name}.xml
+%{__install} -D -m 0644 %{SOURCE11} %{buildroot}%{_unitdir}/%{name}.service
+%{__install} -D -m 0644 %{SOURCE12} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
+%{__install} -D -m 0600 %{SOURCE13} %{buildroot}%{_sysconfdir}/sudoers.d/%{name}-sudoers
+%{__install} -D -m 0755 %{SOURCE14} %{buildroot}%{_libexecdir}/%{name}/restart.sh
+%{__install} -D -m 0644 %{SOURCE16} %{buildroot}%{_prefix}/lib/firewalld/services/%{name}.xml
 
 %files
 %{_libdir}/%{name}/jellyfin-web/*
@@ -80,7 +99,7 @@ EOF
 %{_libdir}/%{name}/createdump
 # Needs 755 else only root can run it since binary build by dotnet is 722
 %attr(755,root,root) %{_libdir}/%{name}/jellyfin
-%{_libdir}/%{name}/sosdocsunix.txt
+%{_libdir}/%{name}/SOS_README.md
 %{_unitdir}/%{name}.service
 %{_libexecdir}/%{name}/restart.sh
 %{_prefix}/lib/firewalld/services/%{name}.xml
