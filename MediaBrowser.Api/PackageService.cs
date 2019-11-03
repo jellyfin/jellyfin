@@ -131,12 +131,6 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        ///
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
         public object Get(GetPackage request)
         {
             var packages = _installationManager.GetAvailablePackages(CancellationToken.None, applicationVersion: typeof(PackageService).Assembly.GetName().Version).Result;

@@ -2,11 +2,11 @@ namespace MediaBrowser.Providers.Tmdb.Models.Search
 {
     public class MovieResult
     {
-            /// <summary>
-            /// Gets or sets a value indicating whether this <see cref="TmdbMovieSearchResult" /> is adult.
-            /// </summary>
-            /// <value><c>true</c> if adult; otherwise, <c>false</c>.</value>
-            public bool Adult { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="MovieResult" /> is adult.
+        /// </summary>
+        /// <value><c>true</c> if adult; otherwise, <c>false</c>.</value>
+        public bool Adult { get; set; }
             /// <summary>
             /// Gets or sets the backdrop_path.
             /// </summary>
