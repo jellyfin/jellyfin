@@ -145,7 +145,7 @@ function Install-TrayApp {
     }else{
         Write-Verbose "Downloading Tray App and copying to Jellyfin location"
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        Invoke-WebRequest -Uri https://github.com/jellyfin/jellyfin-windows-tray/releases/download/v1.0/JellyfinTray.exe -UseBasicParsing -OutFile "$installLocation/JellyfinTray.exe" | Write-Verbose
+        Invoke-WebRequest -Uri https://github.com/jellyfin/jellyfin-windows-tray/releases/latest/download/JellyfinTray.exe -UseBasicParsing -OutFile "$installLocation/JellyfinTray.exe" | Write-Verbose
     }
 }
 
