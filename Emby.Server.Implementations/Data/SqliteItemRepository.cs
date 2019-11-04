@@ -6201,6 +6201,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 throw new ArgumentNullException(nameof(attachments));
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             using var connection = GetConnection();
             connection.RunInTransaction(db =>
             {
