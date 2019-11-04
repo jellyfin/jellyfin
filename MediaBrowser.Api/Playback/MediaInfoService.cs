@@ -527,12 +527,10 @@ namespace MediaBrowser.Api.Playback
 
             foreach (var attachment in mediaSource.MediaAttachments)
             {
-                var filename = string.IsNullOrWhiteSpace(attachment.Filename) ? "Attachment" : attachment.Filename;
-                attachment.DeliveryUrl = string.Format("/Videos/{0}/{1}/Attachments/{2}/{3}",
+                attachment.DeliveryUrl = string.Format("/Videos/{0}/{1}/Attachments/{2}",
                     item.Id,
                     mediaSource.Id,
-                    attachment.Index,
-                    filename);
+                    attachment.Index);
             }
         }
 
