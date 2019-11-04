@@ -6161,7 +6161,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             if (query.Index.HasValue)
             {
-                cmdText += "AND AttachmentIndex=@AttachmentIndex";
+                cmdText += " AND AttachmentIndex=@AttachmentIndex";
             }
 
             cmdText += " order by AttachmentIndex ASC";
