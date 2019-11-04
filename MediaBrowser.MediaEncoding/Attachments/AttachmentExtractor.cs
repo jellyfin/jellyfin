@@ -250,9 +250,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             }
             else
             {
-                var msg = $"ffmpeg attachment extraction completed for {inputPath} to {outputPath}";
-
-                _logger.LogInformation(msg);
+                _logger.LogInformation("ffmpeg attachment extraction completed for {Path} to {Path}", inputPath, outputPath);
             }
         }
 
