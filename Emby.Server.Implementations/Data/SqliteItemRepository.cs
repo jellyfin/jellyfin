@@ -6162,26 +6162,23 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             cmdText += " order by AttachmentIndex ASC";
 
-            using (var connection = GetConnection(true))
+            var list = new List<MediaAttachment>();
+            using var connection = GetConnection(true);
+            using (var statement = PrepareStatement(connection, cmdText))
             {
-                var list = new List<MediaAttachment>();
+                statement.TryBind("@ItemId", query.ItemId.ToByteArray());
 
-                using (var statement = PrepareStatement(connection, cmdText))
+                if (query.Index.HasValue)
                 {
-                    statement.TryBind("@ItemId", query.ItemId.ToByteArray());
-
-                    if (query.Index.HasValue)
-                    {
-                        statement.TryBind("@AttachmentIndex", query.Index.Value);
-                    }
-
-                    foreach (var row in statement.ExecuteQuery()) {
-                        list.Add(GetMediaAttachment(row));
-                    }
+                    statement.TryBind("@AttachmentIndex", query.Index.Value);
                 }
 
-                return list;
+                foreach (var row in statement.ExecuteQuery()) {
+                    list.Add(GetMediaAttachment(row));
+                }
             }
+
+            return list;
         }
 
         public void SaveMediaAttachments(Guid id, List<MediaAttachment> attachments, CancellationToken cancellationToken)
@@ -6197,18 +6194,16 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 throw new ArgumentNullException(nameof(attachments));
             }
 
-            using (var connection = GetConnection())
+            using var connection = GetConnection();
+            connection.RunInTransaction(db =>
             {
-                connection.RunInTransaction(db =>
-                {
-                    var itemIdBlob = id.ToByteArray();
+                var itemIdBlob = id.ToByteArray();
 
-                    db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
+                db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
 
-                    InsertMediaAttachments(itemIdBlob, attachments, db);
+                InsertMediaAttachments(itemIdBlob, attachments, db);
 
-                }, TransactionMode);
-            }
+            }, TransactionMode);
         }
 
         private void InsertMediaAttachments(byte[] idBlob, List<MediaAttachment> attachments, IDatabaseConnection db)
