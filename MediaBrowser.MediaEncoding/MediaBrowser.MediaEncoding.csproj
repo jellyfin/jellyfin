@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Text.Encoding.CodePages" Version="4.6.0" />
-    <PackageReference Include="UTF.Unknown" Version="2.1.0" />
+    <PackageReference Include="UTF.Unknown" Version="2.2.0" />
   </ItemGroup>
 
 </Project>
