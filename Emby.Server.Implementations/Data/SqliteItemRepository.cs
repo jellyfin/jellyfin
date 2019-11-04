@@ -6218,13 +6218,13 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         private void InsertMediaAttachments(byte[] idBlob, List<MediaAttachment> attachments, IDatabaseConnection db)
         {
             var startIndex = 0;
-            var limit = 10;
+            var insertAtOnce = 10;
 
             while (startIndex < attachments.Count)
             {
                 var insertText = new StringBuilder(string.Format("insert into mediaattachments ({0}) values ", string.Join(",", _mediaAttachmentSaveColumns)));
 
-                var endIndex = Math.Min(attachments.Count, startIndex + limit);
+                var endIndex = Math.Min(attachments.Count, startIndex + insertAtOnce);
 
                 for (var i = startIndex; i < endIndex; i++)
                 {
@@ -6266,7 +6266,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     statement.Reset();
                     statement.MoveNext();
                 }
-                startIndex += limit;
+                startIndex += insertAtOnce;
             }
         }
 
