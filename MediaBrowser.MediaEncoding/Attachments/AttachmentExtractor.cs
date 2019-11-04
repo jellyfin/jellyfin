@@ -256,19 +256,18 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
         private string GetAttachmentCachePath(string mediaPath, MediaProtocol protocol, int attachmentStreamIndex)
         {
+            String filename;
             if (protocol == MediaProtocol.File)
             {
                 var date = _fileSystem.GetLastWriteTimeUtc(mediaPath);
-                var filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D");
-                var prefix = filename.Substring(0, 1);
-                return Path.Combine(AttachmentCachePath, prefix, filename);
+                filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D");
             }
             else
             {
-                var filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D");
-                var prefix = filename.Substring(0, 1);
-                return Path.Combine(AttachmentCachePath, prefix, filename);
+                filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D");
             }
+            var prefix = filename.Substring(0, 1);
+            return Path.Combine(AttachmentCachePath, prefix, filename);
         }
 
     }
