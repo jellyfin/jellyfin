@@ -20,7 +20,7 @@ using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
 namespace MediaBrowser.Api.Attachments
 {
-    [Route("/Videos/{Id}/{MediaSourceId}/Attachments/{Index}/{Filename}", "GET", Summary = "Gets specified attachment.")]
+    [Route("/Videos/{Id}/{MediaSourceId}/Attachments/{Index}", "GET", Summary = "Gets specified attachment.")]
     public class GetAttachment
     {
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -31,9 +31,6 @@ namespace MediaBrowser.Api.Attachments
 
         [ApiMember(Name = "Index", Description = "The attachment stream index", IsRequired = true, DataType = "int", ParameterType = "path", Verb = "GET")]
         public int Index { get; set; }
-
-        [ApiMember(Name = "Filename", Description = "The attachment filename", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Filename { get; set; }
     }
 
     public class AttachmentService : BaseApiService
