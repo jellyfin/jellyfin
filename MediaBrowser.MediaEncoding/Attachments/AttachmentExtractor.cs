@@ -216,7 +216,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             
             var failed = false;
 
-            if (exitCode == -1)
+            if (exitCode != 0)
             {
                 failed = true;
 
