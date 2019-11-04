@@ -220,9 +220,9 @@ namespace MediaBrowser.MediaEncoding.Attachments
             {
                 failed = true;
 
+                _logger.LogWarning("Deleting extracted attachment {Path} due to failure: {ExitCode}", outputPath, exitCode);
                 try
                 {
-                    _logger.LogWarning("Deleting extracted attachment due to failure: {Path}", outputPath);
                     _fileSystem.DeleteFile(outputPath);
                 }
                 catch (FileNotFoundException)
