@@ -6168,7 +6168,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                 using (var statement = PrepareStatement(connection, cmdText))
                 {
-                    statement.TryBind("@ItemId", query.ItemId.ToGuidBlob());
+                    statement.TryBind("@ItemId", query.ItemId.ToByteArray());
 
                     if (query.Index.HasValue)
                     {
@@ -6201,7 +6201,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             {
                 connection.RunInTransaction(db =>
                 {
-                    var itemIdBlob = id.ToGuidBlob();
+                    var itemIdBlob = id.ToByteArray();
 
                     db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
 
