@@ -97,20 +97,19 @@ namespace MediaBrowser.MediaEncoding.Attachments
             CancellationToken cancellationToken)
         {
             var inputFiles = new[] {mediaSource.Path};
-            var fileInfo = await GetReadableFile(mediaSource.Path, inputFiles, mediaSource.Protocol, mediaAttachment, cancellationToken).ConfigureAwait(false);
-            var stream = await GetAttachmentStream(fileInfo.Path, fileInfo.Protocol, cancellationToken).ConfigureAwait(false);
+            var attachmentPath = await GetReadableFile(mediaSource.Path, inputFiles, mediaSource.Protocol, mediaAttachment, cancellationToken).ConfigureAwait(false);
+            var stream = await GetAttachmentStream(attachmentPath, cancellationToken).ConfigureAwait(false);
             return stream;
         }
 
         private async Task<Stream> GetAttachmentStream(
             string path,
-            MediaProtocol protocol,
             CancellationToken cancellationToken)
         {
             return File.OpenRead(path);
         }
 
-        private async Task<AttachmentInfo> GetReadableFile(
+        private async Task<String> GetReadableFile(
             string mediaPath,
             string[] inputFiles,
             MediaProtocol protocol,
@@ -121,18 +120,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             await ExtractAttachment(inputFiles, protocol, mediaAttachment.Index, outputPath, cancellationToken)
                 .ConfigureAwait(false);
 
-            return new AttachmentInfo(outputPath, MediaProtocol.File);
-        }
-
-        private struct AttachmentInfo
-        {
-            public AttachmentInfo(string path, MediaProtocol protocol)
-            {
-                Path = path;
-                Protocol = protocol;
-            }
-            public string Path { get; set; }
-            public MediaProtocol Protocol { get; set; }
+            return outputPath;
         }
 
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
