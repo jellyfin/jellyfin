@@ -23,16 +23,14 @@ namespace MediaBrowser.Providers.Manager
         protected readonly ILogger Logger;
         protected readonly IProviderManager ProviderManager;
         protected readonly IFileSystem FileSystem;
-        protected readonly IUserDataManager UserDataManager;
         protected readonly ILibraryManager LibraryManager;
 
-        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager)
+        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
             ProviderManager = providerManager;
             FileSystem = fileSystem;
-            UserDataManager = userDataManager;
             LibraryManager = libraryManager;
         }
 
@@ -44,7 +42,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error getting file {path}", path);
+                Logger.LogError(ex, "Error getting file {Path}", path);
                 return null;
             }
         }

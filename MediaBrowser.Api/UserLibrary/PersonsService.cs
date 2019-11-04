@@ -109,6 +109,11 @@ namespace MediaBrowser.Api.UserLibrary
                 NameContains = query.NameContains ?? query.SearchTerm
             });
 
+            if (query.IsFavorite ?? false && query.User != null)
+            {
+                items = items.Where(i => UserDataRepository.GetUserData(query.User, i).IsFavorite).ToList();
+            }
+
             return new QueryResult<(BaseItem, ItemCounts)>
             {
                 TotalRecordCount = items.Count,

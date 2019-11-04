@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This file was created by NSISDialogDesigner 1.4.4.0
+http://coolsoft.altervista.org/nsisdialogdesigner
+Do not edit manually!
+-->
+<Dialog Name="setuptype" Title="Setup Type" Subtitle="Control how Jellyfin is installed.">
+  <Label Name="InstallasaServiceLabel" Location="12, 115" Size="426, 46" Text="Install Jellyfin as a service. This method is recommended for Advanced Users. Additional setup is required to access network shares." TabIndex="0" />
+  <RadioButton Name="InstallasaService" Location="12, 88" Size="426, 24" Text="Install as a Service (Advanced Users)" TabIndex="1" />
+  <Label Name="BasicInstallLabel" Location="12, 39" Size="426, 46" Text="The basic install will run Jellyfin in your current user account.$\nThis is recommended for new users and those with existing Jellyfin installs older than 10.4." TabIndex="2" />
+  <RadioButton Name="BasicInstall" Location="12, 12" Size="426, 24" Text="Basic Install (Recommended)" Font="Microsoft Sans Serif, 8.25pt, style=Bold" Checked="True" TabIndex="3" />
+</Dialog>

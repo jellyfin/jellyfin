@@ -160,12 +160,13 @@ namespace Emby.Server.Implementations.Library
 
             if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder && !mediaSources[0].MediaStreams.Any(i => i.Type == MediaStreamType.Audio || i.Type == MediaStreamType.Video))
             {
-                await item.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
-                {
-                    EnableRemoteContentProbe = true,
-                    MetadataRefreshMode = MediaBrowser.Controller.Providers.MetadataRefreshMode.FullRefresh
-
-                }, cancellationToken).ConfigureAwait(false);
+                await item.RefreshMetadata(
+                    new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                    {
+                        EnableRemoteContentProbe = true,
+                        MetadataRefreshMode = MetadataRefreshMode.FullRefresh
+                    },
+                    cancellationToken).ConfigureAwait(false);
 
                 mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
             }

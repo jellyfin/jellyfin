@@ -7,7 +7,7 @@ set -o xtrace
 
 # Version variables
 NSSM_VERSION="nssm-2.24-101-g897c7ad"
-NSSM_URL="https://nssm.cc/ci/${NSSM_VERSION}.zip"
+NSSM_URL="http://files.evilt.win/nssm/${NSSM_VERSION}.zip"
 FFMPEG_VERSION="ffmpeg-4.0.2-win32-static"
 FFMPEG_URL="https://ffmpeg.zeranoe.com/builds/win32/static/${FFMPEG_VERSION}.zip"
 

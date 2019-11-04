@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -19,7 +18,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
-using static MediaBrowser.Common.HexHelper;
 
 namespace Emby.Server.Implementations.Updates
 {
@@ -28,43 +26,10 @@ namespace Emby.Server.Implementations.Updates
     /// </summary>
     public class InstallationManager : IInstallationManager
     {
-        public event EventHandler<InstallationEventArgs> PackageInstalling;
-        public event EventHandler<InstallationEventArgs> PackageInstallationCompleted;
-        public event EventHandler<InstallationFailedEventArgs> PackageInstallationFailed;
-        public event EventHandler<InstallationEventArgs> PackageInstallationCancelled;
-
         /// <summary>
-        /// The current installations
-        /// </summary>
-        private List<(InstallationInfo info, CancellationTokenSource token)> _currentInstallations { get; set; }
-
-        /// <summary>
-        /// The completed installations
-        /// </summary>
-        private ConcurrentBag<InstallationInfo> _completedInstallationsInternal;
-
-        public IEnumerable<InstallationInfo> CompletedInstallations => _completedInstallationsInternal;
-
-        /// <summary>
-        /// Occurs when [plugin uninstalled].
-        /// </summary>
-        public event EventHandler<GenericEventArgs<IPlugin>> PluginUninstalled;
-
-        /// <summary>
-        /// Occurs when [plugin updated].
-        /// </summary>
-        public event EventHandler<GenericEventArgs<(IPlugin, PackageVersionInfo)>> PluginUpdated;
-
-        /// <summary>
-        /// Occurs when [plugin updated].
-        /// </summary>
-        public event EventHandler<GenericEventArgs<PackageVersionInfo>> PluginInstalled;
-
-        /// <summary>
-        /// The _logger
+        /// The _logger.
         /// </summary>
         private readonly ILogger _logger;
-
         private readonly IApplicationPaths _appPaths;
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
@@ -78,6 +43,18 @@ namespace Emby.Server.Implementations.Updates
         private readonly IApplicationHost _applicationHost;
 
         private readonly IZipClient _zipClient;
+
+        private readonly object _currentInstallationsLock = new object();
+
+        /// <summary>
+        /// The current installations.
+        /// </summary>
+        private List<(InstallationInfo info, CancellationTokenSource token)> _currentInstallations;
+
+        /// <summary>
+        /// The completed installations.
+        /// </summary>
+        private ConcurrentBag<InstallationInfo> _completedInstallationsInternal;
 
         public InstallationManager(
             ILogger<InstallationManager> logger,
@@ -106,6 +83,31 @@ namespace Emby.Server.Implementations.Updates
             _fileSystem = fileSystem;
             _zipClient = zipClient;
         }
+
+        public event EventHandler<InstallationEventArgs> PackageInstalling;
+
+        public event EventHandler<InstallationEventArgs> PackageInstallationCompleted;
+
+        public event EventHandler<InstallationFailedEventArgs> PackageInstallationFailed;
+
+        public event EventHandler<InstallationEventArgs> PackageInstallationCancelled;
+
+        /// <summary>
+        /// Occurs when a plugin is uninstalled.
+        /// </summary>
+        public event EventHandler<GenericEventArgs<IPlugin>> PluginUninstalled;
+
+        /// <summary>
+        /// Occurs when a plugin plugin is updated.
+        /// </summary>
+        public event EventHandler<GenericEventArgs<(IPlugin, PackageVersionInfo)>> PluginUpdated;
+
+        /// <summary>
+        /// Occurs when a plugin plugin is installed.
+        /// </summary>
+        public event EventHandler<GenericEventArgs<PackageVersionInfo>> PluginInstalled;
+
+        public IEnumerable<InstallationInfo> CompletedInstallations => _completedInstallationsInternal;
 
         /// <summary>
         /// Gets all available packages.
@@ -330,7 +332,7 @@ namespace Emby.Server.Implementations.Updates
             var tuple = (installationInfo, innerCancellationTokenSource);
 
             // Add it to the in-progress list
-            lock (_currentInstallations)
+            lock (_currentInstallationsLock)
             {
                 _currentInstallations.Add(tuple);
             }
@@ -349,7 +351,7 @@ namespace Emby.Server.Implementations.Updates
             {
                 await InstallPackageInternal(package, linkedToken).ConfigureAwait(false);
 
-                lock (_currentInstallations)
+                lock (_currentInstallationsLock)
                 {
                     _currentInstallations.Remove(tuple);
                 }
@@ -360,7 +362,7 @@ namespace Emby.Server.Implementations.Updates
             }
             catch (OperationCanceledException)
             {
-                lock (_currentInstallations)
+                lock (_currentInstallationsLock)
                 {
                     _currentInstallations.Remove(tuple);
                 }
@@ -375,7 +377,7 @@ namespace Emby.Server.Implementations.Updates
             {
                 _logger.LogError(ex, "Package installation failed");
 
-                lock (_currentInstallations)
+                lock (_currentInstallationsLock)
                 {
                     _currentInstallations.Remove(tuple);
                 }
@@ -455,7 +457,7 @@ namespace Emby.Server.Implementations.Updates
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var hash = ToHexString(md5.ComputeHash(stream));
+                var hash = Hex.Encode(md5.ComputeHash(stream));
                 if (!string.Equals(package.checksum, hash, StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogError(
@@ -535,7 +537,7 @@ namespace Emby.Server.Implementations.Updates
         /// <inheritdoc/>
         public bool CancelInstallation(Guid id)
         {
-            lock (_currentInstallations)
+            lock (_currentInstallationsLock)
             {
                 var install = _currentInstallations.Find(x => x.Item1.Id == id);
                 if (install == default((InstallationInfo, CancellationTokenSource)))
@@ -563,7 +565,7 @@ namespace Emby.Server.Implementations.Updates
         {
             if (dispose)
             {
-                lock (_currentInstallations)
+                lock (_currentInstallationsLock)
                 {
                     foreach (var tuple in _currentInstallations)
                     {

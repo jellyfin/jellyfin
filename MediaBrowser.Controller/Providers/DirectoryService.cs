@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
-        private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
         private readonly Dictionary<string, FileSystemMetadata[]> _cache = new Dictionary<string, FileSystemMetadata[]>(StringComparer.OrdinalIgnoreCase);
@@ -17,9 +15,8 @@ namespace MediaBrowser.Controller.Providers
 
         private readonly Dictionary<string, List<string>> _filePathCache = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
-        public DirectoryService(ILogger logger, IFileSystem fileSystem)
+        public DirectoryService(IFileSystem fileSystem)
         {
-            _logger = logger;
             _fileSystem = fileSystem;
         }
 
@@ -27,8 +24,6 @@ namespace MediaBrowser.Controller.Providers
         {
             if (!_cache.TryGetValue(path, out FileSystemMetadata[] entries))
             {
-                //_logger.LogDebug("Getting files for " + path);
-
                 entries = _fileSystem.GetFileSystemEntries(path).ToArray();
 
                 //_cache.TryAdd(path, entries);
@@ -49,6 +44,7 @@ namespace MediaBrowser.Controller.Providers
                     list.Add(item);
                 }
             }
+
             return list;
         }
 
@@ -89,6 +85,5 @@ namespace MediaBrowser.Controller.Providers
 
             return result;
         }
-
     }
 }

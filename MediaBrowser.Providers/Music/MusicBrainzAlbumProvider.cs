@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,7 +15,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -22,16 +22,6 @@ namespace MediaBrowser.Providers.Music
 {
     public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
     {
-        internal static MusicBrainzAlbumProvider Current;
-
-        private readonly IHttpClient _httpClient;
-        private readonly IApplicationHost _appHost;
-        private readonly ILogger _logger;
-        private readonly IJsonSerializer _json;
-        private Stopwatch _stopWatchMusicBrainz = new Stopwatch();
-
-        public readonly string MusicBrainzBaseUrl;
-
         /// <summary>
         /// The Jellyfin user-agent is unrestricted but source IP must not exceed
         /// one request per second, therefore we rate limit to avoid throttling.
@@ -47,19 +37,27 @@ namespace MediaBrowser.Providers.Music
         /// </summary>
         private const uint MusicBrainzQueryAttempts = 5u;
 
+        internal static MusicBrainzAlbumProvider Current;
+
+        private readonly IHttpClient _httpClient;
+        private readonly IApplicationHost _appHost;
+        private readonly ILogger _logger;
+
+        private readonly string _musicBrainzBaseUrl;
+
+        private Stopwatch _stopWatchMusicBrainz = new Stopwatch();
+
         public MusicBrainzAlbumProvider(
             IHttpClient httpClient,
             IApplicationHost appHost,
             ILogger logger,
-            IJsonSerializer json,
             IConfiguration configuration)
         {
             _httpClient = httpClient;
             _appHost = appHost;
             _logger = logger;
-            _json = json;
 
-            MusicBrainzBaseUrl = configuration["MusicBrainz:BaseUrl"];
+            _musicBrainzBaseUrl = configuration["MusicBrainz:BaseUrl"];
 
             // Use a stopwatch to ensure we don't exceed the MusicBrainz rate limit
             _stopWatchMusicBrainz.Start();
@@ -67,6 +65,13 @@ namespace MediaBrowser.Providers.Music
             Current = this;
         }
 
+        /// <inheritdoc />
+        public string Name => "MusicBrainz";
+
+        /// <inheritdoc />
+        public int Order => 0;
+
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(AlbumInfo searchInfo, CancellationToken cancellationToken)
         {
             var releaseId = searchInfo.GetReleaseId();
@@ -76,11 +81,11 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrEmpty(releaseId))
             {
-                url = string.Format("/ws/2/release/?query=reid:{0}", releaseId);
+                url = "/ws/2/release/?query=reid:" + releaseId.ToString(CultureInfo.InvariantCulture);
             }
             else if (!string.IsNullOrEmpty(releaseGroupId))
             {
-                url = string.Format("/ws/2/release?release-group={0}", releaseGroupId);
+                url = "/ws/2/release?release-group=" + releaseGroupId.ToString(CultureInfo.InvariantCulture);
             }
             else
             {
@@ -88,7 +93,9 @@ namespace MediaBrowser.Providers.Music
 
                 if (!string.IsNullOrWhiteSpace(artistMusicBrainzId))
                 {
-                    url = string.Format("/ws/2/release/?query=\"{0}\" AND arid:{1}",
+                    url = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "/ws/2/release/?query=\"{0}\" AND arid:{1}",
                         WebUtility.UrlEncode(searchInfo.Name),
                         artistMusicBrainzId);
                 }
@@ -97,7 +104,9 @@ namespace MediaBrowser.Providers.Music
                     // I'm sure there is a better way but for now it resolves search for 12" Mixes
                     var queryName = searchInfo.Name.Replace("\"", string.Empty);
 
-                    url = string.Format("/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
+                    url = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
                        WebUtility.UrlEncode(queryName),
                        WebUtility.UrlEncode(searchInfo.GetAlbumArtist()));
                 }
@@ -106,11 +115,9 @@ namespace MediaBrowser.Providers.Music
             if (!string.IsNullOrWhiteSpace(url))
             {
                 using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
+                using (var stream = response.Content)
                 {
-                    using (var stream = response.Content)
-                    {
-                        return GetResultsFromResponse(stream);
-                    }
+                    return GetResultsFromResponse(stream);
                 }
             }
 
@@ -156,6 +163,7 @@ namespace MediaBrowser.Providers.Music
                         {
                             result.SetProviderId(MetadataProviders.MusicBrainzAlbum, i.ReleaseId);
                         }
+
                         if (!string.IsNullOrWhiteSpace(i.ReleaseGroupId))
                         {
                             result.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, i.ReleaseGroupId);
@@ -168,6 +176,7 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
+        /// <inheritdoc />
         public async Task<MetadataResult<MusicAlbum>> GetMetadata(AlbumInfo id, CancellationToken cancellationToken)
         {
             var releaseId = id.GetReleaseId();
@@ -238,8 +247,6 @@ namespace MediaBrowser.Providers.Music
             return result;
         }
 
-        public string Name => "MusicBrainz";
-
         private Task<ReleaseResult> GetReleaseResult(string artistMusicBrainId, string artistName, string albumName, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrEmpty(artistMusicBrainId))
@@ -282,7 +289,9 @@ namespace MediaBrowser.Providers.Music
 
         private async Task<ReleaseResult> GetReleaseResultByArtistName(string albumName, string artistName, CancellationToken cancellationToken)
         {
-            var url = string.Format("/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
+            var url = string.Format(
+                CultureInfo.InvariantCulture,
+                "/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
                 WebUtility.UrlEncode(albumName),
                 WebUtility.UrlEncode(artistName));
 
@@ -334,6 +343,7 @@ namespace MediaBrowser.Providers.Music
                                         reader.Read();
                                         continue;
                                     }
+
                                     using (var subReader = reader.ReadSubtree())
                                     {
                                         return ParseReleaseList(subReader).ToList();
@@ -601,7 +611,7 @@ namespace MediaBrowser.Providers.Music
 
         private async Task<string> GetReleaseIdFromReleaseGroupId(string releaseGroupId, CancellationToken cancellationToken)
         {
-            var url = string.Format("/ws/2/release?release-group={0}", releaseGroupId);
+            var url = "/ws/2/release?release-group=" + releaseGroupId.ToString(CultureInfo.InvariantCulture);
 
             using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
             using (var stream = response.Content)
@@ -637,7 +647,7 @@ namespace MediaBrowser.Providers.Music
         /// <returns>Task{System.String}.</returns>
         private async Task<string> GetReleaseGroupFromReleaseId(string releaseEntryId, CancellationToken cancellationToken)
         {
-            var url = string.Format("/ws/2/release-group/?query=reid:{0}", releaseEntryId);
+            var url = "/ws/2/release-group/?query=reid:" + releaseEntryId.ToString(CultureInfo.InvariantCulture);
 
             using (var response = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
             using (var stream = response.Content)
@@ -687,6 +697,7 @@ namespace MediaBrowser.Providers.Music
                             reader.Read();
                         }
                     }
+
                     return null;
                 }
             }
@@ -734,11 +745,15 @@ namespace MediaBrowser.Providers.Music
         {
             var options = new HttpRequestOptions
             {
-                Url = MusicBrainzBaseUrl.TrimEnd('/') + url,
+                Url = _musicBrainzBaseUrl.TrimEnd('/') + url,
                 CancellationToken = cancellationToken,
                 // MusicBrainz request a contact email address is supplied, as comment, in user agent field:
                 // https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#User-Agent
-                UserAgent = string.Format("{0} ( {1} )", _appHost.ApplicationUserAgent, _appHost.ApplicationUserAgentAddress),
+                UserAgent = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0} ( {1} )",
+                    _appHost.ApplicationUserAgent,
+                    _appHost.ApplicationUserAgentAddress),
                 BufferContent = false
             };
 
@@ -768,7 +783,7 @@ namespace MediaBrowser.Providers.Music
             while (attempts < MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable);
 
             // Log error if unable to query MB database due to throttling
-            if (attempts == MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable )
+            if (attempts == MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable)
             {
                 _logger.LogError("GetMusicBrainzResponse: 503 Service Unavailable (throttled) response received {0} times whilst requesting {1}", attempts, options.Url);
             }
@@ -776,8 +791,7 @@ namespace MediaBrowser.Providers.Music
             return response;
         }
 
-        public int Order => 0;
-
+        /// <inheritdoc />
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();

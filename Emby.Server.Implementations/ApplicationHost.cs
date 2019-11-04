@@ -364,7 +364,7 @@ namespace Emby.Server.Implementations
         {
             _configuration = configuration;
 
-            XmlSerializer = new MyXmlSerializer(fileSystem, loggerFactory);
+            XmlSerializer = new MyXmlSerializer();
 
             NetworkManager = networkManager;
             networkManager.LocalSubnetsFn = GetConfiguredLocalSubnets;
@@ -912,7 +912,7 @@ namespace Emby.Server.Implementations
 
             _displayPreferencesRepository.Initialize();
 
-            var userDataRepo = new SqliteUserDataRepository(LoggerFactory, ApplicationPaths);
+            var userDataRepo = new SqliteUserDataRepository(LoggerFactory.CreateLogger<SqliteUserDataRepository>(), ApplicationPaths);
 
             SetStaticProperties();
 

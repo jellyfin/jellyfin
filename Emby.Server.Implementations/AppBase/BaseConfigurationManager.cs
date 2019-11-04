@@ -35,7 +35,7 @@ namespace Emby.Server.Implementations.AppBase
         /// <summary>
         /// The _configuration sync lock.
         /// </summary>
-        private object _configurationSyncLock = new object();
+        private readonly object _configurationSyncLock = new object();
 
         /// <summary>
         /// The _configuration.
@@ -98,16 +98,31 @@ namespace Emby.Server.Implementations.AppBase
         public IApplicationPaths CommonApplicationPaths { get; private set; }
 
         /// <summary>
-        /// Gets the system configuration
+        /// Gets the system configuration.
         /// </summary>
         /// <value>The configuration.</value>
         public BaseApplicationConfiguration CommonConfiguration
         {
             get
             {
-                // Lazy load
-                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationLoaded, ref _configurationSyncLock, () => (BaseApplicationConfiguration)ConfigurationHelper.GetXmlConfiguration(ConfigurationType, CommonApplicationPaths.SystemConfigurationFilePath, XmlSerializer));
-                return _configuration;
+                if (_configurationLoaded)
+                {
+                    return _configuration;
+                }
+
+                lock (_configurationSyncLock)
+                {
+                    if (_configurationLoaded)
+                    {
+                        return _configuration;
+                    }
+
+                    _configuration = (BaseApplicationConfiguration)ConfigurationHelper.GetXmlConfiguration(ConfigurationType, CommonApplicationPaths.SystemConfigurationFilePath, XmlSerializer);
+
+                    _configurationLoaded = true;
+
+                    return _configuration;
+                }
             }
             protected set
             {

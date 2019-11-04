@@ -27,6 +27,11 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private NatManager _natManager;
 
+        private readonly object _createdRulesLock = new object();
+        private List<string> _createdRules = new List<string>();
+        private readonly object _usnsHandledLock = new object();
+        private List<string> _usnsHandled = new List<string>();
+
         public ExternalPortForwarding(ILoggerFactory loggerFactory, IServerApplicationHost appHost, IServerConfigurationManager config, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient)
         {
             _logger = loggerFactory.CreateLogger("PortMapper");
@@ -127,12 +132,13 @@ namespace Emby.Server.Implementations.EntryPoints
                 return;
             }
 
-            lock (_usnsHandled)
+            lock (_usnsHandledLock)
             {
                 if (_usnsHandled.Contains(identifier))
                 {
                     return;
                 }
+
                 _usnsHandled.Add(identifier);
             }
 
@@ -186,11 +192,12 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private void ClearCreatedRules(object state)
         {
-            lock (_createdRules)
+            lock (_createdRulesLock)
             {
                 _createdRules.Clear();
             }
-            lock (_usnsHandled)
+
+            lock (_usnsHandledLock)
             {
                 _usnsHandled.Clear();
             }
@@ -216,8 +223,6 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
-        private List<string> _createdRules = new List<string>();
-        private List<string> _usnsHandled = new List<string>();
         private async void CreateRules(INatDevice device)
         {
             if (_disposed)
@@ -231,7 +236,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             var addressString = address.ToString();
 
-            lock (_createdRules)
+            lock (_createdRulesLock)
             {
                 if (!_createdRules.Contains(addressString))
                 {

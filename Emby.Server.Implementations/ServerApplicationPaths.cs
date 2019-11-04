@@ -6,7 +6,7 @@ using MediaBrowser.Controller;
 namespace Emby.Server.Implementations
 {
     /// <summary>
-    /// Extends BaseApplicationPaths to add paths that are only applicable on the server
+    /// Extends BaseApplicationPaths to add paths that are only applicable on the server.
     /// </summary>
     public class ServerApplicationPaths : BaseApplicationPaths, IServerApplicationPaths
     {

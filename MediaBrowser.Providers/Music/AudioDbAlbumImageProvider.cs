@@ -25,6 +25,14 @@ namespace MediaBrowser.Providers.Music
             _json = json;
         }
 
+        /// <inheritdoc />
+        public string Name => "TheAudioDB";
+
+        /// <inheritdoc />
+        // After embedded and fanart
+        public int Order => 2;
+
+        /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType>
@@ -34,6 +42,7 @@ namespace MediaBrowser.Providers.Music
             };
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var id = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
@@ -82,6 +91,7 @@ namespace MediaBrowser.Providers.Music
             return list;
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClient.GetResponse(new HttpRequestOptions
@@ -91,13 +101,7 @@ namespace MediaBrowser.Providers.Music
             });
         }
 
-        public string Name => "TheAudioDB";
-        // After embedded and fanart
-        public int Order => 2;
-
-        public bool Supports(BaseItem item)
-        {
-            return item is MusicAlbum;
-        }
+        /// <inheritdoc />
+        public bool Supports(BaseItem item) => item is MusicAlbum;
     }
 }
