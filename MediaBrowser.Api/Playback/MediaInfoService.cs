@@ -527,7 +527,9 @@ namespace MediaBrowser.Api.Playback
 
             foreach (var attachment in mediaSource.MediaAttachments)
             {
-                attachment.DeliveryUrl = string.Format("/Videos/{0}/{1}/Attachments/{2}",
+                attachment.DeliveryUrl = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "/Videos/{0}/{1}/Attachments/{2}",
                     item.Id,
                     mediaSource.Id,
                     attachment.Index);

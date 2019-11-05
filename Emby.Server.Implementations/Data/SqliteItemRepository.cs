@@ -6180,7 +6180,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     statement.TryBind("@AttachmentIndex", query.Index.Value);
                 }
 
-                foreach (var row in statement.ExecuteQuery()) {
+                foreach (var row in statement.ExecuteQuery())
+                {
                     list.Add(GetMediaAttachment(row));
                 }
             }
@@ -6230,7 +6231,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 {
                     if (i != startIndex)
                     {
-                        insertText.Append(",");
+                        insertText.Append(',');
                     }
 
                     var index = i.ToString(CultureInfo.InvariantCulture);
