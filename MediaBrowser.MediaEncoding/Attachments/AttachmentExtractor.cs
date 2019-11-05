@@ -59,6 +59,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             {
                 throw new ArgumentNullException(nameof(item));
             }
+
             if (string.IsNullOrWhiteSpace(mediaSourceId))
             {
                 throw new ArgumentNullException(nameof(mediaSourceId));
