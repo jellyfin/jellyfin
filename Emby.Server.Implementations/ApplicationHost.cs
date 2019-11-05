@@ -908,7 +908,7 @@ namespace Emby.Server.Implementations
 
             AttachmentExtractor = new MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor(LibraryManager, LoggerFactory, ApplicationPaths, FileSystemManager, MediaEncoder, MediaSourceManager, ProcessFactory);
 
-            serviceCollection.AddSingleton(AttachmentExtractor);
+            serviceCollection.AddSingleton<MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
             _displayPreferencesRepository.Initialize();
 
