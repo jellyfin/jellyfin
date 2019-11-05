@@ -49,6 +49,19 @@ namespace Emby.Server.Implementations.Data
         private readonly TypeMapper _typeMapper;
         private readonly JsonSerializerOptions _jsonOptions;
 
+        static SqliteItemRepository() {
+            var queryPrefixText = new StringBuilder();
+            queryPrefixText.Append("insert into mediaattachments (");
+            foreach (var column in _mediaAttachmentSaveColumns)
+            {
+                queryPrefixText.Append(column);
+                queryPrefixText.Append(',');
+            }
+            queryPrefixText.Length -= 1;
+            queryPrefixText.Append(") values ");
+            _mediaAttachmentInsertPrefix = queryPrefixText.ToString();
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
@@ -434,6 +447,7 @@ namespace Emby.Server.Implementations.Data
             "Filename",
             "MIMEType"
         };
+        private static readonly string _mediaAttachmentInsertPrefix;
 
         private static string GetSaveItemCommandText()
         {
@@ -6216,7 +6230,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             while (startIndex < attachments.Count)
             {
-                var insertText = new StringBuilder(string.Format("insert into mediaattachments ({0}) values ", string.Join(",", _mediaAttachmentSaveColumns)));
+                var insertText = new StringBuilder(_mediaAttachmentInsertPrefix);
 
                 var endIndex = Math.Min(attachments.Count, startIndex + insertAtOnce);
 
