@@ -6260,6 +6260,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     statement.Reset();
                     statement.MoveNext();
                 }
+
                 startIndex += insertAtOnce;
             }
         }
