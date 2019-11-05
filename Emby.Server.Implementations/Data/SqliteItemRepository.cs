@@ -6240,6 +6240,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     {
                         insertText.Append("@" + column + index + ",");
                     }
+
                     insertText.Length -= 1;
 
                     insertText.Append(")");
@@ -6266,6 +6267,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     statement.Reset();
                     statement.MoveNext();
                 }
+
                 startIndex += insertAtOnce;
             }
         }
