@@ -6193,7 +6193,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             CheckDisposed();
             if (id == Guid.Empty)
             {
-                throw new ArgumentNullException(nameof(id));
+                throw new ArgumentException(nameof(id));
             }
 
             if (attachments == null)
