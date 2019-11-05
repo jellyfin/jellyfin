@@ -6231,7 +6231,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 {
                     if (i != startIndex)
                     {
-                        insertText.Append(",");
+                        insertText.Append(',');
                     }
 
                     var index = i.ToString(CultureInfo.InvariantCulture);
