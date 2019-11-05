@@ -535,8 +535,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 Index = streamInfo.index
             };
 
-            // Filter out junk
-            if (!string.IsNullOrWhiteSpace(streamInfo.codec_tag_string) && streamInfo.codec_tag_string.IndexOf("[0]", StringComparison.OrdinalIgnoreCase) == -1)
+            if (!string.IsNullOrWhiteSpace(streamInfo.codec_tag_string))
             {
                attachment.CodecTag = streamInfo.codec_tag_string;
             }
