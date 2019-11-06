@@ -6184,7 +6184,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             cmdText += " order by AttachmentIndex ASC";
 
             var list = new List<MediaAttachment>();
-            using var connection = GetConnection(true);
+            using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, cmdText))
             {
                 statement.TryBind("@ItemId", query.ItemId.ToByteArray());
@@ -6218,16 +6218,18 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using var connection = GetConnection();
-            connection.RunInTransaction(db =>
+            using (var connection = GetConnection())
             {
-                var itemIdBlob = id.ToByteArray();
+                connection.RunInTransaction(db =>
+                {
+                    var itemIdBlob = id.ToByteArray();
 
-                db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
+                    db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
 
-                InsertMediaAttachments(itemIdBlob, attachments, db);
+                    InsertMediaAttachments(itemIdBlob, attachments, db);
 
-            }, TransactionMode);
+                }, TransactionMode);
+            }
         }
 
         private void InsertMediaAttachments(byte[] idBlob, List<MediaAttachment> attachments, IDatabaseConnection db)
