@@ -66,23 +66,15 @@ namespace MediaBrowser.MediaEncoding.Attachments
             }
 
             var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(item, null, true, false, cancellationToken).ConfigureAwait(false);
-            MediaSourceInfo mediaSource;
-            MediaAttachment mediaAttachment;
-            try
-            {
-                mediaSource = mediaSources
-                    .First(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
-            }
-            catch (Exception ex) when (ex is ArgumentNullException || ex is InvalidOperationException)
+            var mediaSource = mediaSources
+                .FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
+            if (mediaSource == null)
             {
                 throw new ResourceNotFoundException($"MediaSource {mediaSourceId} not found");
             }
-            try
-            {
-                mediaAttachment = mediaSource.MediaAttachments
-                    .First(i => i.Index == attachmentStreamIndex);
-            }
-            catch (Exception ex) when (ex is ArgumentNullException || ex is InvalidOperationException)
+            var mediaAttachment = mediaSource.MediaAttachments
+                .FirstOrDefault(i => i.Index == attachmentStreamIndex);
+            if (mediaAttachment == null)
             {
                 throw new ResourceNotFoundException($"MediaSource {mediaSourceId} has no attachment with stream index {attachmentStreamIndex}");
             }
