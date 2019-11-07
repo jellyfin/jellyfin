@@ -130,6 +130,7 @@ namespace Emby.Server.Implementations.Library
             return streams;
         }
 
+        /// <inheritdoc />
         public List<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query)
         {
             return _itemRepo.GetMediaAttachments(query);
