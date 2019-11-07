@@ -51,7 +51,8 @@ namespace Emby.Server.Implementations.Data
         private readonly TypeMapper _typeMapper;
         private readonly JsonSerializerOptions _jsonOptions;
 
-        static SqliteItemRepository() {
+        static SqliteItemRepository()
+        {
             var queryPrefixText = new StringBuilder();
             queryPrefixText.Append("insert into mediaattachments (");
             foreach (var column in _mediaAttachmentSaveColumns)
