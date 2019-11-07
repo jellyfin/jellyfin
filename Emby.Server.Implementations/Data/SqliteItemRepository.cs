@@ -6219,13 +6219,13 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                     db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
 
-                    InsertMediaAttachments(itemIdBlob, attachments, db);
+                    InsertMediaAttachments(itemIdBlob, attachments, db, cancellationToken);
 
                 }, TransactionMode);
             }
         }
 
-        private void InsertMediaAttachments(byte[] idBlob, List<MediaAttachment> attachments, IDatabaseConnection db)
+        private void InsertMediaAttachments(byte[] idBlob, List<MediaAttachment> attachments, IDatabaseConnection db, CancellationToken cancellationToken)
         {
             var startIndex = 0;
             var insertAtOnce = 10;
@@ -6255,6 +6255,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                     insertText.Append(")");
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 using (var statement = PrepareStatement(db, insertText.ToString()))
                 {
