@@ -134,6 +134,7 @@ namespace Emby.Server.Implementations.Library
             return _itemRepo.GetMediaAttachments(query);
         }
 
+        /// <inheritdoc />
         public List<MediaAttachment> GetMediaAttachments(string mediaSourceId)
         {
             return GetMediaAttachments(new MediaAttachmentQuery
