@@ -60,6 +60,7 @@ namespace Emby.Server.Implementations.Data
                 queryPrefixText.Append(column);
                 queryPrefixText.Append(',');
             }
+
             queryPrefixText.Length -= 1;
             queryPrefixText.Append(") values ");
             _mediaAttachmentInsertPrefix = queryPrefixText.ToString();
