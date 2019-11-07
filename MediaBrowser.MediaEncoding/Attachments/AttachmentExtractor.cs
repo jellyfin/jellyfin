@@ -251,7 +251,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
         private string GetAttachmentCachePath(string mediaPath, MediaProtocol protocol, int attachmentStreamIndex)
         {
-            String filename;
+            string filename;
             if (protocol == MediaProtocol.File)
             {
                 var date = _fileSystem.GetLastWriteTimeUtc(mediaPath);
