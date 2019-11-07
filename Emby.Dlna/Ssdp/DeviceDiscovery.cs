@@ -4,8 +4,6 @@ using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Net;
-using Microsoft.Extensions.Logging;
 using Rssdp;
 using Rssdp.Infrastructure;
 
@@ -15,13 +13,14 @@ namespace Emby.Dlna.Ssdp
     {
         private bool _disposed;
 
-        private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
 
         private event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscoveredInternal;
 
         private int _listenerCount;
         private object _syncLock = new object();
+
+        /// <inheritdoc />
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscovered
         {
             add
@@ -31,6 +30,7 @@ namespace Emby.Dlna.Ssdp
                     _listenerCount++;
                     DeviceDiscoveredInternal += value;
                 }
+
                 StartInternal();
             }
             remove
@@ -43,21 +43,16 @@ namespace Emby.Dlna.Ssdp
             }
         }
 
+        /// <inheritdoc />
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
 
         private SsdpDeviceLocator _deviceLocator;
 
-        private readonly ISocketFactory _socketFactory;
         private ISsdpCommunicationsServer _commsServer;
 
-        public DeviceDiscovery(
-            ILoggerFactory loggerFactory,
-            IServerConfigurationManager config,
-            ISocketFactory socketFactory)
+        public DeviceDiscovery(IServerConfigurationManager config)
         {
-            _logger = loggerFactory.CreateLogger(nameof(DeviceDiscovery));
             _config = config;
-            _socketFactory = socketFactory;
         }
 
         // Call this method from somewhere in your code to start the search.
@@ -82,8 +77,8 @@ namespace Emby.Dlna.Ssdp
                     //_DeviceLocator.NotificationFilter = "upnp:rootdevice";
 
                     // Connect our event handler so we process devices as they are found
-                    _deviceLocator.DeviceAvailable += deviceLocator_DeviceAvailable;
-                    _deviceLocator.DeviceUnavailable += _DeviceLocator_DeviceUnavailable;
+                    _deviceLocator.DeviceAvailable += OnDeviceLocatorDeviceAvailable;
+                    _deviceLocator.DeviceUnavailable += OnDeviceLocatorDeviceUnavailable;
 
                     var dueTime = TimeSpan.FromSeconds(5);
                     var interval = TimeSpan.FromSeconds(_config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds);
@@ -94,7 +89,7 @@ namespace Emby.Dlna.Ssdp
         }
 
         // Process each found device in the event handler
-        void deviceLocator_DeviceAvailable(object sender, DeviceAvailableEventArgs e)
+        private void OnDeviceLocatorDeviceAvailable(object sender, DeviceAvailableEventArgs e)
         {
             var originalHeaders = e.DiscoveredDevice.ResponseHeaders;
 
@@ -115,7 +110,7 @@ namespace Emby.Dlna.Ssdp
             DeviceDiscoveredInternal?.Invoke(this, args);
         }
 
-        private void _DeviceLocator_DeviceUnavailable(object sender, DeviceUnavailableEventArgs e)
+        private void OnDeviceLocatorDeviceUnavailable(object sender, DeviceUnavailableEventArgs e)
         {
             var originalHeaders = e.DiscoveredDevice.ResponseHeaders;
 

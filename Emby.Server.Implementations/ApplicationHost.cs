@@ -866,8 +866,7 @@ namespace Emby.Server.Implementations
             NotificationManager = new NotificationManager(LoggerFactory, UserManager, ServerConfigurationManager);
             serviceCollection.AddSingleton(NotificationManager);
 
-            serviceCollection.AddSingleton<IDeviceDiscovery>(
-                new DeviceDiscovery(LoggerFactory, ServerConfigurationManager, SocketFactory));
+            serviceCollection.AddSingleton<IDeviceDiscovery>(new DeviceDiscovery(ServerConfigurationManager));
 
             ChapterManager = new ChapterManager(LibraryManager, LoggerFactory, ServerConfigurationManager, ItemRepository);
             serviceCollection.AddSingleton(ChapterManager);
@@ -1730,7 +1729,7 @@ namespace Emby.Server.Implementations
         /// dns is prefixed with a valid Uri prefix.
         /// </summary>
         /// <param name="externalDns">The external dns prefix to get the hostname of.</param>
-        /// <returns>The hostname in <paramref name="externalDns"/></returns>
+        /// <returns>The hostname in <paramref name="externalDns"/>.</returns>
         private static string GetHostnameFromExternalDns(string externalDns)
         {
             if (string.IsNullOrEmpty(externalDns))
