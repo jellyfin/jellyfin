@@ -143,6 +143,7 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
+        /// <inheritdoc />
         public List<MediaAttachment> GetMediaAttachments(Guid itemId)
         {
             return GetMediaAttachments(new MediaAttachmentQuery
