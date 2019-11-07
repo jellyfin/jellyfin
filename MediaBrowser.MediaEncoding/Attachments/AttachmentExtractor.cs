@@ -204,7 +204,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 {
                     _logger.LogError(ex, "Error killing attachment extraction process");
                 }
-
             }
 
             var exitCode = ranToCompletion ? process.ExitCode : -1;
