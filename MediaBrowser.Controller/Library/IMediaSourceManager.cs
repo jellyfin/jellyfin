@@ -50,6 +50,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="">The The media source identifier.</param>
         /// <returns>IEnumerable&lt;MediaAttachment&gt;.</returns>
+
         List<MediaAttachment> GetMediaAttachments(string mediaSourceId);
         /// <summary>
         /// Gets the media attachments.
