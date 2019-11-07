@@ -44,6 +44,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="">The item identifier.</param>
         /// <returns>IEnumerable&lt;MediaAttachment&gt;.</returns>
         List<MediaAttachment> GetMediaAttachments(Guid itemId);
+
         /// <summary>
         /// Gets the media attachments.
         /// </summary>
