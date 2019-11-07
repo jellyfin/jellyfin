@@ -233,7 +233,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 {
                     _logger.LogError(ex, "Error deleting extracted attachment {Path}", outputPath);
                 }
-
             }
             else if (!File.Exists(outputPath))
             {
