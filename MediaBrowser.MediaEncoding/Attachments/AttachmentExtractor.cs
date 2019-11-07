@@ -35,7 +35,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
         public AttachmentExtractor(
             ILibraryManager libraryManager,
-            ILoggerFactory loggerFactory,
+            ILogger<AttachmentExtractor> logger,
             IApplicationPaths appPaths,
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
@@ -43,7 +43,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             IProcessFactory processFactory)
         {
             _libraryManager = libraryManager;
-            _logger = loggerFactory.CreateLogger(nameof(AttachmentExtractor));
+            _logger = logger;
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
