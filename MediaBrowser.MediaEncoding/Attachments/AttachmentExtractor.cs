@@ -164,7 +164,12 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
-            var processArgs = string.Format("-dump_attachment:{1} {2} -i {0} -t 0 -f null null", inputPath, attachmentStreamIndex, outputPath);
+            var processArgs = string.Format(
+                CultureInfo.InvariantCulture,
+                "-dump_attachment:{1} {2} -i {0} -t 0 -f null null",
+                inputPath,
+                attachmentStreamIndex,
+                outputPath);
             var startInfo = new ProcessStartInfo
             {
                 Arguments = processArgs,
@@ -233,7 +238,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 {
                     _logger.LogError(ex, "Error deleting extracted attachment {Path}", outputPath);
                 }
-
             }
             else if (!File.Exists(outputPath))
             {
