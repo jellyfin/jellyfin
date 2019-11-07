@@ -62,6 +62,5 @@ namespace MediaBrowser.Api.Attachments
                 request.Index,
                 CancellationToken.None);
         }
-
     }
 }
