@@ -59,6 +59,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Common.Tests", "te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.MediaEncoding.Tests", "tests\Jellyfin.MediaEncoding.Tests\Jellyfin.MediaEncoding.Tests.csproj", "{28464062-0939-4AA7-9F7B-24DDDA61A7C0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Naming.Tests", "tests\Jellyfin.Naming.Tests\Jellyfin.Naming.Tests.csproj", "{3998657B-1CCC-49DD-A19F-275DC8495F57}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +167,10 @@ Global
 		{28464062-0939-4AA7-9F7B-24DDDA61A7C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28464062-0939-4AA7-9F7B-24DDDA61A7C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28464062-0939-4AA7-9F7B-24DDDA61A7C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3998657B-1CCC-49DD-A19F-275DC8495F57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3998657B-1CCC-49DD-A19F-275DC8495F57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3998657B-1CCC-49DD-A19F-275DC8495F57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3998657B-1CCC-49DD-A19F-275DC8495F57}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -193,5 +199,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{DF194677-DFD3-42AF-9F75-D44D5A416478} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
 		{28464062-0939-4AA7-9F7B-24DDDA61A7C0} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
+		{3998657B-1CCC-49DD-A19F-275DC8495F57} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
 	EndGlobalSection
 EndGlobal
