@@ -1899,7 +1899,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         public void UpdateItem(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            UpdateItems(new [] { item }, parent, updateReason, cancellationToken);
+            UpdateItems(new[] { item }, parent, updateReason, cancellationToken);
         }
 
         /// <summary>
@@ -2486,6 +2486,15 @@ namespace Emby.Server.Implementations.Library
                 if (season != null)
                 {
                     episode.ParentIndexNumber = season.IndexNumber;
+                }
+                else
+                {
+                    /*
+                    Anime series don't generally have a season in their file name, however,
+                    tvdb needs a season to correctly get the metadata.
+                    Hence, a null season needs to be filled with something. */
+                    //FIXME perhaps this would be better for tvdb parser to ask for season 1 if no season is specified
+                    episode.ParentIndexNumber = 1;
                 }
 
                 if (episode.ParentIndexNumber.HasValue)
