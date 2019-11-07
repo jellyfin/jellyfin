@@ -298,8 +298,6 @@ namespace Emby.Server.Implementations
 
         private ISubtitleEncoder SubtitleEncoder { get; set; }
 
-        private IAttachmentExtractor AttachmentExtractor { get; set; }
-
         private ISessionManager SessionManager { get; set; }
 
         private ILiveTvManager LiveTvManager { get; set; }
@@ -881,9 +879,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(typeof(IResourceFileManager), typeof(ResourceFileManager));
             serviceCollection.AddSingleton<EncodingHelper>();
 
-            AttachmentExtractor = new MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor(LibraryManager, LoggerFactory, ApplicationPaths, FileSystemManager, MediaEncoder, MediaSourceManager, ProcessFactory);
-
-            serviceCollection.AddSingleton(AttachmentExtractor);
+            serviceCollection.AddSingleton(typeof(MediaBrowser.Controller.MediaEncoding.IAttachmentExtractor),typeof(MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor));
 
             _displayPreferencesRepository.Initialize();
 
