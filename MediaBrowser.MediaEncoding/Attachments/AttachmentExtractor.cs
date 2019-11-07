@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
@@ -31,7 +32,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
         private readonly IFileSystem _fileSystem;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly IProcessFactory _processFactory;
 
         public AttachmentExtractor(
             ILibraryManager libraryManager,
@@ -39,8 +39,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             IApplicationPaths appPaths,
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
-            IMediaSourceManager mediaSourceManager,
-            IProcessFactory processFactory)
+            IMediaSourceManager mediaSourceManager)
         {
             _libraryManager = libraryManager;
             _logger = logger;
@@ -48,7 +47,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
             _mediaSourceManager = mediaSourceManager;
-            _processFactory = processFactory;
         }
 
         private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
@@ -167,16 +165,19 @@ namespace MediaBrowser.MediaEncoding.Attachments
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             var processArgs = string.Format("-dump_attachment:{1} {2} -i {0} -t 0 -f null null", inputPath, attachmentStreamIndex, outputPath);
-            var process = _processFactory.Create(new ProcessOptions
+            var startInfo = new ProcessStartInfo
             {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                EnableRaisingEvents = true,
-                FileName = _mediaEncoder.EncoderPath,
                 Arguments = processArgs,
-                IsHidden = true,
+                FileName = _mediaEncoder.EncoderPath,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false
-            });
+            };
+            var process = new Process
+            {
+                StartInfo = startInfo
+            };
 
             _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
@@ -191,7 +192,12 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 throw;
             }
 
-            var ranToCompletion = await process.WaitForExitAsync(300000).ConfigureAwait(false);
+            var processTcs = new TaskCompletionSource<bool>();
+            process.EnableRaisingEvents = true;
+            process.Exited += (sender, args) => processTcs.TrySetResult(true);
+            var unregister = cancellationToken.Register(() => processTcs.TrySetResult(process.HasExited));
+            var ranToCompletion = await processTcs.Task.ConfigureAwait(false);
+            unregister.Dispose();
 
             if (!ranToCompletion)
             {
@@ -205,7 +211,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
                     _logger.LogError(ex, "Error killing attachment extraction process");
                 }
             }
-
             var exitCode = ranToCompletion ? process.ExitCode : -1;
 
             process.Dispose();
