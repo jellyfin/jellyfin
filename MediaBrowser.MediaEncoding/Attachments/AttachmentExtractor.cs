@@ -89,7 +89,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             MediaAttachment mediaAttachment,
             CancellationToken cancellationToken)
         {
-            var inputFiles = new[] {mediaSource.Path};
+            var inputFiles = new[] { mediaSource.Path };
             var attachmentPath = await GetReadableFile(mediaSource.Path, inputFiles, mediaSource.Protocol, mediaAttachment, cancellationToken).ConfigureAwait(false);
             var stream = await GetAttachmentStream(attachmentPath, cancellationToken).ConfigureAwait(false);
             return stream;
