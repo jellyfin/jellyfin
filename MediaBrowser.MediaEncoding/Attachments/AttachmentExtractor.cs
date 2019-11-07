@@ -166,7 +166,12 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
-            var processArgs = string.Format("-dump_attachment:{1} {2} -i {0} -t 0 -f null null", inputPath, attachmentStreamIndex, outputPath);
+            var processArgs = string.Format(
+                CultureInfo.InvariantCulture,
+                "-dump_attachment:{1} {2} -i {0} -t 0 -f null null",
+                inputPath,
+                attachmentStreamIndex,
+                outputPath);
             var process = _processFactory.Create(new ProcessOptions
             {
                 CreateNoWindow = true,
