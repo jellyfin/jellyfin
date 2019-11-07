@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using static MediaBrowser.Common.HexHelper;
 
 namespace MediaBrowser.Common.Cryptography
 {
@@ -97,12 +96,19 @@ namespace MediaBrowser.Common.Cryptography
                 }
             }
 
+            byte[] hash;
+            byte[] salt;
             // Check if the string also contains a salt
-            byte[] salt = splitted.Length - index == 2
-                ? FromHexString(splitted[index++])
-                : Array.Empty<byte>();
-
-            byte[] hash = FromHexString(splitted[index]);
+            if (splitted.Length - index == 2)
+            {
+                salt = Hex.Decode(splitted[index++]);
+                hash = Hex.Decode(splitted[index++]);
+            }
+            else
+            {
+                salt = Array.Empty<byte>();
+                hash = Hex.Decode(splitted[index++]);
+            }
 
             return new PasswordHash(id, hash, salt, parameters);
         }
@@ -138,11 +144,11 @@ namespace MediaBrowser.Common.Cryptography
             if (Salt.Length != 0)
             {
                 str.Append('$')
-                    .Append(ToHexString(Salt));
+                    .Append(Hex.Encode(Salt, false));
             }
 
             return str.Append('$')
-                .Append(ToHexString(Hash)).ToString();
+                .Append(Hex.Encode(Hash, false)).ToString();
         }
     }
 }
