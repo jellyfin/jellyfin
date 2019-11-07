@@ -50,12 +50,12 @@ namespace Emby.Server.Implementations.Updates
         /// <summary>
         /// The current installations.
         /// </summary>
-        private List<(InstallationInfo info, CancellationTokenSource token)> _currentInstallations;
+        private readonly List<(InstallationInfo info, CancellationTokenSource token)> _currentInstallations;
 
         /// <summary>
         /// The completed installations.
         /// </summary>
-        private ConcurrentBag<InstallationInfo> _completedInstallationsInternal;
+        private readonly ConcurrentBag<InstallationInfo> _completedInstallationsInternal;
 
         public InstallationManager(
             ILogger<InstallationManager> logger,
@@ -85,29 +85,28 @@ namespace Emby.Server.Implementations.Updates
             _zipClient = zipClient;
         }
 
+        /// <inheritdoc />
         public event EventHandler<InstallationEventArgs> PackageInstalling;
 
+        /// <inheritdoc />
         public event EventHandler<InstallationEventArgs> PackageInstallationCompleted;
 
+        /// <inheritdoc />
         public event EventHandler<InstallationFailedEventArgs> PackageInstallationFailed;
 
+        /// <inheritdoc />
         public event EventHandler<InstallationEventArgs> PackageInstallationCancelled;
 
-        /// <summary>
-        /// Occurs when a plugin is uninstalled.
-        /// </summary>
+        /// <inheritdoc />
         public event EventHandler<GenericEventArgs<IPlugin>> PluginUninstalled;
 
-        /// <summary>
-        /// Occurs when a plugin plugin is updated.
-        /// </summary>
+        /// <inheritdoc />
         public event EventHandler<GenericEventArgs<(IPlugin, PackageVersionInfo)>> PluginUpdated;
 
-        /// <summary>
-        /// Occurs when a plugin plugin is installed.
-        /// </summary>
+        /// <inheritdoc />
         public event EventHandler<GenericEventArgs<PackageVersionInfo>> PluginInstalled;
 
+        /// <inheritdoc />
         public IEnumerable<InstallationInfo> CompletedInstallations => _completedInstallationsInternal;
 
         /// <inheritdoc />
