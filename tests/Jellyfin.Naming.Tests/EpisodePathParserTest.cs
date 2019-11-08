@@ -1,8 +1,9 @@
-namespace Emby.Naming.TV
-{
-    using Emby.Naming.Common;
-    using Xunit;
+using Emby.Naming.Common;
+using Emby.Naming.TV;
+using Xunit;
 
+namespace Jellyfin.Naming.Tests
+{
     public class EpisodePathParserTest
     {
         [Theory]
@@ -21,8 +22,8 @@ namespace Emby.Naming.TV
             Assert.Equal(season, res.SeasonNumber);
             Assert.Equal(episode, res.EpisodeNumber);
 
-            //testing other paths delimeter
-            var res2 = p.Parse(path.Replace("/", "\\"), false);
+            // testing other paths delimeter
+            var res2 = p.Parse(path.Replace('/', '\\'), false);
             Assert.True(res2.Success);
             Assert.Equal(name, res2.SeriesName);
             Assert.Equal(season, res2.SeasonNumber);
@@ -31,23 +32,23 @@ namespace Emby.Naming.TV
 
         [Theory]
         [InlineData("/media/Foo/Foo 889", "Foo", 889)]
-        [InlineData("/media/Foo/[Bar] Foo Baz - 11 [1080p]", "Foo Baz", 11)]
+        [InlineData("/media/Foo/[Bar] Foo Baz - 11 [1080p]", "Foo Baz", 11)]
         public void ParseEpisodeWithoutSeason(string path, string name, int episode)
         {
             NamingOptions o = new NamingOptions();
             EpisodePathParser p = new EpisodePathParser(o);
-            var res = p.Parse(path, true, null, null, true);
+            var res = p.Parse(path, true, fillExtendedInfo: true);
 
             Assert.True(res.Success);
             Assert.Equal(name, res.SeriesName);
-            Assert.True(res.SeasonNumber == null);
+            Assert.Null(res.SeasonNumber);
             Assert.Equal(episode, res.EpisodeNumber);
 
-            //testing other paths delimeter
-            var res2 = p.Parse(path.Replace("/", "\\"), false, null, null, true);
+            // testing other paths delimeter
+            var res2 = p.Parse(path.Replace('/', '\\'), false, fillExtendedInfo: false);
             Assert.True(res2.Success);
             Assert.Equal(name, res2.SeriesName);
-            Assert.True(res2.SeasonNumber == null);
+            Assert.Null(res2.SeasonNumber);
             Assert.Equal(episode, res2.EpisodeNumber);
         }
     }
