@@ -13,7 +13,6 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
@@ -157,17 +156,12 @@ namespace MediaBrowser.Api
             return Task.CompletedTask;
         }
 
-        public EncodingOptions GetEncodingOptions()
-        {
-            return ConfigurationManagerExtensions.GetConfiguration<EncodingOptions>(ConfigurationManager, "encoding");
-        }
-
         /// <summary>
         /// Deletes the encoded media cache.
         /// </summary>
         private void DeleteEncodedMediaCache()
         {
-            var path = ConfigurationManager.ApplicationPaths.GetTranscodePath();
+            var path = ConfigurationManager.GetTranscodePath();
 
             if (!Directory.Exists(path))
             {

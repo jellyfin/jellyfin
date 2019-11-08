@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
@@ -15,24 +16,18 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
     /// </summary>
     public class DeleteTranscodeFileTask : IScheduledTask, IConfigurableScheduledTask
     {
-        /// <summary>
-        /// Gets or sets the application paths.
-        /// </summary>
-        /// <value>The application paths.</value>
-        private ServerApplicationPaths ApplicationPaths { get; set; }
-
         private readonly ILogger _logger;
-
+        private readonly IConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteTranscodeFileTask" /> class.
         /// </summary>
-        public DeleteTranscodeFileTask(ServerApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
+        public DeleteTranscodeFileTask(ILogger logger, IFileSystem fileSystem, IConfigurationManager configurationManager)
         {
-            ApplicationPaths = appPaths;
             _logger = logger;
             _fileSystem = fileSystem;
+            _configurationManager = configurationManager;
         }
 
         /// <summary>
@@ -52,14 +47,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             var minDateModified = DateTime.UtcNow.AddDays(-1);
             progress.Report(50);
 
-            try
-            {
-                DeleteTempFilesFromDirectory(cancellationToken, ApplicationPaths.TranscodePath, minDateModified, progress);
-            }
-            catch (DirectoryNotFoundException)
-            {
-                // No biggie here. Nothing to delete
-            }
+            DeleteTempFilesFromDirectory(cancellationToken, _configurationManager.GetTranscodingTempPath(), minDateModified, progress);
 
             return Task.CompletedTask;
         }

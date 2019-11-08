@@ -83,12 +83,6 @@ namespace MediaBrowser.Controller
         string UserConfigurationDirectoryPath { get; }
 
         /// <summary>
-        /// Gets the transcoding temporary path.
-        /// </summary>
-        /// <value>The transcoding temporary path.</value>
-        string TranscodePath { get; }
-
-        /// <summary>
         /// Gets the internal metadata path.
         /// </summary>
         /// <value>The internal metadata path.</value>
@@ -96,7 +90,5 @@ namespace MediaBrowser.Controller
         string VirtualInternalMetadataPath { get; }
 
         string ArtistsPath { get; }
-
-        string GetTranscodePath();
     }
 }

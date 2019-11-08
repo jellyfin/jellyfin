@@ -582,11 +582,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     modelInfo.TunerCount,
                     FileSystem,
                     Logger,
-                    Config.ApplicationPaths,
+                    Config,
                     _appHost,
                     _networkManager,
                     _streamHelper);
-
             }
 
             var enableHttpStream = true;
@@ -611,7 +610,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     FileSystem,
                     _httpClient,
                     Logger,
-                    Config.ApplicationPaths,
+                    Config,
                     _appHost,
                     _streamHelper);
             }
@@ -624,7 +623,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 modelInfo.TunerCount,
                 FileSystem,
                 Logger,
-                Config.ApplicationPaths,
+                Config,
                 _appHost,
                 _networkManager,
                 _streamHelper);
