@@ -36,7 +36,7 @@ namespace MediaBrowser.Common.Updates
         event EventHandler<GenericEventArgs<PackageVersionInfo>> PluginInstalled;
 
         /// <summary>
-        /// Gets the completed installations
+        /// Gets the completed installations.
         /// </summary>
         IEnumerable<InstallationInfo> CompletedInstallations { get; }
 
@@ -91,7 +91,7 @@ namespace MediaBrowser.Common.Updates
         /// Returns the available plugin updates.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Tthe available plugin updates.</returns>
+        /// <returns>The available plugin updates.</returns>
         Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(CancellationToken cancellationToken = default);
 
         /// <summary>
