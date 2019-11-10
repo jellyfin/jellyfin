@@ -456,7 +456,7 @@ namespace Emby.Server.Implementations
         public string Name => ApplicationProductName;
 
         /// <summary>
-        /// Creates an instance of type and resolves all constructor dependencies
+        /// Creates an instance of type and resolves all constructor dependencies.
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
@@ -464,7 +464,7 @@ namespace Emby.Server.Implementations
             => ActivatorUtilities.CreateInstance(_serviceProvider, type);
 
         /// <summary>
-        /// Creates an instance of type and resolves all constructor dependencies
+        /// Creates an instance of type and resolves all constructor dependencies.
         /// </summary>
         /// /// <typeparam name="T">The type.</typeparam>
         /// <returns>T.</returns>
@@ -512,11 +512,12 @@ namespace Emby.Server.Implementations
         /// <inheritdoc />
         public IReadOnlyCollection<T> GetExports<T>(bool manageLifetime = true)
         {
+            // Convert to list so this isn't executed for each iteration
             var parts = GetExportTypes<T>()
                 .Select(CreateInstanceSafe)
                 .Where(i => i != null)
                 .Cast<T>()
-                .ToList(); // Convert to list so this isn't executed for each iteration
+                .ToList();
 
             if (manageLifetime)
             {
@@ -1418,7 +1419,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the system status.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>SystemInfo.</returns>
         public async Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken)
         {
@@ -1446,7 +1447,7 @@ namespace Emby.Server.Implementations
                 CanSelfRestart = CanSelfRestart,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 HasUpdateAvailable = HasUpdateAvailable,
-                TranscodingTempPath = ApplicationPaths.TranscodePath,
+                TranscodePath = ApplicationPaths.TranscodePath,
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,
                 SupportsLibraryMonitor = true,
@@ -1847,6 +1848,7 @@ namespace Emby.Server.Implementations
     internal class CertificateInfo
     {
         public string Path { get; set; }
+
         public string Password { get; set; }
     }
 }

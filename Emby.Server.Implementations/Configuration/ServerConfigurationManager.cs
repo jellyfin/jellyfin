@@ -91,9 +91,9 @@ namespace Emby.Server.Implementations.Configuration
         {
             var encodingConfig = this.GetConfiguration<EncodingOptions>("encoding");
 
-            ((ServerApplicationPaths)ApplicationPaths).TranscodePath = string.IsNullOrEmpty(encodingConfig.TranscodingTempPath) ?
+            ((ServerApplicationPaths)ApplicationPaths).TranscodePath = string.IsNullOrEmpty(encodingConfig.TranscodePath) ?
                 null :
-                Path.Combine(encodingConfig.TranscodingTempPath, "transcodes");
+                Path.Combine(encodingConfig.TranscodePath, "transcodes");
         }
 
         protected override void OnNamedConfigurationUpdated(string key, object configuration)

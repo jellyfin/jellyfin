@@ -10,7 +10,7 @@ namespace Emby.Server.Implementations
     /// </summary>
     public class ServerApplicationPaths : BaseApplicationPaths, IServerApplicationPaths
     {
-        private string _defaultTranscodingTempPath;
+        private string _defaultTranscodePath;
         private string _transcodePath;
         private string _internalMetadataPath;
 
@@ -107,7 +107,7 @@ namespace Emby.Server.Implementations
         /// <value>The user configuration directory path.</value>
         public string UserConfigurationDirectoryPath => Path.Combine(ConfigurationDirectoryPath, "users");
 
-        public string DefaultTranscodePath => _defaultTranscodingTempPath ?? (_defaultTranscodingTempPath = Path.Combine(ProgramDataPath, "transcodes"));
+        public string DefaultTranscodePath => _defaultTranscodePath ?? (_defaultTranscodePath = Path.Combine(ProgramDataPath, "transcodes"));
 
         public string TranscodePath
         {

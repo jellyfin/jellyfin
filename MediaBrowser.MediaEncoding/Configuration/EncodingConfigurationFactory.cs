@@ -40,10 +40,10 @@ namespace MediaBrowser.MediaEncoding.Configuration
             var oldEncodingConfig = (EncodingOptions)oldConfig;
             var newEncodingConfig = (EncodingOptions)newConfig;
 
-            var newPath = newEncodingConfig.TranscodingTempPath;
+            var newPath = newEncodingConfig.TranscodePath;
 
             if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(oldEncodingConfig.TranscodingTempPath ?? string.Empty, newPath))
+                && !string.Equals(oldEncodingConfig.TranscodePath ?? string.Empty, newPath))
             {
                 // Validate
                 if (!Directory.Exists(newPath))
