@@ -2175,7 +2175,6 @@ namespace Emby.Server.Implementations.Library
                     DisplayParentId = parentId
                 };
 
-
                 CreateItem(item, null);
 
                 isNew = true;
@@ -2197,7 +2196,6 @@ namespace Emby.Server.Implementations.Library
                     {
                         // Need to force save to increment DateLastSaved
                         ForceSave = true
-
                     },
                     RefreshPriority.Normal);
             }
