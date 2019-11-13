@@ -299,8 +299,9 @@ namespace MediaBrowser.Api
             var first = pathInfo[0];
 
             // backwards compatibility
-            if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(first, ApiEntryPoint.Instance.ConfigurationManager.Configuration.BaseUrl))
             {
                 index++;
             }
