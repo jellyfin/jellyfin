@@ -410,13 +410,17 @@ namespace Emby.Server.Implementations
             _validAddressResults.Clear();
         }
 
-        public string ApplicationVersion { get; } = typeof(ApplicationHost).Assembly.GetName().Version.ToString(3);
+        /// <inheritdoc />
+        public Version ApplicationVersion { get; } = typeof(ApplicationHost).Assembly.GetName().Version;
+
+        /// <inheritdoc />
+        public string ApplicationVersionString { get; } = typeof(ApplicationHost).Assembly.GetName().Version.ToString(3);
 
         /// <summary>
         /// Gets the current application user agent.
         /// </summary>
         /// <value>The application user agent.</value>
-        public string ApplicationUserAgent => Name.Replace(' ', '-') + "/" + ApplicationVersion;
+        public string ApplicationUserAgent => Name.Replace(' ', '-') + "/" + ApplicationVersionString;
 
         /// <summary>
         /// Gets the email address for use within a comment section of a user agent field.
@@ -1424,7 +1428,7 @@ namespace Emby.Server.Implementations
             {
                 HasPendingRestart = HasPendingRestart,
                 IsShuttingDown = IsShuttingDown,
-                Version = ApplicationVersion,
+                Version = ApplicationVersionString,
                 WebSocketPortNumber = HttpPort,
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
                 Id = SystemId,
@@ -1464,7 +1468,7 @@ namespace Emby.Server.Implementations
 
             return new PublicSystemInfo
             {
-                Version = ApplicationVersion,
+                Version = ApplicationVersionString,
                 ProductName = ApplicationProductName,
                 Id = SystemId,
                 OperatingSystem = OperatingSystem.Id.ToString(),
