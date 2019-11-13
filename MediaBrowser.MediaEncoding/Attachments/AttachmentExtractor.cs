@@ -250,7 +250,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
                 _logger.LogError(msg);
 
-                throw new Exception(msg);
+                throw new InvalidOperationException(msg);
             }
             else
             {
