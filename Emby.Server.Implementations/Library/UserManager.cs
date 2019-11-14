@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
@@ -31,7 +32,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 using Microsoft.Extensions.Logging;
-using static MediaBrowser.Common.HexHelper;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -490,7 +490,7 @@ namespace Emby.Server.Implementations.Library
         {
             return string.IsNullOrEmpty(user.EasyPassword)
                 ? null
-                : ToHexString(PasswordHash.Parse(user.EasyPassword).Hash);
+                : Hex.Encode(PasswordHash.Parse(user.EasyPassword).Hash);
         }
 
         private void ResetInvalidLoginAttemptCount(User user)
@@ -639,7 +639,7 @@ namespace Emby.Server.Implementations.Library
         {
             foreach (var user in Users)
             {
-                await user.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), cancellationToken).ConfigureAwait(false);
+                await user.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem)), cancellationToken).ConfigureAwait(false);
             }
         }
 

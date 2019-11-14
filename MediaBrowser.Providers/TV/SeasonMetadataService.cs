@@ -15,6 +15,17 @@ namespace MediaBrowser.Providers.TV
 {
     public class SeasonMetadataService : MetadataService<Season, SeasonInfo>
     {
+        public SeasonMetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
+        {
+        }
+
+        /// <inheritdoc />
         protected override ItemUpdateType BeforeSaveInternal(Season item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
             var updateType = base.BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
@@ -54,13 +65,14 @@ namespace MediaBrowser.Providers.TV
             return updateType;
         }
 
+        /// <inheritdoc />
         protected override bool EnableUpdatingPremiereDateFromChildren => true;
 
+        /// <inheritdoc />
         protected override IList<BaseItem> GetChildrenForMetadataUpdates(Season item)
-        {
-            return item.GetEpisodes();
-        }
+            => item.GetEpisodes();
 
+        /// <inheritdoc />
         protected override ItemUpdateType UpdateMetadataFromChildren(Season item, IList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
             var updateType = base.UpdateMetadataFromChildren(item, children, isFullRefresh, currentUpdateType);
@@ -73,6 +85,7 @@ namespace MediaBrowser.Providers.TV
             return updateType;
         }
 
+        /// <inheritdoc />
         protected override void MergeData(MetadataResult<Season> source, MetadataResult<Season> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
@@ -89,10 +102,6 @@ namespace MediaBrowser.Providers.TV
             }
 
             return ItemUpdateType.None;
-        }
-
-        public SeasonMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
-        {
         }
     }
 }

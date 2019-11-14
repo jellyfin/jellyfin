@@ -340,7 +340,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (deleted)
             {
-                item.ValidateImages(new DirectoryService(_logger, _fileSystem));
+                item.ValidateImages(new DirectoryService(_fileSystem));
             }
         }
 

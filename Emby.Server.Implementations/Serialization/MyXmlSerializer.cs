@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Serialization
 {
@@ -14,35 +12,13 @@ namespace Emby.Server.Implementations.Serialization
     /// </summary>
     public class MyXmlSerializer : IXmlSerializer
     {
-        private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
-
-        public MyXmlSerializer(
-            IFileSystem fileSystem,
-            ILoggerFactory loggerFactory)
-        {
-            _fileSystem = fileSystem;
-            _logger = loggerFactory.CreateLogger("XmlSerializer");
-        }
-
         // Need to cache these
         // http://dotnetcodebox.blogspot.com/2013/01/xmlserializer-class-may-result-in.html
-        private readonly Dictionary<string, XmlSerializer> _serializers =
-            new Dictionary<string, XmlSerializer>();
+        private static readonly ConcurrentDictionary<string, XmlSerializer> _serializers =
+            new ConcurrentDictionary<string, XmlSerializer>();
 
-        private XmlSerializer GetSerializer(Type type)
-        {
-            var key = type.FullName;
-            lock (_serializers)
-            {
-                if (!_serializers.TryGetValue(key, out var serializer))
-                {
-                    serializer = new XmlSerializer(type);
-                    _serializers[key] = serializer;
-                }
-                return serializer;
-            }
-        }
+        private static XmlSerializer GetSerializer(Type type)
+            => _serializers.GetOrAdd(type.FullName, _ => new XmlSerializer(type));
 
         /// <summary>
         /// Serializes to writer.
@@ -91,7 +67,6 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="file">The file.</param>
         public void SerializeToFile(object obj, string file)
         {
-            _logger.LogDebug("Serializing to file {0}", file);
             using (var stream = new FileStream(file, FileMode.Create))
             {
                 SerializeToStream(obj, stream);
@@ -106,7 +81,6 @@ namespace Emby.Server.Implementations.Serialization
         /// <returns>System.Object.</returns>
         public object DeserializeFromFile(Type type, string file)
         {
-            _logger.LogDebug("Deserializing file {0}", file);
             using (var stream = File.OpenRead(file))
             {
                 return DeserializeFromStream(type, stream);

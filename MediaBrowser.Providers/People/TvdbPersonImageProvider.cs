@@ -32,23 +32,22 @@ namespace MediaBrowser.Providers.People
             _tvDbClientManager = tvDbClientManager;
         }
 
-        public string Name => ProviderName;
+        /// <inheritdoc />
+        public string Name => "TheTVDB";
 
-        public static string ProviderName => "TheTVDB";
+        /// <inheritdoc />
+        public int Order => 1;
 
-        public bool Supports(BaseItem item)
-        {
-            return item is Person;
-        }
+        /// <inheritdoc />
+        public bool Supports(BaseItem item) => item is Person;
 
+        /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
-            return new List<ImageType>
-            {
-                ImageType.Primary
-            };
+            yield return ImageType.Primary;
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var seriesWithPerson = _libraryManager.GetItemList(new InternalItemsQuery
@@ -104,8 +103,7 @@ namespace MediaBrowser.Providers.People
             }
         }
 
-        public int Order => 1;
-
+        /// <inheritdoc />
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClient.GetResponse(new HttpRequestOptions

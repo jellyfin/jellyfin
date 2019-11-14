@@ -413,7 +413,7 @@ namespace MediaBrowser.Api.UserLibrary
 
                 if (!hasMetdata)
                 {
-                    var options = new MetadataRefreshOptions(new DirectoryService(Logger, _fileSystem))
+                    var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                     {
                         MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                         ImageRefreshMode = MetadataRefreshMode.FullRefresh,

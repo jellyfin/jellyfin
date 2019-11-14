@@ -67,7 +67,13 @@ namespace MediaBrowser.Common
         /// Gets the application version.
         /// </summary>
         /// <value>The application version.</value>
-        string ApplicationVersion { get; }
+        Version ApplicationVersion { get; }
+
+        /// <summary>
+        /// Gets the application version.
+        /// </summary>
+        /// <value>The application version.</value>
+        string ApplicationVersionString { get; }
 
         /// <summary>
         /// Gets the application user agent.

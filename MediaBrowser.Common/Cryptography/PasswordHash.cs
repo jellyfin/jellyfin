@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using static MediaBrowser.Common.HexHelper;
 
 namespace MediaBrowser.Common.Cryptography
 {
@@ -102,13 +101,13 @@ namespace MediaBrowser.Common.Cryptography
             // Check if the string also contains a salt
             if (splitted.Length - index == 2)
             {
-                salt = FromHexString(splitted[index++]);
-                hash = FromHexString(splitted[index++]);
+                salt = Hex.Decode(splitted[index++]);
+                hash = Hex.Decode(splitted[index++]);
             }
             else
             {
                 salt = Array.Empty<byte>();
-                hash = FromHexString(splitted[index++]);
+                hash = Hex.Decode(splitted[index++]);
             }
 
             return new PasswordHash(id, hash, salt, parameters);
@@ -124,10 +123,10 @@ namespace MediaBrowser.Common.Cryptography
             stringBuilder.Append('$');
             foreach (var pair in _parameters)
             {
-                stringBuilder.Append(pair.Key);
-                stringBuilder.Append('=');
-                stringBuilder.Append(pair.Value);
-                stringBuilder.Append(',');
+                stringBuilder.Append(pair.Key)
+                    .Append('=')
+                    .Append(pair.Value)
+                    .Append(',');
             }
 
             // Remove last ','
@@ -137,21 +136,19 @@ namespace MediaBrowser.Common.Cryptography
         /// <inheritdoc />
         public override string ToString()
         {
-            var str = new StringBuilder();
-            str.Append('$');
-            str.Append(Id);
+            var str = new StringBuilder()
+                .Append('$')
+                .Append(Id);
             SerializeParameters(str);
 
             if (Salt.Length != 0)
             {
-                str.Append('$');
-                str.Append(ToHexString(Salt));
+                str.Append('$')
+                    .Append(Hex.Encode(Salt, false));
             }
 
-            str.Append('$');
-            str.Append(ToHexString(Hash));
-
-            return str.ToString();
+            return str.Append('$')
+                .Append(Hex.Encode(Hash, false)).ToString();
         }
     }
 }

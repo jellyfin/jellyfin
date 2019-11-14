@@ -362,7 +362,7 @@ namespace Emby.Server.Implementations
         {
             _configuration = configuration;
 
-            XmlSerializer = new MyXmlSerializer(fileSystem, loggerFactory);
+            XmlSerializer = new MyXmlSerializer();
 
             NetworkManager = networkManager;
             networkManager.LocalSubnetsFn = GetConfiguredLocalSubnets;
@@ -410,13 +410,17 @@ namespace Emby.Server.Implementations
             _validAddressResults.Clear();
         }
 
-        public string ApplicationVersion { get; } = typeof(ApplicationHost).Assembly.GetName().Version.ToString(3);
+        /// <inheritdoc />
+        public Version ApplicationVersion { get; } = typeof(ApplicationHost).Assembly.GetName().Version;
+
+        /// <inheritdoc />
+        public string ApplicationVersionString { get; } = typeof(ApplicationHost).Assembly.GetName().Version.ToString(3);
 
         /// <summary>
         /// Gets the current application user agent.
         /// </summary>
         /// <value>The application user agent.</value>
-        public string ApplicationUserAgent => Name.Replace(' ', '-') + "/" + ApplicationVersion;
+        public string ApplicationUserAgent => Name.Replace(' ', '-') + "/" + ApplicationVersionString;
 
         /// <summary>
         /// Gets the email address for use within a comment section of a user agent field.
@@ -866,8 +870,7 @@ namespace Emby.Server.Implementations
             NotificationManager = new NotificationManager(LoggerFactory, UserManager, ServerConfigurationManager);
             serviceCollection.AddSingleton(NotificationManager);
 
-            serviceCollection.AddSingleton<IDeviceDiscovery>(
-                new DeviceDiscovery(LoggerFactory, ServerConfigurationManager, SocketFactory));
+            serviceCollection.AddSingleton<IDeviceDiscovery>(new DeviceDiscovery(ServerConfigurationManager));
 
             ChapterManager = new ChapterManager(LibraryManager, LoggerFactory, ServerConfigurationManager, ItemRepository);
             serviceCollection.AddSingleton(ChapterManager);
@@ -906,7 +909,7 @@ namespace Emby.Server.Implementations
 
             _displayPreferencesRepository.Initialize();
 
-            var userDataRepo = new SqliteUserDataRepository(LoggerFactory, ApplicationPaths);
+            var userDataRepo = new SqliteUserDataRepository(LoggerFactory.CreateLogger<SqliteUserDataRepository>(), ApplicationPaths);
 
             SetStaticProperties();
 
@@ -1425,7 +1428,7 @@ namespace Emby.Server.Implementations
             {
                 HasPendingRestart = HasPendingRestart,
                 IsShuttingDown = IsShuttingDown,
-                Version = ApplicationVersion,
+                Version = ApplicationVersionString,
                 WebSocketPortNumber = HttpPort,
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
                 Id = SystemId,
@@ -1465,7 +1468,7 @@ namespace Emby.Server.Implementations
 
             return new PublicSystemInfo
             {
-                Version = ApplicationVersion,
+                Version = ApplicationVersionString,
                 ProductName = ApplicationProductName,
                 Id = SystemId,
                 OperatingSystem = OperatingSystem.Id.ToString(),
@@ -1730,7 +1733,7 @@ namespace Emby.Server.Implementations
         /// dns is prefixed with a valid Uri prefix.
         /// </summary>
         /// <param name="externalDns">The external dns prefix to get the hostname of.</param>
-        /// <returns>The hostname in <paramref name="externalDns"/></returns>
+        /// <returns>The hostname in <paramref name="externalDns"/>.</returns>
         private static string GetHostnameFromExternalDns(string externalDns)
         {
             if (string.IsNullOrEmpty(externalDns))
