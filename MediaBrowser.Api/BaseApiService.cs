@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -298,11 +297,24 @@ namespace MediaBrowser.Api
             var pathInfo = Parse(Request.PathInfo);
             var first = pathInfo[0];
 
+            string baseUrl = ApiEntryPoint.Instance.ConfigurationManager.Configuration.BaseUrl;
+
             // backwards compatibility
-            if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase))
+            if (baseUrl.Length == 0
+                && (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase)))
             {
                 index++;
+            }
+            else if (string.Equals(first, baseUrl))
+            {
+                index++;
+                var second = pathInfo[1];
+                if (string.Equals(second, "mediabrowser", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(second, "emby", StringComparison.OrdinalIgnoreCase))
+                {
+                    index++;
+                }
             }
 
             return pathInfo[index];
