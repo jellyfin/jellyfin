@@ -40,14 +40,13 @@ namespace MediaBrowser.Api
         internal IHttpResultFactory ResultFactory { get; private set; }
 
         /// <summary>
-        /// The application paths
+        /// Gets the configuration manager.
         /// </summary>
-        private readonly IServerConfigurationManager _config;
+        internal IServerConfigurationManager ConfigurationManager { get; }
 
         private readonly ISessionManager _sessionManager;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaSourceManager _mediaSourceManager;
-        public readonly IProcessFactory ProcessFactory;
 
         /// <summary>
         /// The active transcoding jobs
@@ -73,15 +72,13 @@ namespace MediaBrowser.Api
             IServerConfigurationManager config,
             IFileSystem fileSystem,
             IMediaSourceManager mediaSourceManager,
-            IProcessFactory processFactory,
             IHttpResultFactory resultFactory)
         {
             Logger = logger;
             _sessionManager = sessionManager;
-            _config = config;
+            ConfigurationManager = config;
             _fileSystem = fileSystem;
             _mediaSourceManager = mediaSourceManager;
-            ProcessFactory = processFactory;
             ResultFactory = resultFactory;
 
             _sessionManager.PlaybackProgress += _sessionManager_PlaybackProgress;
@@ -162,7 +159,7 @@ namespace MediaBrowser.Api
 
         public EncodingOptions GetEncodingOptions()
         {
-            return ConfigurationManagerExtensions.GetConfiguration<EncodingOptions>(_config, "encoding");
+            return ConfigurationManagerExtensions.GetConfiguration<EncodingOptions>(ConfigurationManager, "encoding");
         }
 
         /// <summary>
@@ -170,7 +167,7 @@ namespace MediaBrowser.Api
         /// </summary>
         private void DeleteEncodedMediaCache()
         {
-            var path = _config.ApplicationPaths.GetTranscodingTempPath();
+            var path = ConfigurationManager.ApplicationPaths.GetTranscodingTempPath();
 
             if (!Directory.Exists(path))
             {
