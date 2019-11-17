@@ -311,6 +311,14 @@ namespace Emby.Naming.Common
                     }
                 },
 
+                // This isn't a Kodi naming rule, but the expression below causes false positives,
+                // so we make sure this one gets tested first.
+                // "Foo Bar 889"
+                new EpisodeExpression(@".*[\\\/](?![Ee]pisode)(?<seriesname>(\w+\s*?)*)\s(?<epnumber>\d{1,3})(-(?<endingepnumber>\d{2,3}))*[^\\\/]*$")
+                {
+                    IsNamed = true
+                },
+
                 new EpisodeExpression("[\\\\/\\._ \\[\\(-]([0-9]+)x([0-9]+(?:(?:[a-i]|\\.[1-9])(?![0-9]))?)([^\\\\/]*)$")
                 {
                     SupportsAbsoluteEpisodeNumbers = true
@@ -328,9 +336,10 @@ namespace Emby.Naming.Common
 
                 // *** End Kodi Standard Naming
 
-                // [bar] Foo - 1 [baz]
-                new EpisodeExpression(@".*?(\[.*?\])+.*?(?<seriesname>(\w+\s)+?)[-\s_]+(?<epnumber>\d+).*$"){
-                    IsNamed=false,
+                // [bar] Foo - 1 [baz]
+                new EpisodeExpression(@".*?(\[.*?\])+.*?(?<seriesname>(\w+\s*?)+?)[-\s_]+(?<epnumber>\d+).*$")
+                {
+                    IsNamed = true
                 },
                 new EpisodeExpression(@".*(\\|\/)[sS]?(?<seasonnumber>\d+)[xX](?<epnumber>\d+)[^\\\/]*$")
                 {

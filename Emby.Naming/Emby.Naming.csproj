@@ -23,10 +23,10 @@
 
   <!-- Code analysers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.4" />
-    <PackageReference Include="SerilogAnalyzer" Version="0.15.0" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
-    <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.4" PrivateAssets="All" />
+    <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
+    <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
