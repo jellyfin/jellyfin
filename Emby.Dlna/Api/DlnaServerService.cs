@@ -220,7 +220,7 @@ namespace Emby.Dlna.Api
             {
                 index++;
             }
-            else if (string.Equals(first, baseUrl))
+            else if (string.Equals(first, baseUrl.Remove(0, 1)))
             {
                 index++;
                 var second = pathInfo[1];
