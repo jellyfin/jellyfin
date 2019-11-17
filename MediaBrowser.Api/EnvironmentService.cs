@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -107,8 +109,8 @@ namespace MediaBrowser.Api
     [Authenticated(Roles = "Admin", AllowBeforeStartupWizard = true)]
     public class EnvironmentService : BaseApiService
     {
-        const char UncSeparator = '\\';
-        const string UncSeparatorString = "\\";
+        private const char UncSeparator = '\\';
+        private const string UncSeparatorString = "\\";
 
         /// <summary>
         /// The _network manager
@@ -120,13 +122,14 @@ namespace MediaBrowser.Api
         /// Initializes a new instance of the <see cref="EnvironmentService" /> class.
         /// </summary>
         /// <param name="networkManager">The network manager.</param>
-        public EnvironmentService(INetworkManager networkManager, IFileSystem fileSystem)
+        public EnvironmentService(
+            ILogger<EnvironmentService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            INetworkManager networkManager,
+            IFileSystem fileSystem)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            if (networkManager == null)
-            {
-                throw new ArgumentNullException(nameof(networkManager));
-            }
-
             _networkManager = networkManager;
             _fileSystem = fileSystem;
         }

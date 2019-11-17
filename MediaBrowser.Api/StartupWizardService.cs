@@ -1,12 +1,10 @@
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -45,35 +43,32 @@ namespace MediaBrowser.Api
     [Authenticated(AllowBeforeStartupWizard = true, Roles = "Admin")]
     public class StartupWizardService : BaseApiService
     {
-        private readonly IServerConfigurationManager _config;
-        private readonly IServerApplicationHost _appHost;
         private readonly IUserManager _userManager;
-        private readonly IMediaEncoder _mediaEncoder;
-        private readonly IHttpClient _httpClient;
 
-        public StartupWizardService(IServerConfigurationManager config, IHttpClient httpClient, IServerApplicationHost appHost, IUserManager userManager, IMediaEncoder mediaEncoder)
+        public StartupWizardService(
+            ILogger<StartupWizardService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IUserManager userManager)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            _config = config;
-            _appHost = appHost;
             _userManager = userManager;
-            _mediaEncoder = mediaEncoder;
-            _httpClient = httpClient;
         }
 
         public void Post(ReportStartupWizardComplete request)
         {
-            _config.Configuration.IsStartupWizardCompleted = true;
-            _config.SetOptimalValues();
-            _config.SaveConfiguration();
+            ServerConfigurationManager.Configuration.IsStartupWizardCompleted = true;
+            ServerConfigurationManager.SetOptimalValues();
+            ServerConfigurationManager.SaveConfiguration();
         }
 
         public object Get(GetStartupConfiguration request)
         {
             var result = new StartupConfiguration
             {
-                UICulture = _config.Configuration.UICulture,
-                MetadataCountryCode = _config.Configuration.MetadataCountryCode,
-                PreferredMetadataLanguage = _config.Configuration.PreferredMetadataLanguage
+                UICulture = ServerConfigurationManager.Configuration.UICulture,
+                MetadataCountryCode = ServerConfigurationManager.Configuration.MetadataCountryCode,
+                PreferredMetadataLanguage = ServerConfigurationManager.Configuration.PreferredMetadataLanguage
             };
 
             return result;
@@ -81,17 +76,17 @@ namespace MediaBrowser.Api
 
         public void Post(UpdateStartupConfiguration request)
         {
-            _config.Configuration.UICulture = request.UICulture;
-            _config.Configuration.MetadataCountryCode = request.MetadataCountryCode;
-            _config.Configuration.PreferredMetadataLanguage = request.PreferredMetadataLanguage;
-            _config.SaveConfiguration();
+            ServerConfigurationManager.Configuration.UICulture = request.UICulture;
+            ServerConfigurationManager.Configuration.MetadataCountryCode = request.MetadataCountryCode;
+            ServerConfigurationManager.Configuration.PreferredMetadataLanguage = request.PreferredMetadataLanguage;
+            ServerConfigurationManager.SaveConfiguration();
         }
 
         public void Post(UpdateRemoteAccessConfiguration request)
         {
-            _config.Configuration.EnableRemoteAccess = request.EnableRemoteAccess;
-            _config.Configuration.EnableUPnP = request.EnableAutomaticPortMapping;
-            _config.SaveConfiguration();
+            ServerConfigurationManager.Configuration.EnableRemoteAccess = request.EnableRemoteAccess;
+            ServerConfigurationManager.Configuration.EnableUPnP = request.EnableAutomaticPortMapping;
+            ServerConfigurationManager.SaveConfiguration();
         }
 
         public object Get(GetStartupUser request)

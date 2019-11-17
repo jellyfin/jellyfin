@@ -1,6 +1,9 @@
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Branding;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -17,21 +20,22 @@ namespace MediaBrowser.Api
 
     public class BrandingService : BaseApiService
     {
-        private readonly IConfigurationManager _config;
-
-        public BrandingService(IConfigurationManager config)
+        public BrandingService(
+            ILogger<BrandingService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            _config = config;
         }
 
         public object Get(GetBrandingOptions request)
         {
-            return _config.GetConfiguration<BrandingOptions>("branding");
+            return ServerConfigurationManager.GetConfiguration<BrandingOptions>("branding");
         }
 
         public object Get(GetBrandingCss request)
         {
-            var result = _config.GetConfiguration<BrandingOptions>("branding");
+            var result = ServerConfigurationManager.GetConfiguration<BrandingOptions>("branding");
 
             // When null this throws a 405 error under Mono OSX, so default to empty string
             return ResultFactory.GetResult(Request, result.CustomCss ?? string.Empty, "text/css");

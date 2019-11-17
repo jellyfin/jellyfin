@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -12,6 +13,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -122,7 +124,15 @@ namespace MediaBrowser.Api
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="dtoService">The dto service.</param>
         /// <param name="imageProcessor">The image processor.</param>
-        public SearchService(ISearchEngine searchEngine, ILibraryManager libraryManager, IDtoService dtoService, IImageProcessor imageProcessor)
+        public SearchService(
+            ILogger<SearchService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            ISearchEngine searchEngine,
+            ILibraryManager libraryManager,
+            IDtoService dtoService,
+            IImageProcessor imageProcessor)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _searchEngine = searchEngine;
             _libraryManager = libraryManager;

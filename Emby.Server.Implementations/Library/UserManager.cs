@@ -194,10 +194,6 @@ namespace Emby.Server.Implementations.Library
             return user;
         }
 
-        /// <inheritdoc />
-        public User GetUserById(string id)
-            => GetUserById(new Guid(id));
-
         public User GetUserByName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))

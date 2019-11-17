@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Updates;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -118,12 +118,15 @@ namespace MediaBrowser.Api
     public class PackageService : BaseApiService
     {
         private readonly IInstallationManager _installationManager;
-        private readonly IApplicationHost _appHost;
 
-        public PackageService(IInstallationManager installationManager, IApplicationHost appHost)
+        public PackageService(
+            ILogger<PackageService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IInstallationManager installationManager)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _installationManager = installationManager;
-            _appHost = appHost;
         }
 
         /// <summary>
