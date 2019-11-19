@@ -21,6 +21,12 @@ RUN wget https://download.visualstudio.microsoft.com/download/pr/d9f37b73-df8d-4
  && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
  && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
 
+# Install npm package manager
+RUN wget -q -O- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - \
+ && echo "deb https://deb.nodesource.com/node_8.x $(lsb_release -s -c) main" > /etc/apt/sources.list.d/npm.list \
+ && apt update \
+ && apt install -y nodejs
+
 # Link to docker-build script
 RUN ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh
 
