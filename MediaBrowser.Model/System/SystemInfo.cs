@@ -110,10 +110,10 @@ namespace MediaBrowser.Model.System
         public string InternalMetadataPath { get; set; }
 
         /// <summary>
-        /// Gets or sets the transcoding temporary path.
+        /// Gets or sets the transcode path.
         /// </summary>
-        /// <value>The transcoding temporary path.</value>
-        public string TranscodePath { get; set; }
+        /// <value>The transcode path.</value>
+        public string TranscodingTempPath { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP server port number.
