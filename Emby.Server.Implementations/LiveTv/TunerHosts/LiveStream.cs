@@ -68,7 +68,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         protected void SetTempFilePath(string extension)
         {
-            TempFilePath = Path.Combine(AppPaths.GetTranscodingTempPath(), UniqueId + "." + extension);
+            TempFilePath = Path.Combine(AppPaths.GetTranscodePath(), UniqueId + "." + extension);
         }
 
         public virtual Task Open(CancellationToken openCancellationToken)

@@ -10,8 +10,8 @@ namespace Emby.Server.Implementations
     /// </summary>
     public class ServerApplicationPaths : BaseApplicationPaths, IServerApplicationPaths
     {
-        private string _defaultTranscodingTempPath;
-        private string _transcodingTempPath;
+        private string _defaultTranscodePath;
+        private string _transcodePath;
         private string _internalMetadataPath;
 
         /// <summary>
@@ -107,19 +107,19 @@ namespace Emby.Server.Implementations
         /// <value>The user configuration directory path.</value>
         public string UserConfigurationDirectoryPath => Path.Combine(ConfigurationDirectoryPath, "users");
 
-        public string DefaultTranscodingTempPath => _defaultTranscodingTempPath ?? (_defaultTranscodingTempPath = Path.Combine(ProgramDataPath, "transcoding-temp"));
+        public string DefaultTranscodePath => _defaultTranscodePath ?? (_defaultTranscodePath = Path.Combine(ProgramDataPath, "transcodes"));
 
-        public string TranscodingTempPath
+        public string TranscodePath
         {
-            get => _transcodingTempPath ?? (_transcodingTempPath = DefaultTranscodingTempPath);
-            set => _transcodingTempPath = value;
+            get => _transcodePath ?? (_transcodePath = DefaultTranscodePath);
+            set => _transcodePath = value;
         }
 
-        public string GetTranscodingTempPath()
+        public string GetTranscodePath()
         {
-            var path = TranscodingTempPath;
+            var path = TranscodePath;
 
-            if (!string.Equals(path, DefaultTranscodingTempPath, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(path, DefaultTranscodePath, StringComparison.OrdinalIgnoreCase))
             {
                 try
                 {
@@ -136,7 +136,7 @@ namespace Emby.Server.Implementations
                 }
             }
 
-            path = DefaultTranscodingTempPath;
+            path = DefaultTranscodePath;
             Directory.CreateDirectory(path);
             return path;
         }

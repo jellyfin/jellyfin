@@ -97,7 +97,7 @@ namespace MediaBrowser.Api.Playback.Hls
         public Task<object> Get(GetHlsPlaylistLegacy request)
         {
             var file = request.PlaylistId + Path.GetExtension(Request.PathInfo);
-            file = Path.Combine(_appPaths.TranscodingTempPath, file);
+            file = Path.Combine(_appPaths.TranscodePath, file);
 
             return GetFileResult(file, file);
         }
@@ -116,7 +116,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
 
-            var transcodeFolderPath = _config.ApplicationPaths.TranscodingTempPath;
+            var transcodeFolderPath = _config.ApplicationPaths.TranscodePath;
             file = Path.Combine(transcodeFolderPath, file);
 
             var normalizedPlaylistId = request.PlaylistId;
@@ -136,7 +136,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             // TODO: Deprecate with new iOS app
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
-            file = Path.Combine(_appPaths.TranscodingTempPath, file);
+            file = Path.Combine(_appPaths.TranscodePath, file);
 
             return ResultFactory.GetStaticFileResult(Request, file, FileShareMode.ReadWrite);
         }
