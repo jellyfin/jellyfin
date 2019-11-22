@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
@@ -60,6 +61,7 @@ namespace Emby.Server.Implementations.Library
         private readonly Func<IDtoService> _dtoServiceFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly IFileSystem _fileSystem;
+        private readonly ICryptoProvider _cryptoProvider;
 
         private ConcurrentDictionary<Guid, User> _users;
 
@@ -80,7 +82,8 @@ namespace Emby.Server.Implementations.Library
             Func<IDtoService> dtoServiceFactory,
             IServerApplicationHost appHost,
             IJsonSerializer jsonSerializer,
-            IFileSystem fileSystem)
+            IFileSystem fileSystem,
+            ICryptoProvider cryptoProvider)
         {
             _logger = logger;
             _userRepository = userRepository;
@@ -91,6 +94,7 @@ namespace Emby.Server.Implementations.Library
             _appHost = appHost;
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
+            _cryptoProvider = cryptoProvider;
             _users = null;
         }
 
@@ -475,22 +479,19 @@ namespace Emby.Server.Implementations.Library
 
             if (!success
                 && _networkManager.IsInLocalNetwork(remoteEndPoint)
-                && user.Configuration.EnableLocalPassword)
+                && user.Configuration.EnableLocalPassword
+                && !string.IsNullOrEmpty(user.EasyPassword))
             {
-                success = string.Equals(
-                    GetLocalPasswordHash(user),
-                    _defaultAuthenticationProvider.GetHashedString(user, password),
-                    StringComparison.OrdinalIgnoreCase);
+                // Check easy password
+                var passwordHash = PasswordHash.Parse(user.EasyPassword);
+                var hash = _cryptoProvider.ComputeHash(
+                    passwordHash.Id,
+                    Encoding.UTF8.GetBytes(password),
+                    passwordHash.Salt);
+                success = passwordHash.Hash.SequenceEqual(hash);
             }
 
             return (authenticationProvider, username, success);
-        }
-
-        private string GetLocalPasswordHash(User user)
-        {
-            return string.IsNullOrEmpty(user.EasyPassword)
-                ? null
-                : ToHexString(PasswordHash.Parse(user.EasyPassword).Hash);
         }
 
         private void ResetInvalidLoginAttemptCount(User user)

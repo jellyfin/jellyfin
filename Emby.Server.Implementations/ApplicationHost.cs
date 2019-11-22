@@ -746,7 +746,8 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(typeof(IStreamHelper), typeof(StreamHelper));
 
-            serviceCollection.AddSingleton(typeof(ICryptoProvider), typeof(CryptographyProvider));
+            var cryptoProvider = new CryptographyProvider();
+            serviceCollection.AddSingleton<ICryptoProvider>(cryptoProvider);
 
             SocketFactory = new SocketFactory();
             serviceCollection.AddSingleton(SocketFactory);
@@ -786,7 +787,17 @@ namespace Emby.Server.Implementations
 
             _userRepository = GetUserRepository();
 
-            UserManager = new UserManager(LoggerFactory.CreateLogger<UserManager>(), _userRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, this, JsonSerializer, FileSystemManager);
+            UserManager = new UserManager(
+                LoggerFactory.CreateLogger<UserManager>(),
+                _userRepository,
+                XmlSerializer,
+                NetworkManager,
+                () => ImageProcessor,
+                () => DtoService,
+                this,
+                JsonSerializer,
+                FileSystemManager,
+                cryptoProvider);
 
             serviceCollection.AddSingleton(UserManager);
 
