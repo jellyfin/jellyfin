@@ -588,7 +588,7 @@ namespace MediaBrowser.Api.Playback
 
         /// <summary>
         /// Parses query parameters as StreamOptions
-        /// <summary>
+        /// </summary>
         /// <param name="request">The stream request.</param>
         private void ParseStreamOptions(StreamRequest request)
         {

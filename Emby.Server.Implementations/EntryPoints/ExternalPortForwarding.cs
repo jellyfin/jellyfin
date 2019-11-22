@@ -70,7 +70,6 @@ namespace Emby.Server.Implementations.EntryPoints
             if (!string.Equals(_lastConfigIdentifier, GetConfigIdentifier(), StringComparison.OrdinalIgnoreCase))
             {
                 Stop();
-
                 Start();
             }
         }

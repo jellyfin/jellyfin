@@ -473,7 +473,7 @@ namespace Emby.Server.Implementations.Channels
             await item.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem))
             {
                 ForceSave = !isNew && forceUpdate
-            }, cancellationToken);
+            }, cancellationToken).ConfigureAwait(false);
 
             return item;
         }
@@ -636,7 +636,7 @@ namespace Emby.Server.Implementations.Channels
 
         private async Task RefreshLatestChannelItems(IChannel channel, CancellationToken cancellationToken)
         {
-            var internalChannel = await GetChannel(channel, cancellationToken);
+            var internalChannel = await GetChannel(channel, cancellationToken).ConfigureAwait(false);
 
             var query = new InternalItemsQuery();
             query.Parent = internalChannel;

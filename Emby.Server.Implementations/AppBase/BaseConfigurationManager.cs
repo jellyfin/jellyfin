@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.AppBase
 {
     /// <summary>
-    /// Class BaseConfigurationManager
+    /// Class BaseConfigurationManager.
     /// </summary>
     public abstract class BaseConfigurationManager : IConfigurationManager
     {
@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.AppBase
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
-        /// <param name="fileSystem">The file system</param>
+        /// <param name="fileSystem">The file system.</param>
         protected BaseConfigurationManager(IApplicationPaths applicationPaths, ILoggerFactory loggerFactory, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
         {
             CommonApplicationPaths = applicationPaths;
@@ -92,7 +92,7 @@ namespace Emby.Server.Implementations.AppBase
         protected IXmlSerializer XmlSerializer { get; private set; }
 
         /// <summary>
-        /// Gets or sets the application paths.
+        /// Gets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
         public IApplicationPaths CommonApplicationPaths { get; private set; }
@@ -173,7 +173,7 @@ namespace Emby.Server.Implementations.AppBase
         /// Replaces the configuration.
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
-        /// <exception cref="ArgumentNullException">newConfiguration</exception>
+        /// <exception cref="ArgumentNullException"><c>newConfiguration</c> is <c>null</c>.</exception>
         public virtual void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
             if (newConfiguration == null)

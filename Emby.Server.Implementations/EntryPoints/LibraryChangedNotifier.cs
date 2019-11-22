@@ -455,7 +455,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 return new[] { item };
             }
 
-            return new T[] { };
+            return Array.Empty<T>();
         }
 
         /// <summary>

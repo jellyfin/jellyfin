@@ -1,7 +1,7 @@
 namespace Emby.Naming.Video
 {
     /// <summary>
-    /// Represents a single video file
+    /// Represents a single video file.
     /// </summary>
     public class VideoFileInfo
     {
