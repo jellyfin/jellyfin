@@ -44,7 +44,7 @@ namespace Emby.Server.Implementations.Library
 
             if (user == null)
             {
-                throw new ArgumentException("User Id does not exist.", nameof(query));
+                throw new ArgumentException("User Id specified in the query does not exist.", nameof(query));
             }
 
             var folders = _libraryManager.GetUserRootFolder()
