@@ -182,12 +182,7 @@ namespace Emby.Server.Implementations.Library
             _defaultPasswordResetProvider = passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
         }
 
-        /// <summary>
-        /// Gets a User by Id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns>User.</returns>
-        /// <exception cref="ArgumentException"></exception>
+        /// <inheritdoc />
         public User GetUserById(Guid id)
         {
             if (id == Guid.Empty)
@@ -199,11 +194,7 @@ namespace Emby.Server.Implementations.Library
             return user;
         }
 
-        /// <summary>
-        /// Gets the user by identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns>User.</returns>
+        /// <inheritdoc />
         public User GetUserById(string id)
             => GetUserById(new Guid(id));
 
@@ -431,7 +422,6 @@ namespace Emby.Server.Implementations.Library
         {
             try
             {
-
                 var authenticationResult = provider is IRequiresResolvedUser requiresResolvedUser
                     ? await requiresResolvedUser.Authenticate(username, password, resolvedUser).ConfigureAwait(false)
                     : await provider.Authenticate(username, password).ConfigureAwait(false);
@@ -538,6 +528,8 @@ namespace Emby.Server.Implementations.Library
                 defaultName = "MyJellyfinUser";
             }
 
+            _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
+
             var name = MakeValidUsername(defaultName);
 
             var user = InstantiateNewUser(name);
@@ -601,7 +593,7 @@ namespace Emby.Server.Implementations.Library
                 catch (Exception ex)
                 {
                     // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {user}", user.Name);
+                    _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {User}", user.Name);
                 }
             }
 
@@ -625,7 +617,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting {imageType} image info for {imagePath}", image.Type, image.Path);
+                _logger.LogError(ex, "Error getting {ImageType} image info for {ImagePath}", image.Type, image.Path);
                 return null;
             }
         }

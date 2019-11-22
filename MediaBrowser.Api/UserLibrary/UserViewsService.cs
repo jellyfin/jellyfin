@@ -10,6 +10,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -49,7 +50,12 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly IAuthorizationContext _authContext;
         private readonly ILibraryManager _libraryManager;
 
-        public UserViewsService(IUserManager userManager, IUserViewManager userViewManager, IDtoService dtoService, IAuthorizationContext authContext, ILibraryManager libraryManager)
+        public UserViewsService(
+            IUserManager userManager,
+            IUserViewManager userViewManager,
+            IDtoService dtoService,
+            IAuthorizationContext authContext,
+            ILibraryManager libraryManager)
         {
             _userManager = userManager;
             _userViewManager = userViewManager;
