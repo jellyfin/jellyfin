@@ -141,13 +141,6 @@ namespace Jellyfin.Server
             // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
             ServicePointManager.Expect100Continue = false;
 
-// CA5359: Do Not Disable Certificate Validation
-#pragma warning disable CA5359
-
-            // Allow all https requests
-            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
-#pragma warning restore CA5359
-
             Batteries_V2.Init();
             if (raw.sqlite3_enable_shared_cache(1) != raw.SQLITE_OK)
             {
