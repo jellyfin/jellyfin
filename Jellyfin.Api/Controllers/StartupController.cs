@@ -42,7 +42,10 @@ namespace Jellyfin.Api.Controllers
         }
 
         [HttpPost("Configuration")]
-        public void UpdateInitialConfiguration([FromForm] string uiCulture, [FromForm] string metadataCountryCode, [FromForm] string preferredMetadataLanguage)
+        public void UpdateInitialConfiguration(
+            [FromForm] string uiCulture,
+            [FromForm] string metadataCountryCode,
+            [FromForm] string preferredMetadataLanguage)
         {
             _config.Configuration.UICulture = uiCulture;
             _config.Configuration.MetadataCountryCode = metadataCountryCode;
