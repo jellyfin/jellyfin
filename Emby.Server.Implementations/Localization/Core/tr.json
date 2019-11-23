@@ -50,7 +50,7 @@
     "NotificationOptionAudioPlayback": "Audio playback started",
     "NotificationOptionAudioPlaybackStopped": "Audio playback stopped",
     "NotificationOptionCameraImageUploaded": "Camera image uploaded",
-    "NotificationOptionInstallationFailed": "Yükleme hatası",
+    "NotificationOptionInstallationFailed": "Kurulum hatası",
     "NotificationOptionNewLibraryContent": "New content added",
     "NotificationOptionPluginError": "Plugin failure",
     "NotificationOptionPluginInstalled": "Plugin installed",
