@@ -47,10 +47,7 @@ using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
-using Jellyfin.Api.Auth;
-using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
-using Jellyfin.Api.Auth.RequiresElevationPolicy;
-using Jellyfin.Api.Controllers;
+using Jellyfin.Api.Extensions;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -92,7 +89,6 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -108,21 +104,15 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.Providers.TV.TheTVDB;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using ServiceStack;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations
@@ -665,70 +655,29 @@ namespace Emby.Server.Implementations
                 {
                     services.AddResponseCompression();
                     services.AddHttpContextAccessor();
-                    services.AddMvc(opts =>
-                        {
-                            var policy = new AuthorizationPolicyBuilder()
-                                .RequireAuthenticatedUser()
-                                .Build();
-                            opts.Filters.Add(new AuthorizeFilter(policy));
-                            opts.EnableEndpointRouting = false;
-                            opts.UseGeneralRoutePrefix(ServerConfigurationManager.Configuration.BaseUrl.TrimStart('/'));
-                        })
-                        .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
-                        .ConfigureApplicationPartManager(a => a.ApplicationParts.Clear()) // Clear app parts to avoid other assemblies being picked up
-                        .AddApplicationPart(typeof(StartupController).Assembly)
-                        .AddControllersAsServices();
-                    services.AddSwaggerGen(c =>
-                    {
-                        c.SwaggerDoc("v1", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
-                    });
+                    services.AddJellyfinApi(ServerConfigurationManager.Configuration.BaseUrl.TrimStart('/'));
 
-                    services.AddSingleton<IAuthorizationHandler, FirstTimeSetupOrElevatedHandler>();
-                    services.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
+                    services.AddJellyfinApiSwagger();
 
                     // configure custom legacy authentication
-                    services.AddAuthentication("CustomAuthentication")
-                        .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>("CustomAuthentication", null);
+                    services.AddCustomAuthentication();
 
-                    services.AddAuthorizationCore(options =>
-                    {
-                        options.AddPolicy(
-                            "RequiresElevation",
-                            policy =>
-                            {
-                                policy.AddAuthenticationSchemes("CustomAuthentication");
-                                policy.AddRequirements(new RequiresElevationRequirement());
-                            });
-                        options.AddPolicy(
-                            "FirstTimeSetupOrElevated",
-                            policy =>
-                            {
-                                policy.AddAuthenticationSchemes("CustomAuthentication");
-                                policy.AddRequirements(new FirstTimeSetupOrElevatedRequirement());
-                            });
-                    });
+                    services.AddJellyfinApiAuthorization();
 
                     // Merge the external ServiceCollection into ASP.NET DI
                     services.TryAdd(serviceCollection);
                 })
                 .Configure(app =>
                 {
-                    app.UseDeveloperExceptionPage();
-                    app.UseSwagger();
-
-                    // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-                    // specifying the Swagger JSON endpoint.
-                    app.UseSwaggerUI(c =>
-                    {
-                        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Jellyfin API V1");
-                    });
-
                     app.UseWebSockets();
 
                     app.UseResponseCompression();
+
                     // TODO app.UseMiddleware<WebSocketMiddleware>();
                     app.Use(ExecuteWebsocketHandlerAsync);
-                    //app.UseAuthentication();
+
+                    // TODO use when old API is removed: app.UseAuthentication();
+                    app.UseJellyfinApiSwagger();
                     app.UseMvc();
                     app.Use(ExecuteHttpHandlerAsync);
                 })
