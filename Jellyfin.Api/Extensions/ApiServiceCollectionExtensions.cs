@@ -1,4 +1,3 @@
-using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
@@ -12,8 +11,16 @@ using Microsoft.OpenApi.Models;
 
 namespace Jellyfin.Api.Extensions
 {
+    /// <summary>
+    /// API specific extensions for the service collection.
+    /// </summary>
     public static class ApiServiceCollectionExtensions
     {
+        /// <summary>
+        /// Adds jellyfin API authorization policies to the DI container.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        /// <returns>The updated service collection.</returns>
         public static IServiceCollection AddJellyfinApiAuthorization(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupOrElevatedHandler>();
@@ -37,12 +44,23 @@ namespace Jellyfin.Api.Extensions
             });
         }
 
+        /// <summary>
+        /// Adds custom legacy authentication to the service collection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        /// <returns>The updated service collection.</returns>
         public static AuthenticationBuilder AddCustomAuthentication(this IServiceCollection serviceCollection)
         {
             return serviceCollection.AddAuthentication("CustomAuthentication")
                 .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>("CustomAuthentication", null);
         }
 
+        /// <summary>
+        /// Extension method for adding the jellyfin API to the service collection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        /// <param name="baseUrl">The base url for the API.</param>
+        /// <returns>The MVC builder.</returns>
         public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, string baseUrl)
         {
             return serviceCollection.AddMvc(opts =>
@@ -55,12 +73,18 @@ namespace Jellyfin.Api.Extensions
                     opts.UseGeneralRoutePrefix(baseUrl);
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+
                 // Clear app parts to avoid other assemblies being picked up
                 .ConfigureApplicationPartManager(a => a.ApplicationParts.Clear())
                 .AddApplicationPart(typeof(StartupController).Assembly)
                 .AddControllersAsServices();
         }
 
+        /// <summary>
+        /// Adds Swagger to the service collection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        /// <returns>The updated service collection.</returns>
         public static IServiceCollection AddJellyfinApiSwagger(this IServiceCollection serviceCollection)
         {
             return serviceCollection.AddSwaggerGen(c =>

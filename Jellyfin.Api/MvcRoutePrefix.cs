@@ -3,10 +3,18 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace Emby.Server.Implementations
+namespace Jellyfin.Api
 {
+    /// <summary>
+    /// Route prefixing for ASP.NET MVC.
+    /// </summary>
     public static class MvcRoutePrefix
     {
+        /// <summary>
+        /// Adds route prefixes to the MVC conventions.
+        /// </summary>
+        /// <param name="opts">The MVC options.</param>
+        /// <param name="prefixes">The list of prefixes.</param>
         public static void UseGeneralRoutePrefix(this MvcOptions opts, params string[] prefixes)
         {
             opts.Conventions.Insert(0, new RoutePrefixConvention(prefixes));
