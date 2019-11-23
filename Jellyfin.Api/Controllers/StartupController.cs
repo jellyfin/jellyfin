@@ -3,12 +3,13 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Models.Startup;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Controllers
 {
-    [ApiVersion("1")]
-    public class StartupController : ControllerBase
+    [Authorize(Policy = "FirstTimeSetupOrElevated")]
+    public class StartupController : BaseJellyfinApiController
     {
         private readonly IServerConfigurationManager _config;
         private readonly IUserManager _userManager;
@@ -28,9 +29,9 @@ namespace Jellyfin.Api.Controllers
         }
 
         [HttpGet("Configuration")]
-        public StartupConfiguration Get()
+        public StartupConfigurationDto GetStartupConfiguration()
         {
-            var result = new StartupConfiguration
+            var result = new StartupConfigurationDto
             {
                 UICulture = _config.Configuration.UICulture,
                 MetadataCountryCode = _config.Configuration.MetadataCountryCode,
@@ -41,7 +42,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         [HttpPost("Configuration")]
-        public void UpdateInitial([FromForm] string uiCulture, [FromForm] string metadataCountryCode, [FromForm] string preferredMetadataLanguage)
+        public void UpdateInitialConfiguration([FromForm] string uiCulture, [FromForm] string metadataCountryCode, [FromForm] string preferredMetadataLanguage)
         {
             _config.Configuration.UICulture = uiCulture;
             _config.Configuration.MetadataCountryCode = metadataCountryCode;
@@ -50,7 +51,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         [HttpPost("RemoteAccess")]
-        public void Post([FromForm] bool enableRemoteAccess, [FromForm] bool enableAutomaticPortMapping)
+        public void SetRemoteAccess([FromForm] bool enableRemoteAccess, [FromForm] bool enableAutomaticPortMapping)
         {
             _config.Configuration.EnableRemoteAccess = enableRemoteAccess;
             _config.Configuration.EnableUPnP = enableAutomaticPortMapping;
@@ -58,11 +59,11 @@ namespace Jellyfin.Api.Controllers
         }
 
         [HttpGet("User")]
-        public StartupUser GetUser()
+        public StartupUserDto GetUser()
         {
             var user = _userManager.Users.First();
 
-            return new StartupUser
+            return new StartupUserDto
             {
                 Name = user.Name,
                 Password = user.Password
@@ -70,17 +71,17 @@ namespace Jellyfin.Api.Controllers
         }
 
         [HttpPost("User")]
-        public async Task UpdateUser([FromForm] StartupUser startupUser)
+        public async Task UpdateUser([FromForm] StartupUserDto startupUserDto)
         {
             var user = _userManager.Users.First();
 
-            user.Name = startupUser.Name;
+            user.Name = startupUserDto.Name;
 
             _userManager.UpdateUser(user);
 
-            if (!string.IsNullOrEmpty(startupUser.Password))
+            if (!string.IsNullOrEmpty(startupUserDto.Password))
             {
-                await _userManager.ChangePassword(user, startupUser.Password).ConfigureAwait(false);
+                await _userManager.ChangePassword(user, startupUserDto.Password).ConfigureAwait(false);
             }
         }
     }

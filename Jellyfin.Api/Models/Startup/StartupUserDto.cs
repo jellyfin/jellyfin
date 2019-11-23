@@ -1,6 +1,6 @@
 namespace Jellyfin.Api.Models.Startup
 {
-    public class StartupUser
+    public class StartupUserDto
     {
         public string Name { get; set; }
         public string Password { get; set; }

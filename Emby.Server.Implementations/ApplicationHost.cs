@@ -47,6 +47,10 @@ using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
+using Jellyfin.Api.Auth;
+using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
+using Jellyfin.Api.Auth.RequiresElevationPolicy;
+using Jellyfin.Api.Controllers;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -104,11 +108,14 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.Providers.TV.TheTVDB;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -660,25 +667,45 @@ namespace Emby.Server.Implementations
                     services.AddHttpContextAccessor();
                     services.AddMvc(opts =>
                         {
-                            opts.UseGeneralRoutePrefix("emby", "emby/emby", "api/v{version:apiVersion}");
+                            var policy = new AuthorizationPolicyBuilder()
+                                .RequireAuthenticatedUser()
+                                .Build();
+                            opts.Filters.Add(new AuthorizeFilter(policy));
+                            opts.EnableEndpointRouting = false;
+                            opts.UseGeneralRoutePrefix(ServerConfigurationManager.Configuration.BaseUrl.TrimStart('/'));
                         })
                         .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
-                        .AddApplicationPart(Assembly.Load("Jellyfin.Api"));
-                    services.AddApiVersioning(opt => opt.ReportApiVersions = true);
+                        .ConfigureApplicationPartManager(a => a.ApplicationParts.Clear()) // Clear app parts to avoid other assemblies being picked up
+                        .AddApplicationPart(typeof(StartupController).Assembly)
+                        .AddControllersAsServices();
                     services.AddSwaggerGen(c =>
                     {
                         c.SwaggerDoc("v1", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
-                        c.DocInclusionPredicate((docName, apiDesc) =>
-                        {
-                            if (!apiDesc.TryGetMethodInfo(out var methodInfo))
-                            {
-                                return false;
-                            }
+                    });
 
-                            // A bit of a hack to make Swagger pick the versioned endpoints instead of the legacy emby endpoints
-                            return methodInfo.DeclaringType?.BaseType == typeof(ControllerBase) &&
-                                   apiDesc.RelativePath.Contains("api/v");
-                        });
+                    services.AddSingleton<IAuthorizationHandler, FirstTimeSetupOrElevatedHandler>();
+                    services.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
+
+                    // configure custom legacy authentication
+                    services.AddAuthentication("CustomAuthentication")
+                        .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>("CustomAuthentication", null);
+
+                    services.AddAuthorizationCore(options =>
+                    {
+                        options.AddPolicy(
+                            "RequiresElevation",
+                            policy =>
+                            {
+                                policy.AddAuthenticationSchemes("CustomAuthentication");
+                                policy.AddRequirements(new RequiresElevationRequirement());
+                            });
+                        options.AddPolicy(
+                            "FirstTimeSetupOrElevated",
+                            policy =>
+                            {
+                                policy.AddAuthenticationSchemes("CustomAuthentication");
+                                policy.AddRequirements(new FirstTimeSetupOrElevatedRequirement());
+                            });
                     });
 
                     // Merge the external ServiceCollection into ASP.NET DI
@@ -686,6 +713,7 @@ namespace Emby.Server.Implementations
                 })
                 .Configure(app =>
                 {
+                    app.UseDeveloperExceptionPage();
                     app.UseSwagger();
 
                     // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
@@ -698,9 +726,9 @@ namespace Emby.Server.Implementations
                     app.UseWebSockets();
 
                     app.UseResponseCompression();
-
                     // TODO app.UseMiddleware<WebSocketMiddleware>();
                     app.Use(ExecuteWebsocketHandlerAsync);
+                    //app.UseAuthentication();
                     app.UseMvc();
                     app.Use(ExecuteHttpHandlerAsync);
                 })
@@ -938,7 +966,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IAuthorizationContext>(authContext);
             serviceCollection.AddSingleton<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
 
-            AuthService = new AuthService(authContext, ServerConfigurationManager, SessionManager, NetworkManager);
+            AuthService = new AuthService(LoggerFactory, authContext, ServerConfigurationManager, SessionManager, NetworkManager);
             serviceCollection.AddSingleton(AuthService);
 
             SubtitleEncoder = new MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder(LibraryManager, LoggerFactory, ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, ProcessFactory);

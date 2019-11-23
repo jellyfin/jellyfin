@@ -12,7 +12,7 @@ namespace Emby.Server.Implementations
             opts.Conventions.Insert(0, new RoutePrefixConvention(prefixes));
         }
 
-        internal class RoutePrefixConvention : IApplicationModelConvention
+        private class RoutePrefixConvention : IApplicationModelConvention
         {
             private readonly AttributeRouteModel[] _routePrefixes;
 

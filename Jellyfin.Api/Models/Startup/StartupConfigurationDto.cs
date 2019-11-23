@@ -1,6 +1,6 @@
 namespace Jellyfin.Api.Models.Startup
 {
-    public class StartupConfiguration
+    public class StartupConfigurationDto
     {
         public string UICulture { get; set; }
         public string MetadataCountryCode { get; set; }
