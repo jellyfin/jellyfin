@@ -9,6 +9,7 @@ ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist
 ENV DEB_BUILD_OPTIONS=noddebs
 ENV ARCH=amd64
+ENV web_branch=release-10.4.z
 
 # Prepare Debian build environment
 RUN apt-get update \

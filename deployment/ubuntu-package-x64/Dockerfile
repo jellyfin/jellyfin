@@ -7,6 +7,7 @@ ARG ARTIFACT_DIR=/dist
 ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist
 ENV DEB_BUILD_OPTIONS=noddebs
+ENV web_branch=release-10.4.z
 
 # Prepare Ubuntu build environment
 RUN apt-get update \
