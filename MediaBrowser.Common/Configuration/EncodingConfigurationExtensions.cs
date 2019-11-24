@@ -23,6 +23,6 @@ namespace MediaBrowser.Common.Configuration
         /// <returns>The transcoding temp path.</returns>
         public static string GetTranscodePath(this IConfigurationManager configurationManager)
             => configurationManager.GetEncodingOptions().TranscodingTempPath
-                ?? Path.Combine(configurationManager.CommonApplicationPaths.ProgramDataPath, "transcoding-temp");
+                ?? Path.Combine(configurationManager.CommonApplicationPaths.ProgramDataPath, "transcodes");
     }
 }
