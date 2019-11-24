@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace Jellyfin.Api.Extensions
+namespace Jellyfin.Server.Extensions
 {
     /// <summary>
     /// Extensions for adding API specific functionality to the application pipeline.

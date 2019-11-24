@@ -1,4 +1,4 @@
-namespace Jellyfin.Api.Models.Startup
+namespace Jellyfin.Api.Models.StartupDtos
 {
     /// <summary>
     /// The startup configuration DTO.

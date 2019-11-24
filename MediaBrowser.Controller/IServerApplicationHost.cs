@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Model.System;
+using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller
 {
@@ -87,5 +88,9 @@ namespace MediaBrowser.Controller
 
         string ExpandVirtualPath(string path);
         string ReverseVirtualPath(string path);
+
+        Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next);
+
+        Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next);
     }
 }

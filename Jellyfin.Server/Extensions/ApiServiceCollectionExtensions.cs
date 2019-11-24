@@ -1,15 +1,14 @@
+using Jellyfin.Api;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Controllers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 
-namespace Jellyfin.Api.Extensions
+namespace Jellyfin.Server.Extensions
 {
     /// <summary>
     /// API specific extensions for the service collection.
@@ -65,14 +64,8 @@ namespace Jellyfin.Api.Extensions
         {
             return serviceCollection.AddMvc(opts =>
                 {
-                    var policy = new AuthorizationPolicyBuilder()
-                        .RequireAuthenticatedUser()
-                        .Build();
-                    opts.Filters.Add(new AuthorizeFilter(policy));
-                    opts.EnableEndpointRouting = false;
                     opts.UseGeneralRoutePrefix(baseUrl);
                 })
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
 
                 // Clear app parts to avoid other assemblies being picked up
                 .ConfigureApplicationPartManager(a => a.ApplicationParts.Clear())

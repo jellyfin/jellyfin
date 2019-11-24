@@ -1,6 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
-using Jellyfin.Api.Models.Startup;
+using Jellyfin.Api.Models.StartupDtos;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
