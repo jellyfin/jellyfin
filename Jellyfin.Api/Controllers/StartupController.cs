@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.StartupDtos;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -11,7 +12,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The startup wizard controller.
     /// </summary>
-    [Authorize(Policy = "FirstTimeSetupOrElevated")]
+    [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
     public class StartupController : BaseJellyfinApiController
     {
         private readonly IServerConfigurationManager _config;

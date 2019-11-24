@@ -51,7 +51,7 @@ namespace Jellyfin.Api.Auth
                     new Claim(ClaimTypes.Name, user.Name),
                     new Claim(
                         ClaimTypes.Role,
-                        value: user.Policy.IsAdministrator ? UserRole.Administrator : UserRole.User)
+                        value: user.Policy.IsAdministrator ? UserRoles.Administrator : UserRoles.User)
                 };
                 var identity = new ClaimsIdentity(claims, Scheme.Name);
                 var principal = new ClaimsPrincipal(identity);

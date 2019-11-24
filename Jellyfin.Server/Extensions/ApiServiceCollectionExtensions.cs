@@ -2,6 +2,7 @@ using Jellyfin.Api;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -27,17 +28,17 @@ namespace Jellyfin.Server.Extensions
             return serviceCollection.AddAuthorizationCore(options =>
             {
                 options.AddPolicy(
-                    "RequiresElevation",
+                    Policies.RequiresElevation,
                     policy =>
                     {
-                        policy.AddAuthenticationSchemes("CustomAuthentication");
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
                         policy.AddRequirements(new RequiresElevationRequirement());
                     });
                 options.AddPolicy(
-                    "FirstTimeSetupOrElevated",
+                    Policies.FirstTimeSetupOrElevated,
                     policy =>
                     {
-                        policy.AddAuthenticationSchemes("CustomAuthentication");
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
                         policy.AddRequirements(new FirstTimeSetupOrElevatedRequirement());
                     });
             });
@@ -50,8 +51,8 @@ namespace Jellyfin.Server.Extensions
         /// <returns>The updated service collection.</returns>
         public static AuthenticationBuilder AddCustomAuthentication(this IServiceCollection serviceCollection)
         {
-            return serviceCollection.AddAuthentication("CustomAuthentication")
-                .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>("CustomAuthentication", null);
+            return serviceCollection.AddAuthentication(AuthenticationSchemes.CustomAuthentication)
+                .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>(AuthenticationSchemes.CustomAuthentication, null);
         }
 
         /// <summary>

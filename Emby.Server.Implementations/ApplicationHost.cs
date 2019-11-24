@@ -237,6 +237,21 @@ namespace Emby.Server.Implementations
         public IServiceProvider ServiceProvider { get; set; }
 
         /// <summary>
+        /// Gets the http port for the webhost.
+        /// </summary>
+        public int HttpPort { get; private set; }
+
+        /// <summary>
+        /// Gets the https port for the webhost.
+        /// </summary>
+        public int HttpsPort { get; private set; }
+
+        /// <summary>
+        /// Gets the content root for the webhost.
+        /// </summary>
+        public string ContentRoot { get; private set; }
+
+        /// <summary>
         /// Gets the server configuration manager.
         /// </summary>
         /// <value>The server configuration manager.</value>
@@ -1603,12 +1618,6 @@ namespace Emby.Server.Implementations
             string.IsNullOrEmpty(ServerConfigurationManager.Configuration.ServerName)
                 ? Environment.MachineName
                 : ServerConfigurationManager.Configuration.ServerName;
-
-        public int HttpPort { get; private set; }
-
-        public int HttpsPort { get; private set; }
-
-        public string ContentRoot { get; private set; }
 
         /// <summary>
         /// Shuts down.

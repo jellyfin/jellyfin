@@ -28,7 +28,7 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy
             {
                 context.Succeed(firstTimeSetupOrElevatedRequirement);
             }
-            else if (context.User.IsInRole(UserRole.Administrator))
+            else if (context.User.IsInRole(UserRoles.Administrator))
             {
                 context.Succeed(firstTimeSetupOrElevatedRequirement);
             }

@@ -3,7 +3,7 @@ namespace Jellyfin.Api.Constants
     /// <summary>
     /// Constants for user roles used in the authentication and authorization for the API.
     /// </summary>
-    public static class UserRole
+    public static class UserRoles
     {
         /// <summary>
         /// Guest user.

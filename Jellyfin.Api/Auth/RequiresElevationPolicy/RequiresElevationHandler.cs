@@ -12,7 +12,7 @@ namespace Jellyfin.Api.Auth.RequiresElevationPolicy
         /// <inheritdoc />
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RequiresElevationRequirement requirement)
         {
-            if (context.User.IsInRole(UserRole.Administrator))
+            if (context.User.IsInRole(UserRoles.Administrator))
             {
                 context.Succeed(requirement);
             }
