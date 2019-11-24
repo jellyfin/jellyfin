@@ -300,11 +300,13 @@ namespace MediaBrowser.Api
             string baseUrl = ApiEntryPoint.Instance.ConfigurationManager.Configuration.BaseUrl;
 
             // backwards compatibility
-            if (baseUrl.Length == 0
-                && (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase)))
+            if (baseUrl.Length == 0)
             {
-                index++;
+                if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase))
+                {
+                    index++;
+                }
             }
             else if (string.Equals(first, baseUrl.Remove(0, 1)))
             {
