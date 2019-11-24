@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Jellyfin.Api.Enums;
+using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Configuration;
 using Microsoft.AspNetCore.Authorization;
 
@@ -28,7 +28,7 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy
             {
                 context.Succeed(firstTimeSetupOrElevatedRequirement);
             }
-            else if (context.User.IsInRole(UserRole.Administrator.ToString()))
+            else if (context.User.IsInRole(UserRole.Administrator))
             {
                 context.Succeed(firstTimeSetupOrElevatedRequirement);
             }

@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Jellyfin.Api.Enums;
+using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
@@ -51,7 +51,7 @@ namespace Jellyfin.Api.Auth
                     new Claim(ClaimTypes.Name, user.Name),
                     new Claim(
                         ClaimTypes.Role,
-                        value: user.Policy.IsAdministrator ? UserRole.Administrator.ToString() : UserRole.User.ToString())
+                        value: user.Policy.IsAdministrator ? UserRole.Administrator : UserRole.User)
                 };
                 var identity = new ClaimsIdentity(claims, Scheme.Name);
                 var principal = new ClaimsPrincipal(identity);

@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Jellyfin.Api.Enums;
+using Jellyfin.Api.Constants;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Jellyfin.Api.Auth.RequiresElevationPolicy
@@ -12,7 +12,7 @@ namespace Jellyfin.Api.Auth.RequiresElevationPolicy
         /// <inheritdoc />
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RequiresElevationRequirement requirement)
         {
-            if (context.User.IsInRole(UserRole.Administrator.ToString()))
+            if (context.User.IsInRole(UserRole.Administrator))
             {
                 context.Succeed(requirement);
             }

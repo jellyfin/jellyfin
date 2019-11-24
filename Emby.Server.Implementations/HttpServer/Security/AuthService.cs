@@ -22,13 +22,13 @@ namespace Emby.Server.Implementations.HttpServer.Security
         private readonly INetworkManager _networkManager;
 
         public AuthService(
-            ILoggerFactory loggerFactory,
+            ILogger<AuthService> logger,
             IAuthorizationContext authorizationContext,
             IServerConfigurationManager config,
             ISessionManager sessionManager,
             INetworkManager networkManager)
         {
-            _logger = loggerFactory.CreateLogger<AuthService>();
+            _logger = logger;
             _authorizationContext = authorizationContext;
             _config = config;
             _sessionManager = sessionManager;

@@ -1,23 +1,23 @@
-namespace Jellyfin.Api.Enums
+namespace Jellyfin.Api.Constants
 {
     /// <summary>
-    /// Enum for user roles used in the authentication and authorization for the API.
+    /// Constants for user roles used in the authentication and authorization for the API.
     /// </summary>
-    public enum UserRole
+    public static class UserRole
     {
         /// <summary>
         /// Guest user.
         /// </summary>
-        Guest = 0,
+        public const string Guest = "Guest";
 
         /// <summary>
         /// Regular user with no special privileges.
         /// </summary>
-        User = 1,
+        public const string User = "User";
 
         /// <summary>
         /// Administrator user with elevated privileges.
         /// </summary>
-        Administrator = 2
+        public const string Administrator = "Administrator";
     }
 }

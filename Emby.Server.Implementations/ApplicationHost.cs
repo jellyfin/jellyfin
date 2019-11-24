@@ -231,7 +231,10 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public IServiceProvider ServiceProvider;
+        /// <summary>
+        /// Gets or sets the service provider.
+        /// </summary>
+        public IServiceProvider ServiceProvider { get; set; }
 
         /// <summary>
         /// Gets the server configuration manager.
@@ -835,7 +838,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IAuthorizationContext>(authContext);
             serviceCollection.AddSingleton<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
 
-            AuthService = new AuthService(LoggerFactory, authContext, ServerConfigurationManager, SessionManager, NetworkManager);
+            AuthService = new AuthService(LoggerFactory.CreateLogger<AuthService>(), authContext, ServerConfigurationManager, SessionManager, NetworkManager);
             serviceCollection.AddSingleton(AuthService);
 
             SubtitleEncoder = new MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder(LibraryManager, LoggerFactory, ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, ProcessFactory);
