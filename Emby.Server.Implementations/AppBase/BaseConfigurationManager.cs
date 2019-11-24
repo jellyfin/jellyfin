@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
@@ -314,8 +313,7 @@ namespace Emby.Server.Implementations.AppBase
                 throw new ArgumentException("Expected configuration type is " + configurationType.Name);
             }
 
-            var validatingStore = configurationStore as IValidatingConfiguration;
-            if (validatingStore != null)
+            if (configurationStore is IValidatingConfiguration validatingStore)
             {
                 var currentConfiguration = GetConfiguration(key);
 

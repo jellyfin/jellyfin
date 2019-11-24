@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
@@ -16,8 +16,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public class LiveStream : ILiveStream
     {
+        private readonly IConfigurationManager _configurationManager;
+
         protected readonly IFileSystem FileSystem;
-        protected readonly IServerApplicationPaths AppPaths;
+
         protected readonly IStreamHelper StreamHelper;
 
         protected string TempFilePath;
@@ -29,7 +31,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             TunerHostInfo tuner,
             IFileSystem fileSystem,
             ILogger logger,
-            IServerApplicationPaths appPaths,
+            IConfigurationManager configurationManager,
             IStreamHelper streamHelper)
         {
             OriginalMediaSource = mediaSource;
@@ -44,7 +46,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 TunerHostId = tuner.Id;
             }
 
-            AppPaths = appPaths;
+            _configurationManager = configurationManager;
             StreamHelper = streamHelper;
 
             ConsumerCount = 1;
@@ -68,7 +70,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         protected void SetTempFilePath(string extension)
         {
-            TempFilePath = Path.Combine(AppPaths.GetTranscodePath(), UniqueId + "." + extension);
+            TempFilePath = Path.Combine(_configurationManager.GetTranscodePath(), UniqueId + "." + extension);
         }
 
         public virtual Task Open(CancellationToken openCancellationToken)

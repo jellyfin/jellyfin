@@ -107,40 +107,6 @@ namespace Emby.Server.Implementations
         /// <value>The user configuration directory path.</value>
         public string UserConfigurationDirectoryPath => Path.Combine(ConfigurationDirectoryPath, "users");
 
-        public string DefaultTranscodePath => _defaultTranscodePath ?? (_defaultTranscodePath = Path.Combine(ProgramDataPath, "transcodes"));
-
-        public string TranscodePath
-        {
-            get => _transcodePath ?? (_transcodePath = DefaultTranscodePath);
-            set => _transcodePath = value;
-        }
-
-        public string GetTranscodePath()
-        {
-            var path = TranscodePath;
-
-            if (!string.Equals(path, DefaultTranscodePath, StringComparison.OrdinalIgnoreCase))
-            {
-                try
-                {
-                    Directory.CreateDirectory(path);
-
-                    var testPath = Path.Combine(path, Guid.NewGuid().ToString());
-                    Directory.CreateDirectory(testPath);
-                    Directory.Delete(testPath);
-
-                    return path;
-                }
-                catch
-                {
-                }
-            }
-
-            path = DefaultTranscodePath;
-            Directory.CreateDirectory(path);
-            return path;
-        }
-
         public string InternalMetadataPath
         {
             get => _internalMetadataPath ?? (_internalMetadataPath = Path.Combine(DataPath, "metadata"));

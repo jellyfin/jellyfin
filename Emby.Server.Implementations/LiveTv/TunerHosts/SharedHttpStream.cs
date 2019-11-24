@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
@@ -26,10 +27,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             IFileSystem fileSystem,
             IHttpClient httpClient,
             ILogger logger,
-            IServerApplicationPaths appPaths,
+            IConfigurationManager configurationManager,
             IServerApplicationHost appHost,
             IStreamHelper streamHelper)
-            : base(mediaSource, tunerHostInfo, fileSystem, logger, appPaths, streamHelper)
+            : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
         {
             _httpClient = httpClient;
             _appHost = appHost;
