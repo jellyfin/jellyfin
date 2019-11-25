@@ -35,7 +35,7 @@
     "Latest": "Neueste",
     "MessageApplicationUpdated": "Jellyfin-Server wurde aktualisiert",
     "MessageApplicationUpdatedTo": "Jellyfin-Server wurde auf Version {0} aktualisiert",
-    "MessageNamedServerConfigurationUpdatedWithValue": "Der Server Einstellungsbereich {0} wurde aktualisiert",
+    "MessageNamedServerConfigurationUpdatedWithValue": "Der Server-Einstellungsbereich {0} wurde aktualisiert",
     "MessageServerConfigurationUpdated": "Servereinstellungen wurden aktualisiert",
     "MixedContent": "Gemischte Inhalte",
     "Movies": "Filme",
