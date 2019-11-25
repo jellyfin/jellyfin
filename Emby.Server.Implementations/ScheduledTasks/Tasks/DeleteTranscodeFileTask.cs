@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             var minDateModified = DateTime.UtcNow.AddDays(-1);
             progress.Report(50);
 
-            DeleteTempFilesFromDirectory(cancellationToken, _configurationManager.GetTranscodingTempPath(), minDateModified, progress);
+            DeleteTempFilesFromDirectory(cancellationToken, _configurationManager.GetTranscodePath(), minDateModified, progress);
 
             return Task.CompletedTask;
         }
