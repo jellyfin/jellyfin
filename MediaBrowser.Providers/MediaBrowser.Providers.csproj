@@ -4,6 +4,7 @@
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
     <ProjectReference Include="..\DvdLib\DvdLib.csproj" />
+    <ProjectReference Include="../../TheTVDB.Net/src/TheTVDB.Net.Cached/TheTVDB.Net.Cached.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,6 +17,7 @@
     <PackageReference Include="OptimizedPriorityQueue" Version="4.2.0" />
     <PackageReference Include="PlaylistsNET" Version="1.0.4" />
     <PackageReference Include="TvDbSharper" Version="2.0.0" />
+    <PackageReference Include="System.Interactive.Async" Version="4.0.0" />
   </ItemGroup>
 
   <PropertyGroup>

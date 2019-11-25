@@ -112,6 +112,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ServiceStack;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
+using TheTVDB.Cached;
 
 namespace Emby.Server.Implementations
 {
@@ -916,6 +917,9 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(SubtitleEncoder);
 
             serviceCollection.AddSingleton(typeof(IResourceFileManager), typeof(ResourceFileManager));
+
+            // TODO: use memory cache from serviceCollection
+            serviceCollection.AddSingleton(new CachedTheTVDBClient(TvdbUtils.TvdbApiKey));
 
             _displayPreferencesRepository.Initialize();
 
