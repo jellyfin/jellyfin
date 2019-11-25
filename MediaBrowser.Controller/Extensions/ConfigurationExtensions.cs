@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Extensions
         /// <summary>
         /// The key for the FFmpeg analyse duration option.
         /// </summary>
-        public const string FfmpegAnalyzeDuration = "FFmpeg_analyzeduration";
+        public const string FfmpegAnalyzeDurationKey = "FFmpeg_analyzeduration";
 
         /// <summary>
         /// Retrieves the FFmpeg probe size from the <see cref="IConfiguration" />.
@@ -31,6 +31,6 @@ namespace MediaBrowser.Controller.Extensions
         /// <param name="configuration">This configuration.</param>
         /// <returns>The FFmpeg analyse duration option.</returns>
         public static string GetAnalyzeDuration(this IConfiguration configuration)
-            => configuration[FfmpegAnalyzeDuration];
+            => configuration[FfmpegAnalyzeDurationKey];
     }
 }

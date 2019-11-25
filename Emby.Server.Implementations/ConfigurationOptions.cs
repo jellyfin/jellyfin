@@ -10,7 +10,7 @@ namespace Emby.Server.Implementations
             { "HttpListenerHost_DefaultRedirectPath", "web/index.html" },
             { "MusicBrainz_BaseUrl", "https://www.musicbrainz.org" },
             { FfmpegProbeSizeKey, "1G" },
-            { FfmpegAnalyzeDuration, "200M" }
+            { FfmpegAnalyzeDurationKey, "200M" }
         };
     }
 }
