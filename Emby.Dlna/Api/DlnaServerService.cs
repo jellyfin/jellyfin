@@ -214,11 +214,13 @@ namespace Emby.Dlna.Api
             string baseUrl = _configurationManager.Configuration.BaseUrl;
 
             // backwards compatibility
-            if (baseUrl.Length == 0
-                && (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase)))
+            if (baseUrl.Length == 0)
             {
-                index++;
+                if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase))
+                {
+                    index++;
+                }
             }
             else if (string.Equals(first, baseUrl.Remove(0, 1)))
             {
@@ -234,7 +236,7 @@ namespace Emby.Dlna.Api
             return pathInfo[index];
         }
 
-        private List<string> Parse(string pathUri)
+        private static string[] Parse(string pathUri)
         {
             var actionParts = pathUri.Split(new[] { "://" }, StringSplitOptions.None);
 
@@ -248,7 +250,7 @@ namespace Emby.Dlna.Api
 
             var args = pathInfo.Split('/');
 
-            return args.Skip(1).ToList();
+            return args.Skip(1).ToArray();
         }
 
         public object Get(GetIcon request)
