@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -21,6 +22,7 @@ using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using Serilog.Extensions.Logging;
 using SQLitePCL;
@@ -35,7 +37,7 @@ namespace Jellyfin.Server
     {
         private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
-        private static ILogger _logger;
+        private static ILogger _logger = NullLogger.Instance;
         private static bool _restartOnShutdown;
 
         /// <summary>
@@ -86,6 +88,12 @@ namespace Jellyfin.Server
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
+
+            // Log all uncaught exceptions to std error
+            static void UnhandledExceptionToConsole(object sender, UnhandledExceptionEventArgs e) =>
+                Console.Error.WriteLine("Unhandled Exception\n" + e.ExceptionObject.ToString());
+            AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionToConsole;
+
             ServerApplicationPaths appPaths = CreateApplicationPaths(options);
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
@@ -97,6 +105,8 @@ namespace Jellyfin.Server
 
             _logger = _loggerFactory.CreateLogger("Main");
 
+            // Log uncaught exceptions to the logging instead of std error
+            AppDomain.CurrentDomain.UnhandledException -= UnhandledExceptionToConsole;
             AppDomain.CurrentDomain.UnhandledException += (sender, e)
                 => _logger.LogCritical((Exception)e.ExceptionObject, "Unhandled Exception");
 
@@ -129,7 +139,7 @@ namespace Jellyfin.Server
 
             _logger.LogInformation(
                 "Jellyfin version: {Version}",
-                Assembly.GetEntryAssembly().GetName().Version.ToString(3));
+                Assembly.GetEntryAssembly()!.GetName().Version!.ToString(3));
 
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
@@ -354,16 +364,25 @@ namespace Jellyfin.Server
 
         private static async Task<IConfiguration> CreateConfiguration(IApplicationPaths appPaths)
         {
+            const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
             string configPath = Path.Combine(appPaths.ConfigurationDirectoryPath, "logging.json");
 
             if (!File.Exists(configPath))
             {
                 // For some reason the csproj name is used instead of the assembly name
-                using (Stream rscstr = typeof(Program).Assembly
-                    .GetManifestResourceStream("Jellyfin.Server.Resources.Configuration.logging.json"))
-                using (Stream fstr = File.Open(configPath, FileMode.CreateNew))
+                using (Stream? resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath))
                 {
-                    await rscstr.CopyToAsync(fstr).ConfigureAwait(false);
+                    if (resource == null)
+                    {
+                        throw new InvalidOperationException(
+                            string.Format(
+                                CultureInfo.InvariantCulture,
+                                "Invalid resource path: '{0}'",
+                                ResourcePath));
+                    }
+
+                    using Stream dst = File.Open(configPath, FileMode.CreateNew);
+                    await resource.CopyToAsync(dst).ConfigureAwait(false);
                 }
             }
 
@@ -426,7 +445,7 @@ namespace Jellyfin.Server
         {
             _logger.LogInformation("Starting new instance");
 
-            string module = options.RestartPath;
+            var module = options.RestartPath;
 
             if (string.IsNullOrWhiteSpace(module))
             {
@@ -434,7 +453,6 @@ namespace Jellyfin.Server
             }
 
             string commandLineArgsString;
-
             if (options.RestartArgs != null)
             {
                 commandLineArgsString = options.RestartArgs ?? string.Empty;
