@@ -21,6 +21,10 @@
     <EmbeddedResource Include="Resources/Configuration/*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  
   <!-- Code analyzers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.7" />

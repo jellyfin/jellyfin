@@ -18,7 +18,6 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -164,7 +163,7 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 OnReceive = ProcessWebSocketMessageReceived,
                 Url = e.Url,
-                QueryString = e.QueryString ?? new QueryCollection()
+                QueryString = e.QueryString
             };
 
             connection.Closed += OnConnectionClosed;

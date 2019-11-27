@@ -19,8 +19,10 @@ using Jellyfin.Drawing.Skia;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Globalization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
@@ -167,7 +169,24 @@ namespace Jellyfin.Server
                 appConfig);
             try
             {
-                await appHost.InitAsync(new ServiceCollection()).ConfigureAwait(false);
+                ServiceCollection serviceCollection = new ServiceCollection();
+                await appHost.InitAsync(serviceCollection).ConfigureAwait(false);
+
+                var host = CreateWebHostBuilder(appHost, serviceCollection).Build();
+
+                // A bit hacky to re-use service provider since ASP.NET doesn't allow a custom service collection.
+                appHost.ServiceProvider = host.Services;
+                appHost.FindParts();
+
+                try
+                {
+                    await host.StartAsync().ConfigureAwait(false);
+                }
+                catch
+                {
+                    _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in system.xml and try again.");
+                    throw;
+                }
 
                 appHost.ImageProcessor.ImageEncoder = GetImageEncoder(appPaths, appHost.LocalizationManager);
 
@@ -197,6 +216,55 @@ namespace Jellyfin.Server
             {
                 StartNewInstance(options);
             }
+        }
+
+        private static IWebHostBuilder CreateWebHostBuilder(ApplicationHost appHost, IServiceCollection serviceCollection)
+        {
+            return new WebHostBuilder()
+                .UseKestrel(options =>
+                {
+                    var addresses = appHost.ServerConfigurationManager
+                        .Configuration
+                        .LocalNetworkAddresses
+                        .Select(appHost.NormalizeConfiguredLocalAddress)
+                        .Where(i => i != null)
+                        .ToList();
+                    if (addresses.Any())
+                    {
+                        foreach (var address in addresses)
+                        {
+                            _logger.LogInformation("Kestrel listening on {ipaddr}", address);
+                            options.Listen(address, appHost.HttpPort);
+
+                            if (appHost.EnableHttps && appHost.Certificate != null)
+                            {
+                                options.Listen(
+                                    address,
+                                    appHost.HttpsPort,
+                                    listenOptions => listenOptions.UseHttps(appHost.Certificate));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Kestrel listening on all interfaces");
+                        options.ListenAnyIP(appHost.HttpPort);
+
+                        if (appHost.EnableHttps && appHost.Certificate != null)
+                        {
+                            options.ListenAnyIP(
+                                appHost.HttpsPort,
+                                listenOptions => listenOptions.UseHttps(appHost.Certificate));
+                        }
+                    }
+                })
+                .UseContentRoot(appHost.ContentRoot)
+                .ConfigureServices(services =>
+                {
+                    // Merge the external ServiceCollection into ASP.NET DI
+                    services.TryAdd(serviceCollection);
+                })
+                .UseStartup<Startup>();
         }
 
         /// <summary>

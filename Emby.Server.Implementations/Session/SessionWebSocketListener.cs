@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -67,7 +66,7 @@ namespace Emby.Server.Implementations.Session
         {
             if (queryString == null)
             {
-                throw new ArgumentNullException(nameof(queryString));
+                return null;
             }
 
             var token = queryString["api_key"];
@@ -75,6 +74,7 @@ namespace Emby.Server.Implementations.Session
             {
                 return null;
             }
+
             var deviceId = queryString["deviceId"];
             return _sessionManager.GetSessionByAuthenticationToken(token, deviceId, remoteEndpoint);
         }
