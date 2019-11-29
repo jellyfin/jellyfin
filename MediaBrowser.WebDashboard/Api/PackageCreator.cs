@@ -73,6 +73,8 @@ namespace MediaBrowser.WebDashboard.Api
             if (isMainIndexPage)
             {
                 html = html.Replace("<head>", "<head>" + GetMetaTags(mode));
+                // remove the html-webpack-plugin template placeholder
+                html = html.Replace("<%= htmlWebpackPlugin.options.appLoader %>", "");
             }
 
             // Disable embedded scripts from plugins. We'll run them later once resources have loaded
