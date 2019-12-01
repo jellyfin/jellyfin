@@ -122,7 +122,7 @@ namespace Emby.Server.Implementations.SocketSharp
                 return specifiedContentType;
             }
 
-            const string ServerDefaultContentType = "application/json";
+            const string ServerDefaultContentType = MediaTypeNames.Application.Json;
 
             var acceptContentTypes = httpReq.Headers.GetCommaSeparatedValues(HeaderNames.Accept);
             string defaultContentType = null;
