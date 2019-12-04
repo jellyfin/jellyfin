@@ -1,3 +1,6 @@
+#pragma warning disable SA1600
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -35,7 +38,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.LiveTv
 {
     /// <summary>
-    /// Class LiveTvManager
+    /// Class LiveTvManager.
     /// </summary>
     public class LiveTvManager : ILiveTvManager, IDisposable
     {

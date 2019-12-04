@@ -270,7 +270,7 @@ namespace MediaBrowser.Api.Playback
                 try
                 {
                     // TODO handle supportedLiveMediaTypes ?
-                    mediaSources = await _mediaSourceManager.GetPlayackMediaSources(item, user, true, false, CancellationToken.None).ConfigureAwait(false);
+                    mediaSources = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, false, CancellationToken.None).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

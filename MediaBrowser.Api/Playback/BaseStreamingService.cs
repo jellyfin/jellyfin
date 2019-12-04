@@ -768,7 +768,7 @@ namespace MediaBrowser.Api.Playback
 
                 if (mediaSource == null)
                 {
-                    var mediaSources = (await MediaSourceManager.GetPlayackMediaSources(LibraryManager.GetItemById(request.Id), null, false, false, cancellationToken).ConfigureAwait(false)).ToList();
+                    var mediaSources = (await MediaSourceManager.GetPlaybackMediaSources(LibraryManager.GetItemById(request.Id), null, false, false, cancellationToken).ConfigureAwait(false)).ToList();
 
                     mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
                        ? mediaSources[0]
