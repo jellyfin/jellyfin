@@ -1978,12 +1978,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 filters.Add("hwupload=extra_hw_frames=64");
             }
 
-            var inputWidth = videoStream?.Width;
-            var inputHeight = videoStream?.Height;
-            var threeDFormat = state.MediaSource.Video3DFormat;
-
-            filters.AddRange(GetScalingFilters(inputWidth, inputHeight, threeDFormat, videoDecoder, outputVideoCodec, request.Width, request.Height, request.MaxWidth, request.MaxHeight));
-
             if (state.DeInterlace("h264", true)
                 && string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
@@ -2006,6 +2000,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
+            var inputWidth = videoStream?.Width;
+            var inputHeight = videoStream?.Height;
+            var threeDFormat = state.MediaSource.Video3DFormat;
+
+            filters.AddRange(GetScalingFilters(inputWidth, inputHeight, threeDFormat, videoDecoder, outputVideoCodec, request.Width, request.Height, request.MaxWidth, request.MaxHeight));
 
             var output = string.Empty;
 
