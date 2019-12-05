@@ -3,7 +3,7 @@
     "AppDeviceValues": "App: {0}, Gerät: {1}",
     "Application": "Anwendung",
     "Artists": "Interpreten",
-    "AuthenticationSucceededWithUserName": "{0} hat sich angemeldet",
+    "AuthenticationSucceededWithUserName": "{0} hat sich erfolgreich angemeldet",
     "Books": "Bücher",
     "CameraImageUploadedFrom": "Ein neues Foto wurde hochgeladen von {0}",
     "Channels": "Kanäle",
