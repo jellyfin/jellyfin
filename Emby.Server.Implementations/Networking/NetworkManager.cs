@@ -7,8 +7,6 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Networking
@@ -55,10 +53,7 @@ namespace Emby.Server.Implementations.Networking
                 _macAddresses = null;
             }
 
-            if (NetworkChanged != null)
-            {
-                NetworkChanged(this, EventArgs.Empty);
-            }
+            NetworkChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public IPAddress[] GetLocalIpAddresses(bool ignoreVirtualInterface = true)
@@ -261,10 +256,10 @@ namespace Emby.Server.Implementations.Networking
                     return true;
                 }
 
-                if (normalizedSubnet.IndexOf('/') != -1)
+                if (normalizedSubnet.Contains('/', StringComparison.Ordinal))
                 {
-                    var ipnetwork = IPNetwork.Parse(normalizedSubnet);
-                    if (ipnetwork.Contains(address))
+                    var ipNetwork = IPNetwork.Parse(normalizedSubnet);
+                    if (ipNetwork.Contains(address))
                     {
                         return true;
                     }
@@ -455,9 +450,9 @@ namespace Emby.Server.Implementations.Networking
 
         public bool IsInSameSubnet(IPAddress address1, IPAddress address2, IPAddress subnetMask)
         {
-             IPAddress network1 = GetNetworkAddress(address1, subnetMask);
-             IPAddress network2 = GetNetworkAddress(address2, subnetMask);
-             return network1.Equals(network2);
+            IPAddress network1 = GetNetworkAddress(address1, subnetMask);
+            IPAddress network2 = GetNetworkAddress(address2, subnetMask);
+            return network1.Equals(network2);
         }
 
         private IPAddress GetNetworkAddress(IPAddress address, IPAddress subnetMask)
@@ -473,7 +468,7 @@ namespace Emby.Server.Implementations.Networking
             byte[] broadcastAddress = new byte[ipAdressBytes.Length];
             for (int i = 0; i < broadcastAddress.Length; i++)
             {
-                broadcastAddress[i] = (byte)(ipAdressBytes[i] & (subnetMaskBytes[i]));
+                broadcastAddress[i] = (byte)(ipAdressBytes[i] & subnetMaskBytes[i]);
             }
 
             return new IPAddress(broadcastAddress);
@@ -512,25 +507,6 @@ namespace Emby.Server.Implementations.Networking
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Gets the network shares.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>IEnumerable{NetworkShare}.</returns>
-        public virtual IEnumerable<NetworkShare> GetNetworkShares(string path)
-        {
-            return new List<NetworkShare>();
-        }
-
-        /// <summary>
-        /// Gets available devices within the domain
-        /// </summary>
-        /// <returns>PC's in the Domain</returns>
-        public virtual IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
-        {
-            return new List<FileSystemEntryInfo>();
         }
     }
 }
