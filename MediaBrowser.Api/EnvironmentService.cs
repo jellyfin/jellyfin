@@ -54,6 +54,7 @@ namespace MediaBrowser.Api
         public bool? IsFile { get; set; }
     }
 
+    [Obsolete]
     [Route("/Environment/NetworkShares", "GET", Summary = "Gets shares from a network device")]
     public class GetNetworkShares : IReturn<List<FileSystemEntryInfo>>
     {
@@ -195,22 +196,18 @@ namespace MediaBrowser.Api
 
             var networkPrefix = UncSeparatorString + UncSeparatorString;
 
-            if (path.StartsWith(networkPrefix, StringComparison.OrdinalIgnoreCase) && path.LastIndexOf(UncSeparator) == 1)
+            if (path.StartsWith(networkPrefix, StringComparison.OrdinalIgnoreCase)
+                && path.LastIndexOf(UncSeparator) == 1)
             {
-                return ToOptimizedResult(GetNetworkShares(path).OrderBy(i => i.Path).ToList());
+                return ToOptimizedResult(Array.Empty<FileSystemEntryInfo>());
             }
 
             return ToOptimizedResult(GetFileSystemEntries(request).ToList());
         }
 
+        [Obsolete]
         public object Get(GetNetworkShares request)
-        {
-            var path = request.Path;
-
-            var shares = GetNetworkShares(path).OrderBy(i => i.Path).ToList();
-
-            return ToOptimizedResult(shares);
-        }
+            => ToOptimizedResult(Array.Empty<FileSystemEntryInfo>());
 
         /// <summary>
         /// Gets the specified request.
@@ -244,26 +241,7 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
         public object Get(GetNetworkDevices request)
-        {
-            var result = _networkManager.GetNetworkDevices().ToList();
-
-            return ToOptimizedResult(result);
-        }
-
-        /// <summary>
-        /// Gets the network shares.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>IEnumerable{FileSystemEntryInfo}.</returns>
-        private IEnumerable<FileSystemEntryInfo> GetNetworkShares(string path)
-        {
-            return _networkManager.GetNetworkShares(path).Where(s => s.ShareType == NetworkShareType.Disk).Select(c => new FileSystemEntryInfo
-            {
-                Name = c.Name,
-                Path = Path.Combine(path, c.Name),
-                Type = FileSystemEntryType.NetworkShare
-            });
-        }
+            => ToOptimizedResult(Array.Empty<FileSystemEntryInfo>());
 
         /// <summary>
         /// Gets the file system entries.
