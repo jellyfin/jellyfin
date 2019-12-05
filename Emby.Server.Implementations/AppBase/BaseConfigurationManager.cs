@@ -84,6 +84,7 @@ namespace Emby.Server.Implementations.AppBase
         /// </summary>
         /// <value>The logger.</value>
         protected ILogger Logger { get; private set; }
+
         /// <summary>
         /// Gets the XML serializer.
         /// </summary>
@@ -97,7 +98,7 @@ namespace Emby.Server.Implementations.AppBase
         public IApplicationPaths CommonApplicationPaths { get; private set; }
 
         /// <summary>
-        /// Gets the system configuration.
+        /// Gets or sets the system configuration.
         /// </summary>
         /// <value>The configuration.</value>
         public BaseApplicationConfiguration CommonConfiguration
@@ -123,6 +124,7 @@ namespace Emby.Server.Implementations.AppBase
                     return _configuration;
                 }
             }
+
             protected set
             {
                 _configuration = value;
@@ -215,7 +217,7 @@ namespace Emby.Server.Implementations.AppBase
                 cachePath = CommonConfiguration.CachePath;
             }
 
-            Logger.LogInformation("Setting cache path to " + cachePath);
+            Logger.LogInformation("Setting cache path: {Path}", cachePath);
             ((BaseApplicationPaths)CommonApplicationPaths).CachePath = cachePath;
         }
 
@@ -223,7 +225,7 @@ namespace Emby.Server.Implementations.AppBase
         /// Replaces the cache path.
         /// </summary>
         /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="DirectoryNotFoundException"></exception>
+        /// <exception cref="DirectoryNotFoundException">The new cache path doesn't exist.</exception>
         private void ValidateCachePath(BaseApplicationConfiguration newConfig)
         {
             var newPath = newConfig.CachePath;
@@ -234,7 +236,7 @@ namespace Emby.Server.Implementations.AppBase
                 // Validate
                 if (!Directory.Exists(newPath))
                 {
-                    throw new FileNotFoundException(
+                    throw new DirectoryNotFoundException(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "{0} does not exist.",
