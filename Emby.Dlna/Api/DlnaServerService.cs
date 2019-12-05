@@ -216,14 +216,10 @@ namespace Emby.Dlna.Api
         protected internal ReadOnlySpan<char> GetPathValue(int index)
         {
             static void ThrowIndexOutOfRangeException()
-            {
-                throw new IndexOutOfRangeException("Path doesn't contain enough segments.");
-            }
+                => throw new IndexOutOfRangeException("Path doesn't contain enough segments.");
 
             static void ThrowInvalidDataException()
-            {
-                throw new InvalidDataException("Path doesn't start with the base url.");
-            }
+                => throw new InvalidDataException("Path doesn't start with the base url.");
 
             ReadOnlySpan<char> path = Request.PathInfo;
 
