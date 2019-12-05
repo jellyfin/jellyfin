@@ -1976,10 +1976,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                 filters.Add("hwupload=extra_hw_frames=64");
             }
 
-            if (state.DeInterlace("h264", true)
-                && string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+            if (state.DeInterlace("h264", true))
             {
-                filters.Add(string.Format(CultureInfo.InvariantCulture, "deinterlace_vaapi"));
+                if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+                {
+                    filters.Add(string.Format(CultureInfo.InvariantCulture, "deinterlace_vaapi"));
+                }
+                else if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+                {
+                    filters.Add(string.Format(CultureInfo.InvariantCulture, "deinterlace_qsv"));
+                }
             }
 
             if ((state.DeInterlace("h264", true) || state.DeInterlace("h265", true) || state.DeInterlace("hevc", true))
