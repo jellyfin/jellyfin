@@ -180,7 +180,7 @@ namespace Emby.Server.Implementations.Updates
             // Package not found.
             if (package == null)
             {
-                return null;
+                return Enumerable.Empty<PackageVersionInfo>();
             }
 
             return GetCompatibleVersions(
@@ -190,19 +190,23 @@ namespace Emby.Server.Implementations.Updates
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<PackageVersionInfo> GetAvailablePluginUpdates(CancellationToken cancellationToken = default)
         {
             var catalog = await GetAvailablePackages(cancellationToken).ConfigureAwait(false);
 
             var systemUpdateLevel = _applicationHost.SystemUpdateLevel;
 
             // Figure out what needs to be installed
-            return _applicationHost.Plugins.Select(x =>
+            foreach (var plugin in _applicationHost.Plugins)
             {
-                var compatibleversions = GetCompatibleVersions(catalog, x.Name, x.Id, x.Version, systemUpdateLevel);
-                return compatibleversions.FirstOrDefault(y => y.Version > x.Version);
-            }).Where(x => x != null)
-            .Where(x => !CompletedInstallations.Any(y => string.Equals(y.AssemblyGuid, x.guid, StringComparison.OrdinalIgnoreCase)));
+                var compatibleversions = GetCompatibleVersions(catalog, plugin.Name, plugin.Id, plugin.Version, systemUpdateLevel);
+                var version = compatibleversions.FirstOrDefault(y => y.Version > plugin.Version);
+                if (version != null
+                    && !CompletedInstallations.Any(x => string.Equals(x.AssemblyGuid, version.guid, StringComparison.OrdinalIgnoreCase)))
+                {
+                    yield return version;
+                }
+            }
         }
 
         /// <inheritdoc />

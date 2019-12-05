@@ -92,7 +92,7 @@ namespace MediaBrowser.Common.Updates
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The available plugin updates.</returns>
-        Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(CancellationToken cancellationToken = default);
+        IAsyncEnumerable<PackageVersionInfo> GetAvailablePluginUpdates(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Installs the package.
