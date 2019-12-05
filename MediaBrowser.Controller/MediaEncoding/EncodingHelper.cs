@@ -1582,6 +1582,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var videoSizeParam = string.Empty;
 
+            // Setup subtitle scaling
             if (state.VideoStream != null && state.VideoStream.Width.HasValue && state.VideoStream.Height.HasValue)
             {
                 videoSizeParam = string.Format(
@@ -1592,6 +1593,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
                 {
+                    //For QSV, feed it into hardware encoder
                     videoSizeParam += ",hwupload=extra_hw_frames=64";
 		        } 
 		        else 
@@ -1609,10 +1611,17 @@ namespace MediaBrowser.Controller.MediaEncoding
                 : state.SubtitleStream.Index;
 
             var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, options);
+
+            // Setup default filtergraph utilizing FFMpeg overlay() and FFMpeg scale() (see the return of this function for index reference)
             var retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay{3}\"";
 
             if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase)) 
 	        {
+                /*
+                    QSV in FFMpeg can now setup hardware overlay for transcodes.
+                    For software decoding and hardware encoding option, frames must be hwuploaded into hardware
+                    with fixed frame size. 
+                */
 		        if (!string.IsNullOrEmpty(videoDecoder) && videoDecoder.Contains("qsv"))
 		        {
 		            retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay_qsv=x=(W-w)/2:y=(H-h)/2{3}\"";
@@ -1705,11 +1714,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                     || !videoHeight.HasValue
                     || outputHeight != videoHeight.Value)
                 {
+                    //Force nv12 pixel format to enable 10-bit to 8-bit colour conversion.
                     filters.Add(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "scale_{0}=w={1}:h={2}:format=nv12",
-			    vaapi_or_qsv,
+                            vaapi_or_qsv,
                             outputWidth,
                             outputHeight));
                 } 
