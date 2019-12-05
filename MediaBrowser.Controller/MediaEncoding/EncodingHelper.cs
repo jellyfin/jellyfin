@@ -1593,14 +1593,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                     state.VideoStream.Width.Value,
                     state.VideoStream.Height.Value);
 
+                videoSizeParam += ":force_original_aspect_ratio=decrease";
+
+                //For QSV, feed it into hardware encoder
                 if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
                 {
-                    //For QSV, feed it into hardware encoder
                     videoSizeParam += ",hwupload=extra_hw_frames=64";
-                } 
-                else 
-                {
-                    videoSizeParam += ":force_original_aspect_ratio=decrease";
                 }
             }
 
