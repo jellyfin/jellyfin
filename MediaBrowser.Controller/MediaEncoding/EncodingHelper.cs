@@ -1558,8 +1558,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         outputSizeParam = "," + outputSizeParam.Substring(index);
                     }
-                } 
-                else 
+                }
+                else
                 {
                     var index = outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase);
                     if (index != -1)
