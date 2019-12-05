@@ -467,26 +467,26 @@ namespace MediaBrowser.Controller.MediaEncoding
                     .Append(' ');
             }
 
-	        if (state.IsVideoRequest 
-		        && string.Equals(encodingOptions.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
-	        {
-		        var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, encodingOptions);
-		        var outputVideoCodec = GetVideoEncoder(state, encodingOptions);
+            if (state.IsVideoRequest 
+                && string.Equals(encodingOptions.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, encodingOptions);
+                var outputVideoCodec = GetVideoEncoder(state, encodingOptions);
 
-		        if(encodingOptions.EnableHardwareEncoding && outputVideoCodec.Contains("qsv"))
-		        {
-		            if (!string.IsNullOrEmpty(videoDecoder) && videoDecoder.Contains("qsv"))
-		            {
-	                    arg.Append("-hwaccel qsv ");
-		            } 
-		            else 
-		            {
-			            arg.Append("-init_hw_device qsv=hw -filter_hw_device hw ");
-		            }	
-		        }
+                if(encodingOptions.EnableHardwareEncoding && outputVideoCodec.Contains("qsv"))
+                {
+                    if (!string.IsNullOrEmpty(videoDecoder) && videoDecoder.Contains("qsv"))
+                    {
+                        arg.Append("-hwaccel qsv ");
+                    } 
+                    else 
+                    {
+                        arg.Append("-init_hw_device qsv=hw -filter_hw_device hw ");
+                    }	
+                }
 
-		        arg.Append(videoDecoder + " ");
-	        }
+                arg.Append(videoDecoder + " ");
+            }
 
             arg.Append("-i ")
                 .Append(GetInputPathArgument(state));
@@ -1558,11 +1558,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         outputSizeParam = "," + outputSizeParam.Substring(index);
                     }
-                } else {
+                } 
+                else 
+                {
                     var index = outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase);
                     if (index != -1)
                     {
-                       outputSizeParam = "," + outputSizeParam.Substring(index);
+                        outputSizeParam = "," + outputSizeParam.Substring(index);
                     }
                 }
             }
@@ -1595,11 +1597,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     //For QSV, feed it into hardware encoder
                     videoSizeParam += ",hwupload=extra_hw_frames=64";
-		        } 
-		        else 
-		        {
-	                videoSizeParam += ":force_original_aspect_ratio=decrease";
-		        }
+                } 
+                else 
+                {
+                    videoSizeParam += ":force_original_aspect_ratio=decrease";
+                }
             }
 
             var mapPrefix = state.SubtitleStream.IsExternal ?
@@ -1616,27 +1618,27 @@ namespace MediaBrowser.Controller.MediaEncoding
             var retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay{3}\"";
 
             if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase)) 
-	        {
+            {
                 /*
                     QSV in FFMpeg can now setup hardware overlay for transcodes.
                     For software decoding and hardware encoding option, frames must be hwuploaded into hardware
                     with fixed frame size. 
                 */
-		        if (!string.IsNullOrEmpty(videoDecoder) && videoDecoder.Contains("qsv"))
-		        {
-		            retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay_qsv=x=(W-w)/2:y=(H-h)/2{3}\"";
-		        } 
-		        else 
-		        {
-		            retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]hwupload=extra_hw_frames=64[v];[v][sub]overlay_qsv=x=(W-w)/2:y=(H-h)/2{3}\"";
-		        }
+                if (!string.IsNullOrEmpty(videoDecoder) && videoDecoder.Contains("qsv"))
+                {
+                    retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay_qsv=x=(W-w)/2:y=(H-h)/2{3}\"";
+                } 
+                else 
+                {
+                    retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]hwupload=extra_hw_frames=64[v];[v][sub]overlay_qsv=x=(W-w)/2:y=(H-h)/2{3}\"";
+                }
             } 
 
             return string.Format(
                 CultureInfo.InvariantCulture,
-		        retStr,
+                retStr,
                 mapPrefix,
-	            subtitleStreamIndex,
+                subtitleStreamIndex,
                 state.VideoStream.Index,
                 outputSizeParam,
                 videoSizeParam);
@@ -1725,8 +1727,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 } 
                 else 
                 {
-		            filters.Add(string.Format(CultureInfo.InvariantCulture, "scale_{0}=format=nv12", vaapi_or_qsv));
-		        }
+                    filters.Add(string.Format(CultureInfo.InvariantCulture, "scale_{0}=format=nv12", vaapi_or_qsv));
+                }
             }
             else if ((videoDecoder ?? string.Empty).IndexOf("_cuvid", StringComparison.OrdinalIgnoreCase) != -1
                 && width.HasValue
@@ -1965,17 +1967,17 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 filters.Add("format=nv12|vaapi");
-		filters.Add("hwupload");
+                filters.Add("hwupload");
             }
 
             var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, options);
 
-	    // If we are software decoding, and hardware encoding	  
+            // If we are software decoding, and hardware encoding	  
             if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) 
-		    && (string.IsNullOrEmpty(videoDecoder) || !videoDecoder.Contains("qsv")))
+                && (string.IsNullOrEmpty(videoDecoder) || !videoDecoder.Contains("qsv")))
             {
                 filters.Add("format=nv12|qsv");
-		        filters.Add("hwupload=extra_hw_frames=64");
+                filters.Add("hwupload=extra_hw_frames=64");
             }
 
             var inputWidth = videoStream?.Width;

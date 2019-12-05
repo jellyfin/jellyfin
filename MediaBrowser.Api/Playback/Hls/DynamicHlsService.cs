@@ -947,10 +947,10 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultEncoderPreset());
 
-		// Unable to force key frames to h264_qsv transcode
-		if (codec != "h264_qsv") {
-		    args += " " + keyFrameArg;
-		}
+                // Unable to force key frames to h264_qsv transcode
+                if (codec != "h264_qsv") {
+                    args += " " + keyFrameArg; 
+                }
 
                 //args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
