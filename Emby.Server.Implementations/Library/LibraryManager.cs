@@ -2556,7 +2556,7 @@ namespace Emby.Server.Implementations.Library
 
             if (currentVideo != null)
             {
-                files.AddRange(currentVideo.Extras.Where(i => string.Equals(i.ExtraType, "trailer", StringComparison.OrdinalIgnoreCase)).Select(i => _fileSystem.GetFileInfo(i.Path)));
+                files.AddRange(currentVideo.Extras.Where(i => i.ExtraType == ExtraType.Trailer).Select(i => _fileSystem.GetFileInfo(i.Path)));
             }
 
             var resolvers = new IItemResolver[]
@@ -2606,7 +2606,7 @@ namespace Emby.Server.Implementations.Library
 
             if (currentVideo != null)
             {
-                files.AddRange(currentVideo.Extras.Where(i => !string.Equals(i.ExtraType, "trailer", StringComparison.OrdinalIgnoreCase)).Select(i => _fileSystem.GetFileInfo(i.Path)));
+                files.AddRange(currentVideo.Extras.Where(i => i.ExtraType != ExtraType.Trailer).Select(i => _fileSystem.GetFileInfo(i.Path)));
             }
 
             return ResolvePaths(files, directoryService, null, new LibraryOptions(), null)
@@ -2710,7 +2710,7 @@ namespace Emby.Server.Implementations.Library
 
             if (!string.Equals(newPath, path, StringComparison.Ordinal))
             {
-                if (to.IndexOf('/') != -1)
+                if (to.IndexOf('/', StringComparison.Ordinal) != -1)
                 {
                     newPath = newPath.Replace('\\', '/');
                 }
@@ -2731,30 +2731,7 @@ namespace Emby.Server.Implementations.Library
 
             var result = resolver.GetExtraInfo(item.Path);
 
-            if (string.Equals(result.ExtraType, "deletedscene", StringComparison.OrdinalIgnoreCase))
-            {
-                item.ExtraType = ExtraType.DeletedScene;
-            }
-            else if (string.Equals(result.ExtraType, "behindthescenes", StringComparison.OrdinalIgnoreCase))
-            {
-                item.ExtraType = ExtraType.BehindTheScenes;
-            }
-            else if (string.Equals(result.ExtraType, "interview", StringComparison.OrdinalIgnoreCase))
-            {
-                item.ExtraType = ExtraType.Interview;
-            }
-            else if (string.Equals(result.ExtraType, "scene", StringComparison.OrdinalIgnoreCase))
-            {
-                item.ExtraType = ExtraType.Scene;
-            }
-            else if (string.Equals(result.ExtraType, "sample", StringComparison.OrdinalIgnoreCase))
-            {
-                item.ExtraType = ExtraType.Sample;
-            }
-            else
-            {
-                item.ExtraType = ExtraType.Clip;
-            }
+            item.ExtraType = result.ExtraType;
         }
 
         public List<PersonInfo> GetPeople(InternalPeopleQuery query)

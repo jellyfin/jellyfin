@@ -1,3 +1,5 @@
+using MediaBrowser.Model.Entities;
+
 namespace Emby.Naming.Video
 {
     /// <summary>
@@ -30,10 +32,10 @@ namespace Emby.Naming.Video
         public int? Year { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the extra, e.g. trailer, theme song, behing the scenes, etc.
+        /// Gets or sets the type of the extra, e.g. trailer, theme song, behind the scenes, etc.
         /// </summary>
         /// <value>The type of the extra.</value>
-        public string ExtraType { get; set; }
+        public ExtraType? ExtraType { get; set; }
 
         /// <summary>
         /// Gets or sets the extra rule.

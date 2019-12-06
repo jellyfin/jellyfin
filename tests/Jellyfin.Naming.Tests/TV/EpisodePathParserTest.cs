@@ -2,7 +2,7 @@ using Emby.Naming.Common;
 using Emby.Naming.TV;
 using Xunit;
 
-namespace Jellyfin.Naming.Tests
+namespace Jellyfin.Naming.Tests.TV
 {
     public class EpisodePathParserTest
     {
@@ -23,7 +23,7 @@ namespace Jellyfin.Naming.Tests
             Assert.Equal(episode, res.EpisodeNumber);
 
             // testing other paths delimeter
-            var res2 = p.Parse(path.Replace('/', '\\'), false);
+            var res2 = p.Parse(path.Replace('/', '/'), false);
             Assert.True(res2.Success);
             Assert.Equal(name, res2.SeriesName);
             Assert.Equal(season, res2.SeasonNumber);
@@ -45,7 +45,7 @@ namespace Jellyfin.Naming.Tests
             Assert.Equal(episode, res.EpisodeNumber);
 
             // testing other paths delimeter
-            var res2 = p.Parse(path.Replace('/', '\\'), false, fillExtendedInfo: false);
+            var res2 = p.Parse(path.Replace('/', '/'), false, fillExtendedInfo: false);
             Assert.True(res2.Success);
             Assert.Equal(name, res2.SeriesName);
             Assert.Null(res2.SeasonNumber);

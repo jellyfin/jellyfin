@@ -91,7 +91,7 @@ namespace Emby.Naming.Video
             {
                 var cleanDateTimeResult = CleanDateTime(name);
 
-                if (string.IsNullOrEmpty(extraResult.ExtraType))
+                if (extraResult.ExtraType == null)
                 {
                     name = CleanString(cleanDateTimeResult.Name).Name;
                 }
