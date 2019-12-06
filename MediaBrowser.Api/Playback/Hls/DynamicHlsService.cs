@@ -948,7 +948,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultEncoderPreset());
 
                 // Unable to force key frames to h264_qsv transcode
-                if (codec == "h264_qsv") {
+                if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase)) {
                     Logger.LogInformation("Bug Workaround: Disabling force_key_frames for h264_qsv"); 
                 } 
                 else
