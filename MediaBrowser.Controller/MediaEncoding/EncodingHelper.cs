@@ -517,7 +517,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                 }
 
-
                 arg.Append(" -i \"").Append(subtitlePath).Append('\"');
             }
 
