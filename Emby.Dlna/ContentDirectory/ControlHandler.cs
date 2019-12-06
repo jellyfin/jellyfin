@@ -1278,6 +1278,7 @@ namespace Emby.Dlna.ContentDirectory
             {
                 query.OrderBy = Array.Empty<(string, SortOrder)>();
             }
+            else
             {
                 query.OrderBy = new[] { (ItemSortBy.SortName, sort.SortOrder) };
             }
