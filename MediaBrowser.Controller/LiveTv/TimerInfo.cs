@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -129,10 +129,10 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets or sets a value indicating whether this instance is live.
         /// </summary>
         /// <value><c>true</c> if this instance is live; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public bool IsLive => Tags.Contains("Live", StringComparer.OrdinalIgnoreCase);
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public bool IsPremiere => Tags.Contains("Premiere", StringComparer.OrdinalIgnoreCase);
 
         public int? ProductionYear { get; set; }

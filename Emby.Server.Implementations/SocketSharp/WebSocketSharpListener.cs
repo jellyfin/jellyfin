@@ -81,8 +81,10 @@ namespace Emby.Server.Implementations.SocketSharp
 
                 if (webSocketContext.State == WebSocketState.Open)
                 {
-                    await webSocketContext.CloseAsync(result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
-                        result.CloseStatusDescription, _disposeCancellationToken);
+                    await webSocketContext.CloseAsync(
+                        result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
+                        result.CloseStatusDescription,
+                        _disposeCancellationToken).ConfigureAwait(false);
                 }
 
                 socket.Dispose();

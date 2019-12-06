@@ -54,7 +54,7 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await user.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), cancellationToken).ConfigureAwait(false);
+                await user.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem)), cancellationToken).ConfigureAwait(false);
             }
         }
 

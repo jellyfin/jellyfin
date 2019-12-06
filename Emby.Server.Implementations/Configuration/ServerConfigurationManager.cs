@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using Emby.Server.Implementations.AppBase;
 using MediaBrowser.Common.Configuration;
@@ -14,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Configuration
 {
     /// <summary>
-    /// Class ServerConfigurationManager
+    /// Class ServerConfigurationManager.
     /// </summary>
     public class ServerConfigurationManager : BaseConfigurationManager, IServerConfigurationManager
     {
@@ -62,13 +61,6 @@ namespace Emby.Server.Implementations.Configuration
             base.OnConfigurationUpdated();
         }
 
-        public override void AddParts(IEnumerable<IConfigurationFactory> factories)
-        {
-            base.AddParts(factories);
-
-            UpdateTranscodePath();
-        }
-
         /// <summary>
         /// Updates the metadata path.
         /// </summary>
@@ -81,28 +73,6 @@ namespace Emby.Server.Implementations.Configuration
             else
             {
                 ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = Configuration.MetadataPath;
-            }
-        }
-
-        /// <summary>
-        /// Updates the transcoding temporary path.
-        /// </summary>
-        private void UpdateTranscodePath()
-        {
-            var encodingConfig = this.GetConfiguration<EncodingOptions>("encoding");
-
-            ((ServerApplicationPaths)ApplicationPaths).TranscodingTempPath = string.IsNullOrEmpty(encodingConfig.TranscodingTempPath) ?
-                null :
-                Path.Combine(encodingConfig.TranscodingTempPath, "transcodes");
-        }
-
-        protected override void OnNamedConfigurationUpdated(string key, object configuration)
-        {
-            base.OnNamedConfigurationUpdated(key, configuration);
-
-            if (string.Equals(key, "encoding", StringComparison.OrdinalIgnoreCase))
-            {
-                UpdateTranscodePath();
             }
         }
 
@@ -122,7 +92,6 @@ namespace Emby.Server.Implementations.Configuration
 
             base.ReplaceConfiguration(newConfiguration);
         }
-
 
         /// <summary>
         /// Validates the SSL certificate.

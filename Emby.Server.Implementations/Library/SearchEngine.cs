@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Library
 
             if (string.IsNullOrEmpty(searchTerm))
             {
-                throw new ArgumentNullException(nameof(searchTerm));
+                throw new ArgumentNullException("SearchTerm can't be empty.", nameof(searchTerm));
             }
 
             searchTerm = searchTerm.Trim().RemoveDiacritics();

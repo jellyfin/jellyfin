@@ -39,12 +39,12 @@ namespace Emby.Server.Implementations.WebSockets
             do
             {
                 var buffer = WebSocket.CreateServerBuffer(BufferSize);
-                result = await webSocket.ReceiveAsync(buffer, cancellationToken);
+                result = await webSocket.ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
                 message.AddRange(buffer.Array.Take(result.Count));
 
                 if (result.EndOfMessage)
                 {
-                    await ProcessMessage(message.ToArray(), taskCompletionSource);
+                    await ProcessMessage(message.ToArray(), taskCompletionSource).ConfigureAwait(false);
                     message.Clear();
                 }
             } while (!taskCompletionSource.Task.IsCompleted &&
@@ -53,8 +53,10 @@ namespace Emby.Server.Implementations.WebSockets
 
             if (webSocket.State == WebSocketState.Open)
             {
-                await webSocket.CloseAsync(result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
-                    result.CloseStatusDescription, cancellationToken);
+                await webSocket.CloseAsync(
+                    result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
+                    result.CloseStatusDescription,
+                    cancellationToken).ConfigureAwait(false);
             }
         }
 

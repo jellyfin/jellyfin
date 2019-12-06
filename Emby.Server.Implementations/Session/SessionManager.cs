@@ -1386,27 +1386,28 @@ namespace Emby.Server.Implementations.Session
             if (user != null)
             {
                 // TODO: Move this to userManager?
-                if (!string.IsNullOrEmpty(request.DeviceId))
+                if (!string.IsNullOrEmpty(request.DeviceId)
+                    && !_deviceManager.CanAccessDevice(user, request.DeviceId))
                 {
-                    if (!_deviceManager.CanAccessDevice(user, request.DeviceId))
-                    {
-                        throw new SecurityException("User is not allowed access from this device.");
-                    }
+                    throw new SecurityException("User is not allowed access from this device.");
                 }
             }
 
             if (enforcePassword)
             {
-                var result = await _userManager.AuthenticateUser(request.Username, request.Password, request.PasswordSha1, request.RemoteEndPoint, true).ConfigureAwait(false);
+                user = await _userManager.AuthenticateUser(
+                    request.Username,
+                    request.Password,
+                    request.PasswordSha1,
+                    request.RemoteEndPoint,
+                    true).ConfigureAwait(false);
+            }
 
-                if (result == null)
-                {
-                    AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
+            if (user == null)
+            {
+                AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
 
-                    throw new SecurityException("Invalid user or password entered.");
-                }
-
-                user = result;
+                throw new SecurityException("Invalid user or password entered.");
             }
 
             var token = GetAuthorizationToken(user, request.DeviceId, request.App, request.AppVersion, request.DeviceName);

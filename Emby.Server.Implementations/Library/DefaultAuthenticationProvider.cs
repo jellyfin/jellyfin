@@ -2,11 +2,11 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Cryptography;
-using static MediaBrowser.Common.HexHelper;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -59,7 +59,10 @@ namespace Emby.Server.Implementations.Library
             if (_cryptographyProvider.GetSupportedHashMethods().Contains(readyHash.Id)
                 || _cryptographyProvider.DefaultHashMethod == readyHash.Id)
             {
-                byte[] calculatedHash = _cryptographyProvider.ComputeHash(readyHash.Id, passwordbytes, readyHash.Salt);
+                byte[] calculatedHash = _cryptographyProvider.ComputeHash(
+                    readyHash.Id,
+                    passwordbytes,
+                    readyHash.Salt);
 
                 if (calculatedHash.SequenceEqual(readyHash.Hash))
                 {
@@ -122,7 +125,7 @@ namespace Emby.Server.Implementations.Library
         {
             return string.IsNullOrEmpty(user.EasyPassword)
                 ? null
-                : ToHexString(PasswordHash.Parse(user.EasyPassword).Hash);
+                : Hex.Encode(PasswordHash.Parse(user.EasyPassword).Hash);
         }
 
         /// <summary>

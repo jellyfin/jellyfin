@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Providers.TV.TheTVDB
 {

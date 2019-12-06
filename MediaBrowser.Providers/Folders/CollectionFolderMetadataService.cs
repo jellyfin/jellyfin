@@ -12,13 +12,20 @@ namespace MediaBrowser.Providers.Folders
 {
     public class CollectionFolderMetadataService : MetadataService<CollectionFolder, ItemLookupInfo>
     {
+        public CollectionFolderMetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
+        {
+        }
+
+        /// <inheritdoc />
         protected override void MergeData(MetadataResult<CollectionFolder> source, MetadataResult<CollectionFolder> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
-        }
-
-        public CollectionFolderMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
-        {
         }
     }
 }

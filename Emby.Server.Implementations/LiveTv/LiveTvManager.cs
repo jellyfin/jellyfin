@@ -1226,12 +1226,13 @@ namespace Emby.Server.Implementations.LiveTv
                         currentChannel.AddTag("Kids");
                     }
 
-                    //currentChannel.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken);
-                    await currentChannel.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
-                    {
-                        ForceSave = true
-
-                    }, cancellationToken).ConfigureAwait(false);
+                    currentChannel.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken);
+                    await currentChannel.RefreshMetadata(
+                        new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                        {
+                            ForceSave = true
+                        },
+                        cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -1245,7 +1246,7 @@ namespace Emby.Server.Implementations.LiveTv
                 numComplete++;
                 double percent = numComplete / (double)allChannelsList.Count;
 
-                progress.Report(85 * percent + 15);
+                progress.Report((85 * percent) + 15);
             }
 
             progress.Report(100);
@@ -1278,12 +1279,14 @@ namespace Emby.Server.Implementations.LiveTv
 
                     if (item != null)
                     {
-                        _libraryManager.DeleteItem(item, new DeleteOptions
-                        {
-                            DeleteFileLocation = false,
-                            DeleteFromExternalProvider = false
-
-                        }, false);
+                        _libraryManager.DeleteItem(
+                            item,
+                            new DeleteOptions
+                            {
+                                DeleteFileLocation = false,
+                                DeleteFromExternalProvider = false
+                            },
+                            false);
                     }
                 }
 
@@ -2301,8 +2304,10 @@ namespace Emby.Server.Implementations.LiveTv
             if (provider == null)
             {
                 throw new ResourceNotFoundException(
-                    string.Format("Couldn't find provider of type: '{0}'", info.Type)
-                );
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Couldn't find provider of type: '{0}'",
+                        info.Type));
             }
 
             await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);

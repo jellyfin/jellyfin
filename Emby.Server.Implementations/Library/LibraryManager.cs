@@ -519,7 +519,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         public BaseItem ResolvePath(FileSystemMetadata fileInfo, Folder parent = null)
-            => ResolvePath(fileInfo, new DirectoryService(_logger, _fileSystem), null, parent);
+            => ResolvePath(fileInfo, new DirectoryService(_fileSystem), null, parent);
 
         private BaseItem ResolvePath(
             FileSystemMetadata fileInfo,
@@ -1045,7 +1045,7 @@ namespace Emby.Server.Implementations.Library
             await RootFolder.ValidateChildren(
                 new SimpleProgress<double>(),
                 cancellationToken,
-                new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)),
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false).ConfigureAwait(false);
 
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
@@ -1053,7 +1053,7 @@ namespace Emby.Server.Implementations.Library
             await GetUserRootFolder().ValidateChildren(
                 new SimpleProgress<double>(),
                 cancellationToken,
-                new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)),
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false).ConfigureAwait(false);
 
             // Quickly scan CollectionFolders for changes
@@ -1074,7 +1074,7 @@ namespace Emby.Server.Implementations.Library
             innerProgress.RegisterAction(pct => progress.Report(pct * .96));
 
             // Now validate the entire media library
-            await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), recursive: true).ConfigureAwait(false);
+            await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true).ConfigureAwait(false);
 
             progress.Report(96);
 
@@ -1899,7 +1899,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         public void UpdateItem(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            UpdateItems(new [] { item }, parent, updateReason, cancellationToken);
+            UpdateItems(new[] { item }, parent, updateReason, cancellationToken);
         }
 
         /// <summary>
@@ -2135,7 +2135,7 @@ namespace Emby.Server.Implementations.Library
             if (refresh)
             {
                 item.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None);
-                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), RefreshPriority.Normal);
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.Normal);
             }
 
             return item;
@@ -2175,7 +2175,6 @@ namespace Emby.Server.Implementations.Library
                     DisplayParentId = parentId
                 };
 
-
                 CreateItem(item, null);
 
                 isNew = true;
@@ -2193,11 +2192,10 @@ namespace Emby.Server.Implementations.Library
             {
                 _providerManagerFactory().QueueRefresh(
                     item.Id,
-                    new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
+                    new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                     {
                         // Need to force save to increment DateLastSaved
                         ForceSave = true
-
                     },
                     RefreshPriority.Normal);
             }
@@ -2261,7 +2259,7 @@ namespace Emby.Server.Implementations.Library
             {
                 _providerManagerFactory().QueueRefresh(
                     item.Id,
-                    new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
+                    new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                     {
                         // Need to force save to increment DateLastSaved
                         ForceSave = true
@@ -2338,7 +2336,7 @@ namespace Emby.Server.Implementations.Library
             {
                 _providerManagerFactory().QueueRefresh(
                     item.Id,
-                    new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
+                    new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                     {
                         // Need to force save to increment DateLastSaved
                         ForceSave = true
@@ -2486,6 +2484,15 @@ namespace Emby.Server.Implementations.Library
                 if (season != null)
                 {
                     episode.ParentIndexNumber = season.IndexNumber;
+                }
+                else
+                {
+                    /*
+                    Anime series don't generally have a season in their file name, however,
+                    tvdb needs a season to correctly get the metadata.
+                    Hence, a null season needs to be filled with something. */
+                    //FIXME perhaps this would be better for tvdb parser to ask for season 1 if no season is specified
+                    episode.ParentIndexNumber = 1;
                 }
 
                 if (episode.ParentIndexNumber.HasValue)

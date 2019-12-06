@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using Emby.Server.Implementations.AppBase;
 using MediaBrowser.Controller;
@@ -6,12 +5,10 @@ using MediaBrowser.Controller;
 namespace Emby.Server.Implementations
 {
     /// <summary>
-    /// Extends BaseApplicationPaths to add paths that are only applicable on the server
+    /// Extends BaseApplicationPaths to add paths that are only applicable on the server.
     /// </summary>
     public class ServerApplicationPaths : BaseApplicationPaths, IServerApplicationPaths
     {
-        private string _defaultTranscodingTempPath;
-        private string _transcodingTempPath;
         private string _internalMetadataPath;
 
         /// <summary>
@@ -23,15 +20,14 @@ namespace Emby.Server.Implementations
             string configurationDirectoryPath,
             string cacheDirectoryPath,
             string webDirectoryPath)
-            : base(programDataPath,
+            : base(
+                programDataPath,
                 logDirectoryPath,
                 configurationDirectoryPath,
                 cacheDirectoryPath,
                 webDirectoryPath)
         {
         }
-
-        public string ApplicationResourcesPath { get; } = AppContext.BaseDirectory;
 
         /// <summary>
         /// Gets the path to the base root media directory.
@@ -46,17 +42,12 @@ namespace Emby.Server.Implementations
         public string DefaultUserViewsPath => Path.Combine(RootFolderPath, "default");
 
         /// <summary>
-        /// Gets the path to localization data.
-        /// </summary>
-        /// <value>The localization path.</value>
-        public string LocalizationPath => Path.Combine(ProgramDataPath, "localization");
-
-        /// <summary>
         /// Gets the path to the People directory.
         /// </summary>
         /// <value>The people path.</value>
         public string PeoplePath => Path.Combine(InternalMetadataPath, "People");
 
+        /// <inheritdoc />
         public string ArtistsPath => Path.Combine(InternalMetadataPath, "artists");
 
         /// <summary>
@@ -107,46 +98,14 @@ namespace Emby.Server.Implementations
         /// <value>The user configuration directory path.</value>
         public string UserConfigurationDirectoryPath => Path.Combine(ConfigurationDirectoryPath, "users");
 
-        public string DefaultTranscodingTempPath => _defaultTranscodingTempPath ?? (_defaultTranscodingTempPath = Path.Combine(ProgramDataPath, "transcoding-temp"));
-
-        public string TranscodingTempPath
-        {
-            get => _transcodingTempPath ?? (_transcodingTempPath = DefaultTranscodingTempPath);
-            set => _transcodingTempPath = value;
-        }
-
-        public string GetTranscodingTempPath()
-        {
-            var path = TranscodingTempPath;
-
-            if (!string.Equals(path, DefaultTranscodingTempPath, StringComparison.OrdinalIgnoreCase))
-            {
-                try
-                {
-                    Directory.CreateDirectory(path);
-
-                    var testPath = Path.Combine(path, Guid.NewGuid().ToString());
-                    Directory.CreateDirectory(testPath);
-                    Directory.Delete(testPath);
-
-                    return path;
-                }
-                catch
-                {
-                }
-            }
-
-            path = DefaultTranscodingTempPath;
-            Directory.CreateDirectory(path);
-            return path;
-        }
-
+        /// <inheritdoc />
         public string InternalMetadataPath
         {
             get => _internalMetadataPath ?? (_internalMetadataPath = Path.Combine(DataPath, "metadata"));
             set => _internalMetadataPath = value;
         }
 
+        /// <inheritdoc />
         public string VirtualInternalMetadataPath { get; } = "%MetadataPath%";
     }
 }

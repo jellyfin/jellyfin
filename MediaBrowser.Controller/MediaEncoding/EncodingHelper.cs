@@ -10,7 +10,6 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 
@@ -1173,17 +1172,17 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     bitrate = GetMinBitrate(videoStream.BitRate.Value, bitrate.Value);
                 }
-            }
 
-            if (bitrate.HasValue)
-            {
-                var inputVideoCodec = videoStream.Codec;
-                bitrate = ScaleBitrate(bitrate.Value, inputVideoCodec, outputVideoCodec);
-
-                // If a max bitrate was requested, don't let the scaled bitrate exceed it
-                if (request.VideoBitRate.HasValue)
+                if (bitrate.HasValue)
                 {
-                    bitrate = Math.Min(bitrate.Value, request.VideoBitRate.Value);
+                    var inputVideoCodec = videoStream.Codec;
+                    bitrate = ScaleBitrate(bitrate.Value, inputVideoCodec, outputVideoCodec);
+
+                    // If a max bitrate was requested, don't let the scaled bitrate exceed it
+                    if (request.VideoBitRate.HasValue)
+                    {
+                        bitrate = Math.Min(bitrate.Value, request.VideoBitRate.Value);
+                    }
                 }
             }
 
@@ -2168,7 +2167,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Important: If this is ever re-enabled, make sure not to use it with wtv because it breaks seeking
                 if (!string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase)
                     && state.TranscodingType != TranscodingJobType.Progressive
-                    && state.EnableBreakOnNonKeyFrames(outputVideoCodec))
+                    && !state.EnableBreakOnNonKeyFrames(outputVideoCodec)
+                    && (state.BaseRequest.StartTimeTicks ?? 0) > 0)
                 {
                     inputModifier += " -noaccurate_seek";
                 }
@@ -2529,13 +2529,25 @@ namespace MediaBrowser.Controller.MediaEncoding
                         case "h264":
                             if (_mediaEncoder.SupportsDecoder("h264_mmal") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
                             {
-                                return "-c:v h264_mmal";
+                                return "-c:v h264_mmal ";
                             }
                             break;
                         case "mpeg2video":
                             if (_mediaEncoder.SupportsDecoder("mpeg2_mmal") && encodingOptions.HardwareDecodingCodecs.Contains("mpeg2video", StringComparer.OrdinalIgnoreCase))
                             {
-                                return "-c:v mpeg2_mmal";
+                                return "-c:v mpeg2_mmal ";
+                            }
+                            break;
+                        case "mpeg4":
+                            if (_mediaEncoder.SupportsDecoder("mpeg4_mmal") && encodingOptions.HardwareDecodingCodecs.Contains("mpeg4", StringComparer.OrdinalIgnoreCase))
+                            {
+                                return "-c:v mpeg4_mmal ";
+                            }
+                            break;
+                        case "vc1":
+                            if (_mediaEncoder.SupportsDecoder("vc1_mmal") && encodingOptions.HardwareDecodingCodecs.Contains("vc1", StringComparer.OrdinalIgnoreCase))
+                            {
+                                return "-c:v vc1_mmal ";
                             }
                             break;
                     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -18,25 +19,19 @@ namespace MediaBrowser.Providers.Music
 {
     public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>
     {
-        public MusicBrainzArtistProvider()
-        {
-
-        }
-
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
         {
             var musicBrainzId = searchInfo.GetMusicBrainzArtistId();
 
             if (!string.IsNullOrWhiteSpace(musicBrainzId))
             {
-                var url = string.Format("/ws/2/artist/?query=arid:{0}", musicBrainzId);
+                var url = "/ws/2/artist/?query=arid:{0}" + musicBrainzId.ToString(CultureInfo.InvariantCulture);
 
                 using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
+                using (var stream = response.Content)
                 {
-                    using (var stream = response.Content)
-                    {
-                        return GetResultsFromResponse(stream);
-                    }
+                    return GetResultsFromResponse(stream);
                 }
             }
             else
@@ -47,15 +42,13 @@ namespace MediaBrowser.Providers.Music
                 var url = string.Format("/ws/2/artist/?query=\"{0}\"&dismax=true", UrlEncode(nameToSearch));
 
                 using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
+                using (var stream = response.Content)
                 {
-                    using (var stream = response.Content)
-                    {
-                        var results = GetResultsFromResponse(stream).ToList();
+                    var results = GetResultsFromResponse(stream).ToList();
 
-                        if (results.Count > 0)
-                        {
-                            return results;
-                        }
+                    if (results.Count > 0)
+                    {
+                        return results;
                     }
                 }
 

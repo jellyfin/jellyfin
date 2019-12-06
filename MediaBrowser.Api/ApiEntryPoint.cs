@@ -13,7 +13,6 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
@@ -40,14 +39,13 @@ namespace MediaBrowser.Api
         internal IHttpResultFactory ResultFactory { get; private set; }
 
         /// <summary>
-        /// The application paths
+        /// Gets the configuration manager.
         /// </summary>
-        private readonly IServerConfigurationManager _config;
+        internal IServerConfigurationManager ConfigurationManager { get; }
 
         private readonly ISessionManager _sessionManager;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaSourceManager _mediaSourceManager;
-        public readonly IProcessFactory ProcessFactory;
 
         /// <summary>
         /// The active transcoding jobs
@@ -73,15 +71,13 @@ namespace MediaBrowser.Api
             IServerConfigurationManager config,
             IFileSystem fileSystem,
             IMediaSourceManager mediaSourceManager,
-            IProcessFactory processFactory,
             IHttpResultFactory resultFactory)
         {
             Logger = logger;
             _sessionManager = sessionManager;
-            _config = config;
+            ConfigurationManager = config;
             _fileSystem = fileSystem;
             _mediaSourceManager = mediaSourceManager;
-            ProcessFactory = processFactory;
             ResultFactory = resultFactory;
 
             _sessionManager.PlaybackProgress += _sessionManager_PlaybackProgress;
@@ -160,17 +156,12 @@ namespace MediaBrowser.Api
             return Task.CompletedTask;
         }
 
-        public EncodingOptions GetEncodingOptions()
-        {
-            return ConfigurationManagerExtensions.GetConfiguration<EncodingOptions>(_config, "encoding");
-        }
-
         /// <summary>
         /// Deletes the encoded media cache.
         /// </summary>
         private void DeleteEncodedMediaCache()
         {
-            var path = _config.ApplicationPaths.GetTranscodingTempPath();
+            var path = ConfigurationManager.GetTranscodePath();
 
             if (!Directory.Exists(path))
             {

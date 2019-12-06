@@ -27,7 +27,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -548,7 +547,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     using (var saveImagesStatement = base.PrepareStatement(db, "Update TypedBaseItems set Images=@Images where guid=@Id"))
                     {
-                        saveImagesStatement.TryBind("@Id", item.Id.ToGuidBlob());
+                        saveImagesStatement.TryBind("@Id", item.Id.ToByteArray());
                         saveImagesStatement.TryBind("@Images", SerializeImages(item));
 
                         saveImagesStatement.MoveNext();
@@ -658,12 +657,14 @@ namespace Emby.Server.Implementations.Data
 
         private void SaveItem(BaseItem item, BaseItem topParent, string userDataKey, IStatement saveItemStatement)
         {
-            saveItemStatement.TryBind("@guid", item.Id);
-            saveItemStatement.TryBind("@type", item.GetType().FullName);
+            Type type = item.GetType();
 
-            if (TypeRequiresDeserialization(item.GetType()))
+            saveItemStatement.TryBind("@guid", item.Id);
+            saveItemStatement.TryBind("@type", type.FullName);
+
+            if (TypeRequiresDeserialization(type))
             {
-                saveItemStatement.TryBind("@data", JsonSerializer.SerializeToUtf8Bytes(item, _jsonOptions));
+                saveItemStatement.TryBind("@data", JsonSerializer.SerializeToUtf8Bytes(item, type, _jsonOptions));
             }
             else
             {
@@ -1177,7 +1178,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (id == Guid.Empty)
             {
-                throw new ArgumentException(nameof(id), "Guid can't be empty");
+                throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
             CheckDisposed();
@@ -1988,7 +1989,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(chapters));
             }
 
-            var idBlob = id.ToGuidBlob();
+            var idBlob = id.ToByteArray();
 
             using (var connection = GetConnection())
             {
@@ -3760,7 +3761,7 @@ namespace Emby.Server.Implementations.Data
 
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, personId.ToGuidBlob());
+                        statement.TryBind(paramName, personId.ToByteArray());
                     }
                     index++;
                 }
@@ -3971,7 +3972,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("(guid in (select itemid from itemvalues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type<=1))");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, artistId.ToGuidBlob());
+                        statement.TryBind(paramName, artistId.ToByteArray());
                     }
                     index++;
                 }
@@ -3990,7 +3991,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("(guid in (select itemid from itemvalues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type=1))");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, artistId.ToGuidBlob());
+                        statement.TryBind(paramName, artistId.ToByteArray());
                     }
                     index++;
                 }
@@ -4009,7 +4010,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("((select CleanName from TypedBaseItems where guid=" + paramName + ") in (select CleanValue from itemvalues where ItemId=Guid and Type=0) AND (select CleanName from TypedBaseItems where guid=" + paramName + ") not in (select CleanValue from itemvalues where ItemId=Guid and Type=1))");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, artistId.ToGuidBlob());
+                        statement.TryBind(paramName, artistId.ToByteArray());
                     }
                     index++;
                 }
@@ -4028,7 +4029,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("Album in (select Name from typedbaseitems where guid=" + paramName + ")");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, albumId.ToGuidBlob());
+                        statement.TryBind(paramName, albumId.ToByteArray());
                     }
                     index++;
                 }
@@ -4047,7 +4048,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("(guid not in (select itemid from itemvalues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type<=1))");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, artistId.ToGuidBlob());
+                        statement.TryBind(paramName, artistId.ToByteArray());
                     }
                     index++;
                 }
@@ -4066,7 +4067,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("(guid in (select itemid from itemvalues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type=2))");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, genreId.ToGuidBlob());
+                        statement.TryBind(paramName, genreId.ToByteArray());
                     }
                     index++;
                 }
@@ -4137,7 +4138,7 @@ namespace Emby.Server.Implementations.Data
 
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, studioId.ToGuidBlob());
+                        statement.TryBind(paramName, studioId.ToByteArray());
                     }
                     index++;
                 }
@@ -4913,7 +4914,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             {
                 connection.RunInTransaction(db =>
                 {
-                    var idBlob = id.ToGuidBlob();
+                    var idBlob = id.ToByteArray();
 
                     // Delete people
                     ExecuteWithSingleParam(db, "delete from People where ItemId=@Id", idBlob);
@@ -5032,7 +5033,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 whereClauses.Add("ItemId=@ItemId");
                 if (statement != null)
                 {
-                    statement.TryBind("@ItemId", query.ItemId.ToGuidBlob());
+                    statement.TryBind("@ItemId", query.ItemId.ToByteArray());
                 }
             }
             if (!query.AppearsInItemId.Equals(Guid.Empty))
@@ -5040,7 +5041,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 whereClauses.Add("Name in (Select Name from People where ItemId=@AppearsInItemId)");
                 if (statement != null)
                 {
-                    statement.TryBind("@AppearsInItemId", query.AppearsInItemId.ToGuidBlob());
+                    statement.TryBind("@AppearsInItemId", query.AppearsInItemId.ToByteArray());
                 }
             }
             var queryPersonTypes = query.PersonTypes.Where(IsValidPersonType).ToList();
@@ -5109,7 +5110,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            var itemIdBlob = itemId.ToGuidBlob();
+            var itemIdBlob = itemId.ToByteArray();
 
             // First delete
             deleteAncestorsStatement.Reset();
@@ -5143,7 +5144,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                     var ancestorId = ancestorIds[i];
 
-                    statement.TryBind("@AncestorId" + index, ancestorId.ToGuidBlob());
+                    statement.TryBind("@AncestorId" + index, ancestorId.ToByteArray());
                     statement.TryBind("@AncestorIdText" + index, ancestorId.ToString("N", CultureInfo.InvariantCulture));
                 }
 
@@ -5608,7 +5609,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            var guidBlob = itemId.ToGuidBlob();
+            var guidBlob = itemId.ToByteArray();
 
             // First delete
             db.Execute("delete from ItemValues where ItemId=@Id", guidBlob);
@@ -5632,10 +5633,13 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 {
                     if (isSubsequentRow)
                     {
-                        insertText.Append(",");
+                        insertText.Append(',');
                     }
 
-                    insertText.AppendFormat("(@ItemId, @Type{0}, @Value{0}, @CleanValue{0})", i.ToString(CultureInfo.InvariantCulture));
+                    insertText.AppendFormat(
+                        CultureInfo.InvariantCulture,
+                        "(@ItemId, @Type{0}, @Value{0}, @CleanValue{0})",
+                        i);
                     isSubsequentRow = true;
                 }
 
@@ -5688,7 +5692,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             {
                 connection.RunInTransaction(db =>
                 {
-                    var itemIdBlob = itemId.ToGuidBlob();
+                    var itemIdBlob = itemId.ToByteArray();
 
                     // First delete chapters
                     db.Execute("delete from People where ItemId=@ItemId", itemIdBlob);
@@ -5807,7 +5811,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                 using (var statement = PrepareStatement(connection, cmdText))
                 {
-                    statement.TryBind("@ItemId", query.ItemId.ToGuidBlob());
+                    statement.TryBind("@ItemId", query.ItemId.ToByteArray());
 
                     if (query.Type.HasValue)
                     {
@@ -5849,7 +5853,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             {
                 connection.RunInTransaction(db =>
                 {
-                    var itemIdBlob = id.ToGuidBlob();
+                    var itemIdBlob = id.ToByteArray();
 
                     // First delete chapters
                     db.Execute("delete from mediastreams where ItemId=@ItemId", itemIdBlob);

@@ -57,7 +57,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     {
                         IndexNumber = episode.IndexNumber.Value,
                         ParentIndexNumber = episode.ParentIndexNumber.Value,
-                        SeriesProviderIds = series.ProviderIds
+                        SeriesProviderIds = series.ProviderIds,
+                        SeriesDisplayOrder = series.DisplayOrder
                     };
                     string episodeTvdbId = await _tvDbClientManager
                         .GetEpisodeTvdbId(episodeInfo, language, cancellationToken).ConfigureAwait(false);

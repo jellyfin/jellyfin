@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -21,11 +21,11 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasMediaSources
     {
         /// <inheritdoc />
-        [IgnoreDataMember]
+        [JsonIgnore]
         public IReadOnlyList<string> Artists { get; set; }
 
         /// <inheritdoc />
-        [IgnoreDataMember]
+        [JsonIgnore]
         public IReadOnlyList<string> AlbumArtists { get; set; }
 
         public Audio()
@@ -39,22 +39,22 @@ namespace MediaBrowser.Controller.Entities.Audio
             return 1;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPlayedStatus => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsAddingToPlaylist => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         protected override bool SupportsOwnedItems => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override Folder LatestItemsIndexContainer => AlbumEntity;
 
         public override bool CanDownload()
@@ -62,14 +62,14 @@ namespace MediaBrowser.Controller.Entities.Audio
             return IsFileProtocol;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public MusicAlbum AlbumEntity => FindParent<MusicAlbum>();
 
         /// <summary>
         /// Gets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string MediaType => Model.Entities.MediaType.Audio;
 
         /// <summary>

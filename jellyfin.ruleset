@@ -6,10 +6,14 @@
     <!-- disable warning SA1204: Static members must appear before non-static members -->
     <Rule Id="SA1204" Action="Info" />
 
+    <!-- disable warning SA1009: Closing parenthesis should be followed by a space. -->
+    <Rule Id="SA1009" Action="None" />
     <!-- disable warning SA1101: Prefix local calls with 'this.' -->
     <Rule Id="SA1101" Action="None" />
     <!-- disable warning SA1108: Block statements should not contain embedded comments -->
     <Rule Id="SA1108" Action="None" />
+    <!-- disable warning SA1128:: Put constructor initializers on their own line -->
+    <Rule Id="SA1128" Action="None" />
     <!-- disable warning SA1130: Use lambda syntax -->
     <Rule Id="SA1130" Action="None" />
     <!-- disable warning SA1200: 'using' directive must appear within a namespace declaration -->
@@ -29,6 +33,8 @@
     <Rule Id="CA1031" Action="Info" />
     <!-- disable warning CA1062: Validate arguments of public methods -->
     <Rule Id="CA1062" Action="Info" />
+    <!-- disable warning CA1720: Identifiers should not contain type names -->
+    <Rule Id="CA1720" Action="Info" />
     <!-- disable warning CA1812: internal class that is apparently never instantiated.
         If so, remove the code from the assembly.
         If this class is intended to contain only static members, make it static -->

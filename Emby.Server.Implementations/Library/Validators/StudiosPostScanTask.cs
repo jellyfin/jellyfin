@@ -21,9 +21,11 @@ namespace Emby.Server.Implementations.Library.Validators
         private readonly IItemRepository _itemRepo;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ArtistsPostScanTask" /> class.
+        /// Initializes a new instance of the <see cref="StudiosPostScanTask" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="itemRepo">Th item repository.</param>
         public StudiosPostScanTask(ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;

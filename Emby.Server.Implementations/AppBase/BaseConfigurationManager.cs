@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
@@ -16,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.AppBase
 {
     /// <summary>
-    /// Class BaseConfigurationManager
+    /// Class BaseConfigurationManager.
     /// </summary>
     public abstract class BaseConfigurationManager : IConfigurationManager
     {
@@ -35,7 +34,7 @@ namespace Emby.Server.Implementations.AppBase
         /// <summary>
         /// The _configuration sync lock.
         /// </summary>
-        private object _configurationSyncLock = new object();
+        private readonly object _configurationSyncLock = new object();
 
         /// <summary>
         /// The _configuration.
@@ -48,7 +47,7 @@ namespace Emby.Server.Implementations.AppBase
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
-        /// <param name="fileSystem">The file system</param>
+        /// <param name="fileSystem">The file system.</param>
         protected BaseConfigurationManager(IApplicationPaths applicationPaths, ILoggerFactory loggerFactory, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
         {
             CommonApplicationPaths = applicationPaths;
@@ -85,6 +84,7 @@ namespace Emby.Server.Implementations.AppBase
         /// </summary>
         /// <value>The logger.</value>
         protected ILogger Logger { get; private set; }
+
         /// <summary>
         /// Gets the XML serializer.
         /// </summary>
@@ -92,23 +92,39 @@ namespace Emby.Server.Implementations.AppBase
         protected IXmlSerializer XmlSerializer { get; private set; }
 
         /// <summary>
-        /// Gets or sets the application paths.
+        /// Gets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
         public IApplicationPaths CommonApplicationPaths { get; private set; }
 
         /// <summary>
-        /// Gets the system configuration
+        /// Gets or sets the system configuration.
         /// </summary>
         /// <value>The configuration.</value>
         public BaseApplicationConfiguration CommonConfiguration
         {
             get
             {
-                // Lazy load
-                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationLoaded, ref _configurationSyncLock, () => (BaseApplicationConfiguration)ConfigurationHelper.GetXmlConfiguration(ConfigurationType, CommonApplicationPaths.SystemConfigurationFilePath, XmlSerializer));
-                return _configuration;
+                if (_configurationLoaded)
+                {
+                    return _configuration;
+                }
+
+                lock (_configurationSyncLock)
+                {
+                    if (_configurationLoaded)
+                    {
+                        return _configuration;
+                    }
+
+                    _configuration = (BaseApplicationConfiguration)ConfigurationHelper.GetXmlConfiguration(ConfigurationType, CommonApplicationPaths.SystemConfigurationFilePath, XmlSerializer);
+
+                    _configurationLoaded = true;
+
+                    return _configuration;
+                }
             }
+
             protected set
             {
                 _configuration = value;
@@ -158,7 +174,7 @@ namespace Emby.Server.Implementations.AppBase
         /// Replaces the configuration.
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
-        /// <exception cref="ArgumentNullException">newConfiguration</exception>
+        /// <exception cref="ArgumentNullException"><c>newConfiguration</c> is <c>null</c>.</exception>
         public virtual void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
             if (newConfiguration == null)
@@ -201,7 +217,7 @@ namespace Emby.Server.Implementations.AppBase
                 cachePath = CommonConfiguration.CachePath;
             }
 
-            Logger.LogInformation("Setting cache path to " + cachePath);
+            Logger.LogInformation("Setting cache path: {Path}", cachePath);
             ((BaseApplicationPaths)CommonApplicationPaths).CachePath = cachePath;
         }
 
@@ -209,7 +225,7 @@ namespace Emby.Server.Implementations.AppBase
         /// Replaces the cache path.
         /// </summary>
         /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="DirectoryNotFoundException"></exception>
+        /// <exception cref="DirectoryNotFoundException">The new cache path doesn't exist.</exception>
         private void ValidateCachePath(BaseApplicationConfiguration newConfig)
         {
             var newPath = newConfig.CachePath;
@@ -220,7 +236,7 @@ namespace Emby.Server.Implementations.AppBase
                 // Validate
                 if (!Directory.Exists(newPath))
                 {
-                    throw new FileNotFoundException(
+                    throw new DirectoryNotFoundException(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "{0} does not exist.",
@@ -299,8 +315,7 @@ namespace Emby.Server.Implementations.AppBase
                 throw new ArgumentException("Expected configuration type is " + configurationType.Name);
             }
 
-            var validatingStore = configurationStore as IValidatingConfiguration;
-            if (validatingStore != null)
+            if (configurationStore is IValidatingConfiguration validatingStore)
             {
                 var currentConfiguration = GetConfiguration(key);
 

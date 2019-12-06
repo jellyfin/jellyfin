@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
@@ -31,7 +32,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 using Microsoft.Extensions.Logging;
-using static MediaBrowser.Common.HexHelper;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -60,6 +60,7 @@ namespace Emby.Server.Implementations.Library
         private readonly Func<IDtoService> _dtoServiceFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly IFileSystem _fileSystem;
+        private readonly ICryptoProvider _cryptoProvider;
 
         private ConcurrentDictionary<Guid, User> _users;
 
@@ -80,7 +81,8 @@ namespace Emby.Server.Implementations.Library
             Func<IDtoService> dtoServiceFactory,
             IServerApplicationHost appHost,
             IJsonSerializer jsonSerializer,
-            IFileSystem fileSystem)
+            IFileSystem fileSystem,
+            ICryptoProvider cryptoProvider)
         {
             _logger = logger;
             _userRepository = userRepository;
@@ -91,6 +93,7 @@ namespace Emby.Server.Implementations.Library
             _appHost = appHost;
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
+            _cryptoProvider = cryptoProvider;
             _users = null;
         }
 
@@ -179,12 +182,7 @@ namespace Emby.Server.Implementations.Library
             _defaultPasswordResetProvider = passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
         }
 
-        /// <summary>
-        /// Gets a User by Id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns>User.</returns>
-        /// <exception cref="ArgumentException"></exception>
+        /// <inheritdoc />
         public User GetUserById(Guid id)
         {
             if (id == Guid.Empty)
@@ -196,11 +194,7 @@ namespace Emby.Server.Implementations.Library
             return user;
         }
 
-        /// <summary>
-        /// Gets the user by identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns>User.</returns>
+        /// <inheritdoc />
         public User GetUserById(string id)
             => GetUserById(new Guid(id));
 
@@ -428,7 +422,6 @@ namespace Emby.Server.Implementations.Library
         {
             try
             {
-
                 var authenticationResult = provider is IRequiresResolvedUser requiresResolvedUser
                     ? await requiresResolvedUser.Authenticate(username, password, resolvedUser).ConfigureAwait(false)
                     : await provider.Authenticate(username, password).ConfigureAwait(false);
@@ -475,22 +468,19 @@ namespace Emby.Server.Implementations.Library
 
             if (!success
                 && _networkManager.IsInLocalNetwork(remoteEndPoint)
-                && user.Configuration.EnableLocalPassword)
+                && user.Configuration.EnableLocalPassword
+                && !string.IsNullOrEmpty(user.EasyPassword))
             {
-                success = string.Equals(
-                    GetLocalPasswordHash(user),
-                    _defaultAuthenticationProvider.GetHashedString(user, password),
-                    StringComparison.OrdinalIgnoreCase);
+                // Check easy password
+                var passwordHash = PasswordHash.Parse(user.EasyPassword);
+                var hash = _cryptoProvider.ComputeHash(
+                    passwordHash.Id,
+                    Encoding.UTF8.GetBytes(password),
+                    passwordHash.Salt);
+                success = passwordHash.Hash.SequenceEqual(hash);
             }
 
             return (authenticationProvider, username, success);
-        }
-
-        private string GetLocalPasswordHash(User user)
-        {
-            return string.IsNullOrEmpty(user.EasyPassword)
-                ? null
-                : ToHexString(PasswordHash.Parse(user.EasyPassword).Hash);
         }
 
         private void ResetInvalidLoginAttemptCount(User user)
@@ -537,6 +527,8 @@ namespace Emby.Server.Implementations.Library
             {
                 defaultName = "MyJellyfinUser";
             }
+
+            _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
 
             var name = MakeValidUsername(defaultName);
 
@@ -601,7 +593,7 @@ namespace Emby.Server.Implementations.Library
                 catch (Exception ex)
                 {
                     // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {user}", user.Name);
+                    _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {User}", user.Name);
                 }
             }
 
@@ -625,7 +617,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting {imageType} image info for {imagePath}", image.Type, image.Path);
+                _logger.LogError(ex, "Error getting {ImageType} image info for {ImagePath}", image.Type, image.Path);
                 return null;
             }
         }
@@ -639,7 +631,7 @@ namespace Emby.Server.Implementations.Library
         {
             foreach (var user in Users)
             {
-                await user.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), cancellationToken).ConfigureAwait(false);
+                await user.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem)), cancellationToken).ConfigureAwait(false);
             }
         }
 

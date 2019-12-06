@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Progress;
@@ -18,7 +19,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -39,7 +39,7 @@ namespace MediaBrowser.Controller.Entities
 
         public LinkedChild[] LinkedChildren { get; set; }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public DateTime? DateLastMediaAdded { get; set; }
 
         public Folder()
@@ -47,35 +47,35 @@ namespace MediaBrowser.Controller.Entities
             LinkedChildren = Array.Empty<LinkedChild>();
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsThemeMedia => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public virtual bool IsPreSorted => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public virtual bool IsPhysicalRoot => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPlayedStatus => true;
 
         /// <summary>
         /// Gets a value indicating whether this instance is folder.
         /// </summary>
         /// <value><c>true</c> if this instance is folder; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool IsFolder => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool IsDisplayedAsFolder => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public virtual bool SupportsCumulativeRunTimeTicks => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public virtual bool SupportsDateLastMediaAdded => false;
 
         public override bool CanDelete()
@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.Entities
             return baseResult;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string FileNameWithoutExtension
         {
             get
@@ -127,7 +127,7 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         protected virtual bool SupportsShortcutChildren => false;
 
         /// <summary>
@@ -162,14 +162,14 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the actual children.
         /// </summary>
         /// <value>The actual children.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public virtual IEnumerable<BaseItem> Children => LoadChildren();
 
         /// <summary>
         /// thread-safe access to all recursive children of this folder - without regard to user
         /// </summary>
         /// <value>The recursive children.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public IEnumerable<BaseItem> RecursiveChildren => GetRecursiveChildren();
 
         public override bool IsVisible(User user)
@@ -216,7 +216,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return ValidateChildren(progress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(Logger, FileSystem)));
+            return ValidateChildren(progress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(FileSystem)));
         }
 
         /// <summary>
@@ -1152,6 +1152,11 @@ namespace MediaBrowser.Controller.Entities
 
         public List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             return GetChildren(user, includeLinkedChildren, null);
         }
 
@@ -1431,7 +1436,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i.Item2 != null);
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         protected override bool SupportsOwnedItems => base.SupportsOwnedItems || SupportsShortcutChildren;
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
@@ -1598,7 +1603,7 @@ namespace MediaBrowser.Controller.Entities
             return !IsPlayed(user);
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public virtual bool SupportsUserDataFromChildren
         {
             get

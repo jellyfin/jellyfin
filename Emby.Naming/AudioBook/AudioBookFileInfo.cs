@@ -3,7 +3,7 @@ using System;
 namespace Emby.Naming.AudioBook
 {
     /// <summary>
-    /// Represents a single video file
+    /// Represents a single video file.
     /// </summary>
     public class AudioBookFileInfo : IComparable<AudioBookFileInfo>
     {

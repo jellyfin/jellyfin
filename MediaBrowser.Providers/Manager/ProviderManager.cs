@@ -328,7 +328,7 @@ namespace MediaBrowser.Providers.Manager
 
             return GetImageProviders(item, libraryOptions, options,
                     new ImageRefreshOptions(
-                        new DirectoryService(_logger, _fileSystem)),
+                        new DirectoryService(_fileSystem)),
                     includeDisabled)
                 .OfType<IRemoteImageProvider>();
         }
@@ -507,7 +507,7 @@ namespace MediaBrowser.Providers.Manager
 
             var imageProviders = GetImageProviders(dummy, libraryOptions, options,
                                     new ImageRefreshOptions(
-                                        new DirectoryService(_logger, _fileSystem)),
+                                        new DirectoryService(_fileSystem)),
                                     true)
                                 .ToList();
 

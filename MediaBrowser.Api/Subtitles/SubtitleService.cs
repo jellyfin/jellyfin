@@ -279,13 +279,12 @@ namespace MediaBrowser.Api.Subtitles
                     await _subtitleManager.DownloadSubtitles(video, request.SubtitleId, CancellationToken.None)
                         .ConfigureAwait(false);
 
-                    _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(Logger, _fileSystem)), RefreshPriority.High);
+                    _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
                 }
                 catch (Exception ex)
                 {
                     Logger.LogError(ex, "Error downloading subtitles");
                 }
-
             });
         }
     }

@@ -3,7 +3,7 @@ FROM ubuntu:bionic
 ARG SOURCE_DIR=/jellyfin
 ARG PLATFORM_DIR=/jellyfin/deployment/ubuntu-package-arm64
 ARG ARTIFACT_DIR=/dist
-ARG SDK_VERSION=2.2
+ARG SDK_VERSION=3.0
 # Docker run environment
 ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist
@@ -12,14 +12,20 @@ ENV ARCH=amd64
 
 # Prepare Debian build environment
 RUN apt-get update \
- && apt-get install -y apt-transport-https debhelper gnupg wget devscripts mmv 
+ && apt-get install -y apt-transport-https debhelper gnupg wget devscripts mmv
 
 # Install dotnet repository
 # https://dotnet.microsoft.com/download/linux-package-manager/debian9/sdk-current
-RUN wget https://download.visualstudio.microsoft.com/download/pr/69937b49-a877-4ced-81e6-286620b390ab/8ab938cf6f5e83b2221630354160ef21/dotnet-sdk-2.2.104-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
+RUN wget https://download.visualstudio.microsoft.com/download/pr/4f51cfd8-311d-43fe-a887-c80b40358cfd/440d10dc2091b8d0f1a12b7124034e49/dotnet-sdk-3.0.101-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
  && mkdir -p dotnet-sdk \
  && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
  && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
+
+# Install npm package manager
+RUN wget -q -O- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - \
+ && echo "deb https://deb.nodesource.com/node_8.x $(lsb_release -s -c) main" > /etc/apt/sources.list.d/npm.list \
+ && apt update \
+ && apt install -y nodejs
 
 # Prepare the cross-toolchain
 RUN rm /etc/apt/sources.list \
@@ -39,12 +45,6 @@ RUN rm /etc/apt/sources.list \
  && cd cross-gcc-packages-amd64/cross-gcc-6-arm64 \
  && ln -fs /usr/share/zoneinfo/America/Toronto /etc/localtime \
  && apt-get install -y gcc-6-source libstdc++6-arm64-cross binutils-aarch64-linux-gnu bison flex libtool gdb sharutils netbase libcloog-isl-dev libmpc-dev libmpfr-dev libgmp-dev systemtap-sdt-dev autogen expect chrpath zlib1g-dev zip libc6-dev:arm64 linux-libc-dev:arm64 libgcc1:arm64 libcurl4-openssl-dev:arm64 libfontconfig1-dev:arm64 libfreetype6-dev:arm64 liblttng-ust0:arm64 libstdc++6:arm64 libssl-dev:arm64
-
-# Install yarn package manager
-RUN wget -q -O- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
- && echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
- && apt update \
- && apt install -y yarn
 
 # Link to docker-build script
 RUN ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh

@@ -30,6 +30,9 @@ namespace Emby.Server.Implementations.Cryptography
 
         private bool _disposed = false;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CryptographyProvider"/> class.
+        /// </summary>
         public CryptographyProvider()
         {
             // FIXME: When we get DotNet Standard 2.1 we need to revisit how we do the crypto
@@ -59,12 +62,6 @@ namespace Emby.Server.Implementations.Cryptography
             throw new CryptographicException($"Cannot currently use PBKDF2 with requested hash method: {method}");
         }
 
-        public byte[] ComputeHash(string hashMethod, byte[] bytes)
-            => ComputeHash(hashMethod, bytes, Array.Empty<byte>());
-
-        public byte[] ComputeHashWithDefaultMethod(byte[] bytes)
-            => ComputeHash(DefaultHashMethod, bytes);
-
         public byte[] ComputeHash(string hashMethod, byte[] bytes, byte[] salt)
         {
             if (hashMethod == DefaultHashMethod)
@@ -90,7 +87,6 @@ namespace Emby.Server.Implementations.Cryptography
             }
 
             throw new CryptographicException($"Requested hash method is not supported: {hashMethod}");
-
         }
 
         public byte[] ComputeHashWithDefaultMethod(byte[] bytes, byte[] salt)

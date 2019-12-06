@@ -460,7 +460,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException(nameof(path));
+                throw new ArgumentException("Path can't be empty.", nameof(options));
             }
 
             if (fileShare != FileShareMode.Read && fileShare != FileShareMode.ReadWrite)

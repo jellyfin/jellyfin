@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Emby.Dlna.Main;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
@@ -108,12 +109,13 @@ namespace Emby.Dlna.Api
 
     public class DlnaServerService : IService, IRequiresRequest
     {
-        private readonly IDlnaManager _dlnaManager;
-
         private const string XMLContentType = "text/xml; charset=UTF-8";
 
+        private readonly IDlnaManager _dlnaManager;
+        private readonly IHttpResultFactory _resultFactory;
+        private readonly IServerConfigurationManager _configurationManager;
+
         public IRequest Request { get; set; }
-        private IHttpResultFactory _resultFactory;
 
         private IContentDirectory ContentDirectory => DlnaEntryPoint.Current.ContentDirectory;
 
@@ -121,10 +123,14 @@ namespace Emby.Dlna.Api
 
         private IMediaReceiverRegistrar MediaReceiverRegistrar => DlnaEntryPoint.Current.MediaReceiverRegistrar;
 
-        public DlnaServerService(IDlnaManager dlnaManager, IHttpResultFactory httpResultFactory)
+        public DlnaServerService(
+            IDlnaManager dlnaManager,
+            IHttpResultFactory httpResultFactory,
+            IServerConfigurationManager configurationManager)
         {
             _dlnaManager = dlnaManager;
             _resultFactory = httpResultFactory;
+            _configurationManager = configurationManager;
         }
 
         private string GetHeader(string name)
@@ -205,19 +211,32 @@ namespace Emby.Dlna.Api
             var pathInfo = Parse(Request.PathInfo);
             var first = pathInfo[0];
 
+            string baseUrl = _configurationManager.Configuration.BaseUrl;
+
             // backwards compatibility
-            // TODO: Work out what this is doing.
-            if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(first, "jellyfin", StringComparison.OrdinalIgnoreCase))
+            if (baseUrl.Length == 0)
+            {
+                if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase))
+                {
+                    index++;
+                }
+            }
+            else if (string.Equals(first, baseUrl.Remove(0, 1)))
             {
                 index++;
+                var second = pathInfo[1];
+                if (string.Equals(second, "mediabrowser", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(second, "emby", StringComparison.OrdinalIgnoreCase))
+                {
+                    index++;
+                }
             }
 
             return pathInfo[index];
         }
 
-        private List<string> Parse(string pathUri)
+        private static string[] Parse(string pathUri)
         {
             var actionParts = pathUri.Split(new[] { "://" }, StringSplitOptions.None);
 
@@ -231,7 +250,7 @@ namespace Emby.Dlna.Api
 
             var args = pathInfo.Split('/');
 
-            return args.Skip(1).ToList();
+            return args.Skip(1).ToArray();
         }
 
         public object Get(GetIcon request)
