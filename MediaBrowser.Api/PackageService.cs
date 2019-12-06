@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
@@ -133,10 +132,11 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetPackage request)
         {
-            var packages = _installationManager.GetAvailablePackages().Result;
-
-            var result = packages.FirstOrDefault(p => string.Equals(p.guid, request.AssemblyGuid ?? "none", StringComparison.OrdinalIgnoreCase))
-                         ?? packages.FirstOrDefault(p => p.name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
+            var packages = _installationManager.GetAvailablePackages().GetAwaiter().GetResult();
+            var result = _installationManager.FilterPackages(
+                packages,
+                request.Name,
+                string.IsNullOrEmpty(request.AssemblyGuid) ? default : Guid.Parse(request.AssemblyGuid)).FirstOrDefault();
 
             return ToOptimizedResult(result);
         }
@@ -181,7 +181,7 @@ namespace MediaBrowser.Api
             var package = _installationManager.GetCompatibleVersions(
                     packages,
                     request.Name,
-                    new Guid(request.AssemblyGuid),
+                    string.IsNullOrEmpty(request.AssemblyGuid) ? Guid.Empty : Guid.Parse(request.AssemblyGuid),
                     string.IsNullOrEmpty(request.Version) ? null : Version.Parse(request.Version),
                     request.UpdateClass).FirstOrDefault();
 
