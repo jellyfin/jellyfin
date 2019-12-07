@@ -22,7 +22,14 @@ namespace MediaBrowser.Common.Configuration
         /// <param name="configurationManager">The Configuration manager.</param>
         /// <returns>The transcoding temp path.</returns>
         public static string GetTranscodePath(this IConfigurationManager configurationManager)
-            => configurationManager.GetEncodingOptions().TranscodingTempPath
-                ?? Path.Combine(configurationManager.CommonApplicationPaths.ProgramDataPath, "transcodes");
+        {
+            var transcodingTempPath = configurationManager.GetEncodingOptions().TranscodingTempPath;
+            if (string.IsNullOrEmpty(transcodingTempPath))
+            {
+                return Path.Combine(configurationManager.CommonApplicationPaths.ProgramDataPath, "transcodes");
+            }
+
+            return transcodingTempPath;
+        }
     }
 }
