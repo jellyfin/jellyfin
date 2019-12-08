@@ -2451,7 +2451,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                             }
                             else if (_mediaEncoder.SupportsDecoder("h264_cuvid") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
                             {
-                                
                                 return "-c:v h264_cuvid ";
                             }
                             break;
