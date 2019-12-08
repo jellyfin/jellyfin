@@ -2443,8 +2443,15 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         case "avc":
                         case "h264":
-                            if (_mediaEncoder.SupportsDecoder("h264_cuvid") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
+                            // cuvid decoder does not support >8 bits on h264, fall back onto h264.
+                            if ((videoStream.BitDepth ?? 8) > 8)
                             {
+                                encodingOptions.HardwareDecodingCodecs = Array.Empty<string>();
+                                return "-c:v h264";
+                            }
+                            else if (_mediaEncoder.SupportsDecoder("h264_cuvid") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
+                            {
+                                
                                 return "-c:v h264_cuvid ";
                             }
                             break;
