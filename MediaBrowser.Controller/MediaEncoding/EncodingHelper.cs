@@ -2444,7 +2444,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         case "avc":
                         case "h264":
                             // cuvid decoder does not support >8 bits on h264, fall back onto h264.
-                            if ((videoStream.BitDepth ?? 8) > 8)
+                            if (videoStream.BitDepth.HasValue && videoStream.BitDepth.Value > 8)
                             {
                                 encodingOptions.HardwareDecodingCodecs = Array.Empty<string>();
                                 return "-c:v h264";
