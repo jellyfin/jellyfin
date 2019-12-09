@@ -2447,7 +2447,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                             if ((videoStream.BitDepth ?? 8) > 8)
                             {
                                 encodingOptions.HardwareDecodingCodecs = Array.Empty<string>();
-                                return "-c:v h264";
+                                return "-c:v h264 ";
                             }
                             else if (_mediaEncoder.SupportsDecoder("h264_cuvid") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
                             {
