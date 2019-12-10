@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -9,6 +10,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -47,6 +49,27 @@ namespace MediaBrowser.Api.UserLibrary
     [Authenticated]
     public class GenresService : BaseItemsByNameService<Genre>
     {
+        public GenresService(
+            ILogger<GenresService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IUserManager userManager,
+            ILibraryManager libraryManager,
+            IUserDataManager userDataRepository,
+            IDtoService dtoService,
+            IAuthorizationContext authorizationContext)
+            : base(
+                logger,
+                serverConfigurationManager,
+                httpResultFactory,
+                userManager,
+                libraryManager,
+                userDataRepository,
+                dtoService,
+                authorizationContext)
+        {
+        }
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -113,10 +136,6 @@ namespace MediaBrowser.Api.UserLibrary
         protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IList<BaseItem> items)
         {
             throw new NotImplementedException();
-        }
-
-        public GenresService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepository, IDtoService dtoService, IAuthorizationContext authorizationContext) : base(userManager, libraryManager, userDataRepository, itemRepository, dtoService, authorizationContext)
-        {
         }
     }
 }

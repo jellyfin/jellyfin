@@ -94,9 +94,10 @@ namespace MediaBrowser.Api.Playback.Hls
     [Authenticated]
     public class DynamicHlsService : BaseHlsService
     {
-
         public DynamicHlsService(
-            IServerConfigurationManager serverConfig,
+            ILogger logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
             IUserManager userManager,
             ILibraryManager libraryManager,
             IIsoManager isoManager,
@@ -109,7 +110,10 @@ namespace MediaBrowser.Api.Playback.Hls
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext,
             INetworkManager networkManager)
-            : base(serverConfig,
+            : base(
+                logger,
+                serverConfigurationManager,
+                httpResultFactory,
                 userManager,
                 libraryManager,
                 isoManager,

@@ -55,6 +55,7 @@ namespace Emby.Server.Implementations.Library
             {
                 throw new ArgumentNullException(nameof(userData));
             }
+
             if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
@@ -158,11 +159,6 @@ namespace Emby.Server.Implementations.Library
         public UserItemData GetUserData(User user, BaseItem item)
         {
             return GetUserData(user, item.Id, item.GetUserDataKeys());
-        }
-
-        public UserItemData GetUserData(string userId, BaseItem item)
-        {
-            return GetUserData(new Guid(userId), item);
         }
 
         public UserItemData GetUserData(Guid userId, BaseItem item)

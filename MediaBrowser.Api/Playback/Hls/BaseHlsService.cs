@@ -12,7 +12,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
@@ -25,6 +24,39 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {
+        public BaseHlsService(
+            ILogger logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IUserManager userManager,
+            ILibraryManager libraryManager,
+            IIsoManager isoManager,
+            IMediaEncoder mediaEncoder,
+            IFileSystem fileSystem,
+            IDlnaManager dlnaManager,
+            ISubtitleEncoder subtitleEncoder,
+            IDeviceManager deviceManager,
+            IMediaSourceManager mediaSourceManager,
+            IJsonSerializer jsonSerializer,
+            IAuthorizationContext authorizationContext)
+                : base(
+                    logger,
+                    serverConfigurationManager,
+                    httpResultFactory,
+                    userManager,
+                    libraryManager,
+                    isoManager,
+                    mediaEncoder,
+                    fileSystem,
+                    dlnaManager,
+                    subtitleEncoder,
+                    deviceManager,
+                    mediaSourceManager,
+                    jsonSerializer,
+                    authorizationContext)
+        {
+        }
+
         /// <summary>
         /// Gets the audio arguments.
         /// </summary>
@@ -312,34 +344,6 @@ namespace MediaBrowser.Api.Playback.Hls
         protected virtual int GetStartNumber(StreamState state)
         {
             return 0;
-        }
-
-        public BaseHlsService(
-            IServerConfigurationManager serverConfig,
-            IUserManager userManager,
-            ILibraryManager libraryManager,
-            IIsoManager isoManager,
-            IMediaEncoder mediaEncoder,
-            IFileSystem fileSystem,
-            IDlnaManager dlnaManager,
-            ISubtitleEncoder subtitleEncoder,
-            IDeviceManager deviceManager,
-            IMediaSourceManager mediaSourceManager,
-            IJsonSerializer jsonSerializer,
-            IAuthorizationContext authorizationContext)
-                : base(serverConfig,
-                    userManager,
-                    libraryManager,
-                    isoManager,
-                    mediaEncoder,
-                    fileSystem,
-                    dlnaManager,
-                    subtitleEncoder,
-                    deviceManager,
-                    mediaSourceManager,
-                    jsonSerializer,
-                    authorizationContext)
-        {
         }
     }
 }

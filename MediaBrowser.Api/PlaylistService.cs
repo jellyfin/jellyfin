@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -9,6 +10,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Playlists;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -128,7 +130,16 @@ namespace MediaBrowser.Api
         private readonly ILibraryManager _libraryManager;
         private readonly IAuthorizationContext _authContext;
 
-        public PlaylistService(IDtoService dtoService, IPlaylistManager playlistManager, IUserManager userManager, ILibraryManager libraryManager, IAuthorizationContext authContext)
+        public PlaylistService(
+            ILogger<PlaylistService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IDtoService dtoService,
+            IPlaylistManager playlistManager,
+            IUserManager userManager,
+            ILibraryManager libraryManager,
+            IAuthorizationContext authContext)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _dtoService = dtoService;
             _playlistManager = playlistManager;

@@ -1,9 +1,11 @@
 using System;
 using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Collections;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Movies
 {
@@ -50,7 +52,14 @@ namespace MediaBrowser.Api.Movies
         private readonly IDtoService _dtoService;
         private readonly IAuthorizationContext _authContext;
 
-        public CollectionService(ICollectionManager collectionManager, IDtoService dtoService, IAuthorizationContext authContext)
+        public CollectionService(
+            ILogger<CollectionService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            ICollectionManager collectionManager,
+            IDtoService dtoService,
+            IAuthorizationContext authContext)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _collectionManager = collectionManager;
             _dtoService = dtoService;

@@ -34,12 +34,6 @@ namespace MediaBrowser.Api.Playback
         protected virtual bool EnableOutputInSubFolder => false;
 
         /// <summary>
-        /// Gets or sets the application paths.
-        /// </summary>
-        /// <value>The application paths.</value>
-        protected IServerConfigurationManager ServerConfigurationManager { get; private set; }
-
-        /// <summary>
         /// Gets or sets the user manager.
         /// </summary>
         /// <value>The user manager.</value>
@@ -89,7 +83,9 @@ namespace MediaBrowser.Api.Playback
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
         protected BaseStreamingService(
-            IServerConfigurationManager serverConfig,
+            ILogger logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
             IUserManager userManager,
             ILibraryManager libraryManager,
             IIsoManager isoManager,
@@ -101,8 +97,8 @@ namespace MediaBrowser.Api.Playback
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            ServerConfigurationManager = serverConfig;
             UserManager = userManager;
             LibraryManager = libraryManager;
             IsoManager = isoManager;
@@ -588,7 +584,7 @@ namespace MediaBrowser.Api.Playback
         }
 
         /// <summary>
-        /// Parses query parameters as StreamOptions
+        /// Parses query parameters as StreamOptions.
         /// </summary>
         /// <param name="request">The stream request.</param>
         private void ParseStreamOptions(StreamRequest request)

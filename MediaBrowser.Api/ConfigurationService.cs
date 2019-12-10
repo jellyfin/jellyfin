@@ -1,14 +1,12 @@
 using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -78,18 +76,19 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly IServerConfigurationManager _configurationManager;
 
-        private readonly IFileSystem _fileSystem;
-        private readonly IProviderManager _providerManager;
-        private readonly ILibraryManager _libraryManager;
         private readonly IMediaEncoder _mediaEncoder;
 
-        public ConfigurationService(IJsonSerializer jsonSerializer, IServerConfigurationManager configurationManager, IFileSystem fileSystem, IProviderManager providerManager, ILibraryManager libraryManager, IMediaEncoder mediaEncoder)
+        public ConfigurationService(
+            ILogger<ConfigurationService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IJsonSerializer jsonSerializer,
+            IServerConfigurationManager configurationManager,
+            IMediaEncoder mediaEncoder)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _jsonSerializer = jsonSerializer;
             _configurationManager = configurationManager;
-            _fileSystem = fileSystem;
-            _providerManager = providerManager;
-            _libraryManager = libraryManager;
             _mediaEncoder = mediaEncoder;
         }
 
@@ -131,7 +130,7 @@ namespace MediaBrowser.Api
 
         public async Task Post(UpdateNamedConfiguration request)
         {
-            var key = GetPathValue(2);
+            var key = GetPathValue(2).ToString();
 
             var configurationType = _configurationManager.GetConfigurationType(key);
             var configuration = await _jsonSerializer.DeserializeFromStreamAsync(request.RequestStream, configurationType).ConfigureAwait(false);

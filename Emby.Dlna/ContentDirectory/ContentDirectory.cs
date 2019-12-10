@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -104,7 +103,7 @@ namespace Emby.Dlna.ContentDirectory
         {
             if (!string.IsNullOrEmpty(profile.UserId))
             {
-                var user = _userManager.GetUserById(profile.UserId);
+                var user = _userManager.GetUserById(Guid.Parse(profile.UserId));
 
                 if (user != null)
                 {
@@ -116,7 +115,7 @@ namespace Emby.Dlna.ContentDirectory
 
             if (!string.IsNullOrEmpty(userId))
             {
-                var user = _userManager.GetUserById(userId);
+                var user = _userManager.GetUserById(Guid.Parse(userId));
 
                 if (user != null)
                 {

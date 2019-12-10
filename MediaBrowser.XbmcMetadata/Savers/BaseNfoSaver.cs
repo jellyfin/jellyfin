@@ -16,7 +16,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.XbmcMetadata.Configuration;
 using Microsoft.Extensions.Logging;
@@ -856,7 +855,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 return;
             }
 
-            var user = userManager.GetUserById(userId);
+            var user = userManager.GetUserById(Guid.Parse(userId));
 
             if (user == null)
             {
