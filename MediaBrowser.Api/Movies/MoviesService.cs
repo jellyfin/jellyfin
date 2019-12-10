@@ -198,12 +198,10 @@ namespace MediaBrowser.Api.Movies
             var mostRecentMovies = recentlyPlayedMovies.Take(6).ToList();
             // Get recently played directors
             var recentDirectors = GetDirectors(mostRecentMovies)
-                .OrderBy(i => Guid.NewGuid())
                 .ToList();
 
             // Get recently played actors
             var recentActors = GetActors(mostRecentMovies)
-                .OrderBy(i => Guid.NewGuid())
                 .ToList();
 
             var similarToRecentlyPlayed = GetSimilarTo(user, recentlyPlayedMovies, itemLimit, dtoOptions, RecommendationType.SimilarToRecentlyPlayed).GetEnumerator();

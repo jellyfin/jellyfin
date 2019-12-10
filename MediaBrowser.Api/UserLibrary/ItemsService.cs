@@ -468,7 +468,7 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             // Apply default sorting if none requested
-            if (query.OrderBy.Length == 0)
+            if (query.OrderBy.Count == 0)
             {
                 // Albums by artist
                 if (query.ArtistIds.Length > 0 && query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], "MusicAlbum", StringComparison.OrdinalIgnoreCase))

@@ -485,7 +485,7 @@ namespace MediaBrowser.Api
 
             if (string.Equals(request.SortBy, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
             {
-                episodes = episodes.OrderBy(i => Guid.NewGuid()).ToList();
+                episodes.Shuffle();
             }
 
             var returnItems = episodes;
