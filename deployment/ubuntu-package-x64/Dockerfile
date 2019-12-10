@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.2-sdk-bionic
+FROM microsoft/dotnet:3.0-sdk-bionic
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG PLATFORM_DIR=/jellyfin/deployment/ubuntu-package-x64
