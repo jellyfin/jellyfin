@@ -8,12 +8,12 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library.Validators
 {
     /// <summary>
-    /// Class MusicGenresPostScanTask
+    /// Class MusicGenresPostScanTask.
     /// </summary>
     public class MusicGenresPostScanTask : ILibraryPostScanTask
     {
         /// <summary>
-        /// The _library manager
+        /// The library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;

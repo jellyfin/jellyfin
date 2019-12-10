@@ -42,6 +42,10 @@ namespace Emby.Server.Implementations.Library
                 ".grab",
         };
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CoreResolutionIgnoreRule"/> class.
+        /// </summary>
+        /// <param name="libraryManager">The library manager.</param>
         public CoreResolutionIgnoreRule(ILibraryManager libraryManager)
         {
             _libraryManager = libraryManager;
