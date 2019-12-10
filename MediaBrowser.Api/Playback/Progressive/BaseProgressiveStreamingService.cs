@@ -15,6 +15,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace MediaBrowser.Api.Playback.Progressive
@@ -27,8 +28,10 @@ namespace MediaBrowser.Api.Playback.Progressive
         protected IHttpClient HttpClient { get; private set; }
 
         public BaseProgressiveStreamingService(
+            ILogger logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
             IHttpClient httpClient,
-            IServerConfigurationManager serverConfig,
             IUserManager userManager,
             ILibraryManager libraryManager,
             IIsoManager isoManager,
@@ -41,7 +44,9 @@ namespace MediaBrowser.Api.Playback.Progressive
             IAuthorizationContext authorizationContext,
             EncodingHelper encodingHelper)
             : base(
-                serverConfig,
+                logger,
+                serverConfigurationManager,
+                httpResultFactory,
                 userManager,
                 libraryManager,
                 isoManager,

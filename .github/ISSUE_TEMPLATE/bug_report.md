@@ -30,6 +30,7 @@ assignees: ''
  - OS: [e.g. Docker, Debian, Windows]
  - Browser: [e.g. Firefox, Chrome, Safari]
  - Jellyfin Version: [e.g. 10.0.1]
+ - Installed Plugins: [e.g. none, Fanart, Anime, etc.]
  - Reverse proxy: [e.g. no, nginx, apache, etc.]
 
 **Additional context**

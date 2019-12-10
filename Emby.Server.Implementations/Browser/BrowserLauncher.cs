@@ -4,7 +4,7 @@ using MediaBrowser.Controller;
 namespace Emby.Server.Implementations.Browser
 {
     /// <summary>
-    /// Class BrowserLauncher
+    /// Class BrowserLauncher.
     /// </summary>
     public static class BrowserLauncher
     {
@@ -32,6 +32,7 @@ namespace Emby.Server.Implementations.Browser
         /// <summary>
         /// Opens the URL.
         /// </summary>
+        /// <param name="appHost">The application host instance.</param>
         /// <param name="url">The URL.</param>
         private static void OpenUrl(IServerApplicationHost appHost, string url)
         {

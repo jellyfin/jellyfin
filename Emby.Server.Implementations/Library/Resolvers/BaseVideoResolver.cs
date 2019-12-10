@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.IO;
 using System.Linq;
@@ -10,7 +12,7 @@ using MediaBrowser.Model.Entities;
 namespace Emby.Server.Implementations.Library.Resolvers
 {
     /// <summary>
-    /// Resolves a Path into a Video or Video subclass
+    /// Resolves a Path into a Video or Video subclass.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public abstract class BaseVideoResolver<T> : MediaBrowser.Controller.Resolvers.ItemResolver<T>

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -130,7 +131,18 @@ namespace MediaBrowser.Api.Subtitles
         private readonly IFileSystem _fileSystem;
         private readonly IAuthorizationContext _authContext;
 
-        public SubtitleService(ILibraryManager libraryManager, ISubtitleManager subtitleManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager, IProviderManager providerManager, IFileSystem fileSystem, IAuthorizationContext authContext)
+        public SubtitleService(
+            ILogger<SubtitleService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            ILibraryManager libraryManager,
+            ISubtitleManager subtitleManager,
+            ISubtitleEncoder subtitleEncoder,
+            IMediaSourceManager mediaSourceManager,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            IAuthorizationContext authContext)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;

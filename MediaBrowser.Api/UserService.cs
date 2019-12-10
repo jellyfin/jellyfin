@@ -244,22 +244,23 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly IUserManager _userManager;
         private readonly ISessionManager _sessionMananger;
-        private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
         private readonly IDeviceManager _deviceManager;
         private readonly IAuthorizationContext _authContext;
 
         public UserService(
+            ILogger<UserService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
             IUserManager userManager,
             ISessionManager sessionMananger,
-            IServerConfigurationManager config,
             INetworkManager networkManager,
             IDeviceManager deviceManager,
             IAuthorizationContext authContext)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _userManager = userManager;
             _sessionMananger = sessionMananger;
-            _config = config;
             _networkManager = networkManager;
             _deviceManager = deviceManager;
             _authContext = authContext;
@@ -268,7 +269,7 @@ namespace MediaBrowser.Api
         public object Get(GetPublicUsers request)
         {
             // If the startup wizard hasn't been completed then just return all users
-            if (!_config.Configuration.IsStartupWizardCompleted)
+            if (!ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
             {
                 return Get(new GetUsers
                 {
@@ -497,9 +498,9 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public async Task Post(UpdateUser request)
         {
-            var id = GetPathValue(1);
+            var id = Guid.Parse(GetPathValue(1));
 
-            AssertCanUpdateUser(_authContext, _userManager, new Guid(id), false);
+            AssertCanUpdateUser(_authContext, _userManager, id, false);
 
             var dtoUser = request;
 

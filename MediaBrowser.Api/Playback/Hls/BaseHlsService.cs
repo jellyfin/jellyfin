@@ -12,7 +12,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
@@ -26,7 +25,9 @@ namespace MediaBrowser.Api.Playback.Hls
     public abstract class BaseHlsService : BaseStreamingService
     {
         public BaseHlsService(
-            IServerConfigurationManager serverConfig,
+            ILogger logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
             IUserManager userManager,
             ILibraryManager libraryManager,
             IIsoManager isoManager,
@@ -38,18 +39,21 @@ namespace MediaBrowser.Api.Playback.Hls
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext,
             EncodingHelper encodingHelper)
-                : base(serverConfig,
-                    userManager,
-                    libraryManager,
-                    isoManager,
-                    mediaEncoder,
-                    fileSystem,
-                    dlnaManager,
-                    deviceManager,
-                    mediaSourceManager,
-                    jsonSerializer,
-                    authorizationContext,
-                    encodingHelper)
+            : base(
+                logger,
+                serverConfigurationManager,
+                httpResultFactory,
+                userManager,
+                libraryManager,
+                isoManager,
+                mediaEncoder,
+                fileSystem,
+                dlnaManager,
+                deviceManager,
+                mediaSourceManager,
+                jsonSerializer,
+                authorizationContext,
+                encodingHelper)
         {
         }
 

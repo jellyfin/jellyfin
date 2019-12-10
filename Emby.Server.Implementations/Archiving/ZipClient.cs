@@ -10,15 +10,10 @@ using SharpCompress.Readers.Zip;
 namespace Emby.Server.Implementations.Archiving
 {
     /// <summary>
-    /// Class DotNetZipClient
+    /// Class DotNetZipClient.
     /// </summary>
     public class ZipClient : IZipClient
     {
-        public ZipClient()
-        {
-
-        }
-
         /// <summary>
         /// Extracts all.
         /// </summary>
@@ -143,7 +138,6 @@ namespace Emby.Server.Implementations.Archiving
                 }
             }
         }
-
 
         /// <summary>
         /// Extracts all from tar.

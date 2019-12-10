@@ -12,6 +12,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -27,7 +28,9 @@ namespace MediaBrowser.Api.Playback.Hls
     public class VideoHlsService : BaseHlsService
     {
         public VideoHlsService(
-            IServerConfigurationManager serverConfig,
+            ILogger<VideoHlsService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
             IUserManager userManager,
             ILibraryManager libraryManager,
             IIsoManager isoManager,
@@ -39,18 +42,21 @@ namespace MediaBrowser.Api.Playback.Hls
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext,
             EncodingHelper encodingHelper)
-                : base(serverConfig,
-                    userManager,
-                    libraryManager,
-                    isoManager,
-                    mediaEncoder,
-                    fileSystem,
-                    dlnaManager,
-                    deviceManager,
-                    mediaSourceManager,
-                    jsonSerializer,
-                    authorizationContext,
-                    encodingHelper)
+            : base(
+                logger,
+                serverConfigurationManager,
+                httpResultFactory,
+                userManager,
+                libraryManager,
+                isoManager,
+                mediaEncoder,
+                fileSystem,
+                dlnaManager,
+                deviceManager,
+                mediaSourceManager,
+                jsonSerializer,
+                authorizationContext,
+                encodingHelper)
         {
         }
 

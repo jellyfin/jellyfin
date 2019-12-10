@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using Emby.Server.Implementations.Playlists;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
@@ -2831,8 +2832,8 @@ namespace Emby.Server.Implementations.Data
                             BindSimilarParams(query, statement);
                             BindSearchParams(query, statement);
 
-                                // Running this again will bind the params
-                                GetWhereClauses(query, statement);
+                            // Running this again will bind the params
+                            GetWhereClauses(query, statement);
 
                             var hasEpisodeAttributes = HasEpisodeAttributes(query);
                             var hasServiceName = HasServiceName(query);
@@ -2881,14 +2882,14 @@ namespace Emby.Server.Implementations.Data
 
         private string GetOrderByText(InternalItemsQuery query)
         {
+            var orderBy = query.OrderBy;
             if (string.IsNullOrEmpty(query.SearchTerm))
             {
-                int oldLen = query.OrderBy.Length;
-
-                if (query.SimilarTo != null && oldLen == 0)
+                int oldLen = orderBy.Count;
+                if (oldLen == 0 && query.SimilarTo != null)
                 {
                     var arr = new (string, SortOrder)[oldLen + 2];
-                    query.OrderBy.CopyTo(arr, 0);
+                    orderBy.CopyTo(arr, 0);
                     arr[oldLen] = ("SimilarityScore", SortOrder.Descending);
                     arr[oldLen + 1] = (ItemSortBy.Random, SortOrder.Ascending);
                     query.OrderBy = arr;
@@ -2896,16 +2897,15 @@ namespace Emby.Server.Implementations.Data
             }
             else
             {
-                query.OrderBy = new []
+                query.OrderBy = new[]
                 {
                     ("SearchScore", SortOrder.Descending),
                     (ItemSortBy.SortName, SortOrder.Ascending)
                 };
             }
 
-            var orderBy = query.OrderBy;
 
-            if (orderBy.Length == 0)
+            if (orderBy.Count == 0)
             {
                 return string.Empty;
             }
@@ -2913,14 +2913,8 @@ namespace Emby.Server.Implementations.Data
             return " ORDER BY " + string.Join(",", orderBy.Select(i =>
             {
                 var columnMap = MapOrderByField(i.Item1, query);
-                var columnAscending = i.Item2 == SortOrder.Ascending;
-                const bool enableOrderInversion = false;
-                if (columnMap.Item2 && enableOrderInversion)
-                {
-                    columnAscending = !columnAscending;
-                }
 
-                var sortOrder = columnAscending ? "ASC" : "DESC";
+                var sortOrder = i.Item2 == SortOrder.Ascending ? "ASC" : "DESC";
 
                 return columnMap.Item1 + " " + sortOrder;
             }));

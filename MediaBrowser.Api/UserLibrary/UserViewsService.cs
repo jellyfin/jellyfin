@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -51,11 +52,15 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly ILibraryManager _libraryManager;
 
         public UserViewsService(
+            ILogger<UserViewsService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
             IUserManager userManager,
             IUserViewManager userViewManager,
             IDtoService dtoService,
             IAuthorizationContext authContext,
             ILibraryManager libraryManager)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _userManager = userManager;
             _userViewManager = userViewManager;
