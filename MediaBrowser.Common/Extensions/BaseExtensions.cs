@@ -1,12 +1,12 @@
 using System;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Security.Cryptography;
 
 namespace MediaBrowser.Common.Extensions
 {
     /// <summary>
-    /// Class BaseExtensions
+    /// Class BaseExtensions.
     /// </summary>
     public static class BaseExtensions
     {
@@ -30,10 +30,13 @@ namespace MediaBrowser.Common.Extensions
         /// <returns><see cref="Guid" />.</returns>
         public static Guid GetMD5(this string str)
         {
+#pragma warning disable CA5351
             using (var provider = MD5.Create())
             {
                 return new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(str)));
             }
+
+#pragma warning restore CA5351
         }
     }
 }

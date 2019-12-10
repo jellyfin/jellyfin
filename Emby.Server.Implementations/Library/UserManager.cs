@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1600
 
 using System;
 using System.Collections.Concurrent;
@@ -480,7 +481,7 @@ namespace Emby.Server.Implementations.Library
                 var hash = _cryptoProvider.ComputeHash(
                     passwordHash.Id,
                     Encoding.UTF8.GetBytes(password),
-                    passwordHash.Salt);
+                    passwordHash.Salt.ToArray());
                 success = passwordHash.Hash.SequenceEqual(hash);
             }
 

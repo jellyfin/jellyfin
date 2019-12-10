@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1600
 
 using System;
 using MediaBrowser.Model.Plugins;
@@ -6,12 +7,12 @@ using MediaBrowser.Model.Plugins;
 namespace MediaBrowser.Common.Plugins
 {
     /// <summary>
-    /// Interface IPlugin
+    /// Interface IPlugin.
     /// </summary>
     public interface IPlugin
     {
         /// <summary>
-        /// Gets the name of the plugin
+        /// Gets the name of the plugin.
         /// </summary>
         /// <value>The name.</value>
         string Name { get; }
@@ -29,19 +30,19 @@ namespace MediaBrowser.Common.Plugins
         Guid Id { get; }
 
         /// <summary>
-        /// Gets the plugin version
+        /// Gets the plugin version.
         /// </summary>
         /// <value>The version.</value>
         Version Version { get; }
 
         /// <summary>
-        /// Gets the path to the assembly file
+        /// Gets the path to the assembly file.
         /// </summary>
         /// <value>The assembly file path.</value>
         string AssemblyFilePath { get; }
 
         /// <summary>
-        /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed
+        /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed.
         /// </summary>
         /// <value>The data folder path.</value>
         string DataFolderPath { get; }
@@ -61,24 +62,24 @@ namespace MediaBrowser.Common.Plugins
     public interface IHasPluginConfiguration
     {
         /// <summary>
-        /// Gets the type of configuration this plugin uses
+        /// Gets the type of configuration this plugin uses.
         /// </summary>
         /// <value>The type of the configuration.</value>
         Type ConfigurationType { get; }
 
         /// <summary>
-        /// Completely overwrites the current configuration with a new copy
-        /// Returns true or false indicating success or failure
-        /// </summary>
-        /// <param name="configuration">The configuration.</param>
-        /// <exception cref="ArgumentNullException">configuration</exception>
-        void UpdateConfiguration(BasePluginConfiguration configuration);
-
-        /// <summary>
-        /// Gets the plugin's configuration
+        /// Gets the plugin's configuration.
         /// </summary>
         /// <value>The configuration.</value>
         BasePluginConfiguration Configuration { get; }
+
+        /// <summary>
+        /// Completely overwrites the current configuration with a new copy
+        /// Returns true or false indicating success or failure.
+        /// </summary>
+        /// <param name="configuration">The configuration.</param>
+        /// <exception cref="ArgumentNullException"><c>configuration</c> is <c>null</c>.</exception>
+        void UpdateConfiguration(BasePluginConfiguration configuration);
 
         void SetStartupInfo(Action<string> directoryCreateFn);
     }

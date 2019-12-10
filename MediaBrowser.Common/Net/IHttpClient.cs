@@ -1,12 +1,12 @@
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Net
 {
     /// <summary>
-    /// Interface IHttpClient
+    /// Interface IHttpClient.
     /// </summary>
     public interface IHttpClient
     {
