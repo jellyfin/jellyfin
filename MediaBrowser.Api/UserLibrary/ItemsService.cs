@@ -127,6 +127,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var result = new QueryResult<BaseItemDto>
             {
+                StartIndex = request.StartIndex.GetValueOrDefault(),
                 TotalRecordCount = itemsResult.TotalRecordCount,
                 Items = returnItems
             };
@@ -177,6 +178,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             return new QueryResult<BaseItemDto>
             {
+                StartIndex = request.StartIndex.GetValueOrDefault(),
                 TotalRecordCount = result.TotalRecordCount,
                 Items = dtoList
             };
@@ -237,7 +239,8 @@ namespace MediaBrowser.Api.UserLibrary
                 return new QueryResult<BaseItem>
                 {
                     Items = Array.Empty<BaseItem>(),
-                    TotalRecordCount = 0
+                    TotalRecordCount = 0,
+                    StartIndex = 0
                 };
             }
 
@@ -250,7 +253,8 @@ namespace MediaBrowser.Api.UserLibrary
             return new QueryResult<BaseItem>
             {
                 Items = itemsArray,
-                TotalRecordCount = itemsArray.Length
+                TotalRecordCount = itemsArray.Length,
+                StartIndex = 0
             };
         }
 
