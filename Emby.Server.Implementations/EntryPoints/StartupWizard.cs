@@ -13,12 +13,12 @@ namespace Emby.Server.Implementations.EntryPoints
     public class StartupWizard : IServerEntryPoint
     {
         /// <summary>
-        /// The _app host.
+        /// The app host.
         /// </summary>
         private readonly IServerApplicationHost _appHost;
 
         /// <summary>
-        /// The _user manager.
+        /// The user manager.
         /// </summary>
         private readonly ILogger _logger;
 

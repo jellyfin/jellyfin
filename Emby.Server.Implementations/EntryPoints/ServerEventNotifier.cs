@@ -21,22 +21,22 @@ namespace Emby.Server.Implementations.EntryPoints
     public class ServerEventNotifier : IServerEntryPoint
     {
         /// <summary>
-        /// The _user manager.
+        /// The user manager.
         /// </summary>
         private readonly IUserManager _userManager;
 
         /// <summary>
-        /// The _installation manager.
+        /// The installation manager.
         /// </summary>
         private readonly IInstallationManager _installationManager;
 
         /// <summary>
-        /// The _kernel.
+        /// The kernel.
         /// </summary>
         private readonly IServerApplicationHost _appHost;
 
         /// <summary>
-        /// The _task manager.
+        /// The task manager.
         /// </summary>
         private readonly ITaskManager _taskManager;
 

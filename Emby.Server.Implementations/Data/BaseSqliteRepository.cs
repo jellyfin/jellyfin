@@ -16,7 +16,7 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseSqliteRepository"/> class.
         /// </summary>
-        /// <param name="logger">The ogger.</param>
+        /// <param name="logger">The logger.</param>
         protected BaseSqliteRepository(ILogger logger)
         {
             Logger = logger;

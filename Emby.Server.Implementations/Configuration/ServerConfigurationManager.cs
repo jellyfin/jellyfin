@@ -150,7 +150,7 @@ namespace Emby.Server.Implementations.Configuration
         }
 
         /// <summary>
-        /// Sets all config values to the optimal value.
+        /// Sets all configuration values to their optimal values.
         /// </summary>
         /// <returns>If the configuration changed.</returns>
         public bool SetOptimalValues()

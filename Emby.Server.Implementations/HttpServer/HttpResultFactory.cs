@@ -29,7 +29,7 @@ namespace Emby.Server.Implementations.HttpServer
     public class HttpResultFactory : IHttpResultFactory
     {
         /// <summary>
-        /// The _logger.
+        /// The logger.
         /// </summary>
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;

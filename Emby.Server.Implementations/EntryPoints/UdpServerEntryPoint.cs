@@ -20,7 +20,7 @@ namespace Emby.Server.Implementations.EntryPoints
         public const int PortNumber = 7359;
 
         /// <summary>
-        /// The _logger.
+        /// The logger.
         /// </summary>
         private readonly ILogger _logger;
         private readonly ISocketFactory _socketFactory;

@@ -13,7 +13,7 @@ namespace Emby.Server.Implementations.Library.Validators
     public class MusicGenresPostScanTask : ILibraryPostScanTask
     {
         /// <summary>
-        /// The _library manager.
+        /// The library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;

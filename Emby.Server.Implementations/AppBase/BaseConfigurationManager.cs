@@ -351,7 +351,7 @@ namespace Emby.Server.Implementations.AppBase
         }
 
         /// <summary>
-        /// Event handler for when a named configuration got updates.
+        /// Event handler for when a named configuration has been updated.
         /// </summary>
         /// <param name="key">The key of the configuration.</param>
         /// <param name="configuration">The old configuration.</param>

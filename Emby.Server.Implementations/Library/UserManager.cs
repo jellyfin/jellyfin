@@ -43,7 +43,7 @@ namespace Emby.Server.Implementations.Library
     public class UserManager : IUserManager
     {
         /// <summary>
-        /// The _logger.
+        /// The logger.
         /// </summary>
         private readonly ILogger _logger;
 

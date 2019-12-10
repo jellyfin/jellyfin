@@ -24,12 +24,12 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly ILogger _logger;
 
         /// <summary>
-        /// The _json serializer.
+        /// The json serializer.
         /// </summary>
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
-        /// The _socket.
+        /// The socket.
         /// </summary>
         private readonly IWebSocket _socket;
 
@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.HttpServer
         public event EventHandler<EventArgs> Closed;
 
         /// <summary>
-        /// Gets or sets the _remote end point.
+        /// Gets or sets the remote end point.
         /// </summary>
         public string RemoteEndPoint { get; private set; }
 

@@ -15,7 +15,7 @@ namespace Emby.Server.Implementations.HttpServer
     public class StreamWriter : IAsyncStreamWriter, IHasHeaders
     {
         /// <summary>
-        /// The _options.
+        /// The options.
         /// </summary>
         private readonly IDictionary<string, string> _options = new Dictionary<string, string>();
 

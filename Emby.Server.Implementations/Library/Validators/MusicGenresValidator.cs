@@ -13,12 +13,12 @@ namespace Emby.Server.Implementations.Library.Validators
     public class MusicGenresValidator
     {
         /// <summary>
-        /// The _library manager.
+        /// The library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
-        /// The _logger.
+        /// The logger.
         /// </summary>
         private readonly ILogger _logger;
         private readonly IItemRepository _itemRepo;

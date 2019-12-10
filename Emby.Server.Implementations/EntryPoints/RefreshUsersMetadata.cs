@@ -18,7 +18,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly ILogger _logger;
 
         /// <summary>
-        /// The _user manager.
+        /// The user manager.
         /// </summary>
         private readonly IUserManager _userManager;
 
