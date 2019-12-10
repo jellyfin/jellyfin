@@ -44,7 +44,7 @@ namespace MediaBrowser.Api.Music
         private readonly IAuthorizationContext _authContext;
 
         public AlbumsService(
-            Logger<AlbumsService> logger,
+            ILogger<AlbumsService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,

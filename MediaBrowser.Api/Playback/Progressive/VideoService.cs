@@ -70,7 +70,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     public class VideoService : BaseProgressiveStreamingService
     {
         public VideoService(
-            Logger<VideoService> logger,
+            ILogger<VideoService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IHttpClient httpClient,

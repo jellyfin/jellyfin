@@ -239,7 +239,7 @@ namespace MediaBrowser.Api.Images
         /// Initializes a new instance of the <see cref="ImageService" /> class.
         /// </summary>
         public ImageService(
-            Logger<ImageService> logger,
+            ILogger<ImageService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
