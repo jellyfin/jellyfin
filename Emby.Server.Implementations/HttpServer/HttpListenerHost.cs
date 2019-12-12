@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.HttpServer
             _appHost = applicationHost;
             _logger = logger;
             _config = config;
-            _defaultRedirectPath = configuration["HttpListenerHost_DefaultRedirectPath"];
+            _defaultRedirectPath = configuration["HttpListenerHost:DefaultRedirectPath"];
             _baseUrlPrefix = _config.Configuration.BaseUrl;
             _networkManager = networkManager;
             _jsonSerializer = jsonSerializer;

@@ -57,7 +57,7 @@ namespace MediaBrowser.Providers.Music
             _appHost = appHost;
             _logger = logger;
 
-            _musicBrainzBaseUrl = configuration["MusicBrainz_BaseUrl"];
+            _musicBrainzBaseUrl = configuration["MusicBrainz:BaseUrl"];
 
             // Use a stopwatch to ensure we don't exceed the MusicBrainz rate limit
             _stopWatchMusicBrainz.Start();

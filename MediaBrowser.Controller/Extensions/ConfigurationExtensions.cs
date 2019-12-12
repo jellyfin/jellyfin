@@ -10,12 +10,12 @@ namespace MediaBrowser.Controller.Extensions
         /// <summary>
         /// The key for the FFmpeg probe size option.
         /// </summary>
-        public const string FfmpegProbeSizeKey = "FFmpeg_probesize";
+        public const string FfmpegProbeSizeKey = "FFmpeg:probesize";
 
         /// <summary>
         /// The key for the FFmpeg analyse duration option.
         /// </summary>
-        public const string FfmpegAnalyzeDurationKey = "FFmpeg_analyzeduration";
+        public const string FfmpegAnalyzeDurationKey = "FFmpeg:analyzeduration";
 
         /// <summary>
         /// Retrieves the FFmpeg probe size from the <see cref="IConfiguration" />.
