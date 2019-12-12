@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Extensions
         /// </summary>
         /// <param name="configuration">This configuration.</param>
         /// <returns>The FFmpeg probe size option.</returns>
-        public static string GetProbeSize(this IConfiguration configuration)
+        public static string GetFFmpegProbeSize(this IConfiguration configuration)
             => configuration[FfmpegProbeSizeKey];
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace MediaBrowser.Controller.Extensions
         /// </summary>
         /// <param name="configuration">This configuration.</param>
         /// <returns>The FFmpeg analyse duration option.</returns>
-        public static string GetAnalyzeDuration(this IConfiguration configuration)
+        public static string GetFFmpegAnalyzeDuration(this IConfiguration configuration)
             => configuration[FfmpegAnalyzeDurationKey];
     }
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -2049,10 +2050,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         public string GetProbeSizeArgument(int numInputFiles)
-            => numInputFiles > 1 ? "-probesize " + _configuration["FFmpeg:probesize"] : string.Empty;
+            => numInputFiles > 1 ? "-probesize " + _configuration.GetFFmpegProbeSize() : string.Empty;
 
         public string GetAnalyzeDurationArgument(int numInputFiles)
-            => numInputFiles > 1 ? "-analyzeduration " + _configuration["FFmpeg:analyzeduration"] : string.Empty;
+            => numInputFiles > 1 ? "-analyzeduration " + _configuration.GetFFmpegAnalyzeDuration() : string.Empty;
 
         public string GetInputModifier(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
