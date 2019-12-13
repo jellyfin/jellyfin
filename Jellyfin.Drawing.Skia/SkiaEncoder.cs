@@ -540,7 +540,7 @@ namespace Jellyfin.Drawing.Skia
             {
                 if (bitmap == null)
                 {
-                    throw new ArgumentOutOfRangeException(string.Format("Skia unable to read image {0}", inputPath));
+                    throw new ArgumentOutOfRangeException($"Skia unable to read image {inputPath}");
                 }
 
                 var originalImageSize = new ImageDimensions(bitmap.Width, bitmap.Height);
