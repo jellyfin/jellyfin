@@ -667,12 +667,9 @@ namespace Emby.Server.Implementations.Session
             data.PlayCount++;
             data.LastPlayedDate = DateTime.UtcNow;
 
-            if (item.SupportsPlayedStatus)
+            if (item.SupportsPlayedStatus && !item.SupportsPositionTicksResume)
             {
-                if (!(item is Video))
-                {
-                    data.Played = true;
-                }
+                data.Played = true;
             }
             else
             {
@@ -769,7 +766,6 @@ namespace Emby.Server.Implementations.Session
             {
                 _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None);
             }
-
         }
 
         private static bool UpdatePlaybackSettings(User user, PlaybackProgressInfo info, UserItemData data)
