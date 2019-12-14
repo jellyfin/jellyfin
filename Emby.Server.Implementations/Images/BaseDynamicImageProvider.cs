@@ -215,7 +215,12 @@ namespace Emby.Server.Implementations.Images
 
             if (imageType == ImageType.Primary)
             {
-                if (item is UserView || item is Playlist || item is MusicGenre || item is Genre || item is PhotoAlbum || item is MusicArtist)
+                if (item is UserView
+                    || item is Playlist
+                    || item is MusicGenre
+                    || item is Genre
+                    || item is PhotoAlbum
+                    || item is MusicArtist)
                 {
                     return CreateSquareCollage(item, itemsWithImages, outputPath);
                 }
