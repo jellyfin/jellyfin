@@ -475,7 +475,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (encodingOptions.EnableHardwareEncoding && outputVideoCodec.Contains("qsv", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!string.IsNullOrEmpty(videoDecoder) && videoDecoder.Contains("qsv"))
+                    if (!string.IsNullOrEmpty(videoDecoder) && videoDecoder.Contains("qsv", StringComparison.OrdinalIgnoreCase))
                     {
                         arg.Append("-hwaccel qsv ");
                     } 
