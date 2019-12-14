@@ -77,16 +77,12 @@ namespace Emby.Server.Implementations.UserViews
                 return false;
             }
 
-            if (item is Folder folder)
+            if (item is Folder && item.IsTopParent)
             {
-                if (folder.IsTopParent)
-                {
-                    return false;
-                }
+                return false;
             }
 
             return true;
-            //return item.SourceType == SourceType.Library;
         }
     }
 

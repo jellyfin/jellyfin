@@ -194,7 +194,8 @@ namespace Emby.Server.Implementations.Images
             return outputPath;
         }
 
-        protected virtual string CreateImage(BaseItem item,
+        protected virtual string CreateImage(
+            BaseItem item,
             IReadOnlyCollection<BaseItem> itemsWithImages,
             string outputPathWithoutExtension,
             ImageType imageType,
@@ -225,7 +226,7 @@ namespace Emby.Server.Implementations.Images
             throw new ArgumentException("Unexpected image type", nameof(imageType));
         }
 
-        public bool HasChanged(BaseItem item, IDirectoryService directoryServicee)
+        public bool HasChanged(BaseItem item, IDirectoryService directoryService)
         {
             if (!Supports(item))
             {
@@ -236,6 +237,7 @@ namespace Emby.Server.Implementations.Images
             {
                 return true;
             }
+
             if (SupportedImages.Contains(ImageType.Thumb) && HasChanged(item, ImageType.Thumb))
             {
                 return true;
