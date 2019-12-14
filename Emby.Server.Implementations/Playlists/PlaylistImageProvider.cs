@@ -67,6 +67,30 @@ namespace Emby.Server.Implementations.Playlists
         }
     }
 
+    public class MusicArtistImageProvider : BaseDynamicImageProvider<MusicArtist>
+    {
+        private readonly ILibraryManager _libraryManager;
+
+        public MusicArtistImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, ILibraryManager libraryManager) : base(fileSystem, providerManager, applicationPaths, imageProcessor)
+        {
+            _libraryManager = libraryManager;
+        }
+
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
+        {
+            return _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                ArtistIds = new[] { item.Id },
+                IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+                OrderBy = new[] { (ItemSortBy.Random, SortOrder.Ascending) },
+                Limit = 4,
+                Recursive = true,
+                ImageTypes = new[] { ImageType.Primary },
+                DtoOptions = new DtoOptions(false)
+            });
+        }
+    }
+
     public class MusicGenreImageProvider : BaseDynamicImageProvider<MusicGenre>
     {
         private readonly ILibraryManager _libraryManager;
