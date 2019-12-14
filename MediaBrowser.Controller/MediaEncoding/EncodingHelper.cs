@@ -1619,7 +1619,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     For software decoding and hardware encoding option, frames must be hwuploaded into hardware
                     with fixed frame size. 
                 */
-                if (!string.IsNullOrEmpty(videoDecoder) && videoDecoder.Contains("qsv"))
+                if (!string.IsNullOrEmpty(videoDecoder) && videoDecoder.Contains("qsv", StringComparison.OrdinalIgnoreCase))
                 {
                     retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay_qsv=x=(W-w)/2:y=(H-h)/2{3}\"";
                 } 
