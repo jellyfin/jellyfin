@@ -1969,7 +1969,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // If we are software decoding, and hardware encoding	  
             if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) 
-                && (string.IsNullOrEmpty(videoDecoder) || !videoDecoder.Contains("qsv")))
+                && (string.IsNullOrEmpty(videoDecoder) || !videoDecoder.Contains("qsv", StringComparison.OrdinalIgnoreCase)))
             {
                 filters.Add("format=nv12|qsv");
                 filters.Add("hwupload=extra_hw_frames=64");
