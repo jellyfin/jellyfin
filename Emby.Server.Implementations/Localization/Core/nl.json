@@ -58,7 +58,7 @@
     "NotificationOptionPluginUpdateInstalled": "Plug-in-update geïnstalleerd",
     "NotificationOptionServerRestartRequired": "Server herstart nodig",
     "NotificationOptionTaskFailed": "Geplande taak mislukt",
-    "NotificationOptionUserLockedOut": "Gebruikersaccount vergrendeld",
+    "NotificationOptionUserLockedOut": "Gebruiker is vergrendeld",
     "NotificationOptionVideoPlayback": "Video gestart",
     "NotificationOptionVideoPlaybackStopped": "Video gestopt",
     "Photos": "Foto's",
