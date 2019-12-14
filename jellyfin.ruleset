@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RuleSet Name="Rules for Jellyfin.Server" Description="Code analysis rules for Jellyfin.Server.csproj" ToolsVersion="14.0">
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <!-- disable warning CA1032: Implement standard exception constructors -->
+    <Rule Id="CA1032" Action="Info" />
     <!-- disable warning SA1202: 'public' members must come before 'private' members -->
     <Rule Id="SA1202" Action="Info" />
     <!-- disable warning SA1204: Static members must appear before non-static members -->

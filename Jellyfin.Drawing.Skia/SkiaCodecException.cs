@@ -7,7 +7,6 @@ namespace Jellyfin.Drawing.Skia
     /// <summary>
     /// Represents errors that occur during interaction with Skia codecs.
     /// </summary>
-    [SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "A custom property, CodecResult, is required when creating this exception type.")]
     public class SkiaCodecException : SkiaException
     {
         /// <summary>
