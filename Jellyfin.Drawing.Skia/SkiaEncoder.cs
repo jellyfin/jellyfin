@@ -205,9 +205,9 @@ namespace Jellyfin.Drawing.Skia
         }
 
         /// <inheritdoc />
-        /// <exception cref="ArgumentNullException">If path is null.</exception>
-        /// <exception cref="FileNotFoundException">If the path is not valid.</exception>
-        /// <exception cref="SkiaCodecException">If the file at the specified path could not be used to generate a codec.</exception>
+        /// <exception cref="ArgumentNullException">The path is null.</exception>
+        /// <exception cref="FileNotFoundException">The path is not valid.</exception>
+        /// <exception cref="SkiaCodecException">The file at the specified path could not be used to generate a codec.</exception>
         public ImageDimensions GetImageSize(string path)
         {
             if (path == null)
