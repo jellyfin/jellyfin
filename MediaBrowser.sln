@@ -36,8 +36,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Notifications", "Emby.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Naming", "Emby.Naming\Emby.Naming.csproj", "{E5AF7B26-2239-4CE0-B477-0AA2018EDAA2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.XmlTv", "Emby.XmlTv\Emby.XmlTv\Emby.XmlTv.csproj", "{6EAFA7F0-8A82-49E6-B2FA-086C5CAEA95B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.MediaEncoding", "MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj", "{960295EE-4AF4-4440-A525-B4C295B01A61}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server", "Jellyfin.Server\Jellyfin.Server.csproj", "{07E39F42-A2C6-4B32-AF8C-725F957A73FF}"
@@ -136,10 +134,6 @@ Global
 		{E5AF7B26-2239-4CE0-B477-0AA2018EDAA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5AF7B26-2239-4CE0-B477-0AA2018EDAA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E5AF7B26-2239-4CE0-B477-0AA2018EDAA2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6EAFA7F0-8A82-49E6-B2FA-086C5CAEA95B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6EAFA7F0-8A82-49E6-B2FA-086C5CAEA95B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6EAFA7F0-8A82-49E6-B2FA-086C5CAEA95B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6EAFA7F0-8A82-49E6-B2FA-086C5CAEA95B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{960295EE-4AF4-4440-A525-B4C295B01A61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{960295EE-4AF4-4440-A525-B4C295B01A61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{960295EE-4AF4-4440-A525-B4C295B01A61}.Release|Any CPU.ActiveCfg = Release|Any CPU
