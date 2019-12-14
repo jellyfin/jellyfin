@@ -16,7 +16,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 
-namespace Emby.Server.Implementations.UserViews
+namespace Emby.Server.Implementations.Images
 {
     public class DynamicImageProvider : BaseDynamicImageProvider<UserView>
     {
