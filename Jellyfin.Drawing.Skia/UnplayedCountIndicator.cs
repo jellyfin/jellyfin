@@ -34,6 +34,7 @@ namespace Jellyfin.Drawing.Skia
                 paint.Style = SKPaintStyle.Fill;
                 canvas.DrawCircle((float)x, OffsetFromTopRightCorner, 20, paint);
             }
+
             using (var paint = new SKPaint())
             {
                 paint.Color = new SKColor(255, 255, 255, 255);
@@ -48,6 +49,7 @@ namespace Jellyfin.Drawing.Skia
                 {
                     x -= 7;
                 }
+
                 if (text.Length == 2)
                 {
                     x -= 13;
