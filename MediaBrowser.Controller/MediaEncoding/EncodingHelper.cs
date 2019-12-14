@@ -473,7 +473,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, encodingOptions);
                 var outputVideoCodec = GetVideoEncoder(state, encodingOptions);
 
-                if (encodingOptions.EnableHardwareEncoding && outputVideoCodec.Contains("qsv"))
+                if (encodingOptions.EnableHardwareEncoding && outputVideoCodec.Contains("qsv", StringComparison.OrdinalIgnoreCase))
                 {
                     if (!string.IsNullOrEmpty(videoDecoder) && videoDecoder.Contains("qsv"))
                     {
