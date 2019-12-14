@@ -37,10 +37,10 @@ namespace Jellyfin.Drawing.Skia
                 paint.TextSize = 30;
                 paint.IsAntialias = true;
 
+                // or:
+                // var emojiChar = 0x1F680;
                 var text = "✔️";
                 var emojiChar = StringUtilities.GetUnicodeCharacterCode(text, SKTextEncoding.Utf32);
-                // or:
-                //var emojiChar = 0x1F680;
 
                 // ask the font manager for a font with that character
                 var fontManager = SKFontManager.Default;

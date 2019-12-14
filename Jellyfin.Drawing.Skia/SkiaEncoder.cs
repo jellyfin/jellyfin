@@ -28,6 +28,9 @@ namespace Jellyfin.Drawing.Skia
         /// <summary>
         /// Initializes a new instance of the <see cref="SkiaEncoder"/> class.
         /// </summary>
+        /// <param name="logger">The application logger.</param>
+        /// <param name="appPaths">The application paths.</param>
+        /// <param name="localizationManager">The application localization manager.</param>
         public SkiaEncoder(
             ILogger<SkiaEncoder> logger,
             IApplicationPaths appPaths,
@@ -80,7 +83,7 @@ namespace Jellyfin.Drawing.Skia
             => new HashSet<ImageFormat>() { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png };
 
         /// <summary>
-        /// Test to determine if the native lib is available
+        /// Test to determine if the native lib is available.
         /// </summary>
         public static void TestSkia()
         {
@@ -288,6 +291,14 @@ namespace Jellyfin.Drawing.Skia
             }
         }
 
+        /// <summary>
+        /// Decode an image.
+        /// </summary>
+        /// <param name="path">The filepath of the image to decode.</param>
+        /// <param name="forceCleanBitmap">Whether to force clean the bitmap.</param>
+        /// <param name="orientation">The orientation of the image.</param>
+        /// <param name="origin">The detected origin of the image.</param>
+        /// <returns>The resulting bitmap of the image.</returns>
         internal SKBitmap Decode(string path, bool forceCleanBitmap, ImageOrientation? orientation, out SKEncodedOrigin origin)
         {
             if (!File.Exists(path))
@@ -377,7 +388,7 @@ namespace Jellyfin.Drawing.Skia
 
         private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
         {
-            //var transformations = {
+            // var transformations = {
             //    2: { rotate: 0, flip: true},
             //    3: { rotate: 180, flip: false},
             //    4: { rotate: 180, flip: true},
@@ -385,7 +396,7 @@ namespace Jellyfin.Drawing.Skia
             //    6: { rotate: 90, flip: false},
             //    7: { rotate: 270, flip: true},
             //    8: { rotate: 270, flip: false},
-            //}
+            // }
 
             switch (origin)
             {
@@ -576,7 +587,7 @@ namespace Jellyfin.Drawing.Skia
                     }
 
                     // create bitmap to use for canvas drawing used to draw into bitmap
-                    using (var saveBitmap = new SKBitmap(width, height))//, bitmap.ColorType, bitmap.AlphaType))
+                    using (var saveBitmap = new SKBitmap(width, height)) // , bitmap.ColorType, bitmap.AlphaType))
                     using (var canvas = new SKCanvas(saveBitmap))
                     {
                         // set background color if present
@@ -629,6 +640,7 @@ namespace Jellyfin.Drawing.Skia
                     }
                 }
             }
+
             return outputPath;
         }
 

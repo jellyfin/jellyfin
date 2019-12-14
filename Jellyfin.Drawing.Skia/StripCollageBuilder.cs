@@ -15,6 +15,7 @@ namespace Jellyfin.Drawing.Skia
         /// <summary>
         /// Initializes a new instance of the <see cref="StripCollageBuilder"/> class.
         /// </summary>
+        /// <param name="skiaEncoder">The encoder to use for building collages.</param>
         public StripCollageBuilder(SkiaEncoder skiaEncoder)
         {
             _skiaEncoder = skiaEncoder;
@@ -123,6 +124,7 @@ namespace Jellyfin.Drawing.Skia
                         using (var resizeBitmap = new SKBitmap(iWidth, iHeight, currentBitmap.ColorType, currentBitmap.AlphaType))
                         {
                             currentBitmap.ScalePixels(resizeBitmap, SKFilterQuality.High);
+
                             // crop image
                             int ix = (int)Math.Abs((iWidth - iSlice) / 2);
                             using (var image = SKImage.FromBitmap(resizeBitmap))
