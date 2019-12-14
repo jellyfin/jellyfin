@@ -394,7 +394,7 @@ namespace Emby.Server.Implementations.Library
 
                 foreach (var fileSystemInfo in item.GetDeletePaths().ToList())
                 {
-                    if (File.Exists(fileSystemInfo.FullName))
+                    if (File.Exists(fileSystemInfo.FullName) || Directory.Exists(fileSystemInfo.FullName))
                     {
                         try
                         {
