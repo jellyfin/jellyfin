@@ -388,16 +388,6 @@ namespace Jellyfin.Drawing.Skia
 
         private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
         {
-            // var transformations = {
-            //    2: { rotate: 0, flip: true},
-            //    3: { rotate: 180, flip: false},
-            //    4: { rotate: 180, flip: true},
-            //    5: { rotate: 90, flip: true},
-            //    6: { rotate: 90, flip: false},
-            //    7: { rotate: 270, flip: true},
-            //    8: { rotate: 270, flip: false},
-            // }
-
             switch (origin)
             {
                 case SKEncodedOrigin.TopRight:
