@@ -392,7 +392,7 @@ namespace Emby.Server.Implementations.Library
                 // Add this flag to GetDeletePaths if required in the future
                 var isRequiredForDelete = true;
 
-                 foreach (var fileSystemInfo in item.GetDeletePaths())
+                foreach (var fileSystemInfo in item.GetDeletePaths())
                 {
                     if (fileSystemInfo.IsDirectory ? Directory.Exists(fileSystemInfo.FullName) : File.Exists(fileSystemInfo.FullName))
                     {
