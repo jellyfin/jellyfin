@@ -1711,7 +1711,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     || !videoHeight.HasValue
                     || outputHeight != videoHeight.Value)
                 {
-                    //Force nv12 pixel format to enable 10-bit to 8-bit colour conversion.
+                    // Force nv12 pixel format to enable 10-bit to 8-bit colour conversion.
                     filters.Add(
                         string.Format(
                             CultureInfo.InvariantCulture,
