@@ -564,9 +564,10 @@ namespace MediaBrowser.Api.Playback
                         // Do this after the above so that StartPositionTicks is set
                         SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
                     }
-				}
-             }
-
+			    }
+            }
+        }
+        
         private long? GetMaxBitrate(long? clientMaxBitrate, User user)
         {
             var maxBitrate = clientMaxBitrate;
