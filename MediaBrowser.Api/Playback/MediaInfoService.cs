@@ -671,4 +671,5 @@ namespace MediaBrowser.Api.Playback
             }).ThenBy(originalList.IndexOf)
             .ToArray();
         }
+    }
 }
