@@ -62,5 +62,17 @@
     "NameInstallFailed": "{0} uppsetning mistókst",
     "MusicVideos": "Tónlistarmyndbönd",
     "Music": "Tónlist",
-    "Movies": "Kvikmyndir"
+    "Movies": "Kvikmyndir",
+    "UserDeletedWithName": "Notanda {0} hefur verið eytt",
+    "UserCreatedWithName": "Notandi {0} hefur verið stofnaður",
+    "TvShows": "Þættir",
+    "Sync": "Samstilla",
+    "Songs": "Lög",
+    "ServerNameNeedsToBeRestarted": "{0} þarf að endurræsa",
+    "ScheduledTaskStartedWithName": "{0} hafin",
+    "ScheduledTaskFailedWithName": "{0} mistókst",
+    "PluginUpdatedWithName": "{0} var uppfært",
+    "PluginUninstalledWithName": "{0} var fjarlægt",
+    "PluginInstalledWithName": "{0} var sett upp",
+    "NotificationOptionTaskFailed": "Tímasett verkefni mistókst"
 }
