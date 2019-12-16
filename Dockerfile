@@ -3,6 +3,7 @@ ARG FFMPEG_VERSION=latest
 
 FROM node:alpine as web-builder
 ARG JELLYFIN_WEB_VERSION=master
+COPY --from=builder /jellyfin/jellyfin-web /jellyfin/jellyfin-web
 RUN apk add curl \
  && cd jellyfin-web \
  && yarn install \
