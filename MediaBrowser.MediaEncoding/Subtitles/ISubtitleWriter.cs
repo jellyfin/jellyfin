@@ -5,7 +5,7 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
     /// <summary>
-    /// Interface ISubtitleWriter
+    /// Interface ISubtitleWriter.
     /// </summary>
     public interface ISubtitleWriter
     {

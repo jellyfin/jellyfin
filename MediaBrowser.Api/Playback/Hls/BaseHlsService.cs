@@ -34,26 +34,26 @@ namespace MediaBrowser.Api.Playback.Hls
             IMediaEncoder mediaEncoder,
             IFileSystem fileSystem,
             IDlnaManager dlnaManager,
-            ISubtitleEncoder subtitleEncoder,
             IDeviceManager deviceManager,
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
-            IAuthorizationContext authorizationContext)
-                : base(
-                    logger,
-                    serverConfigurationManager,
-                    httpResultFactory,
-                    userManager,
-                    libraryManager,
-                    isoManager,
-                    mediaEncoder,
-                    fileSystem,
-                    dlnaManager,
-                    subtitleEncoder,
-                    deviceManager,
-                    mediaSourceManager,
-                    jsonSerializer,
-                    authorizationContext)
+            IAuthorizationContext authorizationContext,
+            EncodingHelper encodingHelper)
+            : base(
+                logger,
+                serverConfigurationManager,
+                httpResultFactory,
+                userManager,
+                libraryManager,
+                isoManager,
+                mediaEncoder,
+                fileSystem,
+                dlnaManager,
+                deviceManager,
+                mediaSourceManager,
+                jsonSerializer,
+                authorizationContext,
+                encodingHelper)
         {
         }
 
