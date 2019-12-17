@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -12,6 +13,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Session;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Session
 {
@@ -269,12 +271,12 @@ namespace MediaBrowser.Api.Session
     }
 
     /// <summary>
-    /// Class SessionsService
+    /// Class SessionsService.
     /// </summary>
     public class SessionsService : BaseApiService
     {
         /// <summary>
-        /// The _session manager
+        /// The _session manager.
         /// </summary>
         private readonly ISessionManager _sessionManager;
 
@@ -283,9 +285,20 @@ namespace MediaBrowser.Api.Session
         private readonly IAuthenticationRepository _authRepo;
         private readonly IDeviceManager _deviceManager;
         private readonly ISessionContext _sessionContext;
-        private IServerApplicationHost _appHost;
+        private readonly IServerApplicationHost _appHost;
 
-        public SessionsService(ISessionManager sessionManager, IServerApplicationHost appHost, IUserManager userManager, IAuthorizationContext authContext, IAuthenticationRepository authRepo, IDeviceManager deviceManager, ISessionContext sessionContext)
+        public SessionsService(
+            ILogger<SessionsService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            ISessionManager sessionManager,
+            IServerApplicationHost appHost,
+            IUserManager userManager,
+            IAuthorizationContext authContext,
+            IAuthenticationRepository authRepo,
+            IDeviceManager deviceManager,
+            ISessionContext sessionContext)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _sessionManager = sessionManager;
             _userManager = userManager;

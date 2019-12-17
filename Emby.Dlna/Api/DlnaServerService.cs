@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Emby.Dlna.Main;
@@ -195,7 +193,7 @@ namespace Emby.Dlna.Api
 
         private ControlResponse PostAsync(Stream requestStream, IUpnpService service)
         {
-            var id = GetPathValue(2);
+            var id = GetPathValue(2).ToString();
 
             return service.ProcessControlRequest(new ControlRequest
             {
@@ -206,51 +204,99 @@ namespace Emby.Dlna.Api
             });
         }
 
-        protected string GetPathValue(int index)
+        // Copied from MediaBrowser.Api/BaseApiService.cs
+        // TODO: Remove code duplication
+        /// <summary>
+        /// Gets the path segment at the specified index.
+        /// </summary>
+        /// <param name="index">The index of the path segment.</param>
+        /// <returns>The path segment at the specified index.</returns>
+        /// <exception cref="IndexOutOfRangeException" >Path doesn't contain enough segments.</exception>
+        /// <exception cref="InvalidDataException" >Path doesn't start with the base url.</exception>
+        protected internal ReadOnlySpan<char> GetPathValue(int index)
         {
-            var pathInfo = Parse(Request.PathInfo);
-            var first = pathInfo[0];
+            static void ThrowIndexOutOfRangeException()
+                => throw new IndexOutOfRangeException("Path doesn't contain enough segments.");
 
+            static void ThrowInvalidDataException()
+                => throw new InvalidDataException("Path doesn't start with the base url.");
+
+            ReadOnlySpan<char> path = Request.PathInfo;
+
+            // Remove the protocol part from the url
+            int pos = path.LastIndexOf("://");
+            if (pos != -1)
+            {
+                path = path.Slice(pos + 3);
+            }
+
+            // Remove the query string
+            pos = path.LastIndexOf('?');
+            if (pos != -1)
+            {
+                path = path.Slice(0, pos);
+            }
+
+            // Remove the domain
+            pos = path.IndexOf('/');
+            if (pos != -1)
+            {
+                path = path.Slice(pos);
+            }
+
+            // Remove base url
             string baseUrl = _configurationManager.Configuration.BaseUrl;
-
-            // backwards compatibility
-            if (baseUrl.Length == 0)
+            int baseUrlLen = baseUrl.Length;
+            if (baseUrlLen != 0)
             {
-                if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase))
+                if (path.StartsWith(baseUrl, StringComparison.OrdinalIgnoreCase))
                 {
-                    index++;
+                    path = path.Slice(baseUrlLen);
                 }
-            }
-            else if (string.Equals(first, baseUrl.Remove(0, 1)))
-            {
-                index++;
-                var second = pathInfo[1];
-                if (string.Equals(second, "mediabrowser", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(second, "emby", StringComparison.OrdinalIgnoreCase))
+                else
                 {
-                    index++;
+                    // The path doesn't start with the base url,
+                    // how did we get here?
+                    ThrowInvalidDataException();
                 }
             }
 
-            return pathInfo[index];
-        }
+            // Remove leading /
+            path = path.Slice(1);
 
-        private static string[] Parse(string pathUri)
-        {
-            var actionParts = pathUri.Split(new[] { "://" }, StringSplitOptions.None);
-
-            var pathInfo = actionParts[actionParts.Length - 1];
-
-            var optionsPos = pathInfo.LastIndexOf('?');
-            if (optionsPos != -1)
+            // Backwards compatibility
+            const string Emby = "emby/";
+            if (path.StartsWith(Emby, StringComparison.OrdinalIgnoreCase))
             {
-                pathInfo = pathInfo.Substring(0, optionsPos);
+                path = path.Slice(Emby.Length);
             }
 
-            var args = pathInfo.Split('/');
+            const string MediaBrowser = "mediabrowser/";
+            if (path.StartsWith(MediaBrowser, StringComparison.OrdinalIgnoreCase))
+            {
+                path = path.Slice(MediaBrowser.Length);
+            }
 
-            return args.Skip(1).ToArray();
+            // Skip segments until we are at the right index
+            for (int i = 0; i < index; i++)
+            {
+                pos = path.IndexOf('/');
+                if (pos == -1)
+                {
+                    ThrowIndexOutOfRangeException();
+                }
+
+                path = path.Slice(pos + 1);
+            }
+
+            // Remove the rest
+            pos = path.IndexOf('/');
+            if (pos != -1)
+            {
+                path = path.Slice(0, pos);
+            }
+
+            return path;
         }
 
         public object Get(GetIcon request)

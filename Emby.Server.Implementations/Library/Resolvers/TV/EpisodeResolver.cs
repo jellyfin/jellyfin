@@ -7,7 +7,7 @@ using MediaBrowser.Model.Entities;
 namespace Emby.Server.Implementations.Library.Resolvers.TV
 {
     /// <summary>
-    /// Class EpisodeResolver
+    /// Class EpisodeResolver.
     /// </summary>
     public class EpisodeResolver : BaseVideoResolver<Episode>
     {
@@ -26,6 +26,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             }
 
             var season = parent as Season;
+
             // Just in case the user decided to nest episodes.
             // Not officially supported but in some cases we can handle it.
             if (season == null)
@@ -73,6 +74,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             return null;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EpisodeResolver"/> class.
+        /// </summary>
+        /// <param name="libraryManager">The library manager.</param>
         public EpisodeResolver(ILibraryManager libraryManager)
             : base(libraryManager)
         {

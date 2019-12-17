@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -510,7 +512,7 @@ namespace Emby.Server.Implementations.Channels
             return _libraryManager.GetItemIds(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Channel).Name },
-                OrderBy = new ValueTuple<string, SortOrder>[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) }
+                OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) }
 
             }).Select(i => GetChannelFeatures(i.ToString("N", CultureInfo.InvariantCulture))).ToArray();
         }
@@ -618,16 +620,16 @@ namespace Emby.Server.Implementations.Channels
             {
                 query.OrderBy = new[]
                 {
-                    new ValueTuple<string, SortOrder>(ItemSortBy.PremiereDate, SortOrder.Descending),
-                    new ValueTuple<string, SortOrder>(ItemSortBy.ProductionYear, SortOrder.Descending),
-                    new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending)
+                    (ItemSortBy.PremiereDate, SortOrder.Descending),
+                    (ItemSortBy.ProductionYear, SortOrder.Descending),
+                    (ItemSortBy.DateCreated, SortOrder.Descending)
                 };
             }
             else
             {
                 query.OrderBy = new[]
                 {
-                    new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending)
+                    (ItemSortBy.DateCreated, SortOrder.Descending)
                 };
             }
 

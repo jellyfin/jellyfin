@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -121,10 +122,18 @@ namespace MediaBrowser.Api
         private readonly ILibraryManager _libraryManager;
         private readonly IJsonSerializer _json;
 
-        public ItemLookupService(IProviderManager providerManager, IServerApplicationPaths appPaths, IFileSystem fileSystem, ILibraryManager libraryManager, IJsonSerializer json)
+        public ItemLookupService(
+            ILogger<ItemLookupService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager,
+            IJsonSerializer json)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _providerManager = providerManager;
-            _appPaths = appPaths;
+            _appPaths = serverConfigurationManager.ApplicationPaths;
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
             _json = json;

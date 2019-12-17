@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Api.UserLibrary;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -13,6 +14,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -188,7 +190,13 @@ namespace MediaBrowser.Api
         private readonly IChannelManager _channelManager;
         private IUserManager _userManager;
 
-        public ChannelService(IChannelManager channelManager, IUserManager userManager)
+        public ChannelService(
+            ILogger<ChannelService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IChannelManager channelManager,
+            IUserManager userManager)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _channelManager = channelManager;
             _userManager = userManager;

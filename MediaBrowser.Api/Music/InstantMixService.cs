@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -8,6 +9,7 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Music
 {
@@ -62,7 +64,16 @@ namespace MediaBrowser.Api.Music
         private readonly IMusicManager _musicManager;
         private readonly IAuthorizationContext _authContext;
 
-        public InstantMixService(IUserManager userManager, IDtoService dtoService, IMusicManager musicManager, ILibraryManager libraryManager, IAuthorizationContext authContext)
+        public InstantMixService(
+            ILogger<InstantMixService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IUserManager userManager,
+            IDtoService dtoService,
+            IMusicManager musicManager,
+            ILibraryManager libraryManager,
+            IAuthorizationContext authContext)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _userManager = userManager;
             _dtoService = dtoService;

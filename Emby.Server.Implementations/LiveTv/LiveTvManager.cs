@@ -209,16 +209,16 @@ namespace Emby.Server.Implementations.LiveTv
 
             var orderBy = internalQuery.OrderBy.ToList();
 
-            orderBy.AddRange(query.SortBy.Select(i => new ValueTuple<string, SortOrder>(i, query.SortOrder ?? SortOrder.Ascending)));
+            orderBy.AddRange(query.SortBy.Select(i => (i, query.SortOrder ?? SortOrder.Ascending)));
 
             if (query.EnableFavoriteSorting)
             {
-                orderBy.Insert(0, new ValueTuple<string, SortOrder>(ItemSortBy.IsFavoriteOrLiked, SortOrder.Descending));
+                orderBy.Insert(0, (ItemSortBy.IsFavoriteOrLiked, SortOrder.Descending));
             }
 
             if (!internalQuery.OrderBy.Any(i => string.Equals(i.Item1, ItemSortBy.SortName, StringComparison.OrdinalIgnoreCase)))
             {
-                orderBy.Add(new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending));
+                orderBy.Add((ItemSortBy.SortName, SortOrder.Ascending));
             }
 
             internalQuery.OrderBy = orderBy.ToArray();
@@ -304,9 +304,12 @@ namespace Emby.Server.Implementations.LiveTv
         }
 
         private ILiveTvService GetService(string name)
-        {
-            return _services.FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
-        }
+            => Array.Find(_services, x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase))
+                ?? throw new KeyNotFoundException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "No service with the name '{0}' can be found.",
+                        name));
 
         private static void Normalize(MediaSourceInfo mediaSource, ILiveTvService service, bool isVideo)
         {
@@ -772,22 +775,22 @@ namespace Emby.Server.Implementations.LiveTv
 
             var topFolder = GetInternalLiveTvFolder(cancellationToken);
 
-            if (query.OrderBy.Length == 0)
+            if (query.OrderBy.Count == 0)
             {
                 if (query.IsAiring ?? false)
                 {
                     // Unless something else was specified, order by start date to take advantage of a specialized index
-                    query.OrderBy = new ValueTuple<string, SortOrder>[]
+                    query.OrderBy = new[]
                     {
-                        new ValueTuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending)
+                        (ItemSortBy.StartDate, SortOrder.Ascending)
                     };
                 }
                 else
                 {
                     // Unless something else was specified, order by start date to take advantage of a specialized index
-                    query.OrderBy = new ValueTuple<string, SortOrder>[]
+                    query.OrderBy = new[]
                     {
-                        new ValueTuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending)
+                        (ItemSortBy.StartDate, SortOrder.Ascending)
                     };
                 }
             }
@@ -871,7 +874,7 @@ namespace Emby.Server.Implementations.LiveTv
                 IsSports = query.IsSports,
                 IsKids = query.IsKids,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending) },
+                OrderBy = new[] { (ItemSortBy.StartDate, SortOrder.Ascending) },
                 TopParentIds = new[] { topFolder.Id },
                 DtoOptions = options,
                 GenreIds = query.GenreIds
@@ -1396,7 +1399,7 @@ namespace Emby.Server.Implementations.LiveTv
                 IsVirtualItem = false,
                 Limit = limit,
                 StartIndex = query.StartIndex,
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
+                OrderBy = new[] { (ItemSortBy.DateCreated, SortOrder.Descending) },
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
@@ -1894,7 +1897,7 @@ namespace Emby.Server.Implementations.LiveTv
                 MaxStartDate = now,
                 MinEndDate = now,
                 Limit = channelIds.Length,
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending) },
+                OrderBy = new[] { (ItemSortBy.StartDate, SortOrder.Ascending) },
                 TopParentIds = new[] { GetInternalLiveTvFolder(CancellationToken.None).Id },
                 DtoOptions = options
 

@@ -10,37 +10,20 @@ using Microsoft.Net.Http.Headers;
 namespace Emby.Server.Implementations.HttpServer
 {
     /// <summary>
-    /// Class StreamWriter
+    /// Class StreamWriter.
     /// </summary>
     public class StreamWriter : IAsyncStreamWriter, IHasHeaders
     {
         /// <summary>
-        /// Gets or sets the source stream.
-        /// </summary>
-        /// <value>The source stream.</value>
-        private Stream SourceStream { get; set; }
-
-        private byte[] SourceBytes { get; set; }
-
-        /// <summary>
-        /// The _options
+        /// The options.
         /// </summary>
         private readonly IDictionary<string, string> _options = new Dictionary<string, string>();
-        /// <summary>
-        /// Gets the options.
-        /// </summary>
-        /// <value>The options.</value>
-        public IDictionary<string, string> Headers => _options;
-
-        public Action OnComplete { get; set; }
-        public Action OnError { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamWriter" /> class.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="contentType">Type of the content.</param>
-        /// <param name="logger">The logger.</param>
         public StreamWriter(Stream source, string contentType)
         {
             if (string.IsNullOrEmpty(contentType))
@@ -65,6 +48,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="contentType">Type of the content.</param>
+        /// <param name="contentLength">The content length.</param>
         public StreamWriter(byte[] source, string contentType, int contentLength)
         {
             if (string.IsNullOrEmpty(contentType))
@@ -78,6 +62,31 @@ namespace Emby.Server.Implementations.HttpServer
             Headers[HeaderNames.ContentType] = contentType;
         }
 
+        /// <summary>
+        /// Gets or sets the source stream.
+        /// </summary>
+        /// <value>The source stream.</value>
+        private Stream SourceStream { get; set; }
+
+        private byte[] SourceBytes { get; set; }
+
+        /// <summary>
+        /// Gets the options.
+        /// </summary>
+        /// <value>The options.</value>
+        public IDictionary<string, string> Headers => _options;
+
+        /// <summary>
+        /// Fires when complete.
+        /// </summary>
+        public Action OnComplete { get; set; }
+
+        /// <summary>
+        /// Fires when an error occours.
+        /// </summary>
+        public Action OnError { get; set; }
+
+        /// <inheritdoc />
         public async Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken)
         {
             try
@@ -98,19 +107,13 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch
             {
-                if (OnError != null)
-                {
-                    OnError();
-                }
+                OnError?.Invoke();
 
                 throw;
             }
             finally
             {
-                if (OnComplete != null)
-                {
-                    OnComplete();
-                }
+                OnComplete?.Invoke();
             }
         }
     }

@@ -17,6 +17,12 @@ namespace MediaBrowser.Model.Querying
         /// <value>The total record count.</value>
         public int TotalRecordCount { get; set; }
 
+        /// <summary>
+        /// The index of the first record in Items.
+        /// </summary>
+        /// <value>First record index.</value>
+        public int StartIndex { get; set; }
+
         public QueryResult()
         {
             Items = Array.Empty<T>();

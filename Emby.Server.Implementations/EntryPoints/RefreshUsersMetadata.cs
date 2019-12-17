@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
@@ -12,31 +11,18 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.EntryPoints
 {
     /// <summary>
-    /// Class RefreshUsersMetadata
+    /// Class RefreshUsersMetadata.
     /// </summary>
     public class RefreshUsersMetadata : IScheduledTask, IConfigurableScheduledTask
     {
         private readonly ILogger _logger;
+
         /// <summary>
-        /// The _user manager
+        /// The user manager.
         /// </summary>
         private readonly IUserManager _userManager;
 
         private IFileSystem _fileSystem;
-
-        public string Name => "Refresh Users";
-
-        public string Key => "RefreshUsers";
-
-        public string Description => "Refresh user infos";
-
-        public string Category => "Library";
-
-        public bool IsHidden => true;
-
-        public bool IsEnabled => true;
-
-        public bool IsLogged => true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RefreshUsersMetadata" /> class.
@@ -48,6 +34,28 @@ namespace Emby.Server.Implementations.EntryPoints
             _fileSystem = fileSystem;
         }
 
+        /// <inheritdoc />
+        public string Name => "Refresh Users";
+
+        /// <inheritdoc />
+        public string Key => "RefreshUsers";
+
+        /// <inheritdoc />
+        public string Description => "Refresh user infos";
+
+        /// <inheritdoc />
+        public string Category => "Library";
+
+        /// <inheritdoc />
+        public bool IsHidden => true;
+
+        /// <inheritdoc />
+        public bool IsEnabled => true;
+
+        /// <inheritdoc />
+        public bool IsLogged => true;
+
+        /// <inheritdoc />
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             foreach (var user in _userManager.Users)
@@ -58,9 +66,10 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
+        /// <inheritdoc />
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new List<TaskTriggerInfo>
+            return new[]
             {
                 new TaskTriggerInfo
                 {
