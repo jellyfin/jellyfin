@@ -13,6 +13,9 @@ using static Jellyfin.Drawing.Skia.SkiaHelper;
 
 namespace Jellyfin.Drawing.Skia
 {
+    /// <summary>
+    /// Image encoder that uses <see cref="SkiaSharp"/> to manipulate images.
+    /// </summary>
     public class SkiaEncoder : IImageEncoder
     {
         private readonly ILogger _logger;
@@ -22,6 +25,12 @@ namespace Jellyfin.Drawing.Skia
         private static readonly HashSet<string> _transparentImageTypes
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SkiaEncoder"/> class.
+        /// </summary>
+        /// <param name="logger">The application logger.</param>
+        /// <param name="appPaths">The application paths.</param>
+        /// <param name="localizationManager">The application localization manager.</param>
         public SkiaEncoder(
             ILogger<SkiaEncoder> logger,
             IApplicationPaths appPaths,
@@ -32,12 +41,16 @@ namespace Jellyfin.Drawing.Skia
             _localizationManager = localizationManager;
         }
 
+        /// <inheritdoc/>
         public string Name => "Skia";
 
+        /// <inheritdoc/>
         public bool SupportsImageCollageCreation => true;
 
+        /// <inheritdoc/>
         public bool SupportsImageEncoding => true;
 
+        /// <inheritdoc/>
         public IReadOnlyCollection<string> SupportedInputFormats =>
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -65,11 +78,12 @@ namespace Jellyfin.Drawing.Skia
                 "arw"
             };
 
+        /// <inheritdoc/>
         public IReadOnlyCollection<ImageFormat> SupportedOutputFormats
             => new HashSet<ImageFormat>() { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png };
 
         /// <summary>
-        /// Test to determine if the native lib is available
+        /// Test to determine if the native lib is available.
         /// </summary>
         public static void TestSkia()
         {
@@ -80,6 +94,11 @@ namespace Jellyfin.Drawing.Skia
         private static bool IsTransparent(SKColor color)
             => (color.Red == 255 && color.Green == 255 && color.Blue == 255) || color.Alpha == 0;
 
+        /// <summary>
+        /// Convert a <see cref="ImageFormat"/> to a <see cref="SKEncodedImageFormat"/>.
+        /// </summary>
+        /// <param name="selectedFormat">The format to convert.</param>
+        /// <returns>The converted format.</returns>
         public static SKEncodedImageFormat GetImageFormat(ImageFormat selectedFormat)
         {
             switch (selectedFormat)
@@ -186,6 +205,9 @@ namespace Jellyfin.Drawing.Skia
         }
 
         /// <inheritdoc />
+        /// <exception cref="ArgumentNullException">The path is null.</exception>
+        /// <exception cref="FileNotFoundException">The path is not valid.</exception>
+        /// <exception cref="SkiaCodecException">The file at the specified path could not be used to generate a codec.</exception>
         public ImageDimensions GetImageSize(string path)
         {
             if (path == null)
@@ -269,6 +291,14 @@ namespace Jellyfin.Drawing.Skia
             }
         }
 
+        /// <summary>
+        /// Decode an image.
+        /// </summary>
+        /// <param name="path">The filepath of the image to decode.</param>
+        /// <param name="forceCleanBitmap">Whether to force clean the bitmap.</param>
+        /// <param name="orientation">The orientation of the image.</param>
+        /// <param name="origin">The detected origin of the image.</param>
+        /// <returns>The resulting bitmap of the image.</returns>
         internal SKBitmap Decode(string path, bool forceCleanBitmap, ImageOrientation? orientation, out SKEncodedOrigin origin)
         {
             if (!File.Exists(path))
@@ -358,16 +388,6 @@ namespace Jellyfin.Drawing.Skia
 
         private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
         {
-            //var transformations = {
-            //    2: { rotate: 0, flip: true},
-            //    3: { rotate: 180, flip: false},
-            //    4: { rotate: 180, flip: true},
-            //    5: { rotate: 90, flip: true},
-            //    6: { rotate: 90, flip: false},
-            //    7: { rotate: 270, flip: true},
-            //    8: { rotate: 270, flip: false},
-            //}
-
             switch (origin)
             {
                 case SKEncodedOrigin.TopRight:
@@ -497,6 +517,7 @@ namespace Jellyfin.Drawing.Skia
             }
         }
 
+        /// <inheritdoc/>
         public string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
             if (string.IsNullOrWhiteSpace(inputPath))
@@ -520,7 +541,7 @@ namespace Jellyfin.Drawing.Skia
             {
                 if (bitmap == null)
                 {
-                    throw new ArgumentOutOfRangeException(string.Format("Skia unable to read image {0}", inputPath));
+                    throw new ArgumentOutOfRangeException($"Skia unable to read image {inputPath}");
                 }
 
                 var originalImageSize = new ImageDimensions(bitmap.Width, bitmap.Height);
@@ -556,7 +577,7 @@ namespace Jellyfin.Drawing.Skia
                     }
 
                     // create bitmap to use for canvas drawing used to draw into bitmap
-                    using (var saveBitmap = new SKBitmap(width, height))//, bitmap.ColorType, bitmap.AlphaType))
+                    using (var saveBitmap = new SKBitmap(width, height)) // , bitmap.ColorType, bitmap.AlphaType))
                     using (var canvas = new SKCanvas(saveBitmap))
                     {
                         // set background color if present
@@ -609,9 +630,11 @@ namespace Jellyfin.Drawing.Skia
                     }
                 }
             }
+
             return outputPath;
         }
 
+        /// <inheritdoc/>
         public void CreateImageCollage(ImageCollageOptions options)
         {
             double ratio = (double)options.Width / options.Height;

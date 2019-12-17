@@ -31,6 +31,8 @@
   <Rules AnalyzerId="Microsoft.CodeAnalysis.FxCopAnalyzers" RuleNamespace="Microsoft.Design">
     <!-- disable warning CA1031: Do not catch general exception types -->
     <Rule Id="CA1031" Action="Info" />
+    <!-- disable warning CA1032: Implement standard exception constructors -->
+    <Rule Id="CA1032" Action="Info" />
     <!-- disable warning CA1062: Validate arguments of public methods -->
     <Rule Id="CA1062" Action="Info" />
     <!-- disable warning CA1720: Identifiers should not contain type names -->
