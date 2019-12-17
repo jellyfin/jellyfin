@@ -154,7 +154,6 @@ namespace MediaBrowser.Controller.Net
                     {
                         MessageType = Name,
                         Data = data
-
                     }, cancellationToken).ConfigureAwait(false);
 
                     state.DateLastSendUtc = DateTime.UtcNow;

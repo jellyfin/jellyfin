@@ -11,60 +11,64 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Session
 {
-    public class WebSocketController : ISessionController, IDisposable
+    public sealed class WebSocketController : ISessionController, IDisposable
     {
-        public SessionInfo Session { get; private set; }
-        public IReadOnlyList<IWebSocketConnection> Sockets { get; private set; }
-
         private readonly ILogger _logger;
-
         private readonly ISessionManager _sessionManager;
+        private readonly SessionInfo _session;
 
-        public WebSocketController(SessionInfo session, ILogger logger, ISessionManager sessionManager)
+        private List<IWebSocketConnection> _sockets;
+        private bool _disposed = false;
+
+        public WebSocketController(
+            ILogger<WebSocketController> logger,
+            SessionInfo session,
+            ISessionManager sessionManager)
         {
-            Session = session;
             _logger = logger;
+            _session = session;
             _sessionManager = sessionManager;
-            Sockets = new List<IWebSocketConnection>();
+            _sockets = new List<IWebSocketConnection>();
         }
 
         private bool HasOpenSockets => GetActiveSockets().Any();
 
+        /// <inheritdoc />
         public bool SupportsMediaControl => HasOpenSockets;
 
+        /// <inheritdoc />
         public bool IsSessionActive => HasOpenSockets;
 
         private IEnumerable<IWebSocketConnection> GetActiveSockets()
-        {
-            return Sockets
-                .OrderByDescending(i => i.LastActivityDate)
-                .Where(i => i.State == WebSocketState.Open);
-        }
+            => _sockets.Where(i => i.State == WebSocketState.Open);
 
+        /// <inheritdoc />
         public void AddWebSocket(IWebSocketConnection connection)
         {
-            var sockets = Sockets.ToList();
-            sockets.Add(connection);
+            _logger.LogDebug("Adding websocket to session {Session}", _session.Id);
+            _sockets.Add(connection);
 
-            Sockets = sockets;
-
-            connection.Closed += connection_Closed;
+            connection.Closed += OnConnectionClosed;
         }
 
-        void connection_Closed(object sender, EventArgs e)
+        private void OnConnectionClosed(object sender, EventArgs e)
         {
+            _logger.LogDebug("Removing websocket from session {Session}", _session.Id);
             var connection = (IWebSocketConnection)sender;
-            var sockets = Sockets.ToList();
-            sockets.Remove(connection);
-
-            Sockets = sockets;
-
-            _sessionManager.CloseIfNeeded(Session);
+            _sockets.Remove(connection);
+            _sessionManager.CloseIfNeeded(_session);
+            connection.Dispose();
         }
 
-        public Task SendMessage<T>(string name, string messageId, T data, ISessionController[] allControllers, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public Task SendMessage<T>(
+            string name,
+            Guid messageId,
+            T data,
+            CancellationToken cancellationToken)
         {
             var socket = GetActiveSockets()
+                .OrderByDescending(i => i.LastActivityDate)
                 .FirstOrDefault();
 
             if (socket == null)
@@ -77,16 +81,24 @@ namespace Emby.Server.Implementations.Session
                 Data = data,
                 MessageType = name,
                 MessageId = messageId
-
             }, cancellationToken);
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
-            foreach (var socket in Sockets.ToList())
+            if (_disposed)
             {
-                socket.Closed -= connection_Closed;
+                return;
             }
+
+            foreach (var socket in _sockets)
+            {
+                socket.Closed -= OnConnectionClosed;
+                socket.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

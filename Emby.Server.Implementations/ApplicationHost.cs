@@ -45,7 +45,6 @@ using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
-using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using MediaBrowser.Api;
@@ -105,7 +104,6 @@ using MediaBrowser.Providers.TV.TheTVDB;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -629,32 +627,8 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public async Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next)
-        {
-            if (!context.WebSockets.IsWebSocketRequest)
-            {
-                await next().ConfigureAwait(false);
-                return;
-            }
-
-            await HttpServer.ProcessWebSocketRequest(context).ConfigureAwait(false);
-        }
-
-        public async Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
-        {
-            if (context.WebSockets.IsWebSocketRequest)
-            {
-                await next().ConfigureAwait(false);
-                return;
-            }
-
-            var request = context.Request;
-            var response = context.Response;
-            var localPath = context.Request.Path.ToString();
-
-            var req = new WebSocketSharpRequest(request, response, request.Path, Logger);
-            await HttpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, context.RequestAborted).ConfigureAwait(false);
-        }
+        public Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
+            => HttpServer.RequestHandler(context);
 
         /// <summary>
         /// Registers resources that classes will depend on
@@ -777,7 +751,7 @@ namespace Emby.Server.Implementations
                 NetworkManager,
                 JsonSerializer,
                 XmlSerializer,
-                CreateHttpListener())
+                LoggerFactory)
             {
                 GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading")
             };
@@ -1193,8 +1167,6 @@ namespace Emby.Server.Implementations
                 return prefixes;
             });
         }
-
-        protected IHttpListener CreateHttpListener() => new WebSocketSharpListener(Logger);
 
         private CertificateInfo GetCertificateInfo(bool generateCertificate)
         {

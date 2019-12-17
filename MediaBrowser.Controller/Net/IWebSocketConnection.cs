@@ -1,9 +1,9 @@
 using System;
+using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.Net
@@ -16,12 +16,6 @@ namespace MediaBrowser.Controller.Net
         event EventHandler<EventArgs> Closed;
 
         /// <summary>
-        /// Gets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        Guid Id { get; }
-
-        /// <summary>
         /// Gets the last activity date.
         /// </summary>
         /// <value>The last activity date.</value>
@@ -32,6 +26,7 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <value>The URL.</value>
         string Url { get; set; }
+
         /// <summary>
         /// Gets or sets the query string.
         /// </summary>
@@ -54,7 +49,7 @@ namespace MediaBrowser.Controller.Net
         /// Gets the remote end point.
         /// </summary>
         /// <value>The remote end point.</value>
-        string RemoteEndPoint { get; }
+        IPAddress RemoteEndPoint { get; }
 
         /// <summary>
         /// Sends a message asynchronously.
@@ -66,21 +61,6 @@ namespace MediaBrowser.Controller.Net
         /// <exception cref="ArgumentNullException">message</exception>
         Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Sends a message asynchronously.
-        /// </summary>
-        /// <param name="buffer">The buffer.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SendAsync(byte[] buffer, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Sends a message asynchronously.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">buffer</exception>
-        Task SendAsync(string text, CancellationToken cancellationToken);
+        Task ProcessAsync(CancellationToken cancellationToken = default);
     }
 }

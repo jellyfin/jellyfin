@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Services;
@@ -20,11 +19,6 @@ namespace MediaBrowser.Controller.Net
         string[] UrlPrefixes { get; }
 
         /// <summary>
-        /// Stops this instance.
-        /// </summary>
-        void Stop();
-
-        /// <summary>
         /// Occurs when [web socket connected].
         /// </summary>
         event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
@@ -40,22 +34,10 @@ namespace MediaBrowser.Controller.Net
         string GlobalResponse { get; set; }
 
         /// <summary>
-        /// Sends the http context to the socket listener
-        /// </summary>
-        /// <param name="ctx"></param>
-        /// <returns></returns>
-        Task ProcessWebSocketRequest(HttpContext ctx);
-
-        /// <summary>
         /// The HTTP request handler
         /// </summary>
-        /// <param name="httpReq"></param>
-        /// <param name="urlString"></param>
-        /// <param name="host"></param>
-        /// <param name="localPath"></param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        Task RequestHandler(IHttpRequest httpReq, string urlString, string host, string localPath,
-            CancellationToken cancellationToken);
+        Task RequestHandler(HttpContext context);
     }
 }

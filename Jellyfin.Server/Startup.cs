@@ -3,7 +3,6 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -64,7 +63,6 @@ namespace Jellyfin.Server
             app.UseResponseCompression();
 
             // TODO app.UseMiddleware<WebSocketMiddleware>();
-            app.Use(serverApplicationHost.ExecuteWebsocketHandlerAsync);
 
             // TODO use when old API is removed: app.UseAuthentication();
             app.UseJellyfinApiSwagger();
