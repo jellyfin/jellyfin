@@ -49,19 +49,12 @@ namespace MediaBrowser.Controller.Library
         event EventHandler<GenericEventArgs<User>> UserLockedOut;
 
         /// <summary>
-        /// Gets a User by Id.
+        /// Gets a user by Id.
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>The user with the specified Id, or <c>null</c> if the user doesn't exist.</returns>
         /// <exception cref="ArgumentException"><c>id</c> is an empty Guid.</exception>
         User GetUserById(Guid id);
-
-        /// <summary>
-        /// Gets the user by identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns>User.</returns>
-        User GetUserById(string id);
 
         /// <summary>
         /// Gets the name of the user by.

@@ -12,6 +12,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -137,7 +138,9 @@ namespace MediaBrowser.Api.Playback.Hls
         }
 
         public VideoHlsService(
-            IServerConfigurationManager serverConfig,
+            ILogger<VideoHlsService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
             IUserManager userManager,
             ILibraryManager libraryManager,
             IIsoManager isoManager,
@@ -149,7 +152,10 @@ namespace MediaBrowser.Api.Playback.Hls
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext)
-                : base(serverConfig,
+                : base(
+                    logger,
+                    serverConfigurationManager,
+                    httpResultFactory,
                     userManager,
                     libraryManager,
                     isoManager,

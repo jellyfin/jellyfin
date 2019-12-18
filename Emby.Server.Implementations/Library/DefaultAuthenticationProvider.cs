@@ -10,10 +10,17 @@ using MediaBrowser.Model.Cryptography;
 
 namespace Emby.Server.Implementations.Library
 {
+    /// <summary>
+    /// The default authentication provider.
+    /// </summary>
     public class DefaultAuthenticationProvider : IAuthenticationProvider, IRequiresResolvedUser
     {
         private readonly ICryptoProvider _cryptographyProvider;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultAuthenticationProvider"/> class.
+        /// </summary>
+        /// <param name="cryptographyProvider">The cryptography provider.</param>
         public DefaultAuthenticationProvider(ICryptoProvider cryptographyProvider)
         {
             _cryptographyProvider = cryptographyProvider;
@@ -38,11 +45,12 @@ namespace Emby.Server.Implementations.Library
         // This is the version that we need to use for local users. Because reasons.
         public Task<ProviderAuthenticationResult> Authenticate(string username, string password, User resolvedUser)
         {
-            bool success = false;
             if (resolvedUser == null)
             {
                 throw new ArgumentNullException(nameof(resolvedUser));
             }
+
+            bool success = false;
 
             // As long as jellyfin supports passwordless users, we need this little block here to accommodate
             if (!HasPassword(resolvedUser) && string.IsNullOrEmpty(password))

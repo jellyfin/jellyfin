@@ -133,6 +133,10 @@ namespace Emby.Server.Implementations.AppBase
             }
         }
 
+        /// <summary>
+        /// Adds parts.
+        /// </summary>
+        /// <param name="factories">The configuration factories.</param>
         public virtual void AddParts(IEnumerable<IConfigurationFactory> factories)
         {
             _configurationFactories = factories.ToArray();
@@ -247,6 +251,10 @@ namespace Emby.Server.Implementations.AppBase
             }
         }
 
+        /// <summary>
+        /// Ensures that we have write access to the path.
+        /// </summary>
+        /// <param name="path">The path.</param>
         protected void EnsureWriteAccess(string path)
         {
             var file = Path.Combine(path, Guid.NewGuid().ToString());
@@ -259,6 +267,7 @@ namespace Emby.Server.Implementations.AppBase
             return Path.Combine(CommonApplicationPaths.ConfigurationDirectoryPath, key.ToLowerInvariant() + ".xml");
         }
 
+        /// <inheritdoc />
         public object GetConfiguration(string key)
         {
             return _configurations.GetOrAdd(key, k =>
@@ -305,6 +314,7 @@ namespace Emby.Server.Implementations.AppBase
             }
         }
 
+        /// <inheritdoc />
         public void SaveConfiguration(string key, object configuration)
         {
             var configurationStore = GetConfigurationStore(key);
@@ -341,6 +351,11 @@ namespace Emby.Server.Implementations.AppBase
             OnNamedConfigurationUpdated(key, configuration);
         }
 
+        /// <summary>
+        /// Event handler for when a named configuration has been updated.
+        /// </summary>
+        /// <param name="key">The key of the configuration.</param>
+        /// <param name="configuration">The old configuration.</param>
         protected virtual void OnNamedConfigurationUpdated(string key, object configuration)
         {
             NamedConfigurationUpdated?.Invoke(this, new ConfigurationUpdateEventArgs
@@ -350,6 +365,7 @@ namespace Emby.Server.Implementations.AppBase
             });
         }
 
+        /// <inheritdoc />
         public Type GetConfigurationType(string key)
         {
             return GetConfigurationStore(key)

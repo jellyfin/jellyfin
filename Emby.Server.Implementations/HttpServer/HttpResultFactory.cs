@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -5,12 +7,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Runtime.Serialization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Emby.Server.Implementations.Services;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
@@ -24,12 +24,12 @@ using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 namespace Emby.Server.Implementations.HttpServer
 {
     /// <summary>
-    /// Class HttpResultFactory
+    /// Class HttpResultFactory.
     /// </summary>
     public class HttpResultFactory : IHttpResultFactory
     {
         /// <summary>
-        /// The _logger
+        /// The logger.
         /// </summary>
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;

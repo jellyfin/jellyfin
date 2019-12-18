@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Resolvers;
 namespace Emby.Server.Implementations.Library.Resolvers
 {
     /// <summary>
-    /// Class FolderResolver
+    /// Class FolderResolver.
     /// </summary>
     public class FolderResolver : FolderResolver<Folder>
     {
@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
     }
 
     /// <summary>
-    /// Class FolderResolver
+    /// Class FolderResolver.
     /// </summary>
     /// <typeparam name="TItemType">The type of the T item type.</typeparam>
     public abstract class FolderResolver<TItemType> : ItemResolver<TItemType>

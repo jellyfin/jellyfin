@@ -25,7 +25,6 @@ using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
@@ -315,46 +314,40 @@ namespace MediaBrowser.Api.Library
     /// </summary>
     public class LibraryService : BaseApiService
     {
-        /// <summary>
-        /// The _item repo
-        /// </summary>
-        private readonly IItemRepository _itemRepo;
-
+        private readonly IProviderManager _providerManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
-        private readonly IUserDataManager _userDataManager;
-
         private readonly IDtoService _dtoService;
         private readonly IAuthorizationContext _authContext;
         private readonly IActivityManager _activityManager;
         private readonly ILocalizationManager _localization;
-        private readonly ILiveTvManager _liveTv;
-        private readonly ITVSeriesManager _tvManager;
         private readonly ILibraryMonitor _libraryMonitor;
-        private readonly IFileSystem _fileSystem;
-        private readonly IServerConfigurationManager _config;
-        private readonly IProviderManager _providerManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
-        public LibraryService(IProviderManager providerManager, IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization, ILiveTvManager liveTv, ITVSeriesManager tvManager, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, IServerConfigurationManager config)
+        public LibraryService(
+            ILogger<LibraryService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IProviderManager providerManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IDtoService dtoService,
+            IAuthorizationContext authContext,
+            IActivityManager activityManager,
+            ILocalizationManager localization,
+            ILibraryMonitor libraryMonitor)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            _itemRepo = itemRepo;
+            _providerManager = providerManager;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dtoService = dtoService;
-            _userDataManager = userDataManager;
             _authContext = authContext;
             _activityManager = activityManager;
             _localization = localization;
-            _liveTv = liveTv;
-            _tvManager = tvManager;
             _libraryMonitor = libraryMonitor;
-            _fileSystem = fileSystem;
-            _config = config;
-            _providerManager = providerManager;
         }
 
         private string[] GetRepresentativeItemTypes(string contentType)
@@ -390,7 +383,7 @@ namespace MediaBrowser.Api.Library
                 return false;
             }
 
-            var metadataOptions = _config.Configuration.MetadataOptions
+            var metadataOptions = ServerConfigurationManager.Configuration.MetadataOptions
                 .Where(i => itemTypes.Contains(i.ItemType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 .ToArray();
 
@@ -446,7 +439,7 @@ namespace MediaBrowser.Api.Library
                 return false;
             }
 
-            var metadataOptions = _config.Configuration.MetadataOptions
+            var metadataOptions = ServerConfigurationManager.Configuration.MetadataOptions
                 .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
@@ -510,7 +503,7 @@ namespace MediaBrowser.Api.Library
                 return false;
             }
 
-            var metadataOptions = _config.Configuration.MetadataOptions
+            var metadataOptions = ServerConfigurationManager.Configuration.MetadataOptions
                 .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
@@ -630,7 +623,14 @@ namespace MediaBrowser.Api.Library
 
             if (item is Movie || (program != null && program.IsMovie) || item is Trailer)
             {
-                return new MoviesService(_userManager, _libraryManager, _dtoService, _config, _authContext)
+                return new MoviesService(
+                    Logger,
+                    ServerConfigurationManager,
+                    ResultFactory,
+                    _userManager,
+                    _libraryManager,
+                    _dtoService,
+                    _authContext)
                 {
                     Request = Request,
 

@@ -69,36 +69,34 @@ namespace MediaBrowser.Api.Playback
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IDeviceManager _deviceManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IUserManager _userManager;
         private readonly IJsonSerializer _json;
         private readonly IAuthorizationContext _authContext;
-        private readonly ILogger _logger;
 
         public MediaInfoService(
+            ILogger logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
             IMediaSourceManager mediaSourceManager,
             IDeviceManager deviceManager,
             ILibraryManager libraryManager,
-            IServerConfigurationManager config,
             INetworkManager networkManager,
             IMediaEncoder mediaEncoder,
             IUserManager userManager,
             IJsonSerializer json,
-            IAuthorizationContext authContext,
-            ILoggerFactory loggerFactory)
+            IAuthorizationContext authContext)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _mediaSourceManager = mediaSourceManager;
             _deviceManager = deviceManager;
             _libraryManager = libraryManager;
-            _config = config;
             _networkManager = networkManager;
             _mediaEncoder = mediaEncoder;
             _userManager = userManager;
             _json = json;
             _authContext = authContext;
-            _logger = loggerFactory.CreateLogger(nameof(MediaInfoService));
         }
 
         public object Get(GetBitrateTestBytes request)
@@ -275,7 +273,7 @@ namespace MediaBrowser.Api.Playback
                 catch (Exception ex)
                 {
                     mediaSources = new List<MediaSourceInfo>();
-                    _logger.LogError(ex, "Could not find media sources for item id {id}", id);
+                    Logger.LogError(ex, "Could not find media sources for item id {id}", id);
                     // TODO PlaybackException ??
                     //result.ErrorCode = ex.ErrorCode;
                 }
@@ -533,7 +531,7 @@ namespace MediaBrowser.Api.Playback
 
             if (remoteClientMaxBitrate <= 0)
             {
-                remoteClientMaxBitrate = _config.Configuration.RemoteClientBitrateLimit;
+                remoteClientMaxBitrate = ServerConfigurationManager.Configuration.RemoteClientBitrateLimit;
             }
 
             if (remoteClientMaxBitrate > 0)

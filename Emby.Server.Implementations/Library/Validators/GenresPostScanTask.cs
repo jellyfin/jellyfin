@@ -7,6 +7,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators
 {
+    /// <summary>
+    /// Class GenresPostScanTask.
+    /// </summary>
     public class GenresPostScanTask : ILibraryPostScanTask
     {
         /// <summary>

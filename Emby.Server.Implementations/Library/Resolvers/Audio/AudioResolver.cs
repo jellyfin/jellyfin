@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +15,7 @@ using MediaBrowser.Model.IO;
 namespace Emby.Server.Implementations.Library.Resolvers.Audio
 {
     /// <summary>
-    /// Class AudioResolver
+    /// Class AudioResolver.
     /// </summary>
     public class AudioResolver : ItemResolver<MediaBrowser.Controller.Entities.Audio.Audio>, IMultiItemResolver
     {

@@ -1582,15 +1582,15 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     return;
                 }
 
-                var episodesToDelete = (librarySeries.GetItemList(new InternalItemsQuery
+                var episodesToDelete = librarySeries.GetItemList(new InternalItemsQuery
                 {
-                    OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
+                    OrderBy = new[] { (ItemSortBy.DateCreated, SortOrder.Descending) },
                     IsVirtualItem = false,
                     IsFolder = false,
                     Recursive = true,
                     DtoOptions = new DtoOptions(true)
 
-                }))
+                })
                     .Where(i => i.IsFileProtocol && File.Exists(i.Path))
                     .Skip(seriesTimer.KeepUpTo - 1)
                     .ToList();
@@ -2260,7 +2260,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 },
                 MinStartDate = startDateUtc.AddMinutes(-3),
                 MaxStartDate = startDateUtc.AddMinutes(3),
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending) }
+                OrderBy = new[] { (ItemSortBy.StartDate, SortOrder.Ascending) }
             };
 
             if (!string.IsNullOrWhiteSpace(channelId))
