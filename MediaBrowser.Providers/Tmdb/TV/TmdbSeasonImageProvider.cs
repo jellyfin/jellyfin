@@ -59,14 +59,14 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
             if (string.IsNullOrEmpty(seriesId))
             {
-                return list;
+                return Enumerable.Empty<RemoteImageInfo>();
             }
 
             var seasonNumber = season.IndexNumber;
 
             if (!seasonNumber.HasValue)
             {
-                return list;
+                return Enumerable.Empty<RemoteImageInfo>();
             }
 
             var language = item.GetPreferredMetadataLanguage();
@@ -88,7 +88,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
                 ProviderName = Name,
                 Type = ImageType.Primary,
                 RatingType = RatingType.Score
-            }));
+            }).ToList());
 
 
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
