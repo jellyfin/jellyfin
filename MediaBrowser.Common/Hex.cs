@@ -14,7 +14,7 @@ namespace MediaBrowser.Common
         internal const int LastHexSymbol = 0x66; // 102: f
 
         /// <summary>
-        /// Gets an map from an ASCII char to its hex value shifted,
+        /// Gets a map from an ASCII char to its hex value shifted,
         /// e.g. <c>b</c> -> 11. 0xFF means it's not a hex symbol.
         /// </summary>
         internal static ReadOnlySpan<byte> HexLookup => new byte[]

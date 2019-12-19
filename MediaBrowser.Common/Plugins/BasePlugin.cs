@@ -96,19 +96,19 @@ namespace MediaBrowser.Common.Plugins
         where TConfigurationType : BasePluginConfiguration
     {
         /// <summary>
-        /// The _configuration sync lock.
+        /// The configuration sync lock.
         /// </summary>
         private readonly object _configurationSyncLock = new object();
 
         /// <summary>
-        /// The _save lock.
+        /// The save lock.
         /// </summary>
         private readonly object _configurationSaveLock = new object();
 
         private Action<string> _directoryCreateFn;
 
         /// <summary>
-        /// The _configuration.
+        /// The configuration.
         /// </summary>
         private TConfigurationType _configuration;
 
