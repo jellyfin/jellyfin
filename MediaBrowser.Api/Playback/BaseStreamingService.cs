@@ -759,13 +759,13 @@ namespace MediaBrowser.Api.Playback
 
                 if (mediaSource == null)
                 {
-                    var mediaSources = (await MediaSourceManager.GetPlayackMediaSources(LibraryManager.GetItemById(request.Id), null, false, false, cancellationToken).ConfigureAwait(false)).ToList();
+                    var mediaSources = await MediaSourceManager.GetPlayackMediaSources(LibraryManager.GetItemById(request.Id), null, false, false, cancellationToken).ConfigureAwait(false);
 
                     mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
                        ? mediaSources[0]
                        : mediaSources.Find(i => string.Equals(i.Id, request.MediaSourceId));
 
-                    if (mediaSource == null && request.MediaSourceId.Equals(request.Id))
+                    if (mediaSource == null && Guid.Parse(request.MediaSourceId) == request.Id)
                     {
                         mediaSource = mediaSources[0];
                     }
