@@ -55,8 +55,6 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
             var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tmdb) : null;
 
-            var list = new List<RemoteImageInfo>();
-
             if (string.IsNullOrEmpty(seriesId))
             {
                 return Enumerable.Empty<RemoteImageInfo>();
@@ -77,7 +75,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
             var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
 
-            list.AddRange(results.Select(i => new RemoteImageInfo
+            var list = results.Select(i => new RemoteImageInfo
             {
                 Url = tmdbImageUrl + i.File_Path,
                 CommunityRating = i.Vote_Average,
@@ -88,8 +86,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
                 ProviderName = Name,
                 Type = ImageType.Primary,
                 RatingType = RatingType.Score
-            }).ToList());
-
+            }).ToList();
 
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 
