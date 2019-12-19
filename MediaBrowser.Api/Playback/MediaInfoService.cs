@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -54,7 +55,7 @@ namespace MediaBrowser.Api.Playback
     public class GetBitrateTestBytes
     {
         [ApiMember(Name = "Size", Description = "Size", IsRequired = true, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public long Size { get; set; }
+        public int Size { get; set; }
 
         public GetBitrateTestBytes()
         {
@@ -101,8 +102,31 @@ namespace MediaBrowser.Api.Playback
 
         public object Get(GetBitrateTestBytes request)
         {
-            var bytes = new byte[request.Size];
-            return ResultFactory.GetResult(null, bytes, "application/octet-stream");
+            const int MaxSize = 10_000_000;
+
+            var size = request.Size;
+
+            if (size <= 0)
+            {
+                throw new ArgumentException($"The requested size can't be equal or smaller than 0.", nameof(request));
+            }
+
+            if (size > MaxSize)
+            {
+                throw new ArgumentException($"The requested size can't be larger than the max allowed value ({MaxSize}).", nameof(request));
+            }
+
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
+            try
+            {
+                // ArrayPool<byte>.Shared.Rent doesn't guarantee that the returned buffer is zeroed
+                Array.Fill<byte>(buffer, 0);
+                return ResultFactory.GetResult(null, buffer, "application/octet-stream");
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
 
         public async Task<object> Get(GetPlaybackInfo request)
