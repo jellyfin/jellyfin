@@ -1,3 +1,8 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1402
+#pragma warning disable SA1600
+#pragma warning disable SA1649
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,60 +17,6 @@ using MediaBrowser.Model.Services;
 
 namespace Emby.Notifications.Api
 {
-    [Route("/Notifications/{UserId}", "GET", Summary = "Gets notifications")]
-    public class GetNotifications : IReturn<NotificationResult>
-    {
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
-
-        [ApiMember(Name = "IsRead", Description = "An optional filter by IsRead", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public bool? IsRead { get; set; }
-
-        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? StartIndex { get; set; }
-
-        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? Limit { get; set; }
-    }
-
-    public class Notification
-    {
-        public string Id { get; set; }
-
-        public string UserId { get; set; }
-
-        public DateTime Date { get; set; }
-
-        public bool IsRead { get; set; }
-
-        public string Name { get; set; }
-
-        public string Description { get; set; }
-
-        public string Url { get; set; }
-
-        public NotificationLevel Level { get; set; }
-    }
-
-    public class NotificationResult
-    {
-        public Notification[] Notifications { get; set; }
-        public int TotalRecordCount { get; set; }
-    }
-
-    public class NotificationsSummary
-    {
-        public int UnreadCount { get; set; }
-        public NotificationLevel MaxUnreadNotificationLevel { get; set; }
-    }
-
-    [Route("/Notifications/{UserId}/Summary", "GET", Summary = "Gets a notification summary for a user")]
-    public class GetNotificationsSummary : IReturn<NotificationsSummary>
-    {
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
-    }
-
     [Route("/Notifications/Types", "GET", Summary = "Gets notification types")]
     public class GetNotificationTypes : IReturn<List<NotificationTypeInfo>>
     {
@@ -80,39 +31,19 @@ namespace Emby.Notifications.Api
     public class AddAdminNotification : IReturnVoid
     {
         [ApiMember(Name = "Name", Description = "The notification's name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [ApiMember(Name = "Description", Description = "The notification's description", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         [ApiMember(Name = "ImageUrl", Description = "The notification's image url", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string ImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
 
         [ApiMember(Name = "Url", Description = "The notification's info url", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Url { get; set; }
+        public string? Url { get; set; }
 
         [ApiMember(Name = "Level", Description = "The notification level", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public NotificationLevel Level { get; set; }
-    }
-
-    [Route("/Notifications/{UserId}/Read", "POST", Summary = "Marks notifications as read")]
-    public class MarkRead : IReturnVoid
-    {
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string UserId { get; set; }
-
-        [ApiMember(Name = "Ids", Description = "A list of notification ids, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
-        public string Ids { get; set; }
-    }
-
-    [Route("/Notifications/{UserId}/Unread", "POST", Summary = "Marks notifications as unread")]
-    public class MarkUnread : IReturnVoid
-    {
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string UserId { get; set; }
-
-        [ApiMember(Name = "Ids", Description = "A list of notification ids, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
-        public string Ids { get; set; }
     }
 
     [Authenticated]
@@ -129,30 +60,19 @@ namespace Emby.Notifications.Api
 
         public object Get(GetNotificationTypes request)
         {
+            _ = request; // Silence unused variable warning
             return _notificationManager.GetNotificationTypes();
         }
 
         public object Get(GetNotificationServices request)
         {
+            _ = request; // Silence unused variable warning
             return _notificationManager.GetNotificationServices().ToList();
-        }
-
-        public object Get(GetNotificationsSummary request)
-        {
-            return new NotificationsSummary
-            {
-
-            };
         }
 
         public Task Post(AddAdminNotification request)
         {
             // This endpoint really just exists as post of a real with sickbeard
-            return AddNotification(request);
-        }
-
-        private Task AddNotification(AddAdminNotification request)
-        {
             var notification = new NotificationRequest
             {
                 Date = DateTime.UtcNow,
@@ -164,19 +84,6 @@ namespace Emby.Notifications.Api
             };
 
             return _notificationManager.SendNotification(notification, CancellationToken.None);
-        }
-
-        public void Post(MarkRead request)
-        {
-        }
-
-        public void Post(MarkUnread request)
-        {
-        }
-
-        public object Get(GetNotifications request)
-        {
-            return new NotificationResult();
         }
     }
 }
