@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
             var season = (Season)item;
             var series = season.Series;
 
-            var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tmdb) : null;
+            var seriesId = series?.GetProviderId(MetadataProviders.Tmdb);
 
             if (string.IsNullOrEmpty(seriesId))
             {
