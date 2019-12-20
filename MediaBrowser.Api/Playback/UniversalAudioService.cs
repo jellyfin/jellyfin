@@ -74,7 +74,6 @@ namespace MediaBrowser.Api.Playback
     [Authenticated]
     public class UniversalAudioService : BaseApiService
     {
-        private readonly ILoggerFactory _loggerFactory;
         private readonly EncodingHelper _encodingHelper;
 
         public UniversalAudioService(
@@ -243,7 +242,6 @@ namespace MediaBrowser.Api.Playback
                 NetworkManager,
                 MediaEncoder,
                 UserManager,
-                JsonSerializer,
                 AuthorizationContext)
             {
                 Request = Request

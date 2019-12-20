@@ -1,7 +1,13 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1402
+#pragma warning disable SA1600
+#pragma warning disable SA1649
+
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -73,7 +79,6 @@ namespace MediaBrowser.Api.Playback
         private readonly INetworkManager _networkManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IUserManager _userManager;
-        private readonly IJsonSerializer _json;
         private readonly IAuthorizationContext _authContext;
 
         public MediaInfoService(
@@ -86,7 +91,6 @@ namespace MediaBrowser.Api.Playback
             INetworkManager networkManager,
             IMediaEncoder mediaEncoder,
             IUserManager userManager,
-            IJsonSerializer json,
             IAuthorizationContext authContext)
             : base(logger, serverConfigurationManager, httpResultFactory)
         {
@@ -96,7 +100,6 @@ namespace MediaBrowser.Api.Playback
             _networkManager = networkManager;
             _mediaEncoder = mediaEncoder;
             _userManager = userManager;
-            _json = json;
             _authContext = authContext;
         }
 
@@ -193,7 +196,7 @@ namespace MediaBrowser.Api.Playback
 
             var profile = request.DeviceProfile;
 
-            Logger.LogInformation("GetPostedPlaybackInfo profile: {profile}", _json.SerializeToString(profile));
+            Logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", profile);
 
             if (profile == null)
             {
@@ -266,9 +269,8 @@ namespace MediaBrowser.Api.Playback
         {
             // Since we're going to be setting properties on MediaSourceInfos that come out of _mediaSourceManager, we should clone it
             // Should we move this directly into MediaSourceManager?
-
-            var json = _json.SerializeToString(obj);
-            return _json.DeserializeFromString<T>(json);
+            var json = JsonSerializer.SerializeToUtf8Bytes(obj);
+            return JsonSerializer.Deserialize<T>(json);
         }
 
         private async Task<PlaybackInfoResponse> GetPlaybackInfo(Guid id, Guid userId, string[] supportedLiveMediaTypes, string mediaSourceId = null, string liveStreamId = null)
@@ -309,7 +311,7 @@ namespace MediaBrowser.Api.Playback
                 result.MediaSources = new MediaSourceInfo[] { mediaSource };
             }
 
-            if (result.MediaSources.Length == 0)
+            if (result.MediaSources.Count == 0)
             {
                 if (!result.ErrorCode.HasValue)
                 {
