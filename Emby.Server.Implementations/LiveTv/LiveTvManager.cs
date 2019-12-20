@@ -304,9 +304,12 @@ namespace Emby.Server.Implementations.LiveTv
         }
 
         private ILiveTvService GetService(string name)
-        {
-            return _services.FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
-        }
+            => Array.Find(_services, x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase))
+                ?? throw new KeyNotFoundException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "No service with the name '{0}' can be found.",
+                        name));
 
         private static void Normalize(MediaSourceInfo mediaSource, ILiveTvService service, bool isVideo)
         {

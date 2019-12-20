@@ -667,12 +667,9 @@ namespace Emby.Server.Implementations.Session
             data.PlayCount++;
             data.LastPlayedDate = DateTime.UtcNow;
 
-            if (item.SupportsPlayedStatus)
+            if (item.SupportsPlayedStatus && !item.SupportsPositionTicksResume)
             {
-                if (!(item is Video))
-                {
-                    data.Played = true;
-                }
+                data.Played = true;
             }
             else
             {
@@ -769,7 +766,6 @@ namespace Emby.Server.Implementations.Session
             {
                 _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None);
             }
-
         }
 
         private static bool UpdatePlaybackSettings(User user, PlaybackProgressInfo info, UserItemData data)
@@ -1393,6 +1389,12 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
+            if (user == null)
+            {
+                AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
+                throw new SecurityException("Invalid user or password entered.");
+            }
+
             if (enforcePassword)
             {
                 user = await _userManager.AuthenticateUser(
@@ -1401,13 +1403,6 @@ namespace Emby.Server.Implementations.Session
                     request.PasswordSha1,
                     request.RemoteEndPoint,
                     true).ConfigureAwait(false);
-            }
-
-            if (user == null)
-            {
-                AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
-
-                throw new SecurityException("Invalid user or password entered.");
             }
 
             var token = GetAuthorizationToken(user, request.DeviceId, request.App, request.AppVersion, request.DeviceName);

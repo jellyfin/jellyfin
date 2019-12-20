@@ -141,8 +141,7 @@ namespace Emby.Server.Implementations.Updates
 
             if (guid != Guid.Empty)
             {
-                var strGuid = guid.ToString("N", CultureInfo.InvariantCulture);
-                availablePackages = availablePackages.Where(x => x.guid.Equals(strGuid, StringComparison.OrdinalIgnoreCase));
+                availablePackages = availablePackages.Where(x => Guid.Parse(x.guid) == guid);
             }
 
             return availablePackages;

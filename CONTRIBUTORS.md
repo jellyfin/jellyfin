@@ -30,6 +30,7 @@
  - [Khinenw](https://github.com/HelloWorld017)
  - [fhriley](https://github.com/fhriley)
  - [nevado](https://github.com/nevado)
+ - [mark-monteiro](https://github.com/mark-monteiro)
 
 # Emby Contributors
 

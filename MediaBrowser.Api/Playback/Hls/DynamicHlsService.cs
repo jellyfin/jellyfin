@@ -104,12 +104,12 @@ namespace MediaBrowser.Api.Playback.Hls
             IMediaEncoder mediaEncoder,
             IFileSystem fileSystem,
             IDlnaManager dlnaManager,
-            ISubtitleEncoder subtitleEncoder,
             IDeviceManager deviceManager,
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext,
-            INetworkManager networkManager)
+            INetworkManager networkManager,
+            EncodingHelper encodingHelper)
             : base(
                 logger,
                 serverConfigurationManager,
@@ -120,11 +120,11 @@ namespace MediaBrowser.Api.Playback.Hls
                 mediaEncoder,
                 fileSystem,
                 dlnaManager,
-                subtitleEncoder,
                 deviceManager,
                 mediaSourceManager,
                 jsonSerializer,
-                authorizationContext)
+                authorizationContext,
+                encodingHelper)
         {
             NetworkManager = networkManager;
         }
@@ -949,7 +949,17 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
-                args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultEncoderPreset()) + keyFrameArg;
+                args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultEncoderPreset());
+
+                // Unable to force key frames to h264_qsv transcode
+                if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.LogInformation("Bug Workaround: Disabling force_key_frames for h264_qsv"); 
+                } 
+                else
+                {
+                    args += " " + keyFrameArg;
+                } 
 
                 //args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
