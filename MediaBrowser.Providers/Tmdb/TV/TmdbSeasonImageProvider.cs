@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,15 +23,11 @@ namespace MediaBrowser.Providers.Tmdb.TV
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
-        private readonly IFileSystem _fileSystem;
-        private readonly ILocalizationManager _localization;
 
-        public TmdbSeasonImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, ILocalizationManager localization)
+        public TmdbSeasonImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
-            _fileSystem = fileSystem;
-            _localization = localization;
         }
 
         public int Order => 1;
@@ -69,7 +66,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
             var language = item.GetPreferredMetadataLanguage();
 
-            var results = await FetchImages(season, seriesId, language, _jsonSerializer, cancellationToken).ConfigureAwait(false);
+            var results = await FetchImages(season, seriesId, language, cancellationToken).ConfigureAwait(false);
 
             var tmdbSettings = await TmdbMovieProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
@@ -86,7 +83,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
                 ProviderName = Name,
                 Type = ImageType.Primary,
                 RatingType = RatingType.Score
-            }).ToList();
+            });
 
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 
@@ -96,6 +93,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
                 {
                     return 3;
                 }
+
                 if (!isLanguageEn)
                 {
                     if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
@@ -103,18 +101,19 @@ namespace MediaBrowser.Providers.Tmdb.TV
                         return 2;
                     }
                 }
+
                 if (string.IsNullOrEmpty(i.Language))
                 {
                     return isLanguageEn ? 3 : 2;
                 }
+
                 return 0;
             })
                 .ThenByDescending(i => i.CommunityRating ?? 0)
                 .ThenByDescending(i => i.VoteCount ?? 0);
         }
 
-        private async Task<List<Poster>> FetchImages(Season item, string tmdbId, string language, IJsonSerializer jsonSerializer,
-            CancellationToken cancellationToken)
+        private async Task<List<Poster>> FetchImages(Season item, string tmdbId, string language, CancellationToken cancellationToken)
         {
             await TmdbSeasonProvider.Current.EnsureSeasonInfo(tmdbId, item.IndexNumber.GetValueOrDefault(), language, cancellationToken).ConfigureAwait(false);
 
@@ -122,11 +121,9 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
             if (!string.IsNullOrEmpty(path))
             {
-                var fileInfo = _fileSystem.GetFileInfo(path);
-
-                if (fileInfo.Exists)
+                if (File.Exists(path))
                 {
-                    return jsonSerializer.DeserializeFromFile<Models.TV.SeasonResult>(path).Images.Posters;
+                    return _jsonSerializer.DeserializeFromFile<Models.TV.SeasonResult>(path).Images.Posters;
                 }
             }
 
