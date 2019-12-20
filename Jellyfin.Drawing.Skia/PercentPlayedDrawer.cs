@@ -4,10 +4,19 @@ using SkiaSharp;
 
 namespace Jellyfin.Drawing.Skia
 {
+    /// <summary>
+    /// Static helper class used to draw percentage-played indicators on images.
+    /// </summary>
     public static class PercentPlayedDrawer
     {
         private const int IndicatorHeight = 8;
 
+        /// <summary>
+        /// Draw a percentage played indicator on a canvas.
+        /// </summary>
+        /// <param name="canvas">The canvas to draw the indicator on.</param>
+        /// <param name="imageSize">The size of the image being drawn on.</param>
+        /// <param name="percent">The percentage played to display with the indicator.</param>
         public static void Process(SKCanvas canvas, ImageDimensions imageSize, double percent)
         {
             using (var paint = new SKPaint())
