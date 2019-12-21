@@ -461,13 +461,13 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsDirectStream)
             {
-                if (mediaSource.IsRemote && forceDirectPlayRemoteMediaSource)// && user.Policy.ForceRemoteSourceTranscoding)
+                if (mediaSource.IsRemote && forceDirectPlayRemoteMediaSource && user.Policy.ForceRemoteSourceTranscoding)
                 {
-                    mediaSource.SupportsDirectStream = true; //false
-              //  }
-              //  else if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
-              //  {
-              //      mediaSource.SupportsDirectStream = false;
+                    mediaSource.SupportsDirectStream = false;
+                }
+                else if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
+                {
+                    mediaSource.SupportsDirectStream = false;
                 }
                 else
                 {
@@ -527,7 +527,6 @@ namespace MediaBrowser.Api.Playback
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
                     streamBuilder.BuildAudioItem(options) :
                     streamBuilder.BuildVideoItem(options);
-                    
 
 				if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
 				{
