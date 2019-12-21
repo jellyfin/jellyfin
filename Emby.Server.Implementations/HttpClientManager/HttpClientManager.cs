@@ -59,7 +59,17 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (!_httpClients.TryGetValue(key, out var client))
             {
-                client = new HttpClient()
+                var httpClientHandler = new HttpClientHandler()
+                {
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
+                    {
+                        var success = errors == System.Net.Security.SslPolicyErrors.None;
+                        _logger.LogDebug("Validating certificate {Cert}. Success {1}", cert, success);
+                        return success;
+                    }
+                };
+
+                client = new HttpClient(httpClientHandler)
                 {
                     BaseAddress = new Uri(url)
                 };
