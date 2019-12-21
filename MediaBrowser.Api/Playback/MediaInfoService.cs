@@ -405,6 +405,7 @@ namespace MediaBrowser.Api.Playback
                     user.Policy.EnableAudioPlaybackTranscoding);
             }
 
+            // Beginning of Playback Determination: Attempt DirectPlay first
             if (mediaSource.SupportsDirectPlay)
             {
                 if (mediaSource.IsRemote && forceDirectPlayRemoteMediaSource && user.Policy.ForceRemoteSourceTranscoding)
@@ -460,13 +461,13 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsDirectStream)
             {
-                if (mediaSource.IsRemote && forceDirectPlayRemoteMediaSource && user.Policy.ForceRemoteSourceTranscoding)
+                if (mediaSource.IsRemote && forceDirectPlayRemoteMediaSource)// && user.Policy.ForceRemoteSourceTranscoding)
                 {
-                    mediaSource.SupportsDirectStream = false;
-                }
-                else if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
-                {
-                    mediaSource.SupportsDirectStream = false;
+                    mediaSource.SupportsDirectStream = true; //false
+              //  }
+              //  else if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
+              //  {
+              //      mediaSource.SupportsDirectStream = false;
                 }
                 else
                 {
