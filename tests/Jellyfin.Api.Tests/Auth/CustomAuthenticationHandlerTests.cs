@@ -23,8 +23,8 @@ namespace Jellyfin.Api.Tests.Auth
     {
         private readonly IFixture _fixture;
 
-        private readonly Mock<IAuthService> _authServiceMock;
-        private readonly Mock<IOptionsMonitor<AuthenticationSchemeOptions>> _optionsMock;
+        private readonly Mock<IAuthService> _jellyfinAuthServiceMock;
+        private readonly Mock<IOptionsMonitor<AuthenticationSchemeOptions>> _optionsMonitorMock;
         private readonly Mock<ISystemClock> _clockMock;
         private readonly Mock<IServiceProvider> _serviceProviderMock;
         private readonly Mock<IAuthenticationService> _authenticationServiceMock;
@@ -44,8 +44,8 @@ namespace Jellyfin.Api.Tests.Auth
             _fixture = new Fixture().Customize(fixtureCustomizations);
             AllowFixtureCircularDependencies();
 
-            _authServiceMock = _fixture.Freeze<Mock<IAuthService>>();
-            _optionsMock = _fixture.Freeze<Mock<IOptionsMonitor<AuthenticationSchemeOptions>>>();
+            _jellyfinAuthServiceMock = _fixture.Freeze<Mock<IAuthService>>();
+            _optionsMonitorMock = _fixture.Freeze<Mock<IOptionsMonitor<AuthenticationSchemeOptions>>>();
             _clockMock = _fixture.Freeze<Mock<ISystemClock>>();
             _serviceProviderMock = _fixture.Freeze<Mock<IServiceProvider>>();
             _authenticationServiceMock = _fixture.Freeze<Mock<IAuthenticationService>>();
@@ -56,7 +56,7 @@ namespace Jellyfin.Api.Tests.Auth
             _serviceProviderMock.Setup(s => s.GetService(typeof(IAuthenticationService)))
                 .Returns(_authenticationServiceMock.Object);
 
-            _optionsMock.Setup(o => o.Get(It.IsAny<string>()))
+            _optionsMonitorMock.Setup(o => o.Get(It.IsAny<string>()))
                 .Returns(new AuthenticationSchemeOptions
                 {
                     ForwardAuthenticate = null
@@ -79,11 +79,11 @@ namespace Jellyfin.Api.Tests.Auth
         [Fact]
         public async Task HandleAuthenticateAsyncShouldFailWithNullUser()
         {
-            _authServiceMock.Setup(
+            _jellyfinAuthServiceMock.Setup(
                     a => a.Authenticate(
                         It.IsAny<HttpRequest>(),
                         It.IsAny<AuthenticatedAttribute>()))
-                .Returns((User) null);
+                .Returns((User)null);
 
             var authenticateResult = await _sut.AuthenticateAsync();
 
@@ -96,7 +96,7 @@ namespace Jellyfin.Api.Tests.Auth
         {
             var errorMessage = _fixture.Create<string>();
 
-            _authServiceMock.Setup(
+            _jellyfinAuthServiceMock.Setup(
                     a => a.Authenticate(
                         It.IsAny<HttpRequest>(),
                         It.IsAny<AuthenticatedAttribute>()))
@@ -153,7 +153,7 @@ namespace Jellyfin.Api.Tests.Auth
             var user = _fixture.Create<User>();
             user.Policy.IsAdministrator = isAdmin;
 
-            _authServiceMock.Setup(
+            _jellyfinAuthServiceMock.Setup(
                     a => a.Authenticate(
                         It.IsAny<HttpRequest>(),
                         It.IsAny<AuthenticatedAttribute>()))
