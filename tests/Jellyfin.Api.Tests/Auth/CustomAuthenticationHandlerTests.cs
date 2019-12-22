@@ -36,7 +36,12 @@ namespace Jellyfin.Api.Tests.Auth
 
         public CustomAuthenticationHandlerTests()
         {
-            _fixture = new Fixture().Customize(new AutoMoqCustomization {ConfigureMembers = true});
+            var fixtureCustomizations = new AutoMoqCustomization
+            {
+                ConfigureMembers = true
+            };
+
+            _fixture = new Fixture().Customize(fixtureCustomizations);
             AllowFixtureCircularDependencies();
 
             _authServiceMock = _fixture.Freeze<Mock<IAuthService>>();
@@ -143,7 +148,7 @@ namespace Jellyfin.Api.Tests.Auth
             Assert.Equal(_scheme.Name, authenticatedResult.Ticket.AuthenticationScheme);
         }
 
-        private User SetupUser(bool isAdmin=false)
+        private User SetupUser(bool isAdmin = false)
         {
             var user = _fixture.Create<User>();
             user.Policy.IsAdministrator = isAdmin;

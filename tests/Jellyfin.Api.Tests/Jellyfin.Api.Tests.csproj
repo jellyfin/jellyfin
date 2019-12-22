@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../MediaBrowser.Api/MediaBrowser.Api.csproj" />
-    <ProjectReference Include="..\..\Jellyfin.Api\Jellyfin.Api.csproj" />
+    <ProjectReference Include="../../Jellyfin.Api/Jellyfin.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>
