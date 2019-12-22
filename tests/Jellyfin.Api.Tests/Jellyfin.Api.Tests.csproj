@@ -22,10 +22,4 @@
     <ProjectReference Include="../../Jellyfin.Api/Jellyfin.Api.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Authentication, Version=3.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\..\..\..\..\..\usr\local\share\dotnet\packs\Microsoft.AspNetCore.App.Ref\3.0.0\ref\netcoreapp3.0\Microsoft.AspNetCore.Authentication.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
