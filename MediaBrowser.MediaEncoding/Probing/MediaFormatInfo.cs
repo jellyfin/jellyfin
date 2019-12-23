@@ -13,7 +13,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <value>The filename.</value>
         [JsonPropertyName("filename")]
-        public string Fileame { get; set; }
+        public string Filename { get; set; }
 
         /// <summary>
         /// Gets or sets the nb_streams.
