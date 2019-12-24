@@ -53,7 +53,10 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationService"/> class.
         /// </summary>
+        /// <param name="httpResultFactory">The HTTP result factory</param>
         /// <param name="localization">The localization.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="serverConfigurationManager">The server configuration manager</param>
         public LocalizationService(
             ILogger<LocalizationService> logger,
             IServerConfigurationManager serverConfigurationManager,

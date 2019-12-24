@@ -187,7 +187,8 @@ namespace MediaBrowser.Api
                     request.Name,
                     string.IsNullOrEmpty(request.AssemblyGuid) ? Guid.Empty : Guid.Parse(request.AssemblyGuid),
                     string.IsNullOrEmpty(request.Version) ? null : Version.Parse(request.Version),
-                    request.UpdateClass).FirstOrDefault();
+                    request.UpdateClass)
+                .FirstOrDefault();
 
             if (package == null)
             {

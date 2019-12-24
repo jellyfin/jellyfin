@@ -78,8 +78,7 @@ namespace MediaBrowser.Api.Movies
                 Name = request.Name,
                 ParentId = parentId,
                 ItemIdList = SplitValue(request.Ids, ','),
-                UserIds = new[] { userId }
-
+                UserIds = new[] { userId },
             });
 
             var dtoOptions = GetDtoOptions(_authContext, request);

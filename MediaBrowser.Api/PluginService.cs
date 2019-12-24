@@ -135,6 +135,7 @@ namespace MediaBrowser.Api
         public string SupporterKey { get; set; }
         public bool IsMBSupporter { get; set; }
     }
+
     /// <summary>
     /// Class PluginsService
     /// </summary>
@@ -149,6 +150,7 @@ namespace MediaBrowser.Api
         /// The _app host
         /// </summary>
         private readonly IApplicationHost _appHost;
+
         private readonly IInstallationManager _installationManager;
 
         public PluginService(
@@ -243,9 +245,7 @@ namespace MediaBrowser.Api
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
             var id = Guid.Parse(GetPathValue(1));
 
-            var plugin = _appHost.Plugins.First(p => p.Id == id) as IHasPluginConfiguration;
-
-            if (plugin == null)
+            if (!(_appHost.Plugins.FirstOrDefault(p => p.Id == id) is IHasPluginConfiguration plugin))
             {
                 throw new FileNotFoundException();
             }

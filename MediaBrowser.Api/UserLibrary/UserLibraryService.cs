@@ -310,12 +310,9 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            if (!request.IsPlayed.HasValue)
+            if (!request.IsPlayed.HasValue && user.Configuration.HidePlayedInLatest)
             {
-                if (user.Configuration.HidePlayedInLatest)
-                {
-                    request.IsPlayed = false;
-                }
+                request.IsPlayed = false;
             }
 
             var dtoOptions = GetDtoOptions(_authContext, request);
@@ -355,9 +352,9 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = string.IsNullOrEmpty(request.Id) ?
-                _libraryManager.GetUserRootFolder() :
-                _libraryManager.GetItemById(request.Id);
+            var item = string.IsNullOrEmpty(request.Id)
+                ? _libraryManager.GetUserRootFolder()
+                : _libraryManager.GetItemById(request.Id);
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 

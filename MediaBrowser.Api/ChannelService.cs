@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Api.UserLibrary;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -118,7 +118,7 @@ namespace MediaBrowser.Api
 
             if (string.IsNullOrEmpty(val))
             {
-                return new ItemFilter[] { };
+                return Array.Empty<ItemFilter>();
             }
 
             return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
@@ -177,7 +177,7 @@ namespace MediaBrowser.Api
 
             if (string.IsNullOrEmpty(val))
             {
-                return new ItemFilter[] { };
+                return Array.Empty<ItemFilter>();
             }
 
             return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
@@ -188,7 +188,7 @@ namespace MediaBrowser.Api
     public class ChannelService : BaseApiService
     {
         private readonly IChannelManager _channelManager;
-        private IUserManager _userManager;
+        private readonly IUserManager _userManager;
 
         public ChannelService(
             ILogger<ChannelService> logger,
@@ -241,14 +241,13 @@ namespace MediaBrowser.Api
             {
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
-                ChannelIds = new Guid[] { new Guid(request.Id) },
+                ChannelIds = new[] { new Guid(request.Id) },
                 ParentId = string.IsNullOrWhiteSpace(request.FolderId) ? Guid.Empty : new Guid(request.FolderId),
                 OrderBy = request.GetOrderBy(),
                 DtoOptions = new Controller.Dto.DtoOptions
                 {
                     Fields = request.GetItemFields()
                 }
-
             };
 
             foreach (var filter in request.GetFilters())

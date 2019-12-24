@@ -35,10 +35,12 @@ namespace MediaBrowser.Api.Music
         /// The _user data repository
         /// </summary>
         private readonly IUserDataManager _userDataRepository;
+
         /// <summary>
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
+
         private readonly IItemRepository _itemRepo;
         private readonly IDtoService _dtoService;
         private readonly IAuthorizationContext _authContext;

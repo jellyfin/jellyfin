@@ -152,8 +152,7 @@ namespace MediaBrowser.Api.Images
                 ProviderName = request.ProviderName,
                 IncludeAllLanguages = request.IncludeAllLanguages,
                 IncludeDisabledProviders = true,
-                ImageType = request.Type
-
+                ImageType = request.Type,
             }, CancellationToken.None).ConfigureAwait(false);
 
             var imagesList = images.ToArray();
@@ -169,8 +168,8 @@ namespace MediaBrowser.Api.Images
             {
                 TotalRecordCount = imagesList.Length,
                 Providers = allProviders.Select(i => i.Name)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray()
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray()
             };
 
             if (request.StartIndex.HasValue)
@@ -264,23 +263,23 @@ namespace MediaBrowser.Api.Images
             using (var result = await _httpClient.GetResponse(new HttpRequestOptions
             {
                 Url = url,
-                BufferContent = false
-
+                BufferContent = false,
             }).ConfigureAwait(false))
             {
                 var ext = result.ContentType.Split('/').Last();
 
                 var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
+                // TODO: Path.GetDirectoryName can return null
                 Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
+
                 using (var stream = result.Content)
+                using (var fileStream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                 {
-                    using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
-                    {
-                        await stream.CopyToAsync(filestream).ConfigureAwait(false);
-                    }
+                    await stream.CopyToAsync(fileStream).ConfigureAwait(false);
                 }
 
+                // TODO: Path.GetDirectoryName can return null
                 Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
                 File.WriteAllText(pointerCachePath, fullCachePath);
             }

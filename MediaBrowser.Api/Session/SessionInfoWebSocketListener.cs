@@ -31,46 +31,46 @@ namespace MediaBrowser.Api.Session
         {
             _sessionManager = sessionManager;
 
-            _sessionManager.SessionStarted += _sessionManager_SessionStarted;
-            _sessionManager.SessionEnded += _sessionManager_SessionEnded;
-            _sessionManager.PlaybackStart += _sessionManager_PlaybackStart;
-            _sessionManager.PlaybackStopped += _sessionManager_PlaybackStopped;
-            _sessionManager.PlaybackProgress += _sessionManager_PlaybackProgress;
-            _sessionManager.CapabilitiesChanged += _sessionManager_CapabilitiesChanged;
-            _sessionManager.SessionActivity += _sessionManager_SessionActivity;
+            _sessionManager.SessionStarted += SessionManager_SessionStarted;
+            _sessionManager.SessionEnded += SessionManager_SessionEnded;
+            _sessionManager.PlaybackStart += SessionManager_PlaybackStart;
+            _sessionManager.PlaybackStopped += SessionManager_PlaybackStopped;
+            _sessionManager.PlaybackProgress += SessionManager_PlaybackProgress;
+            _sessionManager.CapabilitiesChanged += SessionManager_CapabilitiesChanged;
+            _sessionManager.SessionActivity += SessionManager_SessionActivity;
         }
 
-        void _sessionManager_SessionActivity(object sender, SessionEventArgs e)
+        private void SessionManager_SessionActivity(object sender, SessionEventArgs e)
         {
             SendData(false);
         }
 
-        void _sessionManager_CapabilitiesChanged(object sender, SessionEventArgs e)
+        private void SessionManager_CapabilitiesChanged(object sender, SessionEventArgs e)
         {
             SendData(true);
         }
 
-        void _sessionManager_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
+        private void SessionManager_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
         {
             SendData(!e.IsAutomated);
         }
 
-        void _sessionManager_PlaybackStopped(object sender, PlaybackStopEventArgs e)
+        private void SessionManager_PlaybackStopped(object sender, PlaybackStopEventArgs e)
         {
             SendData(true);
         }
 
-        void _sessionManager_PlaybackStart(object sender, PlaybackProgressEventArgs e)
+        private void SessionManager_PlaybackStart(object sender, PlaybackProgressEventArgs e)
         {
             SendData(true);
         }
 
-        void _sessionManager_SessionEnded(object sender, SessionEventArgs e)
+        private void SessionManager_SessionEnded(object sender, SessionEventArgs e)
         {
             SendData(true);
         }
 
-        void _sessionManager_SessionStarted(object sender, SessionEventArgs e)
+        private void SessionManager_SessionStarted(object sender, SessionEventArgs e)
         {
             SendData(true);
         }
@@ -86,13 +86,13 @@ namespace MediaBrowser.Api.Session
 
         protected override void Dispose(bool dispose)
         {
-            _sessionManager.SessionStarted -= _sessionManager_SessionStarted;
-            _sessionManager.SessionEnded -= _sessionManager_SessionEnded;
-            _sessionManager.PlaybackStart -= _sessionManager_PlaybackStart;
-            _sessionManager.PlaybackStopped -= _sessionManager_PlaybackStopped;
-            _sessionManager.PlaybackProgress -= _sessionManager_PlaybackProgress;
-            _sessionManager.CapabilitiesChanged -= _sessionManager_CapabilitiesChanged;
-            _sessionManager.SessionActivity -= _sessionManager_SessionActivity;
+            _sessionManager.SessionStarted -= SessionManager_SessionStarted;
+            _sessionManager.SessionEnded -= SessionManager_SessionEnded;
+            _sessionManager.PlaybackStart -= SessionManager_PlaybackStart;
+            _sessionManager.PlaybackStopped -= SessionManager_PlaybackStopped;
+            _sessionManager.PlaybackProgress -= SessionManager_PlaybackProgress;
+            _sessionManager.CapabilitiesChanged -= SessionManager_CapabilitiesChanged;
+            _sessionManager.SessionActivity -= SessionManager_SessionActivity;
 
             base.Dispose(dispose);
         }

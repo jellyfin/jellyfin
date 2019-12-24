@@ -49,9 +49,9 @@ namespace MediaBrowser.Api.System
 
         public object Get(GetActivityLogs request)
         {
-            DateTime? minDate = string.IsNullOrWhiteSpace(request.MinDate) ?
-                (DateTime?)null :
-                DateTime.Parse(request.MinDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
+            DateTime? minDate = string.IsNullOrWhiteSpace(request.MinDate)
+                ? (DateTime?)null
+                : DateTime.Parse(request.MinDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
 
             var result = _activityManager.GetActivityLogEntries(minDate, request.HasUserId, request.StartIndex, request.Limit);
 

@@ -24,7 +24,7 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {
-        public BaseHlsService(
+        protected BaseHlsService(
             ILogger logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
@@ -146,6 +146,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     ApiEntryPoint.Instance.OnTranscodeEndRequest(job);
                 }
+
                 return ResultFactory.GetResult(GetLivePlaylistText(playlist, state.SegmentLength), MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
             }
 
@@ -169,31 +170,29 @@ namespace MediaBrowser.Api.Playback.Hls
         private string GetLivePlaylistText(string path, int segmentLength)
         {
             using (var stream = FileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite))
+            using (var reader = new StreamReader(stream))
             {
-                using (var reader = new StreamReader(stream))
-                {
-                    var text = reader.ReadToEnd();
+                var text = reader.ReadToEnd();
 
-                    text = text.Replace("#EXTM3U", "#EXTM3U\n#EXT-X-PLAYLIST-TYPE:EVENT");
+                text = text.Replace("#EXTM3U", "#EXTM3U\n#EXT-X-PLAYLIST-TYPE:EVENT");
 
-                    var newDuration = "#EXT-X-TARGETDURATION:" + segmentLength.ToString(CultureInfo.InvariantCulture);
+                var newDuration = "#EXT-X-TARGETDURATION:" + segmentLength.ToString(CultureInfo.InvariantCulture);
 
-                    text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength - 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
-                    //text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
+                text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength - 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
+                //text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
 
-                    return text;
-                }
+                return text;
             }
         }
 
-        private string GetMasterPlaylistFileText(string firstPlaylist, int bitrate, int baselineStreamBitrate)
+        private string GetMasterPlaylistFileText(string firstPlaylist, int bitRate, int baselineStreamBitrate)
         {
             var builder = new StringBuilder();
 
             builder.AppendLine("#EXTM3U");
 
             // Pad a little to satisfy the apple hls validator
-            var paddedBitrate = Convert.ToInt32(bitrate * 1.15);
+            var paddedBitrate = Convert.ToInt32(bitRate * 1.15);
 
             // Main stream
             builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + paddedBitrate.ToString(CultureInfo.InvariantCulture));
@@ -213,27 +212,26 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     // Need to use FileShareMode.ReadWrite because we're reading the file at the same time it's being written
                     using (var fileStream = GetPlaylistFileStream(playlist))
+                    using (var reader = new StreamReader(fileStream))
                     {
-                        using (var reader = new StreamReader(fileStream))
+                        var count = 0;
+
+                        while (!reader.EndOfStream)
                         {
-                            var count = 0;
+                            var line = reader.ReadLine();
 
-                            while (!reader.EndOfStream)
+                            if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
                             {
-                                var line = reader.ReadLine();
-
-                                if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
+                                count++;
+                                if (count >= segmentCount)
                                 {
-                                    count++;
-                                    if (count >= segmentCount)
-                                    {
-                                        Logger.LogDebug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
-                                        return;
-                                    }
+                                    Logger.LogDebug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
+                                    return;
                                 }
                             }
-                            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                         }
+
+                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch (IOException)
@@ -247,6 +245,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected Stream GetPlaylistFileStream(string path)
         {
+            // TODO: This should not be correct
             var tmpPath = path + ".tmp";
             tmpPath = path;
 

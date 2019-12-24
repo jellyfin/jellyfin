@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
@@ -17,7 +16,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetYears
     /// </summary>
     [Route("/Years", "GET", Summary = "Gets all years from a given item, folder, or the entire library")]
-    public class GetYears : GetItemsByName
+    public class GetYears : GetItemsByNameBase
     {
     }
 
@@ -120,7 +119,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IList<BaseItem> items)
+        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByNameBase request, IList<BaseItem> items)
         {
             return items
                 .Select(i => i.ProductionYear ?? 0)

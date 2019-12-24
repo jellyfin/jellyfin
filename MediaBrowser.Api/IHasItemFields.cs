@@ -35,16 +35,19 @@ namespace MediaBrowser.Api
                 return Array.Empty<ItemFields>();
             }
 
-            return val.Split(',').Select(v =>
-            {
-                if (Enum.TryParse(v, true, out ItemFields value))
+            return val.Split(',')
+                .Select(v =>
                 {
-                    return (ItemFields?)value;
-                }
+                    if (Enum.TryParse(v, true, out ItemFields value))
+                    {
+                        return (ItemFields?)value;
+                    }
 
-                return null;
-
-            }).Where(i => i.HasValue).Select(i => i.Value).ToArray();
+                    return null;
+                })
+                .Where(i => i.HasValue)
+                .Select(i => i.Value)
+                .ToArray();
         }
     }
 }

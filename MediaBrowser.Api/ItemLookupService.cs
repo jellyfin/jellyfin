@@ -305,9 +305,9 @@ namespace MediaBrowser.Api
 
             Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
             using (var stream = result.Content)
-            using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
+            using (var fileStream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
             {
-                await stream.CopyToAsync(filestream).ConfigureAwait(false);
+                await stream.CopyToAsync(fileStream).ConfigureAwait(false);
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));

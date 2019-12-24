@@ -46,6 +46,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
+
         private readonly ILocalizationManager _localization;
 
         private readonly IDtoService _dtoService;
@@ -199,21 +200,19 @@ namespace MediaBrowser.Api.UserLibrary
                 item = _libraryManager.GetUserRootFolder();
             }
 
-            Folder folder = item as Folder;
-            if (folder == null)
+            if (!(item is Folder folder))
             {
                 folder = _libraryManager.GetUserRootFolder();
             }
 
-            var hasCollectionType = folder as IHasCollectionType;
-            if (hasCollectionType != null
+            if (folder is IHasCollectionType hasCollectionType
                 && string.Equals(hasCollectionType.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             {
                 request.Recursive = true;
                 request.IncludeItemTypes = "Playlist";
             }
 
-            bool isInEnabledFolder = user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id);
+            var isInEnabledFolder = user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id);
             var collectionFolders = _libraryManager.GetCollectionFolders(item);
             foreach (var collectionFolder in collectionFolders)
             {
@@ -479,8 +478,8 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     query.OrderBy = new[]
                     {
-                        new ValueTuple<string, SortOrder>(ItemSortBy.ProductionYear, SortOrder.Descending),
-                        new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending)
+                        (ItemSortBy.ProductionYear, SortOrder.Descending),
+                        (ItemSortBy.SortName, SortOrder.Ascending),
                     };
                 }
             }
@@ -502,6 +501,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem x, BaseItem y)
         {
+            // TODO: handle null
             return x.DateCreated.CompareTo(y.DateCreated);
         }
     }

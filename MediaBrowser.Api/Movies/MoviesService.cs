@@ -112,9 +112,11 @@ namespace MediaBrowser.Api.Movies
         {
             var user = !request.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(request.UserId) : null;
 
-            var item = string.IsNullOrEmpty(request.Id) ?
-                (!request.UserId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() :
-                _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
+            var item = string.IsNullOrEmpty(request.Id)
+                ? (!request.UserId.Equals(Guid.Empty)
+                    ? _libraryManager.GetUserRootFolder()
+                    : _libraryManager.RootFolder)
+                : _libraryManager.GetItemById(request.Id);
 
             var itemTypes = new List<string> { typeof(Movie).Name };
             if (ServerConfigurationManager.Configuration.EnableExternalContentInSuggestions)
@@ -132,8 +134,7 @@ namespace MediaBrowser.Api.Movies
                 IsMovie = true,
                 SimilarTo = item,
                 EnableGroupByMetadataKey = true,
-                DtoOptions = dtoOptions
-
+                DtoOptions = dtoOptions,
             });
 
             var returnList = _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user);
@@ -156,6 +157,7 @@ namespace MediaBrowser.Api.Movies
 
             var query = new InternalItemsQuery(user)
             {
+                // TODO: why commented?
                 IncludeItemTypes = new[]
                 {
                     typeof(Movie).Name,
@@ -191,8 +193,7 @@ namespace MediaBrowser.Api.Movies
                 EnableGroupByMetadataKey = true,
                 ParentId = parentIdGuid,
                 Recursive = true,
-                DtoOptions = dtoOptions
-
+                DtoOptions = dtoOptions,
             });
 
             var mostRecentMovies = recentlyPlayedMovies.Take(6).ToList();
@@ -228,17 +229,14 @@ namespace MediaBrowser.Api.Movies
             {
                 var allEmpty = true;
 
-                foreach (var category in categoryTypes)
+                foreach (var category in categoryTypes.Where(category => category.MoveNext()))
                 {
-                    if (category.MoveNext())
-                    {
-                        categories.Add(category.Current);
-                        allEmpty = false;
+                    categories.Add(category.Current);
+                    allEmpty = false;
 
-                        if (categories.Count >= categoryLimit)
-                        {
-                            break;
-                        }
+                    if (categories.Count >= categoryLimit)
+                    {
+                        break;
                     }
                 }
 
@@ -262,34 +260,37 @@ namespace MediaBrowser.Api.Movies
 
             foreach (var name in names)
             {
-                var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
+                var items = _libraryManager.GetItemList(
+                        new InternalItemsQuery(user)
+                        {
+                            Person = name,
+                            // Account for duplicates by imdb id, since the database doesn't support this yet
+                            Limit = itemLimit + 2,
+                            PersonTypes = new[] { PersonType.Director },
+                            IncludeItemTypes = itemTypes.ToArray(),
+                            IsMovie = true,
+                            EnableGroupByMetadataKey = true,
+                            DtoOptions = dtoOptions,
+                        })
+                    .GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
+                    .Select(x => x.First())
+                    .Take(itemLimit)
+                    .ToList();
+
+                if (items.Count <= 0)
                 {
-                    Person = name,
-                    // Account for duplicates by imdb id, since the database doesn't support this yet
-                    Limit = itemLimit + 2,
-                    PersonTypes = new[] { PersonType.Director },
-                    IncludeItemTypes = itemTypes.ToArray(),
-                    IsMovie = true,
-                    EnableGroupByMetadataKey = true,
-                    DtoOptions = dtoOptions
-
-                }).GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
-                .Select(x => x.First())
-                .Take(itemLimit)
-                .ToList();
-
-                if (items.Count > 0)
-                {
-                    var returnItems = _dtoService.GetBaseItemDtos(items, dtoOptions, user);
-
-                    yield return new RecommendationDto
-                    {
-                        BaselineItemName = name,
-                        CategoryId = name.GetMD5(),
-                        RecommendationType = type,
-                        Items = returnItems
-                    };
+                    continue;
                 }
+
+                var returnItems = _dtoService.GetBaseItemDtos(items, dtoOptions, user);
+
+                yield return new RecommendationDto
+                {
+                    BaselineItemName = name,
+                    CategoryId = name.GetMD5(),
+                    RecommendationType = type,
+                    Items = returnItems
+                };
             }
         }
 
@@ -304,20 +305,21 @@ namespace MediaBrowser.Api.Movies
 
             foreach (var name in names)
             {
-                var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
-                {
-                    Person = name,
-                    // Account for duplicates by imdb id, since the database doesn't support this yet
-                    Limit = itemLimit + 2,
-                    IncludeItemTypes = itemTypes.ToArray(),
-                    IsMovie = true,
-                    EnableGroupByMetadataKey = true,
-                    DtoOptions = dtoOptions
-
-                }).GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
-                .Select(x => x.First())
-                .Take(itemLimit)
-                .ToList();
+                var items = _libraryManager.GetItemList(
+                        new InternalItemsQuery(user)
+                        {
+                            Person = name,
+                            // Account for duplicates by imdb id, since the database doesn't support this yet
+                            Limit = itemLimit + 2,
+                            IncludeItemTypes = itemTypes.ToArray(),
+                            IsMovie = true,
+                            EnableGroupByMetadataKey = true,
+                            DtoOptions = dtoOptions,
+                        })
+                    .GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
+                    .Select(x => x.First())
+                    .Take(itemLimit)
+                    .ToList();
 
                 if (items.Count > 0)
                 {
@@ -352,8 +354,7 @@ namespace MediaBrowser.Api.Movies
                     IsMovie = true,
                     SimilarTo = item,
                     EnableGroupByMetadataKey = true,
-                    DtoOptions = dtoOptions
-
+                    DtoOptions = dtoOptions,
                 });
 
                 if (similar.Count > 0)
@@ -394,7 +395,7 @@ namespace MediaBrowser.Api.Movies
         {
             var people = _libraryManager.GetPeople(new InternalPeopleQuery
             {
-                PersonTypes = new string[]
+                PersonTypes = new[]
                 {
                     PersonType.Director
                 }

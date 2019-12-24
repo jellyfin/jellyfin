@@ -312,6 +312,7 @@ namespace MediaBrowser.Api.Library
             return _libraryManager.RemoveVirtualFolder(request.Name, request.RefreshLibrary);
         }
 
+        // TODO: Investigate if this should be async
         /// <summary>
         /// Posts the specified request.
         /// </summary>
@@ -327,15 +328,11 @@ namespace MediaBrowser.Api.Library
 
             try
             {
-                var mediaPath = request.PathInfo;
-
-                if (mediaPath == null)
+                var mediaPath = request.PathInfo ?? new MediaPathInfo
                 {
-                    mediaPath = new MediaPathInfo
-                    {
-                        Path = request.Path
-                    };
-                }
+                    Path = request.Path
+                };
+
                 _libraryManager.AddMediaPath(request.Name, mediaPath);
             }
             finally
@@ -374,6 +371,7 @@ namespace MediaBrowser.Api.Library
             _libraryManager.UpdateMediaPath(request.Name, request.PathInfo);
         }
 
+        // TODO: Investigate if this should be async
         /// <summary>
         /// Deletes the specified request.
         /// </summary>

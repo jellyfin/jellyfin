@@ -125,8 +125,7 @@ namespace MediaBrowser.Api.Devices
         {
             var sessions = _authRepo.Get(new AuthenticationInfoQuery
             {
-                DeviceId = request.Id
-
+                DeviceId = request.Id,
             }).Items;
 
             foreach (var session in sessions)
@@ -145,7 +144,11 @@ namespace MediaBrowser.Api.Devices
 
             if (req.HasFormContentType)
             {
-                var file = req.Form.Files.Count == 0 ? null : req.Form.Files[0];
+                var file = req.Form.Files.Count == 0
+                    ? null
+                    : req.Form.Files[0];
+
+                // TODO: If file count is 0 the a NullReferenceException is thrown. What is the desired behaviour?
 
                 return _deviceManager.AcceptCameraUpload(deviceId, file.OpenReadStream(), new LocalFileInfo
                 {
@@ -155,16 +158,14 @@ namespace MediaBrowser.Api.Devices
                     Id = id
                 });
             }
-            else
+
+            return _deviceManager.AcceptCameraUpload(deviceId, request.RequestStream, new LocalFileInfo
             {
-                return _deviceManager.AcceptCameraUpload(deviceId, request.RequestStream, new LocalFileInfo
-                {
-                    MimeType = Request.ContentType,
-                    Album = album,
-                    Name = name,
-                    Id = id
-                });
-            }
+                MimeType = Request.ContentType,
+                Album = album,
+                Name = name,
+                Id = id
+            });
         }
     }
 }

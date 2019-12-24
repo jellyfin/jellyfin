@@ -171,9 +171,9 @@ namespace MediaBrowser.Api.Images
 
             parentName = Path.GetFileName(parentName);
 
-            return string.Equals(parentName, "all", StringComparison.OrdinalIgnoreCase) ?
-                null :
-                parentName;
+            return string.Equals(parentName, "all", StringComparison.OrdinalIgnoreCase)
+                ? null
+                : parentName;
         }
 
         /// <summary>
@@ -184,8 +184,8 @@ namespace MediaBrowser.Api.Images
         public Task<object> Get(GetGeneralImage request)
         {
             var filename = string.Equals(request.Type, "primary", StringComparison.OrdinalIgnoreCase)
-                               ? "folder"
-                               : request.Type;
+                ? "folder"
+                : request.Type;
 
             var paths = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(_appPaths.GeneralPath, request.Name, filename + i)).ToList();
 

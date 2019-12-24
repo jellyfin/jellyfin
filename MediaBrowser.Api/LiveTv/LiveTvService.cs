@@ -347,6 +347,7 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "HasAired", Description = "Optional. Filter by programs that have completed airing, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? HasAired { get; set; }
+
         public bool? IsAiring { get; set; }
 
         [ApiMember(Name = "MaxStartDate", Description = "Optional. The maximum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
@@ -649,6 +650,7 @@ namespace MediaBrowser.Api.LiveTv
     {
         [ApiMember(Name = "Id", Description = "Provider id", IsRequired = true, DataType = "string", ParameterType = "query")]
         public string ProviderId { get; set; }
+
         public string TunerChannelId { get; set; }
         public string ProviderChannelId { get; set; }
     }
@@ -678,7 +680,6 @@ namespace MediaBrowser.Api.LiveTv
     [Authenticated]
     public class GetTunerHostTypes : IReturn<List<NameIdPair>>
     {
-
     }
 
     [Route("/LiveTv/Tuners/Discvover", "GET")]
@@ -810,10 +811,10 @@ namespace MediaBrowser.Api.LiveTv
             var listingsProviderName = _liveTvManager.ListingProviders.First(i => string.Equals(i.Type, listingsProviderInfo.Type, StringComparison.OrdinalIgnoreCase)).Name;
 
             var tunerChannels = await _liveTvManager.GetChannelsForListingsProvider(request.ProviderId, CancellationToken.None)
-                        .ConfigureAwait(false);
+                .ConfigureAwait(false);
 
             var providerChannels = await _liveTvManager.GetChannelsFromListingsProviderData(request.ProviderId, CancellationToken.None)
-                     .ConfigureAwait(false);
+                .ConfigureAwait(false);
 
             var mappings = listingsProviderInfo.ChannelMappings;
 
@@ -824,8 +825,7 @@ namespace MediaBrowser.Api.LiveTv
                 ProviderChannels = providerChannels.Select(i => new NameIdPair
                 {
                     Name = i.Name,
-                    Id = i.Id
-
+                    Id = i.Id,
                 }).ToList(),
 
                 Mappings = mappings,
@@ -843,8 +843,7 @@ namespace MediaBrowser.Api.LiveTv
             var response = await _httpClient.Get(new HttpRequestOptions
             {
                 Url = "https://json.schedulesdirect.org/20141201/available/countries",
-                BufferContent = false
-
+                BufferContent = false,
             }).ConfigureAwait(false);
 
             return ResultFactory.GetResult(Request, response, "application/json");
@@ -957,8 +956,7 @@ namespace MediaBrowser.Api.LiveTv
                 IsSports = request.IsSports,
                 SortBy = request.GetOrderBy(),
                 SortOrder = request.SortOrder ?? SortOrder.Ascending,
-                AddCurrentProgram = request.AddCurrentProgram
-
+                AddCurrentProgram = request.AddCurrentProgram,
             }, options, CancellationToken.None);
 
             var user = request.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(request.UserId);
@@ -1050,8 +1048,7 @@ namespace MediaBrowser.Api.LiveTv
             {
                 query.IsSeries = true;
 
-                var series = _libraryManager.GetItemById(request.LibrarySeriesId) as Series;
-                if (series != null)
+                if (_libraryManager.GetItemById(request.LibrarySeriesId) is Series series)
                 {
                     query.Name = series.Name;
                 }
@@ -1076,10 +1073,10 @@ namespace MediaBrowser.Api.LiveTv
                 IsKids = request.IsKids,
                 IsNews = request.IsNews,
                 IsSports = request.IsSports,
-                EnableTotalRecordCount = request.EnableTotalRecordCount
+                EnableTotalRecordCount = request.EnableTotalRecordCount,
+                GenreIds = GetGuids(request.GenreIds),
             };
 
-            query.GenreIds = GetGuids(request.GenreIds);
 
             var result = _liveTvManager.GetRecommendedPrograms(query, GetDtoOptions(_authContext, request), CancellationToken.None);
 
@@ -1113,8 +1110,7 @@ namespace MediaBrowser.Api.LiveTv
                 IsLibraryItem = request.IsLibraryItem,
                 Fields = request.GetItemFields(),
                 ImageTypeLimit = request.ImageTypeLimit,
-                EnableImages = request.EnableImages
-
+                EnableImages = request.EnableImages,
             }, options);
 
             return ToOptimizedResult(result);
@@ -1152,8 +1148,7 @@ namespace MediaBrowser.Api.LiveTv
                 ChannelId = request.ChannelId,
                 SeriesTimerId = request.SeriesTimerId,
                 IsActive = request.IsActive,
-                IsScheduled = request.IsScheduled
-
+                IsScheduled = request.IsScheduled,
             }, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
@@ -1188,8 +1183,7 @@ namespace MediaBrowser.Api.LiveTv
             var result = await _liveTvManager.GetSeriesTimers(new SeriesTimerQuery
             {
                 SortOrder = request.SortOrder,
-                SortBy = request.SortBy
-
+                SortBy = request.SortBy,
             }, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);

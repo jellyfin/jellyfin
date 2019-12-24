@@ -235,6 +235,7 @@ namespace MediaBrowser.Api.Playback.Hls
                         Logger.LogDebug("Starting transcoding because segmentGap is {0} and max allowed gap is {1}. requestedIndex={2}", requestedIndex - currentTranscodingIndex.Value, segmentGapRequiringTranscodingChange, requestedIndex);
                         startTranscoding = true;
                     }
+
                     if (startTranscoding)
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
@@ -439,8 +440,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var segmentId = "0";
 
-            var segmentRequest = request as GetHlsVideoSegment;
-            if (segmentRequest != null)
+            if (request is GetHlsVideoSegment segmentRequest)
             {
                 segmentId = segmentRequest.SegmentId;
             }
@@ -520,6 +520,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     Logger.LogDebug("serving {0} as it's on disk and transcoding stopped", segmentPath);
                 }
+
                 cancellationToken.ThrowIfCancellationRequested();
             }
             else
@@ -691,8 +692,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 return false;
             }
 
-            var request = state.Request as IMasterHlsRequest;
-            if (request != null && !request.EnableAdaptiveBitrateStreaming)
+            if (state.Request is IMasterHlsRequest request && !request.EnableAdaptiveBitrateStreaming)
             {
                 return false;
             }
@@ -835,9 +835,8 @@ namespace MediaBrowser.Api.Playback.Hls
                     return "-acodec copy";
                 }
 
-                var audioTranscodeParams = new List<string>();
+                var audioTranscodeParams = new List<string> {"-acodec " + audioCodec};
 
-                audioTranscodeParams.Add("-acodec " + audioCodec);
 
                 if (state.OutputAudioBitrate.HasValue)
                 {
@@ -954,12 +953,12 @@ namespace MediaBrowser.Api.Playback.Hls
                 // Unable to force key frames to h264_qsv transcode
                 if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger.LogInformation("Bug Workaround: Disabling force_key_frames for h264_qsv"); 
-                } 
+                    Logger.LogInformation("Bug Workaround: Disabling force_key_frames for h264_qsv");
+                }
                 else
                 {
                     args += " " + keyFrameArg;
-                } 
+                }
 
                 //args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
@@ -1008,6 +1007,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 Logger.LogInformation("Current HLS implementation doesn't support non-keyframe breaks but one is requested, ignoring that request");
                 state.BaseRequest.BreakOnNonKeyFrames = false;
             }
+
             var inputModifier = EncodingHelper.GetInputModifier(state, encodingOptions);
 
             // If isEncoding is true we're actually starting ffmpeg
@@ -1016,6 +1016,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var mapArgs = state.IsOutputVideo ? EncodingHelper.GetMapArgs(state) : string.Empty;
 
+            // TODO: Path.GetDirectoryName could return null
             var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request);
 
             var segmentFormat = GetSegmentFileExtension(state.Request).TrimStart('.');

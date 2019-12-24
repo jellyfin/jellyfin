@@ -18,7 +18,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetGenres
     /// </summary>
     [Route("/Genres", "GET", Summary = "Gets all genres from a given item, folder, or the entire library")]
-    public class GetGenres : GetItemsByName
+    public class GetGenres : GetItemsByNameBase
     {
     }
 
@@ -115,7 +115,7 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(result);
         }
 
-        protected override QueryResult<(BaseItem, ItemCounts)> GetItems(GetItemsByName request, InternalItemsQuery query)
+        protected override QueryResult<(BaseItem, ItemCounts)> GetItems(GetItemsByNameBase request, InternalItemsQuery query)
         {
             var viewType = GetParentItemViewType(request);
 
@@ -133,7 +133,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IList<BaseItem> items)
+        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByNameBase request, IList<BaseItem> items)
         {
             throw new NotImplementedException();
         }

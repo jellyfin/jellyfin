@@ -27,7 +27,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     {
         protected IHttpClient HttpClient { get; private set; }
 
-        public BaseProgressiveStreamingService(
+        protected BaseProgressiveStreamingService(
             ILogger logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
@@ -154,10 +154,11 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 using (state)
                 {
-                    var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-                    // TODO: Don't hardcode this
-                    outputHeaders[HeaderNames.ContentType] = Model.Net.MimeTypes.GetMimeType("file.ts");
+                    var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        // TODO: Don't hardcode this
+                        [HeaderNames.ContentType] = Model.Net.MimeTypes.GetMimeType("file.ts")
+                    };
 
                     return new ProgressiveFileCopier(state.DirectStreamProvider, outputHeaders, null, Logger, CancellationToken.None)
                     {
@@ -224,8 +225,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                         ContentType = contentType,
                         IsHeadRequest = isHeadRequest,
                         Path = state.MediaPath,
-                        CacheDuration = cacheDuration
-
+                        CacheDuration = cacheDuration,
                     }).ConfigureAwait(false);
                 }
             }

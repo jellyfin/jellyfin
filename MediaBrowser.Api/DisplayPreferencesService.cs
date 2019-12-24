@@ -53,6 +53,7 @@ namespace MediaBrowser.Api
         /// The _display preferences manager
         /// </summary>
         private readonly IDisplayPreferencesRepository _displayPreferencesManager;
+
         /// <summary>
         /// The _json serializer
         /// </summary>
@@ -61,6 +62,9 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Initializes a new instance of the <see cref="DisplayPreferencesService" /> class.
         /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="serverConfigurationManager">The server configuration manager.</param>
+        /// <param name="httpResultFactory">The HTTP result factory</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="displayPreferencesManager">The display preferences manager.</param>
         public DisplayPreferencesService(

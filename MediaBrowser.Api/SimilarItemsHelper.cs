@@ -69,13 +69,25 @@ namespace MediaBrowser.Api
     /// </summary>
     public static class SimilarItemsHelper
     {
-        internal static QueryResult<BaseItemDto> GetSimilarItemsResult(DtoOptions dtoOptions, IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, ILogger logger, BaseGetSimilarItemsFromItem request, Type[] includeTypes, Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
+        internal static QueryResult<BaseItemDto> GetSimilarItemsResult(
+            DtoOptions dtoOptions,
+            IUserManager userManager,
+            IItemRepository itemRepository,
+            ILibraryManager libraryManager,
+            IUserDataManager userDataRepository,
+            IDtoService dtoService,
+            ILogger logger,
+            BaseGetSimilarItemsFromItem request,
+            Type[] includeTypes,
+            Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
         {
             var user = !request.UserId.Equals(Guid.Empty) ? userManager.GetUserById(request.UserId) : null;
 
-            var item = string.IsNullOrEmpty(request.Id) ?
-                (!request.UserId.Equals(Guid.Empty) ? libraryManager.GetUserRootFolder() :
-                libraryManager.RootFolder) : libraryManager.GetItemById(request.Id);
+            var item = string.IsNullOrEmpty(request.Id)
+                ? (!request.UserId.Equals(Guid.Empty)
+                    ? libraryManager.GetUserRootFolder()
+                    : libraryManager.RootFolder)
+                : libraryManager.GetItemById(request.Id);
 
             var query = new InternalItemsQuery(user)
             {
@@ -92,8 +104,7 @@ namespace MediaBrowser.Api
 
             var inputItems = libraryManager.GetItemList(query);
 
-            var items = GetSimilaritems(item, libraryManager, inputItems, getSimilarityScore)
-                .ToList();
+            var items = GetSimilarItems(item, libraryManager, inputItems, getSimilarityScore).ToList();
 
             var returnItems = items;
 
@@ -113,14 +124,18 @@ namespace MediaBrowser.Api
         }
 
         /// <summary>
-        /// Gets the similaritems.
+        /// Gets the similar items.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="inputItems">The input items.</param>
         /// <param name="getSimilarityScore">The get similarity score.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        internal static IEnumerable<BaseItem> GetSimilaritems(BaseItem item, ILibraryManager libraryManager, IEnumerable<BaseItem> inputItems, Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
+        internal static IEnumerable<BaseItem> GetSimilarItems(
+            BaseItem item,
+            ILibraryManager libraryManager,
+            IEnumerable<BaseItem> inputItems,
+            Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
         {
             var itemId = item.Id;
             inputItems = inputItems.Where(i => i.Id != itemId);
@@ -130,10 +145,10 @@ namespace MediaBrowser.Api
                 AppearsInItemId = item.Id
             });
 
-            return inputItems.Select(i => new Tuple<BaseItem, int>(i, getSimilarityScore(item, itemPeople, allPeople, i)))
-                .Where(i => i.Item2 > 2)
-                .OrderByDescending(i => i.Item2)
-                .Select(i => i.Item1);
+            return inputItems.Select(i => (baseItem: i, similarityScore: getSimilarityScore(item, itemPeople, allPeople, i)))
+                .Where(i => i.similarityScore > 2)
+                .OrderByDescending(i => i.similarityScore)
+                .Select(i => i.baseItem);
         }
 
         private static IEnumerable<string> GetTags(BaseItem item)
@@ -179,18 +194,22 @@ namespace MediaBrowser.Api
                 {
                     return 5;
                 }
+
                 if (string.Equals(i.Type, PersonType.Actor, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Role, PersonType.Actor, StringComparison.OrdinalIgnoreCase))
                 {
                     return 3;
                 }
+
                 if (string.Equals(i.Type, PersonType.Composer, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Role, PersonType.Composer, StringComparison.OrdinalIgnoreCase))
                 {
                     return 3;
                 }
+
                 if (string.Equals(i.Type, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Role, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))
                 {
                     return 3;
                 }
+
                 if (string.Equals(i.Type, PersonType.Writer, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Role, PersonType.Writer, StringComparison.OrdinalIgnoreCase))
                 {
                     return 2;
@@ -218,6 +237,5 @@ namespace MediaBrowser.Api
 
             return points;
         }
-
     }
 }

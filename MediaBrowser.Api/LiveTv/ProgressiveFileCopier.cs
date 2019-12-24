@@ -19,7 +19,7 @@ namespace MediaBrowser.Api.LiveTv
         public bool AllowEndOfFile = true;
 
         private readonly IDirectStreamProvider _directStreamProvider;
-        private IStreamHelper _streamHelper;
+        private readonly IStreamHelper _streamHelper;
 
         public ProgressiveFileCopier(IStreamHelper streamHelper, string path, Dictionary<string, string> outputHeaders, ILogger logger)
         {
@@ -49,7 +49,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var fileOptions = FileOptions.SequentialScan;
 
-            // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
+            // use non-async file stream along with read due to https://github.com/dotnet/corefx/issues/6039
             if (Environment.OSVersion.Platform != PlatformID.Win32NT)
             {
                 fileOptions |= FileOptions.Asynchronous;
@@ -61,8 +61,7 @@ namespace MediaBrowser.Api.LiveTv
                 var eofCount = 0;
                 while (eofCount < emptyReadLimit)
                 {
-                    int bytesRead;
-                    bytesRead = await _streamHelper.CopyToAsync(inputStream, outputStream, cancellationToken).ConfigureAwait(false);
+                    var bytesRead = await _streamHelper.CopyToAsync(inputStream, outputStream, cancellationToken).ConfigureAwait(false);
 
                     if (bytesRead == 0)
                     {

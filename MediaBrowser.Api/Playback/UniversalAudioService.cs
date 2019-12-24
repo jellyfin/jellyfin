@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
 {
-    public class BaseUniversalRequest
+    public abstract class BaseUniversalRequest
     {
         /// <summary>
         /// Gets or sets the id.
@@ -57,7 +57,7 @@ namespace MediaBrowser.Api.Playback
         public bool EnableRemoteMedia { get; set; }
         public bool BreakOnNonKeyFrames { get; set; }
 
-        public BaseUniversalRequest()
+        protected BaseUniversalRequest()
         {
             EnableRedirection = true;
         }
@@ -168,7 +168,7 @@ namespace MediaBrowser.Api.Playback
                     AudioCodec = request.AudioCodec,
                     Protocol = request.TranscodingProtocol,
                     BreakOnNonKeyFrames = request.BreakOnNonKeyFrames,
-                    MaxAudioChannels = request.TranscodingAudioChannels.HasValue ? request.TranscodingAudioChannels.Value.ToString(CultureInfo.InvariantCulture) : null
+                    MaxAudioChannels = request.TranscodingAudioChannels?.ToString(CultureInfo.InvariantCulture)
                 }
             };
 
@@ -257,8 +257,7 @@ namespace MediaBrowser.Api.Playback
                 StartTimeTicks = request.StartTimeTicks,
                 UserId = request.UserId,
                 DeviceProfile = deviceProfile,
-                MediaSourceId = request.MediaSourceId
-
+                MediaSourceId = request.MediaSourceId,
             }).ConfigureAwait(false);
 
             var mediaSource = playbackInfoResult.MediaSources[0];
@@ -323,6 +322,7 @@ namespace MediaBrowser.Api.Playback
                 {
                     return await service.Head(newRequest).ConfigureAwait(false);
                 }
+
                 return await service.Get(newRequest).ConfigureAwait(false);
             }
             else

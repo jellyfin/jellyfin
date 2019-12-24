@@ -32,23 +32,30 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The path.</value>
         public MediaSourceInfo MediaSource { get; set; }
+
         public string Path { get; set; }
+
         /// <summary>
         /// Gets or sets the type.
         /// </summary>
         /// <value>The type.</value>
         public TranscodingJobType Type { get; set; }
+
         /// <summary>
         /// Gets or sets the process.
         /// </summary>
         /// <value>The process.</value>
         public Process Process { get; set; }
+
         public ILogger Logger { get; private set; }
+
         /// <summary>
         /// Gets or sets the active request count.
         /// </summary>
         /// <value>The active request count.</value>
+
         public int ActiveRequestCount { get; set; }
+
         /// <summary>
         /// Gets or sets the kill timer.
         /// </summary>
@@ -92,10 +99,7 @@ namespace MediaBrowser.Api
         {
             lock (_timerLock)
             {
-                if (KillTimer != null)
-                {
-                    KillTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                }
+                KillTimer?.Change(Timeout.Infinite, Timeout.Infinite);
             }
         }
 

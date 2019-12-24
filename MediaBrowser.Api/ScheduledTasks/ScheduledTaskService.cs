@@ -93,7 +93,10 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTaskService" /> class.
         /// </summary>
+        /// <param name="httpResultFactory">The HTTP result factory</param>
         /// <param name="taskManager">The task manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <exception cref="ArgumentNullException">taskManager</exception>
         public ScheduledTaskService(
             ILogger<ScheduledTaskService> logger,
@@ -123,9 +126,7 @@ namespace MediaBrowser.Api.ScheduledTasks
                 {
                     var isHidden = false;
 
-                    var configurableTask = i.ScheduledTask as IConfigurableScheduledTask;
-
-                    if (configurableTask != null)
+                    if (i.ScheduledTask is IConfigurableScheduledTask configurableTask)
                     {
                         isHidden = configurableTask.IsHidden;
                     }
@@ -142,9 +143,7 @@ namespace MediaBrowser.Api.ScheduledTasks
                 {
                     var isEnabled = true;
 
-                    var configurableTask = i.ScheduledTask as IConfigurableScheduledTask;
-
-                    if (configurableTask != null)
+                    if (i.ScheduledTask is IConfigurableScheduledTask configurableTask)
                     {
                         isEnabled = configurableTask.IsEnabled;
                     }

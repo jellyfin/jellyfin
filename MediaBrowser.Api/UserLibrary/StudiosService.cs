@@ -16,7 +16,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetStudios
     /// </summary>
     [Route("/Studios", "GET", Summary = "Gets all studios from a given item, folder, or the entire library")]
-    public class GetStudios : GetItemsByName
+    public class GetStudios : GetItemsByNameBase
     {
     }
 
@@ -113,7 +113,7 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(result);
         }
 
-        protected override QueryResult<(BaseItem, ItemCounts)> GetItems(GetItemsByName request, InternalItemsQuery query)
+        protected override QueryResult<(BaseItem, ItemCounts)> GetItems(GetItemsByNameBase request, InternalItemsQuery query)
         {
             return LibraryManager.GetStudios(query);
         }
@@ -124,7 +124,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IList<BaseItem> items)
+        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByNameBase request, IList<BaseItem> items)
         {
             throw new NotImplementedException();
         }

@@ -78,10 +78,10 @@ namespace MediaBrowser.Api
             var user = !request.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(request.UserId) : null;
 
             var item = string.IsNullOrEmpty(request.Id)
-                           ? (!request.UserId.Equals(Guid.Empty)
-                                  ? _libraryManager.GetUserRootFolder()
-                                  : _libraryManager.RootFolder)
-                           : _libraryManager.GetItemById(request.Id);
+                ? (!request.UserId.Equals(Guid.Empty)
+                    ? _libraryManager.GetUserRootFolder()
+                    : _libraryManager.RootFolder)
+                : _libraryManager.GetItemById(request.Id);
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
@@ -138,32 +138,15 @@ namespace MediaBrowser.Api
             var videosWithVersions = items.Where(i => i.MediaSourceCount > 1)
                 .ToList();
 
-            var primaryVersion = videosWithVersions.FirstOrDefault();
-
-            if (primaryVersion == null)
-            {
-                primaryVersion = items.OrderBy(i =>
-                    {
-                        if (i.Video3DFormat.HasValue)
-                        {
-                            return 1;
-                        }
-
-                        if (i.VideoType != Model.Entities.VideoType.VideoFile)
-                        {
-                            return 1;
-                        }
-
-                        return 0;
-                    })
-                    .ThenByDescending(i =>
-                    {
-                        var stream = i.GetDefaultVideoStream();
-
-                        return stream == null || stream.Width == null ? 0 : stream.Width.Value;
-
-                    }).First();
-            }
+            var primaryVersion = videosWithVersions.FirstOrDefault()
+                                 ?? items.OrderBy(i =>
+                                         i.Video3DFormat.HasValue
+                                             ? 1
+                                             : i.VideoType != Model.Entities.VideoType.VideoFile
+                                                 ? 1
+                                                 : 0)
+                                     .ThenByDescending(i => i.GetDefaultVideoStream()?.Width ?? 0)
+                                     .First();
 
             var list = primaryVersion.LinkedAlternateVersions.ToList();
 
@@ -179,12 +162,10 @@ namespace MediaBrowser.Api
                     ItemId = item.Id
                 });
 
-                foreach (var linkedItem in item.LinkedAlternateVersions)
+                foreach (var linkedItem in item.LinkedAlternateVersions
+                    .Where(li => !list.Any(i => string.Equals(i.Path, li.Path, StringComparison.OrdinalIgnoreCase))))
                 {
-                    if (!list.Any(i => string.Equals(i.Path, linkedItem.Path, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        list.Add(linkedItem);
-                    }
+                    list.Add(linkedItem);
                 }
 
                 if (item.LinkedAlternateVersions.Length > 0)

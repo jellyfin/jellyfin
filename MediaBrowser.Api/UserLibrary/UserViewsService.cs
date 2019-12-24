@@ -27,6 +27,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "IncludeExternalContent", Description = "Whether or not to include external views such as channels or live tv", IsRequired = true, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? IncludeExternalContent { get; set; }
+
         public bool IncludeHidden { get; set; }
 
         public string PresetViews { get; set; }
@@ -80,6 +81,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 query.IncludeExternalContent = request.IncludeExternalContent.Value;
             }
+
             query.IncludeHidden = request.IncludeHidden;
 
             if (!string.IsNullOrWhiteSpace(request.PresetViews))
@@ -128,11 +130,10 @@ namespace MediaBrowser.Api.UserLibrary
                 .Select(i => new SpecialViewOption
                 {
                     Name = i.Name,
-                    Id = i.Id.ToString("N", CultureInfo.InvariantCulture)
-
+                    Id = i.Id.ToString("N", CultureInfo.InvariantCulture),
                 })
-            .OrderBy(i => i.Name)
-            .ToArray();
+                .OrderBy(i => i.Name)
+                .ToArray();
 
             return ToOptimizedResult(list);
         }

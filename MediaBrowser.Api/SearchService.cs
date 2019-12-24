@@ -113,6 +113,7 @@ namespace MediaBrowser.Api
         /// The _search engine
         /// </summary>
         private readonly ISearchEngine _searchEngine;
+
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
@@ -120,10 +121,13 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Initializes a new instance of the <see cref="SearchService" /> class.
         /// </summary>
+        /// <param name="httpResultFactory">The HTTP result factory</param>
         /// <param name="searchEngine">The search engine.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="dtoService">The dto service.</param>
         /// <param name="imageProcessor">The image processor.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="serverConfigurationManager">The server configuration manager.</param>
         public SearchService(
             ILogger<SearchService> logger,
             IServerConfigurationManager serverConfigurationManager,
@@ -179,8 +183,7 @@ namespace MediaBrowser.Api
                 IsMovie = request.IsMovie,
                 IsNews = request.IsNews,
                 IsSeries = request.IsSeries,
-                IsSports = request.IsSports
-
+                IsSports = request.IsSports,
             });
 
             return new SearchHintResult
@@ -234,20 +237,17 @@ namespace MediaBrowser.Api
             SetThumbImageInfo(result, item);
             SetBackdropImageInfo(result, item);
 
-            var program = item as LiveTvProgram;
-            if (program != null)
+            if (item is LiveTvProgram program)
             {
                 result.StartDate = program.StartDate;
             }
 
-            var hasSeries = item as IHasSeries;
-            if (hasSeries != null)
+            if (item is IHasSeries hasSeries)
             {
                 result.Series = hasSeries.SeriesName;
             }
 
-            var series = item as Series;
-            if (series != null)
+            if (item is Series series)
             {
                 if (series.Status.HasValue)
                 {
@@ -255,17 +255,13 @@ namespace MediaBrowser.Api
                 }
             }
 
-            var album = item as MusicAlbum;
-
-            if (album != null)
+            if (item is MusicAlbum album)
             {
                 result.Artists = album.Artists;
                 result.AlbumArtist = album.AlbumArtist;
             }
 
-            var song = item as Audio;
-
-            if (song != null)
+            if (item is Audio song)
             {
                 result.AlbumArtist = song.AlbumArtists.FirstOrDefault();
                 result.Artists = song.Artists;
@@ -286,7 +282,7 @@ namespace MediaBrowser.Api
             if (!item.ChannelId.Equals(Guid.Empty))
             {
                 var channel = _libraryManager.GetItemById(item.ChannelId);
-                result.ChannelName = channel == null ? null : channel.Name;
+                result.ChannelName = channel?.Name;
             }
 
             return result;
@@ -323,23 +319,23 @@ namespace MediaBrowser.Api
 
         private void SetBackdropImageInfo(SearchHint hint, BaseItem item)
         {
-            var itemWithImage = item.HasImage(ImageType.Backdrop) ? item : null;
+            var itemWithImage = (item.HasImage(ImageType.Backdrop) ? item : null)
+                                ?? GetParentWithImage<BaseItem>(item, ImageType.Backdrop);
 
             if (itemWithImage == null)
             {
-                itemWithImage = GetParentWithImage<BaseItem>(item, ImageType.Backdrop);
+                return;
             }
 
-            if (itemWithImage != null)
+            var tag = _imageProcessor.GetImageCacheTag(itemWithImage, ImageType.Backdrop);
+
+            if (tag == null)
             {
-                var tag = _imageProcessor.GetImageCacheTag(itemWithImage, ImageType.Backdrop);
-
-                if (tag != null)
-                {
-                    hint.BackdropImageTag = tag;
-                    hint.BackdropImageItemId = itemWithImage.Id.ToString("N", CultureInfo.InvariantCulture);
-                }
+                return;
             }
+
+            hint.BackdropImageTag = tag;
+            hint.BackdropImageItemId = itemWithImage.Id.ToString("N", CultureInfo.InvariantCulture);
         }
 
         private T GetParentWithImage<T>(BaseItem item, ImageType type)

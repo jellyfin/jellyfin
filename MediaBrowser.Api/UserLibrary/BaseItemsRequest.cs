@@ -412,12 +412,9 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var val = Filters;
 
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ItemFilter[] { };
-            }
-
-            return val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true)).ToArray();
+            return string.IsNullOrEmpty(val)
+                ? Array.Empty<ItemFilter>()
+                : val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true)).ToArray();
         }
 
         /// <summary>
@@ -428,12 +425,9 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var val = ImageTypes;
 
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ImageType[] { };
-            }
-
-            return val.Split(',').Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToArray();
+            return string.IsNullOrEmpty(val)
+                ? Array.Empty<ImageType>()
+                : val.Split(',').Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToArray();
         }
 
         /// <summary>

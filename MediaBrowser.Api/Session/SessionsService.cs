@@ -322,7 +322,6 @@ namespace MediaBrowser.Api.Session
         public void Delete(RevokeKey request)
         {
             _sessionManager.RevokeToken(request.Key);
-
         }
 
         public void Post(CreateKey request)
@@ -395,15 +394,7 @@ namespace MediaBrowser.Api.Session
                 {
                     var deviceId = i.DeviceId;
 
-                    if (!string.IsNullOrWhiteSpace(deviceId))
-                    {
-                        if (!_deviceManager.CanAccessDevice(user, deviceId))
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
+                    return string.IsNullOrWhiteSpace(deviceId) || _deviceManager.CanAccessDevice(user, deviceId);
                 });
             }
 
@@ -518,6 +509,7 @@ namespace MediaBrowser.Api.Session
             {
                 request.Id = GetSession(_sessionContext).Id;
             }
+
             _sessionManager.ReportCapabilities(request.Id, new ClientCapabilities
             {
                 PlayableMediaTypes = SplitValue(request.PlayableMediaTypes, ','),
@@ -538,6 +530,7 @@ namespace MediaBrowser.Api.Session
             {
                 request.Id = GetSession(_sessionContext).Id;
             }
+
             _sessionManager.ReportCapabilities(request.Id, request);
         }
     }

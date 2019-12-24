@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.UserLibrary
 {
     [Route("/MusicGenres", "GET", Summary = "Gets all music genres from a given item, folder, or the entire library")]
-    public class GetMusicGenres : GetItemsByName
+    public class GetMusicGenres : GetItemsByNameBase
     {
     }
 
@@ -105,7 +105,7 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(result);
         }
 
-        protected override QueryResult<(BaseItem, ItemCounts)> GetItems(GetItemsByName request, InternalItemsQuery query)
+        protected override QueryResult<(BaseItem, ItemCounts)> GetItems(GetItemsByNameBase request, InternalItemsQuery query)
         {
             return LibraryManager.GetMusicGenres(query);
         }
@@ -116,7 +116,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IList<BaseItem> items)
+        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByNameBase request, IList<BaseItem> items)
         {
             throw new NotImplementedException();
         }

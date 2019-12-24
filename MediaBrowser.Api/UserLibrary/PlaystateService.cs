@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -280,10 +281,9 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dto = UpdatePlayedStatus(user, request.Id, true, datePlayed);
 
-            foreach (var additionalUserInfo in session.AdditionalUsers)
+            foreach (var additionalUser in session.AdditionalUsers
+                .Select(additionalUserInfo => _userManager.GetUserById(additionalUserInfo.UserId)))
             {
-                var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
-
                 UpdatePlayedStatus(additionalUser, request.Id, true, datePlayed);
             }
 
@@ -331,6 +331,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var task = _sessionManager.OnPlaybackStart(request);
 
+            // TODO: Should this be async?
             Task.WaitAll(task);
         }
 
@@ -365,6 +366,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var task = _sessionManager.OnPlaybackProgress(request);
 
+            // TODO: Should this be async?
             Task.WaitAll(task);
         }
 
@@ -423,10 +425,9 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dto = UpdatePlayedStatus(user, request.Id, false, null);
 
-            foreach (var additionalUserInfo in session.AdditionalUsers)
+            foreach (var additionalUser in session.AdditionalUsers
+                .Select(additionalUserInfo => _userManager.GetUserById(additionalUserInfo.UserId)))
             {
-                var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
-
                 UpdatePlayedStatus(additionalUser, request.Id, false, null);
             }
 

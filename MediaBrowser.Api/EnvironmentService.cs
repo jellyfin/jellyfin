@@ -6,7 +6,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 
@@ -117,12 +116,17 @@ namespace MediaBrowser.Api
         /// The _network manager
         /// </summary>
         private readonly INetworkManager _networkManager;
+
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EnvironmentService" /> class.
         /// </summary>
+        /// <param name="httpResultFactory">The HTTP result factory.</param>
         /// <param name="networkManager">The network manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="serverConfigurationManager">The server configuration manager.</param>
+        /// <param name="fileSystem">The file system accessor.</param>
         public EnvironmentService(
             ILogger<EnvironmentService> logger,
             IServerConfigurationManager serverConfigurationManager,
@@ -178,7 +182,7 @@ namespace MediaBrowser.Api
         }
 
         public object Get(GetDefaultDirectoryBrowser request) =>
-            ToOptimizedResult(new DefaultDirectoryBrowserInfo {Path = null});
+            ToOptimizedResult(new DefaultDirectoryBrowserInfo { Path = null });
 
         /// <summary>
         /// Gets the specified request.
@@ -272,7 +276,6 @@ namespace MediaBrowser.Api
                 Name = f.Name,
                 Path = f.FullName,
                 Type = f.IsDirectory ? FileSystemEntryType.Directory : FileSystemEntryType.File
-
             });
         }
 
@@ -280,23 +283,27 @@ namespace MediaBrowser.Api
         {
             var parent = Path.GetDirectoryName(request.Path);
 
-            if (string.IsNullOrEmpty(parent))
+            if (!string.IsNullOrEmpty(parent))
             {
-                // Check if unc share
-                var index = request.Path.LastIndexOf(UncSeparator);
-
-                if (index != -1 && request.Path.IndexOf(UncSeparator) == 0)
-                {
-                    parent = request.Path.Substring(0, index);
-
-                    if (string.IsNullOrWhiteSpace(parent.TrimStart(UncSeparator)))
-                    {
-                        parent = null;
-                    }
-                }
+                return parent;
             }
 
-            return parent;
+            // Check if unc share
+            var index = request.Path.LastIndexOf(UncSeparator);
+
+            if (index == -1 || request.Path.IndexOf(UncSeparator) != 0)
+            {
+                return parent;
+            }
+
+            parent = request.Path.Substring(0, index);
+
+            if (!string.IsNullOrWhiteSpace(parent.TrimStart(UncSeparator)))
+            {
+                return parent;
+            }
+
+            return null;
         }
     }
 }

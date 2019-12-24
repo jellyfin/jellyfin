@@ -29,7 +29,13 @@ namespace MediaBrowser.Api.Playback.Progressive
 
         private readonly IDirectStreamProvider _directStreamProvider;
 
-        public ProgressiveFileCopier(IFileSystem fileSystem, string path, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, CancellationToken cancellationToken)
+        public ProgressiveFileCopier(
+            IFileSystem fileSystem,
+            string path,
+            Dictionary<string, string> outputHeaders,
+            TranscodingJob job,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             _fileSystem = fileSystem;
             _path = path;
@@ -39,7 +45,12 @@ namespace MediaBrowser.Api.Playback.Progressive
             _cancellationToken = cancellationToken;
         }
 
-        public ProgressiveFileCopier(IDirectStreamProvider directStreamProvider, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, CancellationToken cancellationToken)
+        public ProgressiveFileCopier(
+            IDirectStreamProvider directStreamProvider,
+            Dictionary<string, string> outputHeaders,
+            TranscodingJob job,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             _directStreamProvider = directStreamProvider;
             _outputHeaders = outputHeaders;
@@ -107,6 +118,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                             {
                                 eofCount++;
                             }
+
                             await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                         }
                         else

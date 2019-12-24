@@ -243,7 +243,8 @@ namespace MediaBrowser.Api
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
-        private readonly ISessionManager _sessionMananger;
+
+        private readonly ISessionManager _sessionManager;
         private readonly INetworkManager _networkManager;
         private readonly IDeviceManager _deviceManager;
         private readonly IAuthorizationContext _authContext;
@@ -253,14 +254,14 @@ namespace MediaBrowser.Api
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
-            ISessionManager sessionMananger,
+            ISessionManager sessionManager,
             INetworkManager networkManager,
             IDeviceManager deviceManager,
             IAuthorizationContext authContext)
             : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _userManager = userManager;
-            _sessionMananger = sessionMananger;
+            _sessionManager = sessionManager;
             _networkManager = networkManager;
             _deviceManager = deviceManager;
             _authContext = authContext;
@@ -277,12 +278,14 @@ namespace MediaBrowser.Api
                 });
             }
 
-            return Get(new GetUsers
-            {
-                IsHidden = false,
-                IsDisabled = false
-
-            }, true, true);
+            return Get(
+                new GetUsers
+                {
+                    IsHidden = false,
+                    IsDisabled = false,
+                },
+                true,
+                true);
         }
 
         /// <summary>
@@ -372,7 +375,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            _sessionMananger.RevokeUserTokens(user.Id, null);
+            _sessionManager.RevokeUserTokens(user.Id, null);
             _userManager.DeleteUser(user);
             return Task.CompletedTask;
         }
@@ -409,7 +412,7 @@ namespace MediaBrowser.Api
 
             try
             {
-                var result = await _sessionMananger.AuthenticateNewSession(new AuthenticationRequest
+                var result = await _sessionManager.AuthenticateNewSession(new AuthenticationRequest
                 {
                     App = auth.Client,
                     AppVersion = auth.Version,
@@ -467,7 +470,7 @@ namespace MediaBrowser.Api
 
                 var currentToken = _authContext.GetAuthorizationInfo(Request).Token;
 
-                _sessionMananger.RevokeUserTokens(user.Id, currentToken);
+                _sessionManager.RevokeUserTokens(user.Id, currentToken);
             }
         }
 
@@ -560,7 +563,6 @@ namespace MediaBrowser.Api
             AssertCanUpdateUser(_authContext, _userManager, request.Id, false);
 
             _userManager.UpdateConfiguration(request.Id, request);
-
         }
 
         public void Post(UpdateUserPolicy request)
@@ -591,7 +593,7 @@ namespace MediaBrowser.Api
                 }
 
                 var currentToken = _authContext.GetAuthorizationInfo(Request).Token;
-                _sessionMananger.RevokeUserTokens(user.Id, currentToken);
+                _sessionManager.RevokeUserTokens(user.Id, currentToken);
             }
 
             _userManager.UpdateUserPolicy(request.Id, request);

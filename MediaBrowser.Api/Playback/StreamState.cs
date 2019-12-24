@@ -52,6 +52,7 @@ namespace MediaBrowser.Api.Playback
                         userAgent.IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
                         userAgent.IndexOf("ipod", StringComparison.OrdinalIgnoreCase) != -1)
                     {
+                        // TODO: This branch always returns 6?
                         if (IsSegmentedLiveStream)
                         {
                             return 6;
@@ -60,12 +61,7 @@ namespace MediaBrowser.Api.Playback
                         return 6;
                     }
 
-                    if (IsSegmentedLiveStream)
-                    {
-                        return 3;
-                    }
-
-                    return 6;
+                    return IsSegmentedLiveStream ? 3 : 6;
                 }
 
                 return 3;

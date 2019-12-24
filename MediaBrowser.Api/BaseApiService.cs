@@ -20,7 +20,7 @@ namespace MediaBrowser.Api
     /// </summary>
     public abstract class BaseApiService : IService, IRequiresRequest
     {
-        public BaseApiService(
+        protected BaseApiService(
             ILogger logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory)

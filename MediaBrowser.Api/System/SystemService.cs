@@ -30,14 +30,12 @@ namespace MediaBrowser.Api.System
     [Route("/System/Info/Public", "GET", Summary = "Gets public information about the server")]
     public class GetPublicSystemInfo : IReturn<PublicSystemInfo>
     {
-
     }
 
     [Route("/System/Ping", "POST")]
     [Route("/System/Ping", "GET")]
     public class PingSystem : IReturnVoid
     {
-
     }
 
     /// <summary>
@@ -83,7 +81,6 @@ namespace MediaBrowser.Api.System
     [Authenticated]
     public class GetWakeOnLanInfo : IReturn<WakeOnLanInfo[]>
     {
-
     }
 
     /// <summary>
@@ -95,6 +92,7 @@ namespace MediaBrowser.Api.System
         /// The _app host
         /// </summary>
         private readonly IServerApplicationHost _appHost;
+
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
 
@@ -103,8 +101,11 @@ namespace MediaBrowser.Api.System
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemService" /> class.
         /// </summary>
+        /// <param name="httpResultFactory">The HTTP result factory</param>
         /// <param name="appHost">The app host.</param>
         /// <param name="fileSystem">The file system.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <exception cref="ArgumentNullException">jsonSerializer</exception>
         public SystemService(
             ILogger<SystemService> logger,
@@ -147,14 +148,15 @@ namespace MediaBrowser.Api.System
                 files = Enumerable.Empty<FileSystemMetadata>();
             }
 
-            var result = files.Select(i => new LogFile
-            {
-                DateCreated = _fileSystem.GetCreationTimeUtc(i),
-                DateModified = _fileSystem.GetLastWriteTimeUtc(i),
-                Name = i.Name,
-                Size = i.Length
-
-            }).OrderByDescending(i => i.DateModified)
+            var result = files
+                .Select(i => new LogFile
+                {
+                    DateCreated = _fileSystem.GetCreationTimeUtc(i),
+                    DateModified = _fileSystem.GetLastWriteTimeUtc(i),
+                    Name = i.Name,
+                    Size = i.Length,
+                })
+                .OrderByDescending(i => i.DateModified)
                 .ThenByDescending(i => i.DateCreated)
                 .ThenBy(i => i.Name)
                 .ToArray();
@@ -168,12 +170,12 @@ namespace MediaBrowser.Api.System
                 .First(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));
 
             // For older files, assume fully static
-            if (file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1))
-            {
-                return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShareMode.Read);
-            }
-
-            return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShareMode.ReadWrite);
+            return ResultFactory.GetStaticFileResult(
+                Request,
+                file.FullName,
+                file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1)
+                    ? FileShareMode.Read
+                    : FileShareMode.ReadWrite);
         }
 
         /// <summary>

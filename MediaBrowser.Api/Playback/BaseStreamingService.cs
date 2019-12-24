@@ -778,8 +778,6 @@ namespace MediaBrowser.Api.Playback
                 state.DirectStreamProvider = liveStreamInfo.Item2;
             }
 
-            var videoRequest = request as VideoStreamRequest;
-
             EncodingHelper.AttachMediaSourceInfo(state, mediaSource, url);
 
             var container = Path.GetExtension(state.RequestedUrl);
@@ -791,9 +789,9 @@ namespace MediaBrowser.Api.Playback
 
             if (string.IsNullOrEmpty(container))
             {
-                container = request.Static ?
-                    StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, state.MediaPath, null, DlnaProfileType.Audio) :
-                    GetOutputFileExtension(state);
+                container = request.Static
+                    ? StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, state.MediaPath, null, DlnaProfileType.Audio)
+                    : GetOutputFileExtension(state);
             }
 
             state.OutputContainer = (container ?? string.Empty).TrimStart('.');
@@ -804,7 +802,7 @@ namespace MediaBrowser.Api.Playback
 
             state.OutputAudioChannels = EncodingHelper.GetNumAudioChannelsParam(state, state.AudioStream, state.OutputAudioCodec);
 
-            if (videoRequest != null)
+            if (request is VideoStreamRequest videoRequest)
             {
                 state.OutputVideoCodec = state.VideoRequest.VideoCodec;
                 state.OutputVideoBitrate = EncodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
@@ -858,14 +856,9 @@ namespace MediaBrowser.Api.Playback
                 {
                     var caps = DeviceManager.GetCapabilities(state.Request.DeviceId);
 
-                    if (caps != null)
-                    {
-                        state.DeviceProfile = caps.DeviceProfile;
-                    }
-                    else
-                    {
-                        state.DeviceProfile = DlnaManager.GetProfile(headers);
-                    }
+                    state.DeviceProfile = caps != null
+                        ? caps.DeviceProfile
+                        : DlnaManager.GetProfile(headers);
                 }
             }
 
@@ -881,52 +874,59 @@ namespace MediaBrowser.Api.Playback
             var audioCodec = state.ActualOutputAudioCodec;
             var videoCodec = state.ActualOutputVideoCodec;
 
-            var mediaProfile = state.VideoRequest == null ?
-                profile.GetAudioMediaProfile(state.OutputContainer, audioCodec, state.OutputAudioChannels, state.OutputAudioBitrate, state.OutputAudioSampleRate, state.OutputAudioBitDepth) :
-                profile.GetVideoMediaProfile(state.OutputContainer,
-                audioCodec,
-                videoCodec,
-                state.OutputWidth,
-                state.OutputHeight,
-                state.TargetVideoBitDepth,
-                state.OutputVideoBitrate,
-                state.TargetVideoProfile,
-                state.TargetVideoLevel,
-                state.TargetFramerate,
-                state.TargetPacketLength,
-                state.TargetTimestamp,
-                state.IsTargetAnamorphic,
-                state.IsTargetInterlaced,
-                state.TargetRefFrames,
-                state.TargetVideoStreamCount,
-                state.TargetAudioStreamCount,
-                state.TargetVideoCodecTag,
-                state.IsTargetAVC);
+            var mediaProfile = state.VideoRequest == null
+                ? profile.GetAudioMediaProfile(state.OutputContainer, audioCodec, state.OutputAudioChannels, state.OutputAudioBitrate, state.OutputAudioSampleRate, state.OutputAudioBitDepth)
+                : profile.GetVideoMediaProfile(
+                    state.OutputContainer,
+                    audioCodec,
+                    videoCodec,
+                    state.OutputWidth,
+                    state.OutputHeight,
+                    state.TargetVideoBitDepth,
+                    state.OutputVideoBitrate,
+                    state.TargetVideoProfile,
+                    state.TargetVideoLevel,
+                    state.TargetFramerate,
+                    state.TargetPacketLength,
+                    state.TargetTimestamp,
+                    state.IsTargetAnamorphic,
+                    state.IsTargetInterlaced,
+                    state.TargetRefFrames,
+                    state.TargetVideoStreamCount,
+                    state.TargetAudioStreamCount,
+                    state.TargetVideoCodecTag,
+                    state.IsTargetAVC);
 
             if (mediaProfile != null)
             {
                 state.MimeType = mediaProfile.MimeType;
             }
 
-            if (!state.Request.Static)
+            if (state.Request.Static)
             {
-                var transcodingProfile = state.VideoRequest == null ?
-                    profile.GetAudioTranscodingProfile(state.OutputContainer, audioCodec) :
-                    profile.GetVideoTranscodingProfile(state.OutputContainer, audioCodec, videoCodec);
-
-                if (transcodingProfile != null)
-                {
-                    state.EstimateContentLength = transcodingProfile.EstimateContentLength;
-                    //state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
-                    state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
-
-                    if (state.VideoRequest != null)
-                    {
-                        state.VideoRequest.CopyTimestamps = transcodingProfile.CopyTimestamps;
-                        state.VideoRequest.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
-                    }
-                }
+                return;
             }
+
+            var transcodingProfile = state.VideoRequest == null
+                ? profile.GetAudioTranscodingProfile(state.OutputContainer, audioCodec)
+                : profile.GetVideoTranscodingProfile(state.OutputContainer, audioCodec, videoCodec);
+
+            if (transcodingProfile == null)
+            {
+                return;
+            }
+
+            state.EstimateContentLength = transcodingProfile.EstimateContentLength;
+            //state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
+            state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
+
+            if (state.VideoRequest == null)
+            {
+                return;
+            }
+
+            state.VideoRequest.CopyTimestamps = transcodingProfile.CopyTimestamps;
+            state.VideoRequest.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
         }
 
         /// <summary>
@@ -1018,6 +1018,7 @@ namespace MediaBrowser.Api.Playback
 
         private void AddTimeSeekResponseHeaders(StreamState state, IDictionary<string, string> responseHeaders)
         {
+            // TODO: RunTImwTicks might not have value
             var runtimeSeconds = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds.ToString(CultureInfo.InvariantCulture);
             var startSeconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
 

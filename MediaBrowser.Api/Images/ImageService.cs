@@ -279,22 +279,12 @@ namespace MediaBrowser.Api.Images
         /// <returns>Task{List{ImageInfo}}.</returns>
         public List<ImageInfo> GetItemImageInfos(BaseItem item)
         {
-            var list = new List<ImageInfo>();
-
             var itemImages = item.ImageInfos;
 
-            foreach (var image in itemImages)
-            {
-                if (!item.AllowsMultipleImages(image.Type))
-                {
-                    var info = GetImageInfo(item, image, null);
-
-                    if (info != null)
-                    {
-                        list.Add(info);
-                    }
-                }
-            }
+            var list = itemImages.Where(image => !item.AllowsMultipleImages(image.Type))
+                .Select(image => GetImageInfo(item, image, null))
+                .Where(info => info != null)
+                .ToList();
 
             foreach (var imageType in itemImages.Select(i => i.Type).Distinct().Where(item.AllowsMultipleImages))
             {
@@ -303,10 +293,10 @@ namespace MediaBrowser.Api.Images
                 // Prevent implicitly captured closure
                 var currentImageType = imageType;
 
-                foreach (var image in itemImages.Where(i => i.Type == currentImageType))
+                foreach (var info in itemImages
+                    .Where(i => i.Type == currentImageType)
+                    .Select(image => GetImageInfo(item, image, index)))
                 {
-                    var info = GetImageInfo(item, image, index);
-
                     if (info != null)
                     {
                         list.Add(info);
@@ -511,6 +501,7 @@ namespace MediaBrowser.Api.Images
         /// Gets the image.
         /// </summary>
         /// <param name="request">The request.</param>
+        /// <param name="itemId">The item ID</param>
         /// <param name="item">The item.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
@@ -547,20 +538,22 @@ namespace MediaBrowser.Api.Images
 
                 if (item == null)
                 {
-                    throw new ResourceNotFoundException(string.Format("Item {0} not found.", itemId.ToString("N", CultureInfo.InvariantCulture)));
+                    throw new ResourceNotFoundException($"Item {itemId.ToString("N", CultureInfo.InvariantCulture)} not found.");
                 }
             }
 
             var imageInfo = GetImageInfo(request, item);
             if (imageInfo == null)
             {
+                // TODO: Unless GetImageInfo modifies item to be null, this check is redundant
                 var displayText = item == null ? itemId.ToString() : item.Name;
-                throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", displayText, request.Type));
+                throw new ResourceNotFoundException($"{displayText} does not have an image of type {request.Type}");
             }
 
             IImageEnhancer[] supportedImageEnhancers;
             if (_imageProcessor.ImageEnhancers.Count > 0)
             {
+                // TODO: Unless GetImageInfo modifies item to be null, this check is always false
                 if (item == null)
                 {
                     item = _libraryManager.GetItemById(itemId);
@@ -573,15 +566,7 @@ namespace MediaBrowser.Api.Images
                 supportedImageEnhancers = Array.Empty<IImageEnhancer>();
             }
 
-            bool cropwhitespace;
-            if (request.CropWhitespace.HasValue)
-            {
-                cropwhitespace = request.CropWhitespace.Value;
-            }
-            else
-            {
-                cropwhitespace = request.Type == ImageType.Logo || request.Type == ImageType.Art;
-            }
+            var cropWhitespace = request.CropWhitespace ?? request.Type == ImageType.Logo || request.Type == ImageType.Art;
 
             var outputFormats = GetOutputFormats(request);
 
@@ -602,7 +587,7 @@ namespace MediaBrowser.Api.Images
                 itemId,
                 request,
                 imageInfo,
-                cropwhitespace,
+                cropWhitespace,
                 outputFormats,
                 supportedImageEnhancers,
                 cacheDuration,
@@ -614,7 +599,7 @@ namespace MediaBrowser.Api.Images
             Guid itemId,
             ImageRequest request,
             ItemImageInfo image,
-            bool cropwhitespace,
+            bool cropWhitespace,
             IReadOnlyCollection<ImageFormat> supportedFormats,
             IReadOnlyCollection<IImageEnhancer> enhancers,
             TimeSpan? cacheDuration,
@@ -623,7 +608,7 @@ namespace MediaBrowser.Api.Images
         {
             var options = new ImageProcessingOptions
             {
-                CropWhiteSpace = cropwhitespace,
+                CropWhiteSpace = cropWhitespace,
                 Enhancers = enhancers,
                 Height = request.Height,
                 ImageIndex = request.Index ?? 0,
@@ -643,7 +628,7 @@ namespace MediaBrowser.Api.Images
                 SupportedOutputFormats = supportedFormats
             };
 
-            var imageResult = await _imageProcessor.ProcessImage(options).ConfigureAwait(false);
+            var (path, mimeType, dateModified) = await _imageProcessor.ProcessImage(options).ConfigureAwait(false);
 
             headers[HeaderNames.Vary] = HeaderNames.Accept;
 
@@ -651,13 +636,11 @@ namespace MediaBrowser.Api.Images
             {
                 CacheDuration = cacheDuration,
                 ResponseHeaders = headers,
-                ContentType = imageResult.Item2,
-                DateLastModified = imageResult.Item3,
+                ContentType = mimeType,
+                DateLastModified = dateModified,
                 IsHeadRequest = isHeadRequest,
-                Path = imageResult.Item1,
-
-                FileShare = FileShareMode.Read
-
+                Path = path,
+                FileShare = FileShareMode.Read,
             }).ConfigureAwait(false);
         }
 
@@ -666,7 +649,7 @@ namespace MediaBrowser.Api.Images
             if (!string.IsNullOrWhiteSpace(request.Format)
                 && Enum.TryParse(request.Format, true, out ImageFormat format))
             {
-                return new ImageFormat[] { format };
+                return new[] { format };
             }
 
             return GetClientSupportedFormats();
@@ -723,12 +706,14 @@ namespace MediaBrowser.Api.Images
         {
             var mimeType = "image/" + format;
 
-            if (requestAcceptTypes.Contains(mimeType))
+            var requestAcceptTypesList = requestAcceptTypes.ToList();
+
+            if (requestAcceptTypesList.Contains(mimeType))
             {
                 return true;
             }
 
-            if (acceptAll && requestAcceptTypes.Contains("*/*"))
+            if (acceptAll && requestAcceptTypesList.Contains("*/*"))
             {
                 return true;
             }

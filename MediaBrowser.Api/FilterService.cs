@@ -118,7 +118,7 @@ namespace MediaBrowser.Api
                 IncludeItemTypes = request.GetIncludeItemTypes(),
                 DtoOptions = new Controller.Dto.DtoOptions
                 {
-                    Fields = new ItemFields[] { },
+                    Fields = Array.Empty<ItemFields>(),
                     EnableImages = false,
                     EnableUserData = false
                 },
@@ -148,8 +148,7 @@ namespace MediaBrowser.Api
                 filters.Genres = _libraryManager.GetMusicGenres(genreQuery).Items.Select(i => new NameGuidPair
                 {
                     Name = i.Item1.Name,
-                    Id = i.Item1.Id
-
+                    Id = i.Item1.Id,
                 }).ToArray();
             }
             else
@@ -157,8 +156,7 @@ namespace MediaBrowser.Api
                 filters.Genres = _libraryManager.GetGenres(genreQuery).Items.Select(i => new NameGuidPair
                 {
                     Name = i.Item1.Name,
-                    Id = i.Item1.Id
-
+                    Id = i.Item1.Id,
                 }).ToArray();
             }
 
@@ -178,9 +176,11 @@ namespace MediaBrowser.Api
                 parentItem = null;
             }
 
-            var item = string.IsNullOrEmpty(request.ParentId) ?
-               user == null ? _libraryManager.RootFolder : _libraryManager.GetUserRootFolder() :
-               parentItem;
+            var item = string.IsNullOrEmpty(request.ParentId)
+                ? user == null
+                    ? _libraryManager.RootFolder
+                    : _libraryManager.GetUserRootFolder()
+                : parentItem;
 
             var result = ((Folder)item).GetItemList(GetItemsQuery(request, user));
 
@@ -191,31 +191,29 @@ namespace MediaBrowser.Api
 
         private QueryFiltersLegacy GetFilters(IReadOnlyCollection<BaseItem> items)
         {
-            var result = new QueryFiltersLegacy();
-
-            result.Years = items.Select(i => i.ProductionYear ?? -1)
-                .Where(i => i > 0)
-                .Distinct()
-                .OrderBy(i => i)
-                .ToArray();
-
-            result.Genres = items.SelectMany(i => i.Genres)
-                .DistinctNames()
-                .OrderBy(i => i)
-                .ToArray();
-
-            result.Tags = items
-                .SelectMany(i => i.Tags)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(i => i)
-                .ToArray();
-
-            result.OfficialRatings = items
-                .Select(i => i.OfficialRating)
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(i => i)
-                .ToArray();
+            var result = new QueryFiltersLegacy
+            {
+                Years = items.Select(i => i.ProductionYear ?? -1)
+                    .Where(i => i > 0)
+                    .Distinct()
+                    .OrderBy(i => i)
+                    .ToArray(),
+                Genres = items.SelectMany(i => i.Genres)
+                    .DistinctNames()
+                    .OrderBy(i => i)
+                    .ToArray(),
+                Tags = items
+                    .SelectMany(i => i.Tags)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(i => i)
+                    .ToArray(),
+                OfficialRatings = items
+                    .Select(i => i.OfficialRating)
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(i => i)
+                    .ToArray()
+            };
 
             return result;
         }
@@ -231,7 +229,7 @@ namespace MediaBrowser.Api
                 EnableTotalRecordCount = false,
                 DtoOptions = new Controller.Dto.DtoOptions
                 {
-                    Fields = new ItemFields[] { ItemFields.Genres, ItemFields.Tags },
+                    Fields = new[] { ItemFields.Genres, ItemFields.Tags },
                     EnableImages = false,
                     EnableUserData = false
                 }

@@ -73,6 +73,7 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableUserData { get; set; }
+
         public bool EnableTotalRecordCount { get; set; }
 
         public GetNextUpEpisodes()
@@ -265,9 +266,14 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Initializes a new instance of the <see cref="TvShowsService" /> class.
         /// </summary>
+        /// <param name="httpResultFactory">The HTTP result factory</param>
         /// <param name="userManager">The user manager.</param>
-        /// <param name="userDataManager">The user data repository.</param>
         /// <param name="libraryManager">The library manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="serverConfigurationManager">The server configuration manager.</param>
+        /// <param name="dtoService">The DTO service.</param>
+        /// <param name="tvSeriesManager">The TV series manager.</param>
+        /// <param name="authContext">THe authorization context.</param>
         public TvShowsService(
             ILogger<TvShowsService> logger,
             IServerConfigurationManager serverConfigurationManager,
@@ -305,8 +311,7 @@ namespace MediaBrowser.Api
                 Limit = request.Limit,
                 ParentId = parentIdGuid,
                 Recursive = true,
-                DtoOptions = options
-
+                DtoOptions = options,
             });
 
             var returnItems = _dtoService.GetBaseItemDtos(itemsResult, options, user);
@@ -389,8 +394,7 @@ namespace MediaBrowser.Api
             {
                 IsMissing = request.IsMissing,
                 IsSpecialSeason = request.IsSpecialSeason,
-                AdjacentTo = request.AdjacentTo
-
+                AdjacentTo = request.AdjacentTo,
             });
 
             var dtoOptions = GetDtoOptions(_authContext, request);
@@ -424,9 +428,7 @@ namespace MediaBrowser.Api
 
             if (!string.IsNullOrWhiteSpace(request.SeasonId))
             {
-                var season = _libraryManager.GetItemById(new Guid(request.SeasonId)) as Season;
-
-                if (season == null)
+                if (!(_libraryManager.GetItemById(new Guid(request.SeasonId)) is Season season))
                 {
                     throw new ResourceNotFoundException("No season exists with Id " + request.SeasonId);
                 }
@@ -444,14 +446,9 @@ namespace MediaBrowser.Api
 
                 var season = series.GetSeasons(user, dtoOptions).FirstOrDefault(i => i.IndexNumber == request.Season.Value);
 
-                if (season == null)
-                {
-                    episodes = new List<BaseItem>();
-                }
-                else
-                {
-                    episodes = ((Season)season).GetEpisodes(user, dtoOptions);
-                }
+                episodes = season is null
+                    ? new List<BaseItem>()
+                    : ((Season)season).GetEpisodes(user, dtoOptions);
             }
             else
             {

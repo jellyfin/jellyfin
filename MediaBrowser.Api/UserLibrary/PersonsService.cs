@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
@@ -18,7 +17,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetPersons
     /// </summary>
     [Route("/Persons", "GET", Summary = "Gets all persons from a given item, folder, or the entire library")]
-    public class GetPersons : GetItemsByName
+    public class GetPersons : GetItemsByNameBase
     {
     }
 
@@ -119,12 +118,12 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IList<BaseItem> items)
+        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByNameBase request, IList<BaseItem> items)
         {
             throw new NotImplementedException();
         }
 
-        protected override QueryResult<(BaseItem, ItemCounts)> GetItems(GetItemsByName request, InternalItemsQuery query)
+        protected override QueryResult<(BaseItem, ItemCounts)> GetItems(GetItemsByNameBase request, InternalItemsQuery query)
         {
             var items = LibraryManager.GetPeopleItems(new InternalPeopleQuery
             {

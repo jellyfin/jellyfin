@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
 {
-    public class TranscodingThrottler : IDisposable
+    public sealed class TranscodingThrottler : IDisposable
     {
         private readonly TranscodingJob _job;
         private readonly ILogger _logger;

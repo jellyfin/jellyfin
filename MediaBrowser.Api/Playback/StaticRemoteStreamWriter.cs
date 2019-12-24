@@ -17,11 +17,6 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         private readonly HttpResponseInfo _response;
 
-        /// <summary>
-        /// The _options
-        /// </summary>
-        private readonly IDictionary<string, string> _options = new Dictionary<string, string>();
-
         public StaticRemoteStreamWriter(HttpResponseInfo response)
         {
             _response = response;
@@ -31,7 +26,7 @@ namespace MediaBrowser.Api.Playback
         /// Gets the options.
         /// </summary>
         /// <value>The options.</value>
-        public IDictionary<string, string> Headers => _options;
+        public IDictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 
         public async Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken)
         {
