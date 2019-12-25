@@ -45,7 +45,7 @@
     "NameSeasonNumber": "Sesong {0}",
     "NameSeasonUnknown": "Sesong ukjent",
     "NewVersionIsAvailable": "En ny versjon av Jellyfin-serveren er tilgjengelig for nedlastning.",
-    "NotificationOptionApplicationUpdateAvailable": "Applikasjon oppdatering tilgjengelig",
+    "NotificationOptionApplicationUpdateAvailable": "Programvareoppdatering er tilgjengelig",
     "NotificationOptionApplicationUpdateInstalled": "Applikasjonsoppdatering installert",
     "NotificationOptionAudioPlayback": "Lyd tilbakespilling startet",
     "NotificationOptionAudioPlaybackStopped": "Lyd avspilling stoppet",
