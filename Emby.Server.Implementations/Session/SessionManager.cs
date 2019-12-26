@@ -1726,6 +1726,7 @@ namespace Emby.Server.Implementations.Session
                 string.Equals(i.Client, client));
         }
 
+        /// <inheritdoc />
         public SessionInfo GetSessionByAuthenticationToken(AuthenticationInfo info, string deviceId, string remoteEndpoint, string appVersion)
         {
             if (info == null)
@@ -1733,7 +1734,7 @@ namespace Emby.Server.Implementations.Session
                 throw new ArgumentNullException(nameof(info));
             }
 
-            var user = info.UserId.Equals(Guid.Empty)
+            var user = info.UserId == Guid.Empty
                 ? null
                 : _userManager.GetUserById(info.UserId);
 

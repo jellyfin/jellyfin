@@ -53,11 +53,12 @@ namespace Emby.Server.Implementations.Session
 
         private void OnConnectionClosed(object sender, EventArgs e)
         {
-            _logger.LogDebug("Removing websocket from session {Session}", _session.Id);
             var connection = (IWebSocketConnection)sender;
+            _logger.LogDebug("Removing websocket from session {Session}", _session.Id);
             _sockets.Remove(connection);
-            _sessionManager.CloseIfNeeded(_session);
+            connection.Closed -= OnConnectionClosed;
             connection.Dispose();
+            _sessionManager.CloseIfNeeded(_session);
         }
 
         /// <inheritdoc />

@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.Session
             }
             else
             {
-                _logger.LogWarning("Unable to determine session based on url: {0}", e.Argument.Url);
+                _logger.LogWarning("Unable to determine session based on query string: {0}", e.Argument.QueryString);
             }
         }
 

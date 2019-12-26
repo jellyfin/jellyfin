@@ -518,30 +518,29 @@ namespace Emby.Server.Implementations.HttpServer
                 return;
             }
 
-            var url = context.Request.GetDisplayUrl();
-            _logger.LogInformation("WS {Url}. UserAgent: {UserAgent}", url, context.Request.Headers[HeaderNames.UserAgent].ToString());
-
             try
             {
-                var webSocket = await context.WebSockets.AcceptWebSocketAsync(null).ConfigureAwait(false);
+                _logger.LogInformation("WS Request from {IP}", context.Connection.RemoteIpAddress);
+
+                WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
 
                 var connection = new WebSocketConnection(
                     _loggerFactory.CreateLogger<WebSocketConnection>(),
                     webSocket,
-                    context.Connection.RemoteIpAddress)
+                    context.Connection.RemoteIpAddress,
+                    context.Request.Query)
                 {
-                    Url = url,
-                    QueryString = context.Request.Query,
                     OnReceive = ProcessWebSocketMessageReceived
                 };
 
                 WebSocketConnected?.Invoke(this, new GenericEventArgs<IWebSocketConnection>(connection));
 
                 await connection.ProcessAsync().ConfigureAwait(false);
+                _logger.LogInformation("WS closed from {IP}", context.Connection.RemoteIpAddress);
             }
-            catch (WebSocketException ex)
+            catch (Exception ex) // Otherwise ASP.Net will ignore the exception
             {
-                _logger.LogError(ex, "ProcessWebSocketRequest error");
+                _logger.LogError(ex, "WebSocketRequestHandler error");
                 if (!context.Response.HasStarted)
                 {
                     context.Response.StatusCode = 500;

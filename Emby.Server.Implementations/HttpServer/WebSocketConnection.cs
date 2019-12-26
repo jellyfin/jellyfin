@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Net;
@@ -39,47 +41,38 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
         /// </summary>
+        /// <param name="logger">The logger.</param>
         /// <param name="socket">The socket.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
-        /// <param name="logger">The logger.</param>
-        /// <exception cref="ArgumentNullException">socket</exception>
-        public WebSocketConnection(ILogger<WebSocketConnection> logger, WebSocket socket, IPAddress remoteEndPoint)
+        /// <param name="query">The query.</param>
+        public WebSocketConnection(
+            ILogger<WebSocketConnection> logger,
+            WebSocket socket,
+            IPAddress? remoteEndPoint,
+            IQueryCollection query)
         {
-            if (socket == null)
-            {
-                throw new ArgumentNullException(nameof(socket));
-            }
-
-            if (remoteEndPoint != null)
-            {
-                throw new ArgumentNullException(nameof(remoteEndPoint));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
+            _logger = logger;
             _socket = socket;
             RemoteEndPoint = remoteEndPoint;
-            _logger = logger;
+            QueryString = query;
 
             _jsonOptions = JsonDefaults.GetOptions();
+            LastActivityDate = DateTime.Now;
         }
 
         /// <inheritdoc />
-        public event EventHandler<EventArgs> Closed;
+        public event EventHandler<EventArgs>? Closed;
 
         /// <summary>
         /// Gets or sets the remote end point.
         /// </summary>
-        public IPAddress RemoteEndPoint { get; private set; }
+        public IPAddress? RemoteEndPoint { get; }
 
         /// <summary>
         /// Gets or sets the receive action.
         /// </summary>
         /// <value>The receive action.</value>
-        public Func<WebSocketMessageInfo, Task> OnReceive { get; set; }
+        public Func<WebSocketMessageInfo, Task>? OnReceive { get; set; }
 
         /// <summary>
         /// Gets the last activity date.
@@ -88,16 +81,10 @@ namespace Emby.Server.Implementations.HttpServer
         public DateTime LastActivityDate { get; private set; }
 
         /// <summary>
-        /// Gets or sets the URL.
-        /// </summary>
-        /// <value>The URL.</value>
-        public string Url { get; set; }
-
-        /// <summary>
         /// Gets or sets the query string.
         /// </summary>
         /// <value>The query string.</value>
-        public IQueryCollection QueryString { get; set; }
+        public IQueryCollection QueryString { get; }
 
         /// <summary>
         /// Gets the state.
@@ -115,11 +102,6 @@ namespace Emby.Server.Implementations.HttpServer
         /// <exception cref="ArgumentNullException">message</exception>
         public Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
         {
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
             var json = JsonSerializer.SerializeToUtf8Bytes(message, _jsonOptions);
             return _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken);
         }
@@ -140,7 +122,7 @@ namespace Emby.Server.Implementations.HttpServer
                 int bytesRead = receiveresult.Count;
                 if (bytesRead == 0)
                 {
-                    continue;
+                    break;
                 }
 
                 // Tell the PipeWriter how much was read from the Socket
@@ -154,6 +136,8 @@ namespace Emby.Server.Implementations.HttpServer
                     break;
                 }
 
+                LastActivityDate = DateTime.UtcNow;
+
                 if (receiveresult.EndOfMessage)
                 {
                     await ProcessInternal(pipe.Reader).ConfigureAwait(false);
@@ -162,10 +146,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (_socket.State == WebSocketState.Open)
             {
-                await _socket.CloseAsync(
-                    WebSocketCloseStatus.NormalClosure,
-                    string.Empty, // REVIEW: human readable explanation as to why the connection is closed.
-                    cancellationToken).ConfigureAwait(false);
+                _logger.LogWarning("Stopped reading from websocket before it was closed");
             }
 
             Closed?.Invoke(this, EventArgs.Empty);
@@ -175,8 +156,6 @@ namespace Emby.Server.Implementations.HttpServer
 
         private async Task ProcessInternal(PipeReader reader)
         {
-            LastActivityDate = DateTime.UtcNow;
-
             if (OnReceive == null)
             {
                 return;

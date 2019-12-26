@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Net;
 using System.Net.WebSockets;
@@ -13,7 +15,7 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// Occurs when [closed].
         /// </summary>
-        event EventHandler<EventArgs> Closed;
+        event EventHandler<EventArgs>? Closed;
 
         /// <summary>
         /// Gets the last activity date.
@@ -22,22 +24,16 @@ namespace MediaBrowser.Controller.Net
         DateTime LastActivityDate { get; }
 
         /// <summary>
-        /// Gets or sets the URL.
-        /// </summary>
-        /// <value>The URL.</value>
-        string Url { get; set; }
-
-        /// <summary>
         /// Gets or sets the query string.
         /// </summary>
         /// <value>The query string.</value>
-        IQueryCollection QueryString { get; set; }
+        IQueryCollection QueryString { get; }
 
         /// <summary>
         /// Gets or sets the receive action.
         /// </summary>
         /// <value>The receive action.</value>
-        Func<WebSocketMessageInfo, Task> OnReceive { get; set; }
+        Func<WebSocketMessageInfo, Task>? OnReceive { get; set; }
 
         /// <summary>
         /// Gets the state.
@@ -49,7 +45,7 @@ namespace MediaBrowser.Controller.Net
         /// Gets the remote end point.
         /// </summary>
         /// <value>The remote end point.</value>
-        IPAddress RemoteEndPoint { get; }
+        IPAddress? RemoteEndPoint { get; }
 
         /// <summary>
         /// Sends a message asynchronously.
