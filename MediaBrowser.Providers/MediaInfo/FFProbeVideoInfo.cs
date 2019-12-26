@@ -158,7 +158,7 @@ namespace MediaBrowser.Providers.MediaInfo
             MetadataRefreshOptions options)
         {
             List<MediaStream> mediaStreams;
-            List<MediaAttachment> mediaAttachments;
+            IReadOnlyList<MediaAttachment> mediaAttachments;
             List<ChapterInfo> chapters;
 
             if (mediaInfo != null)
@@ -200,7 +200,7 @@ namespace MediaBrowser.Providers.MediaInfo
             else
             {
                 mediaStreams = new List<MediaStream>();
-                mediaAttachments = new List<MediaAttachment>();
+                mediaAttachments = Array.Empty<MediaAttachment>();
                 chapters = new List<ChapterInfo>();
             }
 
@@ -213,13 +213,13 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchEmbeddedInfo(video, mediaInfo, options, libraryOptions);
                 FetchPeople(video, mediaInfo, options);
                 video.Timestamp = mediaInfo.Timestamp;
-                video.Video3DFormat = video.Video3DFormat ?? mediaInfo.Video3DFormat;
+                video.Video3DFormat ??= mediaInfo.Video3DFormat;
             }
 
             var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
-            video.Height = videoStream == null ? 0 : videoStream.Height ?? 0;
-            video.Width = videoStream == null ? 0 : videoStream.Width ?? 0;
+            video.Height = videoStream?.Height ?? 0;
+            video.Width = videoStream?.Width ?? 0;
 
             video.DefaultVideoStreamIndex = videoStream == null ? (int?)null : videoStream.Index;
 

@@ -57,7 +57,7 @@ namespace MediaBrowser.Model.Dto
 
         public List<MediaStream> MediaStreams { get; set; }
 
-        public List<MediaAttachment> MediaAttachments { get; set; }
+        public IReadOnlyList<MediaAttachment> MediaAttachments { get; set; }
 
         public string[] Formats { get; set; }
 

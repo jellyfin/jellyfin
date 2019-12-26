@@ -91,7 +91,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="id">The identifier.</param>
         /// <param name="attachments">The attachments.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void SaveMediaAttachments(Guid id, List<MediaAttachment> attachments, CancellationToken cancellationToken);
+        void SaveMediaAttachments(Guid id, IReadOnlyList<MediaAttachment> attachments, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the item ids.
