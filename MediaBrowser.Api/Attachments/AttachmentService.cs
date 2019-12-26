@@ -1,22 +1,14 @@
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
-using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
 namespace MediaBrowser.Api.Attachments
 {
@@ -38,7 +30,13 @@ namespace MediaBrowser.Api.Attachments
         private readonly ILibraryManager _libraryManager;
         private readonly IAttachmentExtractor _attachmentExtractor;
 
-        public AttachmentService(ILibraryManager libraryManager, IAttachmentExtractor attachmentExtractor)
+        public AttachmentService(
+            ILogger<AttachmentService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            ILibraryManager libraryManager,
+            IAttachmentExtractor attachmentExtractor)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _libraryManager = libraryManager;
             _attachmentExtractor = attachmentExtractor;
@@ -46,7 +44,6 @@ namespace MediaBrowser.Api.Attachments
 
         public async Task<object> Get(GetAttachment request)
         {
-            var item = (Video)_libraryManager.GetItemById(request.Id);
             var (attachment, attachmentStream) = await GetAttachment(request).ConfigureAwait(false);
             var mime = string.IsNullOrWhiteSpace(attachment.MIMEType) ? "application/octet-stream" : attachment.MIMEType;
 

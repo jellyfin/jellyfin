@@ -137,15 +137,6 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public List<MediaAttachment> GetMediaAttachments(string mediaSourceId)
-        {
-            return GetMediaAttachments(new MediaAttachmentQuery
-            {
-                ItemId = new Guid(mediaSourceId)
-            });
-        }
-
-        /// <inheritdoc />
         public List<MediaAttachment> GetMediaAttachments(Guid itemId)
         {
             return GetMediaAttachments(new MediaAttachmentQuery
