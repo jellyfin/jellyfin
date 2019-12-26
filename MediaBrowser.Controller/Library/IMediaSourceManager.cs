@@ -41,21 +41,14 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the media attachments.
         /// </summary>
-        /// <param name="">The item identifier.</param>
+        /// <param name="itemId">The item identifier.</param>
         /// <returns>IEnumerable&lt;MediaAttachment&gt;.</returns>
         List<MediaAttachment> GetMediaAttachments(Guid itemId);
 
         /// <summary>
         /// Gets the media attachments.
         /// </summary>
-        /// <param name="">The The media source identifier.</param>
-        /// <returns>IEnumerable&lt;MediaAttachment&gt;.</returns>
-
-        List<MediaAttachment> GetMediaAttachments(string mediaSourceId);
-        /// <summary>
-        /// Gets the media attachments.
-        /// </summary>
-        /// <param name="">The query.</param>
+        /// <param name="query">The query.</param>
         /// <returns>IEnumerable&lt;MediaAttachment&gt;.</returns>
         List<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query);
 

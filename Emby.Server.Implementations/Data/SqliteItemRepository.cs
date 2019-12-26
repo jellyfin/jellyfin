@@ -55,8 +55,8 @@ namespace Emby.Server.Implementations.Data
             queryPrefixText.Append("insert into mediaattachments (");
             foreach (var column in _mediaAttachmentSaveColumns)
             {
-                queryPrefixText.Append(column);
-                queryPrefixText.Append(',');
+                queryPrefixText.Append(column)
+                    .Append(',');
             }
 
             queryPrefixText.Length -= 1;
@@ -449,6 +449,7 @@ namespace Emby.Server.Implementations.Data
             "Filename",
             "MIMEType"
         };
+
         private static readonly string _mediaAttachmentInsertPrefix;
 
         private static string GetSaveItemCommandText()
@@ -6208,7 +6209,10 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             return list;
         }
 
-        public void SaveMediaAttachments(Guid id, List<MediaAttachment> attachments, CancellationToken cancellationToken)
+        public void SaveMediaAttachments(
+            Guid id,
+            List<MediaAttachment> attachments,
+            CancellationToken cancellationToken)
         {
             CheckDisposed();
             if (id == Guid.Empty)
@@ -6237,24 +6241,22 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
         }
 
-        private void InsertMediaAttachments(byte[] idBlob, List<MediaAttachment> attachments, IDatabaseConnection db, CancellationToken cancellationToken)
+        private void InsertMediaAttachments(
+            byte[] idBlob,
+            List<MediaAttachment> attachments,
+            IDatabaseConnection db,
+            CancellationToken cancellationToken)
         {
-            var startIndex = 0;
-            var insertAtOnce = 10;
+            const int InsertAtOnce = 10;
 
-            while (startIndex < attachments.Count)
+            for (var startIndex = 0; startIndex < attachments.Count; startIndex += InsertAtOnce)
             {
                 var insertText = new StringBuilder(_mediaAttachmentInsertPrefix);
 
-                var endIndex = Math.Min(attachments.Count, startIndex + insertAtOnce);
+                var endIndex = Math.Min(attachments.Count, startIndex + InsertAtOnce);
 
                 for (var i = startIndex; i < endIndex; i++)
                 {
-                    if (i != startIndex)
-                    {
-                        insertText.Append(',');
-                    }
-
                     var index = i.ToString(CultureInfo.InvariantCulture);
                     insertText.Append("(@ItemId, ");
 
@@ -6265,8 +6267,10 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                     insertText.Length -= 1;
 
-                    insertText.Append(")");
+                    insertText.Append("),");
                 }
+
+                insertText.Length--;
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -6291,8 +6295,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     statement.Reset();
                     statement.MoveNext();
                 }
-
-                startIndex += insertAtOnce;
             }
         }
 

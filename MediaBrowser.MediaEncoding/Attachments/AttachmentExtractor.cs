@@ -4,44 +4,41 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
-using UtfUnknown;
 
 namespace MediaBrowser.MediaEncoding.Attachments
 {
-    public class AttachmentExtractor : IAttachmentExtractor
+    public class AttachmentExtractor : IAttachmentExtractor, IDisposable
     {
-        private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
 
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
+            new ConcurrentDictionary<string, SemaphoreSlim>();
+
+        private bool _disposed = false;
+
         public AttachmentExtractor(
-            ILibraryManager libraryManager,
             ILogger<AttachmentExtractor> logger,
             IApplicationPaths appPaths,
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
             IMediaSourceManager mediaSourceManager)
         {
-            _libraryManager = libraryManager;
             _logger = logger;
             _appPaths = appPaths;
             _fileSystem = fileSystem;
@@ -49,8 +46,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             _mediaSourceManager = mediaSourceManager;
         }
 
-        private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
-
+        /// <inheritdoc />
         public async Task<(MediaAttachment attachment, Stream stream)> GetAttachment(BaseItem item, string mediaSourceId, int attachmentStreamIndex, CancellationToken cancellationToken)
         {
             if (item == null)
@@ -70,12 +66,14 @@ namespace MediaBrowser.MediaEncoding.Attachments
             {
                 throw new ResourceNotFoundException($"MediaSource {mediaSourceId} not found");
             }
+
             var mediaAttachment = mediaSource.MediaAttachments
                 .FirstOrDefault(i => i.Index == attachmentStreamIndex);
             if (mediaAttachment == null)
             {
                 throw new ResourceNotFoundException($"MediaSource {mediaSourceId} has no attachment with stream index {attachmentStreamIndex}");
             }
+
             var attachmentStream = await GetAttachmentStream(mediaSource, mediaAttachment, cancellationToken)
                     .ConfigureAwait(false);
 
@@ -87,49 +85,32 @@ namespace MediaBrowser.MediaEncoding.Attachments
             MediaAttachment mediaAttachment,
             CancellationToken cancellationToken)
         {
-            var inputFiles = new[] { mediaSource.Path };
-            var attachmentPath = await GetReadableFile(mediaSource.Path, inputFiles, mediaSource.Protocol, mediaAttachment, cancellationToken).ConfigureAwait(false);
-            var stream = await GetAttachmentStream(attachmentPath, cancellationToken).ConfigureAwait(false);
-            return stream;
+            var attachmentPath = await GetReadableFile(mediaSource.Path, mediaSource.Path, mediaSource.Protocol, mediaAttachment, cancellationToken).ConfigureAwait(false);
+            return File.OpenRead(attachmentPath);
         }
 
-        private async Task<Stream> GetAttachmentStream(
-            string path,
-            CancellationToken cancellationToken)
-        {
-            return File.OpenRead(path);
-        }
-
-        private async Task<String> GetReadableFile(
+        private async Task<string> GetReadableFile(
             string mediaPath,
-            string[] inputFiles,
+            string inputFile,
             MediaProtocol protocol,
             MediaAttachment mediaAttachment,
             CancellationToken cancellationToken)
         {
             var outputPath = GetAttachmentCachePath(mediaPath, protocol, mediaAttachment.Index);
-            await ExtractAttachment(inputFiles, protocol, mediaAttachment.Index, outputPath, cancellationToken)
+            await ExtractAttachment(inputFile, protocol, mediaAttachment.Index, outputPath, cancellationToken)
                 .ConfigureAwait(false);
 
             return outputPath;
         }
 
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
-            new ConcurrentDictionary<string, SemaphoreSlim>();
-
-        private SemaphoreSlim GetLock(string filename)
-        {
-            return _semaphoreLocks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
-        }
-
         private async Task ExtractAttachment(
-            string[] inputFiles,
+            string inputFile,
             MediaProtocol protocol,
             int attachmentStreamIndex,
             string outputPath,
             CancellationToken cancellationToken)
         {
-            var semaphore = GetLock(outputPath);
+            var semaphore = _semaphoreLocks.GetOrAdd(outputPath, key => new SemaphoreSlim(1, 1));
 
             await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -137,7 +118,11 @@ namespace MediaBrowser.MediaEncoding.Attachments
             {
                 if (!File.Exists(outputPath))
                 {
-                    await ExtractAttachmentInternal(_mediaEncoder.GetInputArgument(inputFiles, protocol), attachmentStreamIndex, outputPath, cancellationToken).ConfigureAwait(false);
+                    await ExtractAttachmentInternal(
+                        _mediaEncoder.GetInputArgument(new[] { inputFile }, protocol),
+                        attachmentStreamIndex,
+                        outputPath,
+                        cancellationToken).ConfigureAwait(false);
                 }
             }
             finally
@@ -186,16 +171,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            try
-            {
-                process.Start();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting ffmpeg");
-
-                throw;
-            }
+            process.Start();
 
             var processTcs = new TaskCompletionSource<bool>();
             process.EnableRaisingEvents = true;
@@ -216,6 +192,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                     _logger.LogError(ex, "Error killing attachment extraction process");
                 }
             }
+
             var exitCode = ranToCompletion ? process.ExitCode : -1;
 
             process.Dispose();
@@ -270,9 +247,35 @@ namespace MediaBrowser.MediaEncoding.Attachments
             {
                 filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D");
             }
+
             var prefix = filename.Substring(0, 1);
-            return Path.Combine(AttachmentCachePath, prefix, filename);
+            return Path.Combine(_appPaths.DataPath, "attachments", prefix, filename);
         }
 
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+
+            }
+
+            _disposed = true;
+        }
     }
 }

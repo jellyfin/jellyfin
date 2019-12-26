@@ -878,7 +878,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(typeof(IResourceFileManager), typeof(ResourceFileManager));
             serviceCollection.AddSingleton<EncodingHelper>();
 
-            serviceCollection.AddSingleton(typeof(MediaBrowser.Controller.MediaEncoding.IAttachmentExtractor),typeof(MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor));
+            serviceCollection.AddSingleton(typeof(IAttachmentExtractor), typeof(MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor));
 
             _displayPreferencesRepository.Initialize();
 
