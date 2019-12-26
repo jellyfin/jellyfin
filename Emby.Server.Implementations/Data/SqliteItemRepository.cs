@@ -6201,7 +6201,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
         public void SaveMediaAttachments(
             Guid id,
-            List<MediaAttachment> attachments,
+            IReadOnlyList<MediaAttachment> attachments,
             CancellationToken cancellationToken)
         {
             CheckDisposed();
@@ -6233,7 +6233,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
         private void InsertMediaAttachments(
             byte[] idBlob,
-            List<MediaAttachment> attachments,
+            IReadOnlyList<MediaAttachment> attachments,
             IDatabaseConnection db,
             CancellationToken cancellationToken)
         {

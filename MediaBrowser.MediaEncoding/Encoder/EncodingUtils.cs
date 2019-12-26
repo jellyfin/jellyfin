@@ -43,7 +43,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>System.String.</returns>
-        public static string GetFileInputArgument(string path)
+        private static string GetFileInputArgument(string path)
         {
             if (path.IndexOf("://") != -1)
             {
