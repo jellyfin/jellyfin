@@ -195,7 +195,7 @@ namespace Emby.Server.Implementations.HttpServer
             // Tell the PipeReader how much of the buffer we have consumed
             reader.AdvanceTo(buffer.End);
 
-            _logger.LogDebug("WS received message: {@Message}", stub);
+            _logger.LogDebug("WS {IP} received message: {@Message}", RemoteEndPoint, stub);
 
             var info = new WebSocketMessageInfo
             {
@@ -204,7 +204,7 @@ namespace Emby.Server.Implementations.HttpServer
                 Connection = this
             };
 
-            _logger.LogDebug("WS message info: {@MessageInfo}", info);
+            _logger.LogDebug("WS {IP} message info: {@MessageInfo}", RemoteEndPoint, info);
 
             await OnReceive(info).ConfigureAwait(false);
 
