@@ -57,7 +57,6 @@ namespace Emby.Server.Implementations.Session
             _logger.LogDebug("Removing websocket from session {Session}", _session.Id);
             _sockets.Remove(connection);
             connection.Closed -= OnConnectionClosed;
-            connection.Dispose();
             _sessionManager.CloseIfNeeded(_session);
         }
 
@@ -96,7 +95,6 @@ namespace Emby.Server.Implementations.Session
             foreach (var socket in _sockets)
             {
                 socket.Closed -= OnConnectionClosed;
-                socket.Dispose();
             }
 
             _disposed = true;

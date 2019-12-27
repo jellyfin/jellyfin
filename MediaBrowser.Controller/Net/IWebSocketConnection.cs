@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.Net
 {
-    public interface IWebSocketConnection : IDisposable
+    public interface IWebSocketConnection
     {
         /// <summary>
         /// Occurs when [closed].
