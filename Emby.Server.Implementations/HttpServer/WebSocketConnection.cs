@@ -149,14 +149,21 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     await ProcessInternal(pipe.Reader).ConfigureAwait(false);
                 }
-            } while (_socket.State == WebSocketState.Open && receiveresult.MessageType != WebSocketMessageType.Close);
+            } while (
+                (_socket.State == WebSocketState.Open || _socket.State == WebSocketState.Connecting)
+                && receiveresult.MessageType != WebSocketMessageType.Close);
 
             Closed?.Invoke(this, EventArgs.Empty);
 
-            await _socket.CloseAsync(
-                WebSocketCloseStatus.NormalClosure,
-                string.Empty,
-                cancellationToken).ConfigureAwait(false);
+            if (_socket.State == WebSocketState.Open
+                || _socket.State == WebSocketState.CloseReceived
+                || _socket.State == WebSocketState.CloseSent)
+            {
+                await _socket.CloseAsync(
+                    WebSocketCloseStatus.NormalClosure,
+                    string.Empty,
+                    cancellationToken).ConfigureAwait(false);
+            }
         }
 
         private async Task ProcessInternal(PipeReader reader)
