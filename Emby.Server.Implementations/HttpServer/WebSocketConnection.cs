@@ -116,7 +116,16 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 // Allocate at least 512 bytes from the PipeWriter
                 Memory<byte> memory = writer.GetMemory(512);
-                receiveresult = await _socket.ReceiveAsync(memory, cancellationToken);
+                try
+                {
+                    receiveresult = await _socket.ReceiveAsync(memory, cancellationToken);
+                }
+                catch (WebSocketException ex)
+                {
+                    _logger.LogWarning("WS {IP} error receiving data: {Message}", RemoteEndPoint, ex.Message);
+                    break;
+                }
+
                 int bytesRead = receiveresult.Count;
                 if (bytesRead == 0)
                 {

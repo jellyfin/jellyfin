@@ -540,7 +540,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (Exception ex) // Otherwise ASP.Net will ignore the exception
             {
-                _logger.LogError(ex, "WS {IP} WebSocketRequestHandler error");
+                _logger.LogError(ex, "WS {IP} WebSocketRequestHandler error", context.Connection.RemoteIpAddress);
                 if (!context.Response.HasStarted)
                 {
                     context.Response.StatusCode = 500;
