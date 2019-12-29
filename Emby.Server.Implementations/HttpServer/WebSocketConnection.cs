@@ -220,8 +220,6 @@ namespace Emby.Server.Implementations.HttpServer
                 Connection = this
             };
 
-            _logger.LogDebug("WS {IP} message info: {@MessageInfo}", RemoteEndPoint, info);
-
             await OnReceive(info).ConfigureAwait(false);
 
             // Stop reading if there's no more data coming
