@@ -30,7 +30,7 @@
     "Inherit": "Paveldėti",
     "ItemAddedWithName": "{0} - buvo įkeltas į mediateką",
     "ItemRemovedWithName": "{0} - buvo pašalinta iš mediatekos",
-    "LabelIpAddressValue": "Ip address: {0}",
+    "LabelIpAddressValue": "IP adresas: {0}",
     "LabelRunningTimeValue": "Trukmė: {0}",
     "Latest": "Naujausi",
     "MessageApplicationUpdated": "\"Jellyfin Server\" atnaujintas",
