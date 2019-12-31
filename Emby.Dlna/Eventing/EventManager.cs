@@ -29,25 +29,15 @@ namespace Emby.Dlna.Eventing
         {
             var subscription = GetSubscription(subscriptionId, false);
 
-            int timeoutSeconds;
+            subscription.TimeoutSeconds = ParseTimeout(requestedTimeoutString) ?? 300;
+            int timeoutSeconds = subscription.TimeoutSeconds;
+            subscription.SubscriptionTime = DateTime.UtcNow;
 
-            // Remove logging for now because some devices are sending this very frequently
-            // TODO re-enable with dlna debug logging setting
-            //_logger.LogDebug("Renewing event subscription for {0} with timeout of {1} to {2}",
-            //    subscription.NotificationType,
-            //    timeout,
-            //    subscription.CallbackUrl);
-
-            if (subscription != null)
-            {
-                subscription.TimeoutSeconds = ParseTimeout(requestedTimeoutString) ?? 300;
-                timeoutSeconds = subscription.TimeoutSeconds;
-                subscription.SubscriptionTime = DateTime.UtcNow;
-            }
-            else
-            {
-                timeoutSeconds = 300;
-            }
+            _logger.LogDebug(
+                "Renewing event subscription for {0} with timeout of {1} to {2}",
+                subscription.NotificationType,
+                timeoutSeconds,
+                subscription.CallbackUrl);
 
             return GetEventSubscriptionResponse(subscriptionId, requestedTimeoutString, timeoutSeconds);
         }
@@ -57,12 +47,10 @@ namespace Emby.Dlna.Eventing
             var timeout = ParseTimeout(requestedTimeoutString) ?? 300;
             var id = "uuid:" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
-            // Remove logging for now because some devices are sending this very frequently
-            // TODO re-enable with dlna debug logging setting
-            //_logger.LogDebug("Creating event subscription for {0} with timeout of {1} to {2}",
-            //    notificationType,
-            //    timeout,
-            //    callbackUrl);
+            _logger.LogDebug("Creating event subscription for {0} with timeout of {1} to {2}",
+                notificationType,
+                timeout,
+                callbackUrl);
 
             _subscriptions.TryAdd(id, new EventSubscription
             {
