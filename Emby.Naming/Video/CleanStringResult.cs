@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 namespace Emby.Naming.Video
 {
     public class CleanStringResult
@@ -7,6 +10,7 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance has changed.
         /// </summary>

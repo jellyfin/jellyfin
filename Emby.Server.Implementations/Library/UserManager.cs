@@ -392,7 +392,7 @@ namespace Emby.Server.Implementations.Library
             if (providers.Length == 0)
             {
                 // Assign the user to the InvalidAuthProvider since no configured auth provider was valid/found
-                _logger.LogWarning("User {UserName} was found with invalid/missing Authentication Provider {AuthenticationProviderId}. Assigning user to InvalidAuthProvider until this is corrected", user.Name, user.Policy.AuthenticationProviderId);
+                _logger.LogWarning("User {UserName} was found with invalid/missing Authentication Provider {AuthenticationProviderId}. Assigning user to InvalidAuthProvider until this is corrected", user?.Name, user?.Policy.AuthenticationProviderId);
                 providers = new IAuthenticationProvider[] { _invalidAuthProvider };
             }
 
@@ -472,7 +472,7 @@ namespace Emby.Server.Implementations.Library
 
             if (!success
                 && _networkManager.IsInLocalNetwork(remoteEndPoint)
-                && user.Configuration.EnableLocalPassword
+                && user?.Configuration.EnableLocalPassword == true
                 && !string.IsNullOrEmpty(user.EasyPassword))
             {
                 // Check easy password
