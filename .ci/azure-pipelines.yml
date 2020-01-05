@@ -254,6 +254,12 @@ jobs:
       maxParallel: 2
     steps:
     - checkout: none
+    
+    - task: UseDotNet@2
+      displayName: 'Update DotNet'
+      inputs:
+        packageType: sdk
+        version: 3.1.100
 
     - task: DownloadPipelineArtifact@2
       displayName: 'Download New Assembly Build Artifact'
