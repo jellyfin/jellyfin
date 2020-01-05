@@ -19,9 +19,9 @@ jobs:
       vmImage: ubuntu-latest
     strategy:
       matrix:
-        release:
+        Release:
           BuildConfiguration: Release
-        debug:
+        Debug:
           BuildConfiguration: Debug
       maxParallel: 2
     steps:
@@ -191,12 +191,12 @@ jobs:
     #     #publishRunAttachments: true # Optional
 
   - job: main_build_win
-    displayName: Main Build Windows
+    displayName: Publish Windows
     pool:
       vmImage: windows-latest
     strategy:
       matrix:
-        release:
+        Release:
           BuildConfiguration: Release
       maxParallel: 2
     steps:
@@ -373,5 +373,3 @@ jobs:
         script: 'dotnet tools/CompatibilityCheckerCoreCLI.dll current-release/$(AssemblyFileName) new-release/$(AssemblyFileName) --azure-pipelines'
         workingDirectory: $(System.ArtifactsDirectory) # Optional
         #failOnStderr: false # Optional
-
-
