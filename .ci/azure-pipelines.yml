@@ -235,9 +235,8 @@ jobs:
     pool:
       vmImage: ubuntu-latest
     dependsOn: main_build
-    # disabled until ABI is expected to remain unchanged
     # only execute for pull requests
-    condition: and(eq(1, 2), succeeded(), variables['System.PullRequest.PullRequestNumber'])
+    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber'])
     strategy:
       matrix:
         Naming:
