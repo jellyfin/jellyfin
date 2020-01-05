@@ -1006,8 +1006,8 @@ namespace MediaBrowser.Api.Library
         public void Delete(DeleteItems request)
         {
             var ids = string.IsNullOrWhiteSpace(request.Ids)
-             ? Array.Empty<string>()
-             : request.Ids.Split(',');
+                ? Array.Empty<string>()
+                : request.Ids.Split(',');
 
             foreach (var i in ids)
             {
@@ -1028,7 +1028,6 @@ namespace MediaBrowser.Api.Library
                 _libraryManager.DeleteItem(item, new DeleteOptions
                 {
                     DeleteFileLocation = true
-
                 }, true);
             }
         }

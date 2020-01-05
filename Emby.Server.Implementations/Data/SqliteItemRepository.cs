@@ -4593,10 +4593,20 @@ namespace Emby.Server.Implementations.Data
 
             if (query.ExcludeInheritedTags.Length > 0)
             {
-                var tagValues = query.ExcludeInheritedTags.Select(i => "'" + GetCleanValue(i) + "'");
-                var tagValuesList = string.Join(",", tagValues);
-
-                whereClauses.Add("((select CleanValue from itemvalues where ItemId=Guid and Type=6 and cleanvalue in (" + tagValuesList + ")) is null)");
+                var paramName = "@ExcludeInheritedTags";
+                if (statement == null)
+                {
+                    int index = 0;
+                    string excludedTags = string.Join(",", query.ExcludeInheritedTags.Select(t => paramName + index++));
+                    whereClauses.Add("((select CleanValue from itemvalues where ItemId=Guid and Type=6 and cleanvalue in (" + excludedTags + ")) is null)");
+                }
+                else
+                {
+                    for (int index = 0; index < query.ExcludeInheritedTags.Length; index++)
+                    {
+                        statement.TryBind(paramName + index, GetCleanValue(query.ExcludeInheritedTags[index]));
+                    }
+                }
             }
 
             if (query.SeriesStatuses.Length > 0)

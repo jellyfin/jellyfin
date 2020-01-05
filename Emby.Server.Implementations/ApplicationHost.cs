@@ -764,9 +764,8 @@ namespace Emby.Server.Implementations
             LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager);
             serviceCollection.AddSingleton(LibraryManager);
 
-            // TODO wtaylor: investigate use of second music manager
             var musicManager = new MusicManager(LibraryManager);
-            serviceCollection.AddSingleton<IMusicManager>(new MusicManager(LibraryManager));
+            serviceCollection.AddSingleton<IMusicManager>(musicManager);
 
             LibraryMonitor = new LibraryMonitor(LoggerFactory, LibraryManager, ServerConfigurationManager, FileSystemManager);
             serviceCollection.AddSingleton(LibraryMonitor);
