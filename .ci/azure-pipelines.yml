@@ -66,6 +66,12 @@ jobs:
         overWrite: true # Optional
         flattenFolders: false # Optional
 
+    - task: UseDotNet@2
+      displayName: Use Correct DotNet Version
+      inputs:
+        packageType: sdk
+        version: 3.1.100
+
     - task: DotNetCoreCLI@2
       displayName: Publish
       inputs:
