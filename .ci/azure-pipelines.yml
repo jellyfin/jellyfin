@@ -311,8 +311,9 @@ jobs:
         destinationFolder: $(System.ArtifactsDirectory)/tools
         cleanDestinationFolder: true
 
+    # The `--warnings-only` switch will swallow the return code and not emit any errors.
     - task: CmdLine@2
       displayName: 'Execute ABI Compatibility Check Tool'
       inputs:
-        script: 'dotnet tools/CompatibilityCheckerCoreCLI.dll current-release/$(AssemblyFileName) new-release/$(AssemblyFileName) --azure-pipelines'
+        script: 'dotnet tools/CompatibilityCheckerCLI.dll current-release/$(AssemblyFileName) new-release/$(AssemblyFileName) --azure-pipelines --warnings-only'
         workingDirectory: $(System.ArtifactsDirectory) # Optional
