@@ -480,17 +480,20 @@ namespace MediaBrowser.Api.Playback
                 switch (item)
                 {
                     case Audio _ when !user.Policy.EnableAudioPlaybackTranscoding:
-                        {
-                            options.ForceDirectStream = true;
+                    {
+                        options.ForceDirectStream = true;
 
-                            break;
-                        }
-                    case Video _ when !user.Policy.EnableAudioPlaybackTranscoding && !user.Policy.EnableVideoPlaybackTranscoding && !user.Policy.EnablePlaybackRemuxing:
-                        {
-                            options.ForceDirectStream = true;
+                        break;
+                    }
 
-                            break;
-                        }
+                    case Video _ when !user.Policy.EnableAudioPlaybackTranscoding
+                                      && !user.Policy.EnableVideoPlaybackTranscoding
+                                      && !user.Policy.EnablePlaybackRemuxing:
+                    {
+                        options.ForceDirectStream = true;
+
+                        break;
+                    }
                 }
 
                 // The MediaSource supports direct stream, now test to see if the client supports it

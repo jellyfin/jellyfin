@@ -27,10 +27,10 @@ namespace MediaBrowser.Api.System
         public ActivityLogWebSocketListener(ILogger logger, IActivityManager activityManager) : base(logger)
         {
             _activityManager = activityManager;
-            _activityManager.EntryCreated += ActivityManager_EntryCreated;
+            _activityManager.EntryCreated += ActivityManagerEntryCreated;
         }
 
-        private void ActivityManager_EntryCreated(object sender, GenericEventArgs<ActivityLogEntry> e)
+        private void ActivityManagerEntryCreated(object sender, GenericEventArgs<ActivityLogEntry> e)
         {
             SendData(true);
         }
@@ -47,7 +47,7 @@ namespace MediaBrowser.Api.System
 
         protected override void Dispose(bool dispose)
         {
-            _activityManager.EntryCreated -= ActivityManager_EntryCreated;
+            _activityManager.EntryCreated -= ActivityManagerEntryCreated;
 
             base.Dispose(dispose);
         }

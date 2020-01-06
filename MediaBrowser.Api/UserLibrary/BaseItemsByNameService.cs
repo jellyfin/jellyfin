@@ -273,6 +273,8 @@ namespace MediaBrowser.Api.UserLibrary
             var includeItemTypes = request.GetIncludeItemTypes();
             var mediaTypes = request.GetMediaTypes();
 
+            bool ApplyFilter(BaseItem i) => FilterItem(request, i, excludeItemTypes, includeItemTypes, mediaTypes);
+
             var query = new InternalItemsQuery(user)
             {
                 ExcludeItemTypes = excludeItemTypes,
@@ -336,8 +338,6 @@ namespace MediaBrowser.Api.UserLibrary
             result.Items = dtos.Where(i => i != null).ToArray();
 
             return result;
-
-            bool ApplyFilter(BaseItem i) => FilterItem(request, i, excludeItemTypes, includeItemTypes, mediaTypes);
         }
 
         /// <summary>

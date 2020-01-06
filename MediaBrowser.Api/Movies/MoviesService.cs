@@ -229,14 +229,17 @@ namespace MediaBrowser.Api.Movies
             {
                 var allEmpty = true;
 
-                foreach (var category in categoryTypes.Where(category => category.MoveNext()))
+                foreach (var category in categoryTypes)
                 {
-                    categories.Add(category.Current);
-                    allEmpty = false;
-
-                    if (categories.Count >= categoryLimit)
+                    if (category.MoveNext())
                     {
-                        break;
+                        categories.Add(category.Current);
+                        allEmpty = false;
+
+                        if (categories.Count >= categoryLimit)
+                        {
+                            break;
+                        }
                     }
                 }
 

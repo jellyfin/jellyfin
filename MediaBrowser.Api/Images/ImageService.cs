@@ -702,18 +702,16 @@ namespace MediaBrowser.Api.Images
             return formats.ToArray();
         }
 
-        private bool SupportsFormat(IEnumerable<string> requestAcceptTypes, string acceptParam, string format, bool acceptAll)
+        private bool SupportsFormat(IReadOnlyCollection<string> requestAcceptTypes, string acceptParam, string format, bool acceptAll)
         {
             var mimeType = "image/" + format;
 
-            var requestAcceptTypesList = requestAcceptTypes.ToList();
-
-            if (requestAcceptTypesList.Contains(mimeType))
+            if (requestAcceptTypes.Contains(mimeType))
             {
                 return true;
             }
 
-            if (acceptAll && requestAcceptTypesList.Contains("*/*"))
+            if (acceptAll && requestAcceptTypes.Contains("*/*"))
             {
                 return true;
             }
