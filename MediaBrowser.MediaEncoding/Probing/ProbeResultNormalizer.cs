@@ -1334,24 +1334,25 @@ namespace MediaBrowser.MediaEncoding.Probing
                     {
                         video.Timestamp = GetMpegTimestamp(video.Path);
 
-                        _logger.LogDebug("Video has {timestamp} timestamp", video.Timestamp);
+                        _logger.LogDebug("Video has {Timestamp} timestamp", video.Timestamp);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error extracting timestamp info from {path}", video.Path);
+                        _logger.LogError(ex, "Error extracting timestamp info from {Path}", video.Path);
                         video.Timestamp = null;
                     }
                 }
             }
         }
 
+        // REVIEW: find out why the byte array needs to be 197 bytes long and comment the reason
         private TransportStreamTimestamp GetMpegTimestamp(string path)
         {
-            var packetBuffer = new byte['Å'];
+            var packetBuffer = new byte[197];
 
-            using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                fs.Read(packetBuffer, 0, packetBuffer.Length);
+                fs.Read(packetBuffer);
             }
 
             if (packetBuffer[0] == 71)
@@ -1359,7 +1360,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return TransportStreamTimestamp.None;
             }
 
-            if ((packetBuffer[4] == 71) && (packetBuffer['Ä'] == 71))
+            if ((packetBuffer[4] == 71) && (packetBuffer[196] == 71))
             {
                 if ((packetBuffer[0] == 0) && (packetBuffer[1] == 0) && (packetBuffer[2] == 0) && (packetBuffer[3] == 0))
                 {
