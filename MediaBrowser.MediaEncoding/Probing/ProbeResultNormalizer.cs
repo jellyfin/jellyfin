@@ -1345,7 +1345,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
         }
 
-        // REVIEW:
+        // REVIEW: find out why the byte array needs to be 197 bytes long and comment the reason
         private TransportStreamTimestamp GetMpegTimestamp(string path)
         {
             var packetBuffer = new byte[197];
