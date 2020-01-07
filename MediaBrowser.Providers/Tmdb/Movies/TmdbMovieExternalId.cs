@@ -3,13 +3,21 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Providers.Tmdb.Movies
 {
     public class TmdbMovieExternalId : IExternalId
     {
+        private readonly ILocalizationManager _localizationManager;
+
+        public TmdbMovieExternalId(ILocalizationManager localizationManager)
+        {
+            _localizationManager = localizationManager ?? throw new System.ArgumentNullException(nameof(localizationManager));
+        }
+
         /// <inheritdoc />
-        public string Name => TmdbUtils.ProviderName;
+        public string Name => string.Format("{0} {1}", TmdbUtils.ProviderName, _localizationManager.GetLocalizedString("Movie"));
 
         /// <inheritdoc />
         public string Key => MetadataProviders.Tmdb.ToString();
