@@ -9,7 +9,7 @@ namespace MediaBrowser.MediaEncoding.Probing
     public class MediaChapter
     {
         [JsonPropertyName("id")]
-        public int id { get; set; }
+        public int Id { get; set; }
 
         [JsonPropertyName("time_base")]
         public string TimeBase { get; set; }
