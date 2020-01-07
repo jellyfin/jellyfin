@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -253,15 +254,10 @@ namespace MediaBrowser.Api
         private readonly IUserManager _userManager;
 
         /// <summary>
-        /// The _user data repository
-        /// </summary>
-        private readonly IUserDataManager _userDataManager;
-        /// <summary>
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
-        private readonly IItemRepository _itemRepo;
         private readonly IDtoService _dtoService;
         private readonly ITVSeriesManager _tvSeriesManager;
         private readonly IAuthorizationContext _authContext;
@@ -272,12 +268,19 @@ namespace MediaBrowser.Api
         /// <param name="userManager">The user manager.</param>
         /// <param name="userDataManager">The user data repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public TvShowsService(IUserManager userManager, IUserDataManager userDataManager, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService, ITVSeriesManager tvSeriesManager, IAuthorizationContext authContext)
+        public TvShowsService(
+            ILogger<TvShowsService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IUserManager userManager,
+            ILibraryManager libraryManager,
+            IDtoService dtoService,
+            ITVSeriesManager tvSeriesManager,
+            IAuthorizationContext authContext)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _userManager = userManager;
-            _userDataManager = userDataManager;
             _libraryManager = libraryManager;
-            _itemRepo = itemRepo;
             _dtoService = dtoService;
             _tvSeriesManager = tvSeriesManager;
             _authContext = authContext;
@@ -482,7 +485,7 @@ namespace MediaBrowser.Api
 
             if (string.Equals(request.SortBy, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
             {
-                episodes = episodes.OrderBy(i => Guid.NewGuid()).ToList();
+                episodes.Shuffle();
             }
 
             var returnItems = episodes;

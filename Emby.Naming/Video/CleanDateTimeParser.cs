@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Globalization;
 using System.IO;
@@ -8,7 +11,7 @@ using Emby.Naming.Common;
 namespace Emby.Naming.Video
 {
     /// <summary>
-    /// http://kodi.wiki/view/Advancedsettings.xml#video
+    /// <see href="http://kodi.wiki/view/Advancedsettings.xml#video" />.
     /// </summary>
     public class CleanDateTimeParser
     {

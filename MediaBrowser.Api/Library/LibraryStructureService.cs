@@ -7,13 +7,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Library
 {
@@ -179,25 +180,23 @@ namespace MediaBrowser.Api.Library
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
-
         private readonly ILibraryMonitor _libraryMonitor;
 
-        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryStructureService" /> class.
         /// </summary>
-        public LibraryStructureService(IServerApplicationPaths appPaths, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IFileSystem fileSystem)
+        public LibraryStructureService(
+            ILogger<LibraryStructureService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            ILibraryManager libraryManager,
+            ILibraryMonitor libraryMonitor)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            if (appPaths == null)
-            {
-                throw new ArgumentNullException(nameof(appPaths));
-            }
-
-            _appPaths = appPaths;
+            _appPaths = serverConfigurationManager.ApplicationPaths;
             _libraryManager = libraryManager;
             _libraryMonitor = libraryMonitor;
-            _fileSystem = fileSystem;
         }
 
         /// <summary>

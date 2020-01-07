@@ -60,13 +60,13 @@ namespace MediaBrowser.Common.Cryptography
         /// <value>Return the hashed password.</value>
         public byte[] Hash { get; }
 
-        public static PasswordHash Parse(string storageString)
+        public static PasswordHash Parse(string hashString)
         {
-            string[] splitted = storageString.Split('$');
+            string[] splitted = hashString.Split('$');
             // The string should at least contain the hash function and the hash itself
             if (splitted.Length < 3)
             {
-                throw new ArgumentException("String doesn't contain enough segments", nameof(storageString));
+                throw new ArgumentException("String doesn't contain enough segments", nameof(hashString));
             }
 
             // Start at 1, the first index shouldn't contain any data

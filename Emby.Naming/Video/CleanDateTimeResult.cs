@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 namespace Emby.Naming.Video
 {
     public class CleanDateTimeResult
@@ -7,11 +10,13 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+
         /// <summary>
         /// Gets or sets the year.
         /// </summary>
         /// <value>The year.</value>
         public int? Year { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance has changed.
         /// </summary>

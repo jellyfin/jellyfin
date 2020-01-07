@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -390,9 +392,9 @@ namespace Emby.Server.Implementations.Library
                 // Add this flag to GetDeletePaths if required in the future
                 var isRequiredForDelete = true;
 
-                foreach (var fileSystemInfo in item.GetDeletePaths().ToList())
+                foreach (var fileSystemInfo in item.GetDeletePaths())
                 {
-                    if (File.Exists(fileSystemInfo.FullName))
+                    if (Directory.Exists(fileSystemInfo.FullName) || File.Exists(fileSystemInfo.FullName))
                     {
                         try
                         {
@@ -829,7 +831,7 @@ namespace Emby.Server.Implementations.Library
             {
                 Path = path,
                 IsFolder = isFolder,
-                OrderBy = new[] { ItemSortBy.DateCreated }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
+                OrderBy = new[] { (ItemSortBy.DateCreated, SortOrder.Descending) },
                 Limit = 1,
                 DtoOptions = new DtoOptions(true)
             };
@@ -1257,7 +1259,7 @@ namespace Emby.Server.Implementations.Library
 
         public List<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent)
         {
-            if (query.Recursive && !query.ParentId.Equals(Guid.Empty))
+            if (query.Recursive && query.ParentId != Guid.Empty)
             {
                 var parent = GetItemById(query.ParentId);
                 if (parent != null)
@@ -1899,7 +1901,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         public void UpdateItem(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            UpdateItems(new [] { item }, parent, updateReason, cancellationToken);
+            UpdateItems(new[] { item }, parent, updateReason, cancellationToken);
         }
 
         /// <summary>
@@ -2175,7 +2177,6 @@ namespace Emby.Server.Implementations.Library
                     DisplayParentId = parentId
                 };
 
-
                 CreateItem(item, null);
 
                 isNew = true;
@@ -2197,7 +2198,6 @@ namespace Emby.Server.Implementations.Library
                     {
                         // Need to force save to increment DateLastSaved
                         ForceSave = true
-
                     },
                     RefreshPriority.Normal);
             }
@@ -2486,6 +2486,15 @@ namespace Emby.Server.Implementations.Library
                 if (season != null)
                 {
                     episode.ParentIndexNumber = season.IndexNumber;
+                }
+                else
+                {
+                    /*
+                    Anime series don't generally have a season in their file name, however,
+                    tvdb needs a season to correctly get the metadata.
+                    Hence, a null season needs to be filled with something. */
+                    //FIXME perhaps this would be better for tvdb parser to ask for season 1 if no season is specified
+                    episode.ParentIndexNumber = 1;
                 }
 
                 if (episode.ParentIndexNumber.HasValue)

@@ -1,6 +1,6 @@
 {
     "Albums": "專輯",
-    "AppDeviceValues": "應用: {0}, 裝置: {1}",
+    "AppDeviceValues": "軟體: {0}, 裝置: {1}",
     "Application": "應用程式",
     "Artists": "演出者",
     "AuthenticationSucceededWithUserName": "{0} 成功授權",

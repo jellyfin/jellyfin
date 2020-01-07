@@ -10,34 +10,36 @@ namespace MediaBrowser.Controller.Entities
 {
     public class UserView : Folder, IHasCollectionType
     {
+        /// <inheritdoc />
         public string ViewType { get; set; }
+
+        /// <inheritdoc />
         public new Guid DisplayParentId { get; set; }
 
+        /// <inheritdoc />
         public Guid? UserId { get; set; }
 
         public static ITVSeriesManager TVSeriesManager;
 
+        /// <inheritdoc />
         [JsonIgnore]
         public string CollectionType => ViewType;
 
+        /// <inheritdoc />
         public override IEnumerable<Guid> GetIdsForAncestorQuery()
         {
-            var list = new List<Guid>();
-
             if (!DisplayParentId.Equals(Guid.Empty))
             {
-                list.Add(DisplayParentId);
+                yield return DisplayParentId;
             }
             else if (!ParentId.Equals(Guid.Empty))
             {
-                list.Add(ParentId);
+                yield return ParentId;
             }
             else
             {
-                list.Add(Id);
+                yield return Id;
             }
-
-            return list;
         }
 
         [JsonIgnore]

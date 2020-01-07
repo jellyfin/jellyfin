@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -74,7 +75,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 DecompressionMethod = CompressionMethod.None
             };
 
-            using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false))
+            using (var response = await _httpClient.SendAsync(httpRequestOptions, HttpMethod.Get).ConfigureAwait(false))
             {
                 _logger.LogInformation("Opened recording stream from tuner provider");
 

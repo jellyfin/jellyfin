@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Net;
@@ -175,7 +175,7 @@ namespace Emby.Server.Implementations.Services
 
         private SwaggerTag[] GetTags()
         {
-            return new SwaggerTag[] { };
+            return Array.Empty<SwaggerTag>();
         }
 
         private Dictionary<string, SwaggerDefinition> GetDefinitions()

@@ -155,7 +155,7 @@ namespace MediaBrowser.Controller.Entities
         public bool EnableGroupByMetadataKey { get; set; }
         public bool? HasChapterImages { get; set; }
 
-        public ValueTuple<string, SortOrder>[] OrderBy { get; set; }
+        public IReadOnlyList<(string, SortOrder)> OrderBy { get; set; }
 
         public DateTime? MinDateCreated { get; set; }
         public DateTime? MinDateLastSaved { get; set; }

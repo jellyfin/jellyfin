@@ -1,4 +1,4 @@
-ARG DOTNET_VERSION=3.0
+ARG DOTNET_VERSION=3.1
 ARG FFMPEG_VERSION=latest
 
 FROM node:alpine as web-builder
@@ -42,7 +42,7 @@ ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
 EXPOSE 8096
 VOLUME /cache /config /media
-ENTRYPOINT ./jellyfin/jellyfin \
-    --datadir /config \
-    --cachedir /cache \
-    --ffmpeg /usr/local/bin/ffmpeg
+ENTRYPOINT ["./jellyfin/jellyfin", \
+    "--datadir", "/config", \
+    "--cachedir", "/cache", \
+    "--ffmpeg", "/usr/local/bin/ffmpeg"]

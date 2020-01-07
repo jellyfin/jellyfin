@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.IO;
 using System.Linq;
@@ -41,7 +44,7 @@ namespace Emby.Naming.Video
         /// <param name="isDirectory">if set to <c>true</c> [is folder].</param>
         /// <param name="parseName">Whether or not the name should be parsed for info</param>
         /// <returns>VideoFileInfo.</returns>
-        /// <exception cref="ArgumentNullException">path</exception>
+        /// <exception cref="ArgumentNullException"><c>path</c> is <c>null</c>.</exception>
         public VideoFileInfo Resolve(string path, bool isDirectory, bool parseName = true)
         {
             if (string.IsNullOrEmpty(path))

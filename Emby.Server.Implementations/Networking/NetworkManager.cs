@@ -7,8 +7,6 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Networking
@@ -55,10 +53,7 @@ namespace Emby.Server.Implementations.Networking
                 _macAddresses = null;
             }
 
-            if (NetworkChanged != null)
-            {
-                NetworkChanged(this, EventArgs.Empty);
-            }
+            NetworkChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public IPAddress[] GetLocalIpAddresses(bool ignoreVirtualInterface = true)
@@ -261,10 +256,10 @@ namespace Emby.Server.Implementations.Networking
                     return true;
                 }
 
-                if (normalizedSubnet.IndexOf('/') != -1)
+                if (normalizedSubnet.Contains('/', StringComparison.Ordinal))
                 {
-                    var ipnetwork = IPNetwork.Parse(normalizedSubnet);
-                    if (ipnetwork.Contains(address))
+                    var ipNetwork = IPNetwork.Parse(normalizedSubnet);
+                    if (ipNetwork.Contains(address))
                     {
                         return true;
                     }
@@ -453,119 +448,11 @@ namespace Emby.Server.Implementations.Networking
                 .Select(x => x.GetPhysicalAddress())
                 .Where(x => x != null && x != PhysicalAddress.None);
 
-        /// <summary>
-        /// Parses the specified endpointstring.
-        /// </summary>
-        /// <param name="endpointstring">The endpointstring.</param>
-        /// <returns>IPEndPoint.</returns>
-        public IPEndPoint Parse(string endpointstring)
-        {
-            return Parse(endpointstring, -1).Result;
-        }
-
-        /// <summary>
-        /// Parses the specified endpointstring.
-        /// </summary>
-        /// <param name="endpointstring">The endpointstring.</param>
-        /// <param name="defaultport">The defaultport.</param>
-        /// <returns>IPEndPoint.</returns>
-        /// <exception cref="ArgumentException">Endpoint descriptor may not be empty.</exception>
-        /// <exception cref="FormatException"></exception>
-        private static async Task<IPEndPoint> Parse(string endpointstring, int defaultport)
-        {
-            if (string.IsNullOrEmpty(endpointstring)
-                || endpointstring.Trim().Length == 0)
-            {
-                throw new ArgumentException("Endpoint descriptor may not be empty.");
-            }
-
-            if (defaultport != -1 &&
-                (defaultport < IPEndPoint.MinPort
-                || defaultport > IPEndPoint.MaxPort))
-            {
-                throw new ArgumentException(string.Format("Invalid default port '{0}'", defaultport));
-            }
-
-            string[] values = endpointstring.Split(new char[] { ':' });
-            IPAddress ipaddy;
-            int port = -1;
-
-            //check if we have an IPv6 or ports
-            if (values.Length <= 2) // ipv4 or hostname
-            {
-                port = values.Length == 1 ? defaultport : GetPort(values[1]);
-
-                //try to use the address as IPv4, otherwise get hostname
-                if (!IPAddress.TryParse(values[0], out ipaddy))
-                    ipaddy = await GetIPfromHost(values[0]).ConfigureAwait(false);
-            }
-            else if (values.Length > 2) //ipv6
-            {
-                //could [a:b:c]:d
-                if (values[0].StartsWith("[") && values[values.Length - 2].EndsWith("]"))
-                {
-                    string ipaddressstring = string.Join(":", values.Take(values.Length - 1).ToArray());
-                    ipaddy = IPAddress.Parse(ipaddressstring);
-                    port = GetPort(values[values.Length - 1]);
-                }
-                else //[a:b:c] or a:b:c
-                {
-                    ipaddy = IPAddress.Parse(endpointstring);
-                    port = defaultport;
-                }
-            }
-            else
-            {
-                throw new FormatException(string.Format("Invalid endpoint ipaddress '{0}'", endpointstring));
-            }
-
-            if (port == -1)
-                throw new ArgumentException(string.Format("No port specified: '{0}'", endpointstring));
-
-            return new IPEndPoint(ipaddy, port);
-        }
-
-        protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        /// <summary>
-        /// Gets the port.
-        /// </summary>
-        /// <param name="p">The p.</param>
-        /// <returns>System.Int32.</returns>
-        /// <exception cref="FormatException"></exception>
-        private static int GetPort(string p)
-        {
-            if (!int.TryParse(p, out var port)
-             || port < IPEndPoint.MinPort
-             || port > IPEndPoint.MaxPort)
-            {
-                throw new FormatException(string.Format("Invalid end point port '{0}'", p));
-            }
-
-            return port;
-        }
-
-        /// <summary>
-        /// Gets the I pfrom host.
-        /// </summary>
-        /// <param name="p">The p.</param>
-        /// <returns>IPAddress.</returns>
-        /// <exception cref="ArgumentException"></exception>
-        private static async Task<IPAddress> GetIPfromHost(string p)
-        {
-            var hosts = await Dns.GetHostAddressesAsync(p).ConfigureAwait(false);
-
-            if (hosts == null || hosts.Length == 0)
-                throw new ArgumentException(string.Format("Host not found: {0}", p));
-
-            return hosts[0];
-        }
-
         public bool IsInSameSubnet(IPAddress address1, IPAddress address2, IPAddress subnetMask)
         {
-             IPAddress network1 = GetNetworkAddress(address1, subnetMask);
-             IPAddress network2 = GetNetworkAddress(address2, subnetMask);
-             return network1.Equals(network2);
+            IPAddress network1 = GetNetworkAddress(address1, subnetMask);
+            IPAddress network2 = GetNetworkAddress(address2, subnetMask);
+            return network1.Equals(network2);
         }
 
         private IPAddress GetNetworkAddress(IPAddress address, IPAddress subnetMask)
@@ -581,7 +468,7 @@ namespace Emby.Server.Implementations.Networking
             byte[] broadcastAddress = new byte[ipAdressBytes.Length];
             for (int i = 0; i < broadcastAddress.Length; i++)
             {
-                broadcastAddress[i] = (byte)(ipAdressBytes[i] & (subnetMaskBytes[i]));
+                broadcastAddress[i] = (byte)(ipAdressBytes[i] & subnetMaskBytes[i]);
             }
 
             return new IPAddress(broadcastAddress);
@@ -620,25 +507,6 @@ namespace Emby.Server.Implementations.Networking
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Gets the network shares.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>IEnumerable{NetworkShare}.</returns>
-        public virtual IEnumerable<NetworkShare> GetNetworkShares(string path)
-        {
-            return new List<NetworkShare>();
-        }
-
-        /// <summary>
-        /// Gets available devices within the domain
-        /// </summary>
-        /// <returns>PC's in the Domain</returns>
-        public virtual IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
-        {
-            return new List<FileSystemEntryInfo>();
         }
     }
 }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -130,7 +132,6 @@ namespace Emby.Server.Implementations.Devices
             var session = _authRepo.Get(new AuthenticationInfoQuery
             {
                 DeviceId = id
-
             }).Items.FirstOrDefault();
 
             var device = session == null ? null : ToDeviceInfo(session);

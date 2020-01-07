@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
@@ -12,7 +13,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
@@ -501,7 +501,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         public async Task<List<NameIdPair>> GetHeadends(ListingsProviderInfo info, string country, string location, CancellationToken cancellationToken)
         {
-            var token = await GetToken(info, cancellationToken);
+            var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
             var lineups = new List<NameIdPair>();
 
@@ -663,7 +663,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             try
             {
-                return await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
+                return await _httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false);
             }
             catch (HttpException ex)
             {
@@ -713,7 +713,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private async Task AddLineupToAccount(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
-            var token = await GetToken(info, cancellationToken);
+            var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
             if (string.IsNullOrEmpty(token))
             {
@@ -738,7 +738,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             httpOptions.RequestHeaders["token"] = token;
 
-            using (await _httpClient.SendAsync(httpOptions, "PUT"))
+            using (await _httpClient.SendAsync(httpOptions, HttpMethod.Put).ConfigureAwait(false))
             {
             }
         }
@@ -750,7 +750,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 throw new ArgumentException("Listings Id required");
             }
 
-            var token = await GetToken(info, cancellationToken);
+            var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
             if (string.IsNullOrEmpty(token))
             {
@@ -833,7 +833,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 throw new Exception("ListingsId required");
             }
 
-            var token = await GetToken(info, cancellationToken);
+            var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
             if (string.IsNullOrEmpty(token))
             {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -9,6 +10,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -47,6 +49,27 @@ namespace MediaBrowser.Api.UserLibrary
     [Authenticated]
     public class PersonsService : BaseItemsByNameService<Person>
     {
+        public PersonsService(
+            ILogger<PersonsService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IUserManager userManager,
+            ILibraryManager libraryManager,
+            IUserDataManager userDataRepository,
+            IDtoService dtoService,
+            IAuthorizationContext authorizationContext)
+            : base(
+                logger,
+                serverConfigurationManager,
+                httpResultFactory,
+                userManager,
+                libraryManager,
+                userDataRepository,
+                dtoService,
+                authorizationContext)
+        {
+        }
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -109,7 +132,7 @@ namespace MediaBrowser.Api.UserLibrary
                 NameContains = query.NameContains ?? query.SearchTerm
             });
 
-            if (query.IsFavorite ?? false && query.User != null)
+            if ((query.IsFavorite ?? false) && query.User != null)
             {
                 items = items.Where(i => UserDataRepository.GetUserData(query.User, i).IsFavorite).ToList();
             }
@@ -119,10 +142,6 @@ namespace MediaBrowser.Api.UserLibrary
                 TotalRecordCount = items.Count,
                 Items = items.Take(query.Limit ?? int.MaxValue).Select(i => (i as BaseItem, new ItemCounts())).ToArray()
             };
-        }
-
-        public PersonsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepository, IDtoService dtoService, IAuthorizationContext authorizationContext) : base(userManager, libraryManager, userDataRepository, itemRepository, dtoService, authorizationContext)
-        {
         }
     }
 }

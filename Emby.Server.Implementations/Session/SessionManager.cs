@@ -667,12 +667,9 @@ namespace Emby.Server.Implementations.Session
             data.PlayCount++;
             data.LastPlayedDate = DateTime.UtcNow;
 
-            if (item.SupportsPlayedStatus)
+            if (item.SupportsPlayedStatus && !item.SupportsPositionTicksResume)
             {
-                if (!(item is Video))
-                {
-                    data.Played = true;
-                }
+                data.Played = true;
             }
             else
             {
@@ -769,7 +766,6 @@ namespace Emby.Server.Implementations.Session
             {
                 _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None);
             }
-
         }
 
         private static bool UpdatePlaybackSettings(User user, PlaybackProgressInfo info, UserItemData data)
@@ -1061,7 +1057,7 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSessionToRemoteControl(sessionId);
 
-            var user = !session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(session.UserId) : null;
+            var user = session.UserId == Guid.Empty ? null : _userManager.GetUserById(session.UserId);
 
             List<BaseItem> items;
 
@@ -1086,7 +1082,7 @@ namespace Emby.Server.Implementations.Session
 
             if (command.PlayCommand == PlayCommand.PlayShuffle)
             {
-                items = items.OrderBy(i => Guid.NewGuid()).ToList();
+                items.Shuffle();
                 command.PlayCommand = PlayCommand.PlayNow;
             }
 
@@ -1100,28 +1096,27 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            if (user != null && command.ItemIds.Length == 1 && user.Configuration.EnableNextEpisodeAutoPlay)
+            if (user != null
+                && command.ItemIds.Length == 1
+                && user.Configuration.EnableNextEpisodeAutoPlay
+                && _libraryManager.GetItemById(command.ItemIds[0]) is Episode episode)
             {
-                var episode = _libraryManager.GetItemById(command.ItemIds[0]) as Episode;
-                if (episode != null)
+                var series = episode.Series;
+                if (series != null)
                 {
-                    var series = episode.Series;
-                    if (series != null)
-                    {
-                        var episodes = series.GetEpisodes(
-                                user,
-                                new DtoOptions(false)
-                                {
-                                    EnableImages = false
-                                })
-                            .Where(i => !i.IsVirtualItem)
-                            .SkipWhile(i => i.Id != episode.Id)
-                            .ToList();
+                    var episodes = series.GetEpisodes(
+                            user,
+                            new DtoOptions(false)
+                            {
+                                EnableImages = false
+                            })
+                        .Where(i => !i.IsVirtualItem)
+                        .SkipWhile(i => i.Id != episode.Id)
+                        .ToList();
 
-                        if (episodes.Count > 0)
-                        {
-                            command.ItemIds = episodes.Select(i => i.Id).ToArray();
-                        }
+                    if (episodes.Count > 0)
+                    {
+                        command.ItemIds = episodes.Select(i => i.Id).ToArray();
                     }
                 }
             }
@@ -1146,7 +1141,7 @@ namespace Emby.Server.Implementations.Session
             if (item == null)
             {
                 _logger.LogError("A non-existant item Id {0} was passed into TranslateItemForPlayback", id);
-                return new List<BaseItem>();
+                return Array.Empty<BaseItem>();
             }
 
             if (item is IItemByName byName)
@@ -1164,7 +1159,7 @@ namespace Emby.Server.Implementations.Session
                         }
                     },
                     IsVirtualItem = false,
-                    OrderBy = new ValueTuple<string, SortOrder>[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) }
+                    OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) }
                 });
             }
 
@@ -1185,12 +1180,11 @@ namespace Emby.Server.Implementations.Session
                         }
                     },
                     IsVirtualItem = false,
-                    OrderBy = new ValueTuple<string, SortOrder>[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) }
-
+                    OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) }
                 });
             }
 
-            return new List<BaseItem> { item };
+            return new[] { item };
         }
 
         private IEnumerable<BaseItem> TranslateItemForInstantMix(Guid id, User user)
@@ -1388,27 +1382,27 @@ namespace Emby.Server.Implementations.Session
             if (user != null)
             {
                 // TODO: Move this to userManager?
-                if (!string.IsNullOrEmpty(request.DeviceId))
+                if (!string.IsNullOrEmpty(request.DeviceId)
+                    && !_deviceManager.CanAccessDevice(user, request.DeviceId))
                 {
-                    if (!_deviceManager.CanAccessDevice(user, request.DeviceId))
-                    {
-                        throw new SecurityException("User is not allowed access from this device.");
-                    }
+                    throw new SecurityException("User is not allowed access from this device.");
                 }
+            }
+
+            if (user == null)
+            {
+                AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
+                throw new SecurityException("Invalid user or password entered.");
             }
 
             if (enforcePassword)
             {
-                var result = await _userManager.AuthenticateUser(request.Username, request.Password, request.PasswordSha1, request.RemoteEndPoint, true).ConfigureAwait(false);
-
-                if (result == null)
-                {
-                    AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
-
-                    throw new SecurityException("Invalid user or password entered.");
-                }
-
-                user = result;
+                user = await _userManager.AuthenticateUser(
+                    request.Username,
+                    request.Password,
+                    request.PasswordSha1,
+                    request.RemoteEndPoint,
+                    true).ConfigureAwait(false);
             }
 
             var token = GetAuthorizationToken(user, request.DeviceId, request.App, request.AppVersion, request.DeviceName);

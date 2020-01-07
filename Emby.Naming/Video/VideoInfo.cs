@@ -3,10 +3,20 @@ using System.Collections.Generic;
 namespace Emby.Naming.Video
 {
     /// <summary>
-    /// Represents a complete video, including all parts and subtitles
+    /// Represents a complete video, including all parts and subtitles.
     /// </summary>
     public class VideoInfo
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VideoInfo" /> class.
+        /// </summary>
+        public VideoInfo()
+        {
+            Files = new List<VideoFileInfo>();
+            Extras = new List<VideoFileInfo>();
+            AlternateVersions = new List<VideoFileInfo>();
+        }
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -36,12 +46,5 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <value>The alternate versions.</value>
         public List<VideoFileInfo> AlternateVersions { get; set; }
-
-        public VideoInfo()
-        {
-            Files = new List<VideoFileInfo>();
-            Extras = new List<VideoFileInfo>();
-            AlternateVersions = new List<VideoFileInfo>();
-        }
     }
 }

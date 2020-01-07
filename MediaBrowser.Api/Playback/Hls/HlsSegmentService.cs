@@ -2,12 +2,13 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Controller;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -83,21 +84,22 @@ namespace MediaBrowser.Api.Playback.Hls
 
     public class HlsSegmentService : BaseApiService
     {
-        private readonly IServerApplicationPaths _appPaths;
-        private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
 
-        public HlsSegmentService(IServerApplicationPaths appPaths, IServerConfigurationManager config, IFileSystem fileSystem)
+        public HlsSegmentService(
+            ILogger<HlsSegmentService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IFileSystem fileSystem)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            _appPaths = appPaths;
-            _config = config;
             _fileSystem = fileSystem;
         }
 
         public Task<object> Get(GetHlsPlaylistLegacy request)
         {
             var file = request.PlaylistId + Path.GetExtension(Request.PathInfo);
-            file = Path.Combine(_appPaths.TranscodingTempPath, file);
+            file = Path.Combine(ServerConfigurationManager.GetTranscodePath(), file);
 
             return GetFileResult(file, file);
         }
@@ -115,8 +117,8 @@ namespace MediaBrowser.Api.Playback.Hls
         public Task<object> Get(GetHlsVideoSegmentLegacy request)
         {
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
+            var transcodeFolderPath = ServerConfigurationManager.GetTranscodePath();
 
-            var transcodeFolderPath = _config.ApplicationPaths.TranscodingTempPath;
             file = Path.Combine(transcodeFolderPath, file);
 
             var normalizedPlaylistId = request.PlaylistId;
@@ -136,7 +138,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             // TODO: Deprecate with new iOS app
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
-            file = Path.Combine(_appPaths.TranscodingTempPath, file);
+            file = Path.Combine(ServerConfigurationManager.GetTranscodePath(), file);
 
             return ResultFactory.GetStaticFileResult(Request, file, FileShareMode.ReadWrite);
         }

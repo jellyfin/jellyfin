@@ -1,8 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Emby.Naming\Emby.Naming.csproj" />
     <ProjectReference Include="..\Emby.Notifications\Emby.Notifications.csproj" />
+    <ProjectReference Include="..\Jellyfin.Api\Jellyfin.Api.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
@@ -10,17 +11,16 @@
     <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj" />
     <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
-    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj" />
     <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj" />
     <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj" />
     <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
-    <ProjectReference Include="..\Emby.XmlTv\Emby.XmlTv\Emby.XmlTv.csproj" />
     <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="IPNetwork2" Version="2.4.0.126" />
+    <PackageReference Include="Jellyfin.XmlTv" Version="10.4.3" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
@@ -29,12 +29,14 @@
     <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.2.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.0.0" />
-    <PackageReference Include="ServiceStack.Text.Core" Version="5.6.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.0.1" />
+    <PackageReference Include="Mono.Nat" Version="2.0.0" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="5.7.0" />
     <PackageReference Include="sharpcompress" Version="0.24.0" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" Version="2.0.1" />
+    <PackageReference Include="System.Interactive.Async" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,9 +49,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <!-- Code analysers-->
+  <!-- Code Analyzers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.4" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.7" />
     <PackageReference Include="SerilogAnalyzer" Version="0.15.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />

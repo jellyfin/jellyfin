@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -21,7 +23,7 @@ namespace Emby.Server.Implementations.EntryPoints
     public class LibraryChangedNotifier : IServerEntryPoint
     {
         /// <summary>
-        /// The _library manager
+        /// The library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
@@ -30,7 +32,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly ILogger _logger;
 
         /// <summary>
-        /// The _library changed sync lock
+        /// The library changed sync lock.
         /// </summary>
         private readonly object _libraryChangedSyncLock = new object();
 
@@ -48,7 +50,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private Timer LibraryUpdateTimer { get; set; }
 
         /// <summary>
-        /// The library update duration
+        /// The library update duration.
         /// </summary>
         private const int LibraryUpdateDuration = 30000;
 
@@ -188,8 +190,11 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
-                                                   Timeout.Infinite);
+                    LibraryUpdateTimer = new Timer(
+                        LibraryUpdateTimerCallback,
+                        null,
+                        LibraryUpdateDuration,
+                        Timeout.Infinite);
                 }
                 else
                 {
@@ -452,7 +457,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 return new[] { item };
             }
 
-            return new T[] { };
+            return Array.Empty<T>();
         }
 
         /// <summary>

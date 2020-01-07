@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Common.Net
 {
@@ -35,19 +33,6 @@ namespace MediaBrowser.Common.Net
         /// <param name="endpoint">The endpoint.</param>
         /// <returns><c>true</c> if [is in private address space] [the specified endpoint]; otherwise, <c>false</c>.</returns>
         bool IsInPrivateAddressSpace(string endpoint);
-
-        /// <summary>
-        /// Gets the network shares.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>IEnumerable{NetworkShare}.</returns>
-        IEnumerable<NetworkShare> GetNetworkShares(string path);
-
-        /// <summary>
-        /// Gets available devices within the domain
-        /// </summary>
-        /// <returns>PC's in the Domain</returns>
-        IEnumerable<FileSystemEntryInfo> GetNetworkDevices();
 
         /// <summary>
         /// Determines whether [is in local network] [the specified endpoint].

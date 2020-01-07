@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Globalization;
 using System.IO;
@@ -25,7 +28,7 @@ namespace Emby.Naming.TV
         }
 
         /// <summary>
-        /// A season folder must contain one of these somewhere in the name
+        /// A season folder must contain one of these somewhere in the name.
         /// </summary>
         private static readonly string[] _seasonFolderNames =
         {
@@ -124,7 +127,7 @@ namespace Emby.Naming.TV
         }
 
         /// <summary>
-        /// Extracts the season number from the second half of the Season folder name (everything after "Season", or "Staffel")
+        /// Extracts the season number from the second half of the Season folder name (everything after "Season", or "Staffel").
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>System.Nullable{System.Int32}.</returns>

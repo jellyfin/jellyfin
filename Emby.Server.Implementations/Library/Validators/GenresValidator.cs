@@ -7,19 +7,28 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators
 {
-    class GenresValidator
+    /// <summary>
+    /// Class GenresValidator.
+    /// </summary>
+    public class GenresValidator
     {
         /// <summary>
-        /// The _library manager
+        /// The library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
         private readonly IItemRepository _itemRepo;
 
         /// <summary>
-        /// The _logger
+        /// The logger.
         /// </summary>
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GenresValidator"/> class.
+        /// </summary>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="itemRepo">The item repository.</param>
         public GenresValidator(ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;

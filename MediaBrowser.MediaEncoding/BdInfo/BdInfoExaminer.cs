@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BDInfo;
@@ -32,7 +32,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
                 throw new ArgumentNullException(nameof(path));
             }
 
-            var bdrom = new BDROM(path, _fileSystem);
+            var bdrom = new BDROM(BdInfoDirectoryInfo.FromFileSystemPath(_fileSystem, path));
 
             bdrom.Scan();
 

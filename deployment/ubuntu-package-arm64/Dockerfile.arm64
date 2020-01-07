@@ -3,7 +3,7 @@ FROM ubuntu:bionic
 ARG SOURCE_DIR=/jellyfin
 ARG PLATFORM_DIR=/jellyfin/deployment/ubuntu-package-arm64
 ARG ARTIFACT_DIR=/dist
-ARG SDK_VERSION=2.2
+ARG SDK_VERSION=3.1
 # Docker run environment
 ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist
@@ -16,10 +16,16 @@ RUN apt-get update \
 
 # Install dotnet repository
 # https://dotnet.microsoft.com/download/linux-package-manager/debian9/sdk-current
-RUN wget https://download.visualstudio.microsoft.com/download/pr/d9f37b73-df8d-4dfa-a905-b7648d3401d0/6312573ac13d7a8ddc16e4058f7d7dc5/dotnet-sdk-2.2.104-linux-arm.tar.gz -O dotnet-sdk.tar.gz \
+RUN wget https://download.visualstudio.microsoft.com/download/pr/5a4c8f96-1c73-401c-a6de-8e100403188a/0ce6ab39747e2508366d498f9c0a0669/dotnet-sdk-3.1.100-linux-arm64.tar.gz -O dotnet-sdk.tar.gz \
  && mkdir -p dotnet-sdk \
  && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
  && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
+
+# Install npm package manager
+RUN wget -q -O- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - \
+ && echo "deb https://deb.nodesource.com/node_8.x $(lsb_release -s -c) main" > /etc/apt/sources.list.d/npm.list \
+ && apt update \
+ && apt install -y nodejs
 
 # Link to docker-build script
 RUN ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh

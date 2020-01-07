@@ -282,6 +282,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             };
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseInfo> Post(HttpRequestOptions options)
             => SendAsync(options, HttpMethod.Post);
 
@@ -325,7 +326,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (options.LogErrorResponseBody)
             {
-                var msg = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                string msg = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 _logger.LogError("HTTP request failed with message: {Message}", msg);
             }
 

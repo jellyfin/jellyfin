@@ -3,7 +3,7 @@ FROM debian:10
 ARG SOURCE_DIR=/jellyfin
 ARG PLATFORM_DIR=/jellyfin/deployment/macos
 ARG ARTIFACT_DIR=/dist
-ARG SDK_VERSION=2.2
+ARG SDK_VERSION=3.1
 # Docker run environment
 ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist
@@ -16,7 +16,7 @@ RUN apt-get update \
 
 # Install dotnet repository
 # https://dotnet.microsoft.com/download/linux-package-manager/debian9/sdk-current
-RUN wget https://download.visualstudio.microsoft.com/download/pr/228832ea-805f-45ab-8c88-fa36165701b9/16ce29a06031eeb09058dee94d6f5330/dotnet-sdk-2.2.401-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
+RUN wget https://download.visualstudio.microsoft.com/download/pr/d731f991-8e68-4c7c-8ea0-fad5605b077a/49497b5420eecbd905158d86d738af64/dotnet-sdk-3.1.100-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
  && mkdir -p dotnet-sdk \
  && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
  && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet

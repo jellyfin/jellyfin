@@ -17,7 +17,7 @@ using MediaBrowser.Model.IO;
 namespace Emby.Server.Implementations.Library.Resolvers.Movies
 {
     /// <summary>
-    /// Class MovieResolver
+    /// Class MovieResolver.
     /// </summary>
     public class MovieResolver : BaseVideoResolver<Video>, IMultiItemResolver
     {
@@ -27,6 +27,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// <value>The priority.</value>
         public override ResolverPriority Priority => ResolverPriority.Third;
 
+        /// <inheritdoc />
         public MultiItemResolverResult ResolveMultiple(
             Folder parent,
             List<FileSystemMetadata> files,
@@ -522,7 +523,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 CollectionType.MusicVideos,
                 CollectionType.Movies,
                 CollectionType.Photos
-            };
+        };
 
         private bool IsInvalid(Folder parent, string collectionType)
         {
@@ -544,6 +545,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
         private IImageProcessor _imageProcessor;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MovieResolver"/> class.
+        /// </summary>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="imageProcessor">The image processor.</param>
         public MovieResolver(ILibraryManager libraryManager, IImageProcessor imageProcessor)
             : base(libraryManager)
         {

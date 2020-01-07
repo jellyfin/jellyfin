@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
@@ -26,10 +28,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             IFileSystem fileSystem,
             IHttpClient httpClient,
             ILogger logger,
-            IServerApplicationPaths appPaths,
+            IConfigurationManager configurationManager,
             IServerApplicationHost appHost,
             IStreamHelper streamHelper)
-            : base(mediaSource, tunerHostInfo, fileSystem, logger, appPaths, streamHelper)
+            : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
         {
             _httpClient = httpClient;
             _appHost = appHost;
@@ -63,7 +65,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 httpRequestOptions.RequestHeaders[header.Key] = header.Value;
             }
 
-            var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false);
+            var response = await _httpClient.SendAsync(httpRequestOptions, HttpMethod.Get).ConfigureAwait(false);
 
             var extension = "ts";
             var requiresRemux = false;

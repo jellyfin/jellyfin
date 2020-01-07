@@ -226,14 +226,16 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 query.AncestorWithPresentationUniqueKey = null;
                 query.SeriesPresentationUniqueKey = seriesKey;
-                if (query.OrderBy.Length == 0)
+                if (query.OrderBy.Count == 0)
                 {
                     query.OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray();
                 }
+
                 if (query.IncludeItemTypes.Length == 0)
                 {
                     query.IncludeItemTypes = new[] { typeof(Episode).Name, typeof(Season).Name };
                 }
+
                 query.IsVirtualItem = false;
                 return LibraryManager.GetItemsResult(query);
             }

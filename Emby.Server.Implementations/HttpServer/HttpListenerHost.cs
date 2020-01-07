@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,7 +9,6 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Services;
 using MediaBrowser.Common.Extensions;
@@ -16,11 +17,9 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -166,7 +165,7 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 OnReceive = ProcessWebSocketMessageReceived,
                 Url = e.Url,
-                QueryString = e.QueryString ?? new QueryCollection()
+                QueryString = e.QueryString
             };
 
             connection.Closed += OnConnectionClosed;

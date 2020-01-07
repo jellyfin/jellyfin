@@ -425,10 +425,10 @@ namespace Emby.Dlna.ContentDirectory
         {
             var folder = (Folder)item;
 
-            var sortOrders = new List<string>();
+            var sortOrders = new List<(string, SortOrder)>();
             if (!folder.IsPreSorted)
             {
-                sortOrders.Add(ItemSortBy.SortName);
+                sortOrders.Add((ItemSortBy.SortName, sort.SortOrder));
             }
 
             var mediaTypes = new List<string>();
@@ -464,7 +464,7 @@ namespace Emby.Dlna.ContentDirectory
             {
                 Limit = limit,
                 StartIndex = startIndex,
-                OrderBy = sortOrders.Select(i => new ValueTuple<string, SortOrder>(i, sort.SortOrder)).ToArray(),
+                OrderBy = sortOrders,
                 User = user,
                 Recursive = true,
                 IsMissing = false,
@@ -872,10 +872,10 @@ namespace Emby.Dlna.ContentDirectory
             query.Parent = parent;
             query.SetUser(user);
 
-            query.OrderBy = new ValueTuple<string, SortOrder>[]
+            query.OrderBy = new[]
             {
-                new ValueTuple<string, SortOrder> (ItemSortBy.DatePlayed, SortOrder.Descending),
-                new ValueTuple<string, SortOrder> (ItemSortBy.SortName, SortOrder.Ascending)
+                (ItemSortBy.DatePlayed, SortOrder.Descending),
+                (ItemSortBy.SortName, SortOrder.Ascending)
             };
 
             query.IsResumable = true;
@@ -1121,7 +1121,7 @@ namespace Emby.Dlna.ContentDirectory
 
         private QueryResult<ServerItem> GetMusicLatest(BaseItem parent, User user, InternalItemsQuery query)
         {
-            query.OrderBy = new ValueTuple<string, SortOrder>[] { };
+            query.OrderBy = Array.Empty<(string, SortOrder)>();
 
             var items = _userViewManager.GetLatestItems(new LatestItemsQuery
             {
@@ -1138,7 +1138,7 @@ namespace Emby.Dlna.ContentDirectory
 
         private QueryResult<ServerItem> GetNextUp(BaseItem parent, User user, InternalItemsQuery query)
         {
-            query.OrderBy = new ValueTuple<string, SortOrder>[] { };
+            query.OrderBy = Array.Empty<(string, SortOrder)>();
 
             var result = _tvSeriesManager.GetNextUp(new NextUpQuery
             {
@@ -1153,7 +1153,7 @@ namespace Emby.Dlna.ContentDirectory
 
         private QueryResult<ServerItem> GetTvLatest(BaseItem parent, User user, InternalItemsQuery query)
         {
-            query.OrderBy = new ValueTuple<string, SortOrder>[] { };
+            query.OrderBy = Array.Empty<(string, SortOrder)>();
 
             var items = _userViewManager.GetLatestItems(new LatestItemsQuery
             {
@@ -1170,7 +1170,7 @@ namespace Emby.Dlna.ContentDirectory
 
         private QueryResult<ServerItem> GetMovieLatest(BaseItem parent, User user, InternalItemsQuery query)
         {
-            query.OrderBy = new ValueTuple<string, SortOrder>[] { };
+            query.OrderBy = Array.Empty<(string, SortOrder)>();
 
             var items = _userViewManager.GetLatestItems(new LatestItemsQuery
             {
@@ -1274,13 +1274,14 @@ namespace Emby.Dlna.ContentDirectory
 
         private void SetSorting(InternalItemsQuery query, SortCriteria sort, bool isPreSorted)
         {
-            var sortOrders = new List<string>();
-            if (!isPreSorted)
+            if (isPreSorted)
             {
-                sortOrders.Add(ItemSortBy.SortName);
+                query.OrderBy = Array.Empty<(string, SortOrder)>();
             }
-
-            query.OrderBy = sortOrders.Select(i => new ValueTuple<string, SortOrder>(i, sort.SortOrder)).ToArray();
+            else
+            {
+                query.OrderBy = new[] { (ItemSortBy.SortName, sort.SortOrder) };
+            }
         }
 
         private QueryResult<ServerItem> ApplyPaging(QueryResult<ServerItem> result, int? startIndex, int? limit)

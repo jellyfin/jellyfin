@@ -56,10 +56,8 @@ namespace Emby.Server.Implementations.Playlists
         {
             var name = options.Name;
 
-            var folderName = _fileSystem.GetValidFilename(name) + " [playlist]";
-
+            var folderName = _fileSystem.GetValidFilename(name);
             var parentFolder = GetPlaylistsFolder(Guid.Empty);
-
             if (parentFolder == null)
             {
                 throw new ArgumentException();
@@ -253,11 +251,13 @@ namespace Emby.Server.Implementations.Playlists
                 SavePlaylistFile(playlist);
             }
 
-            _providerManager.QueueRefresh(playlist.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-            {
-                ForceSave = true
-
-            }, RefreshPriority.High);
+            _providerManager.QueueRefresh(
+                playlist.Id,
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                {
+                    ForceSave = true
+                },
+                RefreshPriority.High);
         }
 
         public void MoveItem(string playlistId, string entryId, int newIndex)
@@ -303,7 +303,8 @@ namespace Emby.Server.Implementations.Playlists
 
         private void SavePlaylistFile(Playlist item)
         {
-            // This is probably best done as a metatata provider, but saving a file over itself will first require some core work to prevent this from happening when not needed
+            // this is probably best done as a metadata provider
+            // saving a file over itself will require some work to prevent this from happening when not needed
             var playlistPath = item.Path;
             var extension = Path.GetExtension(playlistPath);
 
@@ -335,12 +336,14 @@ namespace Emby.Server.Implementations.Playlists
                     {
                         entry.Duration = TimeSpan.FromTicks(child.RunTimeTicks.Value);
                     }
+
                     playlist.PlaylistEntries.Add(entry);
                 }
 
                 string text = new WplContent().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
+
             if (string.Equals(".zpl", extension, StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new ZplPlaylist();
@@ -375,6 +378,7 @@ namespace Emby.Server.Implementations.Playlists
                 string text = new ZplContent().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
+
             if (string.Equals(".m3u", extension, StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new M3uPlaylist();
@@ -398,12 +402,14 @@ namespace Emby.Server.Implementations.Playlists
                     {
                         entry.Duration = TimeSpan.FromTicks(child.RunTimeTicks.Value);
                     }
+
                     playlist.PlaylistEntries.Add(entry);
                 }
 
                 string text = new M3uContent().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
+
             if (string.Equals(".m3u8", extension, StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new M3uPlaylist();
@@ -427,12 +433,14 @@ namespace Emby.Server.Implementations.Playlists
                     {
                         entry.Duration = TimeSpan.FromTicks(child.RunTimeTicks.Value);
                     }
+
                     playlist.PlaylistEntries.Add(entry);
                 }
 
                 string text = new M3u8Content().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
+
             if (string.Equals(".pls", extension, StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new PlsPlaylist();
@@ -448,6 +456,7 @@ namespace Emby.Server.Implementations.Playlists
                     {
                         entry.Length = TimeSpan.FromTicks(child.RunTimeTicks.Value);
                     }
+
                     playlist.PlaylistEntries.Add(entry);
                 }
 
@@ -473,7 +482,7 @@ namespace Emby.Server.Implementations.Playlists
                 throw new ArgumentException("File absolute path was null or empty.", nameof(fileAbsolutePath));
             }
 
-            if (!folderPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            if (!folderPath.EndsWith(Path.DirectorySeparatorChar))
             {
                 folderPath = folderPath + Path.DirectorySeparatorChar;
             }
@@ -481,7 +490,11 @@ namespace Emby.Server.Implementations.Playlists
             var folderUri = new Uri(folderPath);
             var fileAbsoluteUri = new Uri(fileAbsolutePath);
 
-            if (folderUri.Scheme != fileAbsoluteUri.Scheme) { return fileAbsolutePath; } // path can't be made relative.
+            // path can't be made relative
+            if (folderUri.Scheme != fileAbsoluteUri.Scheme)
+            {
+                return fileAbsolutePath;
+            }
 
             var relativeUri = folderUri.MakeRelativeUri(fileAbsoluteUri);
             string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
