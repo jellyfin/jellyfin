@@ -875,6 +875,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(typeof(IResourceFileManager), typeof(ResourceFileManager));
             serviceCollection.AddSingleton<EncodingHelper>();
 
+            serviceCollection.AddSingleton(typeof(IAttachmentExtractor), typeof(MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor));
+
             _displayPreferencesRepository.Initialize();
 
             var userDataRepo = new SqliteUserDataRepository(LoggerFactory.CreateLogger<SqliteUserDataRepository>(), ApplicationPaths);
