@@ -18,7 +18,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (result.Format != null && result.Format.Tags != null)
             {
-                result.Format.Tags = ConvertDictionaryToCaseInSensitive(result.Format.Tags);
+                result.Format.Tags = ConvertDictionaryToCaseInsensitive(result.Format.Tags);
             }
 
             if (result.Streams != null)
@@ -28,7 +28,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     if (stream.Tags != null)
                     {
-                        stream.Tags = ConvertDictionaryToCaseInSensitive(stream.Tags);
+                        stream.Tags = ConvertDictionaryToCaseInsensitive(stream.Tags);
                     }
                 }
             }
@@ -98,7 +98,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <param name="dict">The dict.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private static Dictionary<string, string> ConvertDictionaryToCaseInSensitive(IReadOnlyDictionary<string, string> dict)
+        private static Dictionary<string, string> ConvertDictionaryToCaseInsensitive(IReadOnlyDictionary<string, string> dict)
         {
             return new Dictionary<string, string>(dict, StringComparer.OrdinalIgnoreCase);
         }
