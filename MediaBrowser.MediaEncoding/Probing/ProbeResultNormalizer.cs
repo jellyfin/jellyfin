@@ -52,7 +52,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 .Where(i => i != null)
                 .ToList();
 
-            if (data.format != null)
+            if (data.Format != null)
             {
                 info.Container = NormalizeFormat(data.Format.FormatName);
 
@@ -523,27 +523,27 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <returns>MediaAttachments.</returns>
         private MediaAttachment GetMediaAttachment(MediaStreamInfo streamInfo)
         {
-            if (!string.Equals(streamInfo.codec_type, "attachment", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(streamInfo.CodecType, "attachment", StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
 
             var attachment = new MediaAttachment
             {
-                Codec = streamInfo.codec_name,
-                Index = streamInfo.index
+                Codec = streamInfo.CodecName,
+                Index = streamInfo.Index
             };
 
-            if (!string.IsNullOrWhiteSpace(streamInfo.codec_tag_string))
+            if (!string.IsNullOrWhiteSpace(streamInfo.CodecTagString))
             {
-               attachment.CodecTag = streamInfo.codec_tag_string;
+               attachment.CodecTag = streamInfo.CodecTagString;
             }
 
-            if (streamInfo.tags != null)
+            if (streamInfo.Tags != null)
             {
-                attachment.FileName = GetDictionaryValue(streamInfo.tags, "filename");
-                attachment.MimeType = GetDictionaryValue(streamInfo.tags, "mimetype");
-                attachment.Comment = GetDictionaryValue(streamInfo.tags, "comment");
+                attachment.FileName = GetDictionaryValue(streamInfo.Tags, "filename");
+                attachment.MimeType = GetDictionaryValue(streamInfo.Tags, "mimetype");
+                attachment.Comment = GetDictionaryValue(streamInfo.Tags, "comment");
             }
 
             return attachment;
