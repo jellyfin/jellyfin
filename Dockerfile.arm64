@@ -1,6 +1,6 @@
 # Requires binfm_misc registration
 # https://github.com/multiarch/qemu-user-static#binfmt_misc-register
-ARG DOTNET_VERSION=3.0
+ARG DOTNET_VERSION=3.1
 
 
 FROM node:alpine as web-builder

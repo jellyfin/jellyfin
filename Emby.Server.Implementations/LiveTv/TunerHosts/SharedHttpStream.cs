@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -64,7 +65,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 httpRequestOptions.RequestHeaders[header.Key] = header.Value;
             }
 
-            var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false);
+            var response = await _httpClient.SendAsync(httpRequestOptions, HttpMethod.Get).ConfigureAwait(false);
 
             var extension = "ts";
             var requiresRemux = false;

@@ -1,4 +1,4 @@
-ARG DOTNET_VERSION=3.0
+ARG DOTNET_VERSION=3.1
 ARG FFMPEG_VERSION=latest
 
 FROM node:alpine as web-builder

@@ -31,11 +31,7 @@ namespace Emby.Server.Implementations.Collections
         private readonly ILogger _logger;
         private readonly IProviderManager _providerManager;
         private readonly ILocalizationManager _localizationManager;
-        private IApplicationPaths _appPaths;
-
-        public event EventHandler<CollectionCreatedEventArgs> CollectionCreated;
-        public event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
-        public event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
+        private readonly IApplicationPaths _appPaths;
 
         public CollectionManager(
             ILibraryManager libraryManager,
@@ -54,6 +50,10 @@ namespace Emby.Server.Implementations.Collections
             _localizationManager = localizationManager;
             _appPaths = appPaths;
         }
+
+        public event EventHandler<CollectionCreatedEventArgs> CollectionCreated;
+        public event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
+        public event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
 
         private IEnumerable<Folder> FindFolders(string path)
         {
@@ -341,11 +341,11 @@ namespace Emby.Server.Implementations.Collections
         }
     }
 
-    public class CollectionManagerEntryPoint : IServerEntryPoint
+    public sealed class CollectionManagerEntryPoint : IServerEntryPoint
     {
         private readonly CollectionManager _collectionManager;
         private readonly IServerConfigurationManager _config;
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public CollectionManagerEntryPoint(ICollectionManager collectionManager, IServerConfigurationManager config, ILogger logger)
         {
@@ -354,6 +354,7 @@ namespace Emby.Server.Implementations.Collections
             _logger = logger;
         }
 
+        /// <inheritdoc />
         public async Task RunAsync()
         {
             if (!_config.Configuration.CollectionsUpgraded && _config.Configuration.IsStartupWizardCompleted)
@@ -377,39 +378,10 @@ namespace Emby.Server.Implementations.Collections
             }
         }
 
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
-                disposedValue = true;
-            }
-        }
-
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~CollectionManagerEntryPoint() {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
-
-        // This code added to correctly implement the disposable pattern.
+        /// <inheritdoc />
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
+            // Nothing to dispose
         }
-        #endregion
     }
 }

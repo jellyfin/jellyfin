@@ -48,7 +48,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 .Where(i => i.Type != MediaStreamType.Subtitle || !string.IsNullOrWhiteSpace(i.Codec))
                 .ToList();
 
-            if (data.Format != null)
+            info.MediaAttachments = internalStreams.Select(s => GetMediaAttachment(s))
+                .Where(i => i != null)
+                .ToList();
+
+            if (data.format != null)
             {
                 info.Container = NormalizeFormat(data.Format.FormatName);
 
@@ -510,6 +514,39 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             return codec;
+        }
+
+        /// <summary>
+        /// Converts ffprobe stream info to our MediaAttachment class
+        /// </summary>
+        /// <param name="streamInfo">The stream info.</param>
+        /// <returns>MediaAttachments.</returns>
+        private MediaAttachment GetMediaAttachment(MediaStreamInfo streamInfo)
+        {
+            if (!string.Equals(streamInfo.codec_type, "attachment", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            var attachment = new MediaAttachment
+            {
+                Codec = streamInfo.codec_name,
+                Index = streamInfo.index
+            };
+
+            if (!string.IsNullOrWhiteSpace(streamInfo.codec_tag_string))
+            {
+               attachment.CodecTag = streamInfo.codec_tag_string;
+            }
+
+            if (streamInfo.tags != null)
+            {
+                attachment.FileName = GetDictionaryValue(streamInfo.tags, "filename");
+                attachment.MimeType = GetDictionaryValue(streamInfo.tags, "mimetype");
+                attachment.Comment = GetDictionaryValue(streamInfo.tags, "comment");
+            }
+
+            return attachment;
         }
 
         /// <summary>
@@ -1337,24 +1374,25 @@ namespace MediaBrowser.MediaEncoding.Probing
                     {
                         video.Timestamp = GetMpegTimestamp(video.Path);
 
-                        _logger.LogDebug("Video has {timestamp} timestamp", video.Timestamp);
+                        _logger.LogDebug("Video has {Timestamp} timestamp", video.Timestamp);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error extracting timestamp info from {path}", video.Path);
+                        _logger.LogError(ex, "Error extracting timestamp info from {Path}", video.Path);
                         video.Timestamp = null;
                     }
                 }
             }
         }
 
+        // REVIEW: find out why the byte array needs to be 197 bytes long and comment the reason
         private TransportStreamTimestamp GetMpegTimestamp(string path)
         {
-            var packetBuffer = new byte['Å'];
+            var packetBuffer = new byte[197];
 
-            using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                fs.Read(packetBuffer, 0, packetBuffer.Length);
+                fs.Read(packetBuffer);
             }
 
             if (packetBuffer[0] == 71)
@@ -1362,7 +1400,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return TransportStreamTimestamp.None;
             }
 
-            if ((packetBuffer[4] == 71) && (packetBuffer['Ä'] == 71))
+            if ((packetBuffer[4] == 71) && (packetBuffer[196] == 71))
             {
                 if ((packetBuffer[0] == 0) && (packetBuffer[1] == 0) && (packetBuffer[2] == 0) && (packetBuffer[3] == 0))
                 {

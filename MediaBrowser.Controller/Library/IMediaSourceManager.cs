@@ -39,6 +39,20 @@ namespace MediaBrowser.Controller.Library
         List<MediaStream> GetMediaStreams(MediaStreamQuery query);
 
         /// <summary>
+        /// Gets the media attachments.
+        /// </summary>
+        /// <param name="itemId">The item identifier.</param>
+        /// <returns>IEnumerable&lt;MediaAttachment&gt;.</returns>
+        List<MediaAttachment> GetMediaAttachments(Guid itemId);
+
+        /// <summary>
+        /// Gets the media attachments.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>IEnumerable&lt;MediaAttachment&gt;.</returns>
+        List<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query);
+
+        /// <summary>
         /// Gets the playack media sources.
         /// </summary>
         Task<List<MediaSourceInfo>> GetPlayackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken);

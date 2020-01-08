@@ -24,8 +24,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Photos", "Emby.Photos\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DvdLib", "DvdLib\DvdLib.csproj", "{713F42B5-878E-499D-A878-E4C652B1D5E8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BDInfo", "BDInfo\BDInfo.csproj", "{88AE38DF-19D7-406F-A6A9-09527719A21E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Server.Implementations", "Emby.Server.Implementations\Emby.Server.Implementations.csproj", "{E383961B-9356-4D5D-8233-9A1079D03055}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSSDP", "RSSDP\RSSDP.csproj", "{21002819-C39A-4D3E-BE83-2A276A77FB1F}"

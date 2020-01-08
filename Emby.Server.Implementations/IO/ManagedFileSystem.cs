@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.IO
             }
             try
             {
-                return Path.Combine(Path.GetFullPath(folderPath), filePath);
+                return Path.GetFullPath(Path.Combine(folderPath, filePath));
             }
             catch (ArgumentException)
             {
