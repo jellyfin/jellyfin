@@ -6288,8 +6288,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                         statement.TryBind("@Codec" + index, attachment.Codec);
                         statement.TryBind("@CodecTag" + index, attachment.CodecTag);
                         statement.TryBind("@Comment" + index, attachment.Comment);
-                        statement.TryBind("@Filename" + index, attachment.Filename);
-                        statement.TryBind("@MIMEType" + index, attachment.MIMEType);
+                        statement.TryBind("@FileName" + index, attachment.FileName);
+                        statement.TryBind("@MimeType" + index, attachment.MimeType);
                     }
 
                     statement.Reset();
@@ -6327,12 +6327,12 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             if (reader[6].SQLiteType != SQLiteType.Null)
             {
-                item.Filename = reader[5].ToString();
+                item.FileName = reader[5].ToString();
             }
 
             if (reader[6].SQLiteType != SQLiteType.Null)
             {
-                item.MIMEType = reader[6].ToString();
+                item.MimeType = reader[6].ToString();
             }
 
             return item;

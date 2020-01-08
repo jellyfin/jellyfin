@@ -45,7 +45,7 @@ namespace MediaBrowser.Api.Attachments
         public async Task<object> Get(GetAttachment request)
         {
             var (attachment, attachmentStream) = await GetAttachment(request).ConfigureAwait(false);
-            var mime = string.IsNullOrWhiteSpace(attachment.MIMEType) ? "application/octet-stream" : attachment.MIMEType;
+            var mime = string.IsNullOrWhiteSpace(attachment.MimeType) ? "application/octet-stream" : attachment.MimeType;
 
             return ResultFactory.GetResult(Request, attachmentStream, mime);
         }

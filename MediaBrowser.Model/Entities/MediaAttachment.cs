@@ -33,13 +33,13 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the filename.
         /// </summary>
         /// <value>The filename.</value>
-        public string Filename { get; set; }
+        public string FileName { get; set; }
 
         /// <summary>
         /// Gets or sets the MIME type.
         /// </summary>
         /// <value>The MIME type.</value>
-        public string MIMEType { get; set; }
+        public string MimeType { get; set; }
 
         /// <summary>
         /// Gets or sets the delivery URL.

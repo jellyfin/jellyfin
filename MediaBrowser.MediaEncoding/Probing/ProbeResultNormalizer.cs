@@ -542,8 +542,8 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (streamInfo.tags != null)
             {
-                attachment.Filename = GetDictionaryValue(streamInfo.tags, "filename");
-                attachment.MIMEType = GetDictionaryValue(streamInfo.tags, "mimetype");
+                attachment.FileName = GetDictionaryValue(streamInfo.tags, "filename");
+                attachment.MimeType = GetDictionaryValue(streamInfo.tags, "mimetype");
                 attachment.Comment = GetDictionaryValue(streamInfo.tags, "comment");
             }
 
