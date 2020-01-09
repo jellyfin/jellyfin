@@ -169,9 +169,9 @@ namespace MediaBrowser.Model.Dlna
                         return ListHelper.ContainsIgnoreCase(expected.Split('|'), currentValue);
                     }
                 case ProfileConditionType.Equals:
-                    return StringHelper.EqualsIgnoreCase(currentValue, expected);
+                    return string.Equals(currentValue, expected, StringComparison.OrdinalIgnoreCase);
                 case ProfileConditionType.NotEquals:
-                    return !StringHelper.EqualsIgnoreCase(currentValue, expected);
+                    return !string.Equals(currentValue, expected, StringComparison.OrdinalIgnoreCase);
                 default:
                     throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition);
             }

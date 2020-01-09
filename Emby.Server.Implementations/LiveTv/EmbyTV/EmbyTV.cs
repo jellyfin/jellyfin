@@ -458,7 +458,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             foreach (NameValuePair mapping in mappings)
             {
-                if (StringHelper.EqualsIgnoreCase(mapping.Name, channelId))
+                if (string.Equals(mapping.Name, channelId, StringComparison.OrdinalIgnoreCase))
                 {
                     return mapping.Value;
                 }
