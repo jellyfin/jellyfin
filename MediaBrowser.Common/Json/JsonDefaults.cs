@@ -21,7 +21,7 @@ namespace MediaBrowser.Common.Json
                 WriteIndented = false
             };
 
-            options.Converters.Add(new GuidConverter());
+            options.Converters.Add(new JsonGuidConverter());
             options.Converters.Add(new JsonStringEnumConverter());
 
             return options;

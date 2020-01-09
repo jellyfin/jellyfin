@@ -79,6 +79,7 @@ namespace Emby.Naming.Video
         /// <value>The file name without extension.</value>
         public string FileNameWithoutExtension => !IsDirectory ? System.IO.Path.GetFileNameWithoutExtension(Path) : System.IO.Path.GetFileName(Path);
 
+        /// <inheritdoc />
         public override string ToString()
         {
             // Makes debugging easier

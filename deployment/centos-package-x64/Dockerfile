@@ -3,7 +3,7 @@ FROM centos:7
 ARG SOURCE_DIR=/jellyfin
 ARG PLATFORM_DIR=/jellyfin/deployment/centos-package-x64
 ARG ARTIFACT_DIR=/dist
-ARG SDK_VERSION=3.0
+ARG SDK_VERSION=3.1
 # Docker run environment
 ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist

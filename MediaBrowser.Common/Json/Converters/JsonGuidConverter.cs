@@ -7,7 +7,7 @@ namespace MediaBrowser.Common.Json.Converters
     /// <summary>
     /// Converts a GUID object or value to/from JSON.
     /// </summary>
-    public class GuidConverter : JsonConverter<Guid>
+    public class JsonGuidConverter : JsonConverter<Guid>
     {
         /// <inheritdoc />
         public override Guid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

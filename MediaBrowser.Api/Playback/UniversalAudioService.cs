@@ -9,7 +9,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
@@ -75,6 +74,9 @@ namespace MediaBrowser.Api.Playback
     [Authenticated]
     public class UniversalAudioService : BaseApiService
     {
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly EncodingHelper _encodingHelper;
+
         public UniversalAudioService(
             ILogger<UniversalAudioService> logger,
             IServerConfigurationManager serverConfigurationManager,
@@ -87,11 +89,11 @@ namespace MediaBrowser.Api.Playback
             IFileSystem fileSystem,
             IDlnaManager dlnaManager,
             IDeviceManager deviceManager,
-            ISubtitleEncoder subtitleEncoder,
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext,
-            INetworkManager networkManager)
+            INetworkManager networkManager,
+            EncodingHelper encodingHelper)
             : base(logger, serverConfigurationManager, httpResultFactory)
         {
             HttpClient = httpClient;
@@ -102,11 +104,11 @@ namespace MediaBrowser.Api.Playback
             FileSystem = fileSystem;
             DlnaManager = dlnaManager;
             DeviceManager = deviceManager;
-            SubtitleEncoder = subtitleEncoder;
             MediaSourceManager = mediaSourceManager;
             JsonSerializer = jsonSerializer;
             AuthorizationContext = authorizationContext;
             NetworkManager = networkManager;
+            _encodingHelper = encodingHelper;
         }
 
         protected IHttpClient HttpClient { get; private set; }
@@ -117,7 +119,6 @@ namespace MediaBrowser.Api.Playback
         protected IFileSystem FileSystem { get; private set; }
         protected IDlnaManager DlnaManager { get; private set; }
         protected IDeviceManager DeviceManager { get; private set; }
-        protected ISubtitleEncoder SubtitleEncoder { get; private set; }
         protected IMediaSourceManager MediaSourceManager { get; private set; }
         protected IJsonSerializer JsonSerializer { get; private set; }
         protected IAuthorizationContext AuthorizationContext { get; private set; }
@@ -287,12 +288,12 @@ namespace MediaBrowser.Api.Playback
                     MediaEncoder,
                     FileSystem,
                     DlnaManager,
-                    SubtitleEncoder,
                     DeviceManager,
                     MediaSourceManager,
                     JsonSerializer,
                     AuthorizationContext,
-                    NetworkManager)
+                    NetworkManager,
+                    _encodingHelper)
                 {
                     Request = Request
                 };
@@ -337,11 +338,11 @@ namespace MediaBrowser.Api.Playback
                     MediaEncoder,
                     FileSystem,
                     DlnaManager,
-                    SubtitleEncoder,
                     DeviceManager,
                     MediaSourceManager,
                     JsonSerializer,
-                    AuthorizationContext)
+                    AuthorizationContext,
+                    _encodingHelper)
                 {
                     Request = Request
                 };

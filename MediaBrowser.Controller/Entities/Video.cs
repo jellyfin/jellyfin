@@ -137,7 +137,7 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The video3 D format.</value>
         public Video3DFormat? Video3DFormat { get; set; }
 
-        public string[] GetPlayableStreamFileNames(IMediaEncoder mediaEncoder)
+        public string[] GetPlayableStreamFileNames()
         {
             var videoType = VideoType;
 
@@ -153,7 +153,8 @@ namespace MediaBrowser.Controller.Entities
             {
                 return Array.Empty<string>();
             }
-            return mediaEncoder.GetPlayableStreamFileNames(Path, videoType);
+
+            throw new NotImplementedException();
         }
 
         /// <summary>

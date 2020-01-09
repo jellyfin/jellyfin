@@ -42,12 +42,12 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class UserManager : IUserManager
     {
+        private readonly object _policySyncLock = new object();
+        private readonly object _configSyncLock = new object();
         /// <summary>
         /// The logger.
         /// </summary>
         private readonly ILogger _logger;
-
-        private readonly object _policySyncLock = new object();
 
         /// <summary>
         /// Gets the active user repository.
@@ -255,7 +255,12 @@ namespace Emby.Server.Implementations.Library
             return builder.ToString();
         }
 
-        public async Task<User> AuthenticateUser(string username, string password, string hashedPassword, string remoteEndPoint, bool isUserSession)
+        public async Task<User> AuthenticateUser(
+            string username,
+            string password,
+            string hashedPassword,
+            string remoteEndPoint,
+            bool isUserSession)
         {
             if (string.IsNullOrWhiteSpace(username))
             {
@@ -392,7 +397,7 @@ namespace Emby.Server.Implementations.Library
             if (providers.Length == 0)
             {
                 // Assign the user to the InvalidAuthProvider since no configured auth provider was valid/found
-                _logger.LogWarning("User {UserName} was found with invalid/missing Authentication Provider {AuthenticationProviderId}. Assigning user to InvalidAuthProvider until this is corrected", user.Name, user.Policy.AuthenticationProviderId);
+                _logger.LogWarning("User {UserName} was found with invalid/missing Authentication Provider {AuthenticationProviderId}. Assigning user to InvalidAuthProvider until this is corrected", user?.Name, user?.Policy.AuthenticationProviderId);
                 providers = new IAuthenticationProvider[] { _invalidAuthProvider };
             }
 
@@ -472,7 +477,7 @@ namespace Emby.Server.Implementations.Library
 
             if (!success
                 && _networkManager.IsInLocalNetwork(remoteEndPoint)
-                && user.Configuration.EnableLocalPassword
+                && user?.Configuration.EnableLocalPassword == true
                 && !string.IsNullOrEmpty(user.EasyPassword))
             {
                 // Check easy password
@@ -754,13 +759,10 @@ namespace Emby.Server.Implementations.Library
             return user;
         }
 
-        /// <summary>
-        /// Deletes the user.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">user</exception>
-        /// <exception cref="ArgumentException"></exception>
+        /// <inheritdoc />
+        /// <exception cref="ArgumentNullException">The <c>user</c> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">The <c>user</c> doesn't exist, or is the last administrator.</exception>
+        /// <exception cref="InvalidOperationException">The <c>user</c> can't be deleted; there are no other users.</exception>
         public void DeleteUser(User user)
         {
             if (user == null)
@@ -779,7 +781,7 @@ namespace Emby.Server.Implementations.Library
 
             if (_users.Count == 1)
             {
-                throw new ArgumentException(string.Format(
+                throw new InvalidOperationException(string.Format(
                     CultureInfo.InvariantCulture,
                     "The user '{0}' cannot be deleted because there must be at least one user in the system.",
                     user.Name));
@@ -800,16 +802,19 @@ namespace Emby.Server.Implementations.Library
 
             _userRepository.DeleteUser(user);
 
-            try
+            // Delete user config dir
+            lock (_configSyncLock)
+            lock (_policySyncLock)
             {
-                _fileSystem.DeleteFile(configPath);
+                try
+                {
+                    Directory.Delete(user.ConfigurationDirectoryPath, true);
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogError(ex, "Error deleting user config dir: {Path}", user.ConfigurationDirectoryPath);
+                }
             }
-            catch (IOException ex)
-            {
-                _logger.LogError(ex, "Error deleting file {path}", configPath);
-            }
-
-            DeleteUserPolicy(user);
 
             _users.TryRemove(user.Id, out _);
 
@@ -918,10 +923,9 @@ namespace Emby.Server.Implementations.Library
         public UserPolicy GetUserPolicy(User user)
         {
             var path = GetPolicyFilePath(user);
-
             if (!File.Exists(path))
             {
-                return GetDefaultPolicy(user);
+                return GetDefaultPolicy();
             }
 
             try
@@ -931,19 +935,15 @@ namespace Emby.Server.Implementations.Library
                     return (UserPolicy)_xmlSerializer.DeserializeFromFile(typeof(UserPolicy), path);
                 }
             }
-            catch (IOException)
-            {
-                return GetDefaultPolicy(user);
-            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error reading policy file: {path}", path);
+                _logger.LogError(ex, "Error reading policy file: {Path}", path);
 
-                return GetDefaultPolicy(user);
+                return GetDefaultPolicy();
             }
         }
 
-        private static UserPolicy GetDefaultPolicy(User user)
+        private static UserPolicy GetDefaultPolicy()
         {
             return new UserPolicy
             {
@@ -983,27 +983,6 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private void DeleteUserPolicy(User user)
-        {
-            var path = GetPolicyFilePath(user);
-
-            try
-            {
-                lock (_policySyncLock)
-                {
-                    _fileSystem.DeleteFile(path);
-                }
-            }
-            catch (IOException)
-            {
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting policy file");
-            }
-        }
-
         private static string GetPolicyFilePath(User user)
         {
             return Path.Combine(user.ConfigurationDirectoryPath, "policy.xml");
@@ -1030,19 +1009,14 @@ namespace Emby.Server.Implementations.Library
                     return (UserConfiguration)_xmlSerializer.DeserializeFromFile(typeof(UserConfiguration), path);
                 }
             }
-            catch (IOException)
-            {
-                return new UserConfiguration();
-            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error reading policy file: {path}", path);
+                _logger.LogError(ex, "Error reading policy file: {Path}", path);
 
                 return new UserConfiguration();
             }
         }
 
-        private readonly object _configSyncLock = new object();
         public void UpdateConfiguration(Guid userId, UserConfiguration config)
         {
             var user = GetUserById(userId);
