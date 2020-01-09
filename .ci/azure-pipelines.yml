@@ -2,7 +2,7 @@ name: $(Date:yyyyMMdd)$(Rev:.r)
 
 variables:
   - name: TestProjects
-    value: 'tests/Jellyfin.Common.Tests/Jellyfin.Common.Tests.csproj'
+    value: 'tests/**/*Tests.csproj'
   - name: RestoreBuildProjects
     value: 'Jellyfin.Server/Jellyfin.Server.csproj'
 
