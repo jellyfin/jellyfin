@@ -132,7 +132,6 @@ jobs:
       inputs:
         packageFeedSelector: 'nugetOrg' # Options: nugetOrg, customFeed, netShare
         versionSelector: 'latestPreRelease' # Required when packageFeedSelector == NugetOrg || PackageFeedSelector == CustomFeed# Options: latestPreRelease, latestStable, specificVersion
-        
     - task: VSTest@2
       inputs:
         testSelector: 'testAssemblies' # Options: testAssemblies, testPlan, testRun
@@ -148,7 +147,7 @@ jobs:
         configuration: 'Debug' # Optional
         publishRunAttachments: true # Optional
         testRunTitle: $(Agent.JobName)
-        otherConsoleOptions: '/platform:x64 /Framework:.NETCoreApp,Version=v3.1 /logger:console;verbosity="normal" '
+        otherConsoleOptions: '/platform:x64 /Framework:.NETCoreApp,Version=v3.1 /logger:console;verbosity="normal"'
 
   - job: main_build_win
     displayName: Publish Windows
