@@ -136,6 +136,7 @@ jobs:
       inputs:
         testSelector: 'testAssemblies' # Options: testAssemblies, testPlan, testRun
         testAssemblyVer2: | # Required when testSelector == TestAssemblies
+          **\bin\$(BuildConfiguration)\**\*tests.dll
           **\bin\$(BuildConfiguration)\**\*test.dll
           !**\obj\**
           !**\xunit.runner.visualstudio.testadapter.dll
