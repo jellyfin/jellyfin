@@ -4,6 +4,8 @@
         <TargetFramework>netcoreapp3.1</TargetFramework>
 
         <IsPackable>false</IsPackable>
+
+        <RootNamespace>Jellyfin.Server.Implementations.Tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

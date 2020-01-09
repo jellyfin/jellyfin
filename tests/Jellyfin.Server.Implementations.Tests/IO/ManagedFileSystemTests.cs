@@ -3,7 +3,7 @@ using AutoFixture.AutoMoq;
 using Emby.Server.Implementations.IO;
 using Xunit;
 
-namespace Emby.Server.Implementations.Tests.IO
+namespace Jellyfin.Server.Implementations.Tests.IO
 {
     public class ManagedFileSystemTests
     {
