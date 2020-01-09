@@ -300,8 +300,8 @@ namespace MediaBrowser.Api.Playback
 
                 var transcodingProfile = deviceProfile.TranscodingProfiles[0];
 
-                //HLS Segment container can only be mpegts or fmp4 per ffmpeg documentation
-                var supoortedHLSContainer = new string[] { "mpegts", "fmp4" };
+                // hls segment container can only be mpegts or fmp4 per ffmpeg documentation
+                var supportedHLSContainers = new string[] { "mpegts", "fmp4" };
 
                 var newRequest = new GetMasterHlsAudioPlaylist
                 {
@@ -315,8 +315,8 @@ namespace MediaBrowser.Api.Playback
                     PlaySessionId = playbackInfoResult.PlaySessionId,
                     StartTimeTicks = request.StartTimeTicks,
                     Static = isStatic,
-                    //fallback to mpegts if device reports some wierd value that is not supported by HLS
-                    SegmentContainer = Array.Exists(supoortedHLSContainer, element => element == request.TranscodingContainer) ? request.TranscodingContainer : "mpegts",
+                    // fallback to mpegts if device reports some weird value unsupported by hls
+                    SegmentContainer = Array.Exists(supportedHLSContainers, element => element == request.TranscodingContainer) ? request.TranscodingContainer : "mpegts",
                     AudioSampleRate = request.MaxAudioSampleRate,
                     MaxAudioBitDepth = request.MaxAudioBitDepth,
                     BreakOnNonKeyFrames = transcodingProfile.BreakOnNonKeyFrames,
