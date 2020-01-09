@@ -397,7 +397,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 try
                 {
                     result = await JsonSerializer.DeserializeAsync<InternalMediaInfoResult>(
-                                        process.StandardOutput.BaseStream).ConfigureAwait(false);
+                                        process.StandardOutput.BaseStream,
+                                        cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -406,24 +407,24 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     throw;
                 }
 
-                if (result == null || (result.streams == null && result.format == null))
+                if (result == null || (result.Streams == null && result.Format == null))
                 {
                     throw new Exception("ffprobe failed - streams and format are both null.");
                 }
 
-                if (result.streams != null)
+                if (result.Streams != null)
                 {
                     // Normalize aspect ratio if invalid
-                    foreach (var stream in result.streams)
+                    foreach (var stream in result.Streams)
                     {
-                        if (string.Equals(stream.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(stream.DisplayAspectRatio, "0:1", StringComparison.OrdinalIgnoreCase))
                         {
-                            stream.display_aspect_ratio = string.Empty;
+                            stream.DisplayAspectRatio = string.Empty;
                         }
 
-                        if (string.Equals(stream.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(stream.SampleAspectRatio, "0:1", StringComparison.OrdinalIgnoreCase))
                         {
-                            stream.sample_aspect_ratio = string.Empty;
+                            stream.SampleAspectRatio = string.Empty;
                         }
                     }
                 }
@@ -778,6 +779,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _runningProcesses.Add(process);
             }
         }
+
         private void StopProcess(ProcessWrapper process, int waitTimeMs)
         {
             try
@@ -786,17 +788,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     return;
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in WaitForExit");
-            }
 
-            try
-            {
                 _logger.LogInformation("Killing ffmpeg process");
 
                 process.Process.Kill();
+            }
+            catch (InvalidOperationException)
+            {
+                // The process has already exited or
+                // there is no process associated with this Process object.
             }
             catch (Exception ex)
             {
