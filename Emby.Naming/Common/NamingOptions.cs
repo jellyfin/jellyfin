@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Emby.Naming.Video;
+using MediaBrowser.Model.Entities;
 
 namespace Emby.Naming.Common
 {
@@ -176,7 +177,7 @@ namespace Emby.Naming.Common
 
             CleanDateTimes = new[]
             {
-                @"(.+[^ _\,\.\(\)\[\]\-])[ _\.\(\)\[\]\-]+(19[0-9][0-9]|20[0-1][0-9])([ _\,\.\(\)\[\]\-][^0-9]|$)"
+                @"(.+[^_\,\.\(\)\[\]\-])[_\.\(\)\[\]\-](19[0-9][0-9]|20[0-1][0-9])([ _\,\.\(\)\[\]\-][^0-9]|).*(19[0-9][0-9]|20[0-1][0-9])*"
             };
 
             CleanStrings = new[]
@@ -423,126 +424,126 @@ namespace Emby.Naming.Common
             {
                 new ExtraRule
                 {
-                    ExtraType = "trailer",
+                    ExtraType = ExtraType.Trailer,
                     RuleType = ExtraRuleType.Filename,
                     Token = "trailer",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "trailer",
+                    ExtraType = ExtraType.Trailer,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-trailer",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "trailer",
+                    ExtraType = ExtraType.Trailer,
                     RuleType = ExtraRuleType.Suffix,
                     Token = ".trailer",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "trailer",
+                    ExtraType = ExtraType.Trailer,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "_trailer",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "trailer",
+                    ExtraType = ExtraType.Trailer,
                     RuleType = ExtraRuleType.Suffix,
                     Token = " trailer",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "sample",
+                    ExtraType = ExtraType.Sample,
                     RuleType = ExtraRuleType.Filename,
                     Token = "sample",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "sample",
+                    ExtraType = ExtraType.Sample,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-sample",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "sample",
+                    ExtraType = ExtraType.Sample,
                     RuleType = ExtraRuleType.Suffix,
                     Token = ".sample",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "sample",
+                    ExtraType = ExtraType.Sample,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "_sample",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "sample",
+                    ExtraType = ExtraType.Sample,
                     RuleType = ExtraRuleType.Suffix,
                     Token = " sample",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "themesong",
+                    ExtraType = ExtraType.ThemeSong,
                     RuleType = ExtraRuleType.Filename,
                     Token = "theme",
                     MediaType = MediaType.Audio
                 },
                 new ExtraRule
                 {
-                    ExtraType = "scene",
+                    ExtraType = ExtraType.Scene,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-scene",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "clip",
+                    ExtraType = ExtraType.Clip,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-clip",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "interview",
+                    ExtraType = ExtraType.Interview,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-interview",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "behindthescenes",
+                    ExtraType = ExtraType.BehindTheScenes,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-behindthescenes",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "deletedscene",
+                    ExtraType = ExtraType.DeletedScene,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-deleted",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "featurette",
+                    ExtraType = ExtraType.Clip,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-featurette",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "short",
+                    ExtraType = ExtraType.Clip,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-short",
                     MediaType = MediaType.Video
