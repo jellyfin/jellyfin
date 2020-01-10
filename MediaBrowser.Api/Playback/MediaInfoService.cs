@@ -111,19 +111,18 @@ namespace MediaBrowser.Api.Playback
 
             if (size <= 0)
             {
-                throw new ArgumentException($"The requested size can't be equal or smaller than 0.", nameof(request));
+                throw new ArgumentException($"The requested size ({size}) is equal to or smaller than 0.", nameof(request));
             }
 
             if (size > MaxSize)
             {
-                throw new ArgumentException($"The requested size can't be larger than the max allowed value ({MaxSize}).", nameof(request));
+                throw new ArgumentException($"The requested size ({size}) is larger than the max allowed value ({MaxSize}).", nameof(request));
             }
 
             byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
             try
             {
-                // ArrayPool<byte>.Shared.Rent doesn't guarantee that the returned buffer is zeroed
-                Array.Fill<byte>(buffer, 0);
+                new Random().NextBytes(buffer);
                 return ResultFactory.GetResult(null, buffer, "application/octet-stream");
             }
             finally
