@@ -34,7 +34,7 @@
     "LabelRunningTimeValue": "Durée : {0}",
     "Latest": "Derniers",
     "MessageApplicationUpdated": "Le serveur Jellyfin a été mis à jour",
-    "MessageApplicationUpdatedTo": "Le serveur Jellyfin a été mis à jour vers {0}",
+    "MessageApplicationUpdatedTo": "Le serveur Jellyfin a été mis à jour en version {0}",
     "MessageNamedServerConfigurationUpdatedWithValue": "La configuration de la section {0} du serveur a été mise à jour",
     "MessageServerConfigurationUpdated": "La configuration du serveur a été mise à jour",
     "MixedContent": "Contenu mixte",
