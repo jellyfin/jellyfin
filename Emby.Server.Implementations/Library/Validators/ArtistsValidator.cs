@@ -12,17 +12,17 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library.Validators
 {
     /// <summary>
-    /// Class ArtistsValidator
+    /// Class ArtistsValidator.
     /// </summary>
     public class ArtistsValidator
     {
         /// <summary>
-        /// The _library manager
+        /// The library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
-        /// The _logger
+        /// The logger.
         /// </summary>
         private readonly ILogger _logger;
         private readonly IItemRepository _itemRepo;

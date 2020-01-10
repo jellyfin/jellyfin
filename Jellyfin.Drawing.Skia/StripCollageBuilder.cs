@@ -5,15 +5,27 @@ using SkiaSharp;
 
 namespace Jellyfin.Drawing.Skia
 {
+    /// <summary>
+    /// Used to build collages of multiple images arranged in vertical strips.
+    /// </summary>
     public class StripCollageBuilder
     {
         private readonly SkiaEncoder _skiaEncoder;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StripCollageBuilder"/> class.
+        /// </summary>
+        /// <param name="skiaEncoder">The encoder to use for building collages.</param>
         public StripCollageBuilder(SkiaEncoder skiaEncoder)
         {
             _skiaEncoder = skiaEncoder;
         }
 
+        /// <summary>
+        /// Check which format an image has been encoded with using its filename extension.
+        /// </summary>
+        /// <param name="outputPath">The path to the image to get the format for.</param>
+        /// <returns>The image format.</returns>
         public static SKEncodedImageFormat GetEncodedFormat(string outputPath)
         {
             if (outputPath == null)
@@ -48,6 +60,13 @@ namespace Jellyfin.Drawing.Skia
             return SKEncodedImageFormat.Png;
         }
 
+        /// <summary>
+        /// Create a square collage.
+        /// </summary>
+        /// <param name="paths">The paths of the images to use in the collage.</param>
+        /// <param name="outputPath">The path at which to place the resulting collage image.</param>
+        /// <param name="width">The desired width of the collage.</param>
+        /// <param name="height">The desired height of the collage.</param>
         public void BuildSquareCollage(string[] paths, string outputPath, int width, int height)
         {
             using (var bitmap = BuildSquareCollageBitmap(paths, width, height))
@@ -58,6 +77,13 @@ namespace Jellyfin.Drawing.Skia
             }
         }
 
+        /// <summary>
+        /// Create a thumb collage.
+        /// </summary>
+        /// <param name="paths">The paths of the images to use in the collage.</param>
+        /// <param name="outputPath">The path at which to place the resulting image.</param>
+        /// <param name="width">The desired width of the collage.</param>
+        /// <param name="height">The desired height of the collage.</param>
         public void BuildThumbCollage(string[] paths, string outputPath, int width, int height)
         {
             using (var bitmap = BuildThumbCollageBitmap(paths, width, height))
@@ -98,6 +124,7 @@ namespace Jellyfin.Drawing.Skia
                         using (var resizeBitmap = new SKBitmap(iWidth, iHeight, currentBitmap.ColorType, currentBitmap.AlphaType))
                         {
                             currentBitmap.ScalePixels(resizeBitmap, SKFilterQuality.High);
+
                             // crop image
                             int ix = (int)Math.Abs((iWidth - iSlice) / 2);
                             using (var image = SKImage.FromBitmap(resizeBitmap))

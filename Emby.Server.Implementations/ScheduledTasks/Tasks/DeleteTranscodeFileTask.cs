@@ -31,13 +31,13 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         }
 
         /// <summary>
-        /// Creates the triggers that define when the task will run
+        /// Creates the triggers that define when the task will run.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers() => new List<TaskTriggerInfo>();
 
         /// <summary>
-        /// Returns the task to be executed
+        /// Returns the task to be executed.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
@@ -52,9 +52,8 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             return Task.CompletedTask;
         }
 
-
         /// <summary>
-        /// Deletes the transcoded temp files from directory with a last write time less than a given date
+        /// Deletes the transcoded temp files from directory with a last write time less than a given date.
         /// </summary>
         /// <param name="cancellationToken">The task cancellation token.</param>
         /// <param name="directory">The directory.</param>

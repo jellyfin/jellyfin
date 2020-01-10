@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +13,10 @@ namespace Emby.Server.Implementations.Data
     {
         private bool _disposed = false;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseSqliteRepository"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
         protected BaseSqliteRepository(ILogger logger)
         {
             Logger = logger;

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -107,7 +109,7 @@ namespace Emby.Server.Implementations.IO
             }
             try
             {
-                return Path.Combine(Path.GetFullPath(folderPath), filePath);
+                return Path.GetFullPath(Path.Combine(folderPath, filePath));
             }
             catch (ArgumentException)
             {

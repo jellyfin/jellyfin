@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +16,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library.Resolvers.TV
 {
     /// <summary>
-    /// Class SeriesResolver
+    /// Class SeriesResolver.
     /// </summary>
     public class SeriesResolver : FolderResolver<Series>
     {
@@ -22,6 +24,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SeriesResolver"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="libraryManager">The library manager.</param>
         public SeriesResolver(IFileSystem fileSystem, ILogger logger, ILibraryManager libraryManager)
         {
             _fileSystem = fileSystem;

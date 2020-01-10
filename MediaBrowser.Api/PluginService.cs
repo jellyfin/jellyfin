@@ -3,14 +3,14 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -150,25 +150,18 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly IApplicationHost _appHost;
         private readonly IInstallationManager _installationManager;
-        private readonly INetworkManager _network;
-        private readonly IDeviceManager _deviceManager;
 
-        public PluginService(IJsonSerializer jsonSerializer,
+        public PluginService(
+            ILogger<PluginService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IJsonSerializer jsonSerializer,
             IApplicationHost appHost,
-            IInstallationManager installationManager,
-            INetworkManager network,
-            IDeviceManager deviceManager)
-            : base()
+            IInstallationManager installationManager)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException(nameof(jsonSerializer));
-            }
-
             _appHost = appHost;
             _installationManager = installationManager;
-            _network = network;
-            _deviceManager = deviceManager;
             _jsonSerializer = jsonSerializer;
         }
 
@@ -248,7 +241,7 @@ namespace MediaBrowser.Api
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
-            var id = new Guid(GetPathValue(1));
+            var id = Guid.Parse(GetPathValue(1));
 
             var plugin = _appHost.Plugins.First(p => p.Id == id) as IHasPluginConfiguration;
 

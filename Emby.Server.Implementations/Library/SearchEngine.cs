@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +15,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library
 {
-    /// <summary>
-    /// </summary>
     public class SearchEngine : ISearchEngine
     {
         private readonly ILibraryManager _libraryManager;
@@ -162,7 +162,7 @@ namespace Emby.Server.Implementations.Library
                 Limit = query.Limit,
                 IncludeItemsByName = string.IsNullOrEmpty(query.ParentId),
                 ParentId = string.IsNullOrEmpty(query.ParentId) ? Guid.Empty : new Guid(query.ParentId),
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) },
+                OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                 Recursive = true,
 
                 IsKids = query.IsKids,

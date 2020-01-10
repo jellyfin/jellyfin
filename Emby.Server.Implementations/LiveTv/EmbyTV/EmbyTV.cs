@@ -1552,14 +1552,16 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 var episodesToDelete = librarySeries.GetItemList(
                     new InternalItemsQuery
                     {
-                        OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
+                        OrderBy = new[] { (ItemSortBy.DateCreated, SortOrder.Descending) },
                         IsVirtualItem = false,
                         IsFolder = false,
                         Recursive = true,
                         DtoOptions = new DtoOptions(true)
-                    }).Where(i => i.IsFileProtocol && File.Exists(i.Path))
-                        .Skip(seriesTimer.KeepUpTo - 1)
-                        .ToList();
+
+                    })
+                    .Where(i => i.IsFileProtocol && File.Exists(i.Path))
+                    .Skip(seriesTimer.KeepUpTo - 1)
+                    .ToList();
 
                 foreach (var item in episodesToDelete)
                 {
@@ -1619,12 +1621,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     },
                     true);
             }
-            else
+            else if (File.Exists(timer.RecordingPath))
             {
-                if (File.Exists(timer.RecordingPath))
-                {
-                    _fileSystem.DeleteFile(timer.RecordingPath);
-                }
+                _fileSystem.DeleteFile(timer.RecordingPath);
             }
 
             _timerProvider.Delete(timer);
@@ -2188,7 +2187,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 },
                 MinStartDate = startDateUtc.AddMinutes(-3),
                 MaxStartDate = startDateUtc.AddMinutes(3),
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending) }
+                OrderBy = new[] { (ItemSortBy.StartDate, SortOrder.Ascending) }
             };
 
             if (!string.IsNullOrWhiteSpace(channelId))

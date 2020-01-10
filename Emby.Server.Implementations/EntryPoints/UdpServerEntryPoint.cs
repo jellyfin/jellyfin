@@ -10,30 +10,36 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.EntryPoints
 {
     /// <summary>
-    /// Class UdpServerEntryPoint
+    /// Class UdpServerEntryPoint.
     /// </summary>
     public class UdpServerEntryPoint : IServerEntryPoint
     {
         /// <summary>
-        /// Gets or sets the UDP server.
+        /// The port of the UDP server.
         /// </summary>
-        /// <value>The UDP server.</value>
-        private UdpServer UdpServer { get; set; }
+        public const int PortNumber = 7359;
 
         /// <summary>
-        /// The _logger
+        /// The logger.
         /// </summary>
         private readonly ILogger _logger;
         private readonly ISocketFactory _socketFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly IJsonSerializer _json;
 
-        public const int PortNumber = 7359;
+        /// <summary>
+        /// The UDP server.
+        /// </summary>
+        private UdpServer _udpServer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServerEntryPoint" /> class.
         /// </summary>
-        public UdpServerEntryPoint(ILogger logger, IServerApplicationHost appHost, IJsonSerializer json, ISocketFactory socketFactory)
+        public UdpServerEntryPoint(
+            ILogger logger,
+            IServerApplicationHost appHost,
+            IJsonSerializer json,
+            ISocketFactory socketFactory)
         {
             _logger = logger;
             _appHost = appHost;
@@ -41,9 +47,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _socketFactory = socketFactory;
         }
 
-        /// <summary>
-        /// Runs this instance.
-        /// </summary>
+        /// <inheritdoc />
         public Task RunAsync()
         {
             var udpServer = new UdpServer(_logger, _appHost, _json, _socketFactory);
@@ -52,7 +56,7 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 udpServer.Start(PortNumber);
 
-                UdpServer = udpServer;
+                _udpServer = udpServer;
             }
             catch (Exception ex)
             {
@@ -62,12 +66,11 @@ namespace Emby.Server.Implementations.EntryPoints
             return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -78,9 +81,9 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             if (dispose)
             {
-                if (UdpServer != null)
+                if (_udpServer != null)
                 {
-                    UdpServer.Dispose();
+                    _udpServer.Dispose();
                 }
             }
         }

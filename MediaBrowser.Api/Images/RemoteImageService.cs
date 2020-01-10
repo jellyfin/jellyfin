@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -16,6 +16,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Images
 {
@@ -108,13 +109,20 @@ namespace MediaBrowser.Api.Images
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
 
-        private readonly IDtoService _dtoService;
         private readonly ILibraryManager _libraryManager;
 
-        public RemoteImageService(IProviderManager providerManager, IDtoService dtoService, IServerApplicationPaths appPaths, IHttpClient httpClient, IFileSystem fileSystem, ILibraryManager libraryManager)
+        public RemoteImageService(
+            ILogger<RemoteImageService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IProviderManager providerManager,
+            IServerApplicationPaths appPaths,
+            IHttpClient httpClient,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _providerManager = providerManager;
-            _dtoService = dtoService;
             _appPaths = appPaths;
             _httpClient = httpClient;
             _fileSystem = fileSystem;

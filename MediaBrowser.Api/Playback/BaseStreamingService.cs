@@ -34,12 +34,6 @@ namespace MediaBrowser.Api.Playback
         protected virtual bool EnableOutputInSubFolder => false;
 
         /// <summary>
-        /// Gets or sets the application paths.
-        /// </summary>
-        /// <value>The application paths.</value>
-        protected IServerConfigurationManager ServerConfigurationManager { get; private set; }
-
-        /// <summary>
         /// Gets or sets the user manager.
         /// </summary>
         /// <value>The user manager.</value>
@@ -69,8 +63,6 @@ namespace MediaBrowser.Api.Playback
 
         protected IDeviceManager DeviceManager { get; private set; }
 
-        protected ISubtitleEncoder SubtitleEncoder { get; private set; }
-
         protected IMediaSourceManager MediaSourceManager { get; private set; }
 
         protected IJsonSerializer JsonSerializer { get; private set; }
@@ -89,33 +81,34 @@ namespace MediaBrowser.Api.Playback
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
         protected BaseStreamingService(
-            IServerConfigurationManager serverConfig,
+            ILogger logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
             IUserManager userManager,
             ILibraryManager libraryManager,
             IIsoManager isoManager,
             IMediaEncoder mediaEncoder,
             IFileSystem fileSystem,
             IDlnaManager dlnaManager,
-            ISubtitleEncoder subtitleEncoder,
             IDeviceManager deviceManager,
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
-            IAuthorizationContext authorizationContext)
+            IAuthorizationContext authorizationContext,
+            EncodingHelper encodingHelper)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            ServerConfigurationManager = serverConfig;
             UserManager = userManager;
             LibraryManager = libraryManager;
             IsoManager = isoManager;
             MediaEncoder = mediaEncoder;
             FileSystem = fileSystem;
             DlnaManager = dlnaManager;
-            SubtitleEncoder = subtitleEncoder;
             DeviceManager = deviceManager;
             MediaSourceManager = mediaSourceManager;
             JsonSerializer = jsonSerializer;
             AuthorizationContext = authorizationContext;
 
-            EncodingHelper = new EncodingHelper(MediaEncoder, FileSystem, SubtitleEncoder);
+            EncodingHelper = encodingHelper;
         }
 
         /// <summary>
@@ -151,8 +144,6 @@ namespace MediaBrowser.Api.Playback
 
             return Path.Combine(folder, filename + ext);
         }
-
-        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         protected virtual string GetDefaultEncoderPreset()
         {
@@ -588,7 +579,7 @@ namespace MediaBrowser.Api.Playback
         }
 
         /// <summary>
-        /// Parses query parameters as StreamOptions
+        /// Parses query parameters as StreamOptions.
         /// </summary>
         /// <param name="request">The stream request.</param>
         private void ParseStreamOptions(StreamRequest request)
@@ -768,13 +759,13 @@ namespace MediaBrowser.Api.Playback
 
                 if (mediaSource == null)
                 {
-                    var mediaSources = (await MediaSourceManager.GetPlaybackMediaSources(LibraryManager.GetItemById(request.Id), null, false, false, cancellationToken).ConfigureAwait(false)).ToList();
+                    var mediaSources = await MediaSourceManager.GetPlaybackMediaSources(LibraryManager.GetItemById(request.Id), null, false, false, cancellationToken).ConfigureAwait(false);
 
                     mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
                        ? mediaSources[0]
                        : mediaSources.Find(i => string.Equals(i.Id, request.MediaSourceId));
 
-                    if (mediaSource == null && request.MediaSourceId.Equals(request.Id))
+                    if (mediaSource == null && Guid.Parse(request.MediaSourceId) == request.Id)
                     {
                         mediaSource = mediaSources[0];
                     }

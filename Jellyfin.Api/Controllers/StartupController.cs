@@ -96,7 +96,6 @@ namespace Jellyfin.Api.Controllers
         public StartupUserDto GetFirstUser()
         {
             var user = _userManager.Users.First();
-
             return new StartupUserDto
             {
                 Name = user.Name,

@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,14 +9,16 @@ namespace Emby.Naming.Video
 {
     public class FileStack
     {
-        public string Name { get; set; }
-        public List<string> Files { get; set; }
-        public bool IsDirectoryStack { get; set; }
-
         public FileStack()
         {
             Files = new List<string>();
         }
+
+        public string Name { get; set; }
+
+        public List<string> Files { get; set; }
+
+        public bool IsDirectoryStack { get; set; }
 
         public bool ContainsFile(string file, bool isDirectory)
         {

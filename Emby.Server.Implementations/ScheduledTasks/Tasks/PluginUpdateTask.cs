@@ -52,7 +52,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             progress.Report(0);
 
-            var packagesToInstall = (await _installationManager.GetAvailablePluginUpdates(cancellationToken).ConfigureAwait(false)).ToList();
+            var packagesToInstall = await _installationManager.GetAvailablePluginUpdates(cancellationToken)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             progress.Report(10);
 
