@@ -104,14 +104,11 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.Providers.TV.TheTVDB;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations
@@ -761,9 +758,8 @@ namespace Emby.Server.Implementations
             LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager);
             serviceCollection.AddSingleton(LibraryManager);
 
-            // TODO wtaylor: investigate use of second music manager
             var musicManager = new MusicManager(LibraryManager);
-            serviceCollection.AddSingleton<IMusicManager>(new MusicManager(LibraryManager));
+            serviceCollection.AddSingleton<IMusicManager>(musicManager);
 
             LibraryMonitor = new LibraryMonitor(LoggerFactory, LibraryManager, ServerConfigurationManager, FileSystemManager);
             serviceCollection.AddSingleton(LibraryMonitor);
@@ -875,6 +871,8 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(typeof(IResourceFileManager), typeof(ResourceFileManager));
             serviceCollection.AddSingleton<EncodingHelper>();
+
+            serviceCollection.AddSingleton(typeof(IAttachmentExtractor), typeof(MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor));
 
             _displayPreferencesRepository.Initialize();
 
@@ -1476,7 +1474,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="address">The IPv6 address.</param>
         /// <returns>The IPv6 address without the scope id.</returns>
-        private string RemoveScopeId(string address)
+        private ReadOnlySpan<char> RemoveScopeId(ReadOnlySpan<char> address)
         {
             var index = address.IndexOf('%');
             if (index == -1)
@@ -1484,33 +1482,50 @@ namespace Emby.Server.Implementations
                 return address;
             }
 
-            return address.Substring(0, index);
+            return address.Slice(0, index);
         }
 
+        /// <inheritdoc />
         public string GetLocalApiUrl(IPAddress ipAddress)
         {
             if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 var str = RemoveScopeId(ipAddress.ToString());
+                Span<char> span = new char[str.Length + 2];
+                span[0] = '[';
+                str.CopyTo(span.Slice(1));
+                span[^1] = ']';
 
-                return GetLocalApiUrl("[" + str + "]");
+                return GetLocalApiUrl(span);
             }
 
             return GetLocalApiUrl(ipAddress.ToString());
         }
 
-        public string GetLocalApiUrl(string host)
+        /// <inheritdoc />
+        public string GetLocalApiUrl(ReadOnlySpan<char> host)
         {
+            var url = new StringBuilder(64);
             if (EnableHttps)
             {
-                return string.Format("https://{0}:{1}",
-                    host,
-                    HttpsPort.ToString(CultureInfo.InvariantCulture));
+                url.Append("https://");
+            }
+            else
+            {
+                url.Append("http://");
             }
 
-            return string.Format("http://{0}:{1}",
-                    host,
-                    HttpPort.ToString(CultureInfo.InvariantCulture));
+            url.Append(host)
+                .Append(':')
+                .Append(HttpPort);
+
+            string baseUrl = ServerConfigurationManager.Configuration.BaseUrl;
+            if (baseUrl.Length != 0)
+            {
+                url.Append('/').Append(baseUrl);
+            }
+
+            return url.ToString();
         }
 
         public Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken)

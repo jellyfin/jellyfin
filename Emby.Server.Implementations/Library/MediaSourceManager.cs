@@ -131,6 +131,21 @@ namespace Emby.Server.Implementations.Library
             return streams;
         }
 
+        /// <inheritdoc />
+        public List<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query)
+        {
+            return _itemRepo.GetMediaAttachments(query);
+        }
+
+        /// <inheritdoc />
+        public List<MediaAttachment> GetMediaAttachments(Guid itemId)
+        {
+            return GetMediaAttachments(new MediaAttachmentQuery
+            {
+                ItemId = itemId
+            });
+        }
+
         public async Task<List<MediaSourceInfo>> GetPlayackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
             var mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);

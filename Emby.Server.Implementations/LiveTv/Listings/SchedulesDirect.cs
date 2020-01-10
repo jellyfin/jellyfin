@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
@@ -12,7 +13,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
@@ -663,7 +663,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             try
             {
-                return await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
+                return await _httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false);
             }
             catch (HttpException ex)
             {
@@ -738,7 +738,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             httpOptions.RequestHeaders["token"] = token;
 
-            using (await _httpClient.SendAsync(httpOptions, "PUT").ConfigureAwait(false))
+            using (await _httpClient.SendAsync(httpOptions, HttpMethod.Put).ConfigureAwait(false))
             {
             }
         }

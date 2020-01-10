@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 namespace Emby.Naming.Video
 {
     public class ExtraResult
@@ -7,6 +10,7 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <value>The type of the extra.</value>
         public string ExtraType { get; set; }
+
         /// <summary>
         /// Gets or sets the rule.
         /// </summary>
