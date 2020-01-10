@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1600
 
 using System;
 using System.Collections.Concurrent;
@@ -177,11 +178,7 @@ namespace Emby.Server.Implementations
         /// Gets the plugins.
         /// </summary>
         /// <value>The plugins.</value>
-        public IPlugin[] Plugins
-        {
-            get => _plugins;
-            protected set => _plugins = value;
-        }
+        public IReadOnlyList<IPlugin> Plugins => _plugins;
 
         /// <summary>
         /// Gets or sets the logger factory.
@@ -1056,7 +1053,7 @@ namespace Emby.Server.Implementations
             }
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
-            Plugins = GetExports<IPlugin>()
+            _plugins = GetExports<IPlugin>()
                         .Select(LoadPlugin)
                         .Where(i => i != null)
                         .ToArray();
@@ -1705,9 +1702,9 @@ namespace Emby.Server.Implementations
         /// <param name="plugin">The plugin.</param>
         public void RemovePlugin(IPlugin plugin)
         {
-            var list = Plugins.ToList();
+            var list = _plugins.ToList();
             list.Remove(plugin);
-            Plugins = list.ToArray();
+            _plugins = list.ToArray();
         }
 
         /// <summary>

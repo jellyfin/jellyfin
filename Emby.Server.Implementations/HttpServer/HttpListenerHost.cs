@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -218,7 +219,6 @@ namespace Emby.Server.Implementations.HttpServer
                 case FileNotFoundException _:
                 case ResourceNotFoundException _: return 404;
                 case MethodNotAllowedException _: return 405;
-                case RemoteServiceUnavailableException _: return 502;
                 default: return 500;
             }
         }
