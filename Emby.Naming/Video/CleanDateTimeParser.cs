@@ -24,12 +24,8 @@ namespace Emby.Naming.Video
         {
             var regexes = _options.CleanDateTimeRegexes;
             var len = regexes.Length;
-            CleanDateTimeResult result = new CleanDateTimeResult(name);
-            if (len == 0)
-            {
-                return result;
-            }
 
+            CleanDateTimeResult result = new CleanDateTimeResult(name);
             for (int i = 0; i < len; i++)
             {
                 if (TryClean(name, regexes[i], ref result))
