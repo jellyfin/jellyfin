@@ -383,32 +383,6 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         [Fact]
-        public void TestDirectories2()
-        {
-            //TestDirectory(@"blah blah", false, @"blah blah");
-            //TestDirectory(@"d:/music/weezer/03 Pinkerton", false, "03 Pinkerton");
-            //TestDirectory(@"d:/music/michael jackson/Bad (2012 Remaster)", false, "Bad (2012 Remaster)");
-
-            //TestDirectory(@"blah blah - cd1", true, "blah blah");
-            //TestDirectory(@"blah blah - disc1", true, "blah blah");
-            //TestDirectory(@"blah blah - disk1", true, "blah blah");
-            //TestDirectory(@"blah blah - pt1", true, "blah blah");
-            //TestDirectory(@"blah blah - part1", true, "blah blah");
-            //TestDirectory(@"blah blah - dvd1", true, "blah blah");
-
-            //// Add a space
-            //TestDirectory(@"blah blah - cd 1", true, "blah blah");
-            //TestDirectory(@"blah blah - disc 1", true, "blah blah");
-            //TestDirectory(@"blah blah - disk 1", true, "blah blah");
-            //TestDirectory(@"blah blah - pt 1", true, "blah blah");
-            //TestDirectory(@"blah blah - part 1", true, "blah blah");
-            //TestDirectory(@"blah blah - dvd 1", true, "blah blah");
-
-            //// Not case sensitive
-            //TestDirectory(@"blah blah - Disc1", true, "blah blah");
-        }
-
-        [Fact]
         public void TestNamesWithoutParts()
         {
             // No stacking here because there is no part/disc/etc

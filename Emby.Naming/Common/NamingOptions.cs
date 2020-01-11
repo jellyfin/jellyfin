@@ -340,7 +340,7 @@ namespace Emby.Naming.Common
 
                 // *** End Kodi Standard Naming
 
-                // [bar] Foo - 1 [baz]
+                // [bar] Foo - 1 [baz]
                 new EpisodeExpression(@".*?(\[.*?\])+.*?(?<seriesname>[\w\s]+?)[-\s_]+(?<epnumber>\d+).*$")
                 {
                     IsNamed = true
