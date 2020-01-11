@@ -1,9 +1,7 @@
 #pragma warning disable CS1591
 #pragma warning disable SA1600
 
-using System;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Emby.Naming.Common;
@@ -23,47 +21,9 @@ namespace Emby.Naming.Video
         }
 
         public CleanDateTimeResult Clean(string name)
-        {
-            var originalName = name;
-
-            try
-            {
-                var extension = Path.GetExtension(name) ?? string.Empty;
-                // Check supported extensions
-                if (!_options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase)
-                    && !_options.AudioFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
-                {
-                    // Dummy up a file extension because the expressions will fail without one
-                    // This is tricky because we can't just check Path.GetExtension for empty
-                    // If the input is "St. Vincent (2014)", it will produce ". Vincent (2014)" as the extension
-                    name += ".mkv";
-                }
-            }
-            catch (ArgumentException)
-            {
-            }
-
-            var result = _options.CleanDateTimeRegexes.Select(i => Clean(name, i))
+            => _options.CleanDateTimeRegexes.Select(i => Clean(name, i))
                 .FirstOrDefault(i => i.HasChanged) ??
-                new CleanDateTimeResult { Name = originalName };
-
-            if (result.HasChanged)
-            {
-                return result;
-            }
-
-            // Make a second pass, running clean string first
-            var cleanStringResult = CleanStringParser.Clean(name, _options.CleanStringRegexes);
-
-            if (!cleanStringResult.HasChanged)
-            {
-                return result;
-            }
-
-            return _options.CleanDateTimeRegexes.Select(i => Clean(cleanStringResult.Name, i))
-                .FirstOrDefault(i => i.HasChanged) ??
-                result;
-        }
+                new CleanDateTimeResult { Name = name };
 
         private static CleanDateTimeResult Clean(string name, Regex expression)
         {
