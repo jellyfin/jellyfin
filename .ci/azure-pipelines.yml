@@ -2,7 +2,7 @@ name: $(Date:yyyyMMdd)$(Rev:.r)
 
 variables:
   - name: TestProjects
-    value: 'tests/Jellyfin.Common.Tests/Jellyfin.Common.Tests.csproj'
+    value: 'tests/**/*Tests.csproj'
   - name: RestoreBuildProjects
     value: 'Jellyfin.Server/Jellyfin.Server.csproj'
 
@@ -132,12 +132,12 @@ jobs:
       inputs:
         packageFeedSelector: 'nugetOrg' # Options: nugetOrg, customFeed, netShare
         versionSelector: 'latestPreRelease' # Required when packageFeedSelector == NugetOrg || PackageFeedSelector == CustomFeed# Options: latestPreRelease, latestStable, specificVersion
-
     - task: VSTest@2
       inputs:
         testSelector: 'testAssemblies' # Options: testAssemblies, testPlan, testRun
         testAssemblyVer2: | # Required when testSelector == TestAssemblies
-          **\bin\$(BuildConfiguration)\**\*test*.dll
+          **\bin\$(BuildConfiguration)\**\*tests.dll
+          **\bin\$(BuildConfiguration)\**\*test.dll
           !**\obj\**
           !**\xunit.runner.visualstudio.testadapter.dll
           !**\xunit.runner.visualstudio.dotnetcore.testadapter.dll
@@ -147,6 +147,8 @@ jobs:
         codeCoverageEnabled: True # Optional
         configuration: 'Debug' # Optional
         publishRunAttachments: true # Optional
+        testRunTitle: $(Agent.JobName)
+        otherConsoleOptions: '/platform:x64 /Framework:.NETCoreApp,Version=v3.1 /logger:console;verbosity="normal"'
 
   - job: main_build_win
     displayName: Publish Windows
