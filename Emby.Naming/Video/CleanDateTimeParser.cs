@@ -53,7 +53,7 @@ namespace Emby.Naming.Video
             }
 
             // Make a second pass, running clean string first
-            var cleanStringResult = new CleanStringParser().Clean(name, _options.CleanStringRegexes);
+            var cleanStringResult = CleanStringParser.Clean(name, _options.CleanStringRegexes);
 
             if (!cleanStringResult.HasChanged)
             {
@@ -72,12 +72,12 @@ namespace Emby.Naming.Video
             var match = expression.Match(name);
 
             if (match.Success
-                && match.Groups.Count == 4
+                && match.Groups.Count == 5
                 && match.Groups[1].Success
                 && match.Groups[2].Success
                 && int.TryParse(match.Groups[2].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
             {
-                name = match.Groups[1].Value;
+                name = match.Groups[1].Value.TrimEnd();
                 result.Year = year;
                 result.HasChanged = true;
             }

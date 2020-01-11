@@ -132,7 +132,7 @@ namespace Emby.Naming.Video
 
         public CleanStringResult CleanString(string name)
         {
-            return new CleanStringParser().Clean(name, _options.CleanStringRegexes);
+            return CleanStringParser.Clean(name, _options.CleanStringRegexes);
         }
 
         public CleanDateTimeResult CleanDateTime(string name)

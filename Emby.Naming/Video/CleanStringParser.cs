@@ -9,9 +9,9 @@ namespace Emby.Naming.Video
     /// <summary>
     /// <see href="http://kodi.wiki/view/Advancedsettings.xml#video" />.
     /// </summary>
-    public class CleanStringParser
+    public static class CleanStringParser
     {
-        public CleanStringResult Clean(string name, IEnumerable<Regex> expressions)
+        public static CleanStringResult Clean(string name, IEnumerable<Regex> expressions)
         {
             var hasChanged = false;
 
