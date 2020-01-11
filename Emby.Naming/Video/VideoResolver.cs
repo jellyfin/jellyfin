@@ -138,7 +138,7 @@ namespace Emby.Naming.Video
 
         public CleanDateTimeResult CleanDateTime(string name)
         {
-            return new CleanDateTimeParser(_options).Clean(name);
+            return CleanDateTimeParser.Clean(name, _options.CleanDateTimeRegexes);
         }
     }
 }

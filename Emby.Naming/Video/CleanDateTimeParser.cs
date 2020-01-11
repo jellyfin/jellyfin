@@ -2,33 +2,24 @@
 #pragma warning disable SA1600
 #nullable enable
 
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Emby.Naming.Common;
 
 namespace Emby.Naming.Video
 {
     /// <summary>
     /// <see href="http://kodi.wiki/view/Advancedsettings.xml#video" />.
     /// </summary>
-    public class CleanDateTimeParser
+    public static class CleanDateTimeParser
     {
-        private readonly NamingOptions _options;
-
-        public CleanDateTimeParser(NamingOptions options)
+        public static CleanDateTimeResult Clean(string name, IReadOnlyList<Regex> cleanDateTimeRegexes)
         {
-            _options = options;
-        }
-
-        public CleanDateTimeResult Clean(string name)
-        {
-            var regexes = _options.CleanDateTimeRegexes;
-            var len = regexes.Length;
-
             CleanDateTimeResult result = new CleanDateTimeResult(name);
+            var len = cleanDateTimeRegexes.Count;
             for (int i = 0; i < len; i++)
             {
-                if (TryClean(name, regexes[i], ref result))
+                if (TryClean(name, cleanDateTimeRegexes[i], ref result))
                 {
                     return result;
                 }

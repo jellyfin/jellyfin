@@ -36,7 +36,6 @@ using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Net;
@@ -54,6 +53,9 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class LibraryManager : ILibraryManager
     {
+        private NamingOptions _namingOptions;
+        private string[] _videoFileExtensions;
+
         /// <summary>
         /// Gets or sets the postscan tasks.
         /// </summary>
@@ -2509,20 +2511,10 @@ namespace Emby.Server.Implementations.Library
 
         public NamingOptions GetNamingOptions()
         {
-            return GetNamingOptionsInternal();
-        }
-
-        private NamingOptions _namingOptions;
-        private string[] _videoFileExtensions;
-
-        private NamingOptions GetNamingOptionsInternal()
-        {
             if (_namingOptions == null)
             {
-                var options = new NamingOptions();
-
-                _namingOptions = options;
-                _videoFileExtensions = _namingOptions.VideoFileExtensions.ToArray();
+                _namingOptions = new NamingOptions();
+                _videoFileExtensions = _namingOptions.VideoFileExtensions;
             }
 
             return _namingOptions;
@@ -2533,11 +2525,10 @@ namespace Emby.Server.Implementations.Library
             var resolver = new VideoResolver(GetNamingOptions());
 
             var result = resolver.CleanDateTime(name);
-            var cleanName = resolver.CleanString(result.Name);
 
             return new ItemLookupInfo
             {
-                Name = cleanName.Name,
+                Name = resolver.TryCleanString(result.Name, out var newName) ? newName.ToString() : result.Name,
                 Year = result.Year
             };
         }
