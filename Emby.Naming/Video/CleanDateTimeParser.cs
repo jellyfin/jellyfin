@@ -1,8 +1,8 @@
 #pragma warning disable CS1591
 #pragma warning disable SA1600
+#nullable enable
 
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Emby.Naming.Common;
 
@@ -21,14 +21,28 @@ namespace Emby.Naming.Video
         }
 
         public CleanDateTimeResult Clean(string name)
-            => _options.CleanDateTimeRegexes.Select(i => Clean(name, i))
-                .FirstOrDefault(i => i.HasChanged) ??
-                new CleanDateTimeResult { Name = name };
-
-        private static CleanDateTimeResult Clean(string name, Regex expression)
         {
-            var result = new CleanDateTimeResult();
+            var regexes = _options.CleanDateTimeRegexes;
+            var len = regexes.Length;
+            CleanDateTimeResult result = new CleanDateTimeResult(name);
+            if (len == 0)
+            {
+                return result;
+            }
 
+            for (int i = 0; i < len; i++)
+            {
+                if (TryClean(name, regexes[i], ref result))
+                {
+                    return result;
+                }
+            }
+
+            return result;
+        }
+
+        private static bool TryClean(string name, Regex expression, ref CleanDateTimeResult result)
+        {
             var match = expression.Match(name);
 
             if (match.Success
@@ -37,13 +51,11 @@ namespace Emby.Naming.Video
                 && match.Groups[2].Success
                 && int.TryParse(match.Groups[2].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
             {
-                name = match.Groups[1].Value.TrimEnd();
-                result.Year = year;
-                result.HasChanged = true;
+                result = new CleanDateTimeResult(match.Groups[1].Value.TrimEnd(), year);
+                return true;
             }
 
-            result.Name = name;
-            return result;
+            return false;
         }
     }
 }

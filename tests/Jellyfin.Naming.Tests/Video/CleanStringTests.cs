@@ -1,4 +1,5 @@
-﻿using Emby.Naming.Common;
+﻿using System;
+using Emby.Naming.Common;
 using Emby.Naming.Video;
 using Xunit;
 
@@ -30,8 +31,15 @@ namespace Jellyfin.Naming.Tests.Video
         // FIXME: [InlineData("After The Sunset - [0004].mkv", "After The Sunset")]
         public void CleanStringTest(string input, string expectedName)
         {
-            var result = new VideoResolver(_namingOptions).CleanString(input);
-            Assert.Equal(expectedName, result.Name);
+            if (new VideoResolver(_namingOptions).TryCleanString(input, out ReadOnlySpan<char> newName))
+            {
+                // TODO: compare spans when XUnit supports it
+                Assert.Equal(expectedName, newName.ToString());
+            }
+            else
+            {
+                Assert.Equal(expectedName, input);
+            }
         }
     }
 }
