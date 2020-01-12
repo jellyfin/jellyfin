@@ -123,7 +123,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException(nameof(mediaSourceId));
             }
 
-            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(item, null, true, false, cancellationToken).ConfigureAwait(false);
+            var mediaSources = await _mediaSourceManager.GetPlaybackMediaSources(item, null, true, false, cancellationToken).ConfigureAwait(false);
 
             var mediaSource = mediaSources
                 .First(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
