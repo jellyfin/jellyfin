@@ -301,6 +301,7 @@ namespace MediaBrowser.Api.Playback
                 var transcodingProfile = deviceProfile.TranscodingProfiles[0];
 
                 // hls segment container can only be mpegts or fmp4 per ffmpeg documentation
+                // TODO: remove this when we switch back to the segment muxer
                 var supportedHLSContainers = new string[] { "mpegts", "fmp4" };
 
                 var newRequest = new GetMasterHlsAudioPlaylist
