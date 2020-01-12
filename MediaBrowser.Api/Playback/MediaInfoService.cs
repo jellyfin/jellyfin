@@ -264,13 +264,6 @@ namespace MediaBrowser.Api.Playback
             return ToOptimizedResult(result);
         }
 
-        private T Clone<T>(T obj)
-        {
-
-            var json = JsonSerializer.SerializeToUtf8Bytes(obj);
-            return JsonSerializer.Deserialize<T>(json);
-        }
-
         private async Task<PlaybackInfoResponse> GetPlaybackInfo(Guid id, Guid userId, string[] supportedLiveMediaTypes, string mediaSourceId = null, string liveStreamId = null)
         {
             var user = _userManager.GetUserById(userId);
