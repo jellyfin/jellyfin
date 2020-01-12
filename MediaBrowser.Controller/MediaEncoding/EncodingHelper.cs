@@ -2642,22 +2642,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                         else
                             return "-hwaccel dxva2";
                     }
-
-                    switch (videoStream.Codec.ToLowerInvariant())
+                    else
                     {
-                        case "avc":
-                        case "h264":
-                            if (_mediaEncoder.SupportsDecoder("h264_amf") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
-                            {
-                                return "-c:v h264_amf";
-                            }
-                            break;
-                        case "mpeg2video":
-                            if (_mediaEncoder.SupportsDecoder("hevc_amf") && encodingOptions.HardwareDecodingCodecs.Contains("mpeg2video", StringComparer.OrdinalIgnoreCase))
-                            {
-                                return "-c:v mpeg2_mmal";
-                            }
-                            break;
+                        //h264_amf is now supported on linux with 'amdgpu-pro' installed and '--enable-amf' when compiling ffmpeg
+                        //using vaapi decode and h264_amf encode on linux platform can avoid some weird transcoding errors in h264_vaapi with amd gpu
+                        return "-hwaccel vaapi";
                     }
                 }
             }
