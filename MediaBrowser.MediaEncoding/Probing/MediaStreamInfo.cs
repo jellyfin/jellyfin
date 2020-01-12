@@ -225,7 +225,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <value>The start_pts.</value>
         [JsonPropertyName("start_pts")]
-        public int StartPts { get; set; }
+        public long StartPts { get; set; }
 
         /// <summary>
         /// Gets or sets the is_avc.
