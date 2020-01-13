@@ -1,3 +1,7 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +46,6 @@ namespace Emby.Server.Implementations.Session
         private IEnumerable<IWebSocketConnection> GetActiveSockets()
             => _sockets.Where(i => i.State == WebSocketState.Open);
 
-        /// <inheritdoc />
         public void AddWebSocket(IWebSocketConnection connection)
         {
             _logger.LogDebug("Adding websocket to session {Session}", _session.Id);
@@ -76,12 +79,14 @@ namespace Emby.Server.Implementations.Session
                 return Task.CompletedTask;
             }
 
-            return socket.SendAsync(new WebSocketMessage<T>
-            {
-                Data = data,
-                MessageType = name,
-                MessageId = messageId
-            }, cancellationToken);
+            return socket.SendAsync(
+                new WebSocketMessage<T>
+                {
+                    Data = data,
+                    MessageType = name,
+                    MessageId = messageId
+                },
+                cancellationToken);
         }
 
         /// <inheritdoc />
