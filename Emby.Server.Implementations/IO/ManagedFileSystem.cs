@@ -448,7 +448,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetHidden(string path, bool isHidden)
         {
-            if (OperatingSystem.Id != MediaBrowser.Model.System.OperatingSystemId.Windows)
+            if (OperatingSystem.Id != OperatingSystemId.Windows)
             {
                 return;
             }
@@ -779,7 +779,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetExecutable(string path)
         {
-            if (OperatingSystem.Id == MediaBrowser.Model.System.OperatingSystemId.Darwin)
+            if (OperatingSystem.Id == OperatingSystemId.Darwin)
             {
                 RunProcess("chmod", "+x \"" + path + "\"", Path.GetDirectoryName(path));
             }
