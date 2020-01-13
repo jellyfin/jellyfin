@@ -22,9 +22,6 @@ namespace Emby.Server.Implementations.Udp
         private readonly ILogger _logger;
         private readonly IServerApplicationHost _appHost;
 
-        /// <summary>
-        /// The _udp client.
-        /// </summary>
         private Socket _udpSocket;
         private IPEndPoint _endpoint;
         private readonly byte[] _receiveBuffer = new byte[8192];
