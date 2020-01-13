@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.IO
         public virtual string MakeAbsolutePath(string folderPath, string filePath)
         {
             // path is actually a stream
-            if (string.IsNullOrWhiteSpace(filePath) || filePath.Contains("://", StringComparison.InvariantCulture))
+            if (string.IsNullOrWhiteSpace(filePath) || filePath.Contains("://", StringComparison.Ordinal))
             {
                 return filePath;
             }
@@ -93,7 +93,7 @@ namespace Emby.Server.Implementations.IO
             }
 
             // unc path
-            if (filePath.StartsWith("\\\\", StringComparison.InvariantCulture))
+            if (filePath.StartsWith("\\\\", StringComparison.Ordinal))
             {
                 return filePath;
             }
