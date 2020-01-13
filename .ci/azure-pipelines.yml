@@ -112,7 +112,7 @@ jobs:
   - job: main_test
     displayName: Main Test
     pool:
-      vmImage: windows-latest
+      vmImage: ubuntu-latest
     steps:
     - checkout: self
       clean: true
