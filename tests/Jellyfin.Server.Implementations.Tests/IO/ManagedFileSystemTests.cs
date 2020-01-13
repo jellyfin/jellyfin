@@ -31,8 +31,8 @@ namespace Jellyfin.Server.Implementations.Tests.IO
 
             if (MediaBrowser.Common.System.OperatingSystem.Id == OperatingSystemId.Windows)
             {
-                var expectedWindowsPath = expectedAbsolutePath.Replace('/', '\\').Split(':')[1];
-                Assert.Equal(expectedWindowsPath, generatedPath);
+                var expectedWindowsPath = expectedAbsolutePath.Replace('/', '\\');
+                Assert.Equal(expectedWindowsPath, generatedPath.Split(':')[1]);
             }
             else
             {
