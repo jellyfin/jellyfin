@@ -196,7 +196,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (item == null)
             {
-                item = _libraryManager.GetUserRootFolder();
+                item = user != null ? _libraryManager.GetUserRootFolder() : _libraryManager.RootFolder;
             }
 
             Folder folder = item as Folder;
@@ -213,27 +213,29 @@ namespace MediaBrowser.Api.UserLibrary
                 request.IncludeItemTypes = "Playlist";
             }
 
-            bool isInEnabledFolder = user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id);
-            var collectionFolders = _libraryManager.GetCollectionFolders(item);
-            foreach (var collectionFolder in collectionFolders)
+            if (user != null)
             {
-                if (user.Policy.EnabledFolders.Contains(
-                    collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture),
-                    StringComparer.OrdinalIgnoreCase))
+                bool isInEnabledFolder = user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id);
+                var collectionFolders = _libraryManager.GetCollectionFolders(item);
+                foreach (var collectionFolder in collectionFolders)
                 {
-                    isInEnabledFolder = true;
+                    if (user.Policy.EnabledFolders.Contains(
+                        collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture),
+                        StringComparer.OrdinalIgnoreCase))
+                    {
+                        isInEnabledFolder = true;
+                    }
                 }
-            }
 
-            if (!(item is UserRootFolder) && !user.Policy.EnableAllFolders && !isInEnabledFolder)
-            {
-                Logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Name, item.Name);
-                return new QueryResult<BaseItem>
+                if (!(item is UserRootFolder) && !user.Policy.EnableAllFolders && !isInEnabledFolder)
                 {
-                    Items = Array.Empty<BaseItem>(),
-                    TotalRecordCount = 0,
-                    StartIndex = 0
-                };
+                    Logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Name,
+                        item.Name);
+                    return new QueryResult<BaseItem>
+                    {
+                        Items = Array.Empty<BaseItem>(), TotalRecordCount = 0, StartIndex = 0
+                    };
+                }
             }
 
             if (request.Recursive || !string.IsNullOrEmpty(request.Ids) || !(item is UserRootFolder))
