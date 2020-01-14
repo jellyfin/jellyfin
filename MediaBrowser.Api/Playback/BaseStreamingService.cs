@@ -1018,7 +1018,7 @@ namespace MediaBrowser.Api.Playback
 
         private void AddTimeSeekResponseHeaders(StreamState state, IDictionary<string, string> responseHeaders)
         {
-            // TODO: RunTImwTicks might not have value
+            // TODO: RuntimeTicks might not have value
             var runtimeSeconds = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds.ToString(CultureInfo.InvariantCulture);
             var startSeconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
