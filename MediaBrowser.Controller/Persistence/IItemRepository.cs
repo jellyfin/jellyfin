@@ -79,6 +79,21 @@ namespace MediaBrowser.Controller.Persistence
         void SaveMediaStreams(Guid id, List<MediaStream> streams, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Gets the media attachments.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>IEnumerable{MediaAttachment}.</returns>
+        List<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query);
+
+        /// <summary>
+        /// Saves the media attachments.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="attachments">The attachments.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        void SaveMediaAttachments(Guid id, IReadOnlyList<MediaAttachment> attachments, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Gets the item ids.
         /// </summary>
         /// <param name="query">The query.</param>

@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.IO;
 using System.Linq;
@@ -11,14 +14,14 @@ namespace Emby.Naming.Video
         {
             if (path == null)
             {
-                return default(StubResult);
+                return default;
             }
 
             var extension = Path.GetExtension(path);
 
             if (!options.StubFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
             {
-                return default(StubResult);
+                return default;
             }
 
             var result = new StubResult()

@@ -2,7 +2,7 @@ name: $(Date:yyyyMMdd)$(Rev:.r)
 
 variables:
   - name: TestProjects
-    value: 'tests/Jellyfin.Common.Tests/Jellyfin.Common.Tests.csproj'
+    value: 'tests/**/*Tests.csproj'
   - name: RestoreBuildProjects
     value: 'Jellyfin.Server/Jellyfin.Server.csproj'
 
@@ -19,9 +19,9 @@ jobs:
       vmImage: ubuntu-latest
     strategy:
       matrix:
-        release:
+        Release:
           BuildConfiguration: Release
-        debug:
+        Debug:
           BuildConfiguration: Debug
       maxParallel: 2
     steps:
@@ -31,32 +31,32 @@ jobs:
       persistCredentials: true
 
     - task: CmdLine@2
-      displayName: "Check out web"
+      displayName: "Clone Web Client (Master, Release, or Tag)"
       condition: and(succeeded(), or(contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
         script: 'git clone --single-branch --branch $(Build.SourceBranchName) --depth=1 https://github.com/jellyfin/jellyfin-web.git $(Agent.TempDirectory)/jellyfin-web'
 
     - task: CmdLine@2
-      displayName: "Check out web (PR)"
+      displayName: "Clone Web Client (PR)"
       condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest'))
       inputs:
         script: 'git clone --single-branch --branch $(System.PullRequest.TargetBranch) --depth 1 https://github.com/jellyfin/jellyfin-web.git $(Agent.TempDirectory)/jellyfin-web'
 
     - task: NodeTool@0
-      displayName: 'Install Node.js'
+      displayName: 'Install Node'
       condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
         versionSpec: '10.x'
 
     - task: CmdLine@2
-      displayName: "Build Web UI"
+      displayName: "Build Web Client"
       condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
         script: yarn install
         workingDirectory: $(Agent.TempDirectory)/jellyfin-web
 
     - task: CopyFiles@2
-      displayName: Copy the web UI
+      displayName: 'Copy Web Client'
       condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
         sourceFolder: $(Agent.TempDirectory)/jellyfin-web/dist # Optional
@@ -66,8 +66,14 @@ jobs:
         overWrite: true # Optional
         flattenFolders: false # Optional
 
+    - task: UseDotNet@2
+      displayName: 'Update DotNet'
+      inputs:
+        packageType: sdk
+        version: 3.1.100
+
     - task: DotNetCoreCLI@2
-      displayName: Publish
+      displayName: 'Publish Server'
       inputs:
         command: publish
         publishWebProjects: false
@@ -126,71 +132,31 @@ jobs:
       inputs:
         packageFeedSelector: 'nugetOrg' # Options: nugetOrg, customFeed, netShare
         versionSelector: 'latestPreRelease' # Required when packageFeedSelector == NugetOrg || PackageFeedSelector == CustomFeed# Options: latestPreRelease, latestStable, specificVersion
-
     - task: VSTest@2
       inputs:
         testSelector: 'testAssemblies' # Options: testAssemblies, testPlan, testRun
         testAssemblyVer2: | # Required when testSelector == TestAssemblies
-          **\bin\$(BuildConfiguration)\**\*test*.dll
+          **\bin\$(BuildConfiguration)\**\*tests.dll
+          **\bin\$(BuildConfiguration)\**\*test.dll
           !**\obj\**
           !**\xunit.runner.visualstudio.testadapter.dll
           !**\xunit.runner.visualstudio.dotnetcore.testadapter.dll
-        #testPlan: # Required when testSelector == TestPlan
-        #testSuite: # Required when testSelector == TestPlan
-        #testConfiguration: # Required when testSelector == TestPlan
-        #tcmTestRun: '$(test.RunId)' # Optional
         searchFolder: '$(System.DefaultWorkingDirectory)'
-        #testFiltercriteria: # Optional
-        #runOnlyImpactedTests: False # Optional
-        #runAllTestsAfterXBuilds: '50' # Optional
-        #uiTests: false # Optional
-        #vstestLocationMethod: 'version' # Optional. Options: version, location
-        #vsTestVersion: 'latest' # Optional. Options: latest, 16.0, 15.0, 14.0, toolsInstaller
-        #vstestLocation: # Optional
-        #runSettingsFile: # Optional
-        #overrideTestrunParameters: # Optional
-        #pathtoCustomTestAdapters: # Optional
         runInParallel: True # Optional
         runTestsInIsolation: True # Optional
         codeCoverageEnabled: True # Optional
-        #otherConsoleOptions: # Optional
-        #distributionBatchType: 'basedOnTestCases' # Optional. Options: basedOnTestCases, basedOnExecutionTime, basedOnAssembly
-        #batchingBasedOnAgentsOption: 'autoBatchSize' # Optional. Options: autoBatchSize, customBatchSize
-        #customBatchSizeValue: '10' # Required when distributionBatchType == BasedOnTestCases && BatchingBasedOnAgentsOption == CustomBatchSize
-        #batchingBasedOnExecutionTimeOption: 'autoBatchSize' # Optional. Options: autoBatchSize, customTimeBatchSize
-        #customRunTimePerBatchValue: '60' # Required when distributionBatchType == BasedOnExecutionTime && BatchingBasedOnExecutionTimeOption == CustomTimeBatchSize
-        #dontDistribute: False # Optional
-        #testRunTitle: # Optional
-        #platform: # Optional
         configuration: 'Debug' # Optional
         publishRunAttachments: true # Optional
-        #diagnosticsEnabled: false # Optional
-        #collectDumpOn: 'onAbortOnly' # Optional. Options: onAbortOnly, always, never
-        #rerunFailedTests: False # Optional
-        #rerunType: 'basedOnTestFailurePercentage' # Optional. Options: basedOnTestFailurePercentage, basedOnTestFailureCount
-        #rerunFailedThreshold: '30' # Optional
-        #rerunFailedTestCasesMaxLimit: '5' # Optional
-        #rerunMaxAttempts: '3' # Optional
-
-    # - task: PublishTestResults@2
-    #   inputs:
-    #     testResultsFormat: 'VSTest' # Options: JUnit, NUnit, VSTest, xUnit, cTest
-    #     testResultsFiles: '**/*.trx'
-    #     #searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
-    #     mergeTestResults: true # Optional
-    #     #failTaskOnFailedTests: false # Optional
-    #     #testRunTitle: # Optional
-    #     #buildPlatform: # Optional
-    #     #buildConfiguration: # Optional
-    #     #publishRunAttachments: true # Optional
+        testRunTitle: $(Agent.JobName)
+        otherConsoleOptions: '/platform:x64 /Framework:.NETCoreApp,Version=v3.1 /logger:console;verbosity="normal"'
 
   - job: main_build_win
-    displayName: Main Build Windows
+    displayName: Publish Windows
     pool:
       vmImage: windows-latest
     strategy:
       matrix:
-        release:
+        Release:
           BuildConfiguration: Release
       maxParallel: 2
     steps:
@@ -200,32 +166,32 @@ jobs:
       persistCredentials: true
 
     - task: CmdLine@2
-      displayName: "Check out web (master, release or tag)"
+      displayName: "Clone Web Client (Master, Release, or Tag)"
       condition: and(succeeded(), or(contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master'), contains(variables['Build.SourceBranch'], 'tag')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
         script: 'git clone --single-branch --branch $(Build.SourceBranchName) --depth=1 https://github.com/jellyfin/jellyfin-web.git $(Agent.TempDirectory)/jellyfin-web'
 
     - task: CmdLine@2
-      displayName: "Check out web (PR)"
+      displayName: "Clone Web Client (PR)"
       condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest'))
       inputs:
         script: 'git clone --single-branch --branch $(System.PullRequest.TargetBranch) --depth 1 https://github.com/jellyfin/jellyfin-web.git $(Agent.TempDirectory)/jellyfin-web'
 
     - task: NodeTool@0
-      displayName: 'Install Node.js'
+      displayName: 'Install Node'
       condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
         versionSpec: '10.x'
 
     - task: CmdLine@2
-      displayName: "Build Web UI"
+      displayName: "Build Web Client"
       condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
         script: yarn install
         workingDirectory: $(Agent.TempDirectory)/jellyfin-web
 
     - task: CopyFiles@2
-      displayName: Copy the web UI
+      displayName: 'Copy Web Client'
       condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
       inputs:
         sourceFolder: $(Agent.TempDirectory)/jellyfin-web/dist # Optional
@@ -236,25 +202,21 @@ jobs:
         flattenFolders: false # Optional
 
     - task: CmdLine@2
-      displayName: Clone the UX repository
+      displayName: 'Clone UX Repository'
       inputs:
         script: git clone --depth=1 https://github.com/jellyfin/jellyfin-ux $(Agent.TempDirectory)\jellyfin-ux
 
     - task: PowerShell@2
-      displayName: Build the NSIS Installer
+      displayName: 'Build NSIS Installer'
       inputs:
         targetType: 'filePath' # Optional. Options: filePath, inline
         filePath: ./deployment/windows/build-jellyfin.ps1 # Required when targetType == FilePath
         arguments: -InstallFFMPEG -InstallNSSM -MakeNSIS -InstallTrayApp -UXLocation $(Agent.TempDirectory)\jellyfin-ux -InstallLocation $(build.artifactstagingdirectory)
-        #script: '# Write your PowerShell commands here.Write-Host Hello World' # Required when targetType == Inline
         errorActionPreference: 'stop' # Optional. Options: stop, continue, silentlyContinue
-        #failOnStderr: false # Optional
-        #ignoreLASTEXITCODE: false # Optional
-        #pwsh: false # Optional
         workingDirectory: $(Build.SourcesDirectory) # Optional
 
     - task: CopyFiles@2
-      displayName: Copy the NSIS Installer to the artifact directory
+      displayName: 'Copy NSIS Installer'
       inputs:
         sourceFolder: $(Build.SourcesDirectory)/deployment/windows/ # Optional
         contents: 'jellyfin*.exe'
@@ -264,7 +226,7 @@ jobs:
         flattenFolders: true # Optional
 
     - task: PublishPipelineArtifact@0
-      displayName: 'Publish Setup Artifact'
+      displayName: 'Publish Artifact Setup'
       condition: and(eq(variables['BuildConfiguration'], 'Release'), succeeded())
       inputs:
         targetPath: '$(build.artifactstagingdirectory)/setup'
@@ -275,7 +237,8 @@ jobs:
     pool:
       vmImage: ubuntu-latest
     dependsOn: main_build
-    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber']) # Only execute if the pullrequest numer is defined. (So not for normal CI builds)
+    # only execute for pull requests
+    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber'])
     strategy:
       matrix:
         Naming:
@@ -293,24 +256,23 @@ jobs:
       maxParallel: 2
     steps:
     - checkout: none
+    
+    - task: UseDotNet@2
+      displayName: 'Update DotNet'
+      inputs:
+        packageType: sdk
+        version: 3.1.100
 
     - task: DownloadPipelineArtifact@2
-      displayName: Download the New Assembly Build Artifact
+      displayName: 'Download New Assembly Build Artifact'
       inputs:
         source: 'current' # Options: current, specific
-        #preferTriggeringPipeline: false # Optional
-        #tags: # Optional
         artifact: '$(NugetPackageName)' # Optional
-        #patterns: '**' # Optional
         path: '$(System.ArtifactsDirectory)/new-artifacts'
-        #project: # Required when source == Specific
-        #pipeline: # Required when source == Specific
         runVersion: 'latest' # Required when source == Specific. Options: latest, latestFromBranch, specific
-        #runBranch: 'refs/heads/master' # Required when source == Specific && runVersion == LatestFromBranch
-        #runId: # Required when source == Specific && runVersion == Specific
 
     - task: CopyFiles@2
-      displayName: Copy New Assembly to new-release folder
+      displayName: 'Copy New Assembly Build Artifact'
       inputs:
         sourceFolder: $(System.ArtifactsDirectory)/new-artifacts # Optional
         contents: '**/*.dll'
@@ -320,22 +282,18 @@ jobs:
         flattenFolders: true # Optional
 
     - task: DownloadPipelineArtifact@2
-      displayName: Download the Reference Assembly Build Artifact
+      displayName: 'Download Reference Assembly Build Artifact'
       inputs:
         source: 'specific' # Options: current, specific
-        #preferTriggeringPipeline: false # Optional
-        #tags: # Optional
         artifact: '$(NugetPackageName)' # Optional
-        #patterns: '**' # Optional
         path: '$(System.ArtifactsDirectory)/current-artifacts'
         project: '$(System.TeamProjectId)' # Required when source == Specific
         pipeline: '$(System.DefinitionId)' # Required when source == Specific
         runVersion: 'latestFromBranch' # Required when source == Specific. Options: latest, latestFromBranch, specific
         runBranch: 'refs/heads/$(System.PullRequest.TargetBranch)' # Required when source == Specific && runVersion == LatestFromBranch
-        #runId: # Required when source == Specific && runVersion == Specific
 
     - task: CopyFiles@2
-      displayName: Copy Reference Assembly to current-release folder
+      displayName: 'Copy Reference Assembly Build Artifact'
       inputs:
         sourceFolder: $(System.ArtifactsDirectory)/current-artifacts # Optional
         contents: '**/*.dll'
@@ -345,27 +303,24 @@ jobs:
         flattenFolders: true # Optional
 
     - task: DownloadGitHubRelease@0
-      displayName: Download ABI compatibility check tool from GitHub
+      displayName: 'Download ABI Compatibility Check Tool'
       inputs:
         connection: Jellyfin Release Download
         userRepository: EraYaN/dotnet-compatibility
         defaultVersionType: 'latest' # Options: latest, specificVersion, specificTag
-        #version: # Required when defaultVersionType != Latest
         itemPattern: '**-ci.zip' # Optional
         downloadPath: '$(System.ArtifactsDirectory)'
 
     - task: ExtractFiles@1
-      displayName: Extract ABI compatibility check tool
+      displayName: 'Extract ABI Compatibility Check Tool'
       inputs:
         archiveFilePatterns: '$(System.ArtifactsDirectory)/*-ci.zip'
         destinationFolder: $(System.ArtifactsDirectory)/tools
         cleanDestinationFolder: true
 
+    # The `--warnings-only` switch will swallow the return code and not emit any errors.
     - task: CmdLine@2
-      displayName: Execute ABI compatibility check tool
+      displayName: 'Execute ABI Compatibility Check Tool'
       inputs:
-        script: 'dotnet tools/CompatibilityCheckerCoreCLI.dll current-release/$(AssemblyFileName) new-release/$(AssemblyFileName) --azure-pipelines'
+        script: 'dotnet tools/CompatibilityCheckerCLI.dll current-release/$(AssemblyFileName) new-release/$(AssemblyFileName) --azure-pipelines --warnings-only'
         workingDirectory: $(System.ArtifactsDirectory) # Optional
-        #failOnStderr: false # Optional
-
-

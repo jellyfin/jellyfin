@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.IO;
 using System.Net;
@@ -8,10 +6,25 @@ using System.Net.Http.Headers;
 namespace MediaBrowser.Common.Net
 {
     /// <summary>
-    /// Class HttpResponseInfo
+    /// Class HttpResponseInfo.
     /// </summary>
     public class HttpResponseInfo : IDisposable
     {
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+        public HttpResponseInfo()
+        {
+        }
+
+        public HttpResponseInfo(HttpResponseHeaders headers, HttpContentHeaders contentHeader)
+        {
+            Headers = headers;
+            ContentHeaders = contentHeader;
+        }
+
+#pragma warning restore CS1591
+#pragma warning restore SA1600
+
         /// <summary>
         /// Gets or sets the type of the content.
         /// </summary>
@@ -60,21 +73,10 @@ namespace MediaBrowser.Common.Net
         /// <value>The content headers.</value>
         public HttpContentHeaders ContentHeaders { get; set; }
 
-        public HttpResponseInfo()
-        {
-
-        }
-
-        public HttpResponseInfo(HttpResponseHeaders headers, HttpContentHeaders contentHeader)
-        {
-            Headers = headers;
-            ContentHeaders = contentHeader;
-        }
-
         /// <inheritdoc />
         public void Dispose()
         {
-            // Only IDisposable for backwards compatibility
+            // backwards compatibility
         }
     }
 }

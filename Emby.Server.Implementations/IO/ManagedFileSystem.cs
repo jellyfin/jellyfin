@@ -1,9 +1,10 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,7 @@ using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 namespace Emby.Server.Implementations.IO
 {
     /// <summary>
-    /// Class ManagedFileSystem
+    /// Class ManagedFileSystem.
     /// </summary>
     public class ManagedFileSystem : IFileSystem
     {
@@ -79,20 +80,20 @@ namespace Emby.Server.Implementations.IO
 
         public virtual string MakeAbsolutePath(string folderPath, string filePath)
         {
-            if (string.IsNullOrWhiteSpace(filePath)
-                // stream
-                || filePath.Contains("://"))
+            // path is actually a stream
+            if (string.IsNullOrWhiteSpace(filePath) || filePath.Contains("://", StringComparison.Ordinal))
             {
                 return filePath;
             }
 
             if (filePath.Length > 3 && filePath[1] == ':' && filePath[2] == '/')
             {
-                return filePath; // absolute local path
+                // absolute local path
+                return filePath;
             }
 
             // unc path
-            if (filePath.StartsWith("\\\\"))
+            if (filePath.StartsWith("\\\\", StringComparison.Ordinal))
             {
                 return filePath;
             }
@@ -100,16 +101,19 @@ namespace Emby.Server.Implementations.IO
             var firstChar = filePath[0];
             if (firstChar == '/')
             {
-                // For this we don't really know.
+                // for this we don't really know
                 return filePath;
             }
-            if (firstChar == '\\') //relative path
+
+            // relative path
+            if (firstChar == '\\')
             {
                 filePath = filePath.Substring(1);
             }
+
             try
             {
-                return Path.Combine(Path.GetFullPath(folderPath), filePath);
+                return Path.GetFullPath(Path.Combine(folderPath, filePath));
             }
             catch (ArgumentException)
             {
@@ -130,11 +134,7 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="shortcutPath">The shortcut path.</param>
         /// <param name="target">The target.</param>
-        /// <exception cref="ArgumentNullException">
-        /// shortcutPath
-        /// or
-        /// target
-        /// </exception>
+        /// <exception cref="ArgumentNullException">The shortcutPath or target is null.</exception>
         public virtual void CreateShortcut(string shortcutPath, string target)
         {
             if (string.IsNullOrEmpty(shortcutPath))
@@ -280,11 +280,11 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <summary>
-        /// Takes a filename and removes invalid characters
+        /// Takes a filename and removes invalid characters.
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">filename</exception>
+        /// <exception cref="ArgumentNullException">The filename is null.</exception>
         public virtual string GetValidFilename(string filename)
         {
             var builder = new StringBuilder(filename);
@@ -448,7 +448,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetHidden(string path, bool isHidden)
         {
-            if (OperatingSystem.Id != MediaBrowser.Model.System.OperatingSystemId.Windows)
+            if (OperatingSystem.Id != OperatingSystemId.Windows)
             {
                 return;
             }
@@ -472,7 +472,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetReadOnly(string path, bool isReadOnly)
         {
-            if (OperatingSystem.Id != MediaBrowser.Model.System.OperatingSystemId.Windows)
+            if (OperatingSystem.Id != OperatingSystemId.Windows)
             {
                 return;
             }
@@ -496,7 +496,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetAttributes(string path, bool isHidden, bool isReadOnly)
         {
-            if (OperatingSystem.Id != MediaBrowser.Model.System.OperatingSystemId.Windows)
+            if (OperatingSystem.Id != OperatingSystemId.Windows)
             {
                 return;
             }
@@ -779,7 +779,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetExecutable(string path)
         {
-            if (OperatingSystem.Id == MediaBrowser.Model.System.OperatingSystemId.Darwin)
+            if (OperatingSystem.Id == OperatingSystemId.Darwin)
             {
                 RunProcess("chmod", "+x \"" + path + "\"", Path.GetDirectoryName(path));
             }

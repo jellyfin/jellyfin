@@ -29,9 +29,9 @@
     <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.2.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.0" />
     <PackageReference Include="Mono.Nat" Version="2.0.0" />
     <PackageReference Include="ServiceStack.Text.Core" Version="5.7.0" />
     <PackageReference Include="sharpcompress" Version="0.24.0" />
@@ -49,12 +49,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <!-- Code analysers-->
+  <!-- Code Analyzers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.7" />
-    <PackageReference Include="SerilogAnalyzer" Version="0.15.0" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
-    <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" PrivateAssets="All" />
+    <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
+    <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

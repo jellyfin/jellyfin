@@ -8,8 +8,8 @@ set -o xtrace
 # Move to source directory
 pushd ${SOURCE_DIR}
 
-# Remove build-dep for dotnet-sdk-3.0, since it's not a package in this image
-sed -i '/dotnet-sdk-3.0,/d' debian/control
+# Remove build-dep for dotnet-sdk-3.1, since it's not a package in this image
+sed -i '/dotnet-sdk-3.1,/d' debian/control
 
 # Build DEB
 dpkg-buildpackage -us -uc

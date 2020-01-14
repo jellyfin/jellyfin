@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -15,24 +16,24 @@ namespace MediaBrowser.Common.Cryptography
     public class PasswordHash
     {
         private readonly Dictionary<string, string> _parameters;
+        private readonly byte[] _salt;
+        private readonly byte[] _hash;
 
         public PasswordHash(string id, byte[] hash)
             : this(id, hash, Array.Empty<byte>())
         {
-
         }
 
         public PasswordHash(string id, byte[] hash, byte[] salt)
             : this(id, hash, salt, new Dictionary<string, string>())
         {
-
         }
 
         public PasswordHash(string id, byte[] hash, byte[] salt, Dictionary<string, string> parameters)
         {
             Id = id;
-            Hash = hash;
-            Salt = salt;
+            _hash = hash;
+            _salt = salt;
             _parameters = parameters;
         }
 
@@ -45,25 +46,24 @@ namespace MediaBrowser.Common.Cryptography
         /// <summary>
         /// Gets the additional parameters used by the hash function.
         /// </summary>
-        /// <value></value>
         public IReadOnlyDictionary<string, string> Parameters => _parameters;
 
         /// <summary>
         /// Gets the salt used for hashing the password.
         /// </summary>
         /// <value>Returns the salt used for hashing the password.</value>
-        public byte[] Salt { get; }
+        public ReadOnlySpan<byte> Salt => _salt;
 
         /// <summary>
         /// Gets the hashed password.
         /// </summary>
         /// <value>Return the hashed password.</value>
-        public byte[] Hash { get; }
+        public ReadOnlySpan<byte> Hash => _hash;
 
         public static PasswordHash Parse(string hashString)
         {
-            string[] splitted = hashString.Split('$');
             // The string should at least contain the hash function and the hash itself
+            string[] splitted = hashString.Split('$');
             if (splitted.Length < 3)
             {
                 throw new ArgumentException("String doesn't contain enough segments", nameof(hashString));
@@ -77,7 +77,7 @@ namespace MediaBrowser.Common.Cryptography
 
             // Optional parameters
             Dictionary<string, string> parameters = new Dictionary<string, string>();
-            if (splitted[index].IndexOf('=') != -1)
+            if (splitted[index].IndexOf('=', StringComparison.Ordinal) != -1)
             {
                 foreach (string paramset in splitted[index++].Split(','))
                 {
@@ -98,6 +98,7 @@ namespace MediaBrowser.Common.Cryptography
 
             byte[] hash;
             byte[] salt;
+
             // Check if the string also contains a salt
             if (splitted.Length - index == 2)
             {
@@ -141,14 +142,14 @@ namespace MediaBrowser.Common.Cryptography
                 .Append(Id);
             SerializeParameters(str);
 
-            if (Salt.Length != 0)
+            if (_salt.Length != 0)
             {
                 str.Append('$')
-                    .Append(Hex.Encode(Salt, false));
+                    .Append(Hex.Encode(_salt, false));
             }
 
             return str.Append('$')
-                .Append(Hex.Encode(Hash, false)).ToString();
+                .Append(Hex.Encode(_hash, false)).ToString();
         }
     }
 }

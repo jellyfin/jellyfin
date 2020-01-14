@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.IO;
 using System.Linq;
@@ -91,7 +94,7 @@ namespace Emby.Naming.Video
             {
                 var cleanDateTimeResult = CleanDateTime(name);
 
-                if (string.IsNullOrEmpty(extraResult.ExtraType))
+                if (extraResult.ExtraType == null)
                 {
                     name = CleanString(cleanDateTimeResult.Name).Name;
                 }

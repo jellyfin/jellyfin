@@ -16,6 +16,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             using (var writer = new Utf8JsonWriter(stream))
             {
                 var trackevents = info.TrackEvents;
+                writer.WriteStartObject();
                 writer.WriteStartArray("TrackEvents");
 
                 for (int i = 0; i < trackevents.Count; i++)
@@ -33,7 +34,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     writer.WriteEndObject();
                 }
 
+                writer.WriteEndArray();
                 writer.WriteEndObject();
+
+                writer.Flush();
             }
         }
     }

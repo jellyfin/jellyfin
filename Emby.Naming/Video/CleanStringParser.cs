@@ -1,10 +1,13 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Emby.Naming.Video
 {
     /// <summary>
-    /// http://kodi.wiki/view/Advancedsettings.xml#video
+    /// <see href="http://kodi.wiki/view/Advancedsettings.xml#video" />.
     /// </summary>
     public class CleanStringParser
     {
