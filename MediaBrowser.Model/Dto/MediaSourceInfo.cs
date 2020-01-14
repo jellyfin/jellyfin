@@ -76,6 +76,7 @@ namespace MediaBrowser.Model.Dto
         {
             Formats = Array.Empty<string>();
             MediaStreams = new List<MediaStream>();
+            MediaAttachments = Array.Empty<MediaAttachment>();
             RequiredHttpHeaders = new Dictionary<string, string>();
             SupportsTranscoding = true;
             SupportsDirectStream = true;

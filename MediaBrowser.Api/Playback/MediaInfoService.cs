@@ -264,41 +264,26 @@ namespace MediaBrowser.Api.Playback
             return ToOptimizedResult(result);
         }
 
-        private T Clone<T>(T obj)
-        {
-            // Since we're going to be setting properties on MediaSourceInfos that come out of _mediaSourceManager, we should clone it
-            // Should we move this directly into MediaSourceManager?
-            var json = JsonSerializer.SerializeToUtf8Bytes(obj);
-            return JsonSerializer.Deserialize<T>(json);
-        }
-
         private async Task<PlaybackInfoResponse> GetPlaybackInfo(Guid id, Guid userId, string[] supportedLiveMediaTypes, string mediaSourceId = null, string liveStreamId = null)
         {
             var user = _userManager.GetUserById(userId);
             var item = _libraryManager.GetItemById(id);
             var result = new PlaybackInfoResponse();
 
+            MediaSourceInfo[] mediaSources;
             if (string.IsNullOrWhiteSpace(liveStreamId))
             {
-                IEnumerable<MediaSourceInfo> mediaSources;
-                try
-                {
-                    // TODO handle supportedLiveMediaTypes ?
-                    mediaSources = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, false, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    mediaSources = new List<MediaSourceInfo>();
-                    Logger.LogError(ex, "Could not find media sources for item id {id}", id);
-                    // TODO PlaybackException ??
-                    //result.ErrorCode = ex.ErrorCode;
-                }
 
-                result.MediaSources = mediaSources.ToArray();
+                // TODO handle supportedLiveMediaTypes?
+                var mediaSourcesList = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, false, CancellationToken.None).ConfigureAwait(false);
 
-                if (!string.IsNullOrWhiteSpace(mediaSourceId))
+                if (string.IsNullOrWhiteSpace(mediaSourceId))
                 {
-                    result.MediaSources = result.MediaSources
+                    mediaSources = mediaSourcesList.ToArray();
+                }
+                else
+                {
+                    mediaSources = mediaSourcesList
                         .Where(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
                         .ToArray();
                 }
@@ -307,11 +292,13 @@ namespace MediaBrowser.Api.Playback
             {
                 var mediaSource = await _mediaSourceManager.GetLiveStream(liveStreamId, CancellationToken.None).ConfigureAwait(false);
 
-                result.MediaSources = new MediaSourceInfo[] { mediaSource };
+                mediaSources = new MediaSourceInfo[] { mediaSource };
             }
 
-            if (result.MediaSources.Count == 0)
+            if (mediaSources.Length == 0)
             {
+                result.MediaSources = Array.Empty<MediaSourceInfo>();
+
                 if (!result.ErrorCode.HasValue)
                 {
                     result.ErrorCode = PlaybackErrorCode.NoCompatibleStream;
@@ -319,7 +306,9 @@ namespace MediaBrowser.Api.Playback
             }
             else
             {
-                result.MediaSources = Clone(result.MediaSources);
+                // Since we're going to be setting properties on MediaSourceInfos that come out of _mediaSourceManager, we should clone it
+                // Should we move this directly into MediaSourceManager?
+                result.MediaSources = JsonSerializer.Deserialize<MediaSourceInfo[]>(JsonSerializer.SerializeToUtf8Bytes(mediaSources));
 
                 result.PlaySessionId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
             }
