@@ -14,7 +14,7 @@ assignees: ''
 <!-- Please paste any log message from during the playback issue. -->
 
 **FFmpeg Logs**
-<!-- please paste any FFmpeg logs if remuxing or transcoding appears to be part of the issue. -->
+<!-- Please paste any FFmpeg logs if remuxing or transcoding appears to be part of the issue. -->
 
 **Stats for Nerds Screenshots**
 <!-- If available, add screenshots of the stats for nerds screen to help show the issue problem. -->
