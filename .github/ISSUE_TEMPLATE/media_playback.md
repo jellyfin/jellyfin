@@ -11,7 +11,7 @@ assignees: ''
 <!-- Use the Media Info tool (set to text format, download here: https://mediaarea.net/en/MediaInfo) or copy the info from the web ui for the file with the playback issue. -->
 
 **Logs**
-<!-- Please paste any log message from during the playback issue.-->
+<!-- Please paste any log message from during the playback issue. -->
 
 **FFmpeg Logs**
 <!-- please paste any FFmpeg logs if remuxing or transcoding appears to be part of the issue. -->
@@ -32,4 +32,3 @@ assignees: ''
  - Client: [e.g. Web/Browser, webOS, Android, Android TV, Electron]
  - Browser (if Web client): [e.g. Firefox, Chrome, Safari]
  - Client and Browser Version: [e.g. 10.3.4 and 68.0]
-
