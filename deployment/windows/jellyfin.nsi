@@ -4,6 +4,8 @@
 SetCompressor bzip2
 ShowInstDetails show
 ShowUninstDetails show
+Unicode True
+
 ;--------------------------------
 !define SF_USELECTED  0 ; used to check selected options status, rest are inherited from Sections.nsh
 
