@@ -1,5 +1,5 @@
 !verbose 3
-SetCompressor bzip2 /SOLID
+SetCompressor /SOLID bzip2
 ShowInstDetails show
 ShowUninstDetails show
 Unicode True
