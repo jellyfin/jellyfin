@@ -56,8 +56,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "hevc_vaapi",
             "h264_v4l2m2m",
             "ac3",
-			"h264_amf",
-			"hevc_amf"
+            "h264_amf",
+            "hevc_amf"
         };
 
         // Try and use the individual library versions to determine a FFmpeg version
