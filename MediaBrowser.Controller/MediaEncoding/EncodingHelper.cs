@@ -2644,8 +2644,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                     else
                     {
-                        //h264_amf is now supported on linux with 'amdgpu-pro' installed and '--enable-amf' when compiling ffmpeg
-                        //using vaapi decode and h264_amf encode on linux platform can avoid some weird transcoding errors in h264_vaapi with amd gpu
                         return "-hwaccel vaapi";
                     }
                 }
