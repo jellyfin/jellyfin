@@ -1,7 +1,7 @@
 ; Shows a lot of debug information while compiling
 ; This can be removed once stable.
-!verbose 4
-SetCompressor lzma
+!verbose 2
+SetCompressor bzip2
 ShowInstDetails show
 ShowUninstDetails show
 ;--------------------------------
