@@ -1,6 +1,4 @@
-; Shows a lot of debug information while compiling
-; This can be removed once stable.
-!verbose 2
+!verbose 3
 SetCompressor bzip2 /SOLID
 ShowInstDetails show
 ShowUninstDetails show
