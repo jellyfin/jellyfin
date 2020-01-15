@@ -50,12 +50,12 @@ jobs:
         displayName: "Copy Web Client"
         condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')) ,eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
         inputs:
-          sourceFolder: $(Agent.TempDirectory)/jellyfin-web/dist # Optional
+          sourceFolder: $(Agent.TempDirectory)/jellyfin-web/dist
           contents: "**"
           targetFolder: $(Build.SourcesDirectory)/MediaBrowser.WebDashboard/jellyfin-web
-          cleanTargetFolder: true # Optional
-          overWrite: true # Optional
-          flattenFolders: false # Optional
+          cleanTargetFolder: true
+          overWrite: true
+          flattenFolders: false
 
       - task: UseDotNet@2
         displayName: "Update DotNet"

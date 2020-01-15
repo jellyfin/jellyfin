@@ -43,12 +43,12 @@ jobs:
         displayName: "Copy Web Client"
         condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
         inputs:
-          sourceFolder: $(Agent.TempDirectory)/jellyfin-web/dist # Optional
+          sourceFolder: $(Agent.TempDirectory)/jellyfin-web/dist
           contents: "**"
           targetFolder: $(Build.SourcesDirectory)/MediaBrowser.WebDashboard/jellyfin-web
-          cleanTargetFolder: true # Optional
-          overWrite: true # Optional
-          flattenFolders: false # Optional
+          cleanTargetFolder: true
+          overWrite: true
+          flattenFolders: false
 
       - task: CmdLine@2
         displayName: "Clone UX Repository"
@@ -58,21 +58,21 @@ jobs:
       - task: PowerShell@2
         displayName: "Build NSIS Installer"
         inputs:
-          targetType: "filePath" # Optional. Options: filePath, inline
-          filePath: ./deployment/windows/build-jellyfin.ps1 # Required when targetType == FilePath
+          targetType: "filePath"
+          filePath: ./deployment/windows/build-jellyfin.ps1
           arguments: -InstallFFMPEG -InstallNSSM -MakeNSIS -InstallTrayApp -UXLocation $(Agent.TempDirectory)\jellyfin-ux -InstallLocation $(build.artifactstagingdirectory)
-          errorActionPreference: "stop" # Optional. Options: stop, continue, silentlyContinue
-          workingDirectory: $(Build.SourcesDirectory) # Optional
+          errorActionPreference: "stop"
+          workingDirectory: $(Build.SourcesDirectory)
 
       - task: CopyFiles@2
         displayName: "Copy NSIS Installer"
         inputs:
-          sourceFolder: $(Build.SourcesDirectory)/deployment/windows/ # Optional
+          sourceFolder: $(Build.SourcesDirectory)/deployment/windows/
           contents: "jellyfin*.exe"
           targetFolder: $(System.ArtifactsDirectory)/setup
-          cleanTargetFolder: true # Optional
-          overWrite: true # Optional
-          flattenFolders: true # Optional
+          cleanTargetFolder: true
+          overWrite: true
+          flattenFolders: true
 
       - task: PublishPipelineArtifact@0
         displayName: "Publish Artifact Setup"

@@ -1,7 +1,7 @@
 parameters:
   - name: ImageNames
     type: object
-    default: 
+    default:
       Linux: "ubuntu-latest"
       Windows: "windows-latest"
       macOS: "macos-latest"
@@ -40,29 +40,26 @@ jobs:
         inputs:
           command: "test"
           projects: ${{ parameters.TestProjects }}
-          arguments: "--configuration Release --collect:\"XPlat Code Coverage\" --settings tests/coverletArgs.runsettings --verbosity minimal \"-p:GenerateDocumentationFile=False\""
+          arguments: '--configuration Release --collect:"XPlat Code Coverage" --settings tests/coverletArgs.runsettings --verbosity minimal "-p:GenerateDocumentationFile=False"'
           publishTestResults: true
           testRunTitle: $(Agent.JobName)
           workingDirectory: "$(Build.SourcesDirectory)"
-
 
       - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux')) # !! THIS is for V1 only V2 will/should support merging
         displayName: ReportGenerator (merge)
         inputs:
-          reports: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
-          targetdir: '$(Agent.TempDirectory)/merged/'
-          reporttypes: 'Cobertura'
+          reports: "$(Agent.TempDirectory)/**/coverage.cobertura.xml"
+          targetdir: "$(Agent.TempDirectory)/merged/"
+          reporttypes: "Cobertura"
 
       ## V2 is already in the repository but it does not work "wrong number of segments" YAML error.
       - task: PublishCodeCoverageResults@1
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux')) # !! THIS is for V1 only V2 will/should support merging
         displayName: Publish Code Coverage
         inputs:
-          codeCoverageTool: 'cobertura'
+          codeCoverageTool: "cobertura"
           #summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml' # !!THIS IS FOR V2
-          summaryFileLocation: '$(Agent.TempDirectory)/merged/**.xml'
-          pathToSources: $(Build.SourcesDirectory) # Optional
-          #reportDirectory: # Optional
-          #additionalCodeCoverageFiles: # Optional
-          failIfCoverageEmpty: true # Optional
+          summaryFileLocation: "$(Agent.TempDirectory)/merged/**.xml"
+          pathToSources: $(Build.SourcesDirectory)
+          failIfCoverageEmpty: true
