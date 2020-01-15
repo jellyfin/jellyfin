@@ -11,7 +11,7 @@ assignees: ''
 <!-- Use the Media Info tool (set to text format, download here: https://mediaarea.net/en/MediaInfo) or copy the info from the web ui for the file with the playback issue. -->
 
 **Logs**
-<!-- Please paste any log message from during the playback issue. -->
+<!-- Please paste any log messages from during the playback issue. -->
 
 **FFmpeg Logs**
 <!-- Please paste any FFmpeg logs if remuxing or transcoding appears to be part of the issue. -->
