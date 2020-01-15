@@ -8,13 +8,6 @@ namespace MediaBrowser.Model.Net
     /// </summary>
     public interface ISocketFactory
     {
-        /// <summary>
-        /// Creates a new unicast socket using the specified local port number.
-        /// </summary>
-        /// <param name="localPort">The local port to bind to.</param>
-        /// <returns>A <see cref="ISocket"/> implementation.</returns>
-        ISocket CreateUdpSocket(int localPort);
-
         ISocket CreateUdpBroadcastSocket(int localPort);
 
         /// <summary>
@@ -30,7 +23,5 @@ namespace MediaBrowser.Model.Net
         /// <param name="localPort">The local port to bind to.</param>
         /// <returns>A <see cref="ISocket"/> implementation.</returns>
         ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort);
-
-        Stream CreateNetworkStream(ISocket socket, bool ownsSocket);
     }
 }
