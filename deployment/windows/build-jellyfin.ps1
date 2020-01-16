@@ -15,6 +15,8 @@ param(
     [ValidateSet('x64','x86', 'arm', 'arm64')][string]$Architecture = 'x64'
 )
 
+$ProgressPreference = 'SilentlyContinue' # Speedup all downloads by hiding progress bars.
+
 #PowershellCore and *nix check to make determine which temp dir to use.
 if(($PSVersionTable.PSEdition -eq 'Core') -and (-not $IsWindows)){
     $TempDir = mktemp -d
