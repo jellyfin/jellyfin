@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Extensions
         /// Returns the string with the first character as uppercase.
         /// </summary>
         /// <param name="str">The input string.</param>
-        /// <returns>The string with the first character inheritdoc uppercase.</returns>
+        /// <returns>The string with the first character as uppercase.</returns>
         public static string FirstToUpper(string str)
         {
             if (string.IsNullOrEmpty(str))
