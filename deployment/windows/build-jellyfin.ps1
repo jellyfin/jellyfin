@@ -44,8 +44,8 @@ function Build-JellyFin {
 function Install-FFMPEG {
     param(
         [string]$ResolvedInstallLocation,
-		[string]$Architecture,
-		[string]$FFMPEGVersionX86 = "ffmpeg-4.2.1-win32-shared"
+        [string]$Architecture,
+        [string]$FFMPEGVersionX86 = "ffmpeg-4.2.1-win32-shared"
     )
     Write-Verbose "Checking Architecture"
     if($Architecture -notin @('x86','x64')){
