@@ -46,7 +46,8 @@ function Build-JellyFin {
 function Install-FFMPEG {
     param(
         [string]$ResolvedInstallLocation,
-        [string]$Architecture
+        [string]$Architecture,
+        [string]$FFMPEGVersionX86 = "ffmpeg-4.2.1-win32-shared"
     )
     Write-Verbose "Checking Architecture"
     if($Architecture -notin @('x86','x64')){
@@ -57,7 +58,7 @@ function Install-FFMPEG {
          Invoke-WebRequest -Uri https://repo.jellyfin.org/releases/server/windows/ffmpeg/jellyfin-ffmpeg.zip -UseBasicParsing -OutFile "$tempdir/ffmpeg.zip" | Write-Verbose
     }else{
          Write-Verbose "Downloading 32 bit FFMPEG"
-         Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win32/shared/ffmpeg-4.0.2-win32-shared.zip -UseBasicParsing -OutFile "$tempdir/ffmpeg.zip" | Write-Verbose
+         Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win32/shared/$FFMPEGVersionX86.zip -UseBasicParsing -OutFile "$tempdir/ffmpeg.zip" | Write-Verbose
     }
 
     Expand-Archive "$tempdir/ffmpeg.zip" -DestinationPath "$tempdir/ffmpeg/" -Force | Write-Verbose
@@ -68,7 +69,7 @@ function Install-FFMPEG {
         }
     }else{
         Write-Verbose "Copying Binaries to Jellyfin location"
-        Get-ChildItem "$tempdir/ffmpeg/ffmpeg-4.0.2-win32-shared/bin" | ForEach-Object {
+        Get-ChildItem "$tempdir/ffmpeg/$FFMPEGVersionX86/bin" | ForEach-Object {
             Copy-Item $_.FullName -Destination $installLocation | Write-Verbose
         }
     }
