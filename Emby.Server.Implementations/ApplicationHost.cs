@@ -808,7 +808,18 @@ namespace Emby.Server.Implementations
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, ProviderManager);
             serviceCollection.AddSingleton(ChannelManager);
 
-            SessionManager = new SessionManager(UserDataManager, LoggerFactory, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, this, AuthenticationRepository, DeviceManager, MediaSourceManager);
+            SessionManager = new SessionManager(
+                LoggerFactory.CreateLogger<SessionManager>(),
+                UserDataManager,
+                LibraryManager,
+                UserManager,
+                musicManager,
+                DtoService,
+                ImageProcessor,
+                this,
+                AuthenticationRepository,
+                DeviceManager,
+                MediaSourceManager);
             serviceCollection.AddSingleton(SessionManager);
 
             serviceCollection.AddSingleton<IDlnaManager>(
