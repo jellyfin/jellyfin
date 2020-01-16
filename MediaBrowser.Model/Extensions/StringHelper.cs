@@ -6,7 +6,7 @@ namespace MediaBrowser.Model.Extensions
     public static class StringHelper
     {
         /// <summary>
-        /// Returns the string with the first character inheritdoc uppercase.
+        /// Returns the string with the first character as uppercase.
         /// </summary>
         /// <param name="str">The input string.</param>
         /// <returns>The string with the first character inheritdoc uppercase.</returns>
