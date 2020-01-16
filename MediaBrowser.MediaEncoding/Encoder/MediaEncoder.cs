@@ -879,7 +879,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (titleNumber.HasValue)
             {
-                var prefix = string.Format("VTS_0{0}_", titleNumber.Value.ToString(CultureInfo.InvariantCulture));
+                var prefix = string.Format(
+                    CultureInfo.InvariantCulture,
+                    titleNumber.Value >= 10 ? "VTS_{0}_" : "VTS_0{0}_",
+                    titleNumber.Value);
                 var vobs = allVobs.Where(i => i.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList();
 
                 if (vobs.Count > 0)
@@ -891,7 +894,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     return minSizeVobs.Count == 0 ? vobs.Select(i => i.FullName) : minSizeVobs.Select(i => i.FullName);
                 }
 
-                _logger.LogWarning("Could not determine vob file list for {0} using DvdLib. Will scan using file sizes.", video.Path);
+                _logger.LogWarning("Could not determine vob file list for {0} using DvdLib. Will scan using file sizes.", path);
             }
 
             var files = allVobs
