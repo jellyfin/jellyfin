@@ -63,7 +63,8 @@ namespace Emby.Dlna.Service
                     ValidationType = ValidationType.None,
                     CheckCharacters = false,
                     IgnoreProcessingInstructions = true,
-                    IgnoreComments = true
+                    IgnoreComments = true,
+                    Async = true
                 };
 
                 using (var reader = XmlReader.Create(streamReader, readerSettings))
@@ -79,7 +80,8 @@ namespace Emby.Dlna.Service
             var settings = new XmlWriterSettings
             {
                 Encoding = Encoding.UTF8,
-                CloseOutput = false
+                CloseOutput = false,
+                Async = true
             };
 
             StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8);
