@@ -24,10 +24,11 @@ RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" 
 
 
 FROM multiarch/qemu-user-static:x86_64-arm as qemu
-FROM debian:stretch-slim-arm32v7
+FROM debian:stretch-slim
 COPY --from=qemu /usr/bin/qemu-arm-static /usr/bin
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg \
+ libssl-dev \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media
