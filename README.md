@@ -3,6 +3,8 @@
 
 ---
 
+this is a test about branch deletion on github
+
 <p align="center">
 <img alt="Logo Banner" src="https://raw.githubusercontent.com/jellyfin/jellyfin-ux/master/branding/SVG/banner-logo-solid.svg?sanitize=true"/>
 <br/>
