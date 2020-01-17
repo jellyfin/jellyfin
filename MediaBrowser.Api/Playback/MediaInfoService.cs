@@ -275,7 +275,7 @@ namespace MediaBrowser.Api.Playback
             {
 
                 // TODO handle supportedLiveMediaTypes?
-                var mediaSourcesList = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, false, CancellationToken.None).ConfigureAwait(false);
+                var mediaSourcesList = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, true, CancellationToken.None).ConfigureAwait(false);
 
                 if (string.IsNullOrWhiteSpace(mediaSourceId))
                 {
