@@ -94,9 +94,10 @@ namespace Emby.Naming.Video
             {
                 var cleanDateTimeResult = CleanDateTime(name);
 
-                if (extraResult.ExtraType == null)
+                if (extraResult.ExtraType == null
+                    && TryCleanString(cleanDateTimeResult.Name, out ReadOnlySpan<char> newName))
                 {
-                    name = CleanString(cleanDateTimeResult.Name).Name;
+                    name = newName.ToString();
                 }
 
                 year = cleanDateTimeResult.Year;
@@ -130,14 +131,14 @@ namespace Emby.Naming.Video
             return _options.StubFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         }
 
-        public CleanStringResult CleanString(string name)
+        public bool TryCleanString(string name, out ReadOnlySpan<char> newName)
         {
-            return new CleanStringParser().Clean(name, _options.CleanStringRegexes);
+            return CleanStringParser.TryClean(name, _options.CleanStringRegexes, out newName);
         }
 
         public CleanDateTimeResult CleanDateTime(string name)
         {
-            return new CleanDateTimeParser(_options).Clean(name);
+            return CleanDateTimeParser.Clean(name, _options.CleanDateTimeRegexes);
         }
     }
 }
