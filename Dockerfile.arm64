@@ -21,7 +21,7 @@ RUN find . -type d -name obj | xargs -r rm -r
 RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-arm64 "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
 
 
-FROM debian:stretch-slim
+FROM debian:buster-slim
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg \
  libssl-dev \
