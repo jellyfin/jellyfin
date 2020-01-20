@@ -63,7 +63,8 @@ namespace Emby.Dlna.Service
                     ValidationType = ValidationType.None,
                     CheckCharacters = false,
                     IgnoreProcessingInstructions = true,
-                    IgnoreComments = true
+                    IgnoreComments = true,
+                    Async = true
                 };
 
                 using (var reader = XmlReader.Create(streamReader, readerSettings))
@@ -79,31 +80,32 @@ namespace Emby.Dlna.Service
             var settings = new XmlWriterSettings
             {
                 Encoding = Encoding.UTF8,
-                CloseOutput = false
+                CloseOutput = false,
+                Async = true
             };
 
             StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8);
 
             using (var writer = XmlWriter.Create(builder, settings))
             {
-                writer.WriteStartDocument(true);
+                writer.WriteStartDocumentAsync(true);
 
-                writer.WriteStartElement("SOAP-ENV", "Envelope", NS_SOAPENV);
-                writer.WriteAttributeString(string.Empty, "encodingStyle", NS_SOAPENV, "http://schemas.xmlsoap.org/soap/encoding/");
+                writer.WriteStartElementAsync("SOAP-ENV", "Envelope", NS_SOAPENV);
+                writer.WriteAttributeStringAsync(string.Empty, "encodingStyle", NS_SOAPENV, "http://schemas.xmlsoap.org/soap/encoding/");
 
-                writer.WriteStartElement("SOAP-ENV", "Body", NS_SOAPENV);
-                writer.WriteStartElement("u", requestInfo.LocalName + "Response", requestInfo.NamespaceURI);
+                writer.WriteStartElementAsync("SOAP-ENV", "Body", NS_SOAPENV);
+                writer.WriteStartElementAsync("u", requestInfo.LocalName + "Response", requestInfo.NamespaceURI);
                 foreach (var i in result)
                 {
-                    writer.WriteStartElement(i.Key);
-                    writer.WriteString(i.Value);
-                    writer.WriteFullEndElement();
+                    writer.WriteStartElementAsync("", i.Key, requestInfo.NamespaceURI);
+                    writer.WriteStringAsync(i.Value);
+                    writer.WriteFullEndElementAsync();
                 }
-                writer.WriteFullEndElement();
-                writer.WriteFullEndElement();
+                writer.WriteFullEndElementAsync();
+                writer.WriteFullEndElementAsync();
 
-                writer.WriteFullEndElement();
-                writer.WriteEndDocument();
+                writer.WriteFullEndElementAsync();
+                writer.WriteEndDocumentAsync();
             }
 
             var xml = builder.ToString().Replace("xmlns:m=", "xmlns:u=");
@@ -114,7 +116,7 @@ namespace Emby.Dlna.Service
                 IsSuccessful = true
             };
 
-            //logger.LogDebug(xml);
+            //_logger.LogDebug(xml);
 
             controlResponse.Headers.Add("EXT", string.Empty);
 
@@ -123,9 +125,8 @@ namespace Emby.Dlna.Service
 
         private ControlRequestInfo ParseRequest(XmlReader reader)
         {
-            reader.MoveToContent();
-            reader.Read();
-
+            reader.MoveToContentAsync();
+            reader.ReadAsync();
             // Loop through each element
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
@@ -144,20 +145,20 @@ namespace Emby.Dlna.Service
                                 }
                                 else
                                 {
-                                    reader.Read();
+                                    reader.ReadAsync();
                                 }
                                 break;
                             }
                         default:
                             {
-                                reader.Skip();
+                                reader.SkipAsync();
                                 break;
                             }
                     }
                 }
                 else
                 {
-                    reader.Read();
+                    reader.ReadAsync();
                 }
             }
 
@@ -168,8 +169,8 @@ namespace Emby.Dlna.Service
         {
             var result = new ControlRequestInfo();
 
-            reader.MoveToContent();
-            reader.Read();
+            reader.MoveToContentAsync();
+            reader.ReadAsync();
 
             // Loop through each element
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
@@ -189,12 +190,12 @@ namespace Emby.Dlna.Service
                     }
                     else
                     {
-                        reader.Read();
+                        reader.ReadAsync();
                     }
                 }
                 else
                 {
-                    reader.Read();
+                    reader.ReadAsync();
                 }
             }
 
@@ -203,8 +204,8 @@ namespace Emby.Dlna.Service
 
         private void ParseFirstBodyChild(XmlReader reader, IDictionary<string, string> headers)
         {
-            reader.MoveToContent();
-            reader.Read();
+            reader.MoveToContentAsync();
+            reader.ReadAsync();
 
             // Loop through each element
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
@@ -216,7 +217,7 @@ namespace Emby.Dlna.Service
                 }
                 else
                 {
-                    reader.Read();
+                    reader.ReadAsync();
                 }
             }
         }
