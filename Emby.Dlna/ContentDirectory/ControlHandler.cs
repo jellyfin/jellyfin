@@ -771,11 +771,11 @@ namespace Emby.Dlna.ContentDirectory
                 })
                 .ToArray();
 
-            return new QueryResult<ServerItem>
+            return ApplyPaging(new QueryResult<ServerItem>
             {
                 Items = folders,
                 TotalRecordCount = folders.Length
-            };
+            }, startIndex, limit);
         }
 
         private QueryResult<ServerItem> GetTvFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
