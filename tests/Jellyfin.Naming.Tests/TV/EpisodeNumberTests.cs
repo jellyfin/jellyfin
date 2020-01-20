@@ -79,18 +79,6 @@ namespace Jellyfin.Naming.Tests.TV
         }
 
         [Fact]
-        public void TestEpisodeNumber55()
-        {
-            Assert.NotEqual(16, GetEpisodeNumberFromFile(@"Season 2/Season 3 Episode 16.avi"));
-        }
-
-        [Fact]
-        public void TestEpisodeNumber56()
-        {
-            Assert.NotEqual(16, GetEpisodeNumberFromFile(@"Season 2/Season 3 Episode 16 - Some Title.avi"));
-        }
-
-        [Fact]
         public void TestEpisodeNumber57()
         {
             Assert.Equal(16, GetEpisodeNumberFromFile(@"Season 2/16 Some Title.avi"));
