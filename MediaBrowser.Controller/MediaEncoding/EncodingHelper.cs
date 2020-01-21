@@ -2757,7 +2757,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (!state.RunTimeTicks.HasValue)
                 {
-                    args += " -flags -global_header -fflags +genpts";
+                    args += " -fflags +genpts";
                 }
             }
             else
@@ -2801,11 +2801,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (!string.IsNullOrEmpty(qualityParam))
                 {
                     args += " " + qualityParam.Trim();
-                }
-
-                if (!state.RunTimeTicks.HasValue)
-                {
-                    args += " -flags -global_header";
                 }
             }
 
