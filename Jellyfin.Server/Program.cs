@@ -169,7 +169,7 @@ namespace Jellyfin.Server
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new NullImageEncoder(),
+                GetImageEncoder(appPaths),
                 new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
                 appConfig);
             try
@@ -192,8 +192,6 @@ namespace Jellyfin.Server
                     _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in system.xml and try again.");
                     throw;
                 }
-
-                appHost.ImageProcessor.ImageEncoder = GetImageEncoder(appPaths, appHost.LocalizationManager);
 
                 await appHost.RunStartupTasksAsync().ConfigureAwait(false);
 
@@ -494,9 +492,7 @@ namespace Jellyfin.Server
             }
         }
 
-        private static IImageEncoder GetImageEncoder(
-            IApplicationPaths appPaths,
-            ILocalizationManager localizationManager)
+        private static IImageEncoder GetImageEncoder(IApplicationPaths appPaths)
         {
             try
             {
@@ -505,8 +501,7 @@ namespace Jellyfin.Server
 
                 return new SkiaEncoder(
                     _loggerFactory.CreateLogger<SkiaEncoder>(),
-                    appPaths,
-                    localizationManager);
+                    appPaths);
             }
             catch (Exception ex)
             {
