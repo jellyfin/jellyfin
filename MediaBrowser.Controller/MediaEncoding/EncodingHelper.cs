@@ -2750,8 +2750,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 args += " -mpegts_m2ts_mode 1";
             }
 
-            var supportsGlobalHeaderFlag = state.OutputContainer != "mkv";
-
             if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
                 if (state.VideoStream != null
@@ -2772,11 +2770,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (!state.RunTimeTicks.HasValue)
                 {
-                    if(supportsGlobalHeaderFlag)
-                    {
-                        args += " -flags -global_header";
-                    }
-
                     args += " -fflags +genpts";
                 }
             }
@@ -2821,11 +2814,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (!string.IsNullOrEmpty(qualityParam))
                 {
                     args += " " + qualityParam.Trim();
-                }
-
-                if (supportsGlobalHeaderFlag && !state.RunTimeTicks.HasValue)
-                {
-                    args += " -flags -global_header";
                 }
             }
 
