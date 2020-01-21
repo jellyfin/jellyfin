@@ -10,17 +10,26 @@ namespace Jellyfin.Naming.Tests.Music
         public void TestMultiDiscAlbums()
         {
             Assert.False(IsMultiDiscAlbumFolder(@"blah blah"));
-            Assert.False(IsMultiDiscAlbumFolder(@"d:/music\weezer/03 Pinkerton"));
-            Assert.False(IsMultiDiscAlbumFolder(@"d:/music/michael jackson/Bad (2012 Remaster)"));
+            Assert.False(IsMultiDiscAlbumFolder(@"D:/music/weezer/03 Pinkerton"));
+            Assert.False(IsMultiDiscAlbumFolder(@"D:/music/michael jackson/Bad (2012 Remaster)"));
 
             Assert.True(IsMultiDiscAlbumFolder(@"cd1"));
-            Assert.True(IsMultiDiscAlbumFolder(@"disc1"));
-            Assert.True(IsMultiDiscAlbumFolder(@"disk1"));
+            Assert.True(IsMultiDiscAlbumFolder(@"disc18"));
+            Assert.True(IsMultiDiscAlbumFolder(@"disk10"));
+            Assert.True(IsMultiDiscAlbumFolder(@"vol7"));
+            Assert.True(IsMultiDiscAlbumFolder(@"volume1"));
 
-            // Add a space
             Assert.True(IsMultiDiscAlbumFolder(@"cd 1"));
             Assert.True(IsMultiDiscAlbumFolder(@"disc 1"));
             Assert.True(IsMultiDiscAlbumFolder(@"disk 1"));
+
+            Assert.False(IsMultiDiscAlbumFolder(@"disk"));
+            Assert.False(IsMultiDiscAlbumFolder(@"disk ·"));
+            Assert.False(IsMultiDiscAlbumFolder(@"disk a"));
+
+            Assert.False(IsMultiDiscAlbumFolder(@"disk volume"));
+            Assert.False(IsMultiDiscAlbumFolder(@"disc disc"));
+            Assert.False(IsMultiDiscAlbumFolder(@"disk disc 6"));
 
             Assert.True(IsMultiDiscAlbumFolder(@"cd  - 1"));
             Assert.True(IsMultiDiscAlbumFolder(@"disc- 1"));
@@ -38,7 +47,7 @@ namespace Jellyfin.Naming.Tests.Music
         [Fact]
         public void TestMultiDiscAlbums1()
         {
-            Assert.False(IsMultiDiscAlbumFolder(@"[1985] Oppurtunities (Let's make lots of money) (1985)"));
+            Assert.False(IsMultiDiscAlbumFolder(@"[1985] Opportunities (Let's make lots of money) (1985)"));
         }
 
         [Fact]

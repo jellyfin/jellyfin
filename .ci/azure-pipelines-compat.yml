@@ -13,7 +13,7 @@ jobs:
   - job: CompatibilityCheck
     displayName: Compatibility Check
     pool:
-      vmImage: "${{ parameters.LinuxImage}}"
+      vmImage: "${{ parameters.LinuxImage }}"
     # only execute for pull requests
     condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber'])
     strategy:
