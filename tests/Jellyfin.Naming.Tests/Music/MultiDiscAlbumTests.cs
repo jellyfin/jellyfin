@@ -60,7 +60,7 @@ namespace Jellyfin.Naming.Tests.Music
         {
             var parser = new AlbumParser(new NamingOptions());
 
-            return parser.ParseMultiPart(path).IsMultiPart;
+            return parser.IsMultiPart(path);
         }
     }
 }

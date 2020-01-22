@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 #pragma warning disable SA1600
+#nullable enable
 
 using System;
 using System.IO;
@@ -22,7 +23,7 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>VideoFileInfo.</returns>
-        public VideoFileInfo ResolveDirectory(string path)
+        public VideoFileInfo? ResolveDirectory(string path)
         {
             return Resolve(path, true);
         }
@@ -32,7 +33,7 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>VideoFileInfo.</returns>
-        public VideoFileInfo ResolveFile(string path)
+        public VideoFileInfo? ResolveFile(string path)
         {
             return Resolve(path, false);
         }
@@ -42,10 +43,10 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="isDirectory">if set to <c>true</c> [is folder].</param>
-        /// <param name="parseName">Whether or not the name should be parsed for info</param>
+        /// <param name="parseName">Whether or not the name should be parsed for info.</param>
         /// <returns>VideoFileInfo.</returns>
         /// <exception cref="ArgumentNullException"><c>path</c> is <c>null</c>.</exception>
-        public VideoFileInfo Resolve(string path, bool isDirectory, bool parseName = true)
+        public VideoFileInfo? Resolve(string path, bool isDirectory, bool parseName = true)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -53,8 +54,8 @@ namespace Emby.Naming.Video
             }
 
             bool isStub = false;
-            string container = null;
-            string stubType = null;
+            string? container = null;
+            string? stubType = null;
 
             if (!isDirectory)
             {
@@ -63,17 +64,13 @@ namespace Emby.Naming.Video
                 // Check supported extensions
                 if (!_options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
-                    var stubResult = StubResolver.ResolveFile(path, _options);
-
-                    isStub = stubResult.IsStub;
-
                     // It's not supported. Check stub extensions
-                    if (!isStub)
+                    if (!StubResolver.TryResolveFile(path, _options, out stubType))
                     {
                         return null;
                     }
 
-                    stubType = stubResult.StubType;
+                    isStub = true;
                 }
 
                 container = extension.TrimStart('.');

@@ -1,4 +1,5 @@
-﻿using Emby.Naming.Common;
+﻿using System.Linq;
+using Emby.Naming.Common;
 using Emby.Naming.Video;
 using MediaBrowser.Model.IO;
 using Xunit;
@@ -21,10 +22,10 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Single(result.Stacks);
-            TestStackInfo(result.Stacks[0], "Bad Boys (2006)", 4);
+            Assert.Single(result);
+            TestStackInfo(result[0], "Bad Boys (2006)", 4);
         }
 
         [Fact]
@@ -38,9 +39,9 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Empty(result.Stacks);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -54,9 +55,9 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Empty(result.Stacks);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -70,9 +71,9 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Empty(result.Stacks);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -86,9 +87,9 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Empty(result.Stacks);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -102,9 +103,8 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
-
-            Assert.Empty(result.Stacks);
+            var result = resolver.ResolveFiles(files).ToList();
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -119,9 +119,9 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Empty(result.Stacks);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -135,10 +135,10 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Single(result.Stacks);
-            TestStackInfo(result.Stacks[0], "300 2006", 2);
+            Assert.Single(result);
+            TestStackInfo(result[0], "300 2006", 2);
         }
 
         [Fact]
@@ -155,10 +155,10 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Single(result.Stacks);
-            TestStackInfo(result.Stacks[0], "Bad Boys (2006).stv.unrated.multi.1080p.bluray.x264-rough", 4);
+            Assert.Single(result);
+            TestStackInfo(result[0], "Bad Boys (2006).stv.unrated.multi.1080p.bluray.x264-rough", 4);
         }
 
         [Fact]
@@ -175,9 +175,9 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Empty(result.Stacks);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -194,10 +194,10 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Single(result.Stacks);
-            TestStackInfo(result.Stacks[0], "300 (2006)", 4);
+            Assert.Single(result);
+            TestStackInfo(result[0], "300 (2006)", 4);
         }
 
         [Fact]
@@ -214,10 +214,10 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Single(result.Stacks);
-            TestStackInfo(result.Stacks[0], "Bad Boys (2006)", 3);
+            Assert.Single(result);
+            TestStackInfo(result[0], "Bad Boys (2006)", 3);
         }
 
         [Fact]
@@ -238,11 +238,11 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Equal(2, result.Stacks.Count);
-            TestStackInfo(result.Stacks[1], "Bad Boys (2006)", 4);
-            TestStackInfo(result.Stacks[0], "300 (2006)", 3);
+            Assert.Equal(2, result.Count);
+            TestStackInfo(result[1], "Bad Boys (2006)", 4);
+            TestStackInfo(result[0], "300 (2006)", 3);
         }
 
         [Fact]
@@ -256,10 +256,10 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveDirectories(files);
+            var result = resolver.ResolveDirectories(files).ToList();
 
-            Assert.Single(result.Stacks);
-            TestStackInfo(result.Stacks[0], "blah blah", 2);
+            Assert.Single(result);
+            TestStackInfo(result[0], "blah blah", 2);
         }
 
         [Fact]
@@ -275,11 +275,11 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Single(result.Stacks);
+            Assert.Single(result);
 
-            TestStackInfo(result.Stacks[0], "300", 3);
+            TestStackInfo(result[0], "300", 3);
         }
 
         [Fact]
@@ -297,12 +297,12 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Equal(2, result.Stacks.Count);
+            Assert.Equal(2, result.Count);
 
-            TestStackInfo(result.Stacks[0], "300", 2);
-            TestStackInfo(result.Stacks[1], "Avengers", 3);
+            TestStackInfo(result[0], "300", 2);
+            TestStackInfo(result[1], "Avengers", 3);
         }
 
         [Fact]
@@ -328,13 +328,13 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Equal(3, result.Stacks.Count);
+            Assert.Equal(3, result.Count);
 
-            TestStackInfo(result.Stacks[0], "300 (2006)", 4);
-            TestStackInfo(result.Stacks[1], "300", 3);
-            TestStackInfo(result.Stacks[2], "Bad Boys (2006)", 4);
+            TestStackInfo(result[0], "300 (2006)", 4);
+            TestStackInfo(result[1], "300", 3);
+            TestStackInfo(result[2], "Bad Boys (2006)", 4);
         }
 
         [Fact]
@@ -354,11 +354,11 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Single(result.Stacks);
+            Assert.Single(result);
 
-            TestStackInfo(result.Stacks[0], "300 (2006)", 4);
+            TestStackInfo(result[0], "300 (2006)", 4);
         }
 
         [Fact]
@@ -375,11 +375,11 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.Resolve(files);
+            var result = resolver.Resolve(files).ToList();
 
-            Assert.Equal(2, result.Stacks.Count);
-            TestStackInfo(result.Stacks[0], "300 (2006)", 3);
-            TestStackInfo(result.Stacks[1], "Bad Boys (2006)", 2);
+            Assert.Equal(2, result.Count);
+            TestStackInfo(result[0], "300 (2006)", 3);
+            TestStackInfo(result[1], "Bad Boys (2006)", 2);
         }
 
         [Fact]
@@ -397,9 +397,9 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Empty(result.Stacks);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -414,10 +414,10 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveFiles(files);
+            var result = resolver.ResolveFiles(files).ToList();
 
-            Assert.Single(result.Stacks);
-            Assert.Equal(2, result.Stacks[0].Files.Count);
+            Assert.Single(result);
+            Assert.Equal(2, result[0].Files.Count);
         }
 
         [Fact]
@@ -432,10 +432,10 @@ namespace Jellyfin.Naming.Tests.Video
 
             var resolver = GetResolver();
 
-            var result = resolver.ResolveDirectories(files);
+            var result = resolver.ResolveDirectories(files).ToList();
 
-            Assert.Single(result.Stacks);
-            Assert.Equal(2, result.Stacks[0].Files.Count);
+            Assert.Single(result);
+            Assert.Equal(2, result[0].Files.Count);
         }
 
         private void TestStackInfo(FileStack stack, string name, int fileCount)

@@ -11,46 +11,6 @@ namespace Emby.Naming.Common
 {
     public class NamingOptions
     {
-        public string[] AudioFileExtensions { get; set; }
-
-        public string[] AlbumStackingPrefixes { get; set; }
-
-        public string[] SubtitleFileExtensions { get; set; }
-
-        public char[] SubtitleFlagDelimiters { get; set; }
-
-        public string[] SubtitleForcedFlags { get; set; }
-
-        public string[] SubtitleDefaultFlags { get; set; }
-
-        public EpisodeExpression[] EpisodeExpressions { get; set; }
-
-        public string[] EpisodeWithoutSeasonExpressions { get; set; }
-
-        public string[] EpisodeMultiPartExpressions { get; set; }
-
-        public string[] VideoFileExtensions { get; set; }
-
-        public string[] StubFileExtensions { get; set; }
-
-        public string[] AudioBookPartsExpressions { get; set; }
-
-        public StubTypeRule[] StubTypes { get; set; }
-
-        public char[] VideoFlagDelimiters { get; set; }
-
-        public Format3DRule[] Format3DRules { get; set; }
-
-        public string[] VideoFileStackingExpressions { get; set; }
-
-        public string[] CleanDateTimes { get; set; }
-
-        public string[] CleanStrings { get; set; }
-
-        public EpisodeExpression[] MultipleEpisodeExpressions { get; set; }
-
-        public ExtraRule[] VideoExtraRules { get; set; }
-
         public NamingOptions()
         {
             VideoFileExtensions = new[]
@@ -681,11 +641,54 @@ namespace Emby.Naming.Common
             Compile();
         }
 
+        public string[] AudioFileExtensions { get; set; }
+
+        public string[] AlbumStackingPrefixes { get; set; }
+
+        public string[] SubtitleFileExtensions { get; set; }
+
+        public char[] SubtitleFlagDelimiters { get; set; }
+
+        public string[] SubtitleForcedFlags { get; set; }
+
+        public string[] SubtitleDefaultFlags { get; set; }
+
+        public EpisodeExpression[] EpisodeExpressions { get; set; }
+
+        public string[] EpisodeWithoutSeasonExpressions { get; set; }
+
+        public string[] EpisodeMultiPartExpressions { get; set; }
+
+        public string[] VideoFileExtensions { get; set; }
+
+        public string[] StubFileExtensions { get; set; }
+
+        public string[] AudioBookPartsExpressions { get; set; }
+
+        public StubTypeRule[] StubTypes { get; set; }
+
+        public char[] VideoFlagDelimiters { get; set; }
+
+        public Format3DRule[] Format3DRules { get; set; }
+
+        public string[] VideoFileStackingExpressions { get; set; }
+
+        public string[] CleanDateTimes { get; set; }
+
+        public string[] CleanStrings { get; set; }
+
+        public EpisodeExpression[] MultipleEpisodeExpressions { get; set; }
+
+        public ExtraRule[] VideoExtraRules { get; set; }
+
         public Regex[] VideoFileStackingRegexes { get; private set; }
+
         public Regex[] CleanDateTimeRegexes { get; private set; }
+
         public Regex[] CleanStringRegexes { get; private set; }
 
         public Regex[] EpisodeWithoutSeasonRegexes { get; private set; }
+
         public Regex[] EpisodeMultiPartRegexes { get; private set; }
 
         public void Compile()
