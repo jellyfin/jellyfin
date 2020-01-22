@@ -228,7 +228,7 @@ namespace Emby.Dlna.Service
                 return;
             }
 
-            Logger.LogDebug("Control request. Headers: {@Header}", request.Headers);
+            Logger.LogDebug("Control request. Headers: {@Headers}", request.Headers);
         }
 
         private void LogResponse(ControlResponse response)
