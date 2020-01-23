@@ -537,7 +537,7 @@ namespace MediaBrowser.Api.Playback.Hls
             return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {
                 Path = segmentPath,
-                FileShare = FileShareMode.ReadWrite,
+                FileShare = FileShare.ReadWrite,
                 OnComplete = () =>
                 {
                     Logger.LogDebug("finished serving {0}", segmentPath);
@@ -954,12 +954,12 @@ namespace MediaBrowser.Api.Playback.Hls
                 // Unable to force key frames to h264_qsv transcode
                 if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger.LogInformation("Bug Workaround: Disabling force_key_frames for h264_qsv"); 
-                } 
+                    Logger.LogInformation("Bug Workaround: Disabling force_key_frames for h264_qsv");
+                }
                 else
                 {
                     args += " " + keyFrameArg;
-                } 
+                }
 
                 //args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 

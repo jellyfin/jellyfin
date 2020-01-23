@@ -21,8 +21,6 @@ namespace MediaBrowser.Api.Playback.Progressive
         private readonly CancellationToken _cancellationToken;
         private readonly Dictionary<string, string> _outputHeaders;
 
-        const int StreamCopyToBufferSize = 81920;
-
         private long _bytesWritten = 0;
         public long StartPosition { get; set; }
         public bool AllowEndOfFile = true;
@@ -52,14 +50,14 @@ namespace MediaBrowser.Api.Playback.Progressive
 
         private Stream GetInputStream(bool allowAsyncFileRead)
         {
-            var fileOpenOptions = FileOpenOptions.SequentialScan;
+            var fileOptions = FileOptions.SequentialScan;
 
             if (allowAsyncFileRead)
             {
-                fileOpenOptions |= FileOpenOptions.Asynchronous;
+                fileOptions |= FileOptions.Asynchronous;
             }
 
-            return _fileSystem.GetFileStream(_path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, fileOpenOptions);
+            return new FileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, fileOptions);
         }
 
         public async Task WriteToAsync(Stream outputStream, CancellationToken cancellationToken)
@@ -127,7 +125,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
         private async Task<int> CopyToInternalAsyncWithSyncRead(Stream source, Stream destination, CancellationToken cancellationToken)
         {
-            var array = new byte[StreamCopyToBufferSize];
+            var array = new byte[IODefaults.CopyToBufferSize];
             int bytesRead;
             int totalBytesRead = 0;
 
@@ -154,7 +152,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
         private async Task<int> CopyToInternalAsync(Stream source, Stream destination, CancellationToken cancellationToken)
         {
-            var array = new byte[StreamCopyToBufferSize];
+            var array = new byte[IODefaults.CopyToBufferSize];
             int bytesRead;
             int totalBytesRead = 0;
 

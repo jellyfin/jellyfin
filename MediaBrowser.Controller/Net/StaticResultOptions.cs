@@ -24,12 +24,12 @@ namespace MediaBrowser.Controller.Net
         public string Path { get; set; }
         public long? ContentLength { get; set; }
 
-        public FileShareMode FileShare { get; set; }
+        public FileShare FileShare { get; set; }
 
         public StaticResultOptions()
         {
             ResponseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            FileShare = FileShareMode.Read;
+            FileShare = FileShare.Read;
         }
     }
 
