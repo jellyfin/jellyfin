@@ -46,7 +46,6 @@ namespace Emby.Dlna.ContentDirectory
         private const string NS_UPNP = "urn:schemas-upnp-org:metadata-1-0/upnp/";
 
         private readonly int _systemUpdateId;
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly DidlBuilder _didlBuilder;
 
@@ -157,7 +156,7 @@ namespace Emby.Dlna.ContentDirectory
 
             var item = serverItem.Item;
 
-            var newbookmark = int.Parse(sparams["PosSecond"], _usCulture);
+            var newbookmark = int.Parse(sparams["PosSecond"], CultureInfo.InvariantCulture);
 
             var userdata = _userDataManager.GetUserData(_user, item);
 
@@ -317,9 +316,9 @@ namespace Emby.Dlna.ContentDirectory
             xmlWriter.WriteFullEndElement();
             xmlWriter.WriteFullEndElement();
 
-            xmlWriter.WriteElementString("NumberReturned", provided.ToString(_usCulture));
-            xmlWriter.WriteElementString("TotalMatches", totalCount.ToString(_usCulture));
-            xmlWriter.WriteElementString("UpdateID", _systemUpdateId.ToString(_usCulture));
+            xmlWriter.WriteElementString("NumberReturned", provided.ToString(CultureInfo.InvariantCulture));
+            xmlWriter.WriteElementString("TotalMatches", totalCount.ToString(CultureInfo.InvariantCulture));
+            xmlWriter.WriteElementString("UpdateID", _systemUpdateId.ToString(CultureInfo.InvariantCulture));
         }
 
         private void HandleXBrowseByLetter(XmlWriter xmlWriter, IDictionary<string, string> sparams, string deviceId)
@@ -388,20 +387,18 @@ namespace Emby.Dlna.ContentDirectory
             xmlWriter.WriteFullEndElement();
             xmlWriter.WriteFullEndElement();
 
-            xmlWriter.WriteElementString("NumberReturned", childrenResult.Items.Count.ToString(_usCulture));
-            xmlWriter.WriteElementString("TotalMatches", childrenResult.TotalRecordCount.ToString(_usCulture));
-            xmlWriter.WriteElementString("UpdateID", _systemUpdateId.ToString(_usCulture));
+            xmlWriter.WriteElementString("NumberReturned", childrenResult.Items.Count.ToString(CultureInfo.InvariantCulture));
+            xmlWriter.WriteElementString("TotalMatches", childrenResult.TotalRecordCount.ToString(CultureInfo.InvariantCulture));
+            xmlWriter.WriteElementString("UpdateID", _systemUpdateId.ToString(CultureInfo.InvariantCulture));
         }
 
         private QueryResult<BaseItem> GetChildrenSorted(BaseItem item, User user, SearchCriteria search, SortCriteria sort, int? startIndex, int? limit)
         {
             var folder = (Folder)item;
 
-            var sortOrders = folder.IsPreSorted switch
-            {
-                true => Array.Empty<(string, SortOrder)>(),
-                false => new[] { (ItemSortBy.SortName, sort.SortOrder) }
-            };
+            var sortOrders = folder.IsPreSorted
+                ? Array.Empty<(string, SortOrder)>()
+                : new[] { (ItemSortBy.SortName, sort.SortOrder) };
 
             string[] mediaTypes = Array.Empty<string>();
             bool? isFolder = null;
