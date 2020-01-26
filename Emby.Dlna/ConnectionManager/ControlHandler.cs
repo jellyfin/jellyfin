@@ -28,6 +28,7 @@ namespace Emby.Dlna.ConnectionManager
             if (string.Equals(methodName, "GetProtocolInfo", StringComparison.OrdinalIgnoreCase))
             {
                 HandleGetProtocolInfo(xmlWriter);
+                return;
             }
 
             throw new ResourceNotFoundException("Unexpected control request name: " + methodName);
