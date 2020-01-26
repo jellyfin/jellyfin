@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Udp;
 using MediaBrowser.Controller;
@@ -12,7 +13,7 @@ namespace Emby.Server.Implementations.EntryPoints
     /// <summary>
     /// Class UdpServerEntryPoint.
     /// </summary>
-    public class UdpServerEntryPoint : IServerEntryPoint
+    public sealed class UdpServerEntryPoint : IServerEntryPoint
     {
         /// <summary>
         /// The port of the UDP server.
@@ -31,61 +32,44 @@ namespace Emby.Server.Implementations.EntryPoints
         /// The UDP server.
         /// </summary>
         private UdpServer _udpServer;
+        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private bool _disposed = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServerEntryPoint" /> class.
         /// </summary>
         public UdpServerEntryPoint(
-            ILogger logger,
-            IServerApplicationHost appHost,
-            IJsonSerializer json,
-            ISocketFactory socketFactory)
+            ILogger<UdpServerEntryPoint> logger,
+            IServerApplicationHost appHost)
         {
             _logger = logger;
             _appHost = appHost;
-            _json = json;
-            _socketFactory = socketFactory;
+
+
         }
 
         /// <inheritdoc />
-        public Task RunAsync()
+        public async Task RunAsync()
         {
-            var udpServer = new UdpServer(_logger, _appHost, _json, _socketFactory);
-
-            try
-            {
-                udpServer.Start(PortNumber);
-
-                _udpServer = udpServer;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to start UDP Server");
-            }
-
-            return Task.CompletedTask;
+            _udpServer = new UdpServer(_logger, _appHost);
+            _udpServer.Start(PortNumber, _cancellationTokenSource.Token);
         }
 
         /// <inheritdoc />
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
+            if (_disposed)
             {
-                if (_udpServer != null)
-                {
-                    _udpServer.Dispose();
-                }
+                return;
             }
+
+            _cancellationTokenSource.Cancel();
+            _udpServer.Dispose();
+
+            _cancellationTokenSource = null;
+            _udpServer = null;
+
+            _disposed = true;
         }
     }
 }

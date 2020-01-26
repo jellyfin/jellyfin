@@ -93,7 +93,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             // On Windows, savint the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
 
-            using (var filestream = FileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+            using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
                 stream.CopyTo(filestream);
             }

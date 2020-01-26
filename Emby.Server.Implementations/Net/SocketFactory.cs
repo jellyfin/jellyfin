@@ -8,32 +8,6 @@ namespace Emby.Server.Implementations.Net
 {
     public class SocketFactory : ISocketFactory
     {
-        /// <summary>
-        /// Creates a new UDP acceptSocket and binds it to the specified local port.
-        /// </summary>
-        /// <param name="localPort">An integer specifying the local port to bind the acceptSocket to.</param>
-        public ISocket CreateUdpSocket(int localPort)
-        {
-            if (localPort < 0)
-            {
-                throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
-            }
-
-            var retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-            try
-            {
-                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                return new UdpSocket(retVal, localPort, IPAddress.Any);
-            }
-            catch
-            {
-                retVal?.Dispose();
-
-                throw;
-            }
-        }
-
         public ISocket CreateUdpBroadcastSocket(int localPort)
         {
             if (localPort < 0)
@@ -156,8 +130,5 @@ namespace Emby.Server.Implementations.Net
                 throw;
             }
         }
-
-        public Stream CreateNetworkStream(ISocket socket, bool ownsSocket)
-            => new NetworkStream(((UdpSocket)socket).Socket, ownsSocket);
     }
 }

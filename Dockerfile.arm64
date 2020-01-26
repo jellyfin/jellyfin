@@ -1,5 +1,3 @@
-# Requires binfm_misc registration
-# https://github.com/multiarch/qemu-user-static#binfmt_misc-register
 ARG DOTNET_VERSION=3.1
 
 
@@ -23,11 +21,10 @@ RUN find . -type d -name obj | xargs -r rm -r
 RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-arm64 "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
 
 
-FROM multiarch/qemu-user-static:x86_64-aarch64 as qemu
-FROM debian:stretch-slim-arm64v8
-COPY --from=qemu /usr/bin/qemu-aarch64-static /usr/bin
+FROM debian:buster-slim
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg \
+ libssl-dev \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media

@@ -170,32 +170,32 @@ namespace Emby.Dlna.Api
             return _resultFactory.GetResult(Request, xml, XMLContentType);
         }
 
-        public object Post(ProcessMediaReceiverRegistrarControlRequest request)
+        public async Task<object> Post(ProcessMediaReceiverRegistrarControlRequest request)
         {
-            var response = PostAsync(request.RequestStream, MediaReceiverRegistrar);
+            var response = await PostAsync(request.RequestStream, MediaReceiverRegistrar).ConfigureAwait(false);
 
             return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
         }
 
-        public object Post(ProcessContentDirectoryControlRequest request)
+        public async Task<object> Post(ProcessContentDirectoryControlRequest request)
         {
-            var response = PostAsync(request.RequestStream, ContentDirectory);
+            var response = await PostAsync(request.RequestStream, ContentDirectory).ConfigureAwait(false);
 
             return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
         }
 
-        public object Post(ProcessConnectionManagerControlRequest request)
+        public async Task<object> Post(ProcessConnectionManagerControlRequest request)
         {
-            var response = PostAsync(request.RequestStream, ConnectionManager);
+            var response = await PostAsync(request.RequestStream, ConnectionManager).ConfigureAwait(false);
 
             return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
         }
 
-        private ControlResponse PostAsync(Stream requestStream, IUpnpService service)
+        private Task<ControlResponse> PostAsync(Stream requestStream, IUpnpService service)
         {
             var id = GetPathValue(2).ToString();
 
-            return service.ProcessControlRequest(new ControlRequest
+            return service.ProcessControlRequestAsync(new ControlRequest
             {
                 Headers = Request.Headers,
                 InputXml = requestStream,

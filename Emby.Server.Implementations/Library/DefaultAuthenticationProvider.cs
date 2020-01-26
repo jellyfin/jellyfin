@@ -70,9 +70,9 @@ namespace Emby.Server.Implementations.Library
                 byte[] calculatedHash = _cryptographyProvider.ComputeHash(
                     readyHash.Id,
                     passwordbytes,
-                    readyHash.Salt);
+                    readyHash.Salt.ToArray());
 
-                if (calculatedHash.SequenceEqual(readyHash.Hash))
+                if (readyHash.Hash.SequenceEqual(calculatedHash))
                 {
                     success = true;
                 }
@@ -148,17 +148,18 @@ namespace Emby.Server.Implementations.Library
 
             // TODO: make use of iterations parameter?
             PasswordHash passwordHash = PasswordHash.Parse(user.Password);
+            var salt = passwordHash.Salt.ToArray();
             return new PasswordHash(
                 passwordHash.Id,
                 _cryptographyProvider.ComputeHash(
                     passwordHash.Id,
                     Encoding.UTF8.GetBytes(str),
-                    passwordHash.Salt),
-                passwordHash.Salt,
+                    salt),
+                salt,
                 passwordHash.Parameters.ToDictionary(x => x.Key, y => y.Value)).ToString();
         }
 
-        public byte[] GetHashed(User user, string str)
+        public ReadOnlySpan<byte> GetHashed(User user, string str)
         {
             if (string.IsNullOrEmpty(user.Password))
             {
@@ -170,7 +171,7 @@ namespace Emby.Server.Implementations.Library
             return _cryptographyProvider.ComputeHash(
                     passwordHash.Id,
                     Encoding.UTF8.GetBytes(str),
-                    passwordHash.Salt);
+                    passwordHash.Salt.ToArray());
         }
     }
 }

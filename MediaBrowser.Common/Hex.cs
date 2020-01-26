@@ -14,11 +14,11 @@ namespace MediaBrowser.Common
         internal const int LastHexSymbol = 0x66; // 102: f
 
         /// <summary>
-        /// Map from an ASCII char to its hex value shifted,
+        /// Gets a map from an ASCII char to its hex value shifted,
         /// e.g. <c>b</c> -> 11. 0xFF means it's not a hex symbol.
         /// </summary>
-        /// <value></value>
-        internal static ReadOnlySpan<byte> HexLookup => new byte[] {
+        internal static ReadOnlySpan<byte> HexLookup => new byte[]
+        {
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -29,10 +29,10 @@ namespace MediaBrowser.Common
         };
 
         /// <summary>
-        /// Encodes <c>bytes</c> as a hex string.
+        /// Encodes each element of the specified bytes as its hexadecimal string representation.
         /// </summary>
-        /// <param name="bytes"></param>
-        /// <param name="lowercase"></param>
+        /// <param name="bytes">An array of bytes.</param>
+        /// <param name="lowercase"><c>true</c> to use lowercase hexadecimal characters; otherwise <c>false</c>.</param>
         /// <returns><c>bytes</c> as a hex string.</returns>
         public static string Encode(ReadOnlySpan<byte> bytes, bool lowercase = true)
         {

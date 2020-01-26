@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#pragma warning disable SA1402
 
 using System;
 using System.IO;
@@ -8,10 +8,13 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Common.Plugins
 {
+    /// <summary>
+    /// Provides a common base class for all plugins.
+    /// </summary>
     public abstract class BasePlugin : IPlugin, IPluginAssembly
     {
         /// <summary>
-        /// Gets the name of the plugin
+        /// Gets the name of the plugin.
         /// </summary>
         /// <value>The name.</value>
         public abstract string Name { get; }
@@ -29,16 +32,22 @@ namespace MediaBrowser.Common.Plugins
         public virtual Guid Id { get; private set; }
 
         /// <summary>
-        /// Gets the plugin version
+        /// Gets the plugin version.
         /// </summary>
         /// <value>The version.</value>
         public Version Version { get; private set; }
 
         /// <summary>
-        /// Gets the path to the assembly file
+        /// Gets the path to the assembly file.
         /// </summary>
         /// <value>The assembly file path.</value>
         public string AssemblyFilePath { get; private set; }
+
+        /// <summary>
+        /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed.
+        /// </summary>
+        /// <value>The data folder path.</value>
+        public string DataFolderPath { get; private set; }
 
         /// <summary>
         /// Gets the plugin info.
@@ -62,9 +71,9 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         public virtual void OnUninstalling()
         {
-
         }
 
+        /// <inheritdoc />
         public void SetAttributes(string assemblyFilePath, string dataFolderPath, Version assemblyVersion)
         {
             AssemblyFilePath = assemblyFilePath;
@@ -72,25 +81,48 @@ namespace MediaBrowser.Common.Plugins
             Version = assemblyVersion;
         }
 
+        /// <inheritdoc />
         public void SetId(Guid assemblyId)
         {
             Id = assemblyId;
         }
-
-        /// <summary>
-        /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed
-        /// </summary>
-        /// <value>The data folder path.</value>
-        public string DataFolderPath { get; private set; }
     }
 
     /// <summary>
-    /// Provides a common base class for all plugins
+    /// Provides a common base class for all plugins.
     /// </summary>
     /// <typeparam name="TConfigurationType">The type of the T configuration type.</typeparam>
     public abstract class BasePlugin<TConfigurationType> : BasePlugin, IHasPluginConfiguration
         where TConfigurationType : BasePluginConfiguration
     {
+        /// <summary>
+        /// The configuration sync lock.
+        /// </summary>
+        private readonly object _configurationSyncLock = new object();
+
+        /// <summary>
+        /// The save lock.
+        /// </summary>
+        private readonly object _configurationSaveLock = new object();
+
+        private Action<string> _directoryCreateFn;
+
+        /// <summary>
+        /// The configuration.
+        /// </summary>
+        private TConfigurationType _configuration;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BasePlugin{TConfigurationType}" /> class.
+        /// </summary>
+        /// <param name="applicationPaths">The application paths.</param>
+        /// <param name="xmlSerializer">The XML serializer.</param>
+        protected BasePlugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
+        {
+            ApplicationPaths = applicationPaths;
+            XmlSerializer = xmlSerializer;
+        }
+
         /// <summary>
         /// Gets the application paths.
         /// </summary>
@@ -104,34 +136,19 @@ namespace MediaBrowser.Common.Plugins
         protected IXmlSerializer XmlSerializer { get; private set; }
 
         /// <summary>
-        /// Gets the type of configuration this plugin uses
+        /// Gets the type of configuration this plugin uses.
         /// </summary>
         /// <value>The type of the configuration.</value>
         public Type ConfigurationType => typeof(TConfigurationType);
 
-        private Action<string> _directoryCreateFn;
-        public void SetStartupInfo(Action<string> directoryCreateFn)
-        {
-            // hack alert, until the .net core transition is complete
-            _directoryCreateFn = directoryCreateFn;
-        }
-
         /// <summary>
-        /// Gets the name the assembly file
+        /// Gets the name the assembly file.
         /// </summary>
         /// <value>The name of the assembly file.</value>
         protected string AssemblyFileName => Path.GetFileName(AssemblyFilePath);
 
         /// <summary>
-        /// The _configuration sync lock
-        /// </summary>
-        private readonly object _configurationSyncLock = new object();
-        /// <summary>
-        /// The _configuration
-        /// </summary>
-        private TConfigurationType _configuration;
-        /// <summary>
-        /// Gets the plugin's configuration
+        /// Gets or sets the plugin's configuration.
         /// </summary>
         /// <value>The configuration.</value>
         public TConfigurationType Configuration
@@ -149,9 +166,36 @@ namespace MediaBrowser.Common.Plugins
                         }
                     }
                 }
+
                 return _configuration;
             }
+
             protected set => _configuration = value;
+        }
+
+        /// <summary>
+        /// Gets the name of the configuration file. Subclasses should override.
+        /// </summary>
+        /// <value>The name of the configuration file.</value>
+        public virtual string ConfigurationFileName => Path.ChangeExtension(AssemblyFileName, ".xml");
+
+        /// <summary>
+        /// Gets the full path to the configuration file.
+        /// </summary>
+        /// <value>The configuration file path.</value>
+        public string ConfigurationFilePath => Path.Combine(ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName);
+
+        /// <summary>
+        /// Gets the plugin's configuration.
+        /// </summary>
+        /// <value>The configuration.</value>
+        BasePluginConfiguration IHasPluginConfiguration.Configuration => Configuration;
+
+        /// <inheritdoc />
+        public void SetStartupInfo(Action<string> directoryCreateFn)
+        {
+            // hack alert, until the .net core transition is complete
+            _directoryCreateFn = directoryCreateFn;
         }
 
         private TConfigurationType LoadConfiguration()
@@ -169,35 +213,7 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <summary>
-        /// Gets the name of the configuration file. Subclasses should override
-        /// </summary>
-        /// <value>The name of the configuration file.</value>
-        public virtual string ConfigurationFileName => Path.ChangeExtension(AssemblyFileName, ".xml");
-
-        /// <summary>
-        /// Gets the full path to the configuration file
-        /// </summary>
-        /// <value>The configuration file path.</value>
-        public string ConfigurationFilePath => Path.Combine(ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName);
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BasePlugin{TConfigurationType}" /> class.
-        /// </summary>
-        /// <param name="applicationPaths">The application paths.</param>
-        /// <param name="xmlSerializer">The XML serializer.</param>
-        protected BasePlugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
-        {
-            ApplicationPaths = applicationPaths;
-            XmlSerializer = xmlSerializer;
-        }
-
-        /// <summary>
-        /// The _save lock
-        /// </summary>
-        private readonly object _configurationSaveLock = new object();
-
-        /// <summary>
-        /// Saves the current configuration to the file system
+        /// Saves the current configuration to the file system.
         /// </summary>
         public virtual void SaveConfiguration()
         {
@@ -209,12 +225,7 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
-        /// <summary>
-        /// Completely overwrites the current configuration with a new copy
-        /// Returns true or false indicating success or failure
-        /// </summary>
-        /// <param name="configuration">The configuration.</param>
-        /// <exception cref="ArgumentNullException">configuration</exception>
+        /// <inheritdoc />
         public virtual void UpdateConfiguration(BasePluginConfiguration configuration)
         {
             if (configuration == null)
@@ -227,12 +238,7 @@ namespace MediaBrowser.Common.Plugins
             SaveConfiguration();
         }
 
-        /// <summary>
-        /// Gets the plugin's configuration
-        /// </summary>
-        /// <value>The configuration.</value>
-        BasePluginConfiguration IHasPluginConfiguration.Configuration => Configuration;
-
+        /// <inheritdoc />
         public override PluginInfo GetPluginInfo()
         {
             var info = base.GetPluginInfo();
@@ -241,11 +247,5 @@ namespace MediaBrowser.Common.Plugins
 
             return info;
         }
-    }
-
-    public interface IPluginAssembly
-    {
-        void SetAttributes(string assemblyFilePath, string dataFolderPath, Version assemblyVersion);
-        void SetId(Guid assemblyId);
     }
 }

@@ -66,7 +66,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="path">The path.</param>
         /// <param name="fileShare">The file share.</param>
         /// <returns>System.Object.</returns>
-        Task<object> GetStaticFileResult(IRequest requestContext, string path, FileShareMode fileShare = FileShareMode.Read);
+        Task<object> GetStaticFileResult(IRequest requestContext, string path, FileShare fileShare = FileShare.Read);
 
         /// <summary>
         /// Gets the static file result.

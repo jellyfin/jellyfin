@@ -146,7 +146,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (framerate.HasValue || percent.HasValue)
             {
-                state.ReportTranscodingProgress(transcodingPosition, 0, percent, 0, bitRate);
+                state.ReportTranscodingProgress(transcodingPosition, framerate, percent, bytesTranscoded, bitRate);
             }
         }
     }

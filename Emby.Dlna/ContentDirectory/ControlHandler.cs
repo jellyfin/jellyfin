@@ -76,7 +76,7 @@ namespace Emby.Dlna.ContentDirectory
             _profile = profile;
             _config = config;
 
-            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, _logger, mediaEncoder);
+            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, Logger, mediaEncoder);
         }
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, IDictionary<string, string> methodParams)
@@ -771,11 +771,11 @@ namespace Emby.Dlna.ContentDirectory
                 })
                 .ToArray();
 
-            return new QueryResult<ServerItem>
+            return ApplyPaging(new QueryResult<ServerItem>
             {
                 Items = folders,
                 TotalRecordCount = folders.Length
-            };
+            }, startIndex, limit);
         }
 
         private QueryResult<ServerItem> GetTvFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
@@ -1336,7 +1336,7 @@ namespace Emby.Dlna.ContentDirectory
                 };
             }
 
-            _logger.LogError("Error parsing item Id: {id}. Returning user root folder.", id);
+            Logger.LogError("Error parsing item Id: {id}. Returning user root folder.", id);
 
             return new ServerItem(_libraryManager.GetUserRootFolder());
         }

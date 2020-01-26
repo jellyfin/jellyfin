@@ -42,7 +42,7 @@ namespace DvdLib.Ifo
             }
             else
             {
-                using (var vmgFs = _fileSystem.GetFileStream(vmgPath.FullName, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+                using (var vmgFs = new FileStream(vmgPath.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     using (var vmgRead = new BigEndianBinaryReader(vmgFs))
                     {
@@ -95,7 +95,7 @@ namespace DvdLib.Ifo
         {
             VTSPaths[vtsNum] = vtsPath;
 
-            using (var vtsFs = _fileSystem.GetFileStream(vtsPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+            using (var vtsFs = new FileStream(vtsPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 using (var vtsRead = new BigEndianBinaryReader(vtsFs))
                 {
