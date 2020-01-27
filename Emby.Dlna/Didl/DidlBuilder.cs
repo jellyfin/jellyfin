@@ -882,7 +882,7 @@ namespace Emby.Dlna.Didl
 
             var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight, "jpg");
 
-            writer.WriteStartElement("upnp", "albumArtURI", NS_UPNP);
+            writer.WriteStartElement("albumArtURI", NS_UPNP);
             writer.WriteAttributeString("dlna", "profileID", NS_DLNA, _profile.AlbumArtPn);
             writer.WriteString(albumartUrlInfo.Url);
             writer.WriteFullEndElement();
