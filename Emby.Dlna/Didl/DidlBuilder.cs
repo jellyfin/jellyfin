@@ -634,7 +634,7 @@ namespace Emby.Dlna.Didl
             {
                 if (item.PremiereDate.HasValue)
                 {
-                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("o"), NS_DC);
+                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("o", CultureInfo.InvariantCulture), NS_DC);
                 }
             }
 
@@ -882,7 +882,7 @@ namespace Emby.Dlna.Didl
 
             var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight, "jpg");
 
-            writer.WriteStartElement("albumArtURI", NS_UPNP);
+            writer.WriteStartElement("upnp", "albumArtURI", NS_UPNP);
             writer.WriteAttributeString("dlna", "profileID", NS_DLNA, _profile.AlbumArtPn);
             writer.WriteString(albumartUrlInfo.Url);
             writer.WriteFullEndElement();

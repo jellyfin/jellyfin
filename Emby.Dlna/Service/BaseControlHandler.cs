@@ -72,7 +72,7 @@ namespace Emby.Dlna.Service
             {
                 Encoding = Encoding.UTF8,
                 CloseOutput = false,
-                NamespaceHandling = NamespaceHandling.OmitDuplicates
+                ConformanceLevel = ConformanceLevel.Fragment
             };
 
             StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8);
@@ -96,7 +96,7 @@ namespace Emby.Dlna.Service
                 writer.WriteEndDocument();
             }
 
-            var xml = builder.ToString().Replace("xmlns:m=", "xmlns:u=");
+            var xml = builder.ToString().Replace("xmlns:m=", "xmlns:u=", StringComparison.Ordinal);
 
             var controlResponse = new ControlResponse
             {

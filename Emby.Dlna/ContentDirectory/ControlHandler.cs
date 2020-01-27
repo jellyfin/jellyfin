@@ -268,7 +268,7 @@ namespace Emby.Dlna.ContentDirectory
             var item = serverItem.Item;
 
             int totalCount;
-            if (string.Equals(flag, "BrowseMetadata"))
+            if (string.Equals(flag, "BrowseMetadata", StringComparison.Ordinal))
             {
                 totalCount = 1;
 
