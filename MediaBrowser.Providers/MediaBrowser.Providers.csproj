@@ -11,11 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.1" />
     <PackageReference Include="OptimizedPriorityQueue" Version="4.2.0" />
     <PackageReference Include="PlaylistsNET" Version="1.0.4" />
-    <PackageReference Include="TvDbSharper" Version="2.0.0" />
+    <PackageReference Include="TvDbSharper" Version="3.0.1" />
   </ItemGroup>
 
   <PropertyGroup>
