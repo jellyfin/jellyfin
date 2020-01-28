@@ -32,7 +32,7 @@ rm -rf ${web_build_dir}
 version="$( grep "version:" ./build.yaml | sed -E 's/version: "([0-9\.]+.*)"/\1/' )"
 
 # Build binary
-dotnet publish --configuration Release --self-contained --runtime win-x86 --output /dist/jellyfin_${version}/ "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none;UseAppHost=true"
+dotnet publish Jellyfin.Server --configuration Release --self-contained --runtime win-x86 --output /dist/jellyfin_${version}/ "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none;UseAppHost=true"
 
 # Prepare addins
 addin_build_dir="$( mktemp -d )"
