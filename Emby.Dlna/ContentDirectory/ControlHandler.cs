@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -253,68 +254,80 @@ namespace Emby.Dlna.ContentDirectory
                 start = startVal;
             }
 
-            xmlWriter.WriteStartElement("Result");
-
-            xmlWriter.WriteStartElement(string.Empty, "DIDL-Lite", NS_DIDL);
-
-            xmlWriter.WriteAttributeString("xmlns", "dc", null, NS_DC);
-            xmlWriter.WriteAttributeString("xmlns", "dlna", null, NS_DLNA);
-            xmlWriter.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
-            //didl.SetAttribute("xmlns:sec", NS_SEC);
-
-            DidlBuilder.WriteXmlRootAttributes(_profile, xmlWriter);
-
-            var serverItem = GetItemFromObjectId(id, _user);
-            var item = serverItem.Item;
-
             int totalCount;
-            if (string.Equals(flag, "BrowseMetadata", StringComparison.Ordinal))
+
+            var settings = new XmlWriterSettings()
             {
-                totalCount = 1;
+                Encoding = Encoding.UTF8,
+                CloseOutput = false,
+                OmitXmlDeclaration = true,
+                ConformanceLevel = ConformanceLevel.Fragment
+            };
 
-                if (item.IsDisplayedAsFolder || serverItem.StubType.HasValue)
-                {
-                    var childrenResult = GetUserItems(item, serverItem.StubType, _user, sortCriteria, start, requestedCount);
-
-                    _didlBuilder.WriteFolderElement(xmlWriter, item, serverItem.StubType, null, childrenResult.TotalRecordCount, filter, id);
-                }
-                else
-                {
-                    var dlnaOptions = _config.GetDlnaConfiguration();
-                    _didlBuilder.WriteItemElement(dlnaOptions, xmlWriter, item, _user, null, null, deviceId, filter);
-                }
-
-                provided++;
-            }
-            else
+            using (StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8))
+            using (var writer = XmlWriter.Create(builder, settings))
             {
-                var childrenResult = GetUserItems(item, serverItem.StubType, _user, sortCriteria, start, requestedCount);
-                totalCount = childrenResult.TotalRecordCount;
+                writer.WriteStartElement(string.Empty, "DIDL-Lite", NS_DIDL);
 
-                provided = childrenResult.Items.Count;
+                writer.WriteAttributeString("xmlns", "dc", null, NS_DC);
+                writer.WriteAttributeString("xmlns", "dlna", null, NS_DLNA);
+                writer.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
 
-                var dlnaOptions = _config.GetDlnaConfiguration();
-                foreach (var i in childrenResult.Items)
+                DidlBuilder.WriteXmlRootAttributes(_profile, writer);
+
+                var serverItem = GetItemFromObjectId(id, _user);
+                var item = serverItem.Item;
+
+
+                if (string.Equals(flag, "BrowseMetadata", StringComparison.Ordinal))
                 {
-                    var childItem = i.Item;
-                    var displayStubType = i.StubType;
+                    totalCount = 1;
 
-                    if (childItem.IsDisplayedAsFolder || displayStubType.HasValue)
+                    if (item.IsDisplayedAsFolder || serverItem.StubType.HasValue)
                     {
-                        var childCount = GetUserItems(childItem, displayStubType, _user, sortCriteria, null, 0)
-                            .TotalRecordCount;
+                        var childrenResult = GetUserItems(item, serverItem.StubType, _user, sortCriteria, start, requestedCount);
 
-                        _didlBuilder.WriteFolderElement(xmlWriter, childItem, displayStubType, item, childCount, filter);
+                        _didlBuilder.WriteFolderElement(writer, item, serverItem.StubType, null, childrenResult.TotalRecordCount, filter, id);
                     }
                     else
                     {
-                        _didlBuilder.WriteItemElement(dlnaOptions, xmlWriter, childItem, _user, item, serverItem.StubType, deviceId, filter);
+                        var dlnaOptions = _config.GetDlnaConfiguration();
+                        _didlBuilder.WriteItemElement(dlnaOptions, writer, item, _user, null, null, deviceId, filter);
+                    }
+
+                    provided++;
+                }
+                else
+                {
+                    var childrenResult = GetUserItems(item, serverItem.StubType, _user, sortCriteria, start, requestedCount);
+                    totalCount = childrenResult.TotalRecordCount;
+
+                    provided = childrenResult.Items.Count;
+
+                    var dlnaOptions = _config.GetDlnaConfiguration();
+                    foreach (var i in childrenResult.Items)
+                    {
+                        var childItem = i.Item;
+                        var displayStubType = i.StubType;
+
+                        if (childItem.IsDisplayedAsFolder || displayStubType.HasValue)
+                        {
+                            var childCount = GetUserItems(childItem, displayStubType, _user, sortCriteria, null, 0)
+                                .TotalRecordCount;
+
+                            _didlBuilder.WriteFolderElement(writer, childItem, displayStubType, item, childCount, filter);
+                        }
+                        else
+                        {
+                            _didlBuilder.WriteItemElement(dlnaOptions, writer, childItem, _user, item, serverItem.StubType, deviceId, filter);
+                        }
                     }
                 }
-            }
 
-            xmlWriter.WriteFullEndElement();
-            xmlWriter.WriteFullEndElement();
+                writer.WriteFullEndElement();
+
+                xmlWriter.WriteElementString("Result", builder.ToString());
+            }
 
             xmlWriter.WriteElementString("NumberReturned", provided.ToString(CultureInfo.InvariantCulture));
             xmlWriter.WriteElementString("TotalMatches", totalCount.ToString(CultureInfo.InvariantCulture));
@@ -350,42 +363,54 @@ namespace Emby.Dlna.ContentDirectory
                 start = startVal;
             }
 
-            xmlWriter.WriteStartElement("Result");
+            QueryResult<BaseItem> childrenResult;
 
-            xmlWriter.WriteStartElement(string.Empty, "DIDL-Lite", NS_DIDL);
-
-            xmlWriter.WriteAttributeString("xmlns", "dc", null, NS_DC);
-            xmlWriter.WriteAttributeString("xmlns", "dlna", null, NS_DLNA);
-            xmlWriter.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
-            //didl.SetAttribute("xmlns:sec", NS_SEC);
-
-            DidlBuilder.WriteXmlRootAttributes(_profile, xmlWriter);
-
-            var serverItem = GetItemFromObjectId(sparams["ContainerID"], _user);
-
-            var item = serverItem.Item;
-
-            var childrenResult = GetChildrenSorted(item, _user, searchCriteria, sortCriteria, start, requestedCount);
-
-            var dlnaOptions = _config.GetDlnaConfiguration();
-
-            foreach (var i in childrenResult.Items)
+            var settings = new XmlWriterSettings()
             {
-                if (i.IsDisplayedAsFolder)
-                {
-                    var childCount = GetChildrenSorted(i, _user, searchCriteria, sortCriteria, null, 0)
-                        .TotalRecordCount;
+                Encoding = Encoding.UTF8,
+                CloseOutput = false,
+                OmitXmlDeclaration = true,
+                ConformanceLevel = ConformanceLevel.Fragment
+            };
 
-                    _didlBuilder.WriteFolderElement(xmlWriter, i, null, item, childCount, filter);
-                }
-                else
+            using (StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8))
+            using (var writer = XmlWriter.Create(builder, settings))
+            {
+                writer.WriteStartElement(string.Empty, "DIDL-Lite", NS_DIDL);
+
+                writer.WriteAttributeString("xmlns", "dc", null, NS_DC);
+                writer.WriteAttributeString("xmlns", "dlna", null, NS_DLNA);
+                writer.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
+
+                DidlBuilder.WriteXmlRootAttributes(_profile, writer);
+
+                var serverItem = GetItemFromObjectId(sparams["ContainerID"], _user);
+
+                var item = serverItem.Item;
+
+                childrenResult = GetChildrenSorted(item, _user, searchCriteria, sortCriteria, start, requestedCount);
+
+                var dlnaOptions = _config.GetDlnaConfiguration();
+
+                foreach (var i in childrenResult.Items)
                 {
-                    _didlBuilder.WriteItemElement(dlnaOptions, xmlWriter, i, _user, item, serverItem.StubType, deviceId, filter);
+                    if (i.IsDisplayedAsFolder)
+                    {
+                        var childCount = GetChildrenSorted(i, _user, searchCriteria, sortCriteria, null, 0)
+                            .TotalRecordCount;
+
+                        _didlBuilder.WriteFolderElement(writer, i, null, item, childCount, filter);
+                    }
+                    else
+                    {
+                        _didlBuilder.WriteItemElement(dlnaOptions, writer, i, _user, item, serverItem.StubType, deviceId, filter);
+                    }
                 }
+
+                writer.WriteFullEndElement();
+
+                xmlWriter.WriteElementString("Result", builder.ToString());
             }
-
-            xmlWriter.WriteFullEndElement();
-            xmlWriter.WriteFullEndElement();
 
             xmlWriter.WriteElementString("NumberReturned", childrenResult.Items.Count.ToString(CultureInfo.InvariantCulture));
             xmlWriter.WriteElementString("TotalMatches", childrenResult.TotalRecordCount.ToString(CultureInfo.InvariantCulture));
