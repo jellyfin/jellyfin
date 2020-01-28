@@ -71,8 +71,7 @@ namespace Emby.Dlna.Service
             var settings = new XmlWriterSettings
             {
                 Encoding = Encoding.UTF8,
-                CloseOutput = false,
-                ConformanceLevel = ConformanceLevel.Fragment
+                CloseOutput = false
             };
 
             StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8);
