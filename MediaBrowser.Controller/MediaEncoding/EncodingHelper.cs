@@ -2737,8 +2737,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 args += " -mpegts_m2ts_mode 1";
             }
 
-            var supportsGlobalHeaderFlag = state.OutputContainer != "mkv";
-            
             if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
                 if (state.VideoStream != null
