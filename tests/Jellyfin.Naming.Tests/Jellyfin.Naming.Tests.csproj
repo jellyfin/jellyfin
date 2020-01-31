@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
+    <!-- TODO: <TreatWarningsAsErrors>true</TreatWarningsAsErrors> -->
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
