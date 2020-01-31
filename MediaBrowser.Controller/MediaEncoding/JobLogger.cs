@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.MediaEncoding

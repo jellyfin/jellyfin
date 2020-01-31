@@ -9,11 +9,9 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 
