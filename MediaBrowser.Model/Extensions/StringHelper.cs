@@ -28,7 +28,7 @@ namespace MediaBrowser.Model.Extensions
                 (chars, buf) =>
                 {
                     chars[0] = char.ToUpperInvariant(buf[0]);
-                    for (int i = 1; i<chars.Length; i++)
+                    for (int i = 1; i < chars.Length; i++)
                     {
                         chars[i] = buf[i];
                     }
