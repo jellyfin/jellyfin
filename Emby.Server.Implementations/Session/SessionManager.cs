@@ -1379,20 +1379,16 @@ namespace Emby.Server.Implementations.Session
                 user = _userManager.GetUserByName(request.Username);
             }
 
-            if (user != null)
-            {
-                // TODO: Move this to userManager?
-                if (!string.IsNullOrEmpty(request.DeviceId)
-                    && !_deviceManager.CanAccessDevice(user, request.DeviceId))
-                {
-                    throw new SecurityException("User is not allowed access from this device.");
-                }
-            }
-
             if (user == null)
             {
                 AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
-                throw new SecurityException("Invalid user or password entered.");
+                throw new SecurityException("Invalid username or password entered.");
+            }
+
+            if (!string.IsNullOrEmpty(request.DeviceId)
+                && !_deviceManager.CanAccessDevice(user, request.DeviceId))
+            {
+                throw new SecurityException("User is not allowed access from this device.");
             }
 
             if (enforcePassword)
