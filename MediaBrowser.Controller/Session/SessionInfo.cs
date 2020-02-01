@@ -106,6 +106,8 @@ namespace MediaBrowser.Controller.Session
 
         public BaseItem FullNowPlayingItem { get; set; }
 
+        public BaseItemDto NowViewingItem { get; set; }
+
         /// <summary>
         /// Gets or sets the device id.
         /// </summary>

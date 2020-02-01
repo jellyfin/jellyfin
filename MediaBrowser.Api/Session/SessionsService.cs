@@ -230,6 +230,17 @@ namespace MediaBrowser.Api.Session
         public string Id { get; set; }
     }
 
+    [Route("/Sessions/Viewing", "POST", Summary = "Reports that a session is viewing an item")]
+    [Authenticated]
+    public class ReportViewing : IReturnVoid
+    {
+        [ApiMember(Name = "SessionId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string SessionId { get; set; }
+
+        [ApiMember(Name = "ItemId", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string ItemId { get; set; }
+    }
+
     [Route("/Sessions/Logout", "POST", Summary = "Reports that a session has ended")]
     [Authenticated]
     public class ReportSessionEnded : IReturnVoid
@@ -535,6 +546,13 @@ namespace MediaBrowser.Api.Session
             }
 
             _sessionManager.ReportCapabilities(request.Id, request);
+        }
+
+        public void Post(ReportViewing request)
+        {
+            request.SessionId = GetSession(_sessionContext).Id;
+
+            _sessionManager.ReportNowViewingItem(request.SessionId, request.ItemId);
         }
     }
 }

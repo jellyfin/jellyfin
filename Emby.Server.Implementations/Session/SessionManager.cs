@@ -1686,18 +1686,18 @@ namespace Emby.Server.Implementations.Session
                 throw new ArgumentNullException(nameof(itemId));
             }
 
-            //var item = _libraryManager.GetItemById(new Guid(itemId));
+            var item = _libraryManager.GetItemById(new Guid(itemId));
 
-            //var info = GetItemInfo(item, null, null);
+            var info = GetItemInfo(item, null);
 
-            //ReportNowViewingItem(sessionId, info);
+            ReportNowViewingItem(sessionId, info);
         }
 
         public void ReportNowViewingItem(string sessionId, BaseItemDto item)
         {
-            //var session = GetSession(sessionId);
+            var session = GetSession(sessionId);
 
-            //session.NowViewingItem = item;
+            session.NowViewingItem = item;
         }
 
         public void ReportTranscodingInfo(string deviceId, TranscodingInfo info)
