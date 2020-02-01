@@ -1077,7 +1077,7 @@ namespace Emby.Server.Implementations.Library
 
             innerProgress.RegisterAction(pct => progress.Report(pct * pct * 0.96));
 
-            // validate the entire media library
+            // Validate the entire media library
             await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true).ConfigureAwait(false);
 
             progress.Report(96);

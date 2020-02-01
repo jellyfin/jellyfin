@@ -394,7 +394,7 @@ namespace MediaBrowser.Api
                 throw new MethodNotAllowedException("Hashed-only passwords are not valid for this API.");
             }
 
-            // password should always be null
+            // Password should always be null
             return Post(new AuthenticateUserByName
             {
                 Username = user.Name,

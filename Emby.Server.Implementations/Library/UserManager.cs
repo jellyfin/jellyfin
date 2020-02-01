@@ -291,10 +291,10 @@ namespace Emby.Server.Implementations.Library
                     && authenticationProvider != null
                     && !(authenticationProvider is DefaultAuthenticationProvider))
                 {
-                    // trust the username returned by the authentication provider
+                    // Trust the username returned by the authentication provider
                     username = updatedUsername;
 
-                    // search the database for the user again
+                    // Search the database for the user again
                     // the authentication provider might have created it
                     user = Users
                         .FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
