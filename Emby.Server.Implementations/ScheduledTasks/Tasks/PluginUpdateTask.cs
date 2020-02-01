@@ -96,7 +96,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <inheritdoc />
-        public string Name => "Check for plugin updates";
+        public string Name => "Update Plugins";
 
         /// <inheritdoc />
         public string Description => "Downloads and installs updates for plugins that are configured to update automatically.";
