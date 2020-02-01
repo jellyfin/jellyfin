@@ -35,12 +35,12 @@ namespace Emby.Server.Implementations.Session
     public class SessionManager : ISessionManager, IDisposable
     {
         /// <summary>
-        /// The _user data repository.
+        /// The user data repository.
         /// </summary>
         private readonly IUserDataManager _userDataManager;
 
         /// <summary>
-        /// The _logger.
+        /// The logger.
         /// </summary>
         private readonly ILogger _logger;
 
@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.Session
         private readonly IDeviceManager _deviceManager;
 
         /// <summary>
-        /// The _active connections.
+        /// The active connections.
         /// </summary>
         private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections =
             new ConcurrentDictionary<string, SessionInfo>(StringComparer.OrdinalIgnoreCase);
