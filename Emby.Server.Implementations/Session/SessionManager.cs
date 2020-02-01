@@ -1684,7 +1684,7 @@ namespace Emby.Server.Implementations.Session
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error getting image information for {0}", ex, type);
+                _logger.LogError(ex, "Error getting image information for {Type}", type);
                 return null;
             }
         }
