@@ -276,7 +276,7 @@ namespace MediaBrowser.Api.Session
     public class SessionsService : BaseApiService
     {
         /// <summary>
-        /// The _session manager.
+        /// The session manager.
         /// </summary>
         private readonly ISessionManager _sessionManager;
 
@@ -438,14 +438,12 @@ namespace MediaBrowser.Api.Session
         public Task Post(SendSystemCommand request)
         {
             var name = request.Command;
-
             if (Enum.TryParse(name, true, out GeneralCommandType commandType))
             {
                 name = commandType.ToString();
             }
 
             var currentSession = GetSession(_sessionContext);
-
             var command = new GeneralCommand
             {
                 Name = name,
@@ -518,16 +516,13 @@ namespace MediaBrowser.Api.Session
             {
                 request.Id = GetSession(_sessionContext).Id;
             }
+
             _sessionManager.ReportCapabilities(request.Id, new ClientCapabilities
             {
                 PlayableMediaTypes = SplitValue(request.PlayableMediaTypes, ','),
-
                 SupportedCommands = SplitValue(request.SupportedCommands, ','),
-
                 SupportsMediaControl = request.SupportsMediaControl,
-
                 SupportsSync = request.SupportsSync,
-
                 SupportsPersistentIdentifier = request.SupportsPersistentIdentifier
             });
         }
@@ -538,6 +533,7 @@ namespace MediaBrowser.Api.Session
             {
                 request.Id = GetSession(_sessionContext).Id;
             }
+
             _sessionManager.ReportCapabilities(request.Id, request);
         }
     }

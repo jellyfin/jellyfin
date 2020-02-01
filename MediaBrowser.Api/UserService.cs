@@ -240,7 +240,7 @@ namespace MediaBrowser.Api
     public class UserService : BaseApiService
     {
         /// <summary>
-        /// The _user manager
+        /// The user manager.
         /// </summary>
         private readonly IUserManager _userManager;
         private readonly ISessionManager _sessionMananger;

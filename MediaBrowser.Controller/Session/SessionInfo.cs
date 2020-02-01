@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Text.Json.Serialization;
 using System.Threading;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
@@ -123,7 +122,6 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the session controller.
         /// </summary>
         /// <value>The session controller.</value>
-        [JsonIgnore]
         public ISessionController[] SessionControllers { get; set; }
 
         /// <summary>
@@ -243,11 +241,6 @@ namespace MediaBrowser.Controller.Session
             var controllers = SessionControllers.ToList();
             controllers.Add(controller);
             SessionControllers = controllers.ToArray();
-        }
-
-        public bool ContainsUser(string userId)
-        {
-            return ContainsUser(new Guid(userId));
         }
 
         public bool ContainsUser(Guid userId)
