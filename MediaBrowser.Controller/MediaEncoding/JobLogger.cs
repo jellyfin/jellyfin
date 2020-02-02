@@ -90,7 +90,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         framerate = val;
                     }
                 }
-                else if (part.Contains("fps=", StringComparison.OrdinalIgnoreCase))
+                else if (part.StartsWith("fps=", StringComparison.OrdinalIgnoreCase))
                 {
                     var rate = part.Split(new[] { '=' }, 2).Last();
 
