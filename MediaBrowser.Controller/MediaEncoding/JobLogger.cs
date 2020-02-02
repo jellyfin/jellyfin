@@ -92,7 +92,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else if (part.StartsWith("fps=", StringComparison.OrdinalIgnoreCase))
                 {
-                    var rate = part.Split(new[] { '=' }, 2).Last();
+                    var rate = part.Split(new[] { '=' }, 2)[^1];
 
                     if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
                     {
