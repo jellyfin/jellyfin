@@ -668,7 +668,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("Invalid username", nameof(newName));
             }
 
-            if (user.Name.Equals(newName, StringComparison.OrdinalIgnoreCase))
+            if (user.Name.Equals(newName, StringComparison.Ordinal))
             {
                 throw new ArgumentException("The new and old names must be different.");
             }
