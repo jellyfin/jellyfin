@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
 namespace Emby.Server.Implementations.Serialization
@@ -12,13 +11,15 @@ namespace Emby.Server.Implementations.Serialization
     /// </summary>
     public class JsonSerializer : IJsonSerializer
     {
-        private readonly IFileSystem _fileSystem;
-
-        public JsonSerializer(
-            IFileSystem fileSystem)
+        public JsonSerializer()
         {
-            _fileSystem = fileSystem;
-            Configure();
+            ServiceStack.Text.JsConfig.DateHandler = ServiceStack.Text.DateHandler.ISO8601;
+            ServiceStack.Text.JsConfig.ExcludeTypeInfo = true;
+            ServiceStack.Text.JsConfig.IncludeNullValues = false;
+            ServiceStack.Text.JsConfig.AlwaysUseUtc = true;
+            ServiceStack.Text.JsConfig.AssumeUtc = true;
+
+            ServiceStack.Text.JsConfig<Guid>.SerializeFn = SerializeGuid;
         }
 
         /// <summary>
@@ -81,7 +82,7 @@ namespace Emby.Server.Implementations.Serialization
                 throw new ArgumentNullException(nameof(file));
             }
 
-            using (var stream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+            using (var stream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
                 SerializeToStream(obj, stream);
             }
@@ -162,7 +163,6 @@ namespace Emby.Server.Implementations.Serialization
                 throw new ArgumentNullException(nameof(stream));
             }
 
-
             return ServiceStack.Text.JsonSerializer.DeserializeFromStreamAsync<T>(stream);
         }
 
@@ -223,20 +223,6 @@ namespace Emby.Server.Implementations.Serialization
 
                 return ServiceStack.Text.JsonSerializer.DeserializeFromString(json, type);
             }
-        }
-
-        /// <summary>
-        /// Configures this instance.
-        /// </summary>
-        private void Configure()
-        {
-            ServiceStack.Text.JsConfig.DateHandler = ServiceStack.Text.DateHandler.ISO8601;
-            ServiceStack.Text.JsConfig.ExcludeTypeInfo = true;
-            ServiceStack.Text.JsConfig.IncludeNullValues = false;
-            ServiceStack.Text.JsConfig.AlwaysUseUtc = true;
-            ServiceStack.Text.JsConfig.AssumeUtc = true;
-
-            ServiceStack.Text.JsConfig<Guid>.SerializeFn = SerializeGuid;
         }
 
         private static string SerializeGuid(Guid guid)

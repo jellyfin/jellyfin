@@ -39,9 +39,9 @@ namespace MediaBrowser.Model.Tasks
         Task Execute(CancellationToken cancellationToken, IProgress<double> progress);
 
         /// <summary>
-        /// Gets the default triggers.
+        /// Gets the default triggers that define when the task will run.
         /// </summary>
-        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
+        /// <returns>The default triggers that define when the task will run.</returns>
         IEnumerable<TaskTriggerInfo> GetDefaultTriggers();
     }
 }
