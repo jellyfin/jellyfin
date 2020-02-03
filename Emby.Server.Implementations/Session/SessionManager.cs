@@ -1494,7 +1494,7 @@ namespace Emby.Server.Implementations.Session
             {
                 Limit = 1,
                 AccessToken = accessToken
-            }).Items[0];
+            }).Items.FirstOrDefault();
 
             if (existing != null)
             {
