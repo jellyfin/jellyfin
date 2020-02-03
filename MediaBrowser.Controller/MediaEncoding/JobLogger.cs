@@ -90,6 +90,15 @@ namespace MediaBrowser.Controller.MediaEncoding
                         framerate = val;
                     }
                 }
+                else if (part.StartsWith("fps=", StringComparison.OrdinalIgnoreCase))
+                {
+                    var rate = part.Split(new[] { '=' }, 2)[^1];
+
+                    if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
+                    {
+                        framerate = val;
+                    }
+                }
                 else if (state.RunTimeTicks.HasValue &&
                     part.StartsWith("time=", StringComparison.OrdinalIgnoreCase))
                 {
