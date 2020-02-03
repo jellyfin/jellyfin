@@ -1,4 +1,3 @@
-using System;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Services;
 
