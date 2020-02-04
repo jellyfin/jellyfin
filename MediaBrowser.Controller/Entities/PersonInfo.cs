@@ -6,7 +6,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// This is the small Person stub that is attached to BaseItems
+    /// This is a small Person stub that is attached to BaseItems.
     /// </summary>
     public sealed class PersonInfo : IHasProviderIds
     {
