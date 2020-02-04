@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +18,62 @@ using MediaBrowser.Model.Services;
 
 namespace Emby.Notifications.Api
 {
+    [Route("/Notifications/{UserId}", "GET", Summary = "Gets notifications")]
+    public class GetNotifications : IReturn<NotificationResult>
+    {
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UserId { get; set; }
+
+        [ApiMember(Name = "IsRead", Description = "An optional filter by IsRead", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsRead { get; set; }
+
+        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? StartIndex { get; set; }
+
+        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? Limit { get; set; }
+    }
+
+    public class Notification
+    {
+        public string Id { get; set; }
+
+        public string UserId { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public bool IsRead { get; set; }
+
+        public string Name { get; set; }
+
+        public string Description { get; set; }
+
+        public string Url { get; set; }
+
+        public NotificationLevel Level { get; set; }
+    }
+
+    public class NotificationResult
+    {
+        public IReadOnlyList<Notification> Notifications { get; set; }
+
+        public int TotalRecordCount { get; set; }
+    }
+
+    public class NotificationsSummary
+    {
+        public int UnreadCount { get; set; }
+
+        public NotificationLevel MaxUnreadNotificationLevel { get; set; }
+    }
+
+    [Route("/Notifications/{UserId}/Summary", "GET", Summary = "Gets a notification summary for a user")]
+    public class GetNotificationsSummary : IReturn<NotificationsSummary>
+    {
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UserId { get; set; }
+    }
+
     [Route("/Notifications/Types", "GET", Summary = "Gets notification types")]
     public class GetNotificationTypes : IReturn<List<NotificationTypeInfo>>
     {
@@ -46,6 +103,26 @@ namespace Emby.Notifications.Api
         public NotificationLevel Level { get; set; }
     }
 
+    [Route("/Notifications/{UserId}/Read", "POST", Summary = "Marks notifications as read")]
+    public class MarkRead : IReturnVoid
+    {
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string UserId { get; set; }
+
+        [ApiMember(Name = "Ids", Description = "A list of notification ids, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
+        public string Ids { get; set; }
+    }
+
+    [Route("/Notifications/{UserId}/Unread", "POST", Summary = "Marks notifications as unread")]
+    public class MarkUnread : IReturnVoid
+    {
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string UserId { get; set; }
+
+        [ApiMember(Name = "Ids", Description = "A list of notification ids, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
+        public string Ids { get; set; }
+    }
+
     [Authenticated]
     public class NotificationsService : IService
     {
@@ -58,16 +135,24 @@ namespace Emby.Notifications.Api
             _userManager = userManager;
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request")]
         public object Get(GetNotificationTypes request)
         {
-            _ = request; // Silence unused variable warning
             return _notificationManager.GetNotificationTypes();
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request")]
         public object Get(GetNotificationServices request)
         {
-            _ = request; // Silence unused variable warning
             return _notificationManager.GetNotificationServices().ToList();
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request")]
+        public object Get(GetNotificationsSummary request)
+        {
+            return new NotificationsSummary
+            {
+            };
         }
 
         public Task Post(AddAdminNotification request)
@@ -84,6 +169,22 @@ namespace Emby.Notifications.Api
             };
 
             return _notificationManager.SendNotification(notification, CancellationToken.None);
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request")]
+        public void Post(MarkRead request)
+        {
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request")]
+        public void Post(MarkUnread request)
+        {
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request")]
+        public object Get(GetNotifications request)
+        {
+            return new NotificationResult();
         }
     }
 }
