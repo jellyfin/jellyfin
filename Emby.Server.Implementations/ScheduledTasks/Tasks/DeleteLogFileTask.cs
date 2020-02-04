@@ -10,7 +10,7 @@ using MediaBrowser.Model.Tasks;
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
     /// <summary>
-    /// Deletes old log files
+    /// Deletes old log files.
     /// </summary>
     public class DeleteLogFileTask : IScheduledTask, IConfigurableScheduledTask
     {
@@ -33,20 +33,18 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         }
 
         /// <summary>
-        /// Creates the triggers that define when the task will run
+        /// Creates the triggers that define when the task will run.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
             return new[] {
-
-                // Every so often
                 new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks}
             };
         }
 
         /// <summary>
-        /// Returns the task to be executed
+        /// Returns the task to be executed.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
@@ -81,7 +79,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             return Task.CompletedTask;
         }
 
-        public string Name => "Log file cleanup";
+        public string Name => "Clean Log Directory";
 
         public string Description => string.Format("Deletes log files that are more than {0} days old.", ConfigurationManager.CommonConfiguration.LogFileRetentionDays);
 

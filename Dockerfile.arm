@@ -24,7 +24,7 @@ RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" 
 FROM debian:buster-slim
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg \
- libssl-dev \
+ libssl-dev ca-certificates \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media
