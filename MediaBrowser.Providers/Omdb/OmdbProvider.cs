@@ -209,7 +209,7 @@ namespace MediaBrowser.Providers.Omdb
 
             string resultString;
 
-            using (var stream = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
                 {
@@ -228,7 +228,7 @@ namespace MediaBrowser.Providers.Omdb
 
             string resultString;
 
-            using (var stream = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
                 {

@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1600
 
 using System;
 using System.Collections.Concurrent;
@@ -177,11 +178,7 @@ namespace Emby.Server.Implementations
         /// Gets the plugins.
         /// </summary>
         /// <value>The plugins.</value>
-        public IPlugin[] Plugins
-        {
-            get => _plugins;
-            protected set => _plugins = value;
-        }
+        public IReadOnlyList<IPlugin> Plugins => _plugins;
 
         /// <summary>
         /// Gets or sets the logger factory.
@@ -602,7 +599,7 @@ namespace Emby.Server.Implementations
                 HttpsPort = ServerConfiguration.DefaultHttpsPort;
             }
 
-            JsonSerializer = new JsonSerializer(FileSystemManager);
+            JsonSerializer = new JsonSerializer();
 
             if (Plugins != null)
             {
@@ -1010,7 +1007,7 @@ namespace Emby.Server.Implementations
         {
             string dir = Path.Combine(ApplicationPaths.PluginsPath, args.Argument.name);
             var types = Directory.EnumerateFiles(dir, "*.dll", SearchOption.AllDirectories)
-                        .Select(x => Assembly.LoadFrom(x))
+                        .Select(Assembly.LoadFrom)
                         .SelectMany(x => x.ExportedTypes)
                         .Where(x => x.IsClass && !x.IsAbstract && !x.IsInterface && !x.IsGenericType)
                         .ToArray();
@@ -1056,7 +1053,7 @@ namespace Emby.Server.Implementations
             }
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
-            Plugins = GetExports<IPlugin>()
+            _plugins = GetExports<IPlugin>()
                         .Select(LoadPlugin)
                         .Where(i => i != null)
                         .ToArray();
@@ -1705,32 +1702,9 @@ namespace Emby.Server.Implementations
         /// <param name="plugin">The plugin.</param>
         public void RemovePlugin(IPlugin plugin)
         {
-            var list = Plugins.ToList();
+            var list = _plugins.ToList();
             list.Remove(plugin);
-            Plugins = list.ToArray();
-        }
-
-        /// <summary>
-        /// This returns localhost in the case of no external dns, and the hostname if the
-        /// dns is prefixed with a valid Uri prefix.
-        /// </summary>
-        /// <param name="externalDns">The external dns prefix to get the hostname of.</param>
-        /// <returns>The hostname in <paramref name="externalDns"/>.</returns>
-        private static string GetHostnameFromExternalDns(string externalDns)
-        {
-            if (string.IsNullOrEmpty(externalDns))
-            {
-                return "localhost";
-            }
-
-            try
-            {
-                return new Uri(externalDns).Host;
-            }
-            catch
-            {
-                return externalDns;
-            }
+            _plugins = list.ToArray();
         }
 
         public virtual void LaunchUrl(string url)

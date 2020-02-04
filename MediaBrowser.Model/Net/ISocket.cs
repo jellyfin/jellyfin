@@ -14,8 +14,6 @@ namespace MediaBrowser.Model.Net
 
         Task<SocketReceiveResult> ReceiveAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken);
 
-        int Receive(byte[] buffer, int offset, int count);
-
         IAsyncResult BeginReceive(byte[] buffer, int offset, int count, AsyncCallback callback);
         SocketReceiveResult EndReceive(IAsyncResult result);
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -152,12 +153,12 @@ namespace MediaBrowser.Providers.Music
                     CancellationToken = cancellationToken,
                     BufferContent = true
                 },
-                "GET").ConfigureAwait(false))
+                HttpMethod.Get).ConfigureAwait(false))
             using (var response = httpResponse.Content)
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                using (var xmlFileStream = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
+                using (var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true))
                 {
                     await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
                 }

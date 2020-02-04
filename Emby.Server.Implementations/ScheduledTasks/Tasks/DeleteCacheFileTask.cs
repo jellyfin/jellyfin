@@ -158,9 +158,9 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             }
         }
 
-        public string Name => "Cache file cleanup";
+        public string Name => "Clean Cache Directory";
 
-        public string Description => "Deletes cache files no longer needed by the system";
+        public string Description => "Deletes cache files no longer needed by the system.";
 
         public string Category => "Maintenance";
 

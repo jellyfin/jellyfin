@@ -1,6 +1,12 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1402
+#pragma warning disable SA1600
+#pragma warning disable SA1649
+
 using System;
-using System.Collections.Generic;
+using System.Buffers;
 using System.Globalization;
+using System.Text.Json;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +22,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
@@ -54,7 +59,7 @@ namespace MediaBrowser.Api.Playback
     public class GetBitrateTestBytes
     {
         [ApiMember(Name = "Size", Description = "Size", IsRequired = true, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public long Size { get; set; }
+        public int Size { get; set; }
 
         public GetBitrateTestBytes()
         {
@@ -72,7 +77,6 @@ namespace MediaBrowser.Api.Playback
         private readonly INetworkManager _networkManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IUserManager _userManager;
-        private readonly IJsonSerializer _json;
         private readonly IAuthorizationContext _authContext;
 
         public MediaInfoService(
@@ -85,7 +89,6 @@ namespace MediaBrowser.Api.Playback
             INetworkManager networkManager,
             IMediaEncoder mediaEncoder,
             IUserManager userManager,
-            IJsonSerializer json,
             IAuthorizationContext authContext)
             : base(logger, serverConfigurationManager, httpResultFactory)
         {
@@ -95,20 +98,35 @@ namespace MediaBrowser.Api.Playback
             _networkManager = networkManager;
             _mediaEncoder = mediaEncoder;
             _userManager = userManager;
-            _json = json;
             _authContext = authContext;
         }
 
         public object Get(GetBitrateTestBytes request)
         {
-            var bytes = new byte[request.Size];
+            const int MaxSize = 10_000_000;
 
-            for (var i = 0; i < bytes.Length; i++)
+            var size = request.Size;
+
+            if (size <= 0)
             {
-                bytes[i] = 0;
+                throw new ArgumentException($"The requested size ({size}) is equal to or smaller than 0.", nameof(request));
             }
 
-            return ResultFactory.GetResult(null, bytes, "application/octet-stream");
+            if (size > MaxSize)
+            {
+                throw new ArgumentException($"The requested size ({size}) is larger than the max allowed value ({MaxSize}).", nameof(request));
+            }
+
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
+            try
+            {
+                new Random().NextBytes(buffer);
+                return ResultFactory.GetResult(null, buffer, "application/octet-stream");
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
 
         public async Task<object> Get(GetPlaybackInfo request)
@@ -166,8 +184,7 @@ namespace MediaBrowser.Api.Playback
 
         public void Post(CloseMediaSource request)
         {
-            var task = _mediaSourceManager.CloseLiveStream(request.LiveStreamId);
-            Task.WaitAll(task);
+            _mediaSourceManager.CloseLiveStream(request.LiveStreamId).GetAwaiter().GetResult();
         }
 
         public async Task<PlaybackInfoResponse> GetPlaybackInfo(GetPostedPlaybackInfo request)
@@ -176,7 +193,7 @@ namespace MediaBrowser.Api.Playback
 
             var profile = request.DeviceProfile;
 
-            //Logger.LogInformation("GetPostedPlaybackInfo profile: {profile}", _json.SerializeToString(profile));
+            Logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", profile);
 
             if (profile == null)
             {
@@ -215,9 +232,7 @@ namespace MediaBrowser.Api.Playback
                         StartTimeTicks = request.StartTimeTicks,
                         SubtitleStreamIndex = request.SubtitleStreamIndex,
                         UserId = request.UserId,
-                        OpenToken = mediaSource.OpenToken,
-                        //EnableMediaProbe = request.EnableMediaProbe
-
+                        OpenToken = mediaSource.OpenToken
                     }).ConfigureAwait(false);
 
                     info.MediaSources = new MediaSourceInfo[] { openStreamResult.MediaSource };
@@ -247,42 +262,26 @@ namespace MediaBrowser.Api.Playback
             return ToOptimizedResult(result);
         }
 
-        private T Clone<T>(T obj)
-        {
-            // Since we're going to be setting properties on MediaSourceInfos that come out of _mediaSourceManager, we should clone it
-            // Should we move this directly into MediaSourceManager?
-
-            var json = _json.SerializeToString(obj);
-            return _json.DeserializeFromString<T>(json);
-        }
-
         private async Task<PlaybackInfoResponse> GetPlaybackInfo(Guid id, Guid userId, string[] supportedLiveMediaTypes, string mediaSourceId = null, string liveStreamId = null)
         {
             var user = _userManager.GetUserById(userId);
             var item = _libraryManager.GetItemById(id);
             var result = new PlaybackInfoResponse();
 
+            MediaSourceInfo[] mediaSources;
             if (string.IsNullOrWhiteSpace(liveStreamId))
             {
-                IEnumerable<MediaSourceInfo> mediaSources;
-                try
-                {
-                    // TODO handle supportedLiveMediaTypes ?
-                    mediaSources = await _mediaSourceManager.GetPlayackMediaSources(item, user, true, false, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    mediaSources = new List<MediaSourceInfo>();
-                    Logger.LogError(ex, "Could not find media sources for item id {id}", id);
-                    // TODO PlaybackException ??
-                    //result.ErrorCode = ex.ErrorCode;
-                }
 
-                result.MediaSources = mediaSources.ToArray();
+                // TODO handle supportedLiveMediaTypes?
+                var mediaSourcesList = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, true, CancellationToken.None).ConfigureAwait(false);
 
-                if (!string.IsNullOrWhiteSpace(mediaSourceId))
+                if (string.IsNullOrWhiteSpace(mediaSourceId))
                 {
-                    result.MediaSources = result.MediaSources
+                    mediaSources = mediaSourcesList.ToArray();
+                }
+                else
+                {
+                    mediaSources = mediaSourcesList
                         .Where(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
                         .ToArray();
                 }
@@ -291,11 +290,13 @@ namespace MediaBrowser.Api.Playback
             {
                 var mediaSource = await _mediaSourceManager.GetLiveStream(liveStreamId, CancellationToken.None).ConfigureAwait(false);
 
-                result.MediaSources = new MediaSourceInfo[] { mediaSource };
+                mediaSources = new MediaSourceInfo[] { mediaSource };
             }
 
-            if (result.MediaSources.Length == 0)
+            if (mediaSources.Length == 0)
             {
+                result.MediaSources = Array.Empty<MediaSourceInfo>();
+
                 if (!result.ErrorCode.HasValue)
                 {
                     result.ErrorCode = PlaybackErrorCode.NoCompatibleStream;
@@ -303,7 +304,9 @@ namespace MediaBrowser.Api.Playback
             }
             else
             {
-                result.MediaSources = Clone(result.MediaSources);
+                // Since we're going to be setting properties on MediaSourceInfos that come out of _mediaSourceManager, we should clone it
+                // Should we move this directly into MediaSourceManager?
+                result.MediaSources = JsonSerializer.Deserialize<MediaSourceInfo[]>(JsonSerializer.SerializeToUtf8Bytes(mediaSources));
 
                 result.PlaySessionId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
             }
@@ -311,7 +314,8 @@ namespace MediaBrowser.Api.Playback
             return result;
         }
 
-        private void SetDeviceSpecificData(Guid itemId,
+        private void SetDeviceSpecificData(
+            Guid itemId,
             PlaybackInfoResponse result,
             DeviceProfile profile,
             AuthorizationInfo auth,
@@ -339,7 +343,8 @@ namespace MediaBrowser.Api.Playback
             SortMediaSources(result, maxBitrate);
         }
 
-        private void SetDeviceSpecificData(BaseItem item,
+        private void SetDeviceSpecificData(
+            BaseItem item,
             MediaSourceInfo mediaSource,
             DeviceProfile profile,
             AuthorizationInfo auth,
@@ -383,10 +388,12 @@ namespace MediaBrowser.Api.Playback
             {
                 mediaSource.SupportsDirectPlay = false;
             }
+
             if (!enableDirectStream)
             {
                 mediaSource.SupportsDirectStream = false;
             }
+
             if (!enableTranscoding)
             {
                 mediaSource.SupportsTranscoding = false;
@@ -434,9 +441,9 @@ namespace MediaBrowser.Api.Playback
                     }
 
                     // The MediaSource supports direct stream, now test to see if the client supports it
-                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
-                        streamBuilder.BuildAudioItem(options) :
-                        streamBuilder.BuildVideoItem(options);
+                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
+                        ? streamBuilder.BuildAudioItem(options)
+                        : streamBuilder.BuildVideoItem(options);
 
                     if (streamInfo == null || !streamInfo.IsDirectStream)
                     {
@@ -473,9 +480,9 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 // The MediaSource supports direct stream, now test to see if the client supports it
-                var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
-                    streamBuilder.BuildAudioItem(options) :
-                    streamBuilder.BuildVideoItem(options);
+                var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
+                    ? streamBuilder.BuildAudioItem(options)
+                    : streamBuilder.BuildVideoItem(options);
 
                 if (streamInfo == null || !streamInfo.IsDirectStream)
                 {
@@ -493,9 +500,9 @@ namespace MediaBrowser.Api.Playback
                 options.MaxBitrate = GetMaxBitrate(maxBitrate, user);
 
                 // The MediaSource supports direct stream, now test to see if the client supports it
-                var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
-                    streamBuilder.BuildAudioItem(options) :
-                    streamBuilder.BuildVideoItem(options);
+                var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
+                    ? streamBuilder.BuildAudioItem(options)
+                    : streamBuilder.BuildVideoItem(options);
 
                 if (streamInfo != null)
                 {
@@ -510,10 +517,12 @@ namespace MediaBrowser.Api.Playback
                         {
                             mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
                         }
+
                         if (!allowAudioStreamCopy)
                         {
                             mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
                         }
+
                         mediaSource.TranscodingContainer = streamInfo.Container;
                         mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                     }
@@ -609,14 +618,11 @@ namespace MediaBrowser.Api.Playback
 
             }).ThenBy(i =>
             {
-                switch (i.Protocol)
+                return i.Protocol switch
                 {
-                    case MediaProtocol.File:
-                        return 0;
-                    default:
-                        return 1;
-                }
-
+                    MediaProtocol.File => 0,
+                    _ => 1,
+                };
             }).ThenBy(i =>
             {
                 if (maxBitrate.HasValue)

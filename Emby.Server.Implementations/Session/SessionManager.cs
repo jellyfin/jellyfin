@@ -30,17 +30,17 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Session
 {
     /// <summary>
-    /// Class SessionManager
+    /// Class SessionManager.
     /// </summary>
     public class SessionManager : ISessionManager, IDisposable
     {
         /// <summary>
-        /// The _user data repository
+        /// The user data repository.
         /// </summary>
         private readonly IUserDataManager _userDataManager;
 
         /// <summary>
-        /// The _logger
+        /// The logger.
         /// </summary>
         private readonly ILogger _logger;
 
@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.Session
         private readonly IDeviceManager _deviceManager;
 
         /// <summary>
-        /// The _active connections
+        /// The active connections.
         /// </summary>
         private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections =
             new ConcurrentDictionary<string, SessionInfo>(StringComparer.OrdinalIgnoreCase);
@@ -70,18 +70,23 @@ namespace Emby.Server.Implementations.Session
         /// Occurs when [playback start].
         /// </summary>
         public event EventHandler<PlaybackProgressEventArgs> PlaybackStart;
+
         /// <summary>
         /// Occurs when [playback progress].
         /// </summary>
         public event EventHandler<PlaybackProgressEventArgs> PlaybackProgress;
+
         /// <summary>
         /// Occurs when [playback stopped].
         /// </summary>
         public event EventHandler<PlaybackStopEventArgs> PlaybackStopped;
 
         public event EventHandler<SessionEventArgs> SessionStarted;
+
         public event EventHandler<SessionEventArgs> CapabilitiesChanged;
+
         public event EventHandler<SessionEventArgs> SessionEnded;
+
         public event EventHandler<SessionEventArgs> SessionActivity;
 
         public SessionManager(
@@ -924,7 +929,6 @@ namespace Emby.Server.Implementations.Session
                     ClientName = session.Client,
                     DeviceId = session.DeviceId,
                     Session = session
-
                 },
                 _logger);
         }
@@ -1610,7 +1614,7 @@ namespace Emby.Server.Implementations.Session
         private DtoOptions _itemInfoDtoOptions;
 
         /// <summary>
-        /// Converts a BaseItem to a BaseItemInfo
+        /// Converts a BaseItem to a BaseItemInfo.
         /// </summary>
         private BaseItemDto GetItemInfo(BaseItem item, MediaSourceInfo mediaSource)
         {
@@ -1680,7 +1684,7 @@ namespace Emby.Server.Implementations.Session
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error getting {0} image info", ex, type);
+                _logger.LogError(ex, "Error getting image information for {Type}", type);
                 return null;
             }
         }

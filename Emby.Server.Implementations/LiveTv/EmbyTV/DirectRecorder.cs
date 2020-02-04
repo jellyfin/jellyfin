@@ -15,14 +15,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
     {
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
-        private readonly IFileSystem _fileSystem;
         private readonly IStreamHelper _streamHelper;
 
-        public DirectRecorder(ILogger logger, IHttpClient httpClient, IFileSystem fileSystem, IStreamHelper streamHelper)
+        public DirectRecorder(ILogger logger, IHttpClient httpClient, IStreamHelper streamHelper)
         {
             _logger = logger;
             _httpClient = httpClient;
-            _fileSystem = fileSystem;
             _streamHelper = streamHelper;
         }
 
@@ -45,7 +43,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
 
-            using (var output = _fileSystem.GetFileStream(targetFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+            using (var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
                 onStarted();
 
@@ -81,7 +79,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
 
-                using (var output = _fileSystem.GetFileStream(targetFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+                using (var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {
                     onStarted();
 
