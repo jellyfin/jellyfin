@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.Entities
         public string Type { get; set; }
 
         /// <summary>
-        /// Gets or sets the sort order - ascending
+        /// Gets or sets the ascending sort order.
         /// </summary>
         /// <value>The sort order.</value>
         public int? SortOrder { get; set; }
