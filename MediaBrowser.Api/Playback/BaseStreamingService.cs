@@ -145,7 +145,7 @@ namespace MediaBrowser.Api.Playback
             return Path.Combine(folder, filename + ext);
         }
 
-        protected virtual string GetDefaultEncoderPreset()
+        protected virtual string GetDefaultH264Preset()
         {
             return "superfast";
         }
