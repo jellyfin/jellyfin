@@ -7,6 +7,9 @@ namespace Emby.Naming.AudioBook
     /// </summary>
     public class AudioBookInfo
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioBookInfo" /> class.
+        /// </summary>
         public AudioBookInfo()
         {
             Files = new List<AudioBookFileInfo>();

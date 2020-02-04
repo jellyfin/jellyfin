@@ -16,17 +16,13 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
@@ -1006,8 +1002,8 @@ namespace MediaBrowser.Api.Library
         public void Delete(DeleteItems request)
         {
             var ids = string.IsNullOrWhiteSpace(request.Ids)
-             ? Array.Empty<string>()
-             : request.Ids.Split(',');
+                ? Array.Empty<string>()
+                : request.Ids.Split(',');
 
             foreach (var i in ids)
             {
@@ -1028,7 +1024,6 @@ namespace MediaBrowser.Api.Library
                 _libraryManager.DeleteItem(item, new DeleteOptions
                 {
                     DeleteFileLocation = true
-
                 }, true);
             }
         }

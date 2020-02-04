@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.Studios
 
         private RemoteImageInfo GetImage(BaseItem item, string filename, ImageType type, string remoteFilename)
         {
-            var list = GetAvailableImages(filename, _fileSystem);
+            var list = GetAvailableImages(filename);
 
             var match = FindMatch(item, list);
 
@@ -179,9 +179,9 @@ namespace MediaBrowser.Providers.Studios
                 .Replace("/", string.Empty);
         }
 
-        public IEnumerable<string> GetAvailableImages(string file, IFileSystem fileSystem)
+        public IEnumerable<string> GetAvailableImages(string file)
         {
-            using (var fileStream = fileSystem.GetFileStream(file, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+            using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 using (var reader = new StreamReader(fileStream))
                 {

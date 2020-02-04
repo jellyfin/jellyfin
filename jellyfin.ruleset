@@ -24,6 +24,8 @@
     <Rule Id="SA1413" Action="None" />
     <!-- disable warning SA1512: Single-line comments must not be followed by blank line -->
     <Rule Id="SA1512" Action="None" />
+    <!-- disable warning SA1515: Single-line comment should be preceded by blank line -->
+    <Rule Id="SA1515" Action="None" />
     <!-- disable warning SA1633: The file header is missing or not located at the top of the file -->
     <Rule Id="SA1633" Action="None" />
   </Rules>
@@ -35,6 +37,8 @@
     <Rule Id="CA1032" Action="Info" />
     <!-- disable warning CA1062: Validate arguments of public methods -->
     <Rule Id="CA1062" Action="Info" />
+    <!-- disable warning CA1716: Identifiers should not match keywords -->
+    <Rule Id="CA1716" Action="Info" />
     <!-- disable warning CA1720: Identifiers should not contain type names -->
     <Rule Id="CA1720" Action="Info" />
     <!-- disable warning CA1812: internal class that is apparently never instantiated.
@@ -43,14 +47,18 @@
     <Rule Id="CA1812" Action="Info" />
     <!-- disable warning CA1822: Member does not access instance data and can be marked as static -->
     <Rule Id="CA1822" Action="Info" />
+    <!-- disable warning CA2000: Dispose objects before losing scope -->
+    <Rule Id="CA2000" Action="Info" />
 
     <!-- disable warning CA1054: Change the type of parameter url from string to System.Uri -->
     <Rule Id="CA1054" Action="None" />
+    <!-- disable warning CA1055: URI return values should not be strings -->
+    <Rule Id="CA1055" Action="None" />
+    <!-- disable warning CA1056: URI properties should not be strings -->
+    <Rule Id="CA1056" Action="None" />
     <!-- disable warning CA1303: Do not pass literals as localized parameters -->
     <Rule Id="CA1303" Action="None" />
     <!-- disable warning CA1308: Normalize strings to uppercase -->
     <Rule Id="CA1308" Action="None" />
-    <!-- disable warning CA2000: Dispose objects before losing scope -->
-    <Rule Id="CA2000" Action="None" />
   </Rules>
 </RuleSet>

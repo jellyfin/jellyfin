@@ -475,7 +475,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     .Append(' ');
             }
 
-            if (state.IsVideoRequest 
+            if (state.IsVideoRequest
                 && string.Equals(encodingOptions.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
             {
                 var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, encodingOptions);
@@ -486,11 +486,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (!string.IsNullOrEmpty(videoDecoder) && videoDecoder.Contains("qsv", StringComparison.OrdinalIgnoreCase))
                     {
                         arg.Append("-hwaccel qsv ");
-                    } 
-                    else 
+                    }
+                    else
                     {
                         arg.Append("-init_hw_device qsv=hw -filter_hw_device hw ");
-                    }	
+                    }
                 }
 
                 arg.Append(videoDecoder + " ");
@@ -653,7 +653,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             //     _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(fallbackFontPath));
             //     using (var stream = _assemblyInfo.GetManifestResourceStream(GetType(), GetType().Namespace + ".DroidSansFallback.ttf"))
             //     {
-            //         using (var fileStream = _fileSystem.GetFileStream(fallbackFontPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+            //         using (var fileStream = new FileStream(fallbackFontPath, FileMode.Create, FileAccess.Write, FileShare.Read))
             //         {
             //             stream.CopyTo(fileStream);
             //         }
@@ -1624,22 +1624,22 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Setup default filtergraph utilizing FFMpeg overlay() and FFMpeg scale() (see the return of this function for index reference)
             var retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay{3}\"";
 
-            if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase)) 
+            if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
             {
                 /*
                     QSV in FFMpeg can now setup hardware overlay for transcodes.
                     For software decoding and hardware encoding option, frames must be hwuploaded into hardware
-                    with fixed frame size. 
+                    with fixed frame size.
                 */
                 if (!string.IsNullOrEmpty(videoDecoder) && videoDecoder.Contains("qsv", StringComparison.OrdinalIgnoreCase))
                 {
                     retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay_qsv=x=(W-w)/2:y=(H-h)/2{3}\"";
-                } 
-                else 
+                }
+                else
                 {
                     retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]hwupload=extra_hw_frames=64[v];[v][sub]overlay_qsv=x=(W-w)/2:y=(H-h)/2{3}\"";
                 }
-            } 
+            }
 
             return string.Format(
                 CultureInfo.InvariantCulture,
@@ -1731,8 +1731,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                             vaapi_or_qsv,
                             outputWidth,
                             outputHeight));
-                } 
-                else 
+                }
+                else
                 {
                     filters.Add(string.Format(CultureInfo.InvariantCulture, "scale_{0}=format=nv12", vaapi_or_qsv));
                 }
@@ -1979,8 +1979,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, options);
 
-            // If we are software decoding, and hardware encoding	  
-            if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) 
+            // If we are software decoding, and hardware encoding
+            if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
                 && (string.IsNullOrEmpty(videoDecoder) || !videoDecoder.Contains("qsv", StringComparison.OrdinalIgnoreCase)))
             {
                 filters.Add("format=nv12|qsv");
@@ -2642,22 +2642,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                         else
                             return "-hwaccel dxva2";
                     }
-
-                    switch (videoStream.Codec.ToLowerInvariant())
+                    else
                     {
-                        case "avc":
-                        case "h264":
-                            if (_mediaEncoder.SupportsDecoder("h264_amf") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
-                            {
-                                return "-c:v h264_amf";
-                            }
-                            break;
-                        case "mpeg2video":
-                            if (_mediaEncoder.SupportsDecoder("hevc_amf") && encodingOptions.HardwareDecodingCodecs.Contains("mpeg2video", StringComparer.OrdinalIgnoreCase))
-                            {
-                                return "-c:v mpeg2_mmal";
-                            }
-                            break;
+                        return "-hwaccel vaapi";
                     }
                 }
             }
@@ -2770,7 +2757,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (!state.RunTimeTicks.HasValue)
                 {
-                    args += " -flags -global_header -fflags +genpts";
+                    args += " -fflags +genpts";
                 }
             }
             else
@@ -2814,11 +2801,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (!string.IsNullOrEmpty(qualityParam))
                 {
                     args += " " + qualityParam.Trim();
-                }
-
-                if (!state.RunTimeTicks.HasValue)
-                {
-                    args += " -flags -global_header";
                 }
             }
 

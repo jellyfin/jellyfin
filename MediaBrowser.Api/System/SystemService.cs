@@ -170,10 +170,10 @@ namespace MediaBrowser.Api.System
             // For older files, assume fully static
             if (file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1))
             {
-                return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShareMode.Read);
+                return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShare.Read);
             }
 
-            return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShareMode.ReadWrite);
+            return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShare.ReadWrite);
         }
 
         /// <summary>

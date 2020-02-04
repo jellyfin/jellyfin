@@ -159,7 +159,6 @@ namespace MediaBrowser.Model.Configuration
 
         public MetadataOptions[] MetadataOptions { get; set; }
 
-        public bool EnableAutomaticRestart { get; set; }
         public bool SkipDeserializationForBasicTypes { get; set; }
 
         public string ServerName { get; set; }
@@ -249,7 +248,6 @@ namespace MediaBrowser.Model.Configuration
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
 
-            EnableAutomaticRestart = true;
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
 

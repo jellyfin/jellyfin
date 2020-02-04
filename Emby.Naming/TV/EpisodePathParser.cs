@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -128,7 +131,7 @@ namespace Emby.Naming.TV
                     var endingNumberGroup = match.Groups["endingepnumber"];
                     if (endingNumberGroup.Success)
                     {
-                        // Will only set EndingEpsiodeNumber if the captured number is not followed by additional numbers
+                        // Will only set EndingEpisodeNumber if the captured number is not followed by additional numbers
                         // or a 'p' or 'i' as what you would get with a pixel resolution specification.
                         // It avoids erroneous parsing of something like "series-s09e14-1080p.mkv" as a multi-episode from E14 to E108
                         int nextIndex = endingNumberGroup.Index + endingNumberGroup.Length;

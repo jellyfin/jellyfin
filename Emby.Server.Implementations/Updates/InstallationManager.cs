@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -189,7 +189,7 @@ namespace Emby.Server.Implementations.Updates
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<PackageVersionInfo> GetAvailablePluginUpdates(CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<PackageVersionInfo> GetAvailablePluginUpdates([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var catalog = await GetAvailablePackages(cancellationToken).ConfigureAwait(false);
 

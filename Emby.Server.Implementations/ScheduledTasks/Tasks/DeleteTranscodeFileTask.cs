@@ -125,9 +125,9 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             }
         }
 
-        public string Name => "Transcode file cleanup";
+        public string Name => "Clean Transcode Directory";
 
-        public string Description => "Deletes transcode files more than 24 hours old.";
+        public string Description => "Deletes transcode files more than one day old.";
 
         public string Category => "Maintenance";
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -64,7 +65,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 httpRequestOptions.RequestHeaders[header.Key] = header.Value;
             }
 
-            var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false);
+            var response = await _httpClient.SendAsync(httpRequestOptions, HttpMethod.Get).ConfigureAwait(false);
 
             var extension = "ts";
             var requiresRemux = false;
@@ -126,12 +127,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     Logger.LogInformation("Beginning {0} stream to {1}", GetType().Name, TempFilePath);
                     using (response)
                     using (var stream = response.Content)
-                    using (var fileStream = FileSystem.GetFileStream(TempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
+                    using (var fileStream = new FileStream(TempFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
                     {
                         await StreamHelper.CopyToAsync(
                             stream,
                             fileStream,
-                            StreamDefaults.DefaultCopyToBufferSize,
+                            IODefaults.CopyToBufferSize,
                             () => Resolve(openTaskCompletionSource),
                             cancellationToken).ConfigureAwait(false);
                     }

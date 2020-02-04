@@ -9,12 +9,12 @@ using MediaBrowser.Model.Tasks;
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Class PeopleValidationTask
+    /// Class PeopleValidationTask.
     /// </summary>
     public class PeopleValidationTask : IScheduledTask
     {
         /// <summary>
-        /// The _library manager
+        /// The library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
@@ -32,13 +32,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Creates the triggers that define when the task will run
+        /// Creates the triggers that define when the task will run.
         /// </summary>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
             return new[]
             {
-                // Every so often
                 new TaskTriggerInfo
                 {
                     Type = TaskTriggerInfo.TriggerInterval,
@@ -48,7 +47,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Returns the task to be executed
+        /// Returns the task to be executed.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
@@ -58,7 +57,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             return _libraryManager.ValidatePeople(cancellationToken, progress);
         }
 
-        public string Name => "Refresh people";
+        public string Name => "Refresh People";
 
         public string Description => "Updates metadata for actors and directors in your media library.";
 

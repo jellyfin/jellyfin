@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -103,17 +104,16 @@ namespace MediaBrowser.Common.Updates
         Task InstallPackage(PackageVersionInfo package, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Uninstalls a plugin
+        /// Uninstalls a plugin.
         /// </summary>
         /// <param name="plugin">The plugin.</param>
-        /// <exception cref="ArgumentException"></exception>
         void UninstallPlugin(IPlugin plugin);
 
         /// <summary>
-        /// Cancels the installation
+        /// Cancels the installation.
         /// </summary>
-        /// <param name="id">The id of the package that is being installed</param>
-        /// <returns>Returns true if the install was cancelled</returns>
+        /// <param name="id">The id of the package that is being installed.</param>
+        /// <returns>Returns true if the install was cancelled.</returns>
         bool CancelInstallation(Guid id);
     }
 }

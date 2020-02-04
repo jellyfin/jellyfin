@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.IO;
 using System.Linq;
@@ -20,7 +23,7 @@ namespace Emby.Naming.Video
         {
             return _options.VideoExtraRules
                 .Select(i => GetExtraInfo(path, i))
-                .FirstOrDefault(i => !string.IsNullOrEmpty(i.ExtraType)) ?? new ExtraResult();
+                .FirstOrDefault(i => i.ExtraType != null) ?? new ExtraResult();
         }
 
         private ExtraResult GetExtraInfo(string path, ExtraRule rule)
