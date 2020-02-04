@@ -126,7 +126,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
         protected override string GetCommandLineArguments(string outputPath, EncodingOptions encodingOptions, StreamState state, bool isEncoding)
         {
-            return EncodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, outputPath, GetDefaultEncoderPreset());
+            return EncodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, outputPath, GetDefaultH264Preset());
         }
     }
 }
