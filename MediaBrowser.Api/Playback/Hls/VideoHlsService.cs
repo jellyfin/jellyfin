@@ -143,7 +143,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
-                args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultEncoderPreset()) + keyFrameArg;
+                args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultH264Preset()) + keyFrameArg;
 
                 // Add resolution params, if specified
                 if (!hasGraphicalSubs)
