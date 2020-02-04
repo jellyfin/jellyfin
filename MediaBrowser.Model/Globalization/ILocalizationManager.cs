@@ -5,7 +5,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Model.Globalization
 {
     /// <summary>
-    /// Interface ILocalizationManager
+    /// Interface ILocalizationManager.
     /// </summary>
     public interface ILocalizationManager
     {
