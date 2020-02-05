@@ -8,11 +8,11 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Api.Session
+namespace MediaBrowser.Api.Sessions
 {
     [Route("/Auth/Keys", "GET")]
     [Authenticated(Roles = "Admin")]
-    public class GetApiKeys
+    public class GetKeys
     {
     }
 
@@ -32,7 +32,7 @@ namespace MediaBrowser.Api.Session
         public string App { get; set; }
     }
 
-    public class ApiKeysService : BaseApiService
+    public class ApiKeyService : BaseApiService
     {
         private readonly ISessionManager _sessionManager;
 
@@ -40,8 +40,8 @@ namespace MediaBrowser.Api.Session
 
         private readonly IServerApplicationHost _appHost;
 
-        public ApiKeysService(
-            ILogger<ApiKeysService> logger,
+        public ApiKeyService(
+            ILogger<ApiKeyService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             ISessionManager sessionManager,
@@ -72,7 +72,7 @@ namespace MediaBrowser.Api.Session
             });
         }
 
-        public object Get(GetApiKeys request)
+        public object Get(GetKeys request)
         {
             var result = _authRepo.Get(new AuthenticationInfoQuery
             {

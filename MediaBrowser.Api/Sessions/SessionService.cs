@@ -12,7 +12,7 @@ using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Api.Session
+namespace MediaBrowser.Api.Sessions
 {
     /// <summary>
     /// Class GetSessions
@@ -248,7 +248,7 @@ namespace MediaBrowser.Api.Session
     /// <summary>
     /// Class SessionsService.
     /// </summary>
-    public class SessionsService : BaseApiService
+    public class SessionService : BaseApiService
     {
         /// <summary>
         /// The _session manager.
@@ -260,8 +260,8 @@ namespace MediaBrowser.Api.Session
         private readonly IDeviceManager _deviceManager;
         private readonly ISessionContext _sessionContext;
 
-        public SessionsService(
-            ILogger<SessionsService> logger,
+        public SessionService(
+            ILogger<SessionService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             ISessionManager sessionManager,
