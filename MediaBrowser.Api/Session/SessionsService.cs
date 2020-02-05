@@ -1,14 +1,11 @@
 using System;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Services;
@@ -24,10 +21,10 @@ namespace MediaBrowser.Api.Session
     [Authenticated]
     public class GetSessions : IReturn<SessionInfo[]>
     {
-        [ApiMember(Name = "ControllableByUserId", Description = "Optional. Filter by sessions that a given user is allowed to remote control.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "ControllableByUserId", Description = "Filter by sessions that a given user is allowed to remote control.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid ControllableByUserId { get; set; }
 
-        [ApiMember(Name = "DeviceId", Description = "Optional. Filter by device id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "DeviceId", Description = "Filter by device Id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string DeviceId { get; set; }
 
         public int? ActiveWithinSeconds { get; set; }
@@ -182,7 +179,7 @@ namespace MediaBrowser.Api.Session
         [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
 
-        [ApiMember(Name = "UserId", Description = "UserId Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string UserId { get; set; }
     }
 
@@ -236,12 +233,6 @@ namespace MediaBrowser.Api.Session
     {
     }
 
-    [Route("/Auth/Keys", "GET")]
-    [Authenticated(Roles = "Admin")]
-    public class GetApiKeys
-    {
-    }
-
     [Route("/Auth/Providers", "GET")]
     [Authenticated(Roles = "Admin")]
     public class GetAuthProviders : IReturn<NameIdPair[]>
@@ -252,22 +243,6 @@ namespace MediaBrowser.Api.Session
     [Authenticated(Roles = "Admin")]
     public class GetPasswordResetProviders : IReturn<NameIdPair[]>
     {
-    }
-
-    [Route("/Auth/Keys/{Key}", "DELETE")]
-    [Authenticated(Roles = "Admin")]
-    public class RevokeKey
-    {
-        [ApiMember(Name = "Key", Description = "Auth Key", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public string Key { get; set; }
-    }
-
-    [Route("/Auth/Keys", "POST")]
-    [Authenticated(Roles = "Admin")]
-    public class CreateKey
-    {
-        [ApiMember(Name = "App", Description = "App", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string App { get; set; }
     }
 
     /// <summary>
@@ -282,20 +257,16 @@ namespace MediaBrowser.Api.Session
 
         private readonly IUserManager _userManager;
         private readonly IAuthorizationContext _authContext;
-        private readonly IAuthenticationRepository _authRepo;
         private readonly IDeviceManager _deviceManager;
         private readonly ISessionContext _sessionContext;
-        private readonly IServerApplicationHost _appHost;
 
         public SessionsService(
             ILogger<SessionsService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             ISessionManager sessionManager,
-            IServerApplicationHost appHost,
             IUserManager userManager,
             IAuthorizationContext authContext,
-            IAuthenticationRepository authRepo,
             IDeviceManager deviceManager,
             ISessionContext sessionContext)
             : base(logger, serverConfigurationManager, httpResultFactory)
@@ -303,10 +274,8 @@ namespace MediaBrowser.Api.Session
             _sessionManager = sessionManager;
             _userManager = userManager;
             _authContext = authContext;
-            _authRepo = authRepo;
             _deviceManager = deviceManager;
             _sessionContext = sessionContext;
-            _appHost = appHost;
         }
 
         public object Get(GetAuthProviders request)
@@ -319,40 +288,11 @@ namespace MediaBrowser.Api.Session
             return _userManager.GetPasswordResetProviders();
         }
 
-        public void Delete(RevokeKey request)
-        {
-            _sessionManager.RevokeToken(request.Key);
-
-        }
-
-        public void Post(CreateKey request)
-        {
-            _authRepo.Create(new AuthenticationInfo
-            {
-                AppName = request.App,
-                AccessToken = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
-                DateCreated = DateTime.UtcNow,
-                DeviceId = _appHost.SystemId,
-                DeviceName = _appHost.FriendlyName,
-                AppVersion = _appHost.ApplicationVersionString
-            });
-        }
-
         public void Post(ReportSessionEnded request)
         {
             var auth = _authContext.GetAuthorizationInfo(Request);
 
             _sessionManager.Logout(auth.Token);
-        }
-
-        public object Get(GetApiKeys request)
-        {
-            var result = _authRepo.Get(new AuthenticationInfoQuery
-            {
-                HasUser = false
-            });
-
-            return result;
         }
 
         /// <summary>
