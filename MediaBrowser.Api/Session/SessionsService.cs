@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Session
 {
     /// <summary>
-    /// Class GetSessions
+    /// Class GetSessions.
     /// </summary>
     [Route("/Sessions", "GET", Summary = "Gets a list of sessions")]
     [Authenticated]
@@ -34,7 +34,7 @@ namespace MediaBrowser.Api.Session
     }
 
     /// <summary>
-    /// Class DisplayContent
+    /// Class DisplayContent.
     /// </summary>
     [Route("/Sessions/{Id}/Viewing", "POST", Summary = "Instructs a session to browse to an item or view")]
     [Authenticated]

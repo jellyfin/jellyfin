@@ -1,6 +1,4 @@
 using System;
-using System.Net.WebSockets;
-using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 
 namespace Emby.Server.Implementations.Net

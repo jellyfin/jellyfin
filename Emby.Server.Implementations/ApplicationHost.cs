@@ -599,7 +599,7 @@ namespace Emby.Server.Implementations
                 HttpsPort = ServerConfiguration.DefaultHttpsPort;
             }
 
-            JsonSerializer = new JsonSerializer(FileSystemManager);
+            JsonSerializer = new JsonSerializer();
 
             if (Plugins != null)
             {
@@ -1007,7 +1007,7 @@ namespace Emby.Server.Implementations
         {
             string dir = Path.Combine(ApplicationPaths.PluginsPath, args.Argument.name);
             var types = Directory.EnumerateFiles(dir, "*.dll", SearchOption.AllDirectories)
-                        .Select(x => Assembly.LoadFrom(x))
+                        .Select(Assembly.LoadFrom)
                         .SelectMany(x => x.ExportedTypes)
                         .Where(x => x.IsClass && !x.IsAbstract && !x.IsInterface && !x.IsGenericType)
                         .ToArray();
@@ -1705,29 +1705,6 @@ namespace Emby.Server.Implementations
             var list = _plugins.ToList();
             list.Remove(plugin);
             _plugins = list.ToArray();
-        }
-
-        /// <summary>
-        /// This returns localhost in the case of no external dns, and the hostname if the
-        /// dns is prefixed with a valid Uri prefix.
-        /// </summary>
-        /// <param name="externalDns">The external dns prefix to get the hostname of.</param>
-        /// <returns>The hostname in <paramref name="externalDns"/>.</returns>
-        private static string GetHostnameFromExternalDns(string externalDns)
-        {
-            if (string.IsNullOrEmpty(externalDns))
-            {
-                return "localhost";
-            }
-
-            try
-            {
-                return new Uri(externalDns).Host;
-            }
-            catch
-            {
-                return externalDns;
-            }
         }
 
         public virtual void LaunchUrl(string url)

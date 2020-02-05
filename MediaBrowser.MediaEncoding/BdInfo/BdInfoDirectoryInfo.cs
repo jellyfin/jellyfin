@@ -1,16 +1,27 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using BDInfo.IO;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.MediaEncoding.BdInfo
 {
-    class BdInfoDirectoryInfo : BDInfo.IO.IDirectoryInfo
+    class BdInfoDirectoryInfo : IDirectoryInfo
     {
-        IFileSystem _fileSystem = null;
+        private readonly IFileSystem _fileSystem = null;
 
-        FileSystemMetadata _impl = null;
+        private readonly FileSystemMetadata _impl = null;
+
+        public BdInfoDirectoryInfo(IFileSystem fileSystem, string path)
+        {
+            _fileSystem = fileSystem;
+            _impl = _fileSystem.GetDirectoryInfo(path);
+        }
+
+        private BdInfoDirectoryInfo(IFileSystem fileSystem, FileSystemMetadata impl)
+        {
+            _fileSystem = fileSystem;
+            _impl = impl;
+        }
 
         public string Name => _impl.Name;
 
@@ -25,20 +36,9 @@ namespace MediaBrowser.MediaEncoding.BdInfo
                 {
                     return new BdInfoDirectoryInfo(_fileSystem, parentFolder);
                 }
+
                 return null;
             }
-        }
-
-        public BdInfoDirectoryInfo(IFileSystem fileSystem, string path)
-        {
-            _fileSystem = fileSystem;
-            _impl = _fileSystem.GetDirectoryInfo(path);
-        }
-
-        private BdInfoDirectoryInfo(IFileSystem fileSystem, FileSystemMetadata impl)
-        {
-            _fileSystem = fileSystem;
-            _impl = impl;
         }
 
         public IDirectoryInfo[] GetDirectories()
@@ -50,20 +50,20 @@ namespace MediaBrowser.MediaEncoding.BdInfo
         public IFileInfo[] GetFiles()
         {
             return Array.ConvertAll(_fileSystem.GetFiles(_impl.FullName).ToArray(),
-                x => new BdInfoFileInfo(_fileSystem, x));
+                x => new BdInfoFileInfo(x));
         }
 
         public IFileInfo[] GetFiles(string searchPattern)
         {
             return Array.ConvertAll(_fileSystem.GetFiles(_impl.FullName, new[] { searchPattern }, false, false).ToArray(),
-                x => new BdInfoFileInfo(_fileSystem, x));
+                x => new BdInfoFileInfo(x));
         }
 
         public IFileInfo[] GetFiles(string searchPattern, System.IO.SearchOption searchOption)
         {
             return Array.ConvertAll(_fileSystem.GetFiles(_impl.FullName, new[] { searchPattern }, false,
                     searchOption.HasFlag(System.IO.SearchOption.AllDirectories)).ToArray(),
-                x => new BdInfoFileInfo(_fileSystem, x));
+                x => new BdInfoFileInfo(x));
         }
 
         public static IDirectoryInfo FromFileSystemPath(Model.IO.IFileSystem fs, string path)

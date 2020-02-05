@@ -1,6 +1,4 @@
-﻿using System;
-using System.Globalization;
-using Emby.Naming.Common;
+﻿using Emby.Naming.Common;
 using Emby.Naming.Video;
 using Xunit;
 

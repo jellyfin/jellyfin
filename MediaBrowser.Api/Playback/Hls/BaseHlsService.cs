@@ -168,7 +168,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private string GetLivePlaylistText(string path, int segmentLength)
         {
-            using (var stream = FileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite))
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 using (var reader = new StreamReader(stream))
                 {
@@ -211,7 +211,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 try
                 {
-                    // Need to use FileShareMode.ReadWrite because we're reading the file at the same time it's being written
+                    // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
                     using (var fileStream = GetPlaylistFileStream(playlist))
                     {
                         using (var reader = new StreamReader(fileStream))
@@ -252,11 +252,11 @@ namespace MediaBrowser.Api.Playback.Hls
 
             try
             {
-                return FileSystem.GetFileStream(tmpPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, FileOpenOptions.SequentialScan);
+                return new FileStream(tmpPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, FileOptions.SequentialScan);
             }
             catch (IOException)
             {
-                return FileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, FileOpenOptions.SequentialScan);
+                return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, FileOptions.SequentialScan);
             }
         }
 
