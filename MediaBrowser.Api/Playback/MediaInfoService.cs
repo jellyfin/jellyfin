@@ -415,11 +415,7 @@ namespace MediaBrowser.Api.Playback
             // Beginning of Playback Determination: Attempt DirectPlay first
             if (mediaSource.SupportsDirectPlay)
             {
-                if (mediaSource.IsRemote && forceDirectPlayRemoteMediaSource && user.Policy.ForceRemoteSourceTranscoding)
-                {
-                    mediaSource.SupportsDirectPlay = false;
-                }
-                else if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
+                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
                 {
                     mediaSource.SupportsDirectPlay = false;
                 }
@@ -468,11 +464,7 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsDirectStream)
             {
-                if (mediaSource.IsRemote && forceDirectPlayRemoteMediaSource && user.Policy.ForceRemoteSourceTranscoding)
-                {
-                    mediaSource.SupportsDirectStream = false;
-                }
-                else if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
+                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
                 {
                     mediaSource.SupportsDirectStream = false;
                 }
@@ -516,17 +508,6 @@ namespace MediaBrowser.Api.Playback
             {
 				if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
 				{
-					if (GetMaxBitrate(maxBitrate, user) < mediaSource.Bitrate)
-					{
-						options.MaxBitrate = GetMaxBitrate(maxBitrate, user);
-					}
-					else
-					{
-						options.MaxBitrate = mediaSource.Bitrate;
-					}
-				}
-				else
-			    {
 					options.MaxBitrate = GetMaxBitrate(maxBitrate, user);
 				}
 				
@@ -543,7 +524,10 @@ namespace MediaBrowser.Api.Playback
                         streamInfo.StartPositionTicks = startTimeTicks;
                         mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
                         mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
-                        mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                        if (!allowAudioStreamCopy)
+                        {
+                            mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                        }
                         mediaSource.TranscodingContainer = streamInfo.Container;
                         mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                         
