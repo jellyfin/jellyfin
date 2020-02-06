@@ -33,6 +33,7 @@
  - [mark-monteiro](https://github.com/mark-monteiro)
  - [ullmie02](https://github.com/ullmie02)
  - [pR0Ps](https://github.com/pR0Ps)
+ - [artiume](https://github.com/Artiume)
 
 # Emby Contributors
 
