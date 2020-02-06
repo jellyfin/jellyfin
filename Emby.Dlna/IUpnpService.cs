@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace Emby.Dlna
 {
     public interface IUpnpService
@@ -13,6 +15,6 @@ namespace Emby.Dlna
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>ControlResponse.</returns>
-        ControlResponse ProcessControlRequest(ControlRequest request);
+        Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request);
     }
 }

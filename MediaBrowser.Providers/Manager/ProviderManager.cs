@@ -182,7 +182,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var fileStream = _fileSystem.GetFileStream(source, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
+            var fileStream = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, true);
 
             return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
         }

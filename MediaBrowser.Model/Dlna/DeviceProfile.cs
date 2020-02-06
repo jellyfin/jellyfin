@@ -122,7 +122,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!StringHelper.EqualsIgnoreCase(container, i.Container))
+                if (!string.Equals(container, i.Container, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -148,7 +148,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!StringHelper.EqualsIgnoreCase(container, i.Container))
+                if (!string.Equals(container, i.Container, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -158,7 +158,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!StringHelper.EqualsIgnoreCase(videoCodec, i.VideoCodec ?? string.Empty))
+                if (!string.Equals(videoCodec, i.VideoCodec ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }

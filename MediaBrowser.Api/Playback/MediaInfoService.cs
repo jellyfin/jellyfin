@@ -5,7 +5,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
 using System.Linq;
@@ -23,7 +22,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
@@ -275,7 +273,7 @@ namespace MediaBrowser.Api.Playback
             {
 
                 // TODO handle supportedLiveMediaTypes?
-                var mediaSourcesList = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, false, CancellationToken.None).ConfigureAwait(false);
+                var mediaSourcesList = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, true, CancellationToken.None).ConfigureAwait(false);
 
                 if (string.IsNullOrWhiteSpace(mediaSourceId))
                 {

@@ -61,21 +61,6 @@ namespace Jellyfin.Naming.Tests.TV
         }
 
         [Fact]
-        public void TestEpisodeNumber50()
-        {
-            // This convention is not currently supported, just adding in case we want to look at it in the future
-            Assert.Equal(1, GetEpisodeNumberFromFile(@"2016/Season s2016e1.mp4"));
-        }
-
-        // FIXME
-        // [Fact]
-        public void TestEpisodeNumber51()
-        {
-            // This convention is not currently supported, just adding in case we want to look at it in the future
-            Assert.Equal(1, GetEpisodeNumberFromFile(@"2016/Season 2016x1.mp4"));
-        }
-
-        [Fact]
         public void TestEpisodeNumber52()
         {
             Assert.Equal(16, GetEpisodeNumberFromFile(@"Season 2/Episode - 16.avi"));
@@ -84,29 +69,13 @@ namespace Jellyfin.Naming.Tests.TV
         [Fact]
         public void TestEpisodeNumber53()
         {
-            // This is not supported. Expected to fail, although it would be a good one to add support for.
             Assert.Equal(16, GetEpisodeNumberFromFile(@"Season 2/Episode 16.avi"));
         }
 
         [Fact]
         public void TestEpisodeNumber54()
         {
-            // This is not supported. Expected to fail, although it would be a good one to add support for.
             Assert.Equal(16, GetEpisodeNumberFromFile(@"Season 2/Episode 16 - Some Title.avi"));
-        }
-
-        // [Fact]
-        public void TestEpisodeNumber55()
-        {
-            // This is not supported. Expected to fail, although it would be a good one to add support for.
-            Assert.Equal(16, GetEpisodeNumberFromFile(@"Season 2/Season 3 Episode 16.avi"));
-        }
-
-        // [Fact]
-        public void TestEpisodeNumber56()
-        {
-            // This is not supported. Expected to fail, although it would be a good one to add support for.
-            Assert.Equal(16, GetEpisodeNumberFromFile(@"Season 2/Season 3 Episode 16 - Some Title.avi"));
         }
 
         [Fact]

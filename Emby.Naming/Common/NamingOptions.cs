@@ -11,46 +11,6 @@ namespace Emby.Naming.Common
 {
     public class NamingOptions
     {
-        public string[] AudioFileExtensions { get; set; }
-
-        public string[] AlbumStackingPrefixes { get; set; }
-
-        public string[] SubtitleFileExtensions { get; set; }
-
-        public char[] SubtitleFlagDelimiters { get; set; }
-
-        public string[] SubtitleForcedFlags { get; set; }
-
-        public string[] SubtitleDefaultFlags { get; set; }
-
-        public EpisodeExpression[] EpisodeExpressions { get; set; }
-
-        public string[] EpisodeWithoutSeasonExpressions { get; set; }
-
-        public string[] EpisodeMultiPartExpressions { get; set; }
-
-        public string[] VideoFileExtensions { get; set; }
-
-        public string[] StubFileExtensions { get; set; }
-
-        public string[] AudioBookPartsExpressions { get; set; }
-
-        public StubTypeRule[] StubTypes { get; set; }
-
-        public char[] VideoFlagDelimiters { get; set; }
-
-        public Format3DRule[] Format3DRules { get; set; }
-
-        public string[] VideoFileStackingExpressions { get; set; }
-
-        public string[] CleanDateTimes { get; set; }
-
-        public string[] CleanStrings { get; set; }
-
-        public EpisodeExpression[] MultipleEpisodeExpressions { get; set; }
-
-        public ExtraRule[] VideoExtraRules { get; set; }
-
         public NamingOptions()
         {
             VideoFileExtensions = new[]
@@ -177,13 +137,12 @@ namespace Emby.Naming.Common
 
             CleanDateTimes = new[]
             {
-                @"(.+[^_\,\.\(\)\[\]\-])[_\.\(\)\[\]\-](\d{4})([ _\,\.\(\)\[\]\-][^\d]|).*(\d{4})*"
+                @"(.+[^_\,\.\(\)\[\]\-])[_\.\(\)\[\]\-](19\d{2}|20\d{2})([ _\,\.\(\)\[\]\-][^0-9]|).*(19\d{2}|20\d{2})*"
             };
 
             CleanStrings = new[]
             {
-                @"[ _\,\.\(\)\[\]\-](ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multisubs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r3|r5|bd5|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|x264|h264|xvid|xvidvd|xxx|www.www|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
-                @"[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
+                @"[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|HDR|HDC|UHD|UltraHD|4k|ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multisubs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r3|r5|bd5|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|x264|h264|xvid|xvidvd|xxx|www.www|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
                 @"(\[.*\])"
             };
 
@@ -340,7 +299,7 @@ namespace Emby.Naming.Common
 
                 // *** End Kodi Standard Naming
 
-                // [bar] Foo - 1 [baz]
+                // [bar] Foo - 1 [baz]
                 new EpisodeExpression(@".*?(\[.*?\])+.*?(?<seriesname>[\w\s]+?)[-\s_]+(?<epnumber>\d+).*$")
                 {
                     IsNamed = true
@@ -682,11 +641,54 @@ namespace Emby.Naming.Common
             Compile();
         }
 
+        public string[] AudioFileExtensions { get; set; }
+
+        public string[] AlbumStackingPrefixes { get; set; }
+
+        public string[] SubtitleFileExtensions { get; set; }
+
+        public char[] SubtitleFlagDelimiters { get; set; }
+
+        public string[] SubtitleForcedFlags { get; set; }
+
+        public string[] SubtitleDefaultFlags { get; set; }
+
+        public EpisodeExpression[] EpisodeExpressions { get; set; }
+
+        public string[] EpisodeWithoutSeasonExpressions { get; set; }
+
+        public string[] EpisodeMultiPartExpressions { get; set; }
+
+        public string[] VideoFileExtensions { get; set; }
+
+        public string[] StubFileExtensions { get; set; }
+
+        public string[] AudioBookPartsExpressions { get; set; }
+
+        public StubTypeRule[] StubTypes { get; set; }
+
+        public char[] VideoFlagDelimiters { get; set; }
+
+        public Format3DRule[] Format3DRules { get; set; }
+
+        public string[] VideoFileStackingExpressions { get; set; }
+
+        public string[] CleanDateTimes { get; set; }
+
+        public string[] CleanStrings { get; set; }
+
+        public EpisodeExpression[] MultipleEpisodeExpressions { get; set; }
+
+        public ExtraRule[] VideoExtraRules { get; set; }
+
         public Regex[] VideoFileStackingRegexes { get; private set; }
+
         public Regex[] CleanDateTimeRegexes { get; private set; }
+
         public Regex[] CleanStringRegexes { get; private set; }
 
         public Regex[] EpisodeWithoutSeasonRegexes { get; private set; }
+
         public Regex[] EpisodeMultiPartRegexes { get; private set; }
 
         public void Compile()

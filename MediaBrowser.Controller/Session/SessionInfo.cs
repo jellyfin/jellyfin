@@ -127,12 +127,6 @@ namespace MediaBrowser.Controller.Session
         public ISessionController[] SessionControllers { get; set; }
 
         /// <summary>
-        /// Gets or sets the application icon URL.
-        /// </summary>
-        /// <value>The application icon URL.</value>
-        public string AppIconUrl { get; set; }
-
-        /// <summary>
         /// Gets or sets the supported commands.
         /// </summary>
         /// <value>The supported commands.</value>
@@ -259,7 +253,7 @@ namespace MediaBrowser.Controller.Session
 
             foreach (var additionalUser in AdditionalUsers)
             {
-                if (userId.Equals(userId))
+                if (additionalUser.UserId.Equals(userId))
                 {
                     return true;
                 }
@@ -321,7 +315,7 @@ namespace MediaBrowser.Controller.Session
 
             var newPositionTicks = positionTicks + ProgressIncrement;
             var item = progressInfo.Item;
-            long? runtimeTicks = item == null ? null : item.RunTimeTicks;
+            long? runtimeTicks = item?.RunTimeTicks;
 
             // Don't report beyond the runtime
             if (runtimeTicks.HasValue && newPositionTicks >= runtimeTicks.Value)

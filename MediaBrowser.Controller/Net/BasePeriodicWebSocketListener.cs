@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// The _active connections
         /// </summary>
-        protected readonly List<Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>> ActiveConnections =
+        private readonly List<Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>> _activeConnections =
             new List<Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>>();
 
         /// <summary>
@@ -100,9 +100,9 @@ namespace MediaBrowser.Controller.Net
                 InitialDelayMs = dueTimeMs
             };
 
-            lock (ActiveConnections)
+            lock (_activeConnections)
             {
-                ActiveConnections.Add(new Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>(message.Connection, cancellationTokenSource, state));
+                _activeConnections.Add(new Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>(message.Connection, cancellationTokenSource, state));
             }
         }
 
@@ -110,9 +110,9 @@ namespace MediaBrowser.Controller.Net
         {
             Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>[] tuples;
 
-            lock (ActiveConnections)
+            lock (_activeConnections)
             {
-                tuples = ActiveConnections
+                tuples = _activeConnections
                     .Where(c =>
                     {
                         if (c.Item1.State == WebSocketState.Open && !c.Item2.IsCancellationRequested)
@@ -180,9 +180,9 @@ namespace MediaBrowser.Controller.Net
         /// <param name="message">The message.</param>
         private void Stop(WebSocketMessageInfo message)
         {
-            lock (ActiveConnections)
+            lock (_activeConnections)
             {
-                var connection = ActiveConnections.FirstOrDefault(c => c.Item1 == message.Connection);
+                var connection = _activeConnections.FirstOrDefault(c => c.Item1 == message.Connection);
 
                 if (connection != null)
                 {
@@ -212,9 +212,9 @@ namespace MediaBrowser.Controller.Net
                 //TODO Investigate and properly fix.
             }
 
-            lock (ActiveConnections)
+            lock (_activeConnections)
             {
-                ActiveConnections.Remove(connection);
+                _activeConnections.Remove(connection);
             }
         }
 
@@ -226,9 +226,9 @@ namespace MediaBrowser.Controller.Net
         {
             if (dispose)
             {
-                lock (ActiveConnections)
+                lock (_activeConnections)
                 {
-                    foreach (var connection in ActiveConnections.ToArray())
+                    foreach (var connection in _activeConnections.ToArray())
                     {
                         DisposeConnection(connection);
                     }

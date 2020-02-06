@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
