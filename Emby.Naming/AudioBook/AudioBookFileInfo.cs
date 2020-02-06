@@ -32,7 +32,7 @@ namespace Emby.Naming.AudioBook
         public int? ChapterNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets the type.
+        /// Gets or sets a value indicating whether this instance is a directory.
         /// </summary>
         /// <value>The type.</value>
         public bool IsDirectory { get; set; }
