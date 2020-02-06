@@ -102,17 +102,17 @@ namespace Emby.Server.Implementations.Session
         public event EventHandler<GenericEventArgs<AuthenticationResult>> AuthenticationSucceeded;
 
         /// <summary>
-        /// Occurs when [playback start].
+        /// Occurs when playback has started.
         /// </summary>
         public event EventHandler<PlaybackProgressEventArgs> PlaybackStart;
 
         /// <summary>
-        /// Occurs when [playback progress].
+        /// Occurs when playback has progressed.
         /// </summary>
         public event EventHandler<PlaybackProgressEventArgs> PlaybackProgress;
 
         /// <summary>
-        /// Occurs when [playback stopped].
+        /// Occurs when playback has stopped.
         /// </summary>
         public event EventHandler<PlaybackStopEventArgs> PlaybackStopped;
 
