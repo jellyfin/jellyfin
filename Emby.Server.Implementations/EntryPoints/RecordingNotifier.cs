@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
-    public class RecordingNotifier : IServerEntryPoint
+    public sealed class RecordingNotifier : IServerEntryPoint
     {
         private readonly ILiveTvManager _liveTvManager;
         private readonly ISessionManager _sessionManager;
@@ -30,30 +30,30 @@ namespace Emby.Server.Implementations.EntryPoints
 
         public Task RunAsync()
         {
-            _liveTvManager.TimerCancelled += _liveTvManager_TimerCancelled;
-            _liveTvManager.SeriesTimerCancelled += _liveTvManager_SeriesTimerCancelled;
-            _liveTvManager.TimerCreated += _liveTvManager_TimerCreated;
-            _liveTvManager.SeriesTimerCreated += _liveTvManager_SeriesTimerCreated;
+            _liveTvManager.TimerCancelled += LiveTvManagerTimerCancelled;
+            _liveTvManager.SeriesTimerCancelled += LiveTvManagerSeriesTimerCancelled;
+            _liveTvManager.TimerCreated += OnLiveTvManagerTimerCreated;
+            _liveTvManager.SeriesTimerCreated += OnLiveTvManagerSeriesTimerCreated;
 
             return Task.CompletedTask;
         }
 
-        private void _liveTvManager_SeriesTimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private void OnLiveTvManagerSeriesTimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
             SendMessage("SeriesTimerCreated", e.Argument);
         }
 
-        private void _liveTvManager_TimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private void OnLiveTvManagerTimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
             SendMessage("TimerCreated", e.Argument);
         }
 
-        private void _liveTvManager_SeriesTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private void LiveTvManagerSeriesTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
             SendMessage("SeriesTimerCancelled", e.Argument);
         }
 
-        private void _liveTvManager_TimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private void LiveTvManagerTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
             SendMessage("TimerCancelled", e.Argument);
         }
@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             try
             {
-                await _sessionManager.SendMessageToUserSessions(users, name, info, CancellationToken.None);
+                await _sessionManager.SendMessageToUserSessions(users, name, info, CancellationToken.None).ConfigureAwait(false);
             }
             catch (ObjectDisposedException)
             {
@@ -76,12 +76,13 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
-            _liveTvManager.TimerCancelled -= _liveTvManager_TimerCancelled;
-            _liveTvManager.SeriesTimerCancelled -= _liveTvManager_SeriesTimerCancelled;
-            _liveTvManager.TimerCreated -= _liveTvManager_TimerCreated;
-            _liveTvManager.SeriesTimerCreated -= _liveTvManager_SeriesTimerCreated;
+            _liveTvManager.TimerCancelled -= LiveTvManagerTimerCancelled;
+            _liveTvManager.SeriesTimerCancelled -= LiveTvManagerSeriesTimerCancelled;
+            _liveTvManager.TimerCreated -= OnLiveTvManagerTimerCreated;
+            _liveTvManager.SeriesTimerCreated -= OnLiveTvManagerSeriesTimerCreated;
         }
     }
 }
