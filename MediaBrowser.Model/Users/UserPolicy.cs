@@ -93,7 +93,6 @@ namespace MediaBrowser.Model.Users
             EnableVideoPlaybackTranscoding = true;
             EnablePlaybackRemuxing = true;
             ForceRemoteSourceTranscoding = false;
-            
             EnableLiveTvManagement = true;
             EnableLiveTvAccess = true;
 
