@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 
 namespace MediaBrowser.Model.Dto
@@ -9,6 +12,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+        
         /// <summary>
         /// Gets or sets the identifier.
         /// </summary>
