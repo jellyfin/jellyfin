@@ -4,6 +4,7 @@
       <TargetFramework>netcoreapp3.1</TargetFramework>
       <IsPackable>false</IsPackable>
       <RootNamespace>Jellyfin.Server.Implementations.Tests</RootNamespace>
+      <noWarn>1591</noWarn>
     </PropertyGroup>
 
     <ItemGroup>

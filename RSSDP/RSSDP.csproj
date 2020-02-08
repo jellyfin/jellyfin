@@ -9,6 +9,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <noWarn>1591</noWarn>
   </PropertyGroup>
 
 </Project>

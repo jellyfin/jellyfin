@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <noWarn>1591</noWarn>
   </PropertyGroup>
 
   <ItemGroup>
