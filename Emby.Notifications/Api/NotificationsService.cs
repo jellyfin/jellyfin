@@ -22,7 +22,7 @@ namespace Emby.Notifications.Api
     public class GetNotifications : IReturn<NotificationResult>
     {
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         [ApiMember(Name = "IsRead", Description = "An optional filter by IsRead", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsRead { get; set; }
@@ -36,26 +36,26 @@ namespace Emby.Notifications.Api
 
     public class Notification
     {
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         public DateTime Date { get; set; }
 
         public bool IsRead { get; set; }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
-        public string Url { get; set; }
+        public string Url { get; set; } = string.Empty;
 
         public NotificationLevel Level { get; set; }
     }
 
     public class NotificationResult
     {
-        public IReadOnlyList<Notification> Notifications { get; set; }
+        public IReadOnlyList<Notification> Notifications { get; set; } = Array.Empty<Notification>();
 
         public int TotalRecordCount { get; set; }
     }
@@ -71,7 +71,7 @@ namespace Emby.Notifications.Api
     public class GetNotificationsSummary : IReturn<NotificationsSummary>
     {
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
     }
 
     [Route("/Notifications/Types", "GET", Summary = "Gets notification types")]
@@ -107,20 +107,20 @@ namespace Emby.Notifications.Api
     public class MarkRead : IReturnVoid
     {
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         [ApiMember(Name = "Ids", Description = "A list of notification ids, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
-        public string Ids { get; set; }
+        public string Ids { get; set; } = string.Empty;
     }
 
     [Route("/Notifications/{UserId}/Unread", "POST", Summary = "Marks notifications as unread")]
     public class MarkUnread : IReturnVoid
     {
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         [ApiMember(Name = "Ids", Description = "A list of notification ids, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
-        public string Ids { get; set; }
+        public string Ids { get; set; } = string.Empty;
     }
 
     [Authenticated]

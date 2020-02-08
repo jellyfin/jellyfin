@@ -32,7 +32,7 @@ namespace Emby.Notifications
         /// Initializes a new instance of the <see cref="NotificationManager" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        /// <param name="userManager">the user manager.</param>
+        /// <param name="userManager">The user manager.</param>
         /// <param name="config">The server configuration manager.</param>
         public NotificationManager(
             ILogger<NotificationManager> logger,
