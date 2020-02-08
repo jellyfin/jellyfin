@@ -1,20 +1,22 @@
 namespace MediaBrowser.Model.Updates
 {
     /// <summary>
-    /// Enum PackageVersionClass
+    /// Enum PackageVersionClass.
     /// </summary>
     public enum PackageVersionClass
     {
         /// <summary>
-        /// The release
+        /// The release.
         /// </summary>
         Release = 0,
+
         /// <summary>
-        /// The beta
+        /// The beta.
         /// </summary>
         Beta = 1,
+
         /// <summary>
-        /// The dev
+        /// The dev.
         /// </summary>
         Dev = 2
     }

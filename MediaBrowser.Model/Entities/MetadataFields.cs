@@ -1,44 +1,52 @@
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Enum MetadataFields
+    /// Enum MetadataFields.
     /// </summary>
     public enum MetadataFields
     {
         /// <summary>
-        /// The cast
+        /// The cast.
         /// </summary>
         Cast,
+
         /// <summary>
-        /// The genres
+        /// The genres.
         /// </summary>
         Genres,
+
         /// <summary>
-        /// The production locations
+        /// The production locations.
         /// </summary>
         ProductionLocations,
+
         /// <summary>
-        /// The studios
+        /// The studios.
         /// </summary>
         Studios,
+
         /// <summary>
-        /// The tags
+        /// The tags.
         /// </summary>
         Tags,
+
         /// <summary>
-        /// The name
+        /// The name.
         /// </summary>
         Name,
+
         /// <summary>
-        /// The overview
+        /// The overview.
         /// </summary>
         Overview,
+
         /// <summary>
-        /// The runtime
+        /// The runtime.
         /// </summary>
         Runtime,
+
         /// <summary>
-        /// The official rating
+        /// The official rating.
         /// </summary>
         OfficialRating
     }
