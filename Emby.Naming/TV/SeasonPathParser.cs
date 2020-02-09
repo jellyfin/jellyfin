@@ -8,9 +8,24 @@ using System.Linq;
 
 namespace Emby.Naming.TV
 {
-    public class SeasonPathParser
+    public static class SeasonPathParser
     {
-        public SeasonPathParserResult Parse(string path, bool supportSpecialAliases, bool supportNumericSeasonFolders)
+        /// <summary>
+        /// A season folder must contain one of these somewhere in the name.
+        /// </summary>
+        private static readonly string[] _seasonFolderNames =
+        {
+            "season",
+            "sæson",
+            "temporada",
+            "saison",
+            "staffel",
+            "series",
+            "сезон",
+            "stagione"
+        };
+
+        public static SeasonPathParserResult Parse(string path, bool supportSpecialAliases, bool supportNumericSeasonFolders)
         {
             var result = new SeasonPathParserResult();
 
@@ -26,21 +41,6 @@ namespace Emby.Naming.TV
 
             return result;
         }
-
-        /// <summary>
-        /// A season folder must contain one of these somewhere in the name.
-        /// </summary>
-        private static readonly string[] _seasonFolderNames =
-        {
-            "season",
-            "sæson",
-            "temporada",
-            "saison",
-            "staffel",
-            "series",
-            "сезон",
-            "stagione"
-        };
 
         /// <summary>
         /// Gets the season number from path.
@@ -150,6 +150,7 @@ namespace Emby.Naming.TV
                         {
                             numericStart = i;
                         }
+
                         length++;
                     }
                 }
@@ -161,11 +162,11 @@ namespace Emby.Naming.TV
                 }
 
                 var currentChar = path[i];
-                if (currentChar.Equals('('))
+                if (currentChar == '(')
                 {
                     hasOpenParenth = true;
                 }
-                else if (currentChar.Equals(')'))
+                else if (currentChar == ')')
                 {
                     hasOpenParenth = false;
                 }

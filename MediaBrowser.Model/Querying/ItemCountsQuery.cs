@@ -1,7 +1,7 @@
 namespace MediaBrowser.Model.Querying
 {
     /// <summary>
-    /// Class ItemCountsQuery
+    /// Class ItemCountsQuery.
     /// </summary>
     public class ItemCountsQuery
     {

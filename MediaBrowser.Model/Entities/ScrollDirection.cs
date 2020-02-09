@@ -1,16 +1,17 @@
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Enum ScrollDirection
+    /// Enum ScrollDirection.
     /// </summary>
     public enum ScrollDirection
     {
         /// <summary>
-        /// The horizontal
+        /// The horizontal.
         /// </summary>
         Horizontal,
+
         /// <summary>
-        /// The vertical
+        /// The vertical.
         /// </summary>
         Vertical
     }
