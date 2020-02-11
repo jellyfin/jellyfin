@@ -506,11 +506,8 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsTranscoding)
             {
-				if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
-				{
-					options.MaxBitrate = GetMaxBitrate(maxBitrate, user);
-				}
-				
+                options.MaxBitrate = GetMaxBitrate(maxBitrate, user);
+
                 // The MediaSource supports direct stream, now test to see if the client supports it
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
                     ? streamBuilder.BuildAudioItem(options)
